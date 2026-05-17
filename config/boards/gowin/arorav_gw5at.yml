@@ -53,6 +53,7 @@ Boards:
       - openFPGALoader[*]
     Features:
       - ddr3_memory
+      - pcie_endpoint
       - qspi_flash
       - microsd_socket
       - hdmi_output

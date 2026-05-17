@@ -47,6 +47,7 @@ Boards:
       - ddr4_memory
       - dip_switches
       - microsd_socket
+      - pcie_endpoint
       - qspi_flash
       - usb_uart_bridge
       - user_buttons

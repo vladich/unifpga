@@ -156,6 +156,7 @@ Boards:
     BoardName: Aller
     Features:
       - ddr3_memory
+      - pcie_edge_connector
       - qspi_flash
       - usb_jtag_bridge
       - user_buttons
@@ -247,6 +248,7 @@ Boards:
       - dip_switches
       - ethernet_phy_gigabit
       - microsd_socket
+      - pcie_endpoint
       - qspi_flash
       - usb_uart_bridge
       - user_buttons

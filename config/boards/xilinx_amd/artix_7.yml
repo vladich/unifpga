@@ -870,6 +870,7 @@ Boards:
       - dip_switches
       - ethernet_phy_gigabit
       - microsd_socket
+      - pcie_endpoint
       - qspi_flash
       - usb_jtag_bridge
       - usb_uart_bridge
@@ -991,6 +992,7 @@ Boards:
   - Id: alinx_ax7203
     BoardName: AX7203
     Features:
+      - pcie_endpoint
       - usb_jtag_bridge
       - usb_uart_bridge
       - user_buttons

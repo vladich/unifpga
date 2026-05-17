@@ -184,6 +184,7 @@ Boards:
     BoardName: Alveo U200
     Features:
       - ddr4_memory
+      - pcie_edge_connector
     Devices:
       - ddr4_sodimm_socket
     BoardProducer: xilinx_amd
@@ -196,6 +197,7 @@ Boards:
     BoardName: Alveo U250
     Features:
       - ddr4_memory
+      - pcie_edge_connector
     Devices:
       - ddr4_sodimm_socket
     BoardProducer: xilinx_amd
@@ -208,6 +210,7 @@ Boards:
     BoardName: Alveo U280
     Features:
       - ddr4_memory
+      - pcie_edge_connector
     Devices:
       - ddr4_sodimm_socket
     BoardProducer: xilinx_amd

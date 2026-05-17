@@ -9,6 +9,7 @@ Boards:
     BoardName: Certus-NX Versa Eval Board
     Features:
       - microsd_socket
+      - pcie_endpoint
       - usb_jtag_bridge
     Devices:
       - ftdi_ft2232h

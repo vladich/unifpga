@@ -1395,6 +1395,7 @@ Boards:
       - ethernet_phy_gigabit
       - hdmi_output
       - microsd_socket
+      - pcie_endpoint
       - qspi_flash
       - usb_2_host
       - usb_2_otg

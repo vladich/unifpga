@@ -85,6 +85,7 @@ Boards:
     BoardName: Tang Console
     Features:
       - microsd_socket
+      - pcie_endpoint
     Devices:
       - microsd_socket_generic
     BoardProducer: sipeed

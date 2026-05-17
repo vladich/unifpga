@@ -1623,6 +1623,7 @@ Boards:
       - ethernet_phy_gigabit
       - hdmi_output
       - microsd_socket
+      - pcie_endpoint
       - qspi_flash
       - usb_jtag_bridge
       - usb_uart_bridge

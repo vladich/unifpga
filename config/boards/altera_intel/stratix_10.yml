@@ -228,6 +228,7 @@ Boards:
     Features:
       - ddr4_memory
       - dip_switches
+      - pcie_edge_connector
       - qspi_flash
       - usb_jtag_bridge
       - user_buttons
