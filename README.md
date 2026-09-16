@@ -1,4 +1,4 @@
-# uni-fpga
+# unifpga
 
 A multi-vendor FPGA build abstraction. One design, written against a fixed
 virtual-device interface, synthesizes against any of 130 board configurations
