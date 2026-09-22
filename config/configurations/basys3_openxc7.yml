@@ -24,13 +24,15 @@ Configuration:
       width: 16
     bind:
       led: onboard_leds
-  - peripheral: seven_segment_8digit_shared
+  - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
     params:
       digits: 4
+      active: low
+      digits_active: low
     bind:
-      segments: onboard_7seg.segments
-      dp: onboard_7seg.dp
-      digits: onboard_7seg.anodes
+      segments: ["onboard_7seg.segments[0]", "onboard_7seg.segments[1]", "onboard_7seg.segments[2]", "onboard_7seg.segments[3]", "onboard_7seg.segments[4]", "onboard_7seg.segments[5]", "onboard_7seg.segments[6]"]
+      dp: "onboard_7seg.dp"
+      digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]"]
   - peripheral: button_array
     params:
       width: 5

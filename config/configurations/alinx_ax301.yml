@@ -11,7 +11,7 @@ Configuration:
   attach:
     - peripheral: clock_input
       bind:
-        clk: sys_clk
+        clk: clk
     - peripheral: reset_button
       bind:
         rst: cpu_resetn
@@ -25,11 +25,24 @@ Configuration:
         width: 4
       bind:
         led: onboard_leds
-    - peripheral: seven_segment_8digit_shared
+    - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
+      params:
+        digits: 6
+        active: low
+        digits_active: low
       bind:
-        segments: ['onboard_7seg.ca', 'onboard_7seg.cb', 'onboard_7seg.cc', 'onboard_7seg.cd', 'onboard_7seg.ce', 'onboard_7seg.cf', 'onboard_7seg.cg']
-        digits: onboard_7seg.anodes
-    - peripheral: vga_4bit
+        segments: ["onboard_7seg.segments[7]", "onboard_7seg.segments[6]", "onboard_7seg.segments[5]", "onboard_7seg.segments[4]", "onboard_7seg.segments[3]", "onboard_7seg.segments[2]", "onboard_7seg.segments[1]"]
+        dp: "onboard_7seg.segments[0]"
+        digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]"]
+    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+      params:
+        bits_r: 5
+        bits_g: 6
+        bits_b: 5
+        pin_bits_r: 5
+        pin_bits_g: 6
+        pin_bits_b: 5
+        color_depth: 565
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -40,5 +53,11 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
+    - peripheral: inmp441_i2s_mic   # binds from BGM alinx_ax301/board_specific_top.sv
+      bind:
+        lr: "gpio_0[0]"
+        ws: "gpio_0[2]"
+        sck: "gpio_0[4]"
+        sd: "gpio_0[5]"
 
   # External peripherals inferred from the variant directory name.
