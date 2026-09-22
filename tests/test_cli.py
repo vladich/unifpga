@@ -350,8 +350,58 @@ def test_gui_command_table(tmp_path):
     (tmp_path / "post_synth.dcp").write_text("")
     (tmp_path / "post_route.dcp").write_text("")
     assert cli.gui_command("vivado", out)[0] == ["vivado", os.path.join(out, "post_route.dcp")]
-    assert cli.gui_command("gowin_eda", out)[0] is None
-    assert cli.gui_command("nextpnr_icestorm", out)[0] is None
+    cmd, why = cli.gui_command("gowin_eda", out)
+    assert cmd is None and "run build (or prepare) first" in why
+    (tmp_path / "unifpga_top.gprj").write_text("")                 # written by the gowin_eda driver
+    assert cli.gui_command("gowin_eda", out)[0] == ["gw_ide", "-prj", os.path.join(out, "unifpga_top.gprj")]
+    assert cli.gui_command("nextpnr_icestorm", out)[0] == ["nextpnr", "--gui"]   # place-and-route rerun marker
+
+
+def test_gui_for_a_nextpnr_flow_reruns_place_and_route_with_gui(captured, monkeypatch, capsys):
+    """BGM run_fpga_synthesis_gui_yosys: the synthesis step again with
+    GUI_OPT="--gui"; here synthesize -s pnr under UNIFPGA_NEXTPNR_GUI=1."""
+    calls, _ = captured
+    seen = []
+    monkeypatch.setattr(synthesize, "main",
+                        lambda argv=None: (seen.append(os.environ.get("UNIFPGA_NEXTPNR_GUI")), calls.append(list(argv)))[1] or 0)
+    monkeypatch.setenv(cli.ENV_BOARD, "icebreaker_no_dvi_tm1638_yosys")
+    assert cli.main(["gui", DESIGN]) == 0
+    assert calls == [["-c", "icebreaker_no_dvi_tm1638_yosys", "--top", TOP, "-s", "pnr",
+                      "-o", os.path.join(DESIGN_DIR, "run", "icebreaker_no_dvi_tm1638_yosys")]]
+    assert seen == ["1"] and "UNIFPGA_NEXTPNR_GUI" not in os.environ
+    assert "nextpnr --gui" in capsys.readouterr().out
+
+
+def test_prepare_is_the_dry_run_of_synthesize(design, captured, monkeypatch, capsys):
+    """BGM check_setup: "create the run directories of all labs" = the dry
+    run (top, constraints, project files; no tools)."""
+    calls, _ = captured
+    seen = []
+    monkeypatch.setattr(synthesize, "main",
+                        lambda argv=None: (seen.append(os.environ.get("UNIFPGA_DRY_RUN")), calls.append(list(argv)))[1] or 0)
+    monkeypatch.setenv(cli.ENV_BOARD, CFG)
+    assert cli.main(["prepare", str(design)]) == 0
+    argv = calls[0]
+    assert argv[argv.index("-s") + 1] == "full" and "--program" not in argv
+    assert os.path.realpath(argv[argv.index("-o") + 1]) == os.path.realpath(str(design / "run" / CFG))
+    assert seen == ["1"] and "UNIFPGA_DRY_RUN" not in os.environ
+    assert capsys.readouterr().out.startswith("Preparing my_design for {}".format(CFG))
+
+
+def test_prepare_all_walks_every_design(tmp_path, captured, monkeypatch, capsys):
+    calls, rc = captured
+    designs = tmp_path / "designs"
+    for name in ("a", "b"):
+        (designs / name).mkdir(parents=True)
+        (designs / name / cli.TOP_NAME).write_text("")
+    monkeypatch.setattr(cli, "DESIGNS_DIR", str(designs))
+    monkeypatch.setenv(cli.ENV_BOARD, CFG)
+    assert cli.main(["prepare", "--all"]) == 0
+    assert [os.path.basename(os.path.dirname(c[c.index("--top") + 1])) for c in calls] == ["a", "b"]
+    assert "Prepared run/{}/ in 2 design(s)".format(CFG) in capsys.readouterr().out
+    rc[0] = 1
+    assert cli.main(["prepare", "--all"]) == 1
+    assert "failed: a, b" in capsys.readouterr().out
 
 
 def test_clean_all_removes_every_design_run_dir(tmp_path, monkeypatch):

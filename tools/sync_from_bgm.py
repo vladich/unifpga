@@ -1427,7 +1427,20 @@ def apply_polarity(paths, dry_run):
 _GOWIN_TOOLCHAINS = {"gowin_eda", "gowin_standard", "nextpnr_apicula"}
 
 
-def _render_gowin_block(set_device, options, reason=None):
+def _bgm_gprj_device(vdir):
+    """The `<Device ...>` element of BGM's fpga_project_01.gprj (the Gowin IDE
+    project template), or None."""
+    path = os.path.join(vdir, "fpga_project_01.gprj")
+    if not os.path.exists(path):
+        return None
+    for line in open(path, encoding="utf-8", errors="replace"):
+        t = line.strip()
+        if t.startswith("<Device") and not t.startswith("#"):
+            return t
+    return None
+
+
+def _render_gowin_block(set_device, options, reason=None, gprj_device=None):
     lines = ["  # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):",
              "  # set_device args verbatim (part, -name, -device_version) and the",
              "  # set_option -use_*_as_gpio flags that free configuration pins for I/O.",
@@ -1438,6 +1451,9 @@ def _render_gowin_block(set_device, options, reason=None):
     if reason:
         lines.append("      set_device_reason: {}".format(reason))
     lines.append("      options: [{}]".format(", ".join(o.lstrip("-") for o in options)))
+    if gprj_device:
+        lines.append("      gprj_device: '{}'   # Gowin IDE project template (BGM fpga_project_01.gprj)"
+                     .format(gprj_device.replace("'", "''")))
     return "\n".join(lines) + "\n"
 
 
@@ -1487,7 +1503,9 @@ def _bgm_board_info(vdir):
     m = re.search(r'^\s*SYNTH_CMD\s*=\s*"([^"]*)"', text, re.M)
     if m:
         out["synth_options"] = [t.lstrip("-") for t in m.group(1).split()[1:]]
-    for var, key in (("BOARD", "loader_board"), ("CABLE", "loader_cable"), ("FTDI_CHANNEL", "loader_ftdi_channel")):
+    for var, key in (("BOARD", "loader_board"), ("CABLE", "loader_cable"), ("FTDI_CHANNEL", "loader_ftdi_channel"),
+                     ("DEVICE_PART", "device_part"), ("DEVICE_FAMILY", "device_family"), ("DEVICE_PACK", "device_pack"),
+                     ("SPEED", "speed")):
         m = re.search(r'^\s*' + var + r'\s*=\s*"?([^"\n]*)"?\s*$', text, re.M)
         if m and m.group(1).strip():
             out[key] = m.group(1).strip()
@@ -1552,11 +1570,14 @@ def apply_quartus_options(paths, dry_run):
          "dual-purpose pin reservation, unused-pin state, device I/O default."])
 
 
+_YOSYS_KEYS = ("loader_board", "loader_cable", "loader_ftdi_channel", "device_part", "device_family", "device_pack", "speed")
+
+
 def _render_yosys_block(info):
     lines = []
     if "synth_options" in info:
         lines.append("synth_options: [{}]".format(", ".join(info["synth_options"])))
-    for key in ("loader_board", "loader_cable", "loader_ftdi_channel"):
+    for key in _YOSYS_KEYS:
         if key in info:
             lines.append("{}: {}".format(key, _yaml_str(str(info[key]))))
     return lines
@@ -1567,7 +1588,7 @@ def _current_yosys(pinmap):
     out = OrderedDict()
     if cur.get("synth_options") is not None:
         out["synth_options"] = [str(o) for o in cur["synth_options"]]
-    for key in ("loader_board", "loader_cable", "loader_ftdi_channel"):
+    for key in _YOSYS_KEYS:
         if cur.get(key) not in (None, ""):
             out[key] = str(cur[key])
     return out
@@ -1846,7 +1867,7 @@ def _bank_pin_values(bank):
 
 
 def apply_gowin_options(paths, dry_run):
-    per_board = {}
+    per_board, gprj_by_board = {}, {}
     for path in paths:
         cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
         if cfg.get("toolchain") not in _GOWIN_TOOLCHAINS:
@@ -1858,24 +1879,37 @@ def apply_gowin_options(paths, dry_run):
         if dev is None and not opts:
             continue            # yosys variants have no .tcl
         per_board.setdefault(cfg["board"], set()).add((dev, tuple(opts)))
+        g = _bgm_gprj_device(vdir)
+        if g:
+            gprj_by_board.setdefault(cfg["board"], []).append(g)
     results = {}
     for board, variants in sorted(per_board.items()):
         if len(variants) > 1:
-            results[board] = "CONFLICT between BGM variants: {}".format(sorted(variants))
+            results[board] = "CONFLICT between BGM variants: {}".format(sorted(variants, key=str))
             continue
         (dev, opts), = variants
+        # the IDE device line: BGM's variants of one board can disagree on the
+        # internal device id (Tang Nano 20K: gw2a18c-011 vs gw2ar18c-000, two
+        # IDE generations); the majority wins and the choice is reported
+        counts = {}
+        for g in gprj_by_board.get(board) or []:
+            counts[g] = counts.get(g, 0) + 1
+        gprj = max(counts, key=lambda g: (counts[g], g)) if counts else None
+        note = ("" if len(counts) <= 1 else
+                "; IDE device by majority ({} of {} variants)".format(counts[gprj], sum(counts.values())))
         pm_path = _pinmap_path(board)
         pinmap = config_init.read_board_pinmap(board) or {}
         cur = (pinmap.get("toolchain_options") or {}).get("gowin") or {}
         want_opts = [o.lstrip("-") for o in opts]
         if cur.get("set_device_reason"):
             dev = cur.get("set_device")          # documented deviation from BGM's tcl (Tang Mega 138K)
-        if cur.get("set_device") == dev and list(cur.get("options") or []) == want_opts:
+        if cur.get("set_device") == dev and list(cur.get("options") or []) == want_opts \
+                and (cur.get("gprj_device") or None) == gprj:
             results[board] = "already"
             continue
         text = open(pm_path, encoding="utf-8").read()
         reason = cur.get("set_device_reason")
-        gowin_lines = _render_gowin_block(dev, opts, reason).split("\n")
+        gowin_lines = _render_gowin_block(dev, opts, reason, gprj).split("\n")
         gowin_sub = "\n".join(l for l in gowin_lines if l.startswith("    ")) + "\n"
         if re.search(r"^  toolchain_options:", text, re.M):
             # replace only the gowin: sub-block; apicula: and others stay
@@ -1892,7 +1926,8 @@ def apply_gowin_options(paths, dry_run):
         if not dry_run:
             open(pm_path, "w", encoding="utf-8").write(new)
             config_init.clear_cache()
-        results[board] = "set_device {!r}, options {}".format(dev, want_opts)
+        results[board] = "set_device {!r}, options {}{}{}".format(
+            dev, want_opts, ", IDE device " + repr(gprj) if gprj else "", note)
     return results
 
 

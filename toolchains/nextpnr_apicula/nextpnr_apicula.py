@@ -64,6 +64,16 @@ _BOARD_TO_APICULA = {
 }
 
 
+def _himbaechel_has_gowin(binary):
+    """Does this nextpnr-himbaechel include the gowin uarch (`--list-uarch`)?"""
+    try:
+        out = subprocess.run([binary, "--list-uarch"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True, timeout=30).stdout
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return "gowin" in out.lower()
+
+
 def _select_part(board, configuration):
     bid = board.get("Id") or ""
     return _BOARD_TO_APICULA.get(bid)
@@ -139,20 +149,36 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         log.info("[elaborate] yosys synth complete; skipping nextpnr/gowin_pack.")
         return 0
 
-    # ---- nextpnr-gowin place-and-route ----
-    nextpnr = _resolve_bin("nextpnr-gowin") or _resolve_bin("nextpnr-himbaechel")
+    # ---- place-and-route: BGM's canonical command is nextpnr-himbaechel with
+    # the gowin uarch (`--device $DEVICE_PART --vopt family=$DEVICE_FAMILY
+    # --vopt cst=...`); a build without that uarch (mercury's oss-cad-suite)
+    # keeps the legacy nextpnr-gowin ----
+    yo = codegen.yosys_loader_settings(board_pinmap)
+    himbaechel = _resolve_bin("nextpnr-himbaechel")
+    if himbaechel is not None and not _himbaechel_has_gowin(himbaechel):
+        himbaechel = None
+    nextpnr = himbaechel or _resolve_bin("nextpnr-gowin")
     if nextpnr is None:
-        log.error("Could not find nextpnr-gowin or nextpnr-himbaechel on $PATH.")
+        log.error("Could not find nextpnr-himbaechel (gowin uarch) or nextpnr-gowin on $PATH.")
         return 1
-    cmd = [nextpnr, "--device", nextpnr_device,
-           "--json", json_path, "--cst", cst_path,
-           "--write", pack_path,
-           "-q", "-l", nextpnr_log]
-    log.info("Invoking nextpnr-gowin --device %s", nextpnr_device)
+    if himbaechel:
+        family = yo.get("device_family") or gowin_pack_device
+        cmd = [nextpnr, "--json", json_path, "--write", pack_path,
+               "--device", yo.get("device_part") or nextpnr_device,
+               "--vopt", "family=" + str(family), "--vopt", "cst=" + cst_path,
+               "-q", "-l", nextpnr_log] + codegen.nextpnr_gui_args()
+        log.info("Invoking nextpnr-himbaechel --device %s --vopt family=%s", yo.get("device_part") or nextpnr_device, family)
+    else:
+        cmd = [nextpnr, "--device", nextpnr_device,
+               "--json", json_path, "--cst", cst_path,
+               "--write", pack_path,
+               "-q", "-l", nextpnr_log] + codegen.nextpnr_gui_args()
+        log.info("Invoking nextpnr-gowin --device %s", nextpnr_device)
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:
-        log.error("nextpnr-gowin exited with code %d (see %s)", rc, nextpnr_log)
+        log.error("%s exited with code %d (see %s)", os.path.basename(nextpnr), rc, nextpnr_log)
         return rc
+    gowin_pack_device = yo.get("device_pack") or gowin_pack_device
 
     # ---- gowin_pack bitstream ----
     gowin_pack = _resolve_bin("gowin_pack")

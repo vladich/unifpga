@@ -265,3 +265,66 @@ def test_quartus_cable_list_parsing(monkeypatch):
         stdout = "Info: *******\n1) USB-Blaster [1-2]\n2) DE-SoC [1-3]\n"
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: R())
     assert qp._cables("quartus_pgm", {}, ".") == ["USB-Blaster [1-2]", "DE-SoC [1-3]"]
+
+
+def test_gowin_ide_project_file_from_the_pinmap_device():
+    """BGM writes fpga_project.gprj for the IDE (05_run_gui): the <Device>
+    line is board data synced from BGM's template; without it no project."""
+    assert codegen.emit_gowin_gprj({}, ["a.sv"], "x.cst", "x.sdc") is None
+    pm = {"toolchain_options": {"gowin": {
+        "gprj_device": '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>'}}}
+    text = codegen.emit_gowin_gprj(pm, ["/r/top.sv", "/r/rtl/x.sv"], "/o/top.cst", "/o/top.sdc")
+    assert '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>' in text
+    assert '<File path="/r/rtl/x.sv" type="file.verilog" enable="1"/>' in text
+    assert '<File path="/o/top.cst" type="file.cst" enable="1"/>' in text
+    assert '<File path="/o/top.sdc" type="file.sdc" enable="1"/>' in text
+    r = config_init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
+    assert "gw1nr9c-004" in codegen.emit_gowin_gprj(r["board_pinmap"], [], None, None)
+    r = config_init.resolve_configuration("tang_nano_20k_hdmi_tm1638")
+    assert "gw2ar18c-000" in codegen.emit_gowin_gprj(r["board_pinmap"], [], None, None)   # majority of BGM's 7 variants
+
+
+def test_nextpnr_gui_args_follow_the_environment(monkeypatch):
+    monkeypatch.delenv("UNIFPGA_NEXTPNR_GUI", raising=False)
+    assert codegen.nextpnr_gui_args() == []
+    monkeypatch.setenv("UNIFPGA_NEXTPNR_GUI", "1")
+    assert codegen.nextpnr_gui_args() == ["--gui"]
+
+
+def test_bgm_board_info_device_keys(tmp_path):
+    """board_info.source_bash: DEVICE_PART/FAMILY/PACK and SPEED feed
+    nextpnr-himbaechel (--device, --vopt family), gowin_pack -d and
+    nextpnr-ecp5 --speed, as BGM's synthesize_for_fpga_yosys uses them."""
+    import tools.sync_from_bgm as sfb
+    v = tmp_path / "tang_nano_9k"
+    v.mkdir()
+    (v / "board_info.source_bash").write_text(
+        'DEVICE_FAMILY="GW1N-9C"\nDEVICE_PART="GW1NR-LV9QN88PC6/I5"\nDEVICE_PACK="GW1N-9C"\n'
+        'BOARD="tangnano9k"\n')
+    info = sfb._bgm_board_info(str(v))
+    assert info["device_family"] == "GW1N-9C" and info["device_part"] == "GW1NR-LV9QN88PC6/I5"
+    assert info["device_pack"] == "GW1N-9C" and info["loader_board"] == "tangnano9k"
+    (v / "board_info.source_bash").write_text('SPEED="8"\nCABLE="ft2232"\n')
+    info = sfb._bgm_board_info(str(v))
+    assert info == {"speed": "8", "loader_cable": "ft2232"}
+    r = config_init.resolve_configuration("tang_nano_9k_lcd_480_272_tm1638_yosys")
+    yo = codegen.yosys_loader_settings(r["board_pinmap"])
+    assert yo["device_family"] == "GW1N-9C" and yo["device_part"] == "GW1NR-LV9QN88PC6/I5"
+    r = config_init.resolve_configuration("colorlight75b_tm1638_ecp5_yosys")
+    assert codegen.yosys_loader_settings(r["board_pinmap"])["speed"] == "6"
+
+
+def test_efinity_command_is_bgm_project_mode():
+    """BGM synthesize_for_fpga_efinity / configure_fpga_efinity: efx_run.py
+    --pgm_opts source=work_pnr/<p>.lbf --pgm_opts dest=work_pnr/<p>.hex
+    --flow compile <project.xml>; programming is --flow program."""
+    from toolchains.efinity import efinity as ef
+    cmd = ef._efx_command("/e/scripts/efx_run.py", "compile", "/o/unifpga_top.xml")
+    assert cmd == ["python3", "/e/scripts/efx_run.py",
+                   "--pgm_opts", "source=" + os.path.join("work_pnr", "unifpga_top.lbf"),
+                   "--pgm_opts", "dest=" + os.path.join("work_pnr", "unifpga_top.hex"),
+                   "--flow", "compile", "/o/unifpga_top.xml"]
+    assert "--flist" not in cmd and "--family" not in cmd
+    cmd = ef._efx_command("/e/scripts/efx_run.py", "program", "/o/unifpga_top.xml")
+    assert cmd[-3:] == ["--flow", "program", "/o/unifpga_top.xml"]
+    assert cmd[2:4] == ["--pgm_opts", "source=" + os.path.join("work_pnr", "unifpga_top.hex")]

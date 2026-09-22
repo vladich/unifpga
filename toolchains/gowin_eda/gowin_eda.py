@@ -184,6 +184,13 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     with open(tcl_path, "w") as f:
         f.write(_emit_tcl(device_args, sv_files, cst_path, sdc_path, output, step, gowin_opts))
     log.info("Wrote %s", tcl_path)
+    # BGM also writes fpga_project.gprj for the IDE (05_run_gui_for_fpga_synthesis)
+    gprj = codegen.emit_gowin_gprj(board_pinmap, sv_files, cst_path, sdc_path)
+    if gprj:
+        gprj_path = os.path.join(output, PROJECT_NAME + ".gprj")
+        with open(gprj_path, "w") as f:
+            f.write(gprj)
+        log.info("Wrote %s", gprj_path)
 
     log.info("Source files (%d):", len(sv_files))
     for sv in sv_files:

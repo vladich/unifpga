@@ -163,7 +163,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
            "--qsf", qsf_path,
            "--json", json_path,
            "--rbf", rbf_path,
-           "-q", "-l", nextpnr_log]
+           "-q", "-l", nextpnr_log] + codegen.nextpnr_gui_args()
     log.info("Invoking nextpnr-mistral --device %s", part)
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

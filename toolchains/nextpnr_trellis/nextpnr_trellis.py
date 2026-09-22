@@ -99,7 +99,9 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     if info is None:
         log.error("Unrecognized ECP5 board %r — extend _BOARD_TO_TRELLIS.", board.get("Id"))
         return 1
-    device, package, _speed = info
+    device, package, speed = info
+    yo = codegen.yosys_loader_settings(board_pinmap)
+    speed = yo.get("speed") or speed                 # BGM board_info SPEED (nextpnr-ecp5 --speed)
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
     lpf_path = os.path.join(output, PROJECT_NAME + ".lpf")
@@ -154,10 +156,10 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     if nextpnr is None:
         log.error("Could not find nextpnr-ecp5 on $PATH.")
         return 1
-    cmd = [nextpnr, "--{}".format(device), "--package", package,
+    cmd = [nextpnr, "--{}".format(device), "--package", package, "--speed", str(speed),
            "--json", json_path, "--lpf", lpf_path,
            "--textcfg", config_path, "--lpf-allow-unconstrained",
-           "-q", "-l", nextpnr_log]
+           "-q", "-l", nextpnr_log] + codegen.nextpnr_gui_args()
     log.info("Invoking nextpnr-ecp5 --%s --package %s", device, package)
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

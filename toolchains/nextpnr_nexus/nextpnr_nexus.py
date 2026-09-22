@@ -166,7 +166,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
            "--json", json_path,
            "--pdc", pdc_path,
            "--fasm", fasm_path,
-           "-q", "-l", nextpnr_log]
+           "-q", "-l", nextpnr_log] + codegen.nextpnr_gui_args()
     log.info("Invoking nextpnr-nexus --device %s", device)
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

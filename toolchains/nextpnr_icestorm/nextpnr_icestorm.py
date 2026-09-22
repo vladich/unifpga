@@ -183,7 +183,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
     cmd = [nextpnr] + chip_args + ["--json", json_path, "--pcf", pcf_path,
                                     "--asc", asc_path, "-q",
-                                    "-l", nextpnr_log]
+                                    "-l", nextpnr_log] + codegen.nextpnr_gui_args()
     log.info("Invoking nextpnr-ice40 %s", " ".join(chip_args))
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

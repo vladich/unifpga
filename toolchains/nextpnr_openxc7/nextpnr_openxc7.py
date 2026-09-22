@@ -247,7 +247,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
     cmd = [nextpnr, "--chipdb", chipdb,
            "--xdc", xdc_path, "--json", json_path,
-           "--fasm", fasm_path, "-q", "-l", nextpnr_log]
+           "--fasm", fasm_path, "-q", "-l", nextpnr_log] + codegen.nextpnr_gui_args()
     log.info("Invoking nextpnr-xilinx --chipdb %s", part + ".bin")
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

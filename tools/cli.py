@@ -72,6 +72,7 @@ BGM's lab scripts and their equivalents here:
   04_configure_fpga.bash           unifpga program
   05_run_gui_for_fpga_synthesis    unifpga gui
   06_choose_another_fpga_board     unifpga board
+  check_setup_and_choose_fpga_board  unifpga board, then unifpga prepare --all
 """
 
 
@@ -349,7 +350,16 @@ def cmd_board(args):
             return 0
         print("No board selected; run ./unifpga board again.")
         return 1
-    return _select(cfgs, choice, installed)
+    rc = _select(cfgs, choice, installed)
+    if rc == 0 and sys.stdin.isatty():
+        try:
+            reply = input("Write the run directories of every design for this board now "
+                          "(BGM's check_setup offer; no tools are run)? [y/N] ").strip().lower()
+        except EOFError:
+            reply = ""
+        if reply in ("y", "yes"):
+            return cmd_prepare(argparse.Namespace(design=None, board=choice, all=True))
+    return rc
 
 
 # ---------------------------------------------------------------------------
@@ -549,12 +559,13 @@ def gui_command(toolchain_id, out_dir, bins=None):
     if toolchain_id in ("gowin_eda", "gowin_standard"):
         prj = find("*.gprj")
         return (["gw_ide", "-prj", prj], None) if prj else \
-            (None, "the Gowin flow here is scripted (gw_sh tcl, no .gprj); open the sources in gw_ide by hand")
+            (None, "no Gowin IDE project in {}: run build (or prepare) first; the pinmap needs "
+                   "toolchain_options.gowin.gprj_device (sync --gowin-options)".format(out_dir))
     if toolchain_id == "efinity":
-        xml = find("*.xml")
+        xml = find("unifpga_top.xml", "*.xml")
         return (["efinity", "--project", xml] if xml else ["efinity"], None)
     if toolchain_id.startswith("nextpnr_"):
-        return (None, "the open flow has no project GUI; nextpnr's --gui needs the place-and-route rerun by hand")
+        return (["nextpnr", "--gui"], None)             # marker: the place-and-route rerun with --gui
     return (None, "no GUI known for toolchain {}".format(toolchain_id))
 
 
@@ -567,6 +578,16 @@ def cmd_gui(args):
     cmd, why = gui_command(tc_id, out)
     if cmd is None:
         raise CliError(why)
+    if cmd == ["nextpnr", "--gui"]:
+        # BGM run_fpga_synthesis_gui_yosys: the synthesis script runs again
+        # with GUI_OPT="--gui"; nextpnr opens its window in place-and-route
+        print("Rerunning synthesis for {} with nextpnr --gui (the window opens at place-and-route) ...".format(cfg_id))
+        sys.stdout.flush()
+        os.environ["UNIFPGA_NEXTPNR_GUI"] = "1"
+        try:
+            return _run_synthesize(synthesize_argv(design_dir, cfg_id, "pnr"), out)
+        finally:
+            os.environ.pop("UNIFPGA_NEXTPNR_GUI", None)
     tc = config.init.resolve_toolchain_install(config.init.read_toolchains().get(tc_id) or {"Id": tc_id})
     for d in reversed(tc.get("BinDirs") or []):
         os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
@@ -575,6 +596,37 @@ def cmd_gui(args):
     print("Opening: " + " ".join(cmd))
     subprocess.Popen(cmd, cwd=out if os.path.isdir(out) else design_dir)
     return 0
+
+
+def prepare_design(design_dir, cfg_id):
+    """Write <design>/run/<configuration>/ without running the tools: the
+    generated top, constraints and the vendor project files (synthesize's
+    dry run). BGM's check_setup_and_choose_fpga_board offers the same for
+    every lab after a board choice."""
+    out = run_dir(design_dir, cfg_id)
+    os.environ["UNIFPGA_DRY_RUN"] = "1"
+    try:
+        return _run_synthesize(synthesize_argv(design_dir, cfg_id, "full"), out)
+    finally:
+        os.environ.pop("UNIFPGA_DRY_RUN", None)
+
+
+def cmd_prepare(args):
+    cfg_id = chosen_configuration(args.board)
+    if getattr(args, "all", False):
+        failed = []
+        names = list_designs()
+        for name in names:
+            if prepare_design(os.path.join(DESIGNS_DIR, name), cfg_id):
+                failed.append(name)
+        print("Prepared run/{c}/ in {n} design(s){f}".format(
+            c=cfg_id, n=len(names) - len(failed),
+            f="; failed: " + ", ".join(failed) if failed else ""))
+        return 1 if failed else 0
+    design_dir = resolve_design(args.design)
+    print("Preparing {d} for {c} ...  output: {o}".format(
+        d=os.path.basename(design_dir), c=cfg_id, o=_shown(run_dir(design_dir, cfg_id))))
+    return prepare_design(design_dir, cfg_id)
 
 
 def cmd_tools(args):
@@ -598,6 +650,7 @@ COMMANDS = {
     "program": cmd_program,
     "sim": cmd_sim,
     "gui": cmd_gui,
+    "prepare": cmd_prepare,
     "clean": cmd_clean,
     "tools": cmd_tools,
     "designs": cmd_designs,
@@ -642,6 +695,11 @@ def build_parser():
     gu = sub.add_parser("gui", help="open the vendor GUI on the last build")
     design_arg(gu)
     board_arg(gu)
+
+    pp = sub.add_parser("prepare", help="write run/<configuration>/ (top, constraints, project) without running the tools")
+    design_arg(pp)
+    board_arg(pp)
+    pp.add_argument("--all", action="store_true", help="every design under designs/ (BGM check_setup's offer)")
 
     cl = sub.add_parser("clean", help="remove <design>/run/ (--all: every design)")
     design_arg(cl)

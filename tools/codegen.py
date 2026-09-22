@@ -404,6 +404,44 @@ def openfpgaloader_args(pinmap, board_id=None):
     return ["-b", str(board)] if board else []
 
 
+def nextpnr_gui_args():
+    """`--gui` for the nextpnr run when the runner asks for it
+    (`unifpga gui`, BGM run_fpga_synthesis_gui_yosys: GUI_OPT="--gui")."""
+    return ["--gui"] if os.environ.get("UNIFPGA_NEXTPNR_GUI") else []
+
+
+def yosys_loader_settings(pinmap):
+    """`toolchain_options.yosys` of the pinmap (synced from BGM's
+    board_info.source_bash): synth_options, loader_*, device_part,
+    device_family, device_pack, speed."""
+    return ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
+
+
+def emit_gowin_gprj(pinmap, sv_files, cst_path, sdc_path):
+    """Gowin IDE project file (BGM's fpga_project_01.gprj + file list +
+    fpga_project_02.gprj): the `<Device>` element is board data synced from
+    BGM's template (`toolchain_options.gowin.gprj_device`). None without it —
+    the IDE needs the internal device id (gw1nr9c-004) the template carries."""
+    device = (((pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}).get("gprj_device")
+    if not device:
+        return None
+    lines = ['<?xml version="1" encoding="UTF-8"?>',
+             "<!DOCTYPE gowin-fpga-project>",
+             "<Project>",
+             "    <Template>FPGA</Template>",
+             "    <Version>5</Version>",
+             "    " + str(device).strip(),
+             "    <FileList>"]
+    for sv in sv_files:
+        lines.append('        <File path="{}" type="file.verilog" enable="1"/>'.format(_xml_attr(sv)))
+    if cst_path:
+        lines.append('        <File path="{}" type="file.cst" enable="1"/>'.format(_xml_attr(cst_path)))
+    if sdc_path:
+        lines.append('        <File path="{}" type="file.sdc" enable="1"/>'.format(_xml_attr(sdc_path)))
+    lines += ["    </FileList>", "</Project>"]
+    return "\n".join(lines) + "\n"
+
+
 def yosys_synth_options(pinmap):
     """Extra `synth_*` flags for a yosys flow from the pinmap's
     `toolchain_options.yosys.synth_options` (BGM board_info.source_bash

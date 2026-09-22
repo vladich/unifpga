@@ -159,7 +159,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
            "--json", json_path,
            "--vopt", "ccf={}".format(ccf_path),
            "--vopt", "out={}".format(cfg_path),
-           "-q", "-l", nextpnr_log]
+           "-q", "-l", nextpnr_log] + codegen.nextpnr_gui_args()
     log.info("Invoking nextpnr-himbaechel --device %s", device)
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

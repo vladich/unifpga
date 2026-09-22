@@ -161,37 +161,19 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
     install_dir = _resolve_install_dir(toolchain)
 
-    # `-v file1 file2 …` confuses argparse — its nargs='+' consumes the
-    # `design` positional too. Use `--flist <text-file>` instead.
-    flist_path = os.path.join(output, "sources.flist")
-    with open(flist_path, "w") as f:
-        f.write("\n".join(sv_files) + "\n")
-
-    # Efinity 2023.2: `--flow compile` is synthesis + place + route + bitstream
-    # (BGM's flow); `full` also runs the RTL simulation step, which fails
-    # without a simulator ("Python exception running: efx_run_sim.py").
+    # BGM synthesize_for_fpga_efinity: project mode — efx_run.py takes the
+    # project XML (the peri.xml next to it feeds the Interface Designer, which
+    # writes the constraint file efx_pgm needs); `--flow compile` is synthesis
+    # + place + route + bitstream (`full` would also run the RTL simulation,
+    # which fails without a simulator).
     flow = "map" if step == "elaborate" else "compile"
-    # BGM: the programmer step writes the bitstream only where --pgm_opts
-    # says (source = the placed-and-routed .lbf, dest = the .hex).
-    lbf = os.path.join("work_pnr", PROJECT_NAME + ".lbf")
-    hexfile = os.path.join("outflow", PROJECT_NAME + ".hex")
-    cmd = ["python3", efx_run,
-           "--flow", flow,
-           "--pgm_opts", "source=" + lbf,
-           "--pgm_opts", "dest=" + hexfile,
-           "--family", family,
-           "-d", device,
-           "--output_dir", output,
-           "--work_dir", os.path.join(output, "work_pnr"),
-           "--flist", flist_path,
-           PROJECT_NAME]
-
+    cmd = _efx_command(efx_run, flow, project_path)
     env = _efinity_env(install_dir)
     python = os.path.join(install_dir, "bin", "python3")
     if os.path.exists(python):
         cmd[0] = python
 
-    log.info("Invoking efx_run.py --flow %s --family %s -d %s", flow, family, device)
+    log.info("Invoking efx_run.py --flow %s %s (%s %s)", flow, os.path.basename(project_path), family, device)
     with open(log_path, "w") as logf:
         try:
             rc = subprocess.run(cmd, cwd=output, env=env,
@@ -205,26 +187,61 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return rc
 
     if step != "elaborate":
-        bit = os.path.join(output, "outflow", PROJECT_NAME + ".hex")
-        if not os.path.exists(bit):
-            bit = os.path.join(output, "outflow", PROJECT_NAME + ".bit")
-        if os.path.exists(bit):
+        bit = _find_bitstream(output)
+        if bit:
             log.info("Bitstream ready: %s", bit)
+        else:
+            log.error("efx_run finished but wrote no bitstream (expected work_pnr/%s.hex, see %s)", PROJECT_NAME, log_path)
+            return 1
     return 0
 
 
+def _efx_command(efx_run, flow, project_path):
+    """BGM's efx_run.py call shape: --pgm_opts source=<lbf> --pgm_opts
+    dest=<hex> --flow <flow> <project.xml> (`program`: source=<hex>)."""
+    lbf = os.path.join("work_pnr", PROJECT_NAME + ".lbf")
+    hexfile = os.path.join("work_pnr", PROJECT_NAME + ".hex")
+    if flow == "program":
+        return ["python3", efx_run, "--pgm_opts", "source=" + hexfile, "--flow", "program", project_path]
+    return ["python3", efx_run, "--pgm_opts", "source=" + lbf, "--pgm_opts", "dest=" + hexfile,
+            "--flow", flow, project_path]
+
+
+def _find_bitstream(output):
+    for rel in (os.path.join("work_pnr", PROJECT_NAME + ".hex"), os.path.join("outflow", PROJECT_NAME + ".hex"),
+                os.path.join("outflow", PROJECT_NAME + ".bit")):
+        if os.path.exists(os.path.join(output, rel)):
+            return os.path.join(output, rel)
+    return None
+
+
 def program(*, board, board_pinmap=None, toolchain, output, **_):
-    """Download the .bit via Efinity's efx_pgm or openFPGALoader."""
-    bit = os.path.join(output, "outflow", PROJECT_NAME + ".bit")
-    if not os.path.exists(bit) and not os.environ.get("UNIFPGA_DRY_RUN"):
-        log.error("Bitstream not found: %s — run synthesis first", bit)
+    """Download the bitstream the way BGM's configure_fpga_efinity does:
+    efx_run.py --flow program on the project (the programmer settings live
+    in the project XML); openFPGALoader is the fallback without Efinity."""
+    bit = _find_bitstream(output)
+    if bit is None and not os.environ.get("UNIFPGA_DRY_RUN"):
+        log.error("Bitstream not found: work_pnr/%s.hex in %s — run synthesis first", PROJECT_NAME, output)
         return 1
     if os.environ.get("UNIFPGA_DRY_RUN"):
-        log.info("[dry run] Would program %s", bit)
+        log.info("[dry run] Would program %s", bit or os.path.join(output, "work_pnr", PROJECT_NAME + ".hex"))
         return 0
-    pgm = _resolve_bin(toolchain, "efx_pgm") or shutil.which("openFPGALoader")
+    efx_run = _efx_run_script(toolchain)
+    project_path = os.path.join(output, PROJECT_NAME + ".xml")
+    if efx_run is not None and os.path.exists(project_path):
+        install_dir = _resolve_install_dir(toolchain)
+        cmd = _efx_command(efx_run, "program", project_path)
+        python = os.path.join(install_dir, "bin", "python3")
+        if os.path.exists(python):
+            cmd[0] = python
+        log.info("Programming via: %s", " ".join(cmd))
+        rc = subprocess.run(cmd, cwd=output, env=_efinity_env(install_dir)).returncode
+        if rc != 0:
+            log.error("Programming failed (exit %d). Is the board connected?", rc)
+        return rc
+    pgm = shutil.which("openFPGALoader")
     if pgm is None:
-        log.error("Could not find efx_pgm or openFPGALoader on $PATH.")
+        log.error("Could not find efx_run.py or openFPGALoader.")
         return 1
     cmd = [pgm, bit]
     log.info("Programming via: %s", " ".join(cmd))

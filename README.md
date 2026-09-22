@@ -32,6 +32,7 @@ BGM lab script | `unifpga` command
 `03_synthesize_for_fpga.bash` + `04_configure_fpga.bash` | `unifpga program` (`unifpga build` stops after the bitstream)
 `05_run_gui_for_fpga_synthesis.bash` | `unifpga gui`
 `06_choose_another_fpga_board.bash` | `unifpga board`
+`check_setup_and_choose_fpga_board.bash` | `unifpga board`, then `unifpga prepare --all` (the run directories of every design, no tools run; `board` offers it after an interactive choice)
 ```
 
 `build` writes everything (generated `top.sv`, constraints, the toolchain
@@ -110,7 +111,7 @@ artifacts into `designs/`, `config/boards/`, and `config/configurations/`.
 
 | Path | What it holds |
 |---|---|
-| `unifpga` | Short command line (`board`, `build`, `program`, `clean`, `tools`, `designs`); logic in `tools/cli.py`. Remembers the board in `settings.yml`, builds into `<design>/run/<configuration>/`. |
+| `unifpga` | Short command line (`board`, `build`, `program`, `sim`, `gui`, `prepare`, `clean`, `tools`, `designs`); logic in `tools/cli.py`. Remembers the board in `settings.yml`, builds into `<design>/run/<configuration>/`. |
 | `synthesize.py` | Top-level entry point. Resolves a configuration, codegens `top.sv`, dispatches to the toolchain. |
 | `config/boards/<producer>/<family>.yml` | Family-level board catalog: list of boards on that chip family + family description. |
 | `config/boards/<producer>/<family>/<id>.yml` | Per-board pinmap (when available). |
