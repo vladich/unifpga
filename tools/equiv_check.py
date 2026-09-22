@@ -766,6 +766,17 @@ def _merge(gold, gate, n_cmp):
     return (mism, first, moved), None
 
 
+_SERIAL_PORT = re.compile(r"tmds|hdmi_(clk|d)\b|hdmi_(clk|d)_[pn]|dvi_tx|tmds_", re.I)
+
+
+def _is_serial(m):
+    """A TMDS lane: 10 bits per pixel clock, sampled once per system clock it
+    aliases, and a PLL-made serial clock differs in phase from a board clock
+    without either side being wrong. Reported apart from the verdict; the
+    pixel-domain content is what the audit's PLL / clock checks cover."""
+    return bool(_SERIAL_PORT.search(str(m.get("gold") or "")) or _SERIAL_PORT.search(str(m.get("gate") or "")))
+
+
 def _compile(side, entry, roots, d, log):
     s = entry[side]
     # -s: the testbench is the only root, whatever else is left uninstantiated
@@ -834,7 +845,10 @@ def _run_one(entry, roots, out, keep_logs=True):
                               "cycles": mism[i], "first": first[i],
                               "gold_values": "".join(sorted(moved[i][0])), "gate_values": "".join(sorted(moved[i][1]))})
         diffs.sort(key=lambda r: (-r["cycles"], r["pin"]))
+        serial = [m for m in diffs if _is_serial(m)]
+        diffs = [m for m in diffs if not _is_serial(m)]
         res["mismatch_pins"] = diffs
+        res["serial_mismatch_pins"] = serial
         res["constant_pins"] = [entry["cmp_pins"][i] for i in range(n_cmp)
                                 if len(moved[i][0]) <= 1 and len(moved[i][1]) <= 1]
         res["gold_only"] = entry["gold_only"]
@@ -921,6 +935,8 @@ def _print_summary(results, verbose=False):
         elif st == "DIFF":
             line += " {} of {} pins differ ({} cycles, {}s)".format(len(r["mismatch_pins"]), r["n_cmp"],
                                                                      r.get("cycles"), r.get("seconds"))
+        if r.get("serial_mismatch_pins"):
+            line += " +{} TMDS lanes not judged".format(len(r["serial_mismatch_pins"]))
         elif r.get("errors"):
             line += " " + (r["errors"][0] or "")[:110]
         print(line)
@@ -932,6 +948,9 @@ def _print_summary(results, verbose=False):
             if len(r["mismatch_pins"]) > 12:
                 print("      ... {} more".format(len(r["mismatch_pins"]) - 12))
         if verbose and st in ("PASS", "DIFF"):
+            for m in (r.get("serial_mismatch_pins") or [])[:8]:
+                print("      TMDS  {:<8} gold {:<26} gate {:<26} {:>8} cycles (not judged)".format(
+                    m["pin"], str(m["gold"]), str(m["gate"]), m["cycles"]))
             if r.get("gold_only"):
                 print("      BGM-only pins: {}".format(" ".join(r["gold_only"][:12])))
             if r.get("gate_only"):

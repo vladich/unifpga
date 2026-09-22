@@ -1519,8 +1519,20 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     for lab_port, cap, tm_sig in (("led", "leds", "tm_led"), ("digit", "seven_segment", "tm_digit")):
         if not plans[cap].providers:
             continue
-        shares = has_tm and any(re.search(r"\bassign\s+" + re.escape(n) + r"\s*=\s*lab_" + lab_port + r"\b", text)
+        # the net the lab drives (`lab_led`, zybo's `led_top`) and whether a
+        # TM1638 net is assigned from it
+        lab_net = re.match(r"^\s*([A-Za-z_]\w*)", conns.get(lab_port, "") or "")
+        lab_net = lab_net.group(1) if lab_net else "lab_" + lab_port
+        shares = has_tm and any(re.search(r"\bassign\s+" + re.escape(n) + r"\s*=\s*" + re.escape(lab_net) + r"\b", text)
                                 for n in tm_names)
+        direct = conns.get(lab_port, "").strip()
+        if has_tm and not shares and direct in tm_names:
+            # `.led ( tm_led )`: the TM1638 is the lab's whole bus, the board's
+            # own LEDs / digits show nothing (tang_primer_25k, zybo)
+            wanted[tm_idx][cap] = list(range(_TM_WIDTH))
+            for pidx, _w in board_providers(cap):
+                wanted[pidx][cap] = []
+            continue
         if not shares:
             if tm_idx is not None and any(p == tm_idx for p, _perif, _pp in plans[cap].providers) and has_tm:
                 notes.append("{}: TM1638 present but BGM does not connect {} to lab_{}".format(lab_port, tm_sig, lab_port))
