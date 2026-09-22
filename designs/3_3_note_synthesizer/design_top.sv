@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_3_note_synthesizer — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/3_music/3_3_note_synthesizer/design_top.sv
+//   basics-graphics-music/labs/3_music/3_3_note_synthesizer/lab_top.sv
 // =============================================================================
 //
 
@@ -19,7 +19,9 @@ module design_top
                   w_blue        = 0,
                   w_gpio        = 0,
                   w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
-                  w_y = (screen_height > 0) ? $clog2(screen_height) : 1
+                  w_y = (screen_height > 0) ? $clog2(screen_height) : 1,
+                  // legacy basics-graphics-music parameters (BGM's tb overrides them)
+                  w_sound       = 16
 )
 (
     input                            clk,
@@ -44,9 +46,6 @@ module design_top
     output logic                     uart_tx,
     inout        [w_gpio   - 1 : 0]  gpio
 );
-    // Legacy basics-graphics-music parameters re-injected as localparams
-    localparam int w_sound = 16;
-
 
 
     //------------------------------------------------------------------------

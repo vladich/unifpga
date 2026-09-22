@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_9_distance — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/3_music/3_9_distance/design_top.sv
+//   basics-graphics-music/labs/3_music/3_9_distance/lab_top.sv
 // =============================================================================
 //
 // requires:

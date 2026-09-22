@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_2_melody_recognizer — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/3_music/3_2_melody_recognizer/design_top.sv
+//   basics-graphics-music/labs/3_music/3_2_melody_recognizer/lab_top.sv
 // =============================================================================
 //
 

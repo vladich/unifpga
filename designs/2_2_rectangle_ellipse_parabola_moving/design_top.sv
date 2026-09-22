@@ -1,6 +1,6 @@
 // =============================================================================
 // 2_2_rectangle_ellipse_parabola_moving — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/2_graphics/2_2_rectangle_ellipse_parabola_moving/design_top.sv
+//   basics-graphics-music/labs/2_graphics/2_2_rectangle_ellipse_parabola_moving/lab_top.sv
 // =============================================================================
 //
 // requires:

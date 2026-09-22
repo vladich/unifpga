@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_5_3_synth_music — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/3_music/3_5_3_synth_music/design_top.sv
+//   basics-graphics-music/labs/3_music/3_5_3_synth_music/lab_top.sv
 // =============================================================================
 //
 // requires:

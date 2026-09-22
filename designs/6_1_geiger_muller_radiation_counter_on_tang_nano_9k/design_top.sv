@@ -1,6 +1,6 @@
 // =============================================================================
 // 6_1_geiger_muller_radiation_counter_on_tang_nano_9k — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/6_misc/6_1_geiger_muller_radiation_counter_on_tang_nano_9k/design_top.sv
+//   basics-graphics-music/labs/6_misc/6_1_geiger_muller_radiation_counter_on_tang_nano_9k/lab_top.sv
 // =============================================================================
 //
 // requires:

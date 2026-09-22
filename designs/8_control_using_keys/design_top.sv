@@ -1,6 +1,6 @@
 // =============================================================================
 // 8_control_using_keys — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/9_events/8_control_using_keys/design_top.sv
+//   basics-graphics-music/labs/9_events/8_control_using_keys/lab_top.sv
 // =============================================================================
 //
 // requires:

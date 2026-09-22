@@ -1,6 +1,6 @@
 // =============================================================================
 // 1_03_decoder — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/1_basics/1_03_decoder/design_top.sv
+//   basics-graphics-music/labs/1_basics/1_03_decoder/lab_top.sv
 // =============================================================================
 //
 // requires:

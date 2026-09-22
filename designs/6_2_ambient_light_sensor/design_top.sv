@@ -1,6 +1,6 @@
 // =============================================================================
 // 6_2_ambient_light_sensor — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/6_misc/6_2_ambient_light_sensor/design_top.sv
+//   basics-graphics-music/labs/6_misc/6_2_ambient_light_sensor/lab_top.sv
 // =============================================================================
 //
 // requires:

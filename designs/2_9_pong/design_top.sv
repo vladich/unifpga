@@ -1,6 +1,6 @@
 // =============================================================================
 // 2_9_pong — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/2_graphics/2_9_pong/design_top.sv
+//   basics-graphics-music/labs/2_graphics/2_9_pong/lab_top.sv
 // =============================================================================
 //
 // requires:
@@ -273,4 +273,4 @@ module design_top
         end
     end
 endmodule
- // design_top
+ // lab_top

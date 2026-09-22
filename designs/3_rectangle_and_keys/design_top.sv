@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_rectangle_and_keys — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/9_events/3_rectangle_and_keys/design_top.sv
+//   basics-graphics-music/labs/9_events/3_rectangle_and_keys/lab_top.sv
 // =============================================================================
 //
 // requires:

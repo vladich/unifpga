@@ -1,6 +1,6 @@
 // =============================================================================
 // 5_2_schoolriscv_cache — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/5_cpu/5_2_schoolriscv_cache/design_top.sv
+//   basics-graphics-music/labs/5_cpu/5_2_schoolriscv_cache/lab_top.sv
 // =============================================================================
 //
 // requires:

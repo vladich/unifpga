@@ -1,6 +1,6 @@
 // =============================================================================
 // 1_06_binary_counter — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/1_basics/1_06_binary_counter/design_top.sv
+//   basics-graphics-music/labs/1_basics/1_06_binary_counter/lab_top.sv
 // =============================================================================
 //
 
@@ -48,7 +48,6 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    // assign led        = '0;
        assign abcdefgh   = '0;
        assign digit      = '0;
        assign red        = '0;

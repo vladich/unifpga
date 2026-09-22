@@ -1,6 +1,6 @@
 // =============================================================================
 // 1_02_mux — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/1_basics/1_02_mux/design_top.sv
+//   basics-graphics-music/labs/1_basics/1_02_mux/lab_top.sv
 // =============================================================================
 //
 // requires:

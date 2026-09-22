@@ -1,6 +1,6 @@
 // =============================================================================
 // 2_10_color_shapes_and_functions — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/2_graphics/2_10_color_shapes_and_functions/design_top.sv
+//   basics-graphics-music/labs/2_graphics/2_10_color_shapes_and_functions/lab_top.sv
 // =============================================================================
 //
 // requires:

@@ -1,0 +1,8 @@
+variable_add tb.clk
+variable_add tb.rst
+variable_add tb.start
+variable_add tb.angle
+variable_add tb.calc
+variable_add tb.finish
+variable_add tb.cos_out
+variable_add tb.sin_out

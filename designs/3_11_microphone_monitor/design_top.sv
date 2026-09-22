@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_11_microphone_monitor — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/3_music/3_11_microphone_monitor/design_top.sv
+//   basics-graphics-music/labs/3_music/3_11_microphone_monitor/lab_top.sv
 // =============================================================================
 //
 // requires:
@@ -125,8 +125,8 @@ module design_top
         .w_blue        ( w_blue        ),
 
     // Frequency bands of the spectrum analyzer
-        .freq          ('{200, 230, 264, 303,
-                          348, 400, 458, 525})
+        .freq          ({14'd525, 14'd458, 14'd400, 14'd348,
+                         14'd303, 14'd264, 14'd230, 14'd200})
     )
     i_spectrum
     (

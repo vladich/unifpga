@@ -1,6 +1,6 @@
 // =============================================================================
 // 4_1_1_pow5_single_cycle — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/4_microarchitecture/4_1_1_pow5_single_cycle/design_top.sv
+//   basics-graphics-music/labs/4_microarchitecture/4_1_1_pow5_single_cycle/lab_top.sv
 // =============================================================================
 //
 // requires:

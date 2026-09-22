@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_5_echo — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/3_music/3_5_echo/design_top.sv
+//   basics-graphics-music/labs/3_music/3_5_echo/lab_top.sv
 // =============================================================================
 //
 // requires:
@@ -52,7 +52,9 @@ module design_top
     // Original basics-graphics-music labs received `slow_clk` as a port. The
     // uni-fpga virtual device doesn't expose one, so derive a ~1 Hz tick from
     // the system clock.
-    localparam int W_SLOW_CLK_DIV = $clog2(clk_mhz * 1_000_000);
+    // clk_mhz <= 1 is BGM's testbench setting (tb.sv passes clk as slow_clk):
+    // a two-bit divider keeps the simulation short.
+    localparam int W_SLOW_CLK_DIV = (clk_mhz > 1) ? $clog2(clk_mhz * 1_000_000) : 2;
     logic [W_SLOW_CLK_DIV - 1 : 0] slow_clk_div;
     logic                          slow_clk;
     always_ff @(posedge clk or posedge rst)
@@ -68,7 +70,7 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    design_top_3_1_note_recognizer
+    lab_top_3_1_note_recognizer
     # (
         .clk_mhz       ( clk_mhz         ),
         .w_btn         ( w_btn           ),
@@ -84,7 +86,7 @@ module design_top
         .w_green       ( w_green         ),
         .w_blue        ( w_blue          )
     )
-    i_design_top_3_1_note_recognizer
+    i_lab_top_3_1_note_recognizer
     (
         .clk           ( clk             ),
         .slow_clk      (                 ),
@@ -139,7 +141,7 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    design_top_3_3_note_synthesizer
+    lab_top_3_3_note_synthesizer
     # (
         .clk_mhz       ( clk_mhz       ),
         .w_btn         ( w_btn         ),
@@ -155,7 +157,7 @@ module design_top
         .w_green       ( w_green       ),
         .w_blue        ( w_blue        )
     )
-    i_design_top_3_3_note_synthesizer
+    i_lab_top_3_3_note_synthesizer
     (
         .clk           ( clk           ),
         .slow_clk      (               ),

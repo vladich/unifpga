@@ -1,6 +1,6 @@
 // =============================================================================
 // 3_12_acoustic_locator — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/3_music/3_12_acoustic_locator/design_top.sv
+//   basics-graphics-music/labs/3_music/3_12_acoustic_locator/lab_top.sv
 // =============================================================================
 //
 // requires:
@@ -143,8 +143,8 @@ module design_top
         .vol   ( vol[14:12])
     );
 
-    // Display on an 8-bit display of the measured value at the top left 
-    // from 0 to F horizontally and vertically, the same thinned values 
+    // Display on an 8-bit display of the measured value at the top left
+    // from 0 to F horizontally and vertically, the same thinned values
     // ​​and weakening of automatic gain control of each microphone
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -168,7 +168,7 @@ module design_top
 
     // A dynamic seven-segment display
     // The module is located in the common folder
-    seven_segment_display 
+    seven_segment_display
     # (
         .w_digit  ( w_digit   ),
         .clk_mhz  ( clk_mhz   )
@@ -177,7 +177,7 @@ module design_top
     (
         .clk      ( clk       ),
         .rst      ( rst       ),
-        .number   ( {vol, 
+        .number   ( {vol,
                   min_index_h,
                   min_index_v,
                   av_index_h,

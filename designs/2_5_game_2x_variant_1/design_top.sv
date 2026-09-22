@@ -1,6 +1,6 @@
 // =============================================================================
 // 2_5_game_2x_variant_1 — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/2_graphics/2_5_game_2x_variant_1/design_top.sv
+//   basics-graphics-music/labs/2_graphics/2_5_game_2x_variant_1/lab_top.sv
 // =============================================================================
 //
 // requires:
@@ -24,7 +24,9 @@ module design_top
                   w_blue        = 0,
                   w_gpio        = 0,
                   w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
-                  w_y = (screen_height > 0) ? $clog2(screen_height) : 1
+                  w_y = (screen_height > 0) ? $clog2(screen_height) : 1,
+                  // legacy basics-graphics-music parameters (BGM's tb overrides them)
+                  strobe_to_update_xy_counter_width = 23
 )
 (
     input                            clk,
@@ -49,9 +51,6 @@ module design_top
     output logic                     uart_tx,
     inout        [w_gpio   - 1 : 0]  gpio
 );
-    // Legacy basics-graphics-music parameters re-injected as localparams
-    localparam int strobe_to_update_xy_counter_width = 23;
-
 
 
     //------------------------------------------------------------------------

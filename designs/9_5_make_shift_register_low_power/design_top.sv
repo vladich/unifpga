@@ -1,6 +1,6 @@
 // =============================================================================
 // 9_5_make_shift_register_low_power — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/9_events/9_5_make_shift_register_low_power/design_top.sv
+//   basics-graphics-music/labs/9_events/9_5_make_shift_register_low_power/lab_top.sv
 // =============================================================================
 //
 // requires:
@@ -54,7 +54,9 @@ module design_top
     // Original basics-graphics-music labs received `slow_clk` as a port. The
     // uni-fpga virtual device doesn't expose one, so derive a ~1 Hz tick from
     // the system clock.
-    localparam int W_SLOW_CLK_DIV = $clog2(clk_mhz * 1_000_000);
+    // clk_mhz <= 1 is BGM's testbench setting (tb.sv passes clk as slow_clk):
+    // a two-bit divider keeps the simulation short.
+    localparam int W_SLOW_CLK_DIV = (clk_mhz > 1) ? $clog2(clk_mhz * 1_000_000) : 2;
     logic [W_SLOW_CLK_DIV - 1 : 0] slow_clk_div;
     logic                          slow_clk;
     always_ff @(posedge clk or posedge rst)

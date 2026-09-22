@@ -24,7 +24,7 @@ module asic_top
     output logic [w_digit - 1:0] digit
 );
 
-    design_top
+    lab_top
     # (
         .clk_mhz   ( clk_mhz  ),
         .w_btn     ( w_btn    ),
@@ -33,7 +33,7 @@ module asic_top
         .w_digit   ( w_digit  ),
         .w_gpio    ( w_gpio   )
     )
-    i_design_top
+    i_lab_top
     (
         .clk       ( clk      ),
         .slow_clk  ( slow_clk ),

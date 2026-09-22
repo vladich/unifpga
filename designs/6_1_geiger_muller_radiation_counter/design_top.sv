@@ -1,6 +1,6 @@
 // =============================================================================
 // 6_1_geiger_muller_radiation_counter — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/6_misc/6_1_geiger_muller_radiation_counter/design_top.sv
+//   basics-graphics-music/labs/6_misc/6_1_geiger_muller_radiation_counter/lab_top.sv
 // =============================================================================
 //
 // requires:

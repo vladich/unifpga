@@ -1,6 +1,6 @@
 // =============================================================================
 // 4_4_1_round_robin_arbiter — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/4_microarchitecture/4_4_1_round_robin_arbiter/design_top.sv
+//   basics-graphics-music/labs/4_microarchitecture/4_4_1_round_robin_arbiter/lab_top.sv
 // =============================================================================
 //
 
