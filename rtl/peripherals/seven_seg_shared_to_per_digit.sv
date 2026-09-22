@@ -31,7 +31,7 @@ module seven_seg_shared_to_per_digit
 # (
     parameter int    digits  = 6,
     parameter int    segs    = 8,
-    parameter string active  = "low",
+    parameter        active  = "low",     // "low" / "high" (untyped: yosys 0.41 rejects `parameter string`)
     parameter bit    latched = 1'b0
 )
 (

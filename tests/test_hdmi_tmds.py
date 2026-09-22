@@ -33,8 +33,10 @@ def test_gowin_hdmi_serial_pll_and_clkdiv_pixel_clock():
     assert [(n, v, round(s.f_out, 4)) for n, _r, v, s in tree] == \
         [("serial", "gowin_rpll", 252.0), ("pixel", "derived", 25.2)]
     top = codegen.emit_top_sv(r, strict=True)
-    # BGM tang_primer_20k_dock_hdmi_tm1638_yosys: rPLL IDIV 2 / FBDIV 27 / ODIV 2 -> 252 MHz
-    assert ".IDIV_SEL(2), .FBDIV_SEL(27), .ODIV_SEL(2)" in top
+    # BGM tang_primer_20k_dock_hdmi_tm1638_yosys: rPLL IDIV 2 / FBDIV 27 -> 252 MHz (ODIV is the solver's choice)
+    assert ".IDIV_SEL(2), .FBDIV_SEL(27), .ODIV_SEL(4)" in top
+    sol = tree[0][3]
+    assert 400.0 <= sol.f_vco <= 1200.0
     assert 'DEVICE("GW1NR-9C")' in top
     assert "clkdiv_gowin # (.DIV(10)) i_div_pixel (.clk_in(clk_serial), .resetn(clk_serial_locked), .clk_out(clk_pixel));" in top
     assert 'hdmi_tmds_out # (.DIFF_BUF("gowin_elvds"))' in top      # LittleBee: ELVDS_OBUF

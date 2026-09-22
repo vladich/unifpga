@@ -51,6 +51,32 @@ def _resolve_bin(toolchain, name, sub="bin"):
     return shutil.which(name)
 
 
+def _efinity_env(install_dir):
+    """What <install>/bin/setup.sh exports (Efinity 2023.2): the tool homes,
+    PATH additions and the bundled Python (efx_run's helpers read
+    EFXPGM_HOME etc. straight from the environment)."""
+    env = dict(os.environ)
+    h = install_dir
+    env["EFINITY_HOME"] = h
+    env["EFXPT_HOME"] = os.path.join(h, "pt")
+    env["EFXPGM_HOME"] = os.path.join(h, "pgm")
+    env["EFXDBG_HOME"] = os.path.join(h, "debugger")
+    env["EFXIPM_HOME"] = os.path.join(h, "ipm")
+    env["EFXIPMGR_HOME"] = os.path.join(h, "ipm", "bin", "ip_manager")
+    env["EFXIPPKG_HOME"] = os.path.join(h, "ipm", "bin", "ip_packager")
+    env["EFXSVF_HOME"] = os.path.join(h, "debugger", "svf_player")
+    env["QT_LOGGING_CONF"] = os.path.join(h, "bin", "lc.ini")
+    env["QT_PLUGIN_PATH"] = os.path.join(h, "lib", "plugins")
+    env["PYTHONNOUSERSITE"] = "1"
+    env["PYTHONPATH"] = os.path.join(h, "lib") + os.pathsep + env.get("PYTHONPATH", "")
+    env["PYTHONHOME"] = h
+    env["PATH"] = os.pathsep.join([os.path.join(h, "bin"), os.path.join(h, "scripts"),
+                                   os.path.join(h, "pgm", "bin"), os.path.join(h, "debugger", "bin"),
+                                   os.path.join(h, "debugger", "svf_player", "bin"), os.path.join(h, "ipm", "bin"),
+                                   env.get("PATH", "")])
+    return env
+
+
 def _efx_run_script(toolchain):
     install_dir = _resolve_install_dir(toolchain)
     if install_dir:
@@ -184,9 +210,12 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     with open(flist_path, "w") as f:
         f.write("\n".join(sv_files) + "\n")
 
-    flow = "map" if step == "elaborate" else "full"
+    # Efinity 2023.2: `--flow compile` is synthesis + place + route + bitstream
+    # (BGM's flow); `full` also runs the RTL simulation step, which fails
+    # without a simulator ("Python exception running: efx_run_sim.py").
+    flow = "map" if step == "elaborate" else "compile"
     cmd = ["python3", efx_run,
-           "-f", flow,
+           "--flow", flow,
            "--family", family,
            "-d", device,
            "--output_dir", output,
@@ -194,11 +223,12 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
            "--flist", flist_path,
            PROJECT_NAME]
 
-    env = dict(os.environ)
-    env["EFINITY_HOME"] = install_dir
-    env["EFXPT_HOME"] = install_dir
+    env = _efinity_env(install_dir)
+    python = os.path.join(install_dir, "bin", "python3")
+    if os.path.exists(python):
+        cmd[0] = python
 
-    log.info("Invoking efx_run.py -f %s --family %s -d %s", flow, family, device)
+    log.info("Invoking efx_run.py --flow %s --family %s -d %s", flow, family, device)
     with open(log_path, "w") as logf:
         try:
             rc = subprocess.run(cmd, cwd=output, env=env,

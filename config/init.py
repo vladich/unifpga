@@ -10,6 +10,7 @@ synthesize.py and toolchain modules consume.
 
 import copy
 import os
+import re
 import sys
 import logging
 
@@ -797,6 +798,12 @@ def resolve_configuration(configuration_id):
         raise ConfigError("Board '{b}' has no pinmap under config/boards/<producer>/<family>/ — "
                           "re-run tools/curate_board.py".format(b=board_id))
     _apply_pin_overrides(configuration_id, cfg, board_pinmap)
+    _apply_io_overrides(configuration_id, cfg, board_pinmap)
+    if board_resolved.get("Part"):
+        tool_part = _tool_part(board_resolved["Part"], toolchain_id)
+        if tool_part != board_resolved["Part"]:
+            board_resolved["PartOrderingCode"] = board_resolved["Part"]
+            board_resolved["Part"] = tool_part
 
     attached = []
     for entry in cfg.get("attach", []) or []:
@@ -862,6 +869,71 @@ def _apply_pin_overrides(configuration_id, cfg, pinmap):
             pins.pop(sub, None)
         else:
             pins[sub] = value
+
+
+_ORDERING_CODE = re.compile(r"^(XC[67][A-Z0-9]*?)-(\d)([A-Z]{2,3}\d+)([CIQ]?)$", re.I)
+
+
+def _tool_part(part, toolchain_id):
+    """A chip registry Id that is a Xilinx ordering code (`XC7A35T-2FGG484I`,
+    `XC6SLX9-2TQG144C`) rendered the way the tool wants the part:
+    Vivado / nextpnr-xilinx `xc7a35tfgg484-2`, ISE `xc6slx9-2-tqg144`.
+    Anything else passes through."""
+    m = _ORDERING_CODE.match(str(part))
+    if not m:
+        return part
+    dev, speed, pkg = m.group(1).lower(), m.group(2), m.group(3).lower()
+    if toolchain_id == "ise":
+        return "{}-{}-{}".format(dev, speed, pkg)
+    return "{}{}-{}".format(dev, pkg, speed)
+
+
+def _apply_io_overrides(configuration_id, cfg, pinmap):
+    """Apply the configuration's `io_overrides:` (IO standard per bank, sub-key
+    or pin) to its private pinmap copy. BGM's Gowin variants type pins per
+    variant (the Tang Nano 9K HDMI variants put LVCMOS33 on CLK, the LCD
+    variants type nothing), so the pinmap keeps what every variant agrees on
+    and each configuration carries its own additions:
+
+        io_overrides:
+          clk:            LVCMOS33      # whole bank
+          onboard_lcd.r:  LVCMOS33      # one sub-key
+          "gpio[0]":      LVCMOS33      # one pin
+    """
+    overrides = cfg.get("io_overrides") or {}
+    if not overrides:
+        return
+    banks = pinmap.setdefault("pinBanks", {})
+    for ref, value in overrides.items():
+        m = re.match(r"^([A-Za-z_]\w*)(?:\.(\w+))?(?:\[(\d+)\])?$", str(ref).strip())
+        if not m:
+            raise ConfigError("Configuration '{c}': io_overrides key {r!r} is not bank / bank.sub / bank[i]"
+                              .format(c=configuration_id, r=ref))
+        bank_name, sub, idx = m.group(1), m.group(2), m.group(3)
+        bank = banks.get(bank_name)
+        if bank is None:
+            raise ConfigError("Configuration '{c}': io_overrides names unknown bank {b!r}"
+                              .format(c=configuration_id, b=bank_name))
+        if sub is None and idx is None:
+            bank["iostandard"] = value
+            continue
+        pins = bank.get("pins")
+        if sub is not None:
+            if not isinstance(pins, dict) or sub not in pins:
+                raise ConfigError("Configuration '{c}': io_overrides {r!r}: bank {b!r} has no sub-key {s!r}"
+                                  .format(c=configuration_id, r=ref, b=bank_name, s=sub))
+            pins = pins[sub]
+        targets = pins if isinstance(pins, list) else [pins]
+        if idx is not None:
+            i = int(idx)
+            if i >= len(targets) or targets[i] is None:
+                raise ConfigError("Configuration '{c}': io_overrides {r!r}: no pin at index {i}"
+                                  .format(c=configuration_id, r=ref, i=i))
+            targets = [targets[i]]
+        ov = bank.setdefault("overrides", {})
+        for t in targets:
+            if t is not None:
+                ov[str(t)] = value
 
 
 def read_all(configuration_id=None):

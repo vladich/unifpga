@@ -1,6 +1,6 @@
 // =============================================================================
 // pll_gowin_rpll — generic wrapper around the Gowin rPLL primitive
-// (GW1N / GW1NR / GW1NS / GW1NSR / GW2A / GW2AR families).
+// (GW1N / GW1NR / GW2A / GW2AR families; PLLVR on GW1NS / GW1NSR).
 //
 // Same instantiation as the Gowin_rPLL modules BGM ships per board
 // (boards/<variant>/gowin_rpll.v), with the divider settings passed as
@@ -16,6 +16,7 @@
 
 module pll_gowin_rpll
 # (
+    parameter        PRIMITIVE   = "rPLL",   // "rPLL", or "PLLVR" on GW1NS / GW1NSR (Tang Nano 4K)
     parameter        FCLKIN      = "27",
     parameter int    IDIV_SEL    = 0,
     parameter int    FBDIV_SEL   = 0,
@@ -35,47 +36,107 @@ module pll_gowin_rpll
     wire clkoutd_o;
     wire clkoutd3_o;
     wire gw_gnd = 1'b0;
+    wire gw_vcc = 1'b1;
 
-    rPLL rpll_inst (
-        .CLKOUT   ( clkout_o   ),
-        .LOCK     ( lock       ),
-        .CLKOUTP  ( clkoutp_o  ),
-        .CLKOUTD  ( clkoutd_o  ),
-        .CLKOUTD3 ( clkoutd3_o ),
-        .RESET    ( gw_gnd     ),
-        .RESET_P  ( gw_gnd     ),
-        .CLKIN    ( clkin      ),
-        .CLKFB    ( gw_gnd     ),
-        .FBDSEL   ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
-        .IDSEL    ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
-        .ODSEL    ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
-        .PSDA     ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
-        .DUTYDA   ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
-        .FDLY     ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} )
-    );
+    generate
+        if (PRIMITIVE == "PLLVR") begin : g_pllvr
 
-    defparam rpll_inst.FCLKIN          = FCLKIN;
-    defparam rpll_inst.DYN_IDIV_SEL    = "false";
-    defparam rpll_inst.IDIV_SEL        = IDIV_SEL;
-    defparam rpll_inst.DYN_FBDIV_SEL   = "false";
-    defparam rpll_inst.FBDIV_SEL       = FBDIV_SEL;
-    defparam rpll_inst.DYN_ODIV_SEL    = "false";
-    defparam rpll_inst.ODIV_SEL        = ODIV_SEL;
-    defparam rpll_inst.PSDA_SEL        = "0000";
-    defparam rpll_inst.DYN_DA_EN       = "true";
-    defparam rpll_inst.DUTYDA_SEL      = "1000";
-    defparam rpll_inst.CLKOUT_FT_DIR   = 1'b1;
-    defparam rpll_inst.CLKOUTP_FT_DIR  = 1'b1;
-    defparam rpll_inst.CLKOUT_DLY_STEP = 0;
-    defparam rpll_inst.CLKOUTP_DLY_STEP = 0;
-    defparam rpll_inst.CLKFB_SEL       = "internal";
-    defparam rpll_inst.CLKOUT_BYPASS   = "false";
-    defparam rpll_inst.CLKOUTP_BYPASS  = "false";
-    defparam rpll_inst.CLKOUTD_BYPASS  = "false";
-    defparam rpll_inst.DYN_SDIV_SEL    = DYN_SDIV_SEL;
-    defparam rpll_inst.CLKOUTD_SRC     = "CLKOUT";
-    defparam rpll_inst.CLKOUTD3_SRC    = "CLKOUT";
-    defparam rpll_inst.DEVICE          = DEVICE;
+            // GW1NS-4 / GW1NSR-4C have no rPLL ("EX0312: There is no rPLL
+            // resource in current device"); PLLVR is the same block with an
+            // internal regulator enable.
+            PLLVR
+            # (
+                .FCLKIN           ( FCLKIN       ),
+                .DYN_IDIV_SEL     ( "false"      ),
+                .IDIV_SEL         ( IDIV_SEL     ),
+                .DYN_FBDIV_SEL    ( "false"      ),
+                .FBDIV_SEL        ( FBDIV_SEL    ),
+                .DYN_ODIV_SEL     ( "false"      ),
+                .ODIV_SEL         ( ODIV_SEL     ),
+                .PSDA_SEL         ( "0000"       ),
+                .DYN_DA_EN        ( "true"       ),
+                .DUTYDA_SEL       ( "1000"       ),
+                .CLKOUT_FT_DIR    ( 1'b1         ),
+                .CLKOUTP_FT_DIR   ( 1'b1         ),
+                .CLKOUT_DLY_STEP  ( 0            ),
+                .CLKOUTP_DLY_STEP ( 0            ),
+                .CLKFB_SEL        ( "internal"   ),
+                .CLKOUT_BYPASS    ( "false"      ),
+                .CLKOUTP_BYPASS   ( "false"      ),
+                .CLKOUTD_BYPASS   ( "false"      ),
+                .DYN_SDIV_SEL     ( DYN_SDIV_SEL ),
+                .CLKOUTD_SRC      ( "CLKOUT"     ),
+                .CLKOUTD3_SRC     ( "CLKOUT"     ),
+                .DEVICE           ( DEVICE       )
+            )
+            rpll_inst
+            (
+                .CLKOUT   ( clkout_o   ),
+                .LOCK     ( lock       ),
+                .CLKOUTP  ( clkoutp_o  ),
+                .CLKOUTD  ( clkoutd_o  ),
+                .CLKOUTD3 ( clkoutd3_o ),
+                .RESET    ( gw_gnd     ),
+                .RESET_P  ( gw_gnd     ),
+                .CLKIN    ( clkin      ),
+                .CLKFB    ( gw_gnd     ),
+                .FBDSEL   ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .IDSEL    ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .ODSEL    ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .PSDA     ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .DUTYDA   ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .FDLY     ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .VREN     ( gw_vcc     )
+            );
+
+        end else begin : g_rpll
+
+            rPLL
+            # (
+                .FCLKIN           ( FCLKIN       ),
+                .DYN_IDIV_SEL     ( "false"      ),
+                .IDIV_SEL         ( IDIV_SEL     ),
+                .DYN_FBDIV_SEL    ( "false"      ),
+                .FBDIV_SEL        ( FBDIV_SEL    ),
+                .DYN_ODIV_SEL     ( "false"      ),
+                .ODIV_SEL         ( ODIV_SEL     ),
+                .PSDA_SEL         ( "0000"       ),
+                .DYN_DA_EN        ( "true"       ),
+                .DUTYDA_SEL       ( "1000"       ),
+                .CLKOUT_FT_DIR    ( 1'b1         ),
+                .CLKOUTP_FT_DIR   ( 1'b1         ),
+                .CLKOUT_DLY_STEP  ( 0            ),
+                .CLKOUTP_DLY_STEP ( 0            ),
+                .CLKFB_SEL        ( "internal"   ),
+                .CLKOUT_BYPASS    ( "false"      ),
+                .CLKOUTP_BYPASS   ( "false"      ),
+                .CLKOUTD_BYPASS   ( "false"      ),
+                .DYN_SDIV_SEL     ( DYN_SDIV_SEL ),
+                .CLKOUTD_SRC      ( "CLKOUT"     ),
+                .CLKOUTD3_SRC     ( "CLKOUT"     ),
+                .DEVICE           ( DEVICE       )
+            )
+            rpll_inst
+            (
+                .CLKOUT   ( clkout_o   ),
+                .LOCK     ( lock       ),
+                .CLKOUTP  ( clkoutp_o  ),
+                .CLKOUTD  ( clkoutd_o  ),
+                .CLKOUTD3 ( clkoutd3_o ),
+                .RESET    ( gw_gnd     ),
+                .RESET_P  ( gw_gnd     ),
+                .CLKIN    ( clkin      ),
+                .CLKFB    ( gw_gnd     ),
+                .FBDSEL   ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .IDSEL    ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .ODSEL    ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .PSDA     ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .DUTYDA   ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} ),
+                .FDLY     ( {gw_gnd, gw_gnd, gw_gnd, gw_gnd} )
+            );
+
+        end
+    endgenerate
 
     assign clkout = USE_CLKOUTD ? clkoutd_o : clkout_o;
 

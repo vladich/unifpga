@@ -57,29 +57,30 @@ module vga
     output logic [W_BLUE_O  - 1:0]  vga_b
 );
 
-    // Colour outputs gated by display_on (blanking), reduced to the pin width.
+    // Colour outputs gated by display_on (blanking), reduced to the pin width:
+    // same width -> as is; one pin -> OR of the channel; fewer pins -> MSBs.
 
-    function automatic logic [W_RED_O - 1:0] reduce_r (input logic [W_RED - 1:0] v);
-        if (W_RED_O == W_RED)      return v;
-        else if (W_RED_O == 1)     return | v;
-        else                       return v [W_RED - 1 -: W_RED_O];
-    endfunction
+    logic [W_RED_O   - 1:0] red_o;
+    logic [W_GREEN_O - 1:0] green_o;
+    logic [W_BLUE_O  - 1:0] blue_o;
 
-    function automatic logic [W_GREEN_O - 1:0] reduce_g (input logic [W_GREEN - 1:0] v);
-        if (W_GREEN_O == W_GREEN)  return v;
-        else if (W_GREEN_O == 1)   return | v;
-        else                       return v [W_GREEN - 1 -: W_GREEN_O];
-    endfunction
+    generate
+        if (W_RED_O == W_RED)     assign red_o = red;
+        else if (W_RED_O == 1)    assign red_o = | red;
+        else                      assign red_o = red [W_RED - 1 -: W_RED_O];
 
-    function automatic logic [W_BLUE_O - 1:0] reduce_b (input logic [W_BLUE - 1:0] v);
-        if (W_BLUE_O == W_BLUE)    return v;
-        else if (W_BLUE_O == 1)    return | v;
-        else                       return v [W_BLUE - 1 -: W_BLUE_O];
-    endfunction
+        if (W_GREEN_O == W_GREEN) assign green_o = green;
+        else if (W_GREEN_O == 1)  assign green_o = | green;
+        else                      assign green_o = green [W_GREEN - 1 -: W_GREEN_O];
 
-    assign vga_r = display_on ? reduce_r (red)   : '0;
-    assign vga_g = display_on ? reduce_g (green) : '0;
-    assign vga_b = display_on ? reduce_b (blue)  : '0;
+        if (W_BLUE_O == W_BLUE)   assign blue_o = blue;
+        else if (W_BLUE_O == 1)   assign blue_o = | blue;
+        else                      assign blue_o = blue [W_BLUE - 1 -: W_BLUE_O];
+    endgenerate
+
+    assign vga_r = display_on ? red_o   : '0;
+    assign vga_g = display_on ? green_o : '0;
+    assign vga_b = display_on ? blue_o  : '0;
 
     // Derived constants
 

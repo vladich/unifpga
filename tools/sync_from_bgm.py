@@ -1123,6 +1123,8 @@ def apply_clock_tree(path, dry_run):
         # not the serial one. 124.875 MHz on the Tang Nano 20K -> 24.975 MHz
         # pixel -> serial 249.75 MHz here.
         serial_outs = [o for o in outs if re.search(r"serial|x5|TMDS", o[0], re.I)]
+        if not serial_outs and len(outs) == 1:
+            serial_outs = list(outs)        # the only PLL output feeds the transmitter (25K: vga_in_clk)
         pix_param = re.search(r"\bpixel_mhz\s*=\s*([0-9.]+)", t)
         bgm_pixel = bgm_serial = ratio = None
         if len(serial_outs) == 1:
@@ -1321,7 +1323,7 @@ def apply_polarity(paths, dry_run):
 _GOWIN_TOOLCHAINS = {"gowin_eda", "gowin_standard", "nextpnr_apicula"}
 
 
-def _render_gowin_block(set_device, options):
+def _render_gowin_block(set_device, options, reason=None):
     lines = ["  # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):",
              "  # set_device args verbatim (part, -name, -device_version) and the",
              "  # set_option -use_*_as_gpio flags that free configuration pins for I/O.",
@@ -1329,8 +1331,231 @@ def _render_gowin_block(set_device, options):
              "    gowin:"]
     if set_device:
         lines.append('      set_device: "{}"'.format(set_device.replace('"', '\\"')))
+    if reason:
+        lines.append("      set_device_reason: {}".format(reason))
     lines.append("      options: [{}]".format(", ".join(o.lstrip("-") for o in options)))
     return "\n".join(lines) + "\n"
+
+
+# ---------------------------------------------------------------------------
+# --iotypes: Gowin IO_TYPE per pin exactly as BGM's CST files state them
+# ---------------------------------------------------------------------------
+
+def _bgm_iotypes(vdir):
+    """{normalized pin: IO_TYPE} from every constraint file of the variant
+    (only pins BGM gives an IO_TYPE; most Gowin CSTs give none)."""
+    from tools import import_constraints as ic
+    out = {}
+    for path in ic.find_all_constraint_files(vdir):
+        try:
+            signals, _fmt = ic.parse_file(path)
+        except Exception:
+            continue
+        for _name, entry in signals.items():
+            if entry.get("iostandard"):
+                out.setdefault(_norm_pin(entry["pin"]), entry["iostandard"].upper())
+    return out
+
+
+def _del_bank_attr(pinmap_text, bank, attr):
+    """Remove `attr` (scalar line or block) from a bank; returns new text."""
+    inline = re.compile(r"^(    {}:\s*\{{)([^}}]*)(\}})".format(re.escape(bank)), re.M)
+    m = inline.search(pinmap_text)
+    if m:
+        body = re.sub(r",?\s*\b{}:\s*[^,}}]+".format(re.escape(attr)), "", m.group(2))
+        body = body.strip().strip(",").strip()
+        return pinmap_text[:m.start()] + m.group(1) + " " + body + " " + m.group(3) + pinmap_text[m.end():]
+    block = re.compile(r"^(    {}:\s*\n)((?:      .*\n|        .*\n)*)".format(re.escape(bank)), re.M)
+    m = block.search(pinmap_text)
+    if not m:
+        return pinmap_text
+    body = re.sub(r"^      {}:.*\n(?:^        .*\n)*".format(re.escape(attr)), "", m.group(2), flags=re.M)
+    return pinmap_text[:m.start()] + m.group(1) + body + pinmap_text[m.end():]
+
+
+def _set_bank_overrides(pinmap_text, bank, overrides):
+    text = _del_bank_attr(pinmap_text, bank, "overrides")
+    if not overrides:
+        return text
+    block = re.compile(r"^(    {}:\s*\n)((?:      .*\n|        .*\n)*)".format(re.escape(bank)), re.M)
+    m = block.search(text)
+    if not m:
+        return None
+    lines = "      overrides:\n" + "".join('        "{}": {}\n'.format(pin, t) for pin, t in sorted(overrides.items()))
+    return text[:m.start()] + m.group(1) + m.group(2) + lines + text[m.end():]
+
+
+def _set_defaults_iostandard(pinmap_text, value):
+    m = re.search(r"^  defaults:\s*\n((?:    .*\n)*)", pinmap_text, re.M)
+    if m:
+        body = m.group(1)
+        if value is None:
+            body = re.sub(r"^    iostandard:.*\n", "", body, flags=re.M)
+        elif re.search(r"^    iostandard:", body, re.M):
+            body = re.sub(r"^    iostandard:.*$", "    iostandard: {}".format(value), body, flags=re.M)
+        else:
+            body += "    iostandard: {}\n".format(value)
+        if not body.strip():
+            return pinmap_text[:m.start()] + pinmap_text[m.end():]
+        return pinmap_text[:m.start()] + "  defaults:\n" + body + pinmap_text[m.end():]
+    if value is None:
+        return pinmap_text
+    return re.sub(r"^(  pinBanks:)", "  defaults:\n    iostandard: {}\n\1".format(value), pinmap_text, count=1, flags=re.M)
+
+
+def _render_io_overrides(entries):
+    lines = ["  # Gowin IO_TYPE this BGM variant states beyond the board-wide ones (tools/sync_from_bgm.py --iotypes)",
+             "  io_overrides:"]
+    for ref, t in sorted(entries.items()):
+        key = '"{}"'.format(ref) if any(c in ref for c in "[]") else ref
+        lines.append("    {}: {}".format(key, t))
+    return "\n".join(lines) + "\n"
+
+
+def _set_config_io_overrides(text, entries):
+    """Replace / insert / remove the `io_overrides:` block of a configuration."""
+    text = re.sub(r"(?m)(?:^  # Gowin IO_TYPE this BGM variant[^\n]*\n)?^  io_overrides:\n(?:^ {4,}.*\n)*\n?", "", text)
+    if not entries:
+        return text
+    block = _render_io_overrides(entries) + "\n"
+    m = re.search(r"^  attach:", text, re.M)
+    if not m:
+        return text
+    return text[:m.start()] + block + text[m.start():]
+
+
+def apply_iotypes(paths, dry_run):
+    """Gowin IO_TYPE exactly as BGM's CST files state it, per variant. For
+    every pin of a board: the type goes into the pinmap (bank `iostandard`
+    or per-pin `overrides`) when every BGM variant that locates the pin
+    types it the same way; a type only some variants state goes into those
+    configurations' `io_overrides:`. Types no variant states are removed:
+    the tool's defaults and the bank voltages its embedded functions dictate
+    are then what BGM gets too (an invented LVCMOS33 on the Tang Nano 9K's
+    1.8 V bank 3 is refused with CT1136; a per-variant mix of typed and
+    untyped pins in one bank is refused the same way)."""
+    per_board = {}
+    for path in paths:
+        cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
+        if cfg.get("toolchain") not in _GOWIN_TOOLCHAINS:
+            continue
+        vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+        if vdir is None:
+            continue
+        per_board.setdefault(cfg["board"], []).append(
+            (path, cfg["id"], _bgm_iotypes(vdir), set(_bgm_signal_pins(vdir).values())))
+    results = {}
+    for board, variants in sorted(per_board.items()):
+        pm_path = _pinmap_path(board)
+        pinmap = config_init.read_board_pinmap(board) or {}
+        banks = pinmap.get("pinBanks") or {}
+        rev = _pin_to_ref(pinmap)
+
+        # pin -> {type: set(configs)}, pin -> set(configs locating it)
+        typed, located = {}, {}
+        for path, cid, tmap, pins in variants:
+            for pin in pins:
+                located.setdefault(pin, set()).add(cid)
+            for pin, t in tmap.items():
+                typed.setdefault(pin, {}).setdefault(t, set()).add(cid)
+        conflicts = sorted(p for p, ts in typed.items() if len(ts) > 1)
+        if conflicts:
+            results[board] = "CONFLICT between BGM variants on pins {}".format(conflicts)
+            continue
+        board_types, per_cfg = {}, {}          # pin -> type; cid -> {pin: type}
+        for pin, ts in typed.items():
+            (t, cids), = ts.items()
+            if cids >= located.get(pin, set()):
+                board_types[pin] = t
+            else:
+                for cid in cids:
+                    per_cfg.setdefault(cid, {})[pin] = t
+
+        # --- pinmap: bank-level type when every pin of the bank has it, else per-pin overrides
+        text = original = open(pm_path, encoding="utf-8").read()
+        defaults = pinmap.get("defaults") or {}
+        keep_default = bool(defaults.get("iostandard_reason"))
+        if not keep_default:
+            text = _set_defaults_iostandard(text, None)
+        changes = []
+        for bank, b in banks.items():
+            vals = _bank_pin_values(b)
+            btypes = {v: board_types.get(_norm_pin(v)) for v in vals}
+            uniform = vals and len(set(btypes.values())) == 1 and next(iter(btypes.values()))
+            new_type = uniform or None
+            new_over = {} if uniform else {v: t for v, t in btypes.items() if t}
+            cur_type = (b or {}).get("iostandard")
+            cur_over = {str(k): str(v).upper() for k, v in ((b or {}).get("overrides") or {}).items()}
+            if new_type != cur_type:
+                text = (_set_bank_attr(text, bank, "iostandard", new_type) if new_type
+                        else _del_bank_attr(text, bank, "iostandard")) or text
+                changes.append("{}: iostandard {} -> {}".format(bank, cur_type, new_type))
+            if new_over != cur_over:
+                text = _set_bank_overrides(text, bank, new_over) or text
+                changes.append("{}: overrides {} -> {}".format(bank, cur_over, new_over))
+        if defaults.get("iostandard") and not keep_default:
+            changes.append("defaults.iostandard removed (per-pin types instead)")
+        if text != original:
+            if not dry_run:
+                open(pm_path, "w", encoding="utf-8").write(text)
+                config_init.clear_cache()
+        results[board] = "; ".join(changes) if changes else "pinmap already"
+
+        # --- configurations: io_overrides for the variant-specific types
+        for path, cid, _tmap, _pins in variants:
+            entries = {}
+            mine = per_cfg.get(cid, {})
+            # a pin shared by two banks (Tang Nano 9K: LCD colour pins and
+            # TMDS pairs) belongs to the bank this configuration binds
+            try:
+                bound_cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
+                bound = set()
+                for a in bound_cfg.get("attach") or []:
+                    for ref in (a.get("bind") or {}).values():
+                        for one in (ref if isinstance(ref, list) else [ref]):
+                            if isinstance(one, str):
+                                bound.add(re.split(r"[.\[]", one.strip().strip('"'), 1)[0])
+            except Exception:
+                bound = set()
+            rev_bound = _pin_to_ref({"pinBanks": {b: v for b, v in banks.items() if b in bound}})
+            # collapse to bank / sub-key when the variant types every pin of it
+            by_bank = {}
+            for pin, t in mine.items():
+                ref = rev_bound.get(pin) or rev.get(pin)
+                if ref is None:
+                    continue
+                by_bank.setdefault(re.split(r"[.\[]", ref, 1)[0], {})[ref] = t
+            for bank, refs in by_bank.items():
+                vals = _bank_pin_values(banks.get(bank) or {})
+                all_pins = {_norm_pin(v) for v in vals}
+                if all_pins and all_pins <= set(mine) and len({mine[p] for p in all_pins}) == 1:
+                    entries[bank] = mine[next(iter(all_pins))]
+                else:
+                    entries.update(refs)
+            ctext = open(path, encoding="utf-8").read()
+            cur = yaml.safe_load(ctext)["Configuration"].get("io_overrides") or {}
+            if {str(k): str(v) for k, v in cur.items()} == entries:
+                continue
+            new_text = _set_config_io_overrides(ctext, entries)
+            if new_text != ctext and not dry_run:
+                open(path, "w", encoding="utf-8").write(new_text)
+                config_init.clear_cache()
+            results[cid] = "io_overrides = {}".format(entries) if entries else "io_overrides removed"
+    return results
+
+
+def _bank_pin_values(bank):
+    pins = (bank or {}).get("pins")
+    if isinstance(pins, str):
+        return [pins]
+    if isinstance(pins, list):
+        return [v for v in pins if v is not None]
+    if isinstance(pins, dict):
+        out = []
+        for v in pins.values():
+            out.extend([x for x in (v if isinstance(v, list) else [v]) if x is not None])
+        return out
+    return []
 
 
 def apply_gowin_options(paths, dry_run):
@@ -1356,16 +1581,27 @@ def apply_gowin_options(paths, dry_run):
         pinmap = config_init.read_board_pinmap(board) or {}
         cur = (pinmap.get("toolchain_options") or {}).get("gowin") or {}
         want_opts = [o.lstrip("-") for o in opts]
+        if cur.get("set_device_reason"):
+            dev = cur.get("set_device")          # documented deviation from BGM's tcl (Tang Mega 138K)
         if cur.get("set_device") == dev and list(cur.get("options") or []) == want_opts:
             results[board] = "already"
             continue
         text = open(pm_path, encoding="utf-8").read()
-        text = re.sub(r"(?m)(?:^  # Gowin tool settings[^\n]*\n(?:^  #[^\n]*\n)*)?^  toolchain_options:\n(?:^ {4,}.*\n)*", "", text)
-        block = _render_gowin_block(dev, opts)
-        new, n = re.subn(r"^(  pinBanks:)", block.replace("\\", "\\\\") + r"\1", text, count=1, flags=re.M)
-        if n != 1:
-            results[board] = "WARNING: no pinBanks: line in {}".format(pm_path)
-            continue
+        reason = cur.get("set_device_reason")
+        gowin_lines = _render_gowin_block(dev, opts, reason).split("\n")
+        gowin_sub = "\n".join(l for l in gowin_lines if l.startswith("    ")) + "\n"
+        if re.search(r"^  toolchain_options:", text, re.M):
+            # replace only the gowin: sub-block; apicula: and others stay
+            text, n = re.subn(r"(?m)^    gowin:\n(?:^      .*\n)*", gowin_sub.replace("\\", "\\\\"), text, count=1)
+            if n != 1:
+                text = re.sub(r"^(  toolchain_options:\n)", r"\1" + gowin_sub.replace("\\", "\\\\"), text, count=1, flags=re.M)
+            new = text
+        else:
+            block = "\n".join(gowin_lines) + "\n"
+            new, n = re.subn(r"^(  pinBanks:)", block.replace("\\", "\\\\") + r"\1", text, count=1, flags=re.M)
+            if n != 1:
+                results[board] = "WARNING: no pinBanks: line in {}".format(pm_path)
+                continue
         if not dry_run:
             open(pm_path, "w", encoding="utf-8").write(new)
             config_init.clear_cache()
@@ -1436,14 +1672,16 @@ def main(argv=None):
                    help="rewrite the on-board 7-segment attach to match the pinmap shape")
     p.add_argument("--clock-tree", action="store_true",
                    help="lab_clock, PLL pixel-clock frequency and LCD bl/init from BGM's top + gowin_rpll.v")
+    p.add_argument("--iotypes", action="store_true",
+                   help="Gowin IO_TYPE per pin from BGM's CST files into the pinmaps (defaults / bank / overrides)")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--only", nargs="*")
     args = p.parse_args(argv)
     if not (args.reset or args.clock or args.seven_seg or args.vga or args.prune_optional
             or args.sv_binds or args.prune_missing_banks or args.polarity or args.gowin_options
-            or args.clock_tree):
+            or args.clock_tree or args.iotypes):
         p.error("nothing to do: pass one or more of --reset --clock --seven-seg --vga "
-                "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options --clock-tree")
+                "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options --clock-tree --iotypes")
     if not bgm_oracle.has_bgm():
         print("BGM checkout not found at {}".format(bgm_oracle.BGM_BOARDS), file=sys.stderr)
         return 2
@@ -1458,6 +1696,9 @@ def main(argv=None):
     if args.gowin_options:
         for name, result in sorted(apply_gowin_options(paths, args.dry_run).items()):
             print("[gowin] {:44s} {}".format(name, result))
+    if args.iotypes:
+        for name, result in sorted(apply_iotypes(paths, args.dry_run).items()):
+            print("[iotyp] {:44s} {}".format(name, result))
     for path in paths:
         cid = os.path.splitext(os.path.basename(path))[0]
         if args.reset:

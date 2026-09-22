@@ -40,7 +40,9 @@ def gowin_rpll(f_in, f_out, tolerance_pct=0.5, vco_max=1200.0, vco_min=400.0,
 
     Candidates are ranked by |error| first (exact solutions win), then by
     whether CLKOUT is used directly (preferred over CLKOUTD), then by the
-    lowest VCO (least jitter and power), then by the smallest IDIV."""
+    highest VCO inside the family window (GW1N: 400-1200 MHz, GW2A: 500-1250
+    MHz as Gowin EDA enforces; a low VCO is where the tool's checks bite),
+    then by the smallest IDIV."""
     best = None
     for idiv in range(0, 64):
         f_pfd = f_in / (idiv + 1)
@@ -59,7 +61,7 @@ def gowin_rpll(f_in, f_out, tolerance_pct=0.5, vco_max=1200.0, vco_min=400.0,
                     err = abs(f - f_out) / f_out * 100.0
                     if err > tolerance_pct:
                         continue
-                    key = (round(err, 9), 1 if use_d else 0, f_vco, idiv, fbdiv, odiv, sdiv)
+                    key = (round(err, 9), 1 if use_d else 0, -round(f_vco, 6), idiv, fbdiv, odiv, sdiv)
                     if best is None or key < best[0]:
                         best = (key, GowinRPLL(idiv, fbdiv, odiv, sdiv, use_d, f_pfd, f_vco, f_clkout, f, err))
     return best[1] if best else None
@@ -168,4 +170,61 @@ def xilinx_mmcm(f_in, f_outs, tolerance_pct=0.5):
             key = (round(max(errs), 9), -round(f_vco, 6), divclk + mult)
             if best is None or key < best[0]:
                 best = (key, XilinxMMCM(divclk, mult, tuple(odivs), f_pfd, f_vco, tuple(outs), tuple(errs)))
+    return best[1] if best else None
+
+
+# ---------------------------------------------------------------------------
+# Gowin Arora V (GW5A / GW5AST) PLL / PLLA, several outputs from one VCO
+#   f_pfd = f_in / IDIV_SEL; f_vco = f_pfd * FBDIV_SEL * MDIV_SEL; out_i = f_vco / ODIVi_SEL
+#   (checked against BGM's gowin_pll.ipc: 50 MHz, IDIV 1, FBDIV 1, MDIV 16, ODIV0 100 -> 8 MHz)
+# ---------------------------------------------------------------------------
+
+GW5_PFD_MIN, GW5_PFD_MAX = 19.0, 400.0     # Gowin EDA (PA2078): PFD 19 .. 400 MHz on the GW5A PLLA
+GW5_VCO_MIN, GW5_VCO_MAX = 800.0, 1600.0
+GW5_IDIV_MAX, GW5_FBDIV_MAX, GW5_MDIV_MAX, GW5_ODIV_MAX = 64, 64, 128, 128
+
+GowinGW5PLL = namedtuple("GowinGW5PLL", "idiv fbdiv mdiv odivs f_pfd f_vco f_outs errors")
+
+
+def gowin_gw5_pll(f_in, f_outs, tolerance_pct=0.5):
+    """Integer IDIV / FBDIV / MDIV and one ODIV per requested output (up to
+    3). Prefers exact outputs, then the highest PFD (BGM's IP keeps IDIV 1),
+    then the smallest divider set. Returns GowinGW5PLL or None."""
+    if not f_outs or len(f_outs) > 3:
+        return None
+    best = None
+    for idiv in range(1, GW5_IDIV_MAX + 1):
+        f_pfd = f_in / idiv
+        if f_pfd < GW5_PFD_MIN:
+            break
+        if f_pfd > GW5_PFD_MAX:
+            continue
+        for fbdiv in range(1, GW5_FBDIV_MAX + 1):
+            for mdiv in range(2, GW5_MDIV_MAX + 1):
+                f_vco = f_pfd * fbdiv * mdiv
+                if f_vco < GW5_VCO_MIN:
+                    continue
+                if f_vco > GW5_VCO_MAX:
+                    break
+                odivs, outs, errs = [], [], []
+                ok = True
+                for f_out in f_outs:
+                    odiv = int(round(f_vco / f_out))
+                    if odiv < 1 or odiv > GW5_ODIV_MAX:
+                        ok = False
+                        break
+                    f = f_vco / odiv
+                    err = abs(f - f_out) / f_out * 100.0
+                    if err > tolerance_pct:
+                        ok = False
+                        break
+                    odivs.append(odiv)
+                    outs.append(f)
+                    errs.append(err)
+                if not ok:
+                    continue
+                key = (round(max(errs), 9), idiv, fbdiv + mdiv)
+                if best is None or key < best[0]:
+                    best = (key, GowinGW5PLL(idiv, fbdiv, mdiv, tuple(odivs), f_pfd, round(f_vco, 6),
+                                             tuple(outs), tuple(errs)))
     return best[1] if best else None

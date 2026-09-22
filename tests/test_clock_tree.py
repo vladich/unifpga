@@ -41,7 +41,7 @@ def test_gowin_rpll_clock_tree_for_lcd():
 
     top = codegen.emit_top_sv(r, strict=True)
     assert "wire clk_pixel, clk_pixel_locked;" in top
-    assert 'pll_gowin_rpll # (.FCLKIN("27")' in top and '.DEVICE("GW1NR-9C")' in top
+    assert 'pll_gowin_rpll # (.PRIMITIVE("rPLL"), .FCLKIN("27")' in top and '.DEVICE("GW1NR-9C")' in top
     assert ".clkin(clk), .clkout(clk_pixel)" in top
     assert ".PixelClk(clk_pixel)" in top
     assert "assign onboard_lcd_ck = clk_pixel;" in top
@@ -142,9 +142,25 @@ def test_ref_valued_params_drive_pins(value, expected):
 # Unsupported families fail loudly instead of silently running on context.clk
 # ---------------------------------------------------------------------------
 
-def test_gw5_pll_is_reported_not_faked():
+def test_gw5_pll_wrapper_for_arora_v():
+    """Tang Mega 138K Pro (GW5AST): primitive PLL; Tang Primer 25K (GW5A):
+    PLLA with the serial and pixel clocks as two outputs of one VCO."""
     r = _resolve("tang_mega_138k_pro_lcd_480_272_no_tm1638")
-    with pytest.raises(codegen.CodegenError) as exc:
-        codegen.plan_clock_tree(r)
-    assert "GW5" in str(exc.value)
-    assert any("GW5" in p for p in codegen.validate_configuration(r))
+    tree = codegen.plan_clock_tree(r)
+    assert [(n, v) for n, _r, v, _s in tree] == [("pixel", "gowin_gw5")]
+    top = codegen.emit_top_sv(r, strict=True)
+    assert 'pll_gowin_gw5 # (.PRIMITIVE("PLL"), .FCLKIN("50")' in top
+    assert ".clkout0(clk_pixel)" in top
+    r = _resolve("tang_primer_25k_pmod_hdmi")
+    kinds = {n: v for n, _r, v, _s in codegen.plan_clock_tree(r)}
+    assert kinds == {"serial": "gowin_gw5", "pixel": "gowin_gw5"}
+    top = codegen.emit_top_sv(r, strict=True)
+    assert '.PRIMITIVE("PLLA")' in top and ".clkout0(clk_serial), .clkout1(clk_pixel)" in top
+    assert '.CLKOUT1_EN("TRUE")' in top
+
+
+def test_gw5_solver_matches_bgm_ipc():
+    from tools import pll_solver
+    sol = pll_solver.gowin_gw5_pll(50, [8])        # BGM gowin_pll.ipc: Clkout0ExpectedFrequency=8
+    assert sol is not None and sol.f_outs == (8.0,) and 800.0 <= sol.f_vco <= 1600.0
+    assert pll_solver.gowin_gw5_pll(50, [250, 25]).odivs == (4, 40)

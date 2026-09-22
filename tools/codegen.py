@@ -360,10 +360,31 @@ def diff_buf_kind(resolved):
     return "generic"
 
 
+def _gowin_rpll_primitive(board):
+    """GW1NS / GW1NSR (Tang Nano 4K) have PLLVR instead of rPLL."""
+    part = (board.get("Part") or "").upper()
+    return "PLLVR" if part.startswith(("GW1NS", "GW1NSR", "GW1NSE", "GW1NSER")) else "rPLL"
+
+
+def _gw5_primitive(board):
+    """BGM's Gowin_PLL wrappers: primitive PLL on GW5AST / GW5AT (Tang Mega
+    138K), PLLA on GW5A (Tang Primer 25K)."""
+    part = (board.get("Part") or "").upper()
+    return "PLLA" if part.startswith("GW5A-") else "PLL"
+
+
 def _gowin_rpll_device(resolved):
     """The rPLL `DEVICE` parameter BGM uses (`GW1NR-9C`, `GW2AR-18C`): the
-    `-name` plus `-device_version` from the board's Gowin set_device args."""
-    opts = ((resolved["board_pinmap"].get("toolchain_options") or {}).get("gowin") or {})
+    `-name` plus `-device_version` from the board's Gowin set_device args.
+    Under the open flow nextpnr-gowin compares the parameter with its own
+    family name (`GW2A-18` for the Primer 20K, "wrong PLL device" otherwise),
+    so the pinmap may pin `toolchain_options.apicula.rpll_device`."""
+    tc_opts = resolved["board_pinmap"].get("toolchain_options") or {}
+    if resolved["toolchain"]["Id"].startswith("nextpnr_apicula"):
+        dev = (tc_opts.get("apicula") or {}).get("rpll_device")
+        if dev:
+            return str(dev)
+    opts = tc_opts.get("gowin") or {}
     args = opts.get("set_device") or ""
     m_name = re.search(r"-name\s+(\S+)", args)
     m_ver = re.search(r'-device_version\s+("[^"]*"|\S+)', args)
@@ -410,10 +431,6 @@ def plan_clock_tree(resolved, plans=None):
         raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper exists for {} / {} "
                            "(PLAN.md P3.1)".format(cfg_id, sources[0][0], sources[0][1]["mhz"],
                                                    board.get("PartProducer"), board.get("PartFamily")))
-    if sources and vendor == "gowin_gw5":
-        raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but the GW5 (AroraV) PLLA "
-                           "wrapper is not implemented yet (PLAN.md P3.1b)".format(cfg_id, sources[0][0],
-                                                                                    sources[0][1]["mhz"]))
     out = OrderedDict()
     # 1. clocks that already exist: the board clock itself
     for name, r in reqs.items():
@@ -421,23 +438,28 @@ def plan_clock_tree(resolved, plans=None):
             out[name] = (name, r, "alias", ClockAlias(f_in, "clk"))
 
     # 2. PLL-generated source clocks
-    if vendor == "xilinx_mmcm" and sources:
-        # one MMCM makes every clock, derived ones included (clk_wiz style)
+    if vendor in ("xilinx_mmcm", "gowin_gw5") and sources:
+        # one MMCM / Arora V PLL makes every clock, derived ones included
+        # (clk_wiz / Gowin_PLL style)
         wanted = [(n, r) for n, r in reqs.items() if n not in out]
         if len(wanted) > 3:
-            raise CodegenError("Configuration {}: {} PLL clocks requested, pll_xilinx_mmcm has 3 outputs"
-                               .format(cfg_id, len(wanted)))
+            raise CodegenError("Configuration {}: {} PLL clocks requested, the {} wrapper has 3 outputs"
+                               .format(cfg_id, len(wanted), vendor))
         tol = min(r["tolerance_pct"] for _n, r in wanted)
-        mmcm = pll_solver.xilinx_mmcm(f_in, [r["mhz"] for _n, r in wanted], tol)
-        if mmcm is None:
-            raise CodegenError("Configuration {}: no MMCM setting reaches {} MHz from {} MHz within {}%"
-                               .format(cfg_id, [r["mhz"] for _n, r in wanted], f_in, tol))
+        solve = pll_solver.xilinx_mmcm if vendor == "xilinx_mmcm" else pll_solver.gowin_gw5_pll
+        multi = solve(f_in, [r["mhz"] for _n, r in wanted], tol)
+        if multi is None:
+            raise CodegenError("Configuration {}: no {} setting reaches {} MHz from {} MHz within {}%"
+                               .format(cfg_id, vendor, [r["mhz"] for _n, r in wanted], f_in, tol))
         for i, (n, r) in enumerate(wanted):
-            out[n] = (n, r, "xilinx_mmcm", MmcmOutput(mmcm.f_outs[i], i, mmcm))
+            out[n] = (n, r, vendor, MmcmOutput(multi.f_outs[i], i, multi))
     else:
         for name, r in sources:
             if vendor == "gowin_rpll":
-                sol = pll_solver.gowin_rpll(f_in, r["mhz"], r["tolerance_pct"])
+                # Gowin EDA: "suitable VCO range 500 MHz to 1250 MHz" on GW2AR-18C;
+                # BGM's GW1NR-9C settings sit as low as 432 MHz.
+                vco = (400.0, 1200.0) if _is_gowin_littlebee(board) else (500.0, 1250.0)
+                sol = pll_solver.gowin_rpll(f_in, r["mhz"], r["tolerance_pct"], vco_max=vco[1], vco_min=vco[0])
             else:   # ice40
                 sol = pll_solver.ice40_pll(f_in, r["mhz"], r["tolerance_pct"])
             if sol is None:
@@ -457,6 +479,8 @@ def plan_clock_tree(resolved, plans=None):
             raise CodegenError("Configuration {}: clock '{}' would divide the board clock by {}; no fabric "
                                "divider is generated (declare it as a source clock instead)"
                                .format(cfg_id, name, r["divide"]))
+        if src_kind in ("xilinx_mmcm", "gowin_gw5"):
+            continue                        # already an output of the shared PLL
         if vendor == "gowin_rpll":
             if r["divide"] not in _GOWIN_CLKDIV or (r["divide"] == 8 and _is_gowin_littlebee(board)):
                 raise CodegenError("Configuration {}: clock '{}' = {} / {} has no CLKDIV/CLKDIV2 combination "
@@ -529,6 +553,29 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
                          .format(d=sol.divide, name=name, s=src, n=net))
             lines.append("    wire {n}_locked = {s}_locked;".format(n=net, s=src))
             continue
+        if vendor == "gowin_gw5":
+            if not mmcm_done:
+                m = sol.mmcm
+                outs = [(n2, s2) for n2, _r2, v2, s2 in tree if v2 == "gowin_gw5"]
+                lines.append("    wire clk_pll_locked;")
+                lines.append("    wire " + ", ".join("clk_" + n2 for n2, _s2 in outs) + ";")
+                lines.append("    // Arora V PLL: {fin} MHz / {i} * {f} * {md} = VCO {vco:.1f} MHz; ".format(
+                    fin=fin_str, i=m.idiv, f=m.fbdiv, md=m.mdiv, vco=m.f_vco) + "; ".join(
+                    "clk_{} = VCO / {} = {:.4f} MHz".format(n2, m.odivs[s2.index], s2.f_out) for n2, s2 in outs))
+                divs = list(m.odivs) + [8] * (3 - len(m.odivs))
+                ports = ["clk_" + n2 for n2, _s2 in outs] + [""] * (3 - len(outs))
+                lines.append('    pll_gowin_gw5 # (.PRIMITIVE("{prim}"), .FCLKIN("{fin}"), .IDIV_SEL({i}), .FBDIV_SEL({f}), '
+                             '.MDIV_SEL({md}), .ODIV0_SEL({o0}), .ODIV1_SEL({o1}), .ODIV2_SEL({o2}), '
+                             '.CLKOUT1_EN("{e1}"), .CLKOUT2_EN("{e2}")) i_pll '
+                             '(.clkin(clk), .clkout0({p0}), .clkout1({p1}), .clkout2({p2}), .lock(clk_pll_locked));'.format(
+                                 prim=_gw5_primitive(resolved["board"]), fin=fin_str, i=m.idiv, f=m.fbdiv, md=m.mdiv,
+                                 o0=divs[0], o1=divs[1], o2=divs[2],
+                                 e1="TRUE" if len(outs) > 1 else "FALSE", e2="TRUE" if len(outs) > 2 else "FALSE",
+                                 p0=ports[0], p1=ports[1], p2=ports[2]))
+                for n2, _s2 in outs:
+                    lines.append("    wire clk_{}_locked = clk_pll_locked;".format(n2))
+                mmcm_done = True
+            continue
         if vendor == "xilinx_mmcm":
             if not mmcm_done:
                 m = sol.mmcm
@@ -553,9 +600,10 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
         if vendor == "gowin_rpll":
             lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz{})".format(
                 net, sol.f_out, fin_str, sol.f_pfd, sol.f_vco, ", via CLKOUTD" if sol.use_clkoutd else ""))
-            lines.append('    pll_gowin_rpll # (.FCLKIN("{fin}"), .IDIV_SEL({i}), .FBDIV_SEL({f}), .ODIV_SEL({o}), '
-                         '.DYN_SDIV_SEL({s}), .USE_CLKOUTD(1\'b{d}), .DEVICE("{dev}")) i_pll_{name} '
+            lines.append('    pll_gowin_rpll # (.PRIMITIVE("{prim}"), .FCLKIN("{fin}"), .IDIV_SEL({i}), .FBDIV_SEL({f}), '
+                         '.ODIV_SEL({o}), .DYN_SDIV_SEL({s}), .USE_CLKOUTD(1\'b{d}), .DEVICE("{dev}")) i_pll_{name} '
                          '(.clkin(clk), .clkout({net}), .lock({net}_locked));'.format(
+                             prim=_gowin_rpll_primitive(resolved["board"]),
                              fin=fin_str, i=sol.idiv, f=sol.fbdiv, o=sol.odiv, s=sol.sdiv,
                              d=1 if sol.use_clkoutd else 0, dev=_gowin_rpll_device(resolved),
                              name=name, net=net))
@@ -577,6 +625,7 @@ _CLOCK_TREE_MODULES = (
     ("pll_ice40",       os.path.join("rtl", "pll", "pll_ice40.sv")),
     ("pll_xilinx_mmcm", os.path.join("rtl", "pll", "pll_xilinx_mmcm.sv")),
     ("clkdiv_gowin",    os.path.join("rtl", "pll", "clkdiv_gowin.sv")),
+    ("pll_gowin_gw5",   os.path.join("rtl", "pll", "pll_gowin_gw5.sv")),
 )
 
 
@@ -2150,8 +2199,12 @@ def emit_cst(resolved):
     IO_PORT for IO_TYPE / drive strength."""
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
-    default_iotype = _GOWIN_IOTYPE.get(
-        (pinmap.get("defaults") or {}).get("iostandard"), "LVCMOS33")
+    # No IO_TYPE unless the pinmap states one (BGM's Gowin CSTs constrain
+    # only IO_LOC on most boards; the tool then keeps its defaults and the
+    # bank voltages the embedded functions dictate. An invented LVCMOS33 on
+    # the Tang Nano 9K's 1.8 V bank 3 is refused with CT1136.)
+    default_raw = (pinmap.get("defaults") or {}).get("iostandard")
+    default_iotype = _GOWIN_IOTYPE.get(default_raw, default_raw) if default_raw else None
 
     out = []
     out.append("// =============================================================================")
@@ -2167,20 +2220,26 @@ def emit_cst(resolved):
     # plain IO_LOCs (BGM's _yosys variants); pseudo-differential outputs are
     # two ordinary LVCMOS pins.
     pair_style = "pair"
+    kind = diff_buf_kind(resolved)
     if resolved["toolchain"]["Id"].startswith("nextpnr_"):
         pair_style = "split"
-    elif diff_buf_kind(resolved) == "generic":
+    elif kind == "generic":
         pair_style = "lvcmos"
     pair_n = _pair_n_pins(pinmap, referenced)
 
     def lines_for(p, port, iot, explicit):
         if isinstance(p, str) and "," in p:
+            if explicit and kind == "gowin_elvds" and pair_style == "pair" and re.match(r"^LVCMOS\d+$", str(iot)):
+                # ELVDS_OBUF: emulated differential on the bank's own voltage
+                iot = iot + "D"
             return _cst_pair_lines(p, port, iot, explicit, pair_style)
         if str(p) in pair_n:
             if pair_style == "pair":
                 return ['// "{}" is the N half of the pair on {}'.format(port, pair_n[str(p)])]
             if pair_style == "split":
                 return ['IO_LOC  "{}" {};'.format(port, p)]
+        if not iot:
+            return ['IO_LOC  "{}" {};'.format(port, p)]
         return _cst_lines(p, port, iot)
 
     for bank_name in referenced:
@@ -2227,9 +2286,10 @@ def _cst_pair_lines(pin, port_expr, iotype, explicit, style):
     if style == "split":
         return ['IO_LOC  "{}" {};'.format(port_expr, p)]
     if style == "lvcmos":
-        return ['IO_LOC  "{}" {};'.format(port_expr, p), 'IO_PORT "{}" IO_TYPE={};'.format(port_expr, iot)]
+        return ['IO_LOC  "{}" {};'.format(port_expr, p)] + (
+            ['IO_PORT "{}" IO_TYPE={};'.format(port_expr, iot)] if iot else [])
     lines = ['IO_LOC  "{}" {},{};'.format(port_expr, p, n)]
-    if explicit:      # e.g. marsohod3gw2: IO_TYPE=LVCMOS18D on the pair
+    if explicit and iot:      # e.g. marsohod3gw2: IO_TYPE=LVCMOS18D on the pair
         lines.append('IO_PORT "{}" IO_TYPE={};'.format(port_expr, iot))
     return lines
 

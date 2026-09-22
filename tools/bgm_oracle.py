@@ -16,6 +16,7 @@ The module is deliberately dependency-free (no PyYAML) so the parity tool and
 the audit can import it from anywhere.
 """
 
+import glob
 import os
 import re
 
@@ -420,7 +421,31 @@ def gowin_options(vdir):
                     device = m.group(1).strip()
         if opts or device:
             break
+    if not opts:
+        # BGM's gw_sh tcl for some boards (marsohod3gw2) carries no set_option
+        # while the IDE project settings free the dual-purpose pins the CST
+        # uses; take those (`"SSPI" : true` -> -use_sspi_as_gpio).
+        for cand in sorted(glob.glob(os.path.join(vdir, "project_process_config_*.json"))):
+            try:
+                with open(cand, encoding="utf-8", errors="replace") as f:
+                    body = f.read()
+            except OSError:
+                continue
+            # union over the project files BGM ships (01/02 are two IDE
+            # projects of the same variant): freeing a pin more never breaks
+            # a build, and the CST needs every pin some project frees
+            for key, opt in _PROCESS_CONFIG_GPIO:
+                if re.search(r'"{}"\s*:\s*true'.format(key), body):
+                    if opt not in opts:
+                        opts.append(opt)
     return opts, device
+
+
+_PROCESS_CONFIG_GPIO = (
+    ("MSPI", "-use_mspi_as_gpio"), ("SSPI", "-use_sspi_as_gpio"), ("READY", "-use_ready_as_gpio"),
+    ("DONE", "-use_done_as_gpio"), ("RECONFIG_N", "-use_reconfign_as_gpio"), ("JTAG", "-use_jtag_as_gpio"),
+    ("I2C", "-use_i2c_as_gpio"), ("MODE_IO", "-use_mode_as_gpio"), ("CPU", "-use_cpu_as_gpio"),
+)
 
 
 def _tcl_candidates(vdir):
@@ -602,6 +627,24 @@ def pll_outputs(vdir, text, files=None):
             for port, expr in inst["ports"]:
                 if port in ("PLLOUTCORE", "PLLOUTGLOBAL") and expr:
                     outs.append((expr, f, mod))
+    # Gowin Arora V Gowin_PLL wrapper (gowin_pll.v, primitive PLL or PLLA):
+    # f_vco = FCLKIN / IDIV_SEL * FBDIV_SEL * MDIV_SEL; clkout<i> = f_vco / ODIV<i>_SEL
+    # (BGM tang_mega_138k*: 50 MHz -> VCO 800 -> clkout0 8 MHz, per gowin_pll.ipc)
+    gw5_done = False
+    for inst in instantiations(text, "Gowin_PLL"):
+        st = gw5_pll_settings(vdir, files)
+        if st is None:
+            unmodelled.append("Gowin_PLL(no gowin_pll.v)")
+            continue
+        f_vco = st["FCLKIN"] / st["IDIV_SEL"] * st["FBDIV_SEL"] * st["MDIV_SEL"]
+        for port, expr in inst["ports"]:
+            m = re.match(r"^clkout(\d)$", port)
+            if not m or not expr:
+                continue
+            div = st["outputs"].get(int(m.group(1)))
+            if div and _net_used(text, expr, ports):
+                outs.append((expr, f_vco / div, port))
+        gw5_done = True
     # Xilinx clk_wiz: MMCME2_ADV parameters in the generated clk_wiz_clk_wiz.v,
     # wrapper ports clk_out1..3 = CLKOUT0..2 (a7_lite_35t: 250 / 50 / 25 MHz)
     wiz_done = False
@@ -621,9 +664,26 @@ def pll_outputs(vdir, text, files=None):
         wiz_done = True
     for name in sorted(set(pll_instances(text))):
         if name not in _PLL_MODELLED and not name.startswith("Gowin_rPLL_") and not (
-                wiz_done and name.startswith("clk_wiz")):
+                wiz_done and name.startswith("clk_wiz")) and not (gw5_done and name == "Gowin_PLL"):
             unmodelled.append(name)
     return outs, unmodelled
+
+
+def gw5_pll_settings(vdir, files=None):
+    """Arora V PLL / PLLA settings from gowin_pll.v: {"FCLKIN", "IDIV_SEL",
+    "FBDIV_SEL", "MDIV_SEL", "outputs": {i: ODIVi_SEL for enabled outputs}}."""
+    for cand in _pll_wrapper_files(vdir, files, ("gowin_pll.v",)):
+        with open(cand, encoding="utf-8", errors="replace") as f:
+            vals = {k: v.strip().strip('"') for k, v in _DEFPARAM.findall(f.read())}
+        if "IDIV_SEL" in vals and "MDIV_SEL" in vals:
+            outs = {}
+            for i in range(7):
+                if vals.get("CLKOUT{}_EN".format(i), "FALSE").upper() == "TRUE":
+                    outs[i] = float(vals.get("ODIV{}_SEL".format(i), "8"))
+            return {"FCLKIN": float(vals.get("FCLKIN", "50")), "IDIV_SEL": int(vals["IDIV_SEL"]),
+                    "FBDIV_SEL": int(vals.get("FBDIV_SEL", "1")), "MDIV_SEL": int(vals["MDIV_SEL"]),
+                    "outputs": outs, "file": cand}
+    return None
 
 
 _WIZ_PARAM = re.compile(r"\.(CLKIN1_PERIOD|DIVCLK_DIVIDE|CLKFBOUT_MULT_F|CLKOUT0_DIVIDE_F|CLKOUT([1-6])_DIVIDE)\s*\(\s*([0-9.]+)\s*\)")
