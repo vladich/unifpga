@@ -128,10 +128,19 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
     return files
 
 
-def _select_set_device_args(board, configuration):
-    """Pick the args for `set_device`. Prefers the canonical `GowinDeviceArgs`
-    string if the board's YAML provides it (`<part> -name <name> -device_version <ver>`),
-    falling back to the bare Part field."""
+def _gowin_options(board_pinmap):
+    """`toolchain_options.gowin` from the pinmap: {set_device: str, options: [..]}
+    written from BGM's board_specific.tcl by tools/sync_from_bgm.py --gowin-options."""
+    return ((board_pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}
+
+
+def _select_set_device_args(board, configuration, board_pinmap=None):
+    """Pick the args for `set_device`. Precedence: the pinmap's
+    `toolchain_options.gowin.set_device` (BGM's exact `<part> -name <name>
+    -device_version <ver>`), the board's `GowinDeviceArgs`, then the bare Part."""
+    args = _gowin_options(board_pinmap).get("set_device")
+    if args:
+        return args
     args = board.get("GowinDeviceArgs")
     if args:
         return args
@@ -149,9 +158,10 @@ def _select_set_device_args(board, configuration):
     return part_name
 
 
-def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step):
+def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step, options=()):
     """Generate the gw_sh batch script. The Gowin TCL flow is:
         set_device <part> [-name <name>] [-device_version <ver>]
+        set_option -use_<pin-group>_as_gpio 1   (per board, from BGM's .tcl)
         add_file <each .sv .v>
         add_file -type cst <cst>
         add_file -type sdc <sdc>
@@ -167,6 +177,11 @@ def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step):
     lines.append("set_option -verilog_std sysv2017")
     lines.append("set_option -top_module top")
     lines.append("set_option -output_base_name {}".format(PROJECT_NAME))
+    # Configuration pins reused as user I/O (MSPI/SSPI flash lines, DONE,
+    # READY, CPU, I2C): without these the LCD/HDMI/TM1638 pins BGM uses on
+    # the Tang boards are illegal for the placer.
+    for opt in options:
+        lines.append("set_option -{} 1".format(str(opt).lstrip("-")))
     for sv in sv_files:
         # `add_file <path>` auto-detects file type by extension.
         lines.append("add_file {{{}}}".format(sv))
@@ -197,10 +212,11 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved))
 
-    device_args = _select_set_device_args(board, configuration)
+    device_args = _select_set_device_args(board, configuration, board_pinmap)
     if not device_args:
         log.error("Board %s has no 'Part'/'GowinDeviceArgs' — cannot drive Gowin.", board["Id"])
         return 1
+    gowin_opts = _gowin_options(board_pinmap).get("options") or []
     # Use the bare part token (first whitespace-delimited word) wherever a
     # raw part-name is needed (e.g. for emit_cst / pin lookup).
     part_name = device_args.split()[0]
@@ -220,7 +236,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     log.info("Wrote %s", sdc_path)
 
     with open(tcl_path, "w") as f:
-        f.write(_emit_tcl(device_args, sv_files, cst_path, sdc_path, output, step))
+        f.write(_emit_tcl(device_args, sv_files, cst_path, sdc_path, output, step, gowin_opts))
     log.info("Wrote %s", tcl_path)
 
     log.info("Source files (%d):", len(sv_files))

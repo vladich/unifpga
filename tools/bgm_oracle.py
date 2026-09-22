@@ -339,6 +339,53 @@ def instantiations(text, module):
     return found
 
 
+_PORT_DECL = re.compile(
+    r"^\s*(?:input|output|inout)\s+(?:logic\s+|wire\s+|reg\s+)?(?:\[[^\]]*\]\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*(?:,|\)|$)",
+    re.MULTILINE)
+
+
+def top_ports(text):
+    """Names declared as top-level ports in the preprocessed board top."""
+    head = text.split(");", 1)[0]
+    return set(_PORT_DECL.findall(head))
+
+
+def port_polarity(text):
+    """Per top-level port: does BGM invert it, and does it bit-swap it?
+
+        assign LED = ~ lab_led;  assign LED = w_led' (~ lab_led);
+        assign LED_N = ~ led;    `SWAP_BITS (LED, ~ lab_led)   -> LED inverted (+mirrored)
+        .key ( ~ KEY )   lab_key = ~ KEY_N [..]   key = ~ { KEY2, KEY3 }  -> KEY* inverted
+
+    Returns {PORT: {"inverted": bool, "mirrored": bool}} for the ports that
+    appear in such expressions; ports used plainly are absent."""
+    ports = top_ports(text)
+    out = {}
+
+    def mark(name, inverted=None, mirrored=None):
+        if name not in ports:
+            return
+        d = out.setdefault(name, {"inverted": False, "mirrored": False})
+        if inverted:
+            d["inverted"] = True
+        if mirrored:
+            d["mirrored"] = True
+
+    # Output side: assign PORT[...] = [cast (] ~ ...
+    for m in re.finditer(r"\bassign\s+([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*=\s*(?:\w+'\s*\()?\s*(~?)", text):
+        if m.group(2):
+            mark(m.group(1), inverted=True)
+    for m in re.finditer(r"SWAP_BITS\s*\(\s*([A-Za-z_]\w*)\s*,\s*(~?)", text):
+        mark(m.group(1), inverted=bool(m.group(2)), mirrored=True)
+    # Input side: ~ PORT, ~ PORT [..], ~ { P1, P2, ... }
+    for m in re.finditer(r"~\s*([A-Za-z_]\w*)\b", text):
+        mark(m.group(1), inverted=True)
+    for m in re.finditer(r"~\s*\{([^}]*)\}", text):
+        for name in re.findall(r"[A-Za-z_]\w*", m.group(1)):
+            mark(name, inverted=True)
+    return out
+
+
 def polarity_hints(text):
     """Which user-level signal classes BGM inverts or mirrors for this variant."""
     hints = set()

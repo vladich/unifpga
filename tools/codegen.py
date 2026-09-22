@@ -652,7 +652,8 @@ def reset_sources(resolved, plans=None):
         if rst_bank is None:
             continue
         sources.append(("pin", {"ref": rst_bank,
-                                "active": _peripheral_active_polarity(perif, r_attach)}))
+                                "active": _peripheral_active_polarity(perif, r_attach,
+                                                                      resolved["board_pinmap"])}))
     spec = resolved["configuration"].get("reset") or {}
     for src in spec.get("sources") or []:
         if isinstance(src, str):
@@ -822,14 +823,59 @@ def _emit_attachment(resolved, idx, attach, plans):
     return _emit_driver_instance(resolved, idx, attach, plans)
 
 
-def _peripheral_active_polarity(perif, attach):
-    """Returns 'high' or 'low'. Configuration `params:` overrides the
-    peripheral YAML's `parameters.active.default`."""
+def _bank_attr(pinmap, ref, name):
+    """Board-level attribute (`active`, `mirror`, ...) of the bank a bind
+    references, or None. Attributes live next to `pins:` in the pinmap."""
+    if isinstance(ref, list):
+        ref = ref[0] if ref else None
+    parsed = _parse_bank_ref(str(ref)) if isinstance(ref, str) else None
+    if parsed is None:
+        return None
+    bank = (pinmap.get("pinBanks") or {}).get(parsed[0])
+    return bank.get(name) if isinstance(bank, dict) else None
+
+
+def _peripheral_active_polarity(perif, attach, pinmap=None):
+    """Returns 'high' or 'low'. Precedence: configuration `params.active`,
+    the bound bank's `active:` attribute in the pinmap (the board fact, written
+    from BGM by tools/sync_from_bgm.py --polarity), the peripheral YAML's
+    `parameters.active.default`, then 'high'."""
     cfg_params = attach.get("params") or {}
     if "active" in cfg_params:
         return cfg_params["active"]
+    if pinmap is not None:
+        for ref in (attach.get("bind") or {}).values():
+            v = _bank_attr(pinmap, ref, "active")
+            if v is not None:
+                return v
     pdef = (perif.get("parameters") or {}).get("active") or {}
     return pdef.get("default") or "high"
+
+
+def _peripheral_mirror(attach, pinmap):
+    """True when the bank's bit order is reversed relative to the user's bus
+    (BGM `SWAP_BITS (LED, ...)` on the Tang Nano 9K). Configuration
+    `params.mirror` overrides the bank attribute."""
+    cfg_params = attach.get("params") or {}
+    if "mirror" in cfg_params:
+        return bool(cfg_params["mirror"])
+    for ref in (attach.get("bind") or {}).values():
+        v = _bank_attr(pinmap, ref, "mirror")
+        if v is not None:
+            return bool(v)
+    return False
+
+
+def _reversed_bits(expr, width):
+    """`{expr[0], expr[1], ..., expr[w-1]}` for a bus expression, i.e. the
+    bit-reversed value of `expr[w-1:0]`."""
+    if width <= 1:
+        return expr
+    return "{" + ", ".join("{}[{}]".format(expr, i) for i in range(width)) + "}"
+
+
+def _reversed_slice(base, hi, lo):
+    return "{" + ", ".join("{}[{}]".format(base, i) for i in range(lo, hi + 1)) + "}"
 
 
 def _emit_passthrough(resolved, idx, attach, plans):
@@ -839,8 +885,10 @@ def _emit_passthrough(resolved, idx, attach, plans):
     lines = []
     perif = attach["peripheral"]
     bind = attach.get("bind") or {}
-    active = _peripheral_active_polarity(perif, attach)
+    pinmap = resolved["board_pinmap"]
+    active = _peripheral_active_polarity(perif, attach, pinmap)
     inv = "~ " if active == "low" else ""
+    mirror = _peripheral_mirror(attach, pinmap)
 
     for entry in perif.get("provides") or []:
         cap_id = entry["capability"]
@@ -871,11 +919,28 @@ def _emit_passthrough(resolved, idx, attach, plans):
                                  .format(cap_id, hi, lo, _attach_label(attach)))
                     continue
                 pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind)
+                cap_base = "cap_{}_{}".format(cap_id, cap_sig_name)
                 if width == 1:
-                    slice_expr = "cap_{}_{}[{}]".format(cap_id, cap_sig_name, offset)
+                    slice_expr = "{}[{}]".format(cap_base, offset)
                 else:
-                    slice_expr = "cap_{}_{}[{}:{}]".format(cap_id, cap_sig_name,
-                                                           offset+width-1, offset)
+                    slice_expr = "{}[{}:{}]".format(cap_base, offset + width - 1, offset)
+                if mirror and width > 1:
+                    # Board bit order is the reverse of the user's (BGM SWAP_BITS):
+                    # pin[i] <-> user bit (w-1-i). Emitted per bit on the side
+                    # that is a plain bus so the other side stays a slice.
+                    lines.append("    // mirrored: bank bit i <-> capability bit {}-i".format(width - 1))
+                    bound = bind.get(pin_sig_name)
+                    if isinstance(bound, list):
+                        pin_bits = [_bank_ref_to_port(b) for b in bound]          # LSB first
+                        pin_rev = "{" + ", ".join(pin_bits) + "}"                  # first element = MSB
+                    else:
+                        pin_rev = _reversed_bits(pin_expr, width)
+                    if cap_sig.get("direction") == "user_to_hw":
+                        lines.append("    assign {} = {}{};".format(
+                            pin_expr, inv, _reversed_slice(cap_base, offset + width - 1, offset)))
+                    else:
+                        lines.append("    assign {} = {}{};".format(slice_expr, inv, pin_rev))
+                    continue
                 if cap_sig.get("direction") == "user_to_hw":
                     lines.append("    assign {} = {}{};".format(pin_expr, inv, slice_expr))
                 else:

@@ -325,10 +325,14 @@ def analyze(cfg_id, cfg_text):
     plls = bgm_pll_instances(top_text)
     if plls:
         add("PLL", "BGM: {}".format(", ".join(sorted(set(plls)))))
-    if toolchain_id in _GOWIN_TOOLCHAINS:
-        opts = bgm_gowin_options(eff_dir or bgm_dir)
-        if opts:
-            add("GOWIN-OPT", " ".join(opts))
+    if toolchain_id in _GOWIN_TOOLCHAINS and bgm_dir is not None:
+        opts, dev = bgm_oracle.gowin_options(bgm_dir)
+        want = [o.lstrip("-") for o in opts]
+        have = (pinmap.get("toolchain_options") or {}).get("gowin") or {}
+        if dev is not None or want:
+            if have.get("set_device") != dev or list(have.get("options") or []) != want:
+                add("GOWIN-OPT", "pinmap {!r}/{} vs BGM {!r}/{}".format(
+                    have.get("set_device"), list(have.get("options") or []), dev, want))
 
     # ---- peripheral-class issues ----------------------------------------------------
     if any(pid in _SEVEN_SEG_PERIPHERALS for pid in attached_ids):
@@ -355,12 +359,27 @@ def analyze(cfg_id, cfg_text):
     if any(pid in _DISPLAY_PERIPHERALS for pid in attached_ids):
         add("DISPLAY", ", ".join(p for p in attached_ids if p in _DISPLAY_PERIPHERALS))
 
-    # ---- polarity --------------------------------------------------------------------
-    hints = bgm_polarity_hints(top_text)
-    if hints:
-        has_active = any("active" in (a.get("params") or {}) for a in attaches)
-        if not has_active:
-            add("POLARITY", " ".join(hints))
+    # ---- polarity: effective (param > pinmap bank attribute > peripheral
+    # default) vs what BGM's active branch does with the same pins -------------
+    if bgm_dir is not None:
+        from tools import sync_from_bgm
+        derived = sync_from_bgm.derive_bank_polarity(bgm_dir, pinmap, cfg)
+        for a in attaches:
+            if a["peripheral_id"] not in sync_from_bgm._POLARITY_PERIPHERALS:
+                continue
+            banks_of_attach = {re.split(r"[.\[]", one, 1)[0]
+                               for ref in (a.get("bind") or {}).values()
+                               for one in (ref if isinstance(ref, list) else [ref]) if isinstance(one, str)}
+            for bank in sorted(banks_of_attach):
+                d = derived.get(bank)
+                if d is None or d["active"] is None:
+                    continue
+                eff = codegen._peripheral_active_polarity(a["peripheral"], a, pinmap)
+                eff_mirror = codegen._peripheral_mirror(a, pinmap)
+                if eff != d["active"] or bool(eff_mirror) != bool(d["mirror"]):
+                    add("POLARITY", "{}.{}: unifpga {}{} vs BGM {}{} (ports {})".format(
+                        a["peripheral_id"], bank, eff, " mirrored" if eff_mirror else "",
+                        d["active"], " mirrored" if d["mirror"] else "", d["ports"]))
 
     return {
         "id": cfg_id,

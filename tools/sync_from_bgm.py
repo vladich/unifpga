@@ -749,6 +749,252 @@ def apply_sv_binds(path, dry_run):
 
 
 # ---------------------------------------------------------------------------
+# --polarity: bank-level active/mirror attributes from BGM's inversions
+# ---------------------------------------------------------------------------
+
+# Passthrough peripherals whose banks carry the user-visible polarity.
+_POLARITY_PERIPHERALS = {"button_array", "sw_bank", "led_bank", "rgb_led", "reset_button"}
+
+
+def derive_bank_polarity(vdir, pinmap, cfg):
+    """{bank: {"active": "low"|"high", "mirror": bool, "ports": [...]}} for the
+    banks the configuration's passthrough peripherals bind, from the ports BGM
+    inverts / bit-swaps in this variant's active branch (by pin identity)."""
+    text = bgm_oracle.preprocess_variant(vdir).text
+    inv = bgm_oracle.port_polarity(text)
+    body = text.split(");", 1)[1] if ");" in text else text
+    referenced = set(re.findall(r"\b([A-Za-z_]\w*)\b", body))
+    sig_pins = _bgm_signal_pins(vdir)
+    rev = _pin_to_ref(pinmap)
+    # BGM port -> banks (a port like KEY[3:0] covers several pins). A port the
+    # active branch never references (BTN_N on a TM1638 variant) abstains.
+    port_banks = {}
+    for key, pin in sig_pins.items():
+        port = key.split("[", 1)[0]
+        if port not in referenced and port not in inv:
+            continue
+        ref = rev.get(pin)
+        if ref is None:
+            continue
+        bank = re.split(r"[.\[]", ref, 1)[0]
+        port_banks.setdefault(port, set()).add(bank)
+    wanted = set()
+    for a in cfg.get("attach") or []:
+        if a.get("peripheral") in _POLARITY_PERIPHERALS:
+            for ref in (a.get("bind") or {}).values():
+                for one in (ref if isinstance(ref, list) else [ref]):
+                    if isinstance(one, str):
+                        wanted.add(re.split(r"[.\[]", one, 1)[0])
+    out = {}
+    for port, banks in port_banks.items():
+        for bank in banks & wanted:
+            d = out.setdefault(bank, {"inverted": set(), "mirror": False, "ports": []})
+            p = inv.get(port, {"inverted": False, "mirrored": False})
+            d["inverted"].add(bool(p["inverted"]))
+            d["mirror"] = d["mirror"] or bool(p["mirrored"])
+            d["ports"].append(port)
+    result = {}
+    for bank, d in out.items():
+        if len(d["inverted"]) > 1:
+            result[bank] = {"active": None, "mirror": d["mirror"], "ports": sorted(d["ports"]),
+                            "note": "BGM inverts some of this bank's ports but not others"}
+        else:
+            result[bank] = {"active": "low" if True in d["inverted"] else "high",
+                            "mirror": d["mirror"], "ports": sorted(d["ports"])}
+    return result
+
+
+def _set_bank_attr(pinmap_text, bank, attr, value):
+    """Insert or replace `attr: value` on a bank (inline or block form)."""
+    val = "true" if value is True else ("false" if value is False else str(value))
+    inline = re.compile(r"^(    {}:\s*\{{)([^}}]*)(\}})".format(re.escape(bank)), re.M)
+    m = inline.search(pinmap_text)
+    if m:
+        body = m.group(2)
+        if re.search(r"\b{}:".format(attr), body):
+            body = re.sub(r"\b{}:\s*[^,}}]+".format(attr), "{}: {}".format(attr, val), body)
+        else:
+            body = body.rstrip() + ", {}: {} ".format(attr, val)
+        return pinmap_text[:m.start()] + m.group(1) + body + m.group(3) + pinmap_text[m.end():]
+    block = re.compile(r"^(    {}:\s*\n)((?:      .*\n|        .*\n)*)".format(re.escape(bank)), re.M)
+    m = block.search(pinmap_text)
+    if not m:
+        return None
+    body = m.group(2)
+    if re.search(r"^      {}:".format(attr), body, re.M):
+        body = re.sub(r"^      {}:.*$".format(attr), "      {}: {}".format(attr, val), body, flags=re.M)
+    else:
+        body = "      {}: {}\n".format(attr, val) + body
+    return pinmap_text[:m.start()] + m.group(1) + body + pinmap_text[m.end():]
+
+
+def _set_attach_param(lines, pid, bank, key, value):
+    """Set `params.<key>: <value>` on the attach of `pid` whose bind mentions
+    `bank`; returns True when the text changed."""
+    for i, j, ind in _find_attach_blocks(lines, pid):
+        block = lines[i:j]
+        if not any(re.search(r":\s*\"?%s\b" % re.escape(bank), l) for l in block):
+            continue
+        key_indent = ind + "  "
+        val = "true" if value is True else ("false" if value is False else str(value))
+        pidx = next((k for k, l in enumerate(block) if l.startswith(key_indent + "params:")), None)
+        if pidx is None:
+            lines[i + 1:i + 1] = [key_indent + "params:", key_indent + "  {}: {}".format(key, val)]
+            return True
+        for k in range(pidx + 1, len(block)):
+            if not block[k].startswith(key_indent + "  "):
+                break
+            m = re.match(r"^%s  %s:\s*(\S+)" % (re.escape(key_indent), re.escape(key)), block[k])
+            if m:
+                if m.group(1) == val:
+                    return False
+                lines[i + k] = "{}  {}: {}".format(key_indent, key, val)
+                return True
+        lines[i + pidx + 1:i + pidx + 1] = [key_indent + "  {}: {}".format(key, val)]
+        return True
+    return False
+
+
+def apply_polarity(paths, dry_run):
+    """`active` is a board fact when every BGM variant of the board agrees ->
+    written as a bank attribute in the pinmap. When BGM's variants disagree
+    (Tang Nano 20K: `| KEY` in the TM1638 branch, `~ KEY` in the other) each
+    configuration gets `params.active` so it still matches its own oracle, and
+    the disagreement is reported for upstream. `mirror` (BGM `SWAP_BITS` under
+    REVERSE_LED, defined per variant) is always a per-configuration param."""
+    per_board, per_cfg = {}, {}
+    for path in paths:
+        cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
+        vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+        if vdir is None:
+            continue
+        pinmap = config_init.read_board_pinmap(cfg["board"]) or {}
+        config_init._apply_pin_overrides(cfg["id"], cfg, pinmap)
+        derived = derive_bank_polarity(vdir, pinmap, cfg)
+        per_cfg[cfg["id"]] = (path, cfg, derived)
+        for bank, d in derived.items():
+            per_board.setdefault(cfg["board"], {}).setdefault(bank, []).append((cfg["id"], d))
+
+    results = {}
+    conflicts = {}          # (board, bank) -> True
+    for board, banks in sorted(per_board.items()):
+        pm_path = _pinmap_path(board)
+        pinmap = config_init.read_board_pinmap(board) or {}
+        text = open(pm_path, encoding="utf-8").read()
+        notes = []
+        for bank, entries in sorted(banks.items()):
+            actives = {d["active"] for _c, d in entries}
+            if None in actives:
+                notes.append("MIXED {}: BGM inverts only some of its ports ({}); left as is"
+                             .format(bank, sorted({p for _c, d in entries for p in d["ports"]})))
+                conflicts[(board, bank)] = True
+                continue
+            if len(actives) > 1:
+                notes.append("VARIANTS DISAGREE {}: {} -> per-configuration active".format(
+                    bank, {c: d["active"] for c, d in entries}))
+                conflicts[(board, bank)] = True
+                continue
+            (active,) = actives
+            cur = (pinmap.get("pinBanks") or {}).get(bank) or {}
+            if active == "low" and cur.get("active") != "low":
+                new = _set_bank_attr(text, bank, "active", "low")
+                if new:
+                    text = new
+                    notes.append("{} <- active: low (BGM ports {})".format(bank, entries[0][1]["ports"]))
+            elif active == "high" and cur.get("active") == "low":
+                new = _set_bank_attr(text, bank, "active", "high")
+                if new:
+                    text = new
+                    notes.append("{} <- active: high".format(bank))
+        if not dry_run and text != open(pm_path, encoding="utf-8").read():
+            open(pm_path, "w", encoding="utf-8").write(text)
+            config_init.clear_cache()
+        results[board] = "; ".join(notes) if notes else "unchanged"
+
+    # per-configuration: mirror always, active only for disagreeing banks
+    for cid, (path, cfg, derived) in sorted(per_cfg.items()):
+        original = open(path, encoding="utf-8").read()
+        lines = original.split("\n")
+        notes = []
+        for bank, d in derived.items():
+            pid = next((a["peripheral"] for a in cfg.get("attach") or []
+                        if a.get("peripheral") in _POLARITY_PERIPHERALS
+                        and any(bank in str(v) for v in (a.get("bind") or {}).values())), None)
+            if pid is None:
+                continue
+            if d["mirror"] and _set_attach_param(lines, pid, bank, "mirror", True):
+                notes.append("{}.{} mirror: true".format(pid, bank))
+            if (cfg["board"], bank) in conflicts and d["active"] is not None:
+                if _set_attach_param(lines, pid, bank, "active", d["active"]):
+                    notes.append("{}.{} active: {} (variant-specific)".format(pid, bank, d["active"]))
+        text = "\n".join(lines)
+        if text != original:
+            if not dry_run:
+                open(path, "w", encoding="utf-8").write(text)
+            results[cid] = "; ".join(notes)
+    return results
+
+
+# ---------------------------------------------------------------------------
+# --gowin-options: set_device args and set_option flags from BGM's .tcl
+# ---------------------------------------------------------------------------
+
+_GOWIN_TOOLCHAINS = {"gowin_eda", "gowin_standard", "nextpnr_apicula"}
+
+
+def _render_gowin_block(set_device, options):
+    lines = ["  # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):",
+             "  # set_device args verbatim (part, -name, -device_version) and the",
+             "  # set_option -use_*_as_gpio flags that free configuration pins for I/O.",
+             "  toolchain_options:",
+             "    gowin:"]
+    if set_device:
+        lines.append('      set_device: "{}"'.format(set_device.replace('"', '\\"')))
+    lines.append("      options: [{}]".format(", ".join(o.lstrip("-") for o in options)))
+    return "\n".join(lines) + "\n"
+
+
+def apply_gowin_options(paths, dry_run):
+    per_board = {}
+    for path in paths:
+        cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
+        if cfg.get("toolchain") not in _GOWIN_TOOLCHAINS:
+            continue
+        vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+        if vdir is None:
+            continue
+        opts, dev = bgm_oracle.gowin_options(vdir)
+        if dev is None and not opts:
+            continue            # yosys variants have no .tcl
+        per_board.setdefault(cfg["board"], set()).add((dev, tuple(opts)))
+    results = {}
+    for board, variants in sorted(per_board.items()):
+        if len(variants) > 1:
+            results[board] = "CONFLICT between BGM variants: {}".format(sorted(variants))
+            continue
+        (dev, opts), = variants
+        pm_path = _pinmap_path(board)
+        pinmap = config_init.read_board_pinmap(board) or {}
+        cur = (pinmap.get("toolchain_options") or {}).get("gowin") or {}
+        want_opts = [o.lstrip("-") for o in opts]
+        if cur.get("set_device") == dev and list(cur.get("options") or []) == want_opts:
+            results[board] = "already"
+            continue
+        text = open(pm_path, encoding="utf-8").read()
+        text = re.sub(r"(?m)(?:^  # Gowin tool settings[^\n]*\n(?:^  #[^\n]*\n)*)?^  toolchain_options:\n(?:^ {4,}.*\n)*", "", text)
+        block = _render_gowin_block(dev, opts)
+        new, n = re.subn(r"^(  pinBanks:)", block.replace("\\", "\\\\") + r"\1", text, count=1, flags=re.M)
+        if n != 1:
+            results[board] = "WARNING: no pinBanks: line in {}".format(pm_path)
+            continue
+        if not dry_run:
+            open(pm_path, "w", encoding="utf-8").write(new)
+            config_init.clear_cache()
+        results[board] = "set_device {!r}, options {}".format(dev, want_opts)
+    return results
+
+
+# ---------------------------------------------------------------------------
 # --prune-missing-banks: drop attaches whose every bind names an absent bank
 # ---------------------------------------------------------------------------
 
@@ -801,6 +1047,10 @@ def main(argv=None):
                    help="drop binds of optional signals whose sub-key/pin does not exist")
     p.add_argument("--prune-missing-banks", action="store_true",
                    help="drop attaches whose binds all name banks absent from the pinmap")
+    p.add_argument("--polarity", action="store_true",
+                   help="write active:/mirror: bank attributes into the pinmaps from BGM's inversions")
+    p.add_argument("--gowin-options", action="store_true",
+                   help="write Gowin set_device args and set_option flags into the pinmaps from BGM's .tcl")
     p.add_argument("--clock", action="store_true",
                    help="write BGM clk_mhz into the pinmaps' clock banks; add/repair clock_input attaches")
     p.add_argument("--seven-seg", action="store_true",
@@ -809,9 +1059,9 @@ def main(argv=None):
     p.add_argument("--only", nargs="*")
     args = p.parse_args(argv)
     if not (args.reset or args.clock or args.seven_seg or args.vga or args.prune_optional
-            or args.sv_binds or args.prune_missing_banks):
+            or args.sv_binds or args.prune_missing_banks or args.polarity or args.gowin_options):
         p.error("nothing to do: pass one or more of --reset --clock --seven-seg --vga "
-                "--prune-optional --prune-missing-banks --sv-binds")
+                "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options")
     if not bgm_oracle.has_bgm():
         print("BGM checkout not found at {}".format(bgm_oracle.BGM_BOARDS), file=sys.stderr)
         return 2
@@ -820,6 +1070,12 @@ def main(argv=None):
     if args.clock:
         for name, result in sorted(apply_clock(paths, args.dry_run).items()):
             print("[clock] {:44s} {}".format(name, result))
+    if args.polarity:
+        for name, result in sorted(apply_polarity(paths, args.dry_run).items()):
+            print("[pol]   {:44s} {}".format(name, result))
+    if args.gowin_options:
+        for name, result in sorted(apply_gowin_options(paths, args.dry_run).items()):
+            print("[gowin] {:44s} {}".format(name, result))
     for path in paths:
         cid = os.path.splitext(os.path.basename(path))[0]
         if args.reset:
