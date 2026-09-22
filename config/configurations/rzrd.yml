@@ -58,5 +58,31 @@ Configuration:
         ws: "onboard_char_lcd.d[3]"
         sck: "onboard_char_lcd.d[1]"
         sd: "onboard_char_lcd.d[2]"
+    - peripheral: i2s_audio_out   # from BGM rzrd/board_specific_top.sv
+      bind:
+        mclk: onboard_char_lcd.e
+        bclk: onboard_char_lcd.rs
+        lrclk: onboard_char_lcd.rw
+        sdata: "onboard_char_lcd.d[0]"
+    - peripheral: gpio_header   # from BGM rzrd/board_specific_top.sv .gpio
+      params:
+        width: 8
+      bind:
+        io: onboard_char_lcd.d
+    - peripheral: gpio_header   # from BGM rzrd/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_char_lcd.e
+    - peripheral: gpio_header   # from BGM rzrd/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_char_lcd.rw
+    - peripheral: gpio_header   # from BGM rzrd/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_char_lcd.rs
 
   # External peripherals inferred from the variant directory name.

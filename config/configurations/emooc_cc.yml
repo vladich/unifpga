@@ -53,3 +53,28 @@ Configuration:
         ws: "gpio_p1[15]"
         sck: "gpio_p1[16]"
         sd: "gpio_p1[17]"
+    - peripheral: i2s_audio_out   # from BGM emooc_cc/board_specific_top.sv
+      bind:
+        mclk: "gpio_p2[0]"
+        bclk: "gpio_p2[1]"
+        lrclk: "gpio_p2[2]"
+        sdata: "gpio_p2[3]"
+    - peripheral: gpio_header   # from BGM emooc_cc/board_specific_top.sv .gpio
+      params:
+        width: 9
+      bind:
+        io: ["gpio_p2[4]", "gpio_p2[5]", "gpio_p2[6]", "gpio_p2[7]", "gpio_p2[8]", "gpio_p2[9]", "gpio_p2[10]", "gpio_p2[11]", "gpio_p2[12]"]
+    - peripheral: vga_4bit   # from BGM emooc_cc/board_specific_top.sv (VGA on header pins)
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+      bind:
+        r: ["gpio_p1[2]", "gpio_p1[3]", "gpio_p1[4]", "gpio_p1[5]"]
+        g: ["gpio_p1[6]", "gpio_p1[7]", "gpio_p1[8]", "gpio_p1[9]"]
+        b: ["gpio_p1[10]", "gpio_p1[11]", "gpio_p1[12]", "gpio_p1[13]"]
+        hs: "gpio_p1[0]"
+        vs: "gpio_p1[1]"

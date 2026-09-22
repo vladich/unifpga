@@ -10,6 +10,20 @@ Board:
     family: "Cyclone III"
     part: EP3C16Q240C8
 
+  # Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "CYCLONE_OPTIMIZATION_TECHNIQUE SPEED"
+        - "RESERVE_ALL_UNUSED_PINS \"AS INPUT TRI-STATED\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
+        - "RESERVE_DATA0_AFTER_CONFIGURATION \"COMPILER CONFIGURED\""
+        - "RESERVE_DATA1_AFTER_CONFIGURATION \"COMPILER CONFIGURED\""
+        - "RESERVE_FLASH_NCE_AFTER_CONFIGURATION \"COMPILER CONFIGURED\""
+        - "RESERVE_DCLK_AFTER_CONFIGURATION \"USE AS PROGRAMMING PIN\""
+        - "CYCLONE_CONFIGURATION_DEVICE EPCS4"
+        - "RESERVE_ALL_UNUSED_PINS_NO_OUTPUT_GND \"AS INPUT TRI-STATED\""
   pinBanks:
     onboard_mem:
       pins:

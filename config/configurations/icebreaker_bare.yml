@@ -32,19 +32,32 @@ Configuration:
         r: onboard_rgb_led_0.r
         g: onboard_rgb_led_0.g
         b: onboard_rgb_led_0.b
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p1a
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p1b
-    - peripheral: led_bank
+    - peripheral: led_bank   # from BGM icebreaker_bare/board_specific_top.sv
       params:
         width: 5
+        mirror: true
       bind:
         led: onboard_leds
+    - peripheral: led_bank   # from BGM icebreaker_bare/board_specific_top.sv
+      params:
+        width: 1
+        active: low
+      bind:
+        led: onboard_led_green
+    - peripheral: led_bank   # from BGM icebreaker_bare/board_specific_top.sv
+      params:
+        width: 1
+        active: low
+      bind:
+        led: onboard_led_red
     - peripheral: button_array
       params:
         width: 3
       bind:
         btn: onboard_buttons
+    - peripheral: pmod_12pin   # from BGM icebreaker_bare/board_specific_top.sv .gpio
+      bind:
+        io: pmod_p1b
+    - peripheral: pmod_12pin   # from BGM icebreaker_bare/board_specific_top.sv .gpio
+      bind:
+        io: pmod_p1a

@@ -50,18 +50,6 @@ Configuration:
         width: 4
       bind:
         btn: onboard_buttons
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_ja
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_jb
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_jc
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_jd
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -81,3 +69,23 @@ Configuration:
         clk: "arduino_io[28]"
         stb: "arduino_io[29]"
         dio: "arduino_io[27]"
+    - peripheral: gpio_header   # from BGM arty_a7_100_pmod_mic3/board_specific_top.sv .gpio
+      params:
+        width: 30
+        mirror: true
+      bind:
+        io: arduino_io
+    - peripheral: vga_4bit   # from BGM arty_a7_100_pmod_mic3/board_specific_top.sv (VGA on header pins)
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+      bind:
+        r: ["pmod_jb[4]", "pmod_jb[5]", "pmod_jb[6]", "pmod_jb[7]"]
+        g: ["pmod_jc[4]", "pmod_jc[5]", "pmod_jc[6]", "pmod_jc[7]"]
+        b: ["pmod_jb[0]", "pmod_jb[1]", "pmod_jb[2]", "pmod_jb[3]"]
+        hs: "pmod_jc[0]"
+        vs: "pmod_jc[1]"

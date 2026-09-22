@@ -59,3 +59,8 @@ Configuration:
         ws: onboard_microsd.mosi
         sck: onboard_microsd.sclk
         sd: onboard_microsd.miso
+    - peripheral: i2s_audio_out   # from BGM tang_nano_9k_lcd_800_480_tm1638_hackathon/board_specific_top.sv
+      bind:
+        bclk: "gpio[3]"
+        sdata: "gpio[4]"
+        lrclk: "gpio[5]"

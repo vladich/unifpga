@@ -49,10 +49,6 @@ Configuration:
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
-    - peripheral: uart_2wire
-      bind:
-        tx: onboard_uart.tx
-        rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
     - peripheral: pmod_mic3   # binds from BGM saylinx_pmod_mic3/board_specific_top.sv
@@ -60,3 +56,19 @@ Configuration:
         cs: "gpio_1[26]"
         sclk: "gpio_1[32]"
         miso: "gpio_1[30]"
+    - peripheral: i2s_audio_out   # from BGM saylinx_pmod_mic3/board_specific_top.sv
+      bind:
+        mclk: "gpio_0[12]"
+        bclk: "gpio_0[10]"
+        lrclk: "gpio_0[6]"
+        sdata: "gpio_0[8]"
+    - peripheral: gpio_header   # from BGM saylinx_pmod_mic3/board_specific_top.sv .gpio
+      params:
+        width: 34
+      bind:
+        io: gpio_1
+    - peripheral: gpio_header   # from BGM saylinx_pmod_mic3/board_specific_top.sv .gpio
+      params:
+        width: 34
+      bind:
+        io: gpio_0

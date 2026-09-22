@@ -9,18 +9,23 @@ Board:
     producer: "Altera (Intel)"
     family: "Cyclone V"
     part: 5CGXFC5C6F27C7N
-  defaults:
-    iostandard: 3.3-V LVTTL
 
+  # Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
   pinBanks:
-    clk50mhz: { pins: M10, frequency_mhz: 50 }
+    clk50mhz: { pins: M10, frequency_mhz: 50, iostandard: 2.5 V }
     onboard_uart:
+      iostandard: 2.5 V
       pins:
         rx: M9
     onboard_buttons:
       active: low
       pins: [P11, P12, Y15, Y16]
-    cpu_resetn: { pins: AB24 }
+    cpu_resetn: { pins: AB24, iostandard: 3.3-V LVTTL }
     onboard_switches:
       pins: [AC9, AE10, AD13, AC8, W11, AB10, V10, AC10, Y11, AE19]
     onboard_leds:
@@ -36,7 +41,11 @@ Board:
         int: T12
         vs: U25
       overrides:
-        T12: 1.2 V
+        "T12": 1.2 V
+        "U25": 3.3-V LVTTL
+        "U26": 3.3-V LVTTL
+        "Y25": 3.3-V LVTTL
+        "Y26": 3.3-V LVTTL
     onboard_7seg:
       pins:
         hex0: [V19, V18, V17, W18, Y20, Y19, Y18]
@@ -44,12 +53,14 @@ Board:
         hex2: [AD7, AD6, U20, V22, V20, W21, W20]
         hex3: [Y24, Y23, AA23, AA22, AC24, AC23, AC22]
     onboard_i2c:
+      iostandard: 2.5 V
       pins:
         scl: B7
         sda: G11
     gpio:
       pins: [T21, D26, K25, E26, K26, M26, M21, P20, T22, T19, U19, U22, P8, R8, R9, R10, F26, Y9, G26, Y8, AA7, AA6]
     onboard_audio_codec:
+      iostandard: 2.5 V
       pins:
         adc_dat: D7
         adc_lrck: C7

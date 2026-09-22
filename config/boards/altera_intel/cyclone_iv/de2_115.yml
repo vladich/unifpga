@@ -9,19 +9,28 @@ Board:
     producer: "Altera (Intel)"
     family: "Cyclone IV"
     part: EP4CE115F29C7
-  defaults:
-    iostandard: 3.3-V LVTTL
 
+  # Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   pinBanks:
-    clk50mhz: { pins: Y2, frequency_mhz: 50 }
+    clk50mhz: { pins: Y2, frequency_mhz: 50, iostandard: 3.3-V LVTTL }
     onboard_buttons:
+      iostandard: 2.5 V
       active: low
       pins: [M23, M21, N21, R24]
     onboard_switches:
+      iostandard: 2.5 V
       pins: [AB28, AC28, AC27, AD27, AB27, AC26, AD26, AB26, AC25, AB25, AC24, AB24, AB23, AA24, AA23, AA22, Y24, Y23]
     onboard_leds:
+      iostandard: 2.5 V
       pins: [G19, F19, E19, F21, F18, E18, J19, H19, J17, G17, J15, H16, J16, H17, F15, G15, G16, H15]
     onboard_leds_green:
+      iostandard: 2.5 V
       pins: [E21, E22, E25, E24, H21, G20, G22, G21, F17]
     onboard_7seg:
       pins:
@@ -34,9 +43,64 @@ Board:
         hex6: [AA17, AB16, AA16, AB17, AB15, AA15, AC17]
         hex7: [AD17, AE17, AG17, AH17, AF17, AG18, AA14]
       overrides:
-        V21: 2.5 V
-        U21: 2.5 V
+        "AA14": 3.3-V LVTTL
+        "AA15": 3.3-V LVTTL
+        "AA16": 3.3-V LVTTL
+        "AA17": 3.3-V LVTTL
+        "AA19": 3.3-V LVTTL
+        "AA21": 3.3-V LVTTL
+        "AA25": 2.5 V
+        "AA26": 2.5 V
+        "AB15": 3.3-V LVTTL
+        "AB16": 3.3-V LVTTL
+        "AB17": 3.3-V LVTTL
+        "AB18": 3.3-V LVTTL
+        "AB19": 3.3-V LVTTL
+        "AB20": 3.3-V LVTTL
+        "AC17": 3.3-V LVTTL
+        "AC18": 3.3-V LVTTL
+        "AD17": 3.3-V LVTTL
+        "AD18": 3.3-V LVTTL
+        "AD24": 3.3-V LVTTL
+        "AE17": 3.3-V LVTTL
+        "AE18": 3.3-V LVTTL
+        "AE19": 3.3-V LVTTL
+        "AF17": 3.3-V LVTTL
+        "AF18": 3.3-V LVTTL
+        "AF19": 3.3-V LVTTL
+        "AF23": 3.3-V LVTTL
+        "AG17": 3.3-V LVTTL
+        "AG18": 3.3-V LVTTL
+        "AG19": 3.3-V LVTTL
+        "AG21": 3.3-V LVTTL
+        "AH17": 3.3-V LVTTL
+        "AH18": 3.3-V LVTTL
+        "AH19": 3.3-V LVTTL
+        "AH21": 3.3-V LVTTL
+        "E17": 2.5 V
+        "F22": 2.5 V
+        "G18": 2.5 V
+        "H22": 2.5 V
+        "J22": 2.5 V
+        "L25": 2.5 V
+        "L26": 2.5 V
+        "M24": 2.5 V
+        "U21": 2.5 V
+        "U23": 2.5 V
+        "U24": 2.5 V
+        "V21": 2.5 V
+        "W21": 2.5 V
+        "W22": 2.5 V
+        "W25": 2.5 V
+        "W26": 2.5 V
+        "W27": 2.5 V
+        "W28": 2.5 V
+        "Y19": 3.3-V LVTTL
+        "Y22": 2.5 V
+        "Y25": 2.5 V
+        "Y26": 2.5 V
     onboard_vga:
+      iostandard: 3.3-V LVTTL
       pins:
         clk: A12
         blank_n: F11
@@ -47,6 +111,7 @@ Board:
         g: [G8, G11, F8, H12, C8, B8, F10, C9]
         b: [B10, A10, C11, B11, A11, C12, D11, D12]
     onboard_audio_codec:
+      iostandard: 3.3-V LVTTL
       pins:
         adc_lrck: C2
         adc_dat: D2
@@ -55,14 +120,17 @@ Board:
         dac_dat: D1
         xck: E1
     onboard_i2c:
+      iostandard: 3.3-V LVTTL
       pins:
         sclk: B7
         sdat: A8
     onboard_uart:
+      iostandard: 3.3-V LVTTL
       pins:
         rts: G14
         cts: J13
         rx: G12
         tx: G9
     gpio:
+      iostandard: 3.3-V LVTTL
       pins: [AB22, AC15, AB21, Y17, AC21, Y16, AD21, AE16, AD15, AE15, AC19, AF16, AD19, AF15, AF24, AE21, AF25, AC22, AE22, AF21, AF22, AD22, AG25, AD25, AH25, AE25, AG22, AE24, AH22, AF26, AE20, AG23, AF20, AH26, AH23, AG26]

@@ -26,13 +26,26 @@ Board:
     family: "Cyclone III"
     part: EP3C120F780C6
   defaults:
-    iostandard: 1.8 V
+    iostandard: 2.5 V
 
+  # Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "NOMINAL_CORE_SUPPLY_VOLTAGE 1.2V"
+        - "CYCLONEIII_CONFIGURATION_SCHEME \"PASSIVE SERIAL\""
+        - "ON_CHIP_BITSTREAM_DECOMPRESSION OFF"
+        - "USE_CONFIGURATION_DEVICE OFF"
+        - "STRATIX_DEVICE_IO_STANDARD \"2.5 V\""
+        - "RESERVE_DATA0_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
+        - "RESERVE_DATA0_AFTER_CONFIGURATION \"AS INPUT TRI-STATED\""
   pinBanks:
-    clk50mhz: { pins: AH15, frequency_mhz: 50 }
-    clk125mhz: { pins: A14, frequency_mhz: 125 }
-    clkin_sma: { pins: AH14 }
-    clkout_sma: { pins: AE23 }
+    clk50mhz: { pins: AH15, frequency_mhz: 50, iostandard: 1.8 V }
+    clk125mhz: { pins: A14, frequency_mhz: 125, iostandard: 1.8 V }
+    clkin_sma: { pins: AH14, iostandard: 1.8 V }
+    clkout_sma: { pins: AE23, iostandard: 1.8 V }
     altera_config_dclk: { pins: P3 }
     altera_config_data0: { pins: N7 }
     termination_blk0:
@@ -63,12 +76,13 @@ Board:
         ba: [C23, D19, C26]
         active: E10
       overrides:
-        A10: SSTL-18 CLASS I
-        F8: SSTL-18 CLASS I
-        F14: SSTL-18 CLASS I
-        E21: SSTL-18 CLASS I
-        C7: SSTL-18 CLASS I
-        A6: SSTL-18 CLASS I
+        "A10": SSTL-18 CLASS I
+        "A6": SSTL-18 CLASS I
+        "C7": SSTL-18 CLASS I
+        "E10": 1.8 V
+        "E21": SSTL-18 CLASS I
+        "F14": SSTL-18 CLASS I
+        "F8": SSTL-18 CLASS I
     onboard_ddr2_bot:
       pins:
         wen: AE5
@@ -81,12 +95,13 @@ Board:
         ba: [AF3, AF5, AH4]
         active: AA14
       overrides:
-        AE5: SSTL-18 CLASS I
-        AE21: SSTL-18 CLASS I
-        AD21: SSTL-18 CLASS I
-        AG4: SSTL-18 CLASS I
-        AC21: SSTL-18 CLASS I
-        AE24: SSTL-18 CLASS I
+        "AA14": 1.8 V
+        "AC21": SSTL-18 CLASS I
+        "AD21": SSTL-18 CLASS I
+        "AE21": SSTL-18 CLASS I
+        "AE24": SSTL-18 CLASS I
+        "AE5": SSTL-18 CLASS I
+        "AG4": SSTL-18 CLASS I
     onboard_ddr2:
       pins:
         dq: [AG22, AH21, AH22, AG21, AD17, AH23, AE19, AF24, AG18, AG17, AH18, AH17, AF15, AE17, AF16, AB16, AE11, AG11, AG10, AH11, AE9, AE12, AF10, AE13, AC8, AH7, AG8, AH8, AG7, AA10, AF7, AD10, A12, C14, A11, C13, D15, C12, E14, D13, B7, C11, A7, C10, E11, B6, H13, D10, C17, B19, B18, C19, D20, C16, A19, E17, C21, C22, A21, A22, C24, B21, D21, E18, E22, C25, A23, B25, A26, F21, B26, D22]
@@ -99,19 +114,15 @@ Board:
         scl: R1
         sda: M1
     pclk_0:
+      iostandard: SSTL-2 CLASS II
       pins:
         p: G6
         n: G5
-      overrides:
-        G6: SSTL-2 CLASS II
-        G5: SSTL-2 CLASS II
     pclk_1:
+      iostandard: SSTL-2 CLASS II
       pins:
         p: D2
         n: D1
-      overrides:
-        D2: SSTL-2 CLASS II
-        D1: SSTL-2 CLASS II
     onboard_adc_a:
       pins:
         d: [P1, P2, M7, M8, R4, R3, T3, T4, V3, V4, R6, R7, AE3, AB6]
@@ -145,8 +156,9 @@ Board:
         resetn: AD2
         led_link1000: AC25
       overrides:
-        AC25: 2.5 V
+        "B14": 1.8 V
     onboard_parallel_flash:
+      iostandard: 1.8 V
       pins:
         oen: Y17
         wen: AA21
@@ -163,6 +175,13 @@ Board:
         wait: [AG15, AH25]
         psn: B4
         advn: AA19
+      overrides:
+        "AA19": 1.8 V
+        "AB19": 1.8 V
+        "AD22": 1.8 V
+        "AD25": 1.8 V
+        "AE25": 1.8 V
+        "B4": 1.8 V
     onboard_flash_sram:
       pins:
         a: [AC11, AH10, AA13, AC10, Y15, AF22, AF26, AF4, AD8, AG26, AH6, AD24, AF9, AA8, AC22, AE8, AF13, AB14, AF23, AG12, AB18, Y19, AG3, AE16, AB7]
@@ -185,6 +204,12 @@ Board:
         rx_d_p: [AB2, Y4, U3, W2, V2, U2, U6, R2, N4, L4, L2, K2, J6, H4, G4, F2, E3]
         tx_d_n: [R6, V3, T3, R4, M7, P1, M3, M1, L6, L8, K3, J3, K7, G1, F4, E1, C2]
         tx_d_p: [R7, V4, T4, R3, M8, P2, M4, M2, L7, K8, K4, J4, J7, G2, F5, E2, D3]
+      overrides:
+        "AG14": 1.8 V
+        "D1": SSTL-2 CLASS II
+        "D2": SSTL-2 CLASS II
+        "G5": SSTL-2 CLASS II
+        "G6": SSTL-2 CLASS II
     hsmb:
       index_origin: {clk_in_n: 1, clk_in_p: 1, clk_out_n: 1, clk_out_p: 1}
       pins:
@@ -203,6 +228,8 @@ Board:
         rx_d_p: [F27, G27, K25, K27, L27, M27, P25, P27, P21, R22, T25, U27, U22, W28, V23, AB27, AC27]
         tx_d_n: [J26, L24, M26, N26, R28, R26, U26, V28, V26, W26, Y26, AA26, AB26, Y24, AE28, Y22, W21]
         tx_d_p: [J25, L23, M25, N25, R27, R25, U25, V27, V25, W25, Y25, AA25, AB25, Y23, AE27, W22, V21]
+      overrides:
+        "A15": 1.8 V
     onboard_lcd_controller:
       pins:
         rstn: H7
@@ -217,6 +244,7 @@ Board:
     onboard_leds:
       pins: [AD15, AE20, AF18, AD19, AE15, AC17, AG19, AF19]
     onboard_max_ctrl:
+      iostandard: 1.8 V
       pins:
         csn: D23
         oen: E25
@@ -236,6 +264,16 @@ Board:
         dp: AD4
         minus: G19
         anodes: [B3, C5, E4, C3]
+      overrides:
+        "A3": 1.8 V
+        "AD4": 1.8 V
+        "AD5": 1.8 V
+        "AE6": 1.8 V
+        "C4": 1.8 V
+        "D4": 1.8 V
+        "D5": 1.8 V
+        "E5": 1.8 V
+        "G19": 1.8 V
     onboard_speaker: { pins: H22 }
     onboard_buttons:
       pins: [AD7, AC12, AH3, AA12]
@@ -250,3 +288,5 @@ Board:
         empty: F25
         full: F24
         fd: [L21, K22, L22, K21, J24, G26, J23, D26]
+      overrides:
+        "B15": 1.8 V

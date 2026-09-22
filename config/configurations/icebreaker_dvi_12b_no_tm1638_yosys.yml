@@ -28,17 +28,6 @@ Configuration:
         width: 1
       bind:
         btn: onboard_button
-    - peripheral: rgb_led
-      bind:
-        r: onboard_rgb_led_0.r
-        g: onboard_rgb_led_0.g
-        b: onboard_rgb_led_0.b
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p1a
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p1b
     - peripheral: led_bank
       params:
         width: 5

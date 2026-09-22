@@ -28,20 +28,6 @@ Configuration:
         width: 1
       bind:
         btn: onboard_button
-    - peripheral: rgb_led
-      bind:
-        r: onboard_rgb_led_0.r
-        g: onboard_rgb_led_0.g
-        b: onboard_rgb_led_0.b
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p1a
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p1b
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p2
 
   # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key   # binds from BGM icebreaker_no_dvi_tm1638_yosys/board_specific_top.sv
@@ -55,3 +41,14 @@ Configuration:
         ws: "pmod_p1a[1]"
         sck: "pmod_p1a[2]"
         sd: "pmod_p1a[3]"
+    - peripheral: i2s_audio_out   # from BGM icebreaker_no_dvi_tm1638_yosys/board_specific_top.sv
+      bind:
+        mclk: "pmod_p1b[0]"
+        bclk: "pmod_p1b[1]"
+        sdata: "pmod_p1b[2]"
+        lrclk: "pmod_p1b[3]"
+    - peripheral: gpio_header   # from BGM icebreaker_no_dvi_tm1638_yosys/board_specific_top.sv .gpio
+      params:
+        width: 5
+      bind:
+        io: ["pmod_p2[0]", "pmod_p2[1]", "pmod_p2[2]", "pmod_p2[3]", "pmod_p2[4]"]

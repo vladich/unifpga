@@ -61,3 +61,9 @@ Configuration:
         ws: "pmod_0[1]"
         sck: "pmod_0[2]"
         sd: "pmod_0[6]"
+    - peripheral: i2s_audio_out   # from BGM tang_mega_138k_pro_lcd_480_272_tm1638/board_specific_top.sv
+      bind:
+        mclk: "pmod_1[4]"
+        bclk: "pmod_1[5]"
+        sdata: "pmod_1[6]"
+        lrclk: "pmod_1[7]"

@@ -17,14 +17,14 @@ Configuration:
   # Gowin IO_TYPE this BGM variant states beyond the board-wide ones (tools/sync_from_bgm.py --iotypes)
   io_overrides:
     clk: LVCMOS33
-    onboard_hdmi.clk_n: LVCMOS33
-    onboard_hdmi.clk_p: LVCMOS33
-    "onboard_hdmi.d_n[0]": LVCMOS33
-    "onboard_hdmi.d_n[1]": LVCMOS33
-    "onboard_hdmi.d_n[2]": LVCMOS33
-    "onboard_hdmi.d_p[0]": LVCMOS33
-    "onboard_hdmi.d_p[1]": LVCMOS33
-    "onboard_hdmi.d_p[2]": LVCMOS33
+    "onboard_lcd.g[0]": LVCMOS33
+    "onboard_lcd.g[1]": LVCMOS33
+    "onboard_lcd.g[2]": LVCMOS33
+    "onboard_lcd.r[0]": LVCMOS33
+    "onboard_lcd.r[1]": LVCMOS33
+    "onboard_lcd.r[2]": LVCMOS33
+    "onboard_lcd.r[3]": LVCMOS33
+    "onboard_lcd.r[4]": LVCMOS33
 
   attach:
     - peripheral: clock_input
@@ -63,3 +63,17 @@ Configuration:
         ws: onboard_microsd.mosi
         sck: onboard_microsd.sclk
         sd: onboard_microsd.miso
+    - peripheral: i2s_audio_out   # from BGM tang_nano_9k_hdmi_no_ip_tm1638/board_specific_top.sv
+      bind:
+        bclk: onboard_lcd.vs
+        lrclk: onboard_lcd.hs
+        sdata: onboard_lcd.ck
+    - peripheral: gpio_header   # from BGM tang_nano_9k_hdmi_no_ip_tm1638/board_specific_top.sv .gpio
+      params:
+        width: 6
+      bind:
+        io: gpio
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    onboard_lcd.de: 0

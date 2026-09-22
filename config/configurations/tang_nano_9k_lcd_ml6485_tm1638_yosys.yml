@@ -58,3 +58,28 @@ Configuration:
         ws: onboard_microsd.mosi
         sck: onboard_microsd.sclk
         sd: onboard_microsd.miso
+    - peripheral: i2s_audio_out   # from BGM tang_nano_9k_lcd_ml6485_tm1638_yosys/board_specific_top.sv
+      bind:
+        bclk: "gpio[3]"
+        sdata: "gpio[4]"
+        lrclk: "gpio[5]"
+    - peripheral: gpio_header   # from BGM tang_nano_9k_lcd_ml6485_tm1638_yosys/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_small_lcd.data
+    - peripheral: gpio_header   # from BGM tang_nano_9k_lcd_ml6485_tm1638_yosys/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_small_lcd.clk
+    - peripheral: gpio_header   # from BGM tang_nano_9k_lcd_ml6485_tm1638_yosys/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_small_lcd.cs
+    - peripheral: gpio_header   # from BGM tang_nano_9k_lcd_ml6485_tm1638_yosys/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_small_lcd.rs

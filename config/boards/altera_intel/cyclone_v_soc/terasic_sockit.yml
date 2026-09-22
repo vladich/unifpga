@@ -10,30 +10,30 @@ Board:
     producer: "Altera (Intel)"
     family: "Cyclone V SoC"
     part: 5CSXFC6D6F31C6
-  defaults:
-    iostandard: 2.5 V
 
+  # Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   pinBanks:
+    osc_50_b3b: { pins: AF14, frequency_mhz: 50, iostandard: 1.5 V }   # BGM's system clock port
     onboard_buttons:
+      iostandard: 3.3-V LVTTL
       active: low
       pins: [AE9, AE12, AD9, AD11]
-      overrides:
-        AE9: 3.3-V LVTTL
-        AE12: 3.3-V LVTTL
-        AD9: 3.3-V LVTTL
-        AD11: 3.3-V LVTTL
     onboard_leds:
+      iostandard: 3.3-V LVTTL
       pins: [AF10, AD10, AE11, AD7]
-      overrides:
-        AF10: 3.3-V LVTTL
-        AD10: 3.3-V LVTTL
-        AE11: 3.3-V LVTTL
-        AD7: 3.3-V LVTTL
-    clk50mhz: { pins: K14, frequency_mhz: 50 }
-    cpu_resetn: { pins: AD27 }
+    clk50mhz: { pins: K14, frequency_mhz: 50, iostandard: 2.5 V }
+    cpu_resetn: { pins: AD27, iostandard: 3.3-V LVTTL }
     onboard_switches:
+      iostandard: 2.5 V
       pins: [W25, V25, AC28, AC29]
     onboard_vga:
+      iostandard: 3.3-V LVTTL
       pins:
         b: [AE28, Y23, Y24, AG28, AF28, V23, W24, AF29]
         blank_n: AH3
@@ -43,37 +43,8 @@ Board:
         r: [AG5, AA12, AB12, AF6, AG6, AJ2, AH5, AJ1]
         sync_n: AG2
         vs: AC12
-      overrides:
-        AE28: 3.3-V LVTTL
-        Y23: 3.3-V LVTTL
-        Y24: 3.3-V LVTTL
-        AG28: 3.3-V LVTTL
-        AF28: 3.3-V LVTTL
-        V23: 3.3-V LVTTL
-        W24: 3.3-V LVTTL
-        AF29: 3.3-V LVTTL
-        AH3: 3.3-V LVTTL
-        W20: 3.3-V LVTTL
-        Y21: 3.3-V LVTTL
-        AA25: 3.3-V LVTTL
-        AB26: 3.3-V LVTTL
-        AB22: 3.3-V LVTTL
-        AB23: 3.3-V LVTTL
-        AA24: 3.3-V LVTTL
-        AB25: 3.3-V LVTTL
-        AE27: 3.3-V LVTTL
-        AD12: 3.3-V LVTTL
-        AG5: 3.3-V LVTTL
-        AA12: 3.3-V LVTTL
-        AB12: 3.3-V LVTTL
-        AF6: 3.3-V LVTTL
-        AG6: 3.3-V LVTTL
-        AJ2: 3.3-V LVTTL
-        AH5: 3.3-V LVTTL
-        AJ1: 3.3-V LVTTL
-        AG2: 3.3-V LVTTL
-        AC12: 3.3-V LVTTL
     onboard_audio_codec:
+      iostandard: 3.3-V LVTTL
       pins:
         adc_dat: AC27
         adc_lrck: AG30
@@ -84,16 +55,6 @@ Board:
         i2c_sdat: AF30
         mute: AD26
         xck: AC9
-      overrides:
-        AC27: 3.3-V LVTTL
-        AG30: 3.3-V LVTTL
-        AE7: 3.3-V LVTTL
-        AG3: 3.3-V LVTTL
-        AH4: 3.3-V LVTTL
-        AH30: 3.3-V LVTTL
-        AF30: 3.3-V LVTTL
-        AD26: 3.3-V LVTTL
-        AC9: 3.3-V LVTTL
     onboard_ddr3:
       pins:
         a: [AJ14, AK14, AH12, AJ12, AG15, AH15, AK12, AK13, AH13, AH14, AJ9, AK9, AK7, AK8, AG12]
@@ -185,7 +146,7 @@ Board:
         AK21: SSTL-15 Class I
         AG17: SSTL-15
         AJ6: SSTL-15 Class I
-    onboard_fan_ctrl: { pins: AG27 }
+    onboard_fan_ctrl: { pins: AG27, iostandard: 3.3-V LVTTL }
     hsmc:
       index_origin: {clkin_n: 1, clkin_p: 1, clkout_n: 1, clkout_p: 1}
       pins:
@@ -206,54 +167,130 @@ Board:
         tx_n: [A8, D7, F6, C5, C4, E2, D4, B3, D1, C2, B1, A3, A5, B7, B8, B11, A13]
         tx_p: [A9, E8, G7, D6, D5, E3, E4, C3, E1, D2, B2, A4, A6, C7, C8, C12, B13]
       overrides:
-        AE2: 1.5-V PCML
-        AC2: 1.5-V PCML
-        AA2: 1.5-V PCML
-        W2: 1.5-V PCML
-        U2: 1.5-V PCML
-        R2: 1.5-V PCML
-        N2: 1.5-V PCML
-        J2: 1.5-V PCML
-        AD4: 1.5-V PCML
-        AB4: 1.5-V PCML
-        Y4: 1.5-V PCML
-        V4: 1.5-V PCML
-        T4: 1.5-V PCML
-        P4: 1.5-V PCML
-        M4: 1.5-V PCML
-        H4: 1.5-V PCML
-        P9: HCSL
+        "A10": 2.5 V
+        "A11": 2.5 V
+        "A13": 2.5 V
+        "A3": 2.5 V
+        "A4": 2.5 V
+        "A5": 2.5 V
+        "A6": 2.5 V
+        "A8": 2.5 V
+        "A9": 2.5 V
+        "AA2": 1.5-V PCML
+        "AA26": 2.5 V
+        "AA28": 2.5 V
+        "AB27": 2.5 V
+        "AB4": 1.5-V PCML
+        "AC2": 1.5-V PCML
+        "AD29": 2.5 V
+        "AD4": 1.5-V PCML
+        "AE2": 1.5-V PCML
+        "AE29": 2.5 V
+        "B1": 2.5 V
+        "B11": 2.5 V
+        "B12": 2.5 V
+        "B13": 2.5 V
+        "B2": 2.5 V
+        "B3": 2.5 V
+        "B5": 2.5 V
+        "B6": 2.5 V
+        "B7": 2.5 V
+        "B8": 2.5 V
+        "C10": 2.5 V
+        "C12": 2.5 V
+        "C13": 2.5 V
+        "C2": 2.5 V
+        "C3": 2.5 V
+        "C4": 2.5 V
+        "C5": 2.5 V
+        "C7": 2.5 V
+        "C8": 2.5 V
+        "C9": 2.5 V
+        "D1": 2.5 V
+        "D10": 2.5 V
+        "D11": 2.5 V
+        "D12": 2.5 V
+        "D2": 2.5 V
+        "D4": 2.5 V
+        "D5": 2.5 V
+        "D6": 2.5 V
+        "D7": 2.5 V
+        "D9": 2.5 V
+        "E1": 2.5 V
+        "E11": 2.5 V
+        "E12": 2.5 V
+        "E13": 2.5 V
+        "E2": 2.5 V
+        "E3": 2.5 V
+        "E4": 2.5 V
+        "E6": 2.5 V
+        "E7": 2.5 V
+        "E8": 2.5 V
+        "E9": 2.5 V
+        "F10": 2.5 V
+        "F11": 2.5 V
+        "F13": 2.5 V
+        "F14": 2.5 V
+        "F15": 2.5 V
+        "F6": 2.5 V
+        "F8": 2.5 V
+        "F9": 2.5 V
+        "G10": 2.5 V
+        "G11": 2.5 V
+        "G12": 2.5 V
+        "G13": 2.5 V
+        "G15": 2.5 V
+        "G7": 2.5 V
+        "G8": 2.5 V
+        "H12": 2.5 V
+        "H13": 2.5 V
+        "H14": 2.5 V
+        "H15": 2.5 V
+        "H4": 1.5-V PCML
+        "H7": 2.5 V
+        "H8": 2.5 V
+        "J10": 2.5 V
+        "J12": 2.5 V
+        "J14": 2.5 V
+        "J2": 1.5-V PCML
+        "J7": 2.5 V
+        "J9": 2.5 V
+        "K12": 2.5 V
+        "K7": 2.5 V
+        "K8": 2.5 V
+        "M4": 1.5-V PCML
+        "N2": 1.5-V PCML
+        "P4": 1.5-V PCML
+        "P9": HCSL
+        "R2": 1.5-V PCML
+        "T4": 1.5-V PCML
+        "U2": 1.5-V PCML
+        "V4": 1.5-V PCML
+        "W2": 1.5-V PCML
+        "Y4": 1.5-V PCML
     onboard_irda:
+      iostandard: 3.3-V LVTTL
       pins:
         rxd: AH2
-      overrides:
-        AH2: 3.3-V LVTTL
     onboard_pcie:
+      iostandard: 3.3-V LVTTL
       pins:
         perst_n: W22
         wake_n: W21
-      overrides:
-        W22: 3.3-V LVTTL
-        W21: 3.3-V LVTTL
     onboard_si5338:
+      iostandard: 3.3-V LVTTL
       pins:
         scl: AE26
         sda: AJ29
-      overrides:
-        AE26: 3.3-V LVTTL
-        AJ29: 3.3-V LVTTL
     onboard_temp_sensor:
+      iostandard: 3.3-V LVTTL
       pins:
         cs_n: AF8
         din: AG7
         dout: AG1
         sclk: AF9
-      overrides:
-        AF8: 3.3-V LVTTL
-        AG7: 3.3-V LVTTL
-        AG1: 3.3-V LVTTL
-        AF9: 3.3-V LVTTL
     onboard_usb:
+      iostandard: 1.5 V
       pins:
         clk: AF13
         data: [AK28, AD20, AD21, Y19, AA20, AH27, AF25, AC22]
@@ -265,21 +302,3 @@ Board:
         scl: AK4
         sda: AE13
         wr_n: AK6
-      overrides:
-        AF13: 1.5 V
-        AK28: 1.5 V
-        AD20: 1.5 V
-        AD21: 1.5 V
-        Y19: 1.5 V
-        AA20: 1.5 V
-        AH27: 1.5 V
-        AF25: 1.5 V
-        AC22: 1.5 V
-        AJ4: 1.5 V
-        AK3: 1.5 V
-        AE14: 1.5 V
-        AJ5: 1.5 V
-        AD14: 1.5 V
-        AK4: 1.5 V
-        AE13: 1.5 V
-        AK6: 1.5 V

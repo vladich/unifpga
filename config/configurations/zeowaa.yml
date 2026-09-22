@@ -68,3 +68,14 @@ Configuration:
         ws: "gpio[3]"
         sck: "gpio[1]"
         sd: "gpio[0]"
+    - peripheral: i2s_audio_out   # from BGM zeowaa/board_specific_top.sv
+      bind:
+        mclk: "gpio[14]"
+        bclk: "gpio[12]"
+        lrclk: "gpio[8]"
+        sdata: "gpio[10]"
+    - peripheral: gpio_header   # from BGM zeowaa/board_specific_top.sv .gpio
+      params:
+        width: 19
+      bind:
+        io: gpio

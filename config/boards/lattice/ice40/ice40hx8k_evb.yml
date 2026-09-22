@@ -10,6 +10,10 @@ Board:
     family: ICE40
     part: iCE40HX8K-CT256
 
+  # yosys synth flags from BGM's board_info.source_bash SYNTH_CMD (tools/sync_from_bgm.py --yosys-options).
+  toolchain_options:
+    yosys:
+      synth_options: [dsp, noabc9]
   pinBanks:
     clk: { pins: J3, frequency_mhz: 100 }
     onboard_buttons:

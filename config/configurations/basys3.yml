@@ -41,15 +41,6 @@ Configuration:
         width: 5
       bind:
         btn: onboard_buttons
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_ja
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_jb
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_jc
     - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
       params:
         bits_r: 4
@@ -77,3 +68,15 @@ Configuration:
         ws: "pmod_ja[5]"
         sck: "pmod_ja[4]"
         sd: "pmod_ja[0]"
+    - peripheral: i2s_audio_out   # from BGM basys3/board_specific_top.sv
+      bind:
+        mclk: "pmod_jc[4]"
+        bclk: "pmod_jc[5]"
+        sdata: "pmod_jc[6]"
+        lrclk: "pmod_jc[7]"
+    - peripheral: i2s_audio_out   # from BGM basys3/board_specific_top.sv
+      bind:
+        mclk: "pmod_jb[6]"
+        bclk: "pmod_jb[3]"
+        sdata: "pmod_jb[1]"
+        lrclk: "pmod_jb[0]"

@@ -44,3 +44,24 @@ Configuration:
         ws: onboard_serial_flash.wp
         sck: onboard_serial_flash.cs
         sd: "onboard_camera.data[0]"
+    - peripheral: i2s_audio_out   # from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv
+      bind:
+        mclk: "onboard_camera.data[1]"
+        bclk: onboard_camera.pclk
+        sdata: onboard_camera.hsync
+        lrclk: onboard_camera.vsync
+    - peripheral: gpio_header   # from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_camera.scl
+    - peripheral: gpio_header   # from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv .gpio
+      params:
+        width: 1
+      bind:
+        io: onboard_camera.sda
+    - peripheral: led_bank   # from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv
+      params:
+        width: 1
+      bind:
+        led: onboard_led

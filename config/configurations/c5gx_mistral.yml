@@ -53,3 +53,26 @@ Configuration:
         ws: "gpio[2]"
         sck: "gpio[4]"
         sd: "gpio[5]"
+    - peripheral: i2s_audio_out   # from BGM c5gx/board_specific_top.sv
+      bind:
+        mclk: onboard_audio_codec.xck
+        bclk: onboard_audio_codec.bclk
+        lrclk: onboard_audio_codec.dac_lrck
+        sdata: onboard_audio_codec.dac_dat
+    - peripheral: hdmi_adv7513   # from BGM c5gx/board_specific_top.sv
+      params:
+        config_table: c5gx
+      bind:
+        clk: onboard_hdmi_tx.clk
+        de: onboard_hdmi_tx.de
+        hs: onboard_hdmi_tx.hs
+        vs: onboard_hdmi_tx.vs
+        d: onboard_hdmi_tx.d
+        i2c_scl: onboard_i2c.scl
+        i2c_sda: onboard_i2c.sda
+        int: onboard_hdmi_tx.int
+    - peripheral: gpio_header   # from BGM c5gx/board_specific_top.sv .gpio
+      params:
+        width: 22
+      bind:
+        io: gpio

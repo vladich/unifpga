@@ -51,7 +51,6 @@ Configuration:
         vs: onboard_vga.vs
     - peripheral: uart_2wire
       bind:
-        tx: onboard_uart.tx
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
@@ -60,3 +59,14 @@ Configuration:
         cs: "gpio_pseudo_sdram[0]"
         sclk: "gpio_pseudo_sdram[6]"
         miso: "gpio_pseudo_sdram[4]"
+    - peripheral: i2s_audio_out   # from BGM omdazz_pmod_mic3/board_specific_top.sv
+      bind:
+        mclk: onboard_char_lcd.e
+        bclk: onboard_char_lcd.rs
+        lrclk: onboard_char_lcd.rw
+        sdata: "onboard_char_lcd.d[0]"
+    - peripheral: gpio_header   # from BGM omdazz_pmod_mic3/board_specific_top.sv .gpio
+      params:
+        width: 14
+      bind:
+        io: gpio_pseudo_sdram

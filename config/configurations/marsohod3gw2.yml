@@ -30,3 +30,12 @@ Configuration:
         clk_p: onboard_hdmi.clk_p
         clk_n: onboard_hdmi.clk_n
         d_n: onboard_hdmi.d_n
+    - peripheral: seven_segment_8digit_shared   # from BGM marsohod3gw2/board_specific_top.sv (display on header pins)
+      params:
+        digits: 4
+        active: low
+        digits_active: high
+      bind:
+        segments: ["gpio[6]", "gpio[7]", "gpio[4]", "gpio[2]", "gpio[0]", "gpio[5]", "gpio[3]"]
+        dp: "gpio[1]"
+        digits: ["gpio[14]", "gpio[12]", "gpio[13]", "gpio[15]"]

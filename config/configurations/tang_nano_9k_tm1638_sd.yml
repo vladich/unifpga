@@ -62,3 +62,8 @@ Configuration:
         d_p: onboard_hdmi.d_p
         clk_n: onboard_hdmi.clk_n
         d_n: onboard_hdmi.d_n
+    - peripheral: gpio_header   # from BGM tang_nano_9k_tm1638_sd/board_specific_top.sv .gpio
+      params:
+        width: 6
+      bind:
+        io: gpio

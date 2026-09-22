@@ -52,3 +52,14 @@ Configuration:
         d_p: onboard_hdmi.d_p
         clk_n: onboard_hdmi.clk_n
         d_n: onboard_hdmi.d_n
+    - peripheral: i2s_audio_out   # from BGM a7_lite_35t/board_specific_top.sv
+      bind:
+        mclk: "gpio[9]"
+        bclk: "gpio[10]"
+        lrclk: "gpio[11]"
+        sdata: "gpio[12]"
+    - peripheral: gpio_header   # from BGM a7_lite_35t/board_specific_top.sv .gpio
+      params:
+        width: 13
+      bind:
+        io: gpio

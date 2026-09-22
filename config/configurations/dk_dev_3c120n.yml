@@ -30,9 +30,10 @@ Configuration:
         frequency_mhz: 50
       bind:
         clk: clk50mhz
-    - peripheral: led_bank
+    - peripheral: led_bank   # from BGM dk_dev_3c120n/board_specific_top.sv
       params:
         width: 8
+        active: low
       bind:
         led: onboard_leds
     - peripheral: reset_button
@@ -57,3 +58,8 @@ Configuration:
         width: 8
       bind:
         sw: onboard_switches
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    onboard_7seg.minus: 0
+    onboard_speaker: 0

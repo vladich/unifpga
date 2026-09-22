@@ -11,6 +11,12 @@ Board:
     family: "MAX II CPLD"
     part: EPM570T100C5
 
+  # Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS \"AS INPUT TRI-STATED\""
   pinBanks:
     clk: { pins: "12", frequency_mhz: 50 }
     cpu_resetn: { pins: "41", active: low }
@@ -18,10 +24,14 @@ Board:
       active: low
       index_origin: 1
       pins: ["67", "66", "61", "58", "57", "56", "55", "54"]
-    onboard_buttons:
+    onboard_buttons:              # BGM KEY[6:1] (key = ~ KEY): KEY[1] first
       active: low
       index_origin: 1
-      pins: ["53", "52", "51", "50", "43", "42"]
+      pins: ["49", "48", "47", "44", "43", "42"]
+    onboard_switches:             # BGM CKEY[4:1] (sw = ~ CKEY): four more keys used as switches
+      active: low
+      index_origin: 1
+      pins: ["53", "52", "51", "50"]
     onboard_7seg:
       pins:
         anodes: ["87", "86", "85", "84", "95", "92", "91", "89"]

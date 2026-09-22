@@ -26,12 +26,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_1
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_2
 
   # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds   # binds from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
@@ -53,3 +47,14 @@ Configuration:
         ws: "gpio[2]"
         sck: "gpio[4]"
         sd: "gpio[5]"
+    - peripheral: i2s_audio_out   # from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
+      bind:
+        mclk: "pmod_2[4]"
+        bclk: "pmod_2[5]"
+        sdata: "pmod_2[6]"
+        lrclk: "pmod_2[7]"
+    - peripheral: gpio_header   # from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv .gpio
+      params:
+        width: 32
+      bind:
+        io: ["gpio[0]", "gpio[1]", "gpio[2]", "gpio[3]", "gpio[4]", "gpio[5]", "gpio[6]", "gpio[7]", "gpio[8]", "gpio[9]", "gpio[10]", "gpio[11]", "gpio[12]", "gpio[13]", "gpio[14]", "gpio[15]", "gpio[16]", "gpio[17]", "gpio[18]", "gpio[19]", "gpio[20]", "gpio[21]", "gpio[22]", "gpio[23]", "gpio[24]", "gpio[25]", "gpio[26]", "gpio[27]", "gpio[28]", "gpio[29]", "gpio[36]", "gpio[37]"]

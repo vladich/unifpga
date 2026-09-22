@@ -28,12 +28,7 @@ Configuration:
         width: 4
       bind:
         btn: onboard_buttons
-    - peripheral: led_bank
-      params:
-        width: 10
-      bind:
-        led: onboard_leds
-    - peripheral: led_bank
+    - peripheral: led_bank   # from BGM de1/board_specific_top.sv
       params:
         width: 8
       bind:
@@ -72,3 +67,21 @@ Configuration:
         ws: "gpio_1[2]"
         sck: "gpio_1[4]"
         sd: "gpio_1[5]"
+    - peripheral: wm8731_i2s_out   # from BGM de1/board_specific_top.sv
+      bind:
+        xck: onboard_audio_codec.xck
+        bclk: onboard_audio_codec.bclk
+        dac_lrck: onboard_audio_codec.dac_lrck
+        dac_dat: onboard_audio_codec.dac_dat
+        i2c_sclk: onboard_i2c.sclk
+        i2c_sdat: onboard_i2c.sdat
+    - peripheral: gpio_header   # from BGM de1/board_specific_top.sv .gpio
+      params:
+        width: 36
+      bind:
+        io: gpio_1
+    - peripheral: gpio_header   # from BGM de1/board_specific_top.sv .gpio
+      params:
+        width: 36
+      bind:
+        io: gpio_0

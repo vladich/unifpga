@@ -10,6 +10,13 @@ Board:
     family: "Cyclone II"
     part: EP2C20F484C7
 
+  # Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS \"AS INPUT TRI-STATED\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   pinBanks:
     clk50mhz: { pins: L1, frequency_mhz: 50 }
     onboard_uart:

@@ -72,3 +72,39 @@ Configuration:
         clk: "gpio_1[2]"
         stb: "gpio_1[3]"
         dio: "gpio_1[1]"
+    - peripheral: i2s_audio_out   # from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv
+      bind:
+        bclk: onboard_headphone.bck
+        lrclk: onboard_headphone.ws
+        sdata: onboard_headphone.din
+        pa_en: onboard_pa_enable
+    - peripheral: i2s_audio_out   # from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv
+      bind:
+        mclk: "gpio_1[4]"
+        bclk: "gpio_1[5]"
+        lrclk: "gpio_1[7]"
+        sdata: "gpio_1[6]"
+    - peripheral: gpio_header   # from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv .gpio
+      params:
+        width: 8
+      bind:
+        io: gpio_0
+    - peripheral: gpio_header   # from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv .gpio
+      params:
+        width: 8
+      bind:
+        io: gpio_1
+    - peripheral: gpio_header   # from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv .gpio
+      params:
+        width: 8
+      bind:
+        io: gpio_2
+    - peripheral: gpio_header   # from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv .gpio
+      params:
+        width: 8
+      bind:
+        io: gpio_3
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    onboard_lcd.bl: 0

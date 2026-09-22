@@ -51,3 +51,14 @@ Configuration:
         clk: "gpio_0[27]"
         stb: "gpio_0[29]"
         dio: "gpio_0[31]"
+    - peripheral: i2s_audio_out   # from BGM de0_nano_soc_vga_pmod/board_specific_top.sv
+      bind:
+        mclk: "gpio_1[32]"
+        bclk: "gpio_1[30]"
+        lrclk: "gpio_1[26]"
+        sdata: "gpio_1[28]"
+    - peripheral: gpio_header   # from BGM de0_nano_soc_vga_pmod/board_specific_top.sv .gpio
+      params:
+        width: 36
+      bind:
+        io: gpio_0

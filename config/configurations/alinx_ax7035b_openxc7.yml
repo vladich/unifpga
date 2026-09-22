@@ -17,9 +17,11 @@ Configuration:
       width: 4
     bind:
       btn: onboard_buttons
-  - peripheral: led_bank
+  - peripheral: led_bank   # from BGM alinx_ax7035b/board_specific_top.sv
     params:
       width: 4
+      active: low
+      mirror: true
     bind:
       led: onboard_leds
   - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)

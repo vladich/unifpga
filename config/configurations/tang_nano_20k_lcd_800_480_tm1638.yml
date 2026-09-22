@@ -56,3 +56,14 @@ Configuration:
         ws: "gpio[2]"
         sck: "gpio[3]"
         sd: "onboard_microsd.dat[1]"
+    - peripheral: i2s_audio_out   # from BGM tang_nano_20k_lcd_800_480_tm1638/board_specific_top.sv
+      bind:
+        bclk: onboard_headphone.bck
+        lrclk: onboard_headphone.ws
+        sdata: onboard_headphone.din
+        pa_en: onboard_pa_enable
+    - peripheral: gpio_header   # from BGM tang_nano_20k_lcd_800_480_tm1638/board_specific_top.sv .gpio
+      params:
+        width: 5
+      bind:
+        io: gpio

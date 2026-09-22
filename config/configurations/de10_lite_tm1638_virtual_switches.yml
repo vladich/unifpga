@@ -63,3 +63,23 @@ Configuration:
         ws: "gpio[2]"
         sck: "gpio[4]"
         sd: "gpio[5]"
+    - peripheral: i2s_audio_out   # from BGM de10_lite_tm1638_virtual_switches/board_specific_top.sv
+      bind:
+        mclk: "gpio[32]"
+        bclk: "gpio[30]"
+        lrclk: "gpio[26]"
+        sdata: "gpio[28]"
+    - peripheral: gpio_header   # from BGM de10_lite_tm1638_virtual_switches/board_specific_top.sv .gpio
+      params:
+        width: 36
+      bind:
+        io: gpio
+    - peripheral: gpio_header   # from BGM de10_lite_tm1638_virtual_switches/board_specific_top.sv .gpio
+      params:
+        width: 16
+      bind:
+        io: arduino_io
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    arduino_reset_n: ~rst

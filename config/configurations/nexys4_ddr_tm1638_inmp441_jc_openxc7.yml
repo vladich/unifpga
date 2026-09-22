@@ -71,18 +71,26 @@ Configuration:
     bind:
       tx: onboard_uart.tx
       rx: onboard_uart.rx
-  - peripheral: pmod_12pin
-    bind:
-      io: pmod_ja
-  - peripheral: pmod_12pin
-    bind:
-      io: pmod_jb
-  - peripheral: pmod_12pin
-    bind:
-      io: pmod_jd
   - peripheral: inmp441_i2s_mic   # binds from BGM nexys4_ddr/board_specific_top.sv
     bind:
       lr: "pmod_jd[6]"
       ws: "pmod_jd[5]"
       sck: "pmod_jd[4]"
       sd: "pmod_jd[0]"
+  - peripheral: i2s_audio_out   # from BGM nexys4_ddr/board_specific_top.sv
+    bind:
+      mclk: "pmod_jc[4]"
+      bclk: "pmod_jc[5]"
+      sdata: "pmod_jc[6]"
+      lrclk: "pmod_jc[7]"
+  - peripheral: i2s_audio_out   # from BGM nexys4_ddr/board_specific_top.sv
+    bind:
+      mclk: "pmod_jb[6]"
+      bclk: "pmod_jb[3]"
+      sdata: "pmod_jb[1]"
+      lrclk: "pmod_jb[0]"
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    onboard_mic.clk: 0
+    onboard_mic.lrsel: 0

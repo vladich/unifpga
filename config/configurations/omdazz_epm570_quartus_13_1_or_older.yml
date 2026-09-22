@@ -25,6 +25,11 @@ Configuration:
         width: 6
       bind:
         btn: onboard_buttons
+    - peripheral: sw_bank        # BGM: .sw ( ~ CKEY )
+      params:
+        width: 4
+      bind:
+        sw: onboard_switches
     - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
       params:
         digits: 8
@@ -53,3 +58,8 @@ Configuration:
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
+    - peripheral: gpio_header   # from BGM omdazz_epm570_quartus_13_1_or_older/board_specific_top.sv .gpio
+      params:
+        width: 11
+      bind:
+        io: onboard_char_lcd.d
