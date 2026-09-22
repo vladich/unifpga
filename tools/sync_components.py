@@ -18,6 +18,7 @@ physical pin identity (like --sv-binds):
 Idempotent: a configuration already matching BGM is reported "unchanged".
 """
 
+import json
 import os
 import re
 from collections import OrderedDict
@@ -409,6 +410,8 @@ def tie_entries(text, sig_pins, rev, exclude_pins):
 # ---------------------------------------------------------------- LEDs
 
 _LED_RHS = re.compile(r"^(~?)\s*(?:\w+'\s*\(\s*)?(~?)\s*(led|lab_led)\s*(?:\[\s*(\d+)\s*(?::\s*(\d+))?\s*\])?\s*\)?$")
+# colorlight: `assign LED [0] = ( lab_led [0] ? 1'b0 : 1'bz );` — open drain, on = drive 0
+_LED_OD = re.compile(r"^\(?\s*(?:led|lab_led)\s*\[\s*(\d+)\s*\]\s*\?\s*1'b([01])\s*:\s*1'bz\s*\)?$")
 
 
 def led_bits(text, sig_pins, rev):
@@ -417,14 +420,21 @@ def led_bits(text, sig_pins, rev):
     by_bit, notes = {}, []
     ports = bgm_oracle.top_ports(text)
 
-    def put(bit, key, inv):
+    def put(bit, key, inv, od=False):
         if key in sig_pins:
-            by_bit[bit] = (key, inv)
+            by_bit[bit] = (key, inv, od)
         else:
             notes.append("led[{}] -> {}: no pin in the constraint files".format(bit, key))
 
     for m in bgm_oracle._ASSIGN_ANY.finditer(text):
         lhs, rhs = m.group(1).strip(), " ".join(m.group(2).split())
+        od = _LED_OD.match(rhs)
+        if od:
+            lm = re.match(r"^([A-Za-z_]\w*)\s*(?:\[\s*(\d+)\s*\])?$", lhs)
+            if lm and lm.group(1) in ports:
+                key = lm.group(1).upper() + ("[{}]".format(lm.group(2)) if lm.group(2) is not None else "")
+                put(int(od.group(1)), key, od.group(2) == "0", od=True)
+            continue
         r = _LED_RHS.match(rhs)
         if not r:
             continue
@@ -472,29 +482,32 @@ def led_bits(text, sig_pins, rev):
     for i in range(n):
         if i not in by_bit:
             notes.append("led[{}] drives no port".format(i))
-            bits.append((None, False))
+            bits.append((None, False, False))
             continue
-        key, inv = by_bit[i]
+        key, inv, od = by_bit[i]
         ref = rev.get(sig_pins[key], "led")
         if ref is None:
             notes.append("led[{}] -> {}: pin {} not in the pinmap".format(i, key, sig_pins[key]))
-        bits.append((ref, inv))
+        bits.append((ref, inv, od))
     return bits, notes
 
 
 def led_attaches(bits, pinmap):
     """[(params, bind)] led_bank attaches, LSB-first, from [(ref, inverted)]."""
     out = []
-    for run in _runs([b for b in bits if b[0] is not None], same=lambda a, b: a[1] == b[1]):
+    for run in _runs([b for b in bits if b[0] is not None], same=lambda a, b: a[1:] == b[1:]):
         if run["bank"] is None:
             continue
         ref, mirror = _run_bind(run, pinmap)
         inv = run["items"][0][1]
+        od = run["items"][0][2]
         params = OrderedDict([("width", len(run["refs"]))])
         bank_active = ((pinmap.get("pinBanks") or {}).get(run["bank"]) or {}).get("active")
         want = "low" if inv else "high"
         if (bank_active or "high") != want:
             params["active"] = want
+        if od:
+            params["open_drain"] = True
         bank_mirror = bool(((pinmap.get("pinBanks") or {}).get(run["bank"]) or {}).get("mirror"))
         if mirror != bank_mirror:
             params["mirror"] = mirror
@@ -529,7 +542,8 @@ def _led_signature(attaches, pinmap):
         active = params.get("active", battrs.get("active", "high"))
         if mirror:
             pins = list(reversed(pins))
-        sig.extend((p, active == "low") for p in pins)
+        od = bool(params.get("open_drain", False))
+        sig.extend((p, active == "low", od) for p in pins)
     return sig
 
 
@@ -858,16 +872,29 @@ def _sync_blocks(lines, pid, wanted, have, comment, indent, changes, label=None)
         return
     blocks = sy._find_attach_blocks(lines, pid)
     at = blocks[0][0] if blocks else None
+    # lab_bits (tools/sync_from_bgm.py --lab-bits) belongs to the attach; a
+    # re-rendered block with the same bind keeps it
+    kept_bits = {}
+    for a in _yaml_attaches(lines):
+        if a.get("peripheral") == pid and a.get("lab_bits"):
+            kept_bits[_bind_key(a.get("bind") or {})] = a["lab_bits"]
     _remove_blocks(lines, pid)
     rendered = []
     for params, binds in wanted:
         rendered.extend(_render(pid, params, binds, comment, indent))
+        bits = kept_bits.get(_bind_key(binds))
+        if bits:
+            rendered.extend(_render_lab_bits(indent, OrderedDict(bits)))
     if at is not None and rendered:
         lines[at:at] = rendered
     elif rendered:
         _append_after_attaches(lines, rendered, indent)
     changes.append("{} {} -> {}".format(label or pid, [b for _p, b in have] or "none",
                                         [b for _p, b in wanted] or "none"))
+
+
+def _bind_key(bind):
+    return json.dumps({k: (v if isinstance(v, list) else str(v).strip('"')) for k, v in bind.items()}, sort_keys=True)
 
 
 def _have(cfg, pid):
@@ -1374,7 +1401,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
                 notes.append("led: board LEDs taken as lab_led's low bits (assign form not parsed)")
                 continue
             by_ref = {}
-            for bit, (ref, _inv) in enumerate(lbits or []):
+            for bit, (ref, _inv, _od) in enumerate(lbits or []):
                 by_ref.setdefault(str(ref), bit)
             for pidx, w in board_providers(cap):
                 bind = (resolved["peripherals"][pidx].get("bind") or {}).get("led")
@@ -1467,7 +1494,10 @@ def apply_lab_bits(path, dry_run):
     from tools import codegen
     config_init.clear_cache()
     resolved = config_init.resolve_configuration(cfg["id"])
-    plans = codegen.build_capability_plans(resolved)
+    try:
+        plans = codegen.build_capability_plans(resolved)
+    except codegen.CodegenError as exc:
+        return "ERROR: {} (run --lab-bits after any slice that rewrites attaches)".format(exc)
     pinmap = resolved["board_pinmap"]
     pp = bgm_oracle.preprocess_variant(vdir)
     text = bgm_oracle.strip_comments(pp.text)

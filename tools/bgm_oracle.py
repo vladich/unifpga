@@ -395,6 +395,10 @@ def port_polarity(text):
     for m in re.finditer(r"\bassign\s+([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*=\s*(?:\w+'\s*\()?\s*(~?)", text):
         if m.group(2):
             mark(m.group(1), inverted=True)
+    # open drain: `assign LED [0] = ( lab_led [0] ? 1'b0 : 1'bz );` drives 0 when on
+    for m in re.finditer(r"\bassign\s+([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*=\s*\(?\s*\w+\s*(?:\[[^\]]*\])?\s*\?\s*1'b([01])\s*:\s*1'bz", text):
+        if m.group(2) == "0":
+            mark(m.group(1), inverted=True)
     for m in re.finditer(r"SWAP_BITS\s*\(\s*([A-Za-z_]\w*)\s*,\s*(~?)", text):
         mark(m.group(1), inverted=bool(m.group(2)), mirrored=True)
     # Input side: ~ PORT, ~ PORT [..], ~ { P1, P2, ... }

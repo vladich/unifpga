@@ -11,6 +11,9 @@ Peripheral:
       type: enum
       values: [high, low]
       default: high
+    open_drain:
+      type: bool
+      default: false        # BGM colorlight: `LED [0] = lab_led [0] ? 1'b0 : 1'bz` — on drives the active level, off floats
   signals:
     - { name: led, type: bus, width: $width, direction: output }
   provides:

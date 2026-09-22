@@ -196,42 +196,6 @@ module xpm_cdc_async_rst
     assign dest_arst = RST_ACTIVE_HIGH ? sync [DEST_SYNC_FF - 1] : ~ sync [DEST_SYNC_FF - 1];
 endmodule
 
-// ---- Lattice iCE40 -----------------------------------------------------------
-
-module SB_GB (input USER_SIGNAL_TO_GLOBAL_BUFFER, output GLOBAL_BUFFER_OUTPUT);
-    assign GLOBAL_BUFFER_OUTPUT = USER_SIGNAL_TO_GLOBAL_BUFFER;
-endmodule
-
-// PIN_TYPE[5:2] output modes used by BGM: 0110 simple, 0101 registered,
-// 0100 DDR (D_OUT_0 while OUTPUT_CLK is high, D_OUT_1 while low).
-module SB_IO
-# (
-    parameter [5:0] PIN_TYPE = 6'b000001, parameter PULLUP = 1'b0, parameter NEG_TRIGGER = 1'b0,
-    parameter IO_STANDARD = "SB_LVCMOS"
-)
-(
-    inout  PACKAGE_PIN,
-    input  LATCH_INPUT_VALUE,
-    input  CLOCK_ENABLE,
-    input  INPUT_CLK,
-    input  OUTPUT_CLK,
-    input  OUTPUT_ENABLE,
-    input  D_OUT_0,
-    input  D_OUT_1,
-    output D_IN_0,
-    output D_IN_1
-);
-    reg q = 1'b0;
-    always @ (posedge OUTPUT_CLK) q <= D_OUT_0;
-    wire drive = (PIN_TYPE [5:2] == 4'b0110) ? D_OUT_0 :
-                 (PIN_TYPE [5:2] == 4'b0101) ? q :
-                 (PIN_TYPE [5:2] == 4'b0100) ? (OUTPUT_CLK ? D_OUT_0 : D_OUT_1) : 1'bz;
-    wire oe = (PIN_TYPE [5:4] == 2'b01) | (PIN_TYPE [5:4] == 2'b10 & OUTPUT_ENABLE);
-    assign PACKAGE_PIN = oe ? drive : 1'bz;
-    assign D_IN_0 = PACKAGE_PIN;
-    assign D_IN_1 = PACKAGE_PIN;
-endmodule
-
 // ---- Gowin DVI_TX encrypted IP -------------------------------------------------
 // No behaviour to copy; each TMDS lane folds the colour and control inputs
 // it carries so any change in what is wired to the IP changes the pins.

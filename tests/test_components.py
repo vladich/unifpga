@@ -210,8 +210,8 @@ def test_led_bits_mixed_polarity_and_order():
     text = (_HDR_LED2 + "wire [3:0] led; assign LED_R_N = ~ led [3]; assign LED [0] = led [2]; assign LED [1] = led [1]; "
             "assign LED [2] = led [0]; endmodule")
     bits, notes = sc.led_bits(text, _SIG, _rev())
-    assert bits == [("onboard_leds[2]", False), ("onboard_leds[1]", False), ("onboard_leds[0]", False),
-                    ("onboard_led_red", True)]
+    assert bits == [("onboard_leds[2]", False, False), ("onboard_leds[1]", False, False), ("onboard_leds[0]", False, False),
+                    ("onboard_led_red", True, False)]
     att = sc.led_attaches(bits, _PINMAP)
     assert att == [(OrderedDict([("width", 3), ("active", "high"), ("mirror", True)]), {"led": "onboard_leds"}),
                    (OrderedDict([("width", 1), ("active", "low")]), {"led": "onboard_led_red"})]
@@ -224,7 +224,7 @@ def test_led_bits_mixed_polarity_and_order():
 def test_led_whole_bus_assign_and_direct_connection():
     text = _HDR_LED + "assign LED = ~ led; endmodule"
     bits, _ = sc.led_bits(text, _SIG, _rev())
-    assert bits == [("onboard_leds[0]", True), ("onboard_leds[1]", True), ("onboard_leds[2]", True)]
+    assert bits == [("onboard_leds[0]", True, False), ("onboard_leds[1]", True, False), ("onboard_leds[2]", True, False)]
     assert sc.led_attaches(bits, _PINMAP) == [(OrderedDict([("width", 3)]), {"led": "onboard_leds"})]
     text = _HDR_LED + "lab_top i (.led ( LED )); endmodule"
     bits, _ = sc.led_bits(text, _SIG, _rev())

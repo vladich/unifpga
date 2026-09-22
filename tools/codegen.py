@@ -1621,9 +1621,30 @@ def _emit_passthrough(resolved, idx, attach, plans):
     inv = "~ " if active == "low" else ""
     mirror = _peripheral_mirror(attach, pinmap)
 
+    open_drain = bool((attach.get("params") or {}).get("open_drain"))
+
     for entry in perif.get("provides") or []:
         cap_id = entry["capability"]
         plan = plans[cap_id]
+        if open_drain and plan.aggregation == "concat":
+            # BGM colorlight: `LED [0] = lab_led [0] ? 1'b0 : 1'bz` — an LED
+            # that is on drives its active level, an LED that is off floats
+            drive = "1'b0" if active == "low" else "1'b1"
+            for cap_sig in plan.cap.get("signals", []):
+                cap_sig_name = cap_sig["name"]
+                if cap_sig_name not in bind or cap_sig.get("direction") != "user_to_hw":
+                    continue
+                pin_bits = _bind_bit_ports(resolved, bind[cap_sig_name])
+                if mirror:
+                    pin_bits = list(reversed(pin_bits))
+                cap_base = "cap_{}_{}".format(cap_id, cap_sig_name)
+                bits = plan.bits.get(idx) or [plan.offsets[idx] + i for i in range(plan.widths[idx])]
+                lines.append("    // {}: open drain, {} when on".format(_attach_label(attach), drive))
+                for i, b in enumerate(bits):
+                    if i >= len(pin_bits) or b is None:
+                        continue
+                    lines.append("    assign {} = {}[{}] ? {} : 1'bz;".format(pin_bits[i], cap_base, b, drive))
+            continue
         if plan.aggregation in ("exclusive", "broadcast"):
             for cap_sig in plan.cap.get("signals", []):
                 cap_sig_name = cap_sig["name"]

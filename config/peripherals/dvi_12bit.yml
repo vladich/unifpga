@@ -22,33 +22,25 @@ Peripheral:
   clocks:
     - { name: pixel, mhz: 25.125 }
   driver:
-    module: vga
-    file: rtl/peripherals/vga.sv
+    # BGM icebreaker_dvi_12b_*: `vga` + SB_IO PIN_OUTPUT_REGISTERED data +
+    # an SB_IO PIN_OUTPUT_DDR clock pin (0 / 1 = inverted pixel clock)
+    module: dvi_pmod_12b
+    file: rtl/peripherals/dvi_pmod_12b.sv
     parameters:
-      CLK_MHZ:   25
-      PIXEL_MHZ: 25
-      H_DISPLAY: 640
-      V_DISPLAY: 480
-      W_RED:     4
-      W_GREEN:   4
-      W_BLUE:    4
-      W_RED_O:   4
-      W_GREEN_O: 4
-      W_BLUE_O:  4
+      clk_mhz:   25
+      pixel_mhz: 25
     port_map:
-      clk:        clock.pixel
-      rst:        context.rst
-      hsync:      pin.hs
-      vsync:      pin.vs
-      hpos:       capability.screen.x
-      vpos:       capability.screen.y
-      display_on: pin.de      # data enable = active area
-      pixel_clk:
-      red:        capability.screen.red
-      green:      capability.screen.green
-      blue:       capability.screen.blue
-      vga_r:      pin.r       # gated by display_on inside the driver
-      vga_g:      pin.g
-      vga_b:      pin.b
-  pin_assigns:
-    pin.ck: clock.pixel
+      clk:     clock.pixel
+      rst:     context.rst
+      x:       capability.screen.x
+      y:       capability.screen.y
+      red_i:   capability.screen.red
+      green_i: capability.screen.green
+      blue_i:  capability.screen.blue
+      r:       pin.r
+      g:       pin.g
+      b:       pin.b
+      hs:      pin.hs
+      vs:      pin.vs
+      de:      pin.de
+      ck:      pin.ck
