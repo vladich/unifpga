@@ -22,6 +22,7 @@ Set $UNIFPGA_DRY_RUN=1 to generate every artifact without invoking gw_sh.
 
 import logging
 import os
+import sys
 import shutil
 import subprocess
 
@@ -245,6 +246,16 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         log.info("[dry run] Would program %s", bit)
         return 0
 
+    # BGM configure_fpga_gowin: openFPGALoader when it is installed (Linux),
+    # the proprietary programmer_cli otherwise (macOS / Windows, or no loader)
+    loader = shutil.which("openFPGALoader") if sys.platform.startswith("linux") else None
+    if loader is not None:
+        cmd = [loader] + (codegen.openfpgaloader_args(board_pinmap, board.get("Id")) or ["-b", "tangnano9k"]) + [bit]
+        log.info("Programming via: %s", " ".join(cmd))
+        rc = subprocess.run(cmd, cwd=output).returncode
+        if rc != 0:
+            log.error("Programming failed (exit %d). Is the board connected (udev rules for the Sipeed loader)?", rc)
+        return rc
     pgm = _resolve_gowin_bin(toolchain, "programmer_cli", sub="Programmer/bin")
     if pgm is None:
         log.error("Could not locate programmer_cli.")

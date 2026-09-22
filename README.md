@@ -24,6 +24,14 @@ Cologne Chip GateMate) — without changing the design.
 cd designs/1_06_binary_counter
 ../../unifpga build      # or: ./unifpga build 1_06_binary_counter from the repo root
 ../../unifpga program
+
+BGM lab script | `unifpga` command
+--- | ---
+`01_clean.bash` | `unifpga clean` (`--all`: every design)
+`02_simulate_rtl.bash` | `unifpga sim` (Icarus Verilog on `tb.sv`, then gtkwave / surfer)
+`03_synthesize_for_fpga.bash` + `04_configure_fpga.bash` | `unifpga program` (`unifpga build` stops after the bitstream)
+`05_run_gui_for_fpga_synthesis.bash` | `unifpga gui`
+`06_choose_another_fpga_board.bash` | `unifpga board`
 ```
 
 `build` writes everything (generated `top.sv`, constraints, the toolchain

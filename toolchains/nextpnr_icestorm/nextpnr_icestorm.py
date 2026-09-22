@@ -213,11 +213,18 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if os.environ.get("UNIFPGA_DRY_RUN"):
         log.info("[dry run] Would program %s", bit)
         return 0
-    iceprog = _resolve_bin("iceprog")
-    if iceprog is None:
-        log.error("Could not find iceprog on $PATH.")
-        return 1
-    cmd = [iceprog, bit]
+    # BGM configure_fpga_yosys: openFPGALoader -b <BOARD from board_info>;
+    # iceprog stays the fallback for a machine without openFPGALoader
+    loader = _resolve_bin("openFPGALoader")
+    args = codegen.openfpgaloader_args(board_pinmap, board.get("Id"))
+    if loader is not None:
+        cmd = [loader] + args + [bit]
+    else:
+        iceprog = _resolve_bin("iceprog")
+        if iceprog is None:
+            log.error("Could not find openFPGALoader or iceprog on $PATH.")
+            return 1
+        cmd = [iceprog, bit]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

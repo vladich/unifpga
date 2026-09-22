@@ -235,3 +235,33 @@ def test_bgm_clock_port():
     assert sc.bgm_clock_port("wire clk = OSC_50_B3B;") == "OSC_50_B3B"
     assert sc.bgm_clock_port("assign clk = pixel_clk_pll;") == "pixel_clk_pll"
     assert sc.bgm_clock_port("wire clk_100 = CLK;") is None
+
+
+def test_openfpgaloader_args_follow_bgm_board_info():
+    """BGM configure_fpga_yosys: --cable (colorlight), --ftdi-channel (karnix 0,
+    orangecrab 1), -b BOARD; the Gowin table when the pinmap says nothing."""
+    assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_ftdi_channel": "1"}}}) == ["--ftdi-channel", "1"]
+    assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_cable": "ft2232"}}}) == ["--cable", "ft2232"]
+    assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_board": "ice40_generic"}}}) == ["-b", "ice40_generic"]
+    assert codegen.openfpgaloader_args({}, "tang_nano_20k") == ["-b", "tangnano20k"]
+    assert codegen.openfpgaloader_args({}, "de10_lite") == []
+    r = config_init.resolve_configuration("orangecrab_ecp5_yosys")
+    assert codegen.openfpgaloader_args(r["board_pinmap"], "orangecrab_ecp5") == ["--ftdi-channel", "1"]
+
+
+def test_qsf_has_bgm_project_template_lines():
+    r = config_init.resolve_configuration("de10_nano")
+    qsf = codegen.emit_qsf(r, "5CSEBA6U23I7")
+    assert "set_global_assignment -name NUM_PARALLEL_PROCESSORS 4" in qsf
+    assert 'set_global_assignment -name VERILOG_MACRO "INTEL_VERSION"' in qsf
+    assert r["board_pinmap"]["toolchain_options"]["quartus"]["jtag_device_index"] == 2
+
+
+def test_quartus_cable_list_parsing(monkeypatch):
+    from toolchains.quartus_prime import quartus_prime as qp
+    import subprocess
+
+    class R(object):
+        stdout = "Info: *******\n1) USB-Blaster [1-2]\n2) DE-SoC [1-3]\n"
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: R())
+    assert qp._cables("quartus_pgm", {}, ".") == ["USB-Blaster [1-2]", "DE-SoC [1-3]"]

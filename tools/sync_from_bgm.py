@@ -29,6 +29,7 @@ import argparse
 import glob
 import os
 import re
+from collections import OrderedDict
 import sys
 
 import yaml
@@ -1452,7 +1453,7 @@ _QSF_GLOBAL_KEEP = re.compile(
     r"|NOMINAL_CORE_SUPPLY_VOLTAGE|ON_CHIP_BITSTREAM_DECOMPRESSION|CYCLONE_OPTIMIZATION_TECHNIQUE"
     r"|\w*_CONFIGURATION_DEVICE|USE_CONFIGURATION_DEVICE|ENABLE_\w+_PIN|ENABLE_INIT_DONE_OUTPUT"
     r"|CRC_ERROR_OPEN_DRAIN|VCCA_USER_VOLTAGE|ACTIVE_SERIAL_CLOCK|GENERATE_RBF_FILE|PWRMGT_\w+|USE_PWRMGT_\w+"
-    r"|VCCIO_\w+|INTERNAL_FLASH_UPDATE_MODE|AUTO_RESTART_CONFIGURATION|ENABLE_OCT_DONE)$")
+    r"|VCCIO_\w+|INTERNAL_FLASH_UPDATE_MODE|AUTO_RESTART_CONFIGURATION|ENABLE_OCT_DONE|FORCE_CONFIGURATION_VCCIO)$")
 
 
 def _bgm_qsf_globals(vdir):
@@ -1472,16 +1473,25 @@ def _bgm_qsf_globals(vdir):
     return out
 
 
-def _bgm_synth_options(vdir):
-    """yosys synth flags after the command in BGM's board_info.source_bash
-    SYNTH_CMD (`synth_ice40 -dsp -noabc9` -> ['dsp', 'noabc9']), or None."""
+def _bgm_board_info(vdir):
+    """BGM's board_info.source_bash for the open flows as a dict: the yosys
+    synth flags after the command (`synth_ice40 -dsp -noabc9` ->
+    synth_options [dsp, noabc9]) and the openFPGALoader settings its
+    configure_fpga_yosys uses (BOARD -> loader_board, CABLE -> loader_cable,
+    FTDI_CHANNEL -> loader_ftdi_channel). None without the file."""
     path = os.path.join(vdir, "board_info.source_bash")
     if not os.path.exists(path):
         return None
-    m = re.search(r'^\s*SYNTH_CMD\s*=\s*"([^"]*)"', open(path, encoding="utf-8", errors="replace").read(), re.M)
-    if not m:
-        return None
-    return [t.lstrip("-") for t in m.group(1).split()[1:]]
+    text = open(path, encoding="utf-8", errors="replace").read()
+    out = OrderedDict()
+    m = re.search(r'^\s*SYNTH_CMD\s*=\s*"([^"]*)"', text, re.M)
+    if m:
+        out["synth_options"] = [t.lstrip("-") for t in m.group(1).split()[1:]]
+    for var, key in (("BOARD", "loader_board"), ("CABLE", "loader_cable"), ("FTDI_CHANNEL", "loader_ftdi_channel")):
+        m = re.search(r'^\s*' + var + r'\s*=\s*"?([^"\n]*)"?\s*$', text, re.M)
+        if m and m.group(1).strip():
+            out[key] = m.group(1).strip()
+    return out or None
 
 
 def _set_toolchain_block(text, key, body_lines, comment):
@@ -1542,12 +1552,36 @@ def apply_quartus_options(paths, dry_run):
          "dual-purpose pin reservation, unused-pin state, device I/O default."])
 
 
+def _render_yosys_block(info):
+    lines = []
+    if "synth_options" in info:
+        lines.append("synth_options: [{}]".format(", ".join(info["synth_options"])))
+    for key in ("loader_board", "loader_cable", "loader_ftdi_channel"):
+        if key in info:
+            lines.append("{}: {}".format(key, _yaml_str(str(info[key]))))
+    return lines
+
+
+def _current_yosys(pinmap):
+    cur = (pinmap.get("toolchain_options") or {}).get("yosys") or {}
+    out = OrderedDict()
+    if cur.get("synth_options") is not None:
+        out["synth_options"] = [str(o) for o in cur["synth_options"]]
+    for key in ("loader_board", "loader_cable", "loader_ftdi_channel"):
+        if cur.get(key) not in (None, ""):
+            out[key] = str(cur[key])
+    return out
+
+
 def apply_yosys_options(paths, dry_run):
     return _apply_toolchain_option(
-        paths, dry_run, _YOSYS_TOOLCHAINS, "yosys", _bgm_synth_options,
-        lambda want: ["synth_options: [{}]".format(", ".join(want))],
-        lambda pm: [str(o) for o in ((pm.get("toolchain_options") or {}).get("yosys") or {}).get("synth_options") or []],
-        ["yosys synth flags from BGM's board_info.source_bash SYNTH_CMD (tools/sync_from_bgm.py --yosys-options)."])
+        paths, dry_run, _YOSYS_TOOLCHAINS, "yosys",
+        lambda vdir: (lambda d: tuple(sorted((k, tuple(v) if isinstance(v, list) else v) for k, v in d.items())))(_bgm_board_info(vdir))
+        if _bgm_board_info(vdir) else None,
+        lambda want: _render_yosys_block(OrderedDict((k, list(v) if isinstance(v, tuple) else v) for k, v in want)),
+        lambda pm: tuple(sorted((k, tuple(v) if isinstance(v, list) else v) for k, v in _current_yosys(pm).items())),
+        ["yosys synth flags and openFPGALoader settings from BGM's board_info.source_bash",
+         "(SYNTH_CMD, BOARD, CABLE, FTDI_CHANNEL; tools/sync_from_bgm.py --yosys-options)."])
 
 
 def _yaml_str(v):

@@ -380,6 +380,30 @@ def _gw5_primitive(board):
     return "PLLA" if part.startswith("GW5A-") else "PLL"
 
 
+# openFPGALoader board names (`openFPGALoader --list-boards`) for the Gowin
+# boards, BGM scripts/steps/00_setup_gowin.source_bash configure_fpga_gowin_openfpga.
+OPENFPGALOADER_BOARDS = {
+    "runber": "runber", "tang_nano_1k": "tangnano1k", "tang_nano_4k": "tangnano4k", "tang_nano_9k": "tangnano9k",
+    "tang_nano_20k": "tangnano20k", "tang_primer_20k_dock": "tangprimer20k", "tang_primer_20k_lite": "tangprimer20k",
+    "tang_primer_25k": "tangprimer25k", "tang_mega_138k": "tangmega138k", "tang_mega_138k_pro": "tangmega138k",
+}
+
+
+def openfpgaloader_args(pinmap, board_id=None):
+    """openFPGALoader options for this board, BGM's configure_fpga_yosys
+    order: `--cable` (colorlight), `--ftdi-channel` (ECP5 boards), `-b
+    <board>` from the pinmap's `toolchain_options.yosys.loader_*` (synced
+    from BGM's board_info.source_bash) or the Gowin board table. [] when
+    nothing is known (openFPGALoader then autodetects)."""
+    opts = ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
+    if opts.get("loader_cable"):
+        return ["--cable", str(opts["loader_cable"])]
+    if opts.get("loader_ftdi_channel") not in (None, ""):
+        return ["--ftdi-channel", str(opts["loader_ftdi_channel"])]
+    board = opts.get("loader_board") or OPENFPGALOADER_BOARDS.get(board_id or "")
+    return ["-b", str(board)] if board else []
+
+
 def yosys_synth_options(pinmap):
     """Extra `synth_*` flags for a yosys flow from the pinmap's
     `toolchain_options.yosys.synth_options` (BGM board_info.source_bash
@@ -2188,6 +2212,10 @@ def emit_qsf(resolved, part):
     # parses `.v` files (and `\\`include`d `.svh`/`.vh` headers) as Verilog 2001,
     # rejecting `'0`, `always_ff`, `logic`, etc.
     out.append("set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2005")
+    # BGM's fpga_project.qsf template (scripts/steps/00_setup_intel_fpga.source_bash):
+    # four fitter threads and the INTEL_VERSION macro the labs test with `ifdef
+    out.append("set_global_assignment -name NUM_PARALLEL_PROCESSORS 4")
+    out.append('set_global_assignment -name VERILOG_MACRO "INTEL_VERSION"')
     # Board-level project settings BGM's board_specific.qsf carries (dual-
     # purpose pin reservation such as nCEO used as regular I/O, unused-pin
     # state, device I/O default); tools/sync_from_bgm.py --quartus-options.

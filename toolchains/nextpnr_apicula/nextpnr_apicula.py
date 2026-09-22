@@ -55,11 +55,7 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
 # nextpnr-gowin takes the part-line `GW1NR-LV9QN88PC6/I5` form;
 # gowin_pack uses the family-only form `GW1N-9C` / `GW2A-18C`.
 # openFPGALoader board names (`openFPGALoader --list-boards`).
-_OPENFPGALOADER_BOARD = {
-    "tang_nano_1k": "tangnano1k", "tang_nano_4k": "tangnano4k", "tang_nano_9k": "tangnano9k",
-    "tang_nano_20k": "tangnano20k", "tang_primer_20k_dock": "tangprimer20k", "tang_primer_20k_lite": "tangprimer20k",
-    "tang_primer_25k": "tangprimer25k", "tang_mega_138k": "tangmega138k", "tang_mega_138k_pro": "tangmega138k",
-}
+_OPENFPGALOADER_BOARD = codegen.OPENFPGALOADER_BOARDS      # shared with the Gowin EDA driver
 
 _BOARD_TO_APICULA = {
     "tang_nano_9k":         ("GW1NR-LV9QN88PC6/I5", "GW1N-9C"),
@@ -186,7 +182,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if pgm is None:
         log.error("Could not find openFPGALoader on $PATH.")
         return 1
-    cmd = [pgm, "-b", _OPENFPGALOADER_BOARD.get(board.get("Id"), "tangnano9k"), fs]
+    cmd = [pgm] + (codegen.openfpgaloader_args(board_pinmap, board.get("Id")) or ["-b", "tangnano9k"]) + [fs]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

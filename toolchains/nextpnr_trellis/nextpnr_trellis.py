@@ -192,7 +192,10 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if pgm is None:
         log.error("Could not find openFPGALoader or ecpdap on $PATH.")
         return 1
-    cmd = [pgm, bit]
+    # BGM configure_fpga_yosys: `--cable $CABLE` (colorlight, set by the user
+    # in board_info), `--ftdi-channel $FTDI_CHANNEL` (karnix 0, orangecrab 1)
+    args = codegen.openfpgaloader_args(board_pinmap, board.get("Id")) if os.path.basename(pgm).startswith("openFPGALoader") else []
+    cmd = [pgm] + args + [bit]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

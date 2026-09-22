@@ -25,8 +25,12 @@ repo root is a five-line launcher.
 
 import argparse
 import difflib
+import glob
+import logging
 import os
+import platform
 import shutil
+import subprocess
 import sys
 import textwrap
 
@@ -59,6 +63,15 @@ Quick start:
   cd designs/1_06_binary_counter
   ../../unifpga build             # synthesize into run/<configuration>/
   ../../unifpga program           # synthesize and load the bitstream onto the board
+
+BGM's lab scripts and their equivalents here:
+  01_clean.bash                    unifpga clean [--all]
+  02_simulate_rtl.bash             unifpga sim        (tb.sv, Icarus Verilog, waveform viewer)
+  03_synthesize_for_fpga.bash      unifpga program    (BGM synthesizes and configures in one go;
+                                   unifpga build stops after the bitstream)
+  04_configure_fpga.bash           unifpga program
+  05_run_gui_for_fpga_synthesis    unifpga gui
+  06_choose_another_fpga_board     unifpga board
 """
 
 
@@ -300,10 +313,12 @@ def _select(cfgs, cfg_id, installed=None):
     tc = cfg.get("toolchain", "?")
     print("Board configuration: {id}  (board {b}, toolchain {tc}) -- saved to {p}".format(
         id=cfg_id, b=cfg.get("board", "?"), tc=tc, p=SETTINGS_PATH))
-    if installed is None:
-        pin = (config.init.read_toolchains().get(tc) or {}).get("InstallDir")
-        installed = {tc: toolchain_detect.detect(tc, pin=pin).found}
-    if not installed.get(tc):
+    pin = (config.init.read_toolchains().get(tc) or {}).get("InstallDir")
+    det = toolchain_detect.detect(tc, pin=pin)
+    if det.found:
+        print("Toolchain {tc}: {where} ({src})".format(
+            tc=tc, where=det.install_dir or ", ".join(det.bin_dirs or []), src=det.source))
+    else:
         print("note: toolchain {tc} was not found on this machine; "
               "./unifpga tools shows where it is looked for.".format(tc=tc))
     return 0
@@ -346,15 +361,50 @@ def _shown(path):
     return path if rel.startswith("..") else rel
 
 
+LOG_NAME = "log.txt"
+LOG_FORMAT = "%(levelname)s %(name)s: %(message)s"
+
+
+def _run_synthesize(argv, out_dir):
+    """synthesize.main() with its log also written to <out_dir>/log.txt
+    (BGM tees every step into the lab's log.txt); on failure the error lines
+    of that log are repeated, as BGM's `grep -i -A 5 error "$log"` does."""
+    os.makedirs(out_dir, exist_ok=True)
+    log_path = os.path.join(out_dir, LOG_NAME)
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)      # synthesize's own call is then a no-op
+    handler = logging.FileHandler(log_path, mode="w", encoding="utf-8")
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    root = logging.getLogger()
+    root.addHandler(handler)
+    try:
+        rc = synthesize.main(argv)
+    finally:
+        root.removeHandler(handler)
+        handler.close()
+    if rc:
+        try:
+            with open(log_path, encoding="utf-8", errors="replace") as f:
+                errors = [l.rstrip("\n") for l in f if "error" in l.lower()]
+        except OSError:
+            errors = []
+        if errors:
+            print("\nErrors ({}):".format(_shown(log_path)), file=sys.stderr)
+            for l in errors[-8:]:
+                print("  " + l[:200], file=sys.stderr)
+        print("unifpga: step failed with exit status {} (log: {})".format(rc, _shown(log_path)), file=sys.stderr)
+    return rc
+
+
 def cmd_build(args, program=False):
     design_dir = resolve_design(args.design)
     cfg_id = chosen_configuration(args.board)
     step = "full" if program else args.step
+    out = run_dir(design_dir, cfg_id)
     print("{verb} {d} for {c} ...  output: {o}".format(
         verb="Building and programming" if program else "Building",
-        d=os.path.basename(design_dir), c=cfg_id, o=_shown(run_dir(design_dir, cfg_id))))
+        d=os.path.basename(design_dir), c=cfg_id, o=_shown(out)))
     sys.stdout.flush()
-    return synthesize.main(synthesize_argv(design_dir, cfg_id, step, program))
+    return _run_synthesize(synthesize_argv(design_dir, cfg_id, step, program), out)
 
 
 def cmd_program(args):
@@ -362,12 +412,154 @@ def cmd_program(args):
 
 
 def cmd_clean(args):
+    if getattr(args, "all", False):                  # BGM clean_all.bash: every lab's run/
+        removed = 0
+        for name in list_designs():
+            if remove_run_dir(os.path.join(DESIGNS_DIR, name)):
+                removed += 1
+        print("Removed the run/ directory of {} design(s)".format(removed))
+        return 0
     design_dir = resolve_design(args.design)
     removed = remove_run_dir(design_dir)
     if removed:
         print("Removed {}".format(_shown(removed)))
     else:
         print("Nothing to clean: {} does not exist".format(_shown(run_dir(design_dir))))
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# sim (BGM 02_simulate_rtl: Icarus Verilog + gtkwave / surfer) and gui (05)
+# ---------------------------------------------------------------------------
+
+TB_NAME = "tb.sv"
+SIM_DIR_NAME = "sim"
+
+
+def _iverilog_language_option(version_text):
+    """-g2012, or -g2023 for Icarus 14+ (BGM icarus_verilog_choose_language_option)."""
+    import re
+    m = re.search(r"Icarus Verilog version (\d+)\.", version_text or "")
+    if m and int(m.group(1)) >= 14:
+        return "-g2023"
+    return "-g2012"
+
+
+def sim_sources(design_dir):
+    """The files BGM's run_icarus_verilog compiles, transposed: the design
+    directory's *.sv / *.v (tb.sv included), the design-common helpers, and
+    the peripheral models the design directory does not shadow."""
+    files = sorted(glob.glob(os.path.join(design_dir, "*.sv")) + glob.glob(os.path.join(design_dir, "*.v")))
+    common = os.path.join(REPO, "rtl", "peripherals", "designs_common")
+    files += sorted(glob.glob(os.path.join(common, "*.sv")))
+    return files
+
+
+def sim_command(design_dir, out_dir, lang="-g2012"):
+    return (["iverilog", lang, "-s", "tb", "-o", os.path.join(out_dir, "a.out"),
+             "-I", design_dir, "-I", os.path.join(design_dir, "cpu"),
+             "-I", os.path.join(REPO, "rtl", "peripherals"),
+             "-I", os.path.join(REPO, "rtl", "peripherals", "designs_common")]
+            + sim_sources(design_dir))
+
+
+def _waveform_viewer():
+    """gtkwave, or surfer on Apple silicon (BGM's choice); None when neither exists."""
+    if platform.system() == "Darwin" and platform.machine() == "arm64" and shutil.which("surfer"):
+        return ["surfer"]
+    for name in ("gtkwave", "surfer"):
+        if shutil.which(name):
+            return [name]
+    return None
+
+
+def cmd_sim(args):
+    design_dir = resolve_design(args.design)
+    tb = os.path.join(design_dir, TB_NAME)
+    if not os.path.isfile(tb):
+        raise CliError("{d} has no {tb}. BGM's labs keep the testbench next to the top; add one "
+                       "(module tb, instantiating design_top) and run again.".format(d=_shown(design_dir), tb=TB_NAME))
+    if not shutil.which("iverilog"):
+        raise CliError("iverilog is not on PATH. Install Icarus Verilog (apt/yum/brew install iverilog).")
+    out = os.path.join(run_dir(design_dir), SIM_DIR_NAME)
+    os.makedirs(out, exist_ok=True)
+    version = subprocess.run(["iverilog", "-V"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True).stdout
+    cmd = sim_command(design_dir, out, _iverilog_language_option(version))
+    print("Simulating {} ...  output: {}".format(os.path.basename(design_dir), _shown(out)))
+    log_path = os.path.join(out, LOG_NAME)
+    with open(log_path, "w", encoding="utf-8") as log:
+        rc = subprocess.run(cmd, cwd=out, stdout=log, stderr=subprocess.STDOUT).returncode
+        if rc == 0:
+            rc = subprocess.run(["vvp", os.path.join(out, "a.out")], cwd=out, stdout=log, stderr=subprocess.STDOUT).returncode
+    with open(log_path, encoding="utf-8", errors="replace") as f:
+        text = f.read()
+    print(text, end="")
+    if rc:
+        print("unifpga: simulation failed with exit status {} (log: {})".format(rc, _shown(log_path)), file=sys.stderr)
+        return rc
+    if "ERROR" in text:
+        print("unifpga: warning: errors detected in the simulation output", file=sys.stderr)
+    vcd = os.path.join(out, "dump.vcd")
+    if not os.path.isfile(vcd):
+        print("unifpga: no dump.vcd written by the testbench; nothing to show")
+        return 0
+    if getattr(args, "no_wave", False):
+        return 0
+    viewer = _waveform_viewer()
+    if viewer is None:
+        print("unifpga: gtkwave / surfer not installed; the waveform is {}".format(_shown(vcd)))
+        return 0
+    script = os.path.join(design_dir, "gtkwave.tcl" if viewer[0] == "gtkwave" else "surfer.scr")
+    extra = (["--script", script] if viewer[0] == "gtkwave" else ["--command-file", script]) if os.path.isfile(script) else []
+    subprocess.Popen(viewer + extra + [vcd], cwd=out)
+    return 0
+
+
+def gui_command(toolchain_id, out_dir, bins=None):
+    """Vendor GUI command for the last build in <out_dir>, or None with a
+    reason. BGM run_fpga_synthesis_gui_*: Quartus opens the .qpf, Vivado the
+    latest checkpoint, Gowin the .gprj, Efinity the project XML."""
+    def find(*patterns):
+        for pat in patterns:
+            hits = sorted(glob.glob(os.path.join(out_dir, pat)))
+            if hits:
+                return hits[0]
+        return None
+    if toolchain_id.startswith("quartus"):
+        prj = find("*.qpf")
+        return (["quartus", prj], None) if prj else (None, "no Quartus project in {} (run build first)".format(out_dir))
+    if toolchain_id == "vivado":
+        dcp = find("post_route.dcp", "post_place.dcp", "post_synth.dcp")
+        return (["vivado", dcp], None) if dcp else (["vivado"], None)
+    if toolchain_id in ("gowin_eda", "gowin_standard"):
+        prj = find("*.gprj")
+        return (["gw_ide", "-prj", prj], None) if prj else \
+            (None, "the Gowin flow here is scripted (gw_sh tcl, no .gprj); open the sources in gw_ide by hand")
+    if toolchain_id == "efinity":
+        xml = find("*.xml")
+        return (["efinity", "--project", xml] if xml else ["efinity"], None)
+    if toolchain_id.startswith("nextpnr_"):
+        return (None, "the open flow has no project GUI; nextpnr's --gui needs the place-and-route rerun by hand")
+    return (None, "no GUI known for toolchain {}".format(toolchain_id))
+
+
+def cmd_gui(args):
+    design_dir = resolve_design(args.design)
+    cfg_id = chosen_configuration(args.board)
+    cfgs = configurations()
+    tc_id = cfgs[cfg_id].get("toolchain", "")
+    out = run_dir(design_dir, cfg_id)
+    cmd, why = gui_command(tc_id, out)
+    if cmd is None:
+        raise CliError(why)
+    tc = config.init.resolve_toolchain_install(config.init.read_toolchains().get(tc_id) or {"Id": tc_id})
+    for d in reversed(tc.get("BinDirs") or []):
+        os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+    if not shutil.which(cmd[0]):
+        raise CliError("{} is not on PATH (./unifpga tools shows where the toolchain is looked for)".format(cmd[0]))
+    print("Opening: " + " ".join(cmd))
+    subprocess.Popen(cmd, cwd=out if os.path.isdir(out) else design_dir)
     return 0
 
 
@@ -390,6 +582,8 @@ COMMANDS = {
     "board": cmd_board,
     "build": cmd_build,
     "program": cmd_program,
+    "sim": cmd_sim,
+    "gui": cmd_gui,
     "clean": cmd_clean,
     "tools": cmd_tools,
     "designs": cmd_designs,
@@ -427,8 +621,17 @@ def build_parser():
     design_arg(pr)
     board_arg(pr)
 
-    cl = sub.add_parser("clean", help="remove <design>/run/")
+    sm = sub.add_parser("sim", help="simulate <design>/tb.sv with Icarus Verilog, open the waveform")
+    design_arg(sm)
+    sm.add_argument("-n", "--no-wave", action="store_true", help="do not open gtkwave / surfer")
+
+    gu = sub.add_parser("gui", help="open the vendor GUI on the last build")
+    design_arg(gu)
+    board_arg(gu)
+
+    cl = sub.add_parser("clean", help="remove <design>/run/ (--all: every design)")
     design_arg(cl)
+    cl.add_argument("--all", action="store_true", help="remove run/ of every design under designs/")
 
     sub.add_parser("tools", help="report where each toolchain was found (or why not)")
     sub.add_parser("designs", help="list the designs under designs/")

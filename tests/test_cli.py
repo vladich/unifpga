@@ -316,3 +316,48 @@ def test_launcher_help_and_no_args_from_a_subprocess(tmp_path):
         for cmd in cli.COMMANDS:
             assert cmd in r.stdout
     assert not (tmp_path / "settings.yml").exists()
+
+
+# ---------------------------------------------------------------- BGM script parity
+
+def test_sim_command_mirrors_bgm_run_icarus_verilog(tmp_path):
+    d = tmp_path / "designs" / "x"
+    d.mkdir(parents=True)
+    (d / "design_top.sv").write_text("module design_top; endmodule\n")
+    (d / "tb.sv").write_text("module tb; endmodule\n")
+    cmd = cli.sim_command(str(d), str(tmp_path / "out"), "-g2012")
+    assert cmd[:5] == ["iverilog", "-g2012", "-s", "tb", "-o"]
+    assert "-I" in cmd and str(d) in cmd
+    assert str(d / "tb.sv") in cmd and str(d / "design_top.sv") in cmd
+    assert any(p.endswith(os.path.join("designs_common", "seven_segment_display.sv")) for p in cmd)
+
+
+def test_iverilog_language_option_like_bgm():
+    assert cli._iverilog_language_option("Icarus Verilog version 12.0 (stable)") == "-g2012"
+    assert cli._iverilog_language_option("Icarus Verilog version 14.0 (devel)") == "-g2023"
+    assert cli._iverilog_language_option("") == "-g2012"
+
+
+def test_gui_command_table(tmp_path):
+    out = str(tmp_path)
+    cmd, why = cli.gui_command("quartus_prime_lite", out)
+    assert cmd is None and "run build first" in why
+    (tmp_path / "unifpga_top.qpf").write_text("")
+    assert cli.gui_command("quartus_prime_lite", out)[0] == ["quartus", os.path.join(out, "unifpga_top.qpf")]
+    assert cli.gui_command("vivado", out)[0] == ["vivado"]
+    (tmp_path / "post_synth.dcp").write_text("")
+    (tmp_path / "post_route.dcp").write_text("")
+    assert cli.gui_command("vivado", out)[0] == ["vivado", os.path.join(out, "post_route.dcp")]
+    assert cli.gui_command("gowin_eda", out)[0] is None
+    assert cli.gui_command("nextpnr_icestorm", out)[0] is None
+
+
+def test_clean_all_removes_every_design_run_dir(tmp_path, monkeypatch):
+    designs = tmp_path / "designs"
+    for name in ("a", "b"):
+        (designs / name).mkdir(parents=True)
+        (designs / name / "design_top.sv").write_text("")
+        (designs / name / "run").mkdir()
+    monkeypatch.setattr(cli, "DESIGNS_DIR", str(designs))
+    assert cli.main(["clean", "--all"]) == 0
+    assert not (designs / "a" / "run").exists() and not (designs / "b" / "run").exists()

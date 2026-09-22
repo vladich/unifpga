@@ -17,6 +17,7 @@ Set $UNIFPGA_DRY_RUN=1 to generate every artifact without invoking Quartus.
 import datetime
 import logging
 import os
+import re
 import shutil
 import subprocess
 
@@ -238,29 +239,54 @@ def _find_bitstream(output):
     return None
 
 
+def _cables(quartus_pgm, env, cwd):
+    """Cable names from `quartus_pgm -l` ("1) USB-Blaster [1-2]"), BGM's
+    configure_fpga_quartus."""
+    try:
+        out = subprocess.run([quartus_pgm, "-l"], cwd=cwd, env=env, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, universal_newlines=True).stdout
+    except OSError as exc:
+        log.error("quartus_pgm -l failed: %s", exc)
+        return []
+    return [m.group(1).strip() for m in re.finditer(r"^\s*\d+\)\s+(.+?)\s*$", out, re.M)]
+
+
 def program(*, board, board_pinmap=None, toolchain, output, **_):
-    """Download the .sof (or a CPLD's .pof) to the connected board over JTAG
-    via quartus_pgm; both go through the same `P;<file>` operation."""
+    """Download the bitstream over JTAG the way BGM's configure_fpga_quartus
+    does: the first cable `quartus_pgm -l` lists (warn on more), `.sof` else
+    `.pof` (MAX II), the FPGA's index in the JTAG chain from the pinmap
+    (`toolchain_options.quartus.jtag_device_index`: 2 behind the HPS on the
+    DE1-SoC / DE10-Nano)."""
     bitstream = _find_bitstream(output)
+    dry = bool(os.environ.get("UNIFPGA_DRY_RUN"))
+    if bitstream is None and not dry:
+        log.error("Bitstream not found: %s.sof / .pof in %s — run synthesis first", PROJECT_NAME, output)
+        return 1
     if bitstream is None:
-        if not os.environ.get("UNIFPGA_DRY_RUN"):
-            log.error("Bitstream not found: %s.sof / .pof — run synthesis first",
-                      os.path.join(output, PROJECT_NAME))
-            return 1
         bitstream = os.path.join(output, PROJECT_NAME + ".sof")
-
-    if os.environ.get("UNIFPGA_DRY_RUN"):
-        log.info("[dry run] Would program %s", bitstream)
+    opts = ((board_pinmap or {}).get("toolchain_options") or {}).get("quartus") or {}
+    index = opts.get("jtag_device_index")
+    target = "P;{}{}".format(bitstream, "@{}".format(index) if index else "")
+    if dry:
+        log.info("[dry run] Would program %s", target)
         return 0
-
     quartus_pgm = _resolve_quartus_bin(toolchain, "quartus_pgm")
     if quartus_pgm is None:
         log.error("Could not locate quartus_pgm.")
         return 1
-
-    cmd = [quartus_pgm, "--mode=jtag", "-o", "P;{}".format(bitstream)]
+    env = dict(os.environ)
+    env["QUARTUS_64BIT"] = "1"
+    cables = _cables(quartus_pgm, env, output)
+    if not cables:
+        log.error("quartus_pgm lists no cable. Is the USB-Blaster connected? On Linux the udev rules for it "
+                  "(BGM: scripts/fpga/90-intel-fpga.rules -> /etc/udev/rules.d) must be installed; "
+                  "a stale jtagd can be stopped with `killall jtagd`.")
+        return 1
+    if len(cables) > 1:
+        log.warning("more than one cable is connected: %s; using %s", ", ".join(cables), cables[0])
+    cmd = [quartus_pgm, "--no_banner", "-c", cables[0], "--mode=jtag", "-o", target]
     log.info("Programming via: %s", " ".join(cmd))
-    rc = subprocess.run(cmd, cwd=output).returncode
+    rc = subprocess.run(cmd, cwd=output, env=env).returncode
     if rc != 0:
-        log.error("Programming failed (exit %d). Is the board connected?", rc)
+        log.error("Programming failed (exit %d). Is the board powered and the cable driver installed?", rc)
     return rc
