@@ -42,6 +42,8 @@ Configuration:
 
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_800_480
+      params:
+        clock_pixel_mhz: 48.9375
       bind:
         r: onboard_lcd.r
         g: onboard_lcd.g
