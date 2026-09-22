@@ -29,6 +29,8 @@ Configuration:
     - peripheral: button_array
       params: { width: 5 }
       bind: { btn: onboard_buttons }
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [1, 3, 2, 0, 4]
 
     - peripheral: rgb_led
       bind:

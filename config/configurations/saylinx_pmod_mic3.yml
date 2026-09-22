@@ -22,7 +22,8 @@ Configuration:
       bind:
         btn: onboard_buttons
       lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: [0, 1, 2]
+        buttons: [2, 1, 0]
+        switches: [2, 1, 0]
     - peripheral: led_bank
       params:
         width: 4

@@ -25,11 +25,15 @@ Configuration:
         width: 6
       bind:
         btn: onboard_buttons
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [1, 2, 3, 4, 5, ~]
     - peripheral: sw_bank        # BGM: .sw ( ~ CKEY )
       params:
         width: 4
       bind:
         sw: onboard_switches
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        switches: [1, 2, 3, 4]
     - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
       params:
         digits: 8

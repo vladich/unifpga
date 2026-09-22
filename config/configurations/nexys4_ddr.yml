@@ -51,6 +51,8 @@ Configuration:
         width: 5
       bind:
         btn: onboard_buttons
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [1, 3, 2, 0, 4]
     - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
       params:
         bits_r: 4
