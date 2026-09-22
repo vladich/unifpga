@@ -19,11 +19,13 @@ Configuration:
         clk: clk
     - peripheral: button_array
       params:
+        as_switches: true
         width: 2
       bind:
         btn: onboard_buttons
       lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
         buttons: [0, 1]
+        switches: [0, 1]
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx

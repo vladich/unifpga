@@ -14,9 +14,12 @@ Configuration:
       rst: cpu_resetn
   - peripheral: button_array
     params:
+      as_switches: true
       width: 4
     bind:
       btn: onboard_buttons
+    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+      switches: [0, 1, 2, 3]
   - peripheral: led_bank   # from BGM alinx_ax7035b/board_specific_top.sv
     params:
       width: 4
