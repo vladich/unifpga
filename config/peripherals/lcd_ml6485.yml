@@ -1,31 +1,58 @@
-# ML6485 LCD controller — serial-style interface, used on a few Tang Nano variants.
+# 480x272 RGB-parallel LCD with the ML6485 controller (Tang Nano 9K
+# `lcd_ml6485` variants). BGM drives it through the same LARGE_LCD_* pins as
+# the plain 480x272 panel (boards/tang_nano_9k_lcd_480_272_tm1638/
+# board_specific_top.sv, `USE_LCD_480_272_ML6485` branch) with the
+# `lcd_480_272_ml6485` timing module and the 800x480 PLL setting
+# (Gowin_rPLL CLKOUTD = 32.4 MHz). It is not a serial (SPI) display: the
+# SMALL_LCD_* pins are declared but never driven in BGM.
 
 Peripheral:
   id: lcd_ml6485
-  description: ML6485-controlled small serial LCD (4-wire SPI plus reset and command/data select)
+  description: 480x272 RGB-parallel LCD (ML6485 controller) with HSYNC/VSYNC/DE/CLK and optional backlight
+  parameters:
+    bits_r: { type: int, default: 5 }
+    bits_g: { type: int, default: 6 }
+    bits_b: { type: int, default: 5 }
+    bl:   { type: string, default: const.1 }
+    init: { type: string, default: const.0 }
   signals:
-    - { name: data,    type: scalar, direction: output }
-    - { name: clk,     type: scalar, direction: output }
-    - { name: resetn,  type: scalar, direction: output }
-    - { name: cs,      type: scalar, direction: output }
-    - { name: rs,      type: scalar, direction: output, comment: "Register-select / data-command" }
+    - { name: r,    type: bus, width: $bits_r, direction: output }
+    - { name: g,    type: bus, width: $bits_g, direction: output }
+    - { name: b,    type: bus, width: $bits_b, direction: output }
+    - { name: hs,   type: scalar, direction: output, optional: true }
+    - { name: vs,   type: scalar, direction: output, optional: true }
+    - { name: de,   type: scalar, direction: output }
+    - { name: ck,   type: scalar, direction: output }
+    - { name: bl,   type: scalar, direction: output, optional: true, comment: "Backlight enable" }
+    - { name: init, type: scalar, direction: output, optional: true, comment: "Init / display enable" }
   provides:
     - capability: screen
       params:
         width: 480
         height: 272
         color_depth: 565
+        bits_r: $bits_r
+        bits_g: $bits_g
+        bits_b: $bits_b
+  # BGM clocks this panel from the 800x480 PLL setting: 27 MHz -> CLKOUT
+  # 129.6 MHz -> CLKOUTD / 4 = 32.4 MHz (annotated "33.33 MHz" in the top).
+  clocks:
+    - { name: pixel, mhz: 32.4 }
   driver:
     module: lcd_480_272_ml6485
     file: rtl/peripherals/lcd_480_272_ml6485.sv
     port_map:
-      PixelClk:  context.clk
+      PixelClk:  clock.pixel
       nRST:      context.rst_n
-      LCD_DE:    pin.cs       # ML6485 doesn't use HS/VS/DE — repurpose where suitable
-      LCD_HSYNC: pin.rs
-      LCD_VSYNC: pin.clk
+      LCD_DE:    pin.de
+      LCD_HSYNC: pin.hs
+      LCD_VSYNC: pin.vs
       x:         capability.screen.x
       y:         capability.screen.y
   pin_assigns:
-    pin.data:   capability.screen.red    # serial data — actual encoding done in driver
-    pin.resetn: context.rst_n
+    pin.r:    capability.screen.red
+    pin.g:    capability.screen.green
+    pin.b:    capability.screen.blue
+    pin.ck:   clock.pixel
+    pin.bl:   $bl
+    pin.init: $init

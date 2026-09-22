@@ -16,14 +16,18 @@ Peripheral:
         width: 640
         height: 480
         color_depth: 888
+  # 25.125 MHz pixel clock from the iCE40 PLL (BGM: SB_PLL40_PAD 12 -> 25.125
+  # MHz; the whole lab runs on it, see `lab_clock:` in the configurations).
+  clocks:
+    - { name: pixel, mhz: 25.125 }
   driver:
     module: dvi_pmod_ddr_24b
     file: rtl/peripherals/dvi_pmod_ddr_24b.sv
     parameters:
-      clk_mhz:   context.clk_mhz
+      clk_mhz:   25
       pixel_mhz: 25
     port_map:
-      clk:     context.clk
+      clk:     clock.pixel
       rst:     context.rst
       x:       capability.screen.x
       y:       capability.screen.y

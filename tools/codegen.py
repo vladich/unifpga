@@ -29,6 +29,7 @@ from collections import OrderedDict, defaultdict
 import yaml
 
 from config import init as config_init
+from tools import pll_solver
 
 
 log = logging.getLogger(__name__)
@@ -253,6 +254,209 @@ def resolve_clock(resolved, plans=None):
 
 def _clock_period_ns(clock):
     return 1000.0 / float(clock["mhz"])
+
+
+# ---------------------------------------------------------------------------
+# Clock tree: PLL-derived clocks requested by peripherals (P3.1, decision D8)
+#
+# A peripheral declares `clocks: [{name: pixel, mhz: 9, tolerance_pct: 0.5}]`
+# and refers to it as `clock.pixel` in port_map / pin_assigns. Codegen
+# instantiates one vendor PLL wrapper per distinct clock name on the board
+# clock, with dividers from tools/pll_solver.py, and exposes `clk_<name>`.
+# ---------------------------------------------------------------------------
+
+def collect_clock_requirements(resolved):
+    """{name: {"mhz": float, "tolerance_pct": float, "users": [attach idx]}}.
+    A configuration may override a frequency with `params.clock_<name>_mhz`."""
+    reqs = OrderedDict()
+    for idx, attach in enumerate(resolved["peripherals"]):
+        for c in attach["peripheral"].get("clocks") or []:
+            name = c["name"]
+            mhz = float(c["mhz"])
+            override = (attach.get("params") or {}).get("clock_{}_mhz".format(name))
+            if override is not None:
+                mhz = float(override)
+            tol = float(c.get("tolerance_pct", 0.5))
+            if name in reqs and abs(reqs[name]["mhz"] - mhz) > 1e-6:
+                raise CodegenError("Configuration {}: clock '{}' requested at {} MHz by {} and at {} MHz by {}"
+                                   .format(resolved["configuration"]["id"], name, reqs[name]["mhz"],
+                                           reqs[name]["users"], mhz, attach["peripheral_id"]))
+            reqs.setdefault(name, {"mhz": mhz, "tolerance_pct": tol, "users": []})["users"].append(idx)
+    return reqs
+
+
+def _pll_vendor(board):
+    """Which PLL wrapper the board's device family takes, or None."""
+    producer = (board.get("PartProducer") or "").lower()
+    family = (board.get("PartFamily") or "").lower()
+    part = (board.get("Part") or "").upper()
+    if "gowin" in producer:
+        if part.startswith("GW5") or "gw5" in family or "arorav" in family:
+            return "gowin_gw5"           # PLLA-based Gowin_PLL: not wrapped yet (P3.1b)
+        return "gowin_rpll"
+    if "lattice" in producer and "ice40" in family:
+        return "ice40"
+    return None
+
+
+def _gowin_rpll_device(resolved):
+    """The rPLL `DEVICE` parameter BGM uses (`GW1NR-9C`, `GW2AR-18C`): the
+    `-name` plus `-device_version` from the board's Gowin set_device args."""
+    opts = ((resolved["board_pinmap"].get("toolchain_options") or {}).get("gowin") or {})
+    args = opts.get("set_device") or ""
+    m_name = re.search(r"-name\s+(\S+)", args)
+    m_ver = re.search(r'-device_version\s+("[^"]*"|\S+)', args)
+    if m_name:
+        ver = (m_ver.group(1).strip('"') if m_ver else "")
+        return m_name.group(1) + ver
+    part = (resolved["board"].get("Part") or "").upper()
+    m = re.match(r"^(GW\d[A-Z]*)-[A-Z]*(\d+)", part)
+    return "{}-{}C".format(m.group(1), m.group(2)) if m else "GW1NR-9C"
+
+
+def plan_clock_tree(resolved, plans=None):
+    """Resolve every requested clock to a PLL setting. Returns
+    [(name, req, vendor, solution)] or raises CodegenError with the reason
+    (unknown board clock, unsupported family, no divider solution)."""
+    reqs = collect_clock_requirements(resolved)
+    if not reqs:
+        return []
+    cfg_id = resolved["configuration"]["id"]
+    clock = resolve_clock(resolved, plans)
+    if clock is None or clock["mhz"] is None:
+        raise CodegenError("Configuration {}: peripherals need PLL clocks ({}) but the board clock "
+                           "frequency is unknown".format(cfg_id, ", ".join(reqs)))
+    vendor = _pll_vendor(resolved["board"])
+    out = []
+    for name, r in reqs.items():
+        if vendor == "gowin_rpll":
+            sol = pll_solver.gowin_rpll(clock["mhz"], r["mhz"], r["tolerance_pct"])
+        elif vendor == "ice40":
+            sol = pll_solver.ice40_pll(clock["mhz"], r["mhz"], r["tolerance_pct"])
+        elif vendor == "gowin_gw5":
+            raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but the GW5 "
+                               "(AroraV) PLLA wrapper is not implemented yet (PLAN.md P3.1b)"
+                               .format(cfg_id, name, r["mhz"]))
+        else:
+            raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper "
+                               "exists for {} / {} (PLAN.md P3.1)".format(
+                                   cfg_id, name, r["mhz"], resolved["board"].get("PartProducer"),
+                                   resolved["board"].get("PartFamily")))
+        if sol is None:
+            raise CodegenError("Configuration {}: no {} PLL setting reaches {} MHz from {} MHz within {}%"
+                               .format(cfg_id, vendor, r["mhz"], clock["mhz"], r["tolerance_pct"]))
+        out.append((name, r, vendor, sol))
+    return out
+
+
+def lab_clock(resolved, plans=None):
+    """The clock the lab (design_top, resets, tm1638, ...) runs on. Default:
+    the board oscillator (`clk`). A configuration whose BGM twin runs the lab
+    on a PLL clock (`localparam lab_mhz = pixel_mhz; assign clk = pixel_clk`
+    on the iCEBreaker DVI and Tang Primer 20K Dock LCD/HDMI variants) says
+    `lab_clock: pixel` and the whole lab moves to `clk_pixel`.
+    Returns {"net", "mhz", "name"} (name None for the board clock)."""
+    clock = resolve_clock(resolved, plans)
+    name = resolved["configuration"].get("lab_clock")
+    if not name:
+        return {"net": "clk", "mhz": clock["mhz"] if clock else None, "name": None}
+    reqs = collect_clock_requirements(resolved)
+    if name not in reqs:
+        raise CodegenError("Configuration {}: lab_clock '{}' is not a clock any attached peripheral "
+                           "declares (have: {})".format(resolved["configuration"]["id"], name,
+                                                        ", ".join(reqs) or "none"))
+    return {"net": "clk_" + name, "mhz": reqs[name]["mhz"], "name": name}
+
+
+# Emission state for the top being generated (codegen is single-threaded):
+# the lab clock net `context.clk` resolves to.
+_EMIT = {"lab_clk": "clk"}
+
+
+def _emit_clock_tree(resolved, plans, clock, strict=True):
+    try:
+        tree = plan_clock_tree(resolved, plans)
+    except CodegenError as exc:
+        if strict:
+            raise
+        # Non-strict output (audits, lint of refused configurations): keep the
+        # module elaborable, say loudly what is missing. synthesize.py never
+        # takes this path.
+        lines = ["    // ---- Clock tree: NOT GENERATED ({}) ----".format(str(exc).split(": ", 1)[-1])]
+        for name in collect_clock_requirements(resolved):
+            lines.append("    wire clk_{n} = clk;            // TODO PLL; placeholder, wrong frequency".format(n=name))
+            lines.append("    wire clk_{n}_locked = 1'b1;".format(n=name))
+        return lines
+    if not tree:
+        return []
+    lab = lab_clock(resolved, plans)
+    lines = ["    // ---- Clock tree: PLL-derived clocks requested by peripherals ----"]
+    fin = clock["mhz"]
+    fin_str = str(int(fin)) if float(fin).is_integer() else "{:g}".format(fin)
+    for name, r, vendor, sol in tree:
+        net = "clk_" + name
+        lines.append("    wire {n}, {n}_locked;".format(n=net))
+        if vendor == "gowin_rpll":
+            lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz{})".format(
+                net, sol.f_out, fin_str, sol.f_pfd, sol.f_vco, ", via CLKOUTD" if sol.use_clkoutd else ""))
+            lines.append('    pll_gowin_rpll # (.FCLKIN("{fin}"), .IDIV_SEL({i}), .FBDIV_SEL({f}), .ODIV_SEL({o}), '
+                         '.DYN_SDIV_SEL({s}), .USE_CLKOUTD(1\'b{d}), .DEVICE("{dev}")) i_pll_{name} '
+                         '(.clkin(clk), .clkout({net}), .lock({net}_locked));'.format(
+                             fin=fin_str, i=sol.idiv, f=sol.fbdiv, o=sol.odiv, s=sol.sdiv,
+                             d=1 if sol.use_clkoutd else 0, dev=_gowin_rpll_device(resolved),
+                             name=name, net=net))
+        elif vendor == "ice40":
+            lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz)".format(
+                net, sol.f_out, fin_str, sol.f_pfd, sol.f_vco))
+            # SB_PLL40_PAD (BGM's choice) takes the clock pad itself, which then
+            # cannot feed the fabric: only when the lab moved onto this PLL.
+            use_pad = 1 if lab["name"] == name else 0
+            lines.append("    pll_ice40 # (.DIVR(4'd{r}), .DIVF(7'd{f}), .DIVQ(3'd{q}), .FILTER_RANGE(3'd{fr}), "
+                         ".USE_PAD(1'b{pad})) i_pll_{name} (.clkin(clk), .clkout({net}), .lock({net}_locked));".format(
+                             r=sol.divr, f=sol.divf, q=sol.divq, fr=sol.filter_range, pad=use_pad,
+                             name=name, net=net))
+    return lines
+
+
+def pll_source_files(top_text):
+    """Repo-relative RTL files a generated top needs for its PLL wrappers."""
+    out = []
+    if "pll_gowin_rpll" in top_text:
+        out.append(os.path.join("rtl", "pll", "pll_gowin_rpll.sv"))
+    if "pll_ice40" in top_text:
+        out.append(os.path.join("rtl", "pll", "pll_ice40.sv"))
+    return out
+
+
+def pll_source_paths(repo, generated_top):
+    """Absolute PLL wrapper paths for the toolchain source collectors: reads
+    the generated top and maps the wrapper modules it instantiates to
+    rtl/pll/*.sv (empty when the configuration has no PLL clock)."""
+    try:
+        with open(generated_top) as fh:
+            text = fh.read()
+    except OSError:
+        return []
+    return [os.path.join(repo, rel) for rel in pll_source_files(text)
+            if os.path.exists(os.path.join(repo, rel))]
+
+
+def clock_driven_pins(resolved):
+    """[(port_name, clock_name, mhz)] for pins a peripheral drives straight
+    from a PLL clock (`pin.ck: clock.pixel`), so the constraint emitters can
+    put BGM's `create_clock` on the output pad."""
+    reqs = collect_clock_requirements(resolved)
+    out = []
+    for attach in resolved["peripherals"]:
+        bind = attach.get("bind") or {}
+        for lhs, rhs in (attach["peripheral"].get("pin_assigns") or {}).items():
+            if not (isinstance(rhs, str) and rhs.strip().startswith("clock.")):
+                continue
+            pin = _pin_of(lhs)
+            name = rhs.strip()[len("clock."):]
+            if pin and pin in bind and name in reqs:
+                out.append((_bank_port_name(bind[pin]), name, reqs[name]["mhz"]))
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -500,6 +704,12 @@ def validate_configuration(resolved, plans=None):
         problems.append("no clock_input attachment")
     elif clock["mhz"] is None:
         problems.append("clock bank {!r} has no frequency_mhz (configuration or pinmap)".format(clock["bank_ref"]))
+    else:
+        try:
+            plan_clock_tree(resolved, plans)
+            lab_clock(resolved, plans)
+        except CodegenError as exc:
+            problems.append(str(exc).split(": ", 1)[-1])
 
     return ["Configuration {}: {}".format(cfg_id, p) for p in problems]
 
@@ -523,6 +733,7 @@ def emit_top_sv(resolved, strict=True):
         if problems:
             raise CodegenError("\n".join(problems))
     referenced_banks = collect_referenced_banks(resolved)
+    _EMIT["lab_clk"] = lab_clock(resolved, plans)["net"]
 
     out = []
     out.append("// =============================================================================")
@@ -548,6 +759,12 @@ def emit_top_sv(resolved, strict=True):
     # ---- Capability bus declarations ----
     out.extend(_emit_capability_busses(plans))
     out.append("")
+
+    # ---- Clock tree (PLLs on the board clock) ----
+    tree_lines = _emit_clock_tree(resolved, plans, resolve_clock(resolved, plans), strict=strict)
+    if tree_lines:
+        out.extend(tree_lines)
+        out.append("")
 
     # ---- Reset (may reference the switches / buttons buses) ----
     out.extend(_emit_reset(resolved, plans))
@@ -606,8 +823,19 @@ def _emit_context(resolved, plans):
 
     # Advertise clk_mhz to the peripheral drivers (context.clk_mhz). Same
     # value design_top receives (see _emit_lab_top); 50 only as a last resort.
-    lines.append("    localparam int clk_mhz = {};".format(_clk_mhz_int(clock)))
+    # With `lab_clock:` this is the PLL clock's frequency (BGM's lab_mhz).
+    lab = lab_clock(resolved, plans)
+    if lab["name"]:
+        lines.append("    // Lab clock: context.clk is {} ({:g} MHz), see the clock tree below."
+                     .format(lab["net"], lab["mhz"]))
+    lines.append("    localparam int clk_mhz = {};".format(_lab_mhz_int(lab, clock)))
     return lines
+
+
+def _lab_mhz_int(lab, clock):
+    if lab["mhz"] is not None:
+        return int(round(lab["mhz"]))
+    return _clk_mhz_int(clock)
 
 
 def _clk_mhz_int(clock):
@@ -736,7 +964,7 @@ def _emit_reset(resolved, plans):
         elif kind == "power_up":
             lines.append("    wire rst_on_power_up;")
             lines.append("    imitate_reset_on_power_up i_imitate_reset_on_power_up "
-                         "(.clk (clk), .rst (rst_on_power_up));")
+                         "(.clk ({}), .rst (rst_on_power_up));".format(_EMIT["lab_clk"]))
             terms.append("rst_on_power_up")
     lines.append("    assign rst = {};".format(" | ".join(terms) if terms else "1'b0"))
     return lines
@@ -1114,7 +1342,12 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
                     idx_suffix = "[{}]".format(off) if w == 1 else "[{}:{}]".format(off+w-1, off)
             return invert + base + idx_suffix
     if s.startswith("context."):
-        return invert + s[len("context."):] + idx_suffix
+        name = s[len("context."):]
+        if name == "clk":
+            name = _EMIT["lab_clk"]
+        return invert + name + idx_suffix
+    if s.startswith("clock."):
+        return invert + "clk_" + s[len("clock."):] + idx_suffix
     if s.startswith("const."):
         v = s[len("const."):]
         return invert + ("1'b" + v if v in ("0", "1") else v) + idx_suffix
@@ -1126,8 +1359,20 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
         if v is None:
             raise CodegenError("{}: parameter {} has no value and no default".format(
                 attach.get("peripheral_id", "?"), s))
+        if isinstance(v, str) and _looks_like_ref(v):
+            # `params: {bl: const.0}` / `{bl: context.rst_n}`: a wiring choice
+            # the configuration makes (BGM: `assign LCD_BL = ~ rst` on one
+            # board, `1'b0` on another).
+            return invert + _resolve_ref(v, attach, plans, bind, lhs_context, slice_for_idx) + idx_suffix
         return invert + _sv_literal(v) + idx_suffix
     return invert + s + idx_suffix
+
+
+_REF_PREFIXES = ("pin.", "capability.", "context.", "clock.", "const.")
+
+
+def _looks_like_ref(v):
+    return v.strip().lstrip("~").strip().startswith(_REF_PREFIXES)
 
 
 def _sv_literal(v):
@@ -1251,7 +1496,8 @@ def _emit_lab_top(resolved, plans):
     else:
         sw = sh = wr = wg = wb = 0
 
-    clk_mhz = _clk_mhz_int(resolve_clock(resolved, plans))
+    lab = lab_clock(resolved, plans)
+    clk_mhz = _lab_mhz_int(lab, resolve_clock(resolved, plans))
 
     params = [
         ("clk_mhz",       clk_mhz),
@@ -1273,7 +1519,7 @@ def _emit_lab_top(resolved, plans):
     lines.append("    ) i_design_top (")
 
     port_lines = [
-        "        .clk(clk)",
+        "        .clk({})".format(lab["net"]),
         "        .rst(rst)",
         "        .sw(cap_switches_sw)"        if plans["switches"].providers      else "        .sw('0)",
         "        .btn(cap_buttons_btn)"       if plans["buttons"].providers       else "        .btn('0)",
@@ -1677,6 +1923,11 @@ def emit_sdc(resolved):
         )
     else:
         out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
+    # PLL clocks forwarded to output pads (LCD pixel clock): constrain the pad
+    # the way BGM's board_specific.sdc does (`create_clock -name LARGE_LCD_CK ...`).
+    for port, name, mhz in clock_driven_pins(resolved):
+        out.append("create_clock -name {name} -period {p:.3f} [get_ports {{{port}}}]".format(
+            name=re.sub(r"\W+", "_", port).strip("_"), port=port, p=1000.0 / mhz))
 
     if toolchain_id.startswith("quartus"):
         out.append("derive_pll_clocks -create_base_clocks")
@@ -2107,6 +2358,8 @@ def emit_pcf(resolved):
         out.append("set_frequency {} {:g}".format(clock["port"], clock["mhz"]))
     else:
         out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
+    for port, name, mhz in clock_driven_pins(resolved):
+        out.append("set_frequency {} {:g}".format(port, mhz))
 
     out.append("")
     return "\n".join(out)

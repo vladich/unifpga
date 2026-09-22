@@ -444,6 +444,146 @@ def _tcl_candidates(vdir):
 # One-call summary
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# PLL settings and the clocks BGM derives from them (P3.1)
+# ---------------------------------------------------------------------------
+
+_DEFPARAM = re.compile(r"defparam\s+\w+\.(\w+)\s*=\s*([^;]+);")
+_PLL_MODELLED = ("Gowin_rPLL", "SB_PLL40_PAD", "SB_PLL40_CORE")
+
+
+def _pll_wrapper_files(vdir, files, names):
+    """Candidate wrapper files: the variant dir first, then every directory on
+    the include chain (a `_yosys` twin ships its own gowin_rpll.v next to a
+    two-line top that includes the sibling's); `<name>/` subdirectories too
+    (marsohod3gw2 keeps gowin_rpll/gowin_rpll.v)."""
+    dirs = [vdir]
+    for f in files or []:
+        d = os.path.dirname(f)
+        if d not in dirs:
+            dirs.append(d)
+    out = []
+    for d in dirs:
+        for n in names:
+            for cand in (os.path.join(d, n), os.path.join(d, os.path.splitext(n)[0], n)):
+                if os.path.exists(cand) and cand not in out:
+                    out.append(cand)
+    return out
+
+
+def rpll_settings(vdir, files=None):
+    """Gowin rPLL dividers from the variant's gowin_rpll.v: {"FCLKIN",
+    "IDIV_SEL", "FBDIV_SEL", "ODIV_SEL", "DYN_SDIV_SEL", "DEVICE", "file"}
+    or None. CLKOUT = FCLKIN / (IDIV_SEL + 1) * (FBDIV_SEL + 1);
+    CLKOUTD = CLKOUT / DYN_SDIV_SEL."""
+    for cand in _pll_wrapper_files(vdir, files, ("gowin_rpll.v",)):
+        with open(cand, encoding="utf-8", errors="replace") as f:
+            vals = {k: v.strip().strip('"') for k, v in _DEFPARAM.findall(f.read())}
+        if "IDIV_SEL" in vals and "FBDIV_SEL" in vals:
+            return {"FCLKIN": float(vals.get("FCLKIN", "27")),
+                    "IDIV_SEL": int(vals["IDIV_SEL"]),
+                    "FBDIV_SEL": int(vals["FBDIV_SEL"]),
+                    "ODIV_SEL": int(vals.get("ODIV_SEL", "8")),
+                    "DYN_SDIV_SEL": int(vals.get("DYN_SDIV_SEL", "2")),
+                    "DEVICE": vals.get("DEVICE"),
+                    "file": cand}
+    return None
+
+
+def _vlit(s):
+    """Verilog integer literal (`4'b0000`, `7'b1000010`, `12`) -> int."""
+    s = s.strip().replace("_", "")
+    m = re.match(r"^(?:\d+)?'([bBdDhHoO])([0-9a-fA-F]+)$", s)
+    if m:
+        return int(m.group(2), {"b": 2, "d": 10, "h": 16, "o": 8}[m.group(1).lower()])
+    return int(s)
+
+
+def _net_used(text, net, ports):
+    """A PLL output is 'used' when it is a top port or appears beyond its wire
+    declaration and the PLL connection (`high_clk` on the Tang Nano 20K alt
+    variant is connected but dead)."""
+    if net in ports:
+        return True
+    return len(re.findall(r"(?<![A-Za-z0-9_])%s(?![A-Za-z0-9_])" % re.escape(net), text)) >= 3
+
+
+def pll_outputs(vdir, text, files=None):
+    """(outputs, unmodelled). outputs = [(net, mhz, via)] for every PLL output
+    BGM connects and uses: Gowin_rPLL clkout/clkoutd computed from
+    gowin_rpll.v, SB_PLL40_* from its DIVR/DIVF/DIVQ on the board clock.
+    unmodelled = PLL modules whose frequency this oracle cannot compute yet
+    (GW5 Gowin_PLL, Xilinx clk_wiz, altpll, ...) and rPLLs without a wrapper file."""
+    ports = top_ports(text)
+    outs, unmodelled = [], []
+    for inst in instantiations(text, "Gowin_rPLL"):
+        st = rpll_settings(vdir, files)
+        if st is None:
+            unmodelled.append("Gowin_rPLL(no gowin_rpll.v)")
+            continue
+        f_clkout = st["FCLKIN"] / (st["IDIV_SEL"] + 1) * (st["FBDIV_SEL"] + 1)
+        for port, expr in inst["ports"]:
+            if not expr or not _net_used(text, expr, ports):
+                continue
+            if port == "clkout":
+                outs.append((expr, f_clkout, "clkout"))
+            elif port == "clkoutd":
+                outs.append((expr, f_clkout / st["DYN_SDIV_SEL"], "clkoutd"))
+    fin = clk_mhz(text)
+    for mod in ("SB_PLL40_PAD", "SB_PLL40_CORE"):
+        for inst in instantiations(text, mod):
+            params = dict(inst["params"])
+            try:
+                divr, divf, divq = (_vlit(params[k]) for k in ("DIVR", "DIVF", "DIVQ"))
+            except (KeyError, ValueError):
+                unmodelled.append(mod + "(params)")
+                continue
+            if fin is None:
+                unmodelled.append(mod + "(no clk_mhz)")
+                continue
+            f = fin / (divr + 1) * (divf + 1) / (2 ** divq)
+            for port, expr in inst["ports"]:
+                if port in ("PLLOUTCORE", "PLLOUTGLOBAL") and expr:
+                    outs.append((expr, f, mod))
+    for name in sorted(set(pll_instances(text))):
+        if name not in _PLL_MODELLED:
+            unmodelled.append(name)
+    return outs, unmodelled
+
+
+def lab_clock_source(text):
+    """'pixel' when the lab runs on the PLL pixel clock (`localparam lab_mhz =
+    pixel_mhz; assign clk = pixel_clk` — iCEBreaker DVI, Tang Primer 20K Dock
+    LCD/HDMI), else 'board'."""
+    m = re.search(r"localparam\s+lab_mhz\s*=\s*([A-Za-z_]\w*)", text)
+    return "pixel" if m and m.group(1) == "pixel_mhz" else "board"
+
+
+def lab_mhz(text):
+    """The clk_mhz the lab (lab_top) receives: pixel_mhz or clk_mhz."""
+    if lab_clock_source(text) == "pixel":
+        m = re.search(r"\bpixel_mhz\s*=\s*([0-9.]+)", text)
+        return float(m.group(1)) if m else None
+    return clk_mhz(text)
+
+
+def screen_size(text):
+    """(screen_width, screen_height) parameters after preprocessing, or None."""
+    w = re.search(r"\bscreen_width\s*=\s*(\d+)", text)
+    h = re.search(r"\bscreen_height\s*=\s*(\d+)", text)
+    return (int(w.group(1)), int(h.group(1))) if w and h else None
+
+
+_ASSIGN = re.compile(r"\bassign\s+([A-Za-z_]\w*)\s*=\s*([^;]+);")
+
+
+def port_assigns(text):
+    """{PORT: expr} for every `assign PORT = expr;` of a top-level port
+    (`LCD_BL = 1'b0`, `LCD_BL = ~ rst`, `LCD_INIT = 1'b0`)."""
+    ports = top_ports(text)
+    return {p: " ".join(e.split()) for p, e in _ASSIGN.findall(text) if p in ports}
+
+
 def summarize(vdir):
     """Facts about one BGM variant directory after preprocessing its top."""
     pp = preprocess_variant(vdir)
@@ -459,6 +599,11 @@ def summarize(vdir):
         "reset_kinds": sorted(classify_reset(rst)),
         "pll_instances": pll_instances(text),
         "pll_output_mhz": pll_output_mhz(text),
+        "pll_outputs": pll_outputs(vdir, text, pp.files)[0],
+        "pll_unmodelled": pll_outputs(vdir, text, pp.files)[1],
+        "lab_clock": lab_clock_source(text),
+        "lab_mhz": lab_mhz(text),
+        "screen_size": screen_size(text),
         "modules": instantiated_modules(text),
         "polarity": sorted(polarity_hints(text)),
         "gowin_options": opts,

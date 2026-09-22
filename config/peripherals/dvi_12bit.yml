@@ -17,11 +17,15 @@ Peripheral:
         width: 640
         height: 480
         color_depth: 444
+  # 25.125 MHz pixel clock from the iCE40 PLL (BGM: SB_PLL40_PAD 12 -> 25.125
+  # MHz on the iCEBreaker); the timing generator runs on it directly.
+  clocks:
+    - { name: pixel, mhz: 25.125 }
   driver:
     module: vga
     file: rtl/peripherals/vga.sv
     parameters:
-      CLK_MHZ:   context.clk_mhz
+      CLK_MHZ:   25
       PIXEL_MHZ: 25
       H_DISPLAY: 640
       V_DISPLAY: 480
@@ -32,7 +36,7 @@ Peripheral:
       W_GREEN_O: 4
       W_BLUE_O:  4
     port_map:
-      clk:        context.clk
+      clk:        clock.pixel
       rst:        context.rst
       hsync:      pin.hs
       vsync:      pin.vs
@@ -47,4 +51,4 @@ Peripheral:
       vga_g:      pin.g
       vga_b:      pin.b
   pin_assigns:
-    pin.ck: context.clk       # TODO P3.1: 25 MHz pixel clock from a PLL, as BGM does
+    pin.ck: clock.pixel

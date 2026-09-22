@@ -1,0 +1,68 @@
+"""
+tools/pll_solver.py against the settings BGM ships in its per-board
+gowin_rpll.v files and the iCEBreaker SB_PLL40 constants. The solver does not
+have to reproduce BGM's exact divider choice (several settings give the same
+frequency), but it must (a) land on the same output frequency BGM lands on,
+(b) respect the PFD/VCO limits, and (c) read BGM's own settings back into the
+frequency BGM annotates.
+"""
+
+import pytest
+
+from tools import pll_solver as ps
+
+
+# (variant, f_in, IDIV_SEL, FBDIV_SEL, ODIV_SEL, DYN_SDIV_SEL, uses_clkoutd, annotated MHz)
+BGM_RPLL = [
+    ("tang_nano_9k_lcd_480_272_no_tm1638",        27, 2, 0,  48, 2, False, 9.0),
+    ("tang_nano_20k_lcd_480_272_no_tm1638",       27, 2, 0,  64, 2, False, 9.0),
+    ("tang_nano_20k_lcd_800_480_no_tm1638",       27, 8, 10, 16, 2, False, 33.0),
+    ("tang_primer_20k_dock_lcd_800_480_no_tm1638", 27, 8, 10, 16, 2, False, 33.0),
+    ("tang_nano_9k_hdmi_no_ip_tm1638",            27, 2, 13, 4,  2, False, 126.0),
+    ("tang_primer_20k_dock_hdmi_no_tm1638",       27, 2, 13, 4,  2, False, 126.0),
+    ("tang_nano_20k_hdmi_no_tm1638",              27, 7, 36, 8,  2, False, 124.875),
+    ("tang_nano_9k_lcd_480_272_no_tm1638_yosys",  27, 4, 23, 4,  4, True,  32.4),
+    ("tang_nano_20k_lcd_800_480_tm1638_alt",      27, 1, 28, 2,  8, True,  48.9375),
+]
+
+
+@pytest.mark.parametrize("variant,f_in,idiv,fbdiv,odiv,sdiv,use_d,mhz", BGM_RPLL)
+def test_bgm_rpll_settings_read_back(variant, f_in, idiv, fbdiv, odiv, sdiv, use_d, mhz):
+    f = ps.gowin_rpll_frequency(f_in, idiv, fbdiv, odiv, sdiv, use_d)
+    assert abs(f - mhz) < 1e-6, variant
+    # and BGM's settings are inside the limits the solver enforces
+    f_pfd = f_in / (idiv + 1)
+    f_vco = f_in / (idiv + 1) * (fbdiv + 1) * odiv
+    assert 3.0 <= f_pfd <= 400.0, variant
+    assert 400.0 <= f_vco <= 1200.0, variant
+
+
+@pytest.mark.parametrize("variant,f_in,idiv,fbdiv,odiv,sdiv,use_d,mhz", BGM_RPLL)
+def test_solver_reaches_bgm_frequencies(variant, f_in, idiv, fbdiv, odiv, sdiv, use_d, mhz):
+    sol = ps.gowin_rpll(f_in, mhz)
+    assert sol is not None, variant
+    assert sol.error < 1e-6, (variant, sol)
+    assert 3.0 <= sol.f_pfd <= 400.0 and 400.0 <= sol.f_vco <= 1200.0
+
+
+def test_solver_prefers_direct_clkout_and_low_vco():
+    sol = ps.gowin_rpll(27, 9)
+    assert sol.use_clkoutd is False
+    assert sol.f_out == 9.0
+    assert sol.f_vco <= 1200.0 and sol.f_vco >= 400.0
+
+
+def test_solver_rejects_impossible():
+    assert ps.gowin_rpll(27, 2000.0) is None       # CLKOUT tops out at VCO_max / ODIV_min = 600 MHz
+    assert ps.ice40_pll(12, 700.0) is None         # VCO_max / 2^1 = 533 MHz
+    # 1 MHz is reachable through CLKOUTD (128 MHz / 128) and must be reported as such
+    low = ps.gowin_rpll(27, 1.0)
+    assert low is not None and low.use_clkoutd
+
+
+def test_ice40_matches_icebreaker_dvi():
+    # BGM icebreaker: SB_PLL40_PAD DIVR 0, DIVF 66, DIVQ 5, FILTER_RANGE 1: 12 MHz -> 25.125 MHz
+    sol = ps.ice40_pll(12, 25.125)
+    assert sol is not None
+    assert (sol.divr, sol.divf, sol.divq, sol.filter_range) == (0, 66, 5, 1)
+    assert abs(sol.f_out - 25.125) < 1e-9

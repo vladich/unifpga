@@ -10,6 +10,12 @@ Peripheral:
     bits_r: { type: int, default: 5 }
     bits_g: { type: int, default: 6 }
     bits_b: { type: int, default: 5 }
+    # What drives the backlight / init pins when the board has them. BGM
+    # differs per board (`assign LCD_BL = 1'b0` on Tang Nano 9K, `1'b1` on
+    # Tang Nano 20K, `~ rst` on Tang Primer 20K Dock); tools/sync_from_bgm.py
+    # --clock-tree copies each board's choice into the configuration.
+    bl:   { type: string, default: const.1 }
+    init: { type: string, default: const.0 }
   signals:
     - { name: r,    type: bus, width: $bits_r, direction: output }
     - { name: g,    type: bus, width: $bits_g, direction: output }
@@ -31,11 +37,16 @@ Peripheral:
         bits_r: $bits_r
         bits_g: $bits_g
         bits_b: $bits_b
+  # 9 MHz pixel clock from a PLL on the board clock, exactly as BGM does on
+  # every Tang board (Gowin_rPLL 27 -> 9 MHz). Codegen instantiates the
+  # vendor PLL wrapper and exposes it as `clock.pixel`.
+  clocks:
+    - { name: pixel, mhz: 9 }
   driver:
     module: lcd_480_272
     file: rtl/peripherals/lcd_480_272.sv
     port_map:
-      PixelClk:  context.clk
+      PixelClk:  clock.pixel
       nRST:      context.rst_n   # active-low reset
       LCD_DE:    pin.de
       LCD_HSYNC: pin.hs
@@ -46,6 +57,6 @@ Peripheral:
     pin.r:    capability.screen.red
     pin.g:    capability.screen.green
     pin.b:    capability.screen.blue
-    pin.ck:   context.clk    # pixel clock — board may need a PLL upstream
-    pin.bl:   const.1
-    pin.init: const.1
+    pin.ck:   clock.pixel
+    pin.bl:   $bl
+    pin.init: $init

@@ -517,13 +517,12 @@ def _auto_bind(peripheral_id, pin_banks):
             bind[sig] = sub
         return bind
     if peripheral_id == "lcd_ml6485":
-        if "onboard_small_lcd" not in pin_banks:
+        # BGM drives the ML6485 panel through the LARGE_LCD_* pins (its
+        # SMALL_LCD_* pins are declared but never driven).
+        if "onboard_lcd" not in pin_banks:
             return {}
-        return {"data": "onboard_small_lcd.data",
-                "clk": "onboard_small_lcd.clk",
-                "resetn": "onboard_small_lcd.resetn",
-                "cs": "onboard_small_lcd.cs",
-                "rs": "onboard_small_lcd.rs"}
+        return {sig: "onboard_lcd.{}".format(sig)
+                for sig in ("r", "g", "b", "hs", "vs", "de", "ck", "bl", "init")}
     if peripheral_id == "hdmi_tmds":
         if "onboard_hdmi" not in pin_banks:
             return {}

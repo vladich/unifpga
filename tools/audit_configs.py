@@ -25,7 +25,13 @@ Issue codes (see PLAN.md, section "Issue catalogue"):
   NULL-PIN   a referenced bank has null entries (unconstrained port bits)
   WIDTH      params.width differs from the bound bank's pin count
   NO-VARIANT `_no_<x>` variant still attaches <x>
-  PLL        BGM instantiates a PLL for this variant, unifpga has none
+  PLL        PLL-derived clock frequencies differ from BGM's (E7): the set of
+             frequencies BGM's gowin_rpll.v / SB_PLL40 settings produce vs the
+             set codegen's clock tree (peripheral `clocks:`) instantiates
+  LAB-CLK    the lab (design_top, tm1638, resets) runs on a different clock
+             than in BGM (`localparam lab_mhz = pixel_mhz` -> `lab_clock:`)
+  DISPLAY    BGM's screen_width x screen_height differ from the attached
+             display peripheral's (BGM tang_nano_9k_lcd_480_272_*_yosys build 800x480)
   GOWIN-OPT  BGM sets Gowin set_option flags the driver does not emit
   DIFF-PAIR  a bound pin is a Gowin "P,N" pair the emitters skip
   SEG-HEX    per-digit (hexN) display bound as a shared display (no adapter)
@@ -42,7 +48,6 @@ Retired codes (fixed at the source; E5 is now covered by co-simulation):
   POLARITY   BGM inverts keys/LEDs/switches for this board, config has no active:
   SV-BIND-DIFF  TM1638 / INMP441 / MIC3 attachment or pins differ from BGM's
              board_specific_top.sv instantiation (compared by pin identity)
-  DISPLAY    LCD/HDMI/DVI attached (pixel/serial clock from context.clk)
   PIN-PREFIX pinmap stores pins with a vendor prefix (PIN_x)
   HAND       hand-written configuration (not generated; must be re-derived)
   NO-ORACLE  BGM has no directory for this variant (needs another oracle)
@@ -321,10 +326,31 @@ def analyze(cfg_id, cfg_text):
                 if diff:
                     add("SV-BIND-DIFF", "{}: {}".format(pid, diff))
 
-    # ---- PLL / Gowin options ----------------------------------------------------
-    plls = bgm_pll_instances(top_text)
-    if plls:
-        add("PLL", "BGM: {}".format(", ".join(sorted(set(plls)))))
+    # ---- PLL / clock tree (E7) and lab clock ----------------------------------
+    if bgm_dir is not None:
+        pp_files = bgm_oracle.preprocess_variant(bgm_dir).files
+        bgm_outs, unmodelled = bgm_oracle.pll_outputs(bgm_dir, top_text, pp_files)
+        bgm_set = sorted({round(m, 4) for _n, m, _v in bgm_outs})
+        try:
+            our_set = sorted(round(sol.f_out, 4) for _n, _r, _v, sol in codegen.plan_clock_tree(resolved))
+            our_note = ""
+        except codegen.CodegenError as exc:
+            our_set, our_note = [], " ({})".format(str(exc).split(": ", 1)[-1][:90])
+        if unmodelled:
+            add("PLL", "BGM {} not modelled by the oracle; ours {} MHz".format(sorted(set(unmodelled)), our_set))
+        elif bgm_set != our_set:
+            add("PLL", "BGM {} MHz vs ours {} MHz{}".format(bgm_set, our_set, our_note))
+        want_lab = bgm_oracle.lab_clock_source(top_text)
+        have_lab = cfg.get("lab_clock") or "board"
+        bgm_lab_mhz = bgm_oracle.lab_mhz(top_text)
+        try:
+            our_lab_mhz = codegen.lab_clock(resolved)["mhz"]
+        except codegen.CodegenError:
+            our_lab_mhz = None
+        if want_lab != have_lab or (bgm_lab_mhz is not None and our_lab_mhz is not None
+                                    and int(round(bgm_lab_mhz)) != int(round(our_lab_mhz))):
+            add("LAB-CLK", "BGM lab on {} clock ({} MHz) vs ours on {} ({} MHz)".format(
+                want_lab, bgm_lab_mhz, have_lab, our_lab_mhz))
     if toolchain_id in _GOWIN_TOOLCHAINS and bgm_dir is not None:
         opts, dev = bgm_oracle.gowin_options(bgm_dir)
         want = [o.lstrip("-") for o in opts]
@@ -356,8 +382,12 @@ def analyze(cfg_id, cfg_text):
     if problems:
         add("GEN-ERROR", "{} problem(s); first: {}".format(
             len(problems), problems[0].split(": ", 1)[-1][:110]))
-    if any(pid in _DISPLAY_PERIPHERALS for pid in attached_ids):
-        add("DISPLAY", ", ".join(p for p in attached_ids if p in _DISPLAY_PERIPHERALS))
+    if bgm_dir is not None and any(pid in _DISPLAY_PERIPHERALS for pid in attached_ids):
+        size = bgm_oracle.screen_size(top_text)
+        sp = codegen.build_capability_plans(resolved)["screen"].params
+        ours = (sp.get("width"), sp.get("height"))
+        if size is not None and size != ours:
+            add("DISPLAY", "BGM screen {}x{} vs ours {}x{}".format(size[0], size[1], ours[0], ours[1]))
 
     # ---- polarity: effective (param > pinmap bank attribute > peripheral
     # default) vs what BGM's active branch does with the same pins -------------

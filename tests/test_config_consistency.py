@@ -348,7 +348,7 @@ def test_peripheral_drivers_reference_existing_files():
         )
 
 
-def _validate_ref(pid, where, ref, pin_names, caps, provided):
+def _validate_ref(pid, where, ref, pin_names, caps, provided, peripheral=None):
     """Validate a single port_map / pin_assigns reference. Allows leading '~'
     (combinational invert) and indexed expressions like pin.d_p[0]."""
     assert isinstance(ref, str), (
@@ -383,13 +383,26 @@ def _validate_ref(pid, where, ref, pin_names, caps, provided):
         )
     elif expr_root.startswith("const."):
         pass
+    elif expr_root.startswith("clock."):
+        # PLL clock the peripheral declares under `clocks:` (P3.1)
+        name = expr_root[len("clock."):]
+        declared = {c["name"] for c in ((peripheral or {}).get("clocks") or [])}
+        assert name in declared, (
+            "Peripheral {p}: {w} references clock '{c}' not declared under clocks:"
+            .format(p=pid, w=where, c=name)
+        )
+    elif expr_root.startswith("$"):
+        # peripheral-instance parameter (`pin.bl: $bl`)
+        assert expr_root[1:] in ((peripheral or {}).get("parameters") or {}), (
+            "Peripheral {p}: {w} references undeclared parameter {r}".format(p=pid, w=where, r=ref)
+        )
     elif expr_root == "":
         # A blank RHS in port_map means "leave port unconnected; codegen handles
         # via pin_assigns or with a wire". Allow it.
         pass
     else:
         raise AssertionError(
-            "Peripheral {p}: {w} = {r!r} does not start with pin./capability./context./const."
+            "Peripheral {p}: {w} = {r!r} does not start with pin./capability./context./const./clock."
             .format(p=pid, w=where, r=ref)
         )
 
@@ -408,7 +421,7 @@ def test_peripheral_port_map_references_well_formed():
             # A list renders as a concatenation (first element = MSB); every
             # element must be a valid reference on its own.
             for one in (ref if isinstance(ref, list) else [ref]):
-                _validate_ref(pid, "port_map[{}]".format(port), one, pin_names, caps, provided)
+                _validate_ref(pid, "port_map[{}]".format(port), one, pin_names, caps, provided, p)
 
 
 def test_peripheral_pin_assigns_well_formed():
@@ -423,8 +436,8 @@ def test_peripheral_pin_assigns_well_formed():
         provided = {entry["capability"] for entry in p.get("provides") or []}
         for lhs, rhs in pa.items():
             # LHS must be a valid pin / capability sink.
-            _validate_ref(pid, "pin_assigns[{}].lhs".format(lhs), lhs, pin_names, caps, provided)
-            _validate_ref(pid, "pin_assigns[{}].rhs".format(lhs), rhs, pin_names, caps, provided)
+            _validate_ref(pid, "pin_assigns[{}].lhs".format(lhs), lhs, pin_names, caps, provided, p)
+            _validate_ref(pid, "pin_assigns[{}].rhs".format(lhs), rhs, pin_names, caps, provided, p)
 
 
 # ---------------------------------------------------------------------------

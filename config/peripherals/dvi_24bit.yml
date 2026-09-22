@@ -17,16 +17,18 @@ Peripheral:
         width: 640
         height: 480
         color_depth: 888
+  clocks:
+    - { name: pixel, mhz: 25.125 }
   driver:
     module: vga
     file: rtl/peripherals/vga.sv
     parameters:
-      CLK_MHZ:   context.clk_mhz
+      CLK_MHZ:   25
       PIXEL_MHZ: 25
       H_DISPLAY: 640
       V_DISPLAY: 480
     port_map:
-      clk:        context.clk
+      clk:        clock.pixel
       rst:        context.rst
       hsync:      pin.hs
       vsync:      pin.vs
@@ -38,5 +40,5 @@ Peripheral:
     pin.r:  capability.screen.red
     pin.g:  capability.screen.green
     pin.b:  capability.screen.blue
-    pin.ck: context.clk
+    pin.ck: clock.pixel
     pin.de: const.1

@@ -10,6 +10,11 @@ Peripheral:
     color_depth:
       type: int
       default: 16    # 5-6-5 RGB
+    # Backlight / init pin drivers; BGM differs per board (`1'b0` on Tang
+    # Nano 9K / 20K alt, `~ rst` on Tang Primer 20K Dock). Copied per
+    # configuration by tools/sync_from_bgm.py --clock-tree.
+    bl:   { type: string, default: const.1 }
+    init: { type: string, default: const.0 }
   signals:
     - { name: r,    type: bus, width: 5, direction: output }
     - { name: g,    type: bus, width: 6, direction: output }
@@ -26,11 +31,16 @@ Peripheral:
         width: 800
         height: 480
         color_depth: 565
+  # 33 MHz pixel clock from a PLL on the board clock (BGM: Gowin_rPLL
+  # 27 -> 33 MHz on the Tang Nano 20K / Primer 20K Dock, 32.4 or 33.33 MHz on
+  # the Tang Nano 9K variants). Codegen exposes it as `clock.pixel`.
+  clocks:
+    - { name: pixel, mhz: 33, tolerance_pct: 3 }
   driver:
     module: lcd_800_480
     file: rtl/peripherals/lcd_800_480.sv
     port_map:
-      PixelClk:  context.clk
+      PixelClk:  clock.pixel
       nRST:      context.rst_n
       LCD_DE:    pin.de
       LCD_HSYNC: pin.hs
@@ -41,6 +51,6 @@ Peripheral:
     pin.r:    capability.screen.red
     pin.g:    capability.screen.green
     pin.b:    capability.screen.blue
-    pin.ck:   context.clk
-    pin.bl:   const.1
-    pin.init: const.1
+    pin.ck:   clock.pixel
+    pin.bl:   $bl
+    pin.init: $init

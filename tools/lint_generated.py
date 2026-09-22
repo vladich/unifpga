@@ -53,6 +53,10 @@ def _source_list(resolved, design_top, generated_top):
     for f in files:
         f = os.path.abspath(f)
         out.append(os.path.relpath(f, REPO) if f.startswith(REPO + os.sep) else f)
+    # Vendor PLL primitives (rPLL, SB_PLL40_*) only exist in the vendor flows;
+    # the lint compiles the behavioural stand-ins instead.
+    if any(rel.startswith(os.path.join("rtl", "pll") + os.sep) for rel in out):
+        out.append(os.path.join("rtl", "sim", "vendor_stubs.sv"))
     return out
 
 

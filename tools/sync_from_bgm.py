@@ -833,7 +833,7 @@ def _set_attach_param(lines, pid, bank, key, value):
     `bank`; returns True when the text changed."""
     for i, j, ind in _find_attach_blocks(lines, pid):
         block = lines[i:j]
-        if not any(re.search(r":\s*\"?%s\b" % re.escape(bank), l) for l in block):
+        if bank is not None and not any(re.search(r":\s*\"?%s\b" % re.escape(bank), l) for l in block):
             continue
         key_indent = ind + "  "
         val = "true" if value is True else ("false" if value is False else str(value))
@@ -853,6 +853,191 @@ def _set_attach_param(lines, pid, bank, key, value):
         lines[i + pidx + 1:i + pidx + 1] = [key_indent + "  {}: {}".format(key, val)]
         return True
     return False
+
+
+def _del_attach_param(lines, pid, key):
+    """Remove `params.<key>` from every attach of `pid` (and an emptied
+    `params:`); returns True when the text changed."""
+    changed = False
+    for i, j, ind in reversed(_find_attach_blocks(lines, pid)):
+        key_indent = ind + "  "
+        pidx = next((k for k in range(i, j) if lines[k].startswith(key_indent + "params:")), None)
+        if pidx is None:
+            continue
+        k = pidx + 1
+        while k < j and lines[k].startswith(key_indent + "  "):
+            if re.match(r"^%s  %s:" % (re.escape(key_indent), re.escape(key)), lines[k]):
+                del lines[k]
+                j -= 1
+                changed = True
+                continue
+            k += 1
+        if k == pidx + 1:                      # params: is empty now
+            del lines[pidx]
+            changed = True
+    return changed
+
+
+# ---------------------------------------------------------------------------
+# --clock-tree: PLL pixel clock, lab clock and LCD backlight/init from BGM
+# ---------------------------------------------------------------------------
+
+_LAB_CLOCK_LINE = "  lab_clock: pixel   # BGM: `localparam lab_mhz = pixel_mhz` (tools/sync_from_bgm.py --clock-tree)"
+
+
+def _bgm_pixel_mhz(outs):
+    """Pick BGM's pixel clock among the used PLL outputs [(net, mhz, via)]:
+    the one on an LCD/pixel-named net, else CLKOUTD over CLKOUT, else the
+    only one."""
+    if not outs:
+        return None
+    named = [o for o in outs if re.search(r"LCD|_CK\b|pixel", o[0], re.I)]
+    if len(named) == 1:
+        return named[0][1]
+    d = [o for o in outs if o[2] == "clkoutd"]
+    if len(d) == 1:
+        return d[0][1]
+    return outs[0][1] if len(outs) == 1 else None
+
+
+def _fmt_outs(outs):
+    return ", ".join("{} = {:g} MHz ({})".format(n, round(m, 6), via) for n, m, via in outs)
+
+
+def _aux_expr_to_ref(expr):
+    e = expr.replace(" ", "")
+    return {"1'b0": "const.0", "1'b1": "const.1", "~rst": "context.rst_n", "rst": "context.rst",
+            "rst_n": "context.rst_n"}.get(e)
+
+
+def apply_clock_tree(path, dry_run):
+    """Per configuration, from the BGM variant's preprocessed top and PLL
+    wrapper: (1) `lab_clock: pixel` when BGM runs the lab on the PLL clock;
+    (2) `params.clock_<name>_mhz` on peripherals whose `clocks:` default
+    differs from BGM's computed PLL output (9K 800x480: 32.4 MHz via CLKOUTD,
+    Tang Nano 20K alt: 48.9375 MHz); (3) `params.bl` / `params.init` from
+    BGM's `assign LCD_BL = ...` on the same physical pins. Skips the pixel
+    clock when BGM builds a different screen size than the configuration
+    attaches (BGM's tang_nano_9k_lcd_480_272_*_yosys define USE_LCD_800_480)."""
+    original = open(path, encoding="utf-8").read()
+    text = original
+    cfg = yaml.safe_load(text)["Configuration"]
+    cid = cfg["id"]
+    vdir = bgm_oracle.variant_dir_for(cid, cfg["board"])
+    if vdir is None:
+        return "skip (no BGM variant)"
+    try:
+        resolved = config_init.resolve_configuration(cid)
+    except Exception as exc:          # a configuration the loader rejects
+        return "skip (resolve: {})".format(str(exc).splitlines()[0][:80])
+    from tools import codegen
+    pp = bgm_oracle.preprocess_variant(vdir)
+    t = pp.text
+    lines = text.split("\n")
+    changes = []
+
+    declared = {}
+    for a in resolved["peripherals"]:
+        for c in a["peripheral"].get("clocks") or []:
+            declared.setdefault(c["name"], []).append(a)
+
+    # 1. lab clock
+    want = bgm_oracle.lab_clock_source(t)
+    have = cfg.get("lab_clock")
+    idx = next((k for k, l in enumerate(lines) if re.match(r"^  lab_clock:", l)), None)
+    if want == "pixel":
+        if "pixel" not in declared:
+            changes.append("WARNING: BGM runs the lab on the pixel clock ({} MHz) but no attached peripheral "
+                           "declares clock 'pixel' (HDMI: PLAN.md P3.2)".format(bgm_oracle.lab_mhz(t)))
+        elif have != "pixel":
+            if idx is not None:
+                lines[idx] = _LAB_CLOCK_LINE
+            else:
+                hdr = next((k for k, l in enumerate(lines) if re.match(r"^  (toolchain|part):", l)), None)
+                while hdr is not None and hdr + 1 < len(lines) and re.match(r"^  (toolchain|part):", lines[hdr + 1]):
+                    hdr += 1
+                if hdr is None:
+                    changes.append("WARNING: no toolchain: line; lab_clock not inserted")
+                else:
+                    lines[hdr + 1:hdr + 1] = [_LAB_CLOCK_LINE]
+            changes.append("lab_clock: pixel ({} MHz)".format(bgm_oracle.lab_mhz(t)))
+    elif have is not None and idx is not None:
+        del lines[idx]
+        changes.append("drop lab_clock (BGM lab runs on the board clock)")
+
+    # 2. pixel clock frequency
+    outs, unmodelled = bgm_oracle.pll_outputs(vdir, t, pp.files)
+    if "pixel" in declared:
+        size = bgm_oracle.screen_size(t)
+        plans = codegen.build_capability_plans(resolved)
+        ours = (plans["screen"].params.get("width"), plans["screen"].params.get("height"))
+        mhz = _bgm_pixel_mhz(outs)
+        if unmodelled:
+            changes.append("note: BGM PLL {} not modelled; pixel clock left at the peripheral default".format(unmodelled))
+        elif size is not None and size != ours:
+            changes.append("WARNING: BGM builds {}x{} but the configuration attaches {}x{}; pixel clock "
+                           "({} MHz) not copied".format(size[0], size[1], ours[0], ours[1], mhz))
+        elif mhz is None:
+            changes.append("WARNING: cannot tell which PLL output is the pixel clock: {}".format(_fmt_outs(outs)))
+        else:
+            mhz = round(mhz, 6)
+            for a in declared["pixel"]:
+                pid = a["peripheral_id"]
+                default = next(float(c["mhz"]) for c in a["peripheral"]["clocks"] if c["name"] == "pixel")
+                if mhz > 4 * default or mhz < default / 4:
+                    # BGM tang_nano_9k_lcd_480_272_no_tm1638_yosys ships the
+                    # 800x480 gowin_rpll.v but its top takes the 480x272 branch
+                    # (CLKOUT = 129.6 MHz on LARGE_LCD_CK): an upstream bug,
+                    # not a frequency to copy.
+                    changes.append("WARNING: BGM pixel clock {:g} MHz is implausible for {} (default {:g} MHz); "
+                                   "not copied (upstream PLL/branch mismatch?)".format(mhz, pid, default))
+                    continue
+                if abs(mhz - default) > 1e-6:
+                    if _set_attach_param(lines, pid, None, "clock_pixel_mhz", "{:g}".format(mhz)):
+                        changes.append("{}: clock_pixel_mhz = {:g} (BGM {})".format(pid, mhz, _fmt_outs(outs)))
+                elif _del_attach_param(lines, pid, "clock_pixel_mhz"):
+                    changes.append("{}: drop clock_pixel_mhz (BGM uses the default {:g})".format(pid, default))
+
+    # 3. LCD backlight / init from BGM's assigns on the same pins
+    assigns = bgm_oracle.port_assigns(t)
+    if assigns:
+        pinmap = resolved["board_pinmap"]
+        ref_to_pin = {ref: pin for pin, ref in _pin_to_ref(pinmap).items()}
+        pin_to_sig = {pin: sig for sig, pin in _bgm_signal_pins(vdir).items()}
+        for a in resolved["peripherals"]:
+            pid = a["peripheral_id"]
+            params_def = a["peripheral"].get("parameters") or {}
+            for sig in ("bl", "init"):
+                if sig not in params_def:
+                    continue
+                ref = (a.get("bind") or {}).get(sig)
+                if not isinstance(ref, str):
+                    continue
+                bgm_sig = pin_to_sig.get(ref_to_pin.get(ref))
+                expr = assigns.get(bgm_sig) if bgm_sig else None
+                if expr is None:
+                    continue
+                want_ref = _aux_expr_to_ref(expr)
+                if want_ref is None:
+                    changes.append("WARNING: {} = {} in BGM has no ref equivalent".format(bgm_sig, expr))
+                    continue
+                default = params_def[sig].get("default")
+                if want_ref == default:
+                    if _del_attach_param(lines, pid, sig):
+                        changes.append("{}: drop {} (default {})".format(pid, sig, default))
+                elif _set_attach_param(lines, pid, None, sig, want_ref):
+                    changes.append("{}: {} = {} (BGM: assign {} = {})".format(pid, sig, want_ref, bgm_sig, expr))
+
+    text = "\n".join(lines)
+    if not text.endswith("\n"):
+        text += "\n"
+    if text == original:
+        return "; ".join(changes) if changes else "unchanged"
+    if not dry_run:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+        config_init.clear_cache()
+    return "; ".join(changes)
 
 
 def apply_polarity(paths, dry_run):
@@ -1055,13 +1240,16 @@ def main(argv=None):
                    help="write BGM clk_mhz into the pinmaps' clock banks; add/repair clock_input attaches")
     p.add_argument("--seven-seg", action="store_true",
                    help="rewrite the on-board 7-segment attach to match the pinmap shape")
+    p.add_argument("--clock-tree", action="store_true",
+                   help="lab_clock, PLL pixel-clock frequency and LCD bl/init from BGM's top + gowin_rpll.v")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--only", nargs="*")
     args = p.parse_args(argv)
     if not (args.reset or args.clock or args.seven_seg or args.vga or args.prune_optional
-            or args.sv_binds or args.prune_missing_banks or args.polarity or args.gowin_options):
+            or args.sv_binds or args.prune_missing_banks or args.polarity or args.gowin_options
+            or args.clock_tree):
         p.error("nothing to do: pass one or more of --reset --clock --seven-seg --vga "
-                "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options")
+                "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options --clock-tree")
     if not bgm_oracle.has_bgm():
         print("BGM checkout not found at {}".format(bgm_oracle.BGM_BOARDS), file=sys.stderr)
         return 2
@@ -1090,6 +1278,8 @@ def main(argv=None):
             print("[prune] {:44s} {}".format(cid, apply_prune_optional(path, args.dry_run)))
         if args.prune_missing_banks:
             print("[banks] {:44s} {}".format(cid, apply_prune_missing_banks(path, args.dry_run)))
+        if args.clock_tree:
+            print("[clk]   {:44s} {}".format(cid, apply_clock_tree(path, args.dry_run)))
     return 0
 
 
