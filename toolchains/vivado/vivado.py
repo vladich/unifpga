@@ -20,6 +20,7 @@ import shutil
 import subprocess
 
 from tools import codegen
+from tools import source_set
 
 
 log = logging.getLogger(__name__)
@@ -36,63 +37,10 @@ def _resolve_vivado_bin(toolchain):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Build the ordered SV file list Vivado will read."""
-    files = [generated_top, os.path.abspath(user_design_top)]
-    seen = {os.path.abspath(p) for p in files}
-
-    # Sibling SV/SVH files in the design's directory (helper modules,
-    # configuration includes). When an adapted design brings its own helpers,
-    # they live next to design_top.sv. Walk recursively so designs with `cpu/`
-    # or other subdirectories (yrv_plus, schoolriscv, picorv32) get picked up.
-    design_dir = os.path.dirname(os.path.abspath(user_design_top))
-    if os.path.isdir(design_dir):
-        for root, _dirs, names in os.walk(design_dir):
-            for name in sorted(names):
-                if not (name.endswith(".sv") or name.endswith(".svh") or name.endswith(".v")):
-                    continue
-                if name in ("design_top.sv", "tb.sv"):
-                    continue
-                full = os.path.join(root, name)
-                if full not in seen:
-                    files.append(full)
-                    seen.add(full)
-
-    for attach in peripherals:
-        drv = (attach.get("peripheral") or {}).get("driver") or {}
-        f = drv.get("file")
-        if f:
-            full = os.path.join(repo, f)
-            if os.path.exists(full) and full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    for helper in ("tm1638_registers.sv", "slow_clk_gen.sv",
-                   "imitate_reset_on_power_up.sv"):
-        full = os.path.join(repo, "rtl", "peripherals", helper)
-        if os.path.exists(full) and full not in seen:
-            files.append(full)
-            seen.add(full)
-
-    # Lab-common helpers (seven_segment_display, shift_reg, counter_with_enable,
-    # strobe_gen, convert, led_strip_combo). Many adapted designs reference these.
-    designs_common_dir = os.path.join(repo, "rtl", "peripherals", "designs_common")
-    if os.path.isdir(designs_common_dir):
-        for name in sorted(os.listdir(designs_common_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(designs_common_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Clock-tree wrappers (rtl/pll) the generated top instantiates and the
-    # drivers' extra `files:` (P3.1 / P3.2).
-    for full in codegen.pll_source_paths(repo, generated_top, peripherals):
-        if full not in seen:
-            files.append(full)
-            seen.add(full)
-
-    return files
+    """Vivado reads .svh headers; unisim provides BUFG (no compat stubs); helpers/common ungated."""
+    return source_set.collect_sources(
+        repo, peripherals, user_design_top, generated_top,
+        include_svh=True, gate_helpers=False, gate_common=False, compat_stubs=False)
 
 
 def _emit_tcl(part_name, sv_files, xdc_path, output_dir, top_module="top",

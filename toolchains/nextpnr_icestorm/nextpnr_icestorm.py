@@ -25,6 +25,7 @@ import shutil
 import subprocess
 
 from tools import codegen
+from tools import source_set
 
 
 log = logging.getLogger(__name__)
@@ -47,98 +48,10 @@ def _resolve_bin(name):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Same logic as the other drivers — keep symmetrical."""
-    files = [generated_top, os.path.abspath(user_design_top)]
-    seen = {os.path.abspath(p) for p in files}
-
-    design_dir = os.path.dirname(os.path.abspath(user_design_top))
-    if os.path.isdir(design_dir):
-        for root, _dirs, names in os.walk(design_dir):
-            for name in sorted(names):
-                # Exclude .vh/.svh — included via `\`include`, not compiled standalone.
-                if not (name.endswith(".sv") or name.endswith(".v")):
-                    continue
-                if name in ("design_top.sv", "tb.sv"):
-                    continue
-                full = os.path.join(root, name)
-                if full not in seen:
-                    files.append(full)
-                    seen.add(full)
-
-    for attach in peripherals:
-        drv = (attach.get("peripheral") or {}).get("driver") or {}
-        f = drv.get("file")
-        if f:
-            full = os.path.join(repo, f)
-            if os.path.exists(full) and full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Helpers — include only when the generated top.sv references the
-    # module name. yosys 0.36 doesn't accept SV-2009 multi-dim packed
-    # arrays in port declarations (e.g. tm1638_registers.sv), so always
-    # adding them breaks every design on iCE40 even when unused.
-    try:
-        with open(generated_top) as f:
-            top_text = f.read()
-    except Exception:
-        top_text = ""
-    helper_modules = {
-        "tm1638_registers.sv":         ("tm1638_registers", "tm1638_board_controller"),
-        "slow_clk_gen.sv":             ("slow_clk_gen",),
-        "imitate_reset_on_power_up.sv": ("imitate_reset_on_power_up",),
-    }
-    for helper, modules in helper_modules.items():
-        full = os.path.join(repo, "rtl", "peripherals", helper)
-        if not os.path.exists(full) or full in seen:
-            continue
-        if any(m in top_text for m in modules):
-            files.append(full)
-            seen.add(full)
-
-    # designs_common helpers — same gating as above. Include only files whose
-    # module name appears in top.sv or in any sibling SV the design pulls in.
-    # Some helpers use SV-2009 features yosys 0.36 rejects (multi-dim packed
-    # arrays), so unconditionally adding them breaks unrelated designs.
-    sibling_text = top_text
-    for f in list(files):
-        try:
-            with open(f) as fh:
-                sibling_text += "\n" + fh.read()
-        except Exception:
-            pass
-    designs_common_dir = os.path.join(repo, "rtl", "peripherals", "designs_common")
-    if os.path.isdir(designs_common_dir):
-        for name in sorted(os.listdir(designs_common_dir)):
-            if not name.endswith(".sv"):
-                continue
-            module_name = name[:-3]   # strip .sv
-            if module_name not in sibling_text:
-                continue
-            full = os.path.join(designs_common_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # iCE40 doesn't have BUFG; provide stubs as the Quartus driver does.
-    compat_dir = os.path.join(repo, "rtl", "peripherals", "_quartus_compat")
-    if os.path.isdir(compat_dir):
-        for name in sorted(os.listdir(compat_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(compat_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Clock-tree wrappers (rtl/pll) the generated top instantiates and the
-    # drivers' extra `files:` (P3.1 / P3.2).
-    for full in codegen.pll_source_paths(repo, generated_top, peripherals):
-        if full not in seen:
-            files.append(full)
-            seen.add(full)
-
-    return files
+    """yosys 0.36 frontend: gate helpers/common by module-name match; iCE40 has no BUFG, so compat stubs."""
+    return source_set.collect_sources(
+        repo, peripherals, user_design_top, generated_top,
+        include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=True)
 
 
 _PART_TO_NEXTPNR = {
@@ -241,7 +154,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     # syntax against SV-2009 `'{ … }` array-init that yosys still rejects.
     # Telling yosys it's "Icarus" picks the older-syntax branch.
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
-    synth_cmd = _yosys_synth_family(part)
+    synth_cmd = " ".join([_yosys_synth_family(part)] + codegen.yosys_synth_options(board_pinmap))
     yosys_script = "; ".join(
         read_cmds
         + ['{} -top top -json "{}"'.format(synth_cmd, json_path)]

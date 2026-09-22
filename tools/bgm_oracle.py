@@ -115,9 +115,19 @@ def preprocess(path, defines=None, _pp=None, _depth=0):
     # Stack of (parent_active, this_branch_taken_already, currently_active)
     stack = []
     active = True
+    pending = None          # (name, body) of a `define continued with backslashes
     with open(path, encoding="utf-8", errors="replace") as f:
         for raw in f:
             line = raw.rstrip("\n")
+            if pending is not None:
+                name, body = pending
+                cont = line.rstrip()
+                more = cont.endswith("\\")
+                body = body + " " + (cont[:-1] if more else cont).strip()
+                pending = (name, body) if more else None
+                if pending is None and active:
+                    pp.defines[name] = " ".join(body.split())
+                continue
             m = _PP_LINE.match(line)
             if not m:
                 if active:
@@ -151,10 +161,12 @@ def preprocess(path, defines=None, _pp=None, _depth=0):
                     parent_active, _ = stack.pop()
                     active = parent_active
             elif directive == "define":
-                if active:
-                    parts = rest.split(None, 1)
-                    if parts:
-                        pp.defines[parts[0]] = parts[1] if len(parts) > 1 else ""
+                parts = rest.split(None, 1)
+                body = parts[1] if len(parts) > 1 else ""
+                if parts and body.rstrip().endswith("\\"):
+                    pending = (parts[0], body.rstrip()[:-1].strip())
+                elif active and parts:
+                    pp.defines[parts[0]] = body
             elif directive == "undef":
                 if active and rest:
                     pp.defines.pop(rest.split()[0], None)
@@ -341,8 +353,15 @@ def instantiations(text, module):
 
 
 _PORT_DECL = re.compile(
-    r"^\s*(?:input|output|inout)\s+(?:logic\s+|wire\s+|reg\s+)?(?:\[[^\]]*\]\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*(?:,|\)|$)",
+    r"^\s*(?:input|output|inout)\s+(?:logic\s+|wire\s+|reg\s+)?(?:\[[^\]]*\]\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*(?:,|\)|//|$)",
     re.MULTILINE)
+
+
+def strip_comments(text):
+    """The text without `//` line comments and `/* */` block comments (the
+    board tops keep commented-out instantiations and assigns around)."""
+    text = re.sub(r"/\*.*?\*/", " ", text, flags=re.S)
+    return re.sub(r"//[^\n]*", "", text)
 
 
 def top_ports(text):
@@ -627,6 +646,19 @@ def pll_outputs(vdir, text, files=None):
             for port, expr in inst["ports"]:
                 if port in ("PLLOUTCORE", "PLLOUTGLOBAL") and expr:
                     outs.append((expr, f, mod))
+    # Lattice ECP5 EHXPLLL behind a board-local wrapper module (colorlight
+    # clock.v: 25 MHz -> CLKOP 125 / CLKOS 250 / CLKOS2 25 MHz)
+    for mod, st in ehxplll_wrappers(vdir, files).items():
+        for inst in instantiations(text, mod):
+            conns = dict(inst["ports"])
+            if fin is None:
+                unmodelled.append(mod + "(no clk_mhz)")
+                continue
+            f_vco = fin / st["clki_div"] * st["clkfb_div"] * st["clkop_div"]
+            for port, expr in inst["ports"]:
+                div = st["outputs"].get(port)
+                if div and expr and _net_used(text, expr, ports):
+                    outs.append((expr, f_vco / div, "EHXPLLL"))
     # Gowin Arora V Gowin_PLL wrapper (gowin_pll.v, primitive PLL or PLLA):
     # f_vco = FCLKIN / IDIV_SEL * FBDIV_SEL * MDIV_SEL; clkout<i> = f_vco / ODIV<i>_SEL
     # (BGM tang_mega_138k*: 50 MHz -> VCO 800 -> clkout0 8 MHz, per gowin_pll.ipc)
@@ -667,6 +699,51 @@ def pll_outputs(vdir, text, files=None):
                 wiz_done and name.startswith("clk_wiz")) and not (gw5_done and name == "Gowin_PLL"):
             unmodelled.append(name)
     return outs, unmodelled
+
+
+def ehxplll_wrappers(vdir, files=None):
+    """Lattice ECP5 PLL wrappers among the variant's sources (BGM colorlight
+    clock.v): {module: {"clki": input port, "clki_div", "clkfb_div",
+    "clkop_div", "outputs": {output port: divider}}}. Feedback path CLKOP:
+    f_vco = f_in / CLKI_DIV * CLKFB_DIV * CLKOP_DIV, each output f_vco / DIV."""
+    dirs = [vdir] + [os.path.dirname(f) for f in files or [] if os.path.dirname(f) != vdir]
+    found = {}
+    for d in dirs:
+        if not os.path.isdir(d):
+            continue
+        for name in sorted(os.listdir(d)):
+            if not name.endswith((".v", ".sv")) or name == TOP_FILE:
+                continue
+            text = strip_comments(open(os.path.join(d, name), encoding="utf-8", errors="replace").read())
+            for m in re.finditer(r"\bmodule\s+(\w+)(.*?)\bendmodule", text, re.S):
+                mod, body = m.group(1), m.group(2)
+                insts = instantiations(body, "EHXPLLL")
+                if not insts:
+                    continue
+                params = dict(insts[0]["params"])
+                ports = dict(insts[0]["ports"])
+                try:
+                    clki_div = int(params.get("CLKI_DIV", "1"))
+                    clkfb_div = int(params.get("CLKFB_DIV", "1"))
+                    clkop_div = int(params.get("CLKOP_DIV", "1"))
+                except ValueError:
+                    continue
+                if params.get("FEEDBK_PATH", '"CLKOP"').strip('"') != "CLKOP":
+                    continue
+                outputs = {}
+                for port, div_key in (("CLKOP", "CLKOP_DIV"), ("CLKOS", "CLKOS_DIV"), ("CLKOS2", "CLKOS2_DIV"),
+                                      ("CLKOS3", "CLKOS3_DIV")):
+                    net = ports.get(port, "").strip()
+                    try:
+                        div = int(params.get(div_key, "0"))
+                    except ValueError:
+                        div = 0
+                    if net and div > 0 and params.get(port + "_ENABLE", '"ENABLED"').strip('"') == "ENABLED":
+                        outputs[net] = div
+                if outputs:
+                    found[mod] = {"clki": ports.get("CLKI", "").strip(), "clki_div": clki_div,
+                                  "clkfb_div": clkfb_div, "clkop_div": clkop_div, "outputs": outputs}
+    return found
 
 
 def gw5_pll_settings(vdir, files=None):

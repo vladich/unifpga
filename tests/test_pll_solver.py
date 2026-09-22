@@ -66,3 +66,13 @@ def test_ice40_matches_icebreaker_dvi():
     assert sol is not None
     assert (sol.divr, sol.divf, sol.divq, sol.filter_range) == (0, 66, 5, 1)
     assert abs(sol.f_out - 25.125) < 1e-9
+
+
+def test_ecp5_pll_matches_bgm_colorlight_clock():
+    """BGM boards/colorlight75b_tm1638_ecp5_yosys/clock.v: EHXPLLL CLKI_DIV 1,
+    CLKFB_DIV 5, CLKOP_DIV 4 (125 MHz feedback), CLKOS_DIV 2 -> 250 MHz."""
+    from tools import pll_solver
+    sol = pll_solver.ecp5_pll(25, 250)
+    assert (sol.clki_div, sol.clkfb_div, sol.clkop_div, sol.clkos_div) == (1, 5, 4, 2)
+    assert sol.f_vco == 500.0 and sol.f_out == 250.0
+    assert pll_solver.ecp5_pll(25, 3000) is None

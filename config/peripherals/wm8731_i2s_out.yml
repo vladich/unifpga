@@ -1,0 +1,38 @@
+# The on-board Wolfson WM8731 audio codec (Terasic DE1, DE2, DE2-115, DE1-SoC)
+# used as an I2S DAC: BGM's i2s_audio_out on the DAC lines plus Terasic's
+# I2C_AUDIO_Config programming the codec over the board I2C bus after reset.
+# rtl/peripherals/wm8731_i2s_out.sv wraps the two.
+
+Peripheral:
+  id: wm8731_i2s_out
+  description: On-board WM8731 codec as I2S DAC (I2S lines + I2C register setup)
+  signals:
+    - { name: xck,      type: scalar, direction: output, comment: "Codec master clock (AUD_XCK)" }
+    - { name: bclk,     type: scalar, direction: output, comment: "AUD_BCLK" }
+    - { name: dac_lrck, type: scalar, direction: output, comment: "AUD_DACLRCK" }
+    - { name: dac_dat,  type: scalar, direction: output, comment: "AUD_DACDAT" }
+    - { name: i2c_sclk, type: scalar, direction: output, comment: "Codec configuration I2C clock" }
+    - { name: i2c_sdat, type: scalar, direction: inout,  comment: "Codec configuration I2C data" }
+  provides:
+    - capability: audio_out
+  driver:
+    module: wm8731_i2s_out
+    file: rtl/peripherals/wm8731_i2s_out.sv
+    files:
+      - rtl/peripherals/i2s_audio_out.sv
+      - rtl/peripherals/I2C_AUDIO_Config.v
+      - rtl/peripherals/I2C_Controller.v
+      - rtl/peripherals/I2C_WRITE_WDATA.v
+    parameters:
+      clk_mhz: context.clk_mhz
+      in_res:  16
+    port_map:
+      clk:      context.clk
+      reset:    context.rst
+      data_in:  capability.audio_out.sample
+      xck:      pin.xck
+      bclk:     pin.bclk
+      dac_lrck: pin.dac_lrck
+      dac_dat:  pin.dac_dat
+      i2c_sclk: pin.i2c_sclk
+      i2c_sdat: pin.i2c_sdat

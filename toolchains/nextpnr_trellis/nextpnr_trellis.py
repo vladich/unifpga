@@ -26,6 +26,7 @@ import shutil
 import subprocess
 
 from tools import codegen
+from tools import source_set
 
 
 log = logging.getLogger(__name__)
@@ -47,85 +48,10 @@ def _resolve_bin(name):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Same pattern as the icestorm driver — yosys 0.36 frontend rejects
-    multi-dim packed arrays, so gate helper inclusion by module-name match."""
-    files = [generated_top, os.path.abspath(user_design_top)]
-    seen = {os.path.abspath(p) for p in files}
-
-    design_dir = os.path.dirname(os.path.abspath(user_design_top))
-    if os.path.isdir(design_dir):
-        for root, _dirs, names in os.walk(design_dir):
-            for name in sorted(names):
-                if not (name.endswith(".sv") or name.endswith(".v")):
-                    continue
-                if name in ("design_top.sv", "tb.sv"):
-                    continue
-                full = os.path.join(root, name)
-                if full not in seen:
-                    files.append(full)
-                    seen.add(full)
-
-    for attach in peripherals:
-        drv = (attach.get("peripheral") or {}).get("driver") or {}
-        f = drv.get("file")
-        if f:
-            full = os.path.join(repo, f)
-            if os.path.exists(full) and full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    try:
-        with open(generated_top) as f:
-            top_text = f.read()
-    except Exception:
-        top_text = ""
-
-    helper_modules = {
-        "tm1638_registers.sv":         ("tm1638_registers", "tm1638_board_controller"),
-        "slow_clk_gen.sv":             ("slow_clk_gen",),
-        "imitate_reset_on_power_up.sv": ("imitate_reset_on_power_up",),
-    }
-    for helper, modules in helper_modules.items():
-        full = os.path.join(repo, "rtl", "peripherals", helper)
-        if not os.path.exists(full) or full in seen:
-            continue
-        if any(m in top_text for m in modules):
-            files.append(full)
-            seen.add(full)
-
-    sibling_text = top_text
-    for f in list(files):
-        try:
-            with open(f) as fh:
-                sibling_text += "\n" + fh.read()
-        except Exception:
-            pass
-
-    designs_common_dir = os.path.join(repo, "rtl", "peripherals", "designs_common")
-    if os.path.isdir(designs_common_dir):
-        for name in sorted(os.listdir(designs_common_dir)):
-            if not name.endswith(".sv"):
-                continue
-            module_name = name[:-3]
-            if module_name not in sibling_text:
-                continue
-            full = os.path.join(designs_common_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Xilinx-primitive stubs (BUFG etc.) for designs that target Vivado directly.
-    compat_dir = os.path.join(repo, "rtl", "peripherals", "_quartus_compat")
-    if os.path.isdir(compat_dir):
-        for name in sorted(os.listdir(compat_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(compat_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    return files
+    """yosys 0.36 frontend: gate helpers/common by module-name match; Xilinx-primitive stubs for BUFG users."""
+    return source_set.collect_sources(
+        repo, peripherals, user_design_top, generated_top,
+        include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=True)
 
 
 # Map our boards.yml board id to nextpnr-ecp5 (DEVICE, PACKAGE, SPEED).
@@ -206,7 +132,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
     yosys_script = "; ".join(
         read_cmds
-        + ['synth_ecp5 -top top -json "{}"'.format(json_path)]
+        + ['{} -top top -json "{}"'.format(" ".join(["synth_ecp5"] + codegen.yosys_synth_options(board_pinmap)), json_path)]
     )
     cmd = [yosys, "-q", "-l", yosys_log, "-p", yosys_script]
     log.info("Invoking yosys synth_ecp5")

@@ -9,7 +9,7 @@ mode through analyze/synth/place/route/asm. Artifacts:
     <output>/unifpga_top.sdc    — codegen-produced timing constraints
     <output>/unifpga_top.qpf    — minimal Quartus project file
     <output>/quartus.log        — combined Quartus log
-    <output>/unifpga_top.sof    — final bitstream (also .pof for flash)
+    <output>/unifpga_top.sof    — final bitstream (MAX II / MAX V CPLDs emit only unifpga_top.pof)
 
 Set $UNIFPGA_DRY_RUN=1 to generate every artifact without invoking Quartus.
 """
@@ -21,6 +21,7 @@ import shutil
 import subprocess
 
 from tools import codegen
+from tools import source_set
 
 
 log = logging.getLogger(__name__)
@@ -39,68 +40,10 @@ def _resolve_quartus_bin(toolchain, name):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Source-collection logic. Differs from Vivado in one key way: Quartus
-    treats every file in the project as a top-level compilation unit, so
-    `.svh` headers (which are pulled in by `\`include`) must NOT be added
-    explicitly — otherwise modules declared inside them get compiled twice
-    and Quartus errors with 'cannot be declared more than once'."""
-    files = [generated_top, os.path.abspath(user_design_top)]
-    seen = {os.path.abspath(p) for p in files}
-
-    design_dir = os.path.dirname(os.path.abspath(user_design_top))
-    if os.path.isdir(design_dir):
-        for root, _dirs, names in os.walk(design_dir):
-            for name in sorted(names):
-                # Exclude .svh — included via `\`include`, never compiled standalone.
-                if not (name.endswith(".sv") or name.endswith(".v")):
-                    continue
-                if name in ("design_top.sv", "tb.sv"):
-                    continue
-                full = os.path.join(root, name)
-                if full not in seen:
-                    files.append(full)
-                    seen.add(full)
-
-    for attach in peripherals:
-        drv = (attach.get("peripheral") or {}).get("driver") or {}
-        f = drv.get("file")
-        if f:
-            full = os.path.join(repo, f)
-            if os.path.exists(full) and full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    for helper in ("tm1638_registers.sv", "slow_clk_gen.sv",
-                   "imitate_reset_on_power_up.sv"):
-        full = os.path.join(repo, "rtl", "peripherals", helper)
-        if os.path.exists(full) and full not in seen:
-            files.append(full)
-            seen.add(full)
-
-    designs_common_dir = os.path.join(repo, "rtl", "peripherals", "designs_common")
-    if os.path.isdir(designs_common_dir):
-        for name in sorted(os.listdir(designs_common_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(designs_common_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Quartus-only compat stubs for Xilinx primitives (BUFG etc.) referenced
-    # by a few designs targeting 7-series boards directly. Vivado has these in
-    # its unisim library; non-Xilinx toolchains need pass-through stubs.
-    compat_dir = os.path.join(repo, "rtl", "peripherals", "_quartus_compat")
-    if os.path.isdir(compat_dir):
-        for name in sorted(os.listdir(compat_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(compat_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    return files
+    """Quartus compiles every listed file standalone: no .svh; Xilinx-primitive stubs; helpers/common ungated."""
+    return source_set.collect_sources(
+        repo, peripherals, user_design_top, generated_top,
+        include_svh=False, gate_helpers=False, gate_common=False, compat_stubs=True)
 
 
 def _emit_qpf(version):
@@ -277,21 +220,37 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         log.error("Quartus exited with code %d (see %s)", rc, log_path)
         return rc
 
-    sof = os.path.join(output, PROJECT_NAME + ".sof")
-    if os.path.exists(sof):
-        log.info("Bitstream ready: %s", sof)
+    bitstream = _find_bitstream(output)
+    if bitstream:
+        log.info("Bitstream ready: %s", bitstream)
     return 0
 
 
+def _find_bitstream(output):
+    """The programming file Quartus produced: unifpga_top.sof (SRAM object
+    file, FPGAs) or unifpga_top.pof — MAX II / MAX V CPLD builds (quartus2,
+    e.g. omdazz_epm570) emit only the flash programmer object file. Prefers
+    .sof; None when neither exists."""
+    for ext in (".sof", ".pof"):
+        path = os.path.join(output, PROJECT_NAME + ext)
+        if os.path.exists(path):
+            return path
+    return None
+
+
 def program(*, board, board_pinmap=None, toolchain, output, **_):
-    """Download the .sof to the connected board over JTAG via quartus_pgm."""
-    sof = os.path.join(output, PROJECT_NAME + ".sof")
-    if not os.path.exists(sof) and not os.environ.get("UNIFPGA_DRY_RUN"):
-        log.error("Bitstream not found: %s — run synthesis first", sof)
-        return 1
+    """Download the .sof (or a CPLD's .pof) to the connected board over JTAG
+    via quartus_pgm; both go through the same `P;<file>` operation."""
+    bitstream = _find_bitstream(output)
+    if bitstream is None:
+        if not os.environ.get("UNIFPGA_DRY_RUN"):
+            log.error("Bitstream not found: %s.sof / .pof — run synthesis first",
+                      os.path.join(output, PROJECT_NAME))
+            return 1
+        bitstream = os.path.join(output, PROJECT_NAME + ".sof")
 
     if os.environ.get("UNIFPGA_DRY_RUN"):
-        log.info("[dry run] Would program %s", sof)
+        log.info("[dry run] Would program %s", bitstream)
         return 0
 
     quartus_pgm = _resolve_quartus_bin(toolchain, "quartus_pgm")
@@ -299,7 +258,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         log.error("Could not locate quartus_pgm.")
         return 1
 
-    cmd = [quartus_pgm, "--mode=jtag", "-o", "P;{}".format(sof)]
+    cmd = [quartus_pgm, "--mode=jtag", "-o", "P;{}".format(bitstream)]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

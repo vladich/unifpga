@@ -821,6 +821,19 @@ def resolve_configuration(configuration_id):
             "bind":          entry.get("bind", {}) or {},
         })
 
+    # `tie:` — pins the top drives with a constant or the reset (BGM's
+    # `assign M_CLK = 1'b0`, `assign ARDUINO_RESET_N = ~ rst`), one pin_tie
+    # attach each so they are declared, driven and constrained.
+    for ref, value in (cfg.get("tie") or {}).items():
+        if "pin_tie" not in peripherals:
+            raise ConfigError("Configuration '{c}': tie: needs the pin_tie peripheral".format(c=configuration_id))
+        attached.append({
+            "peripheral_id": "pin_tie",
+            "peripheral":    peripherals["pin_tie"],
+            "params":        {"value": _tie_value(configuration_id, ref, value)},
+            "bind":          {"pin": str(ref)},
+        })
+
     return {
         "configuration": cfg,
         "board":         board_resolved,
@@ -828,6 +841,22 @@ def resolve_configuration(configuration_id):
         "toolchain":     resolve_toolchain_install(toolchains[toolchain_id]),
         "peripherals":   attached,
     }
+
+
+_TIE_VALUES = {
+    "0": "const.0", "1": "const.1", "false": "const.0", "true": "const.1",
+    "rst": "context.rst", "~rst": "~context.rst", "rst_n": "~context.rst", "!rst": "~context.rst",
+    "const.0": "const.0", "const.1": "const.1", "context.rst": "context.rst", "~context.rst": "~context.rst",
+}
+
+
+def _tie_value(configuration_id, ref, value):
+    """`tie:` value -> codegen reference (`const.0`, `~context.rst`, ...)."""
+    key = str(value).strip().replace(" ", "").lower()
+    if key not in _TIE_VALUES:
+        raise ConfigError("Configuration '{c}': tie {r!r}: value {v!r} is not one of 0, 1, rst, ~rst"
+                          .format(c=configuration_id, r=ref, v=value))
+    return _TIE_VALUES[key]
 
 
 def _apply_pin_overrides(configuration_id, cfg, pinmap):
@@ -930,11 +959,29 @@ def _apply_io_overrides(configuration_id, cfg, pinmap):
                 raise ConfigError("Configuration '{c}': io_overrides {r!r}: no pin at index {i}"
                                   .format(c=configuration_id, r=ref, i=i))
             targets = [targets[i]]
-        ov = bank.setdefault("overrides", {})
-        for t in targets:
-            if t is not None:
-                ov[str(t)] = value
+        # a pin often sits in two banks (Tang Nano 9K: LCD colours on the TMDS
+        # pairs); the type belongs to the pin, whichever bank the generated
+        # port comes from
+        for p in targets:
+            if p is None:
+                continue
+            for other in banks.values():
+                if _bank_has_pin(other, p):
+                    other.setdefault("overrides", {})[str(p)] = value
 
+
+def _bank_has_pin(bank, pin):
+    pins = (bank or {}).get("pins")
+    vals = []
+    if isinstance(pins, dict):
+        for v in pins.values():
+            vals.extend(v if isinstance(v, list) else [v])
+    elif isinstance(pins, list):
+        vals = pins
+    else:
+        vals = [pins]
+    p = str(pin).split(",", 1)[0].strip()
+    return any(v is not None and str(v).split(",", 1)[0].strip() == p for v in vals)
 
 def read_all(configuration_id=None):
     """

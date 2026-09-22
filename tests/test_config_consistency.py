@@ -48,7 +48,7 @@ def _configurations(): return config_init.read_configurations()
 # ---------------------------------------------------------------------------
 
 _VALID_DIRECTIONS = {"hw_to_user", "user_to_hw", "inout"}
-_VALID_AGGREGATION = {"concat", "exclusive", "or", "mux"}
+_VALID_AGGREGATION = {"concat", "exclusive", "or", "mux", "broadcast"}
 _VALID_SIGNAL_TYPES = {"scalar", "bus"}
 
 
@@ -575,8 +575,8 @@ def test_design_requirements_check_fails_when_under_provisioned():
 
 def test_design_requirements_check_fails_when_capability_missing():
     from tools import design_requirements
-    # de10_lite has no audio_out (no PWM amp on board).
-    resolved = config_init.resolve_configuration("de10_lite")
+    # icebreaker_bare has no audio_out (BGM drives no DAC or amplifier there).
+    resolved = config_init.resolve_configuration("icebreaker_bare")
     reqs = {"audio_out": {}}
     errs = design_requirements.check(resolved, reqs)
     assert len(errs) == 1 and "audio_out" in errs[0], errs

@@ -31,6 +31,10 @@ Peripheral:
     - { name: b,  type: bus, width: $pin_bits_b, direction: output }
     - { name: hs, type: scalar, direction: output }
     - { name: vs, type: scalar, direction: output }
+    # DAC boards (DE2-115, DE1-SoC, SoCKit, DE2): BGM drives VGA_BLANK_N with
+    # display_on and VGA_CLK with the pixel clock; VGA_SYNC_N is a `tie:`.
+    - { name: blank_n, type: scalar, direction: output, optional: true, comment: "ADV7123 BLANK_N = display_on" }
+    - { name: clk,     type: scalar, direction: output, optional: true, comment: "ADV7123 pixel clock" }
   provides:
     - capability: screen
       params:
@@ -61,8 +65,8 @@ Peripheral:
       vsync:      pin.vs
       hpos:       capability.screen.x
       vpos:       capability.screen.y
-      display_on:
-      pixel_clk:
+      display_on: pin.blank_n
+      pixel_clk:  pin.clk
       red:        capability.screen.red
       green:      capability.screen.green
       blue:       capability.screen.blue

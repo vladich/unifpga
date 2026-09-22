@@ -1,0 +1,43 @@
+# I²S stereo DAC output: a PCM5102A module or Digilent Pmod AMP3 on a header,
+# or the on-board headphone DAC + LPA4809 amplifier of the Tang Nano 20K /
+# Tang Primer 20K dock. The driver is BGM's peripherals/i2s_audio_out.sv
+# (mono sample duplicated on both channels; MCLK:BCLK:LRCLK = 256:64:1).
+#
+# BGM wires it on ~50 boards — header pins, LCD/camera pins repurposed as
+# GPIO, Pmod JB and JC at once — so `audio_out` is a broadcast capability:
+# several instances (and a PWM amplifier) may listen to the same samples.
+
+Peripheral:
+  id: i2s_audio_out
+  description: I²S DAC / amplifier output (PCM5102A, Pmod AMP3, on-board headphone jack)
+  parameters:
+    align_right:         { type: int, default: 0, description: "1 for the PT8211 DAC (LSB-justified)" }
+    offset_by_one_cycle: { type: int, default: 1, description: "0 for the PT8211 DAC" }
+    loud:                { type: int, default: 0, description: "1 doubles the sample (clips)" }
+  signals:
+    - { name: mclk,  type: scalar, direction: output, optional: true, comment: "Master clock; BGM leaves it unconnected on DACs that do not need it" }
+    - { name: bclk,  type: scalar, direction: output, comment: "Bit clock" }
+    - { name: lrclk, type: scalar, direction: output, comment: "Word select (32-bit L, 32-bit R)" }
+    - { name: sdata, type: scalar, direction: output, comment: "Serial data" }
+    - { name: pa_en, type: scalar, direction: output, optional: true, comment: "Power-amplifier enable (LPA4809 on the Tang boards): held at 1" }
+  provides:
+    - capability: audio_out
+  driver:
+    module: i2s_audio_out
+    file: rtl/peripherals/i2s_audio_out.sv
+    parameters:
+      clk_mhz:             context.clk_mhz
+      in_res:              16
+      align_right:         $align_right
+      offset_by_one_cycle: $offset_by_one_cycle
+      loud:                $loud
+    port_map:
+      clk:     context.clk
+      reset:   context.rst
+      data_in: capability.audio_out.sample
+      mclk:    pin.mclk
+      bclk:    pin.bclk
+      lrclk:   pin.lrclk
+      sdata:   pin.sdata
+  pin_assigns:
+    pin.pa_en: const.1     # BGM: assign PA_EN = 1'b1

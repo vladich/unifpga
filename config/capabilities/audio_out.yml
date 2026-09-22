@@ -8,4 +8,6 @@ Capability:
   description: 16-bit signed mono audio sample sink.
   signals:
     - { name: sample, type: bus, width: 16, direction: user_to_hw }
-  aggregation: exclusive
+  # Every provider hears the same samples (BGM: PWM amplifier plus I2S DACs on
+  # two Pmods at once); the user drives one bus.
+  aggregation: broadcast

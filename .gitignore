@@ -13,6 +13,8 @@ settings.yml
 
 # Toolchain output / intermediate artifacts
 unifpga_*/
+# Per-design build output of ./unifpga build (designs/<name>/run/<configuration>/)
+run/
 *.bit
 *.bin
 *.bgn

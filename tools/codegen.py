@@ -174,6 +174,11 @@ def build_capability_plans(resolved):
                 plan.providers = plan.providers[:1]
             _, _, params = plan.providers[0]
             plan.params = dict(params)
+        elif plan.aggregation == "broadcast":
+            # every provider consumes the same user-driven bus (BGM feeds
+            # `sound` to the PWM amplifier and to two I2S DACs at once)
+            _, _, params = plan.providers[0]
+            plan.params = dict(params)
         elif plan.aggregation == "concat":
             primary = _PRIMARY_PARAM.get(plan.id, "width")
             offset = 0
@@ -331,6 +336,8 @@ def _pll_vendor(board):
         return "gowin_rpll"
     if "lattice" in producer and "ice40" in family:
         return "ice40"
+    if "lattice" in producer and "ecp5" in family:
+        return "ecp5"
     if ("xilinx" in producer or "amd" in producer or part.startswith(("XC7", "XA7"))) and (
             part.startswith(("XC7", "XA7")) or "7" in family or "zynq" in family):
         return "xilinx_mmcm"
@@ -371,6 +378,15 @@ def _gw5_primitive(board):
     138K), PLLA on GW5A (Tang Primer 25K)."""
     part = (board.get("Part") or "").upper()
     return "PLLA" if part.startswith("GW5A-") else "PLL"
+
+
+def yosys_synth_options(pinmap):
+    """Extra `synth_*` flags for a yosys flow from the pinmap's
+    `toolchain_options.yosys.synth_options` (BGM board_info.source_bash
+    `SYNTH_CMD="synth_ice40 -dsp -noabc9"`; tools/sync_from_bgm.py
+    --yosys-options). Returned with their leading dash."""
+    opts = ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
+    return ["-" + str(o).lstrip("-") for o in (opts.get("synth_options") or [])]
 
 
 def _gowin_rpll_device(resolved):
@@ -460,6 +476,8 @@ def plan_clock_tree(resolved, plans=None):
                 # BGM's GW1NR-9C settings sit as low as 432 MHz.
                 vco = (400.0, 1200.0) if _is_gowin_littlebee(board) else (500.0, 1250.0)
                 sol = pll_solver.gowin_rpll(f_in, r["mhz"], r["tolerance_pct"], vco_max=vco[1], vco_min=vco[0])
+            elif vendor == "ecp5":
+                sol = pll_solver.ecp5_pll(f_in, r["mhz"], r["tolerance_pct"])
             else:   # ice40
                 sol = pll_solver.ice40_pll(f_in, r["mhz"], r["tolerance_pct"])
             if sol is None:
@@ -617,6 +635,12 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
                          ".USE_PAD(1'b{pad})) i_pll_{name} (.clkin(clk), .clkout({net}), .lock({net}_locked));".format(
                              r=sol.divr, f=sol.divf, q=sol.divq, fr=sol.filter_range, pad=use_pad,
                              name=name, net=net))
+        elif vendor == "ecp5":
+            lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz, CLKOP feedback {:.3f} MHz)".format(
+                net, sol.f_out, fin_str, sol.f_pfd, sol.f_vco, sol.f_vco / sol.clkop_div))
+            lines.append("    pll_ecp5 # (.CLKI_DIV({i}), .CLKFB_DIV({f}), .CLKOP_DIV({p}), .CLKOS_DIV({o})) "
+                         "i_pll_{name} (.clkin(clk), .clkout({net}), .lock({net}_locked));".format(
+                             i=sol.clki_div, f=sol.clkfb_div, p=sol.clkop_div, o=sol.clkos_div, name=name, net=net))
     return lines
 
 
@@ -626,6 +650,7 @@ _CLOCK_TREE_MODULES = (
     ("pll_xilinx_mmcm", os.path.join("rtl", "pll", "pll_xilinx_mmcm.sv")),
     ("clkdiv_gowin",    os.path.join("rtl", "pll", "clkdiv_gowin.sv")),
     ("pll_gowin_gw5",   os.path.join("rtl", "pll", "pll_gowin_gw5.sv")),
+    ("pll_ecp5",        os.path.join("rtl", "pll", "pll_ecp5.sv")),
 )
 
 
@@ -691,6 +716,44 @@ def collect_referenced_banks(resolved):
     return list(banks.keys())
 
 
+def referenced_subkeys(resolved):
+    """{bank: None | set of sub-keys}: which pins of a dict bank the
+    configuration references. `None` means the whole bank (a bind to `bank`
+    itself). A bind to `onboard_lcd.vs` alone must not declare and constrain
+    the LCD's colour pins too (Tang Nano 9K: they are the TMDS pairs' pins)."""
+    out = OrderedDict()
+
+    def note(ref):
+        parsed = _parse_bank_ref(ref) if isinstance(ref, str) else None
+        if parsed is None:
+            return
+        bank, sub, _idx = parsed
+        if sub is None:
+            out[bank] = None
+        elif bank not in out:
+            out[bank] = {sub}
+        elif out[bank] is not None:
+            out[bank].add(sub)
+
+    for attach in resolved["peripherals"]:
+        for ref in (attach.get("bind") or {}).values():
+            for one in (ref if isinstance(ref, list) else [ref]):
+                note(one)
+    for src in (resolved["configuration"].get("reset") or {}).get("sources") or []:
+        if isinstance(src, dict) and src.get("pin"):
+            note(str(src["pin"]))
+    return out
+
+
+def _sub_used(resolved, bank, sub):
+    """Is sub-key `sub` of dict bank `bank` referenced by the configuration?"""
+    refd = referenced_subkeys(resolved)
+    if bank not in refd:
+        return False
+    subs = refd[bank]
+    return subs is None or sub in subs
+
+
 def fpga_port_decls(resolved, referenced_banks):
     """Emit the FPGA top module's port list. Direction is inferred per sub-key
     when a bank has differently-directed pins (e.g. UART tx/rx)."""
@@ -714,6 +777,8 @@ def fpga_port_decls(resolved, referenced_banks):
                          .format(dir=_dir_kw(d), hi=w-1, name=bank_name))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 d = _infer_pin_direction(resolved, bank_name, sub)
                 if isinstance(val, list):
@@ -1349,7 +1414,7 @@ def _emit_passthrough(resolved, idx, attach, plans):
     for entry in perif.get("provides") or []:
         cap_id = entry["capability"]
         plan = plans[cap_id]
-        if plan.aggregation == "exclusive":
+        if plan.aggregation in ("exclusive", "broadcast"):
             for cap_sig in plan.cap.get("signals", []):
                 cap_sig_name = cap_sig["name"]
                 pin_sig_name = cap_sig_name
@@ -1828,6 +1893,8 @@ def emit_xdc(resolved):
                 out.append(_xdc_line(p, port, _pin_iostd(p, overrides, bank_iostd)))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
@@ -1885,9 +1952,7 @@ def emit_xdc_simple(resolved):
     plans = build_capability_plans(resolved)
 
     def emit(pin, port, iostd):
-        if "," in str(pin):
-            out.append("# WARNING: pin '{}' for port '{}' is a differential pair (skipped)".format(pin, port))
-            return
+        pin = _pair_p(pin)            # a "P,N" pair locates the P port (nextpnr-xilinx wants both halves typed)
         out.append("set_property PACKAGE_PIN {} [get_ports {{{}}}]".format(pin, port))
         out.append("set_property IOSTANDARD {} [get_ports {{{}}}]".format(iostd, port))
 
@@ -1907,6 +1972,8 @@ def emit_xdc_simple(resolved):
                 emit(p, "{}[{}]".format(bank_name, i), _pin_iostd(p, overrides, bank_iostd))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
@@ -1979,6 +2046,8 @@ def emit_ucf(resolved):
                 emit(p, "{}[{}]".format(bank_name, i), _pin_iostd(p, overrides, bank_iostd))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
@@ -2089,8 +2158,21 @@ def emit_qsf(resolved, part):
     cfg = resolved["configuration"]
     board = resolved["board"]
     pinmap = resolved["board_pinmap"]
-    default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "3.3-V LVTTL"
+    # No invented default: a pin whose standard neither the pinmap nor BGM
+    # states gets the device default, exactly as in BGM's project (Cyclone IV
+    # E: 2.5 V — an invented 3.3-V LVTTL on the DE2-115 puts HEX3 into a
+    # VCCIO conflict, Quartus 169026).
+    default_iostd = (pinmap.get("defaults") or {}).get("iostandard")
     family = _quartus_family(board, part)
+    quartus_opts = (pinmap.get("toolchain_options") or {}).get("quartus") or {}
+    # BGM dk_dev_3c120n: the project default comes from STRATIX_DEVICE_IO_STANDARD
+    # and the pins at that standard carry no assignment of their own; an
+    # explicit 2.5 V on them is refused where the bank runs at 1.8 V (169026)
+    project_default = None
+    for ga in quartus_opts.get("global_assignments") or []:
+        m = re.match(r'^STRATIX_DEVICE_IO_STANDARD\s+"([^"]+)"', ga)
+        if m:
+            project_default = m.group(1)
 
     out = []
     out.append("# =============================================================================")
@@ -2106,6 +2188,11 @@ def emit_qsf(resolved, part):
     # parses `.v` files (and `\\`include`d `.svh`/`.vh` headers) as Verilog 2001,
     # rejecting `'0`, `always_ff`, `logic`, etc.
     out.append("set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2005")
+    # Board-level project settings BGM's board_specific.qsf carries (dual-
+    # purpose pin reservation such as nCEO used as regular I/O, unused-pin
+    # state, device I/O default); tools/sync_from_bgm.py --quartus-options.
+    for ga in quartus_opts.get("global_assignments") or []:
+        out.append("set_global_assignment -name {}".format(ga))
     out.append("")
 
     referenced = collect_referenced_banks(resolved)
@@ -2121,37 +2208,41 @@ def emit_qsf(resolved, part):
         bank_iostd = bank.get("iostandard") or default_iostd
 
         if isinstance(pins, str):
-            out.extend(_qsf_lines(pins, bank_name, _pin_iostd(pins, overrides, bank_iostd)))
+            out.extend(_qsf_lines(pins, bank_name, _pin_iostd(pins, overrides, bank_iostd), project_default))
         elif isinstance(pins, list):
             for i, p in enumerate(pins):
                 if p is None:
                     continue
                 port = "{}[{}]".format(bank_name, i)
-                out.extend(_qsf_lines(p, port, _pin_iostd(p, overrides, bank_iostd)))
+                out.extend(_qsf_lines(p, port, _pin_iostd(p, overrides, bank_iostd), project_default))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
                         if p is None:
                             continue
                         port = "{}[{}]".format(pname, i)
-                        out.extend(_qsf_lines(p, port, _pin_iostd(p, overrides, bank_iostd)))
+                        out.extend(_qsf_lines(p, port, _pin_iostd(p, overrides, bank_iostd), project_default))
                 elif isinstance(val, str):
-                    out.extend(_qsf_lines(val, pname, _pin_iostd(val, overrides, bank_iostd)))
+                    out.extend(_qsf_lines(val, pname, _pin_iostd(val, overrides, bank_iostd), project_default))
 
     out.append("")
     return "\n".join(out) + "\n"
 
 
-def _qsf_lines(pin, port_expr, iostd):
+def _qsf_lines(pin, port_expr, iostd, project_default=None):
     pin_str = str(pin)
     if "," in pin_str:
         return ["# WARNING: pin '{}' for port '{}' is a differential pair (skipped)".format(pin_str, port_expr)]
-    return [
-        "set_location_assignment PIN_{pin} -to {port}".format(pin=pin_str, port=port_expr),
-        'set_instance_assignment -name IO_STANDARD "{std}" -to {port}'.format(std=iostd, port=port_expr),
-    ]
+    lines = ["set_location_assignment PIN_{pin} -to {port}".format(pin=pin_str, port=port_expr)]
+    if iostd and project_default and str(iostd).upper() == project_default.upper():
+        iostd = None                    # the project default says it already
+    if iostd:
+        lines.append('set_instance_assignment -name IO_STANDARD "{std}" -to {port}'.format(std=iostd, port=port_expr))
+    return lines
 
 
 def emit_sdc(resolved):
@@ -2273,15 +2364,17 @@ def emit_cst(resolved):
 
         if isinstance(pins, str):
             out.extend(lines_for(pins, bank_name, _pin_iostd(pins, overrides, bank_iotype),
-                                 explicit or pins in overrides))
+                                 explicit or _has_override(overrides, pins)))
         elif isinstance(pins, list):
             for i, p in enumerate(pins):
                 if p is None:
                     continue
                 port = "{}[{}]".format(bank_name, i)
-                out.extend(lines_for(p, port, _pin_iostd(p, overrides, bank_iotype), explicit or p in overrides))
+                out.extend(lines_for(p, port, _pin_iostd(p, overrides, bank_iotype), explicit or _has_override(overrides, p)))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
@@ -2289,13 +2382,18 @@ def emit_cst(resolved):
                             continue
                         port = "{}[{}]".format(pname, i)
                         out.extend(lines_for(p, port, _pin_iostd(p, overrides, bank_iotype),
-                                             explicit or p in overrides))
+                                             explicit or _has_override(overrides, p)))
                 elif isinstance(val, str):
                     out.extend(lines_for(val, pname, _pin_iostd(val, overrides, bank_iotype),
-                                         explicit or val in overrides))
+                                         explicit or _has_override(overrides, val)))
 
     out.append("")
     return "\n".join(out)
+
+
+def _has_override(overrides, pin):
+    """A per-pin type stated for the pin, or for the P half of a pair."""
+    return str(pin) in overrides or _pair_p(pin) in overrides
 
 
 def _cst_pair_lines(pin, port_expr, iotype, explicit, style):
@@ -2376,6 +2474,8 @@ def emit_lpf(resolved):
                 out.extend(_lpf_lines(p, port, _pin_iostd(p, overrides, bank_iotype), iotype_map))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
@@ -2494,6 +2594,8 @@ def emit_peri_xml(resolved, device_def):
                 out.extend(_efxpt_gpio(portname, p, mode, bank_name, bank_iostd))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 d = _infer_pin_direction(resolved, bank_name, sub)
                 m = d if d in ("input", "output", "inout") else "input"
@@ -2645,6 +2747,8 @@ def emit_pcf(resolved):
                 out.append("set_io -nowarn {}[{}] {}".format(bank_name, i, p))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
@@ -2725,6 +2829,8 @@ def emit_microchip_pdc(resolved):
                 _emit("{}[{}]".format(bank_name, i), p, d)
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 d = _dir(bank_name, sub)
                 if isinstance(val, list):
@@ -2787,6 +2893,8 @@ def emit_pdc(resolved):
                 _emit("{{{}[{}]}}".format(bank_name, i), p)
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):
@@ -2861,6 +2969,8 @@ def emit_ccf(resolved):
                 _emit("{}[{}]".format(bank_name, i), p)
         elif isinstance(pins, dict):
             for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
                 pname = "{}_{}".format(bank_name, sub)
                 if isinstance(val, list):
                     for i, p in enumerate(val):

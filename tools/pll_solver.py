@@ -89,6 +89,53 @@ def ice40_pll(f_in, f_out, tolerance_pct=0.5):
     return best[1] if best else None
 
 
+class Ecp5PLL(object):
+    """One EHXPLLL setting: feedback from CLKOP, the requested clock on CLKOS."""
+
+    def __init__(self, clki_div, clkfb_div, clkop_div, clkos_div, f_pfd, f_vco, f_out, error_pct):
+        self.clki_div, self.clkfb_div, self.clkop_div, self.clkos_div = clki_div, clkfb_div, clkop_div, clkos_div
+        self.f_pfd, self.f_vco, self.f_out, self.error_pct = f_pfd, f_vco, f_out, error_pct
+
+    def __repr__(self):
+        return "Ecp5PLL(CLKI_DIV={}, CLKFB_DIV={}, CLKOP_DIV={}, CLKOS_DIV={}, vco={:.1f}, out={:.4f})".format(
+            self.clki_div, self.clkfb_div, self.clkop_div, self.clkos_div, self.f_vco, self.f_out)
+
+
+ECP5_VCO_MIN, ECP5_VCO_MAX = 400.0, 800.0
+ECP5_PFD_MIN, ECP5_PFD_MAX = 10.0, 400.0
+
+
+def ecp5_pll(f_in, f_out, tolerance_pct=0.5):
+    """Best EHXPLLL setting for f_out from f_in, or None. Feedback path CLKOP:
+    f_vco = f_in / CLKI_DIV * CLKFB_DIV * CLKOP_DIV (400..800 MHz), the output
+    is CLKOS = f_vco / CLKOS_DIV. Ties: smallest CLKI_DIV, then the CLKOP
+    (feedback) clock closest to half the output — BGM colorlight clock.v:
+    25 -> 250 MHz with CLKI 1, CLKFB 5, CLKOP 4 (125 MHz), CLKOS 2."""
+    best = None
+    for clki in range(1, 129):
+        f_pfd = f_in / clki
+        if not (ECP5_PFD_MIN <= f_pfd <= ECP5_PFD_MAX):
+            continue
+        for clkfb in range(1, 81):
+            for clkop in range(1, 129):
+                f_vco = f_pfd * clkfb * clkop
+                if f_vco < ECP5_VCO_MIN:
+                    continue
+                if f_vco > ECP5_VCO_MAX:
+                    break
+                clkos = int(round(f_vco / f_out))
+                if not (1 <= clkos <= 128):
+                    continue
+                f = f_vco / clkos
+                err = abs(f - f_out) / f_out * 100.0
+                if err > tolerance_pct:
+                    continue
+                key = (round(err, 9), clki, round(abs(f_vco / clkop - f_out / 2.0), 6), clkfb)
+                if best is None or key < best[0]:
+                    best = (key, Ecp5PLL(clki, clkfb, clkop, clkos, f_pfd, f_vco, f, err))
+    return best[1] if best else None
+
+
 def ice40_filter_range(f_pfd):
     if f_pfd < 17:
         return 1

@@ -30,6 +30,7 @@ import shutil
 import subprocess
 
 from tools import codegen
+from tools import source_set
 
 
 log = logging.getLogger(__name__)
@@ -87,54 +88,10 @@ def _efx_run_script(toolchain):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Mirrors the Vivado/Quartus drivers — keep symmetrical."""
-    files = [generated_top, os.path.abspath(user_design_top)]
-    seen = {os.path.abspath(p) for p in files}
-
-    design_dir = os.path.dirname(os.path.abspath(user_design_top))
-    if os.path.isdir(design_dir):
-        for root, _dirs, names in os.walk(design_dir):
-            for name in sorted(names):
-                if not (name.endswith(".sv") or name.endswith(".v")):
-                    continue
-                if name in ("design_top.sv", "tb.sv"):
-                    continue
-                full = os.path.join(root, name)
-                if full not in seen:
-                    files.append(full)
-                    seen.add(full)
-
-    for attach in peripherals:
-        drv = (attach.get("peripheral") or {}).get("driver") or {}
-        f = drv.get("file")
-        if f:
-            full = os.path.join(repo, f)
-            if os.path.exists(full) and full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    for helper in ("tm1638_registers.sv", "slow_clk_gen.sv",
-                   "imitate_reset_on_power_up.sv"):
-        full = os.path.join(repo, "rtl", "peripherals", helper)
-        if os.path.exists(full) and full not in seen:
-            files.append(full)
-            seen.add(full)
-
-    designs_common_dir = os.path.join(repo, "rtl", "peripherals", "designs_common")
-    if os.path.isdir(designs_common_dir):
-        for name in sorted(os.listdir(designs_common_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(designs_common_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Skip _quartus_compat stubs: Efinity's Verific frontend chokes on the
-    # BUFGCE pass-through (and 5_4_yrv_plus is the only design that needs
-    # them; it won't fit on T8F81 anyway).
-
-    return files
+    """Efinity's Verific frontend chokes on the BUFGCE stub: no compat stubs; no .svh; helpers/common ungated."""
+    return source_set.collect_sources(
+        repo, peripherals, user_design_top, generated_top,
+        include_svh=False, gate_helpers=False, gate_common=False, compat_stubs=False)
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,

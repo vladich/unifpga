@@ -1,0 +1,23 @@
+# A pin header exposed to the design as bidirectional GPIO: the 40-pin GPIO_0 /
+# GPIO_1 connectors of the DE boards, Arduino / Raspberry-Pi style connectors,
+# Sipeed GPIO rows, a Pmod used bare. This is BGM's `.gpio ( { GPIO_0, GPIO_1 } )`
+# connection: the width is the header's pin count, bits a driver peripheral
+# claims (TM1638, microphone, I2S DAC) are left dangling on the design side so
+# the numbering stays that of the board.
+#
+# pmod_12pin is the fixed-width (8) special case kept for the Digilent boards.
+
+Peripheral:
+  id: gpio_header
+  description: Bare pin header exposed as bidirectional GPIO
+  parameters:
+    width:
+      type: int
+      required: true
+  signals:
+    - { name: io, type: bus, width: $width, direction: inout }
+  provides:
+    - capability: gpio
+      params:
+        width: $width
+  driver: null

@@ -17,6 +17,21 @@ Cologne Chip GateMate) — without changing the design.
 > configuration's row reads `clean` and it has passed the BGM parity check,
 > treat its output as unverified.
 
+## Quick start
+
+```bash
+./unifpga board          # pick your board once (remembered in settings.yml)
+cd designs/1_06_binary_counter
+../../unifpga build      # or: ./unifpga build 1_06_binary_counter from the repo root
+../../unifpga program
+```
+
+`build` writes everything (generated `top.sv`, constraints, the toolchain
+project and bitstream) to `run/<configuration>/` inside the design directory;
+`../../unifpga clean` removes `run/`. `./unifpga -h` lists the other commands
+(`board -l`, `tools`, `designs`); `UNIFPGA_BOARD=<id>` overrides the remembered
+choice for one command. `synthesize.py` (below) remains the full-control form.
+
 ## Why it exists
 
 A typical FPGA design is married to one board's pinout, that board's display
@@ -87,6 +102,7 @@ artifacts into `designs/`, `config/boards/`, and `config/configurations/`.
 
 | Path | What it holds |
 |---|---|
+| `unifpga` | Short command line (`board`, `build`, `program`, `clean`, `tools`, `designs`); logic in `tools/cli.py`. Remembers the board in `settings.yml`, builds into `<design>/run/<configuration>/`. |
 | `synthesize.py` | Top-level entry point. Resolves a configuration, codegens `top.sv`, dispatches to the toolchain. |
 | `config/boards/<producer>/<family>.yml` | Family-level board catalog: list of boards on that chip family + family description. |
 | `config/boards/<producer>/<family>/<id>.yml` | Per-board pinmap (when available). |
@@ -148,7 +164,10 @@ generic} out of the box. Several flows still need extra setup:
 | `gowin_standard` | Gowin EDA 1.9.9.02 at `~/Gowin/1.9.9.02/`; NODELOCK license at `~/Gowin/gowin_E_<HOST_ID>.lic` (HOST_ID must be one of the machine's MACs); `~/Gowin/1.9.9.02/IDE/bin/gwlicense.ini` line `lic="<absolute path to .lic>"` |
 | programming | `openFPGALoader` from `~/oss-cad-suite/bin` works for most boards |
 
-## Quick start
+## Advanced use: `synthesize.py` directly
+
+`./unifpga build` runs `synthesize.py` for you; call it yourself for include
+directories, a custom output directory or a throw-away temp build.
 
 ```bash
 # Pick a configuration and a design:

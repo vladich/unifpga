@@ -26,6 +26,7 @@ import shutil
 import subprocess
 
 from tools import codegen
+from tools import source_set
 
 
 log = logging.getLogger(__name__)
@@ -66,73 +67,10 @@ def _gowin_env(install_dir):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Same shape as the Vivado / Quartus drivers — keep symmetrical."""
-    files = [generated_top, os.path.abspath(user_design_top)]
-    seen = {os.path.abspath(p) for p in files}
-
-    design_dir = os.path.dirname(os.path.abspath(user_design_top))
-    if os.path.isdir(design_dir):
-        for root, _dirs, names in os.walk(design_dir):
-            for name in sorted(names):
-                # Exclude .vh/.svh — Gowin auto-discovers modules in
-                # SEARCH_PATH like Quartus does, causing duplicate
-                # declarations. Headers come in via `\`include`.
-                if not (name.endswith(".sv") or name.endswith(".v")):
-                    continue
-                if name in ("design_top.sv", "tb.sv"):
-                    continue
-                full = os.path.join(root, name)
-                if full not in seen:
-                    files.append(full)
-                    seen.add(full)
-
-    for attach in peripherals:
-        drv = (attach.get("peripheral") or {}).get("driver") or {}
-        f = drv.get("file")
-        if f:
-            full = os.path.join(repo, f)
-            if os.path.exists(full) and full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    for helper in ("tm1638_registers.sv", "slow_clk_gen.sv",
-                   "imitate_reset_on_power_up.sv"):
-        full = os.path.join(repo, "rtl", "peripherals", helper)
-        if os.path.exists(full) and full not in seen:
-            files.append(full)
-            seen.add(full)
-
-    designs_common_dir = os.path.join(repo, "rtl", "peripherals", "designs_common")
-    if os.path.isdir(designs_common_dir):
-        for name in sorted(os.listdir(designs_common_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(designs_common_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Same Xilinx-primitive stubs as the Quartus driver: BUFG / IBUFG /
-    # BUFGCE pass-through. Some designs (5_4_yrv_plus) instantiate BUFG
-    # directly, which Gowin doesn't have a primitive for.
-    compat_dir = os.path.join(repo, "rtl", "peripherals", "_quartus_compat")
-    if os.path.isdir(compat_dir):
-        for name in sorted(os.listdir(compat_dir)):
-            if not name.endswith(".sv"):
-                continue
-            full = os.path.join(compat_dir, name)
-            if full not in seen:
-                files.append(full)
-                seen.add(full)
-
-    # Clock-tree wrappers (rtl/pll) the generated top instantiates and the
-    # drivers' extra `files:` (P3.1 / P3.2).
-    for full in codegen.pll_source_paths(repo, generated_top, peripherals):
-        if full not in seen:
-            files.append(full)
-            seen.add(full)
-
-    return files
+    """Gowin auto-discovers modules like Quartus: no .svh; BUFG/IBUFG compat stubs; helpers/common ungated."""
+    return source_set.collect_sources(
+        repo, peripherals, user_design_top, generated_top,
+        include_svh=False, gate_helpers=False, gate_common=False, compat_stubs=True)
 
 
 def _gowin_options(board_pinmap):
@@ -283,6 +221,19 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
+def _programmer_device(board, board_pinmap):
+    import re
+    args = (((board_pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}).get("set_device") or ""
+    m_name = re.search(r"-name\s+(\S+)", args)
+    m_ver = re.search(r'-device_version\s+("[^"]*"|\S+)', args)
+    if m_name:
+        name, ver = m_name.group(1), (m_ver.group(1).strip('"') if m_ver else "")
+        return name if not ver or name.endswith(ver) else name + ver
+    part = (board.get("Part") or "").upper()
+    m = re.match(r"^(GW\d[A-Z]*)-[A-Z]*(\d+)", part)
+    return "{}-{}".format(m.group(1), m.group(2)) if m else "GW1NR-9C"
+
+
 def program(*, board, board_pinmap=None, toolchain, output, **_):
     """Download the .fs bitstream over JTAG via programmer_cli."""
     bit = os.path.join(output, "impl", "pnr", PROJECT_NAME + ".fs")
@@ -301,7 +252,10 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
 
     install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
     env = _gowin_env(install_dir)
-    cmd = [pgm, "--device", "GW1N-9", "--operation_index", "2", "--fsFile", bit]
+    # programmer_cli wants the family name BGM's tcl gives with `-name`
+    # (GW1NR-9C, GW2AR-18C, GW5AST-138B); the LittleBee 9K default is what the
+    # old hard-coded value was.
+    cmd = [pgm, "--device", _programmer_device(board, board_pinmap), "--operation_index", "2", "--fsFile", bit]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output, env=env).returncode
     if rc != 0:

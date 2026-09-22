@@ -634,7 +634,11 @@ def _pin_to_ref(pinmap):
     return out
 
 
-_TMDS_MODULES = ("DVI_TX_Top", "dvi_top", "HDMI", "TMDS_encoder", "hdmi_tmds_out")
+_TMDS_MODULES = ("DVI_TX_Top", "dvi_top", "HDMI", "hdmi", "TMDS_encoder", "hdmi_tmds_out")
+# transmitter ports carrying the pairs when the constraint names do not say TMDS
+# (colorlight75b: `hdmi i_hdmi (.TMDSp (HDMI_P[2:0]), .TMDSp_clock (HDMI_P[3]), ...)`)
+_TMDS_PORTS = {"TMDSp": ("d_p", True), "TMDSn": ("d_n", True), "TMDSp_clock": ("clk_p", False), "TMDSn_clock": ("clk_n", False),
+               "O_TMDS_DATA_P": ("d_p", True), "O_TMDS_DATA_N": ("d_n", True), "O_TMDS_CLK_P": ("clk_p", False), "O_TMDS_CLK_N": ("clk_n", False)}
 _TMDS_PATTERNS = (
     # TMDS_CLK_P, O_TMDS_CLK_N, TMDS_0_CLK_P
     (re.compile(r"^(?:O_)?TMDS(?:_\d)?_(?:CLK|CLOCK)_([PN])$"), False),
@@ -682,6 +686,39 @@ def _bgm_tmds_binds(text, sig_pins, rev, pinmap):
             found[sig] = ref
         else:
             found.setdefault(sig, {})[idx] = ref
+    if not found:
+        # the pairs travel under other names: follow the transmitter's ports
+        for module in _TMDS_MODULES:
+            for inst in bgm_oracle.instantiations(text, module):
+                for port, expr in inst["ports"]:
+                    if port not in _TMDS_PORTS or not expr.strip():
+                        continue
+                    sig, indexed = _TMDS_PORTS[port]
+                    m = re.match(r"^([A-Za-z_]\w*)\s*(?:\[\s*(\d+)\s*(?::\s*(\d+))?\s*\])?$", expr.strip())
+                    if not m:
+                        notes.append("{}: expression {!r} not a port".format(port, expr))
+                        continue
+                    name, hi, lo = m.group(1).upper(), m.group(2), m.group(3)
+                    if indexed:
+                        if hi is None:
+                            keys = sorted((k for k in sig_pins if re.match(re.escape(name) + r"\[\d+\]$", k)),
+                                          key=lambda k: int(k[len(name) + 1:-1]))
+                        else:
+                            lo_i = int(lo) if lo is not None else int(hi)
+                            keys = ["{}[{}]".format(name, i) for i in range(lo_i, int(hi) + 1)]
+                        for i, key in enumerate(keys):
+                            ref = rev_hdmi.get(sig_pins.get(key)) or rev.get(sig_pins.get(key))
+                            if ref is None:
+                                notes.append("{}: {} is not in the pinmap".format(port, key))
+                                continue
+                            found.setdefault(sig, {})[i] = ref
+                    else:
+                        key = name if hi is None else "{}[{}]".format(name, hi)
+                        ref = rev_hdmi.get(sig_pins.get(key)) or rev.get(sig_pins.get(key))
+                        if ref is None:
+                            notes.append("{}: {} is not in the pinmap".format(port, key))
+                            continue
+                        found[sig] = ref
     binds = {}
     for sig, val in found.items():
         if isinstance(val, dict):
@@ -1178,7 +1215,17 @@ def apply_clock_tree(path, dry_run):
         # SDR) the pixel clock; ours is always 10x, so copy the pixel clock,
         # not the serial one. 124.875 MHz on the Tang Nano 20K -> 24.975 MHz
         # pixel -> serial 249.75 MHz here.
-        serial_outs = [o for o in outs if re.search(r"serial|x5|TMDS", o[0], re.I)]
+        # the PLL output the transmitter's serial-clock port takes (colorlight:
+        # `hdmi i_hdmi (.clk_TMDS (clk_250MHz), ...)`), else by net name
+        tmds_nets = set()
+        for module in _TMDS_MODULES:
+            for inst in bgm_oracle.instantiations(t, module):
+                for port, expr in inst["ports"]:
+                    if re.search(r"serial|tmds|x5|5x", port, re.I) and re.search(r"clk|clock", port, re.I) and expr.strip():
+                        tmds_nets.add(expr.strip())
+        serial_outs = [o for o in outs if o[0] in tmds_nets]
+        if not serial_outs:
+            serial_outs = [o for o in outs if re.search(r"serial|x5|TMDS", o[0], re.I)]
         if not serial_outs and len(outs) == 1:
             serial_outs = list(outs)        # the only PLL output feeds the transmitter (25K: vga_in_clk)
         pix_param = re.search(r"\bpixel_mhz\s*=\s*([0-9.]+)", t)
@@ -1394,6 +1441,120 @@ def _render_gowin_block(set_device, options, reason=None):
 
 
 # ---------------------------------------------------------------------------
+# --quartus-options / --yosys-options: board-level tool settings from BGM
+# ---------------------------------------------------------------------------
+# Quartus project settings that shape the bitstream / pin behaviour (the
+# nCEO dual-purpose pin used as regular I/O, unused-pin state, device I/O
+# default, configuration scheme). Synthesis-tuning, IP, EDA and file entries
+# stay out.
+_QSF_GLOBAL_KEEP = re.compile(
+    r"^(RESERVE_\w+|CYCLONEII_RESERVE_\w+|STRATIX_DEVICE_IO_STANDARD|\w*CONFIGURATION_SCHEME|USE_CONF_DONE"
+    r"|NOMINAL_CORE_SUPPLY_VOLTAGE|ON_CHIP_BITSTREAM_DECOMPRESSION|CYCLONE_OPTIMIZATION_TECHNIQUE"
+    r"|\w*_CONFIGURATION_DEVICE|USE_CONFIGURATION_DEVICE|ENABLE_\w+_PIN|ENABLE_INIT_DONE_OUTPUT"
+    r"|CRC_ERROR_OPEN_DRAIN|VCCA_USER_VOLTAGE|ACTIVE_SERIAL_CLOCK|GENERATE_RBF_FILE|PWRMGT_\w+|USE_PWRMGT_\w+"
+    r"|VCCIO_\w+|INTERNAL_FLASH_UPDATE_MODE|AUTO_RESTART_CONFIGURATION|ENABLE_OCT_DONE)$")
+
+
+def _bgm_qsf_globals(vdir):
+    """['NAME VALUE', ...] global assignments of the variant's QSF files that
+    _QSF_GLOBAL_KEEP admits, in file order without duplicates."""
+    from tools import import_constraints as ic
+    out = []
+    for path in ic.find_all_constraint_files(vdir):
+        if not path.lower().endswith(".qsf"):
+            continue
+        for line in open(path, encoding="utf-8", errors="replace"):
+            m = re.match(r"^\s*set_global_assignment\s+-name\s+(\w+)\s+(.+?)\s*$", line.split("#", 1)[0])
+            if m and _QSF_GLOBAL_KEEP.match(m.group(1)):
+                entry = "{} {}".format(m.group(1), " ".join(m.group(2).split()))
+                if entry not in out:
+                    out.append(entry)
+    return out
+
+
+def _bgm_synth_options(vdir):
+    """yosys synth flags after the command in BGM's board_info.source_bash
+    SYNTH_CMD (`synth_ice40 -dsp -noabc9` -> ['dsp', 'noabc9']), or None."""
+    path = os.path.join(vdir, "board_info.source_bash")
+    if not os.path.exists(path):
+        return None
+    m = re.search(r'^\s*SYNTH_CMD\s*=\s*"([^"]*)"', open(path, encoding="utf-8", errors="replace").read(), re.M)
+    if not m:
+        return None
+    return [t.lstrip("-") for t in m.group(1).split()[1:]]
+
+
+def _set_toolchain_block(text, key, body_lines, comment):
+    """Insert or replace the `key:` sub-block of a pinmap's toolchain_options."""
+    sub = "    {}:\n".format(key) + "".join("      {}\n".format(l) for l in body_lines)
+    if re.search(r"^  toolchain_options:", text, re.M):
+        new, n = re.subn(r"(?m)^    {}:\n(?:^      .*\n)*".format(re.escape(key)), sub.replace("\\", "\\\\"), text, count=1)
+        if n == 1:
+            return new
+        return re.sub(r"^(  toolchain_options:\n)", lambda m: m.group(1) + sub, text, count=1, flags=re.M)
+    block = "".join("  # {}\n".format(c) for c in comment) + "  toolchain_options:\n" + sub
+    return re.sub(r"^(  pinBanks:)", lambda m: block + m.group(1), text, count=1, flags=re.M)
+
+
+def _del_toolchain_block(text, key):
+    return re.sub(r"(?m)^    {}:\n(?:^      .*\n)*".format(re.escape(key)), "", text, count=1)
+
+
+def _apply_toolchain_option(paths, dry_run, toolchains, key, derive, render, current, comment):
+    per_board = {}
+    for path in paths:
+        cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
+        if cfg.get("toolchain") not in toolchains:
+            continue
+        vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+        if vdir is None:
+            continue
+        got = derive(vdir)
+        if got is None:
+            continue
+        per_board.setdefault(cfg["board"], set()).add(tuple(got))
+    results = {}
+    for board, variants in sorted(per_board.items()):
+        if len(variants) > 1:
+            results[board] = "CONFLICT between BGM variants: {}".format(sorted(variants))
+            continue
+        (want,) = variants
+        pm_path = _pinmap_path(board)
+        pinmap = config_init.read_board_pinmap(board) or {}
+        if list(current(pinmap)) == list(want):
+            results[board] = "already"
+            continue
+        text = open(pm_path, encoding="utf-8").read()
+        new = _set_toolchain_block(text, key, render(want), comment) if want else _del_toolchain_block(text, key)
+        if new != text and not dry_run:
+            open(pm_path, "w", encoding="utf-8").write(new)
+            config_init.clear_cache()
+        results[board] = "{} -> {}".format(list(current(pinmap)) or "none", list(want) or "none")
+    return results
+
+
+def apply_quartus_options(paths, dry_run):
+    return _apply_toolchain_option(
+        paths, dry_run, _QUARTUS_TOOLCHAINS, "quartus", _bgm_qsf_globals,
+        lambda want: ["global_assignments:"] + ['  - {}'.format(_yaml_str(g)) for g in want],
+        lambda pm: ((pm.get("toolchain_options") or {}).get("quartus") or {}).get("global_assignments") or [],
+        ["Quartus project settings from BGM's board_specific.qsf (tools/sync_from_bgm.py --quartus-options):",
+         "dual-purpose pin reservation, unused-pin state, device I/O default."])
+
+
+def apply_yosys_options(paths, dry_run):
+    return _apply_toolchain_option(
+        paths, dry_run, _YOSYS_TOOLCHAINS, "yosys", _bgm_synth_options,
+        lambda want: ["synth_options: [{}]".format(", ".join(want))],
+        lambda pm: [str(o) for o in ((pm.get("toolchain_options") or {}).get("yosys") or {}).get("synth_options") or []],
+        ["yosys synth flags from BGM's board_info.source_bash SYNTH_CMD (tools/sync_from_bgm.py --yosys-options)."])
+
+
+def _yaml_str(v):
+    return '"{}"'.format(v.replace("\\", "\\\\").replace('"', '\\"'))
+
+
+# ---------------------------------------------------------------------------
 # --iotypes: Gowin IO_TYPE per pin exactly as BGM's CST files state them
 # ---------------------------------------------------------------------------
 
@@ -1409,8 +1570,30 @@ def _bgm_iotypes(vdir):
             continue
         for _name, entry in signals.items():
             if entry.get("iostandard"):
-                out.setdefault(_norm_pin(entry["pin"]), entry["iostandard"].upper())
+                t = entry["iostandard"]
+                out.setdefault(_norm_pin(entry["pin"]), t.upper() if _fmt == "cst" else t)
     return out
+
+
+_QUARTUS_TOOLCHAINS = {"quartus2", "quartus_prime", "quartus_prime_lite", "quartus_prime_standard", "quartus_prime_pro"}
+_YOSYS_TOOLCHAINS = {"nextpnr_icestorm", "nextpnr_trellis", "nextpnr_apicula"}
+
+
+def _bgm_qsf_default(vdir):
+    """BGM's project-wide I/O standard (`IO_STANDARD ... -to *` or
+    STRATIX_DEVICE_IO_STANDARD) from the variant's QSF files, or None."""
+    from tools import import_constraints as ic
+    for path in ic.find_all_constraint_files(vdir):
+        if not path.lower().endswith(".qsf"):
+            continue
+        text = open(path, encoding="utf-8", errors="replace").read()
+        m = re.search(r'IO_STANDARD\s+"([^"]+)"\s+-to\s+\*\s*$', text, re.M)
+        if m:
+            return m.group(1)
+        m = re.search(r'STRATIX_DEVICE_IO_STANDARD\s+"([^"]+)"', text)
+        if m:
+            return m.group(1)
+    return None
 
 
 def _del_bank_attr(pinmap_text, bank, attr):
@@ -1493,13 +1676,14 @@ def apply_iotypes(paths, dry_run):
     per_board = {}
     for path in paths:
         cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
-        if cfg.get("toolchain") not in _GOWIN_TOOLCHAINS:
+        if cfg.get("toolchain") not in _GOWIN_TOOLCHAINS | _QUARTUS_TOOLCHAINS:
             continue
         vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
         if vdir is None:
             continue
         per_board.setdefault(cfg["board"], []).append(
-            (path, cfg["id"], _bgm_iotypes(vdir), set(_bgm_signal_pins(vdir).values())))
+            (path, cfg["id"], _bgm_iotypes(vdir), set(_bgm_signal_pins(vdir).values()),
+             _bgm_qsf_default(vdir) if cfg.get("toolchain") in _QUARTUS_TOOLCHAINS else None))
     results = {}
     for board, variants in sorted(per_board.items()):
         pm_path = _pinmap_path(board)
@@ -1509,7 +1693,7 @@ def apply_iotypes(paths, dry_run):
 
         # pin -> {type: set(configs)}, pin -> set(configs locating it)
         typed, located = {}, {}
-        for path, cid, tmap, pins in variants:
+        for path, cid, tmap, pins, _dflt in variants:
             for pin in pins:
                 located.setdefault(pin, set()).add(cid)
             for pin, t in tmap.items():
@@ -1518,6 +1702,11 @@ def apply_iotypes(paths, dry_run):
         if conflicts:
             results[board] = "CONFLICT between BGM variants on pins {}".format(conflicts)
             continue
+        bgm_defaults = {d for _p, _c, _t, _pins, d in variants}
+        if len(bgm_defaults) > 1:
+            results[board] = "CONFLICT between BGM variants on the project default I/O standard {}".format(sorted(bgm_defaults))
+            continue
+        bgm_default = next(iter(bgm_defaults))
         board_types, per_cfg = {}, {}          # pin -> type; cid -> {pin: type}
         for pin, ts in typed.items():
             (t, cids), = ts.items()
@@ -1531,9 +1720,17 @@ def apply_iotypes(paths, dry_run):
         text = original = open(pm_path, encoding="utf-8").read()
         defaults = pinmap.get("defaults") or {}
         keep_default = bool(defaults.get("iostandard_reason"))
-        if not keep_default:
-            text = _set_defaults_iostandard(text, None)
         changes = []
+        if keep_default:
+            pass
+        elif bgm_default:
+            # BGM's `-to *`: the pinmap default; only pins typed differently need their own
+            if defaults.get("iostandard") != bgm_default:
+                text = _set_defaults_iostandard(text, bgm_default)
+                changes.append("defaults.iostandard {} -> {} (BGM -to *)".format(defaults.get("iostandard"), bgm_default))
+            board_types = {p: t for p, t in board_types.items() if t.upper() != bgm_default.upper()}
+        else:
+            text = _set_defaults_iostandard(text, None)
         for bank, b in banks.items():
             vals = _bank_pin_values(b)
             btypes = {v: board_types.get(_norm_pin(v)) for v in vals}
@@ -1541,15 +1738,15 @@ def apply_iotypes(paths, dry_run):
             new_type = uniform or None
             new_over = {} if uniform else {v: t for v, t in btypes.items() if t}
             cur_type = (b or {}).get("iostandard")
-            cur_over = {str(k): str(v).upper() for k, v in ((b or {}).get("overrides") or {}).items()}
-            if new_type != cur_type:
+            cur_over = {str(k): str(v) for k, v in ((b or {}).get("overrides") or {}).items()}
+            if (new_type or "").upper() != (cur_type or "").upper():
                 text = (_set_bank_attr(text, bank, "iostandard", new_type) if new_type
                         else _del_bank_attr(text, bank, "iostandard")) or text
                 changes.append("{}: iostandard {} -> {}".format(bank, cur_type, new_type))
-            if new_over != cur_over:
+            if {k: v.upper() for k, v in new_over.items()} != {k: v.upper() for k, v in cur_over.items()}:
                 text = _set_bank_overrides(text, bank, new_over) or text
                 changes.append("{}: overrides {} -> {}".format(bank, cur_over, new_over))
-        if defaults.get("iostandard") and not keep_default:
+        if defaults.get("iostandard") and not keep_default and not bgm_default:
             changes.append("defaults.iostandard removed (per-pin types instead)")
         if text != original:
             if not dry_run:
@@ -1558,7 +1755,7 @@ def apply_iotypes(paths, dry_run):
         results[board] = "; ".join(changes) if changes else "pinmap already"
 
         # --- configurations: io_overrides for the variant-specific types
-        for path, cid, _tmap, _pins in variants:
+        for path, cid, _tmap, _pins, _dflt in variants:
             entries = {}
             mine = per_cfg.get(cid, {})
             # a pin shared by two banks (Tang Nano 9K: LCD colour pins and
@@ -1728,6 +1925,13 @@ def main(argv=None):
                    help="rewrite the on-board 7-segment attach to match the pinmap shape")
     p.add_argument("--clock-tree", action="store_true",
                    help="lab_clock, PLL pixel-clock frequency and LCD bl/init from BGM's top + gowin_rpll.v")
+    p.add_argument("--quartus-options", action="store_true",
+                   help="pinmap toolchain_options.quartus.global_assignments from BGM's board_specific.qsf")
+    p.add_argument("--yosys-options", action="store_true",
+                   help="pinmap toolchain_options.yosys.synth_options from BGM's board_info.source_bash SYNTH_CMD")
+    p.add_argument("--components", action="store_true",
+                   help="i2s_audio_out / gpio providers / led_bank order and polarity / tie: / invented "
+                        "attaches exactly as BGM's board_specific_top.sv (tools/sync_components.py)")
     p.add_argument("--iotypes", action="store_true",
                    help="Gowin IO_TYPE per pin from BGM's CST files into the pinmaps (defaults / bank / overrides)")
     p.add_argument("--dry-run", action="store_true")
@@ -1735,9 +1939,10 @@ def main(argv=None):
     args = p.parse_args(argv)
     if not (args.reset or args.clock or args.seven_seg or args.vga or args.prune_optional
             or args.sv_binds or args.prune_missing_banks or args.polarity or args.gowin_options
-            or args.clock_tree or args.iotypes):
+            or args.clock_tree or args.iotypes or args.components or args.quartus_options or args.yosys_options):
         p.error("nothing to do: pass one or more of --reset --clock --seven-seg --vga "
-                "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options --clock-tree --iotypes")
+                "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options --clock-tree "
+                "--iotypes --components")
     if not bgm_oracle.has_bgm():
         print("BGM checkout not found at {}".format(bgm_oracle.BGM_BOARDS), file=sys.stderr)
         return 2
@@ -1752,6 +1957,12 @@ def main(argv=None):
     if args.gowin_options:
         for name, result in sorted(apply_gowin_options(paths, args.dry_run).items()):
             print("[gowin] {:44s} {}".format(name, result))
+    if args.quartus_options:
+        for name, result in sorted(apply_quartus_options(paths, args.dry_run).items()):
+            print("[qsf]   {:44s} {}".format(name, result))
+    if args.yosys_options:
+        for name, result in sorted(apply_yosys_options(paths, args.dry_run).items()):
+            print("[yosys] {:44s} {}".format(name, result))
     if args.iotypes:
         for name, result in sorted(apply_iotypes(paths, args.dry_run).items()):
             print("[iotyp] {:44s} {}".format(name, result))
@@ -1771,6 +1982,9 @@ def main(argv=None):
             print("[banks] {:44s} {}".format(cid, apply_prune_missing_banks(path, args.dry_run)))
         if args.clock_tree:
             print("[clk]   {:44s} {}".format(cid, apply_clock_tree(path, args.dry_run)))
+        if args.components:
+            from tools import sync_components
+            print("[comp]  {:44s} {}".format(cid, sync_components.apply_components(path, args.dry_run)))
     return 0
 
 

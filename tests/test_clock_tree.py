@@ -164,3 +164,16 @@ def test_gw5_solver_matches_bgm_ipc():
     sol = pll_solver.gowin_gw5_pll(50, [8])        # BGM gowin_pll.ipc: Clkout0ExpectedFrequency=8
     assert sol is not None and sol.f_outs == (8.0,) and 800.0 <= sol.f_vco <= 1600.0
     assert pll_solver.gowin_gw5_pll(50, [250, 25]).odivs == (4, 40)
+
+
+def test_ecp5_hdmi_serial_pll_and_pixel_alias():
+    """BGM colorlight75b_tm1638_ecp5_yosys: clock.v EHXPLLL 25 -> 250 MHz for
+    the TMDS serializer, the 25 MHz pixel clock is the board clock itself."""
+    r = _resolve("colorlight75b_tm1638_ecp5_yosys")
+    tree = codegen.plan_clock_tree(r)
+    assert [(n, v, round(s.f_out, 3)) for n, _r, v, s in tree] == [("serial", "ecp5", 250.0), ("pixel", "alias", 25.0)]
+    top = codegen.emit_top_sv(r, strict=True)
+    assert "pll_ecp5 # (.CLKI_DIV(1), .CLKFB_DIV(5), .CLKOP_DIV(4), .CLKOS_DIV(2)) i_pll_serial" in top
+    assert "wire clk_pixel = clk;" in top
+    assert 'hdmi_tmds_out # (.DIFF_BUF("generic"))' in top          # pseudo-differential pairs, as BGM's hdmi.v
+    assert codegen.pll_source_files(top) == [os.path.join("rtl", "pll", "pll_ecp5.sv")]

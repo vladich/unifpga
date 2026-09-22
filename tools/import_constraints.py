@@ -16,6 +16,7 @@ A separate curation step groups raw signals into peripheral categories
 
 import argparse
 import os
+import fnmatch
 import re
 import sys
 from collections import OrderedDict
@@ -137,12 +138,19 @@ def parse_qsf(text):
         r"^\s*set_instance_assignment\s+-name\s+IO_STANDARD\s+\"([^\"]+)\"\s+-to\s+(\S+)",
         re.IGNORECASE | re.MULTILINE,
     )
+    # Quartus applies assignments in file order, the last matching one wins;
+    # `-to KEY*` / `-to HEX0*` are wildcards over the located signal names
+    # (BGM de2_115 / de1_soc / c5gx), `-to *` alone the project-wide default.
     for m in iostd_re.finditer(text):
-        std, signal = m.group(1), m.group(2)
-        if signal == "*":
+        std, pattern = m.group(1), m.group(2)
+        if pattern == "*":
             default_iostd = std
+        elif "*" in pattern or "?" in pattern:
+            for signal in pin_by_signal:
+                if fnmatch.fnmatchcase(signal, pattern):
+                    iostd_by_signal[signal] = std
         else:
-            iostd_by_signal[signal] = std
+            iostd_by_signal[pattern] = std
 
     if default_iostd is not None:
         for signal in pin_by_signal:

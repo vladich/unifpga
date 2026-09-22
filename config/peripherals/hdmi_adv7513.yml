@@ -1,0 +1,76 @@
+# Parallel-RGB HDMI transmitter (Analog Devices ADV7513) of the Terasic
+# DE10-Nano and Cyclone V GX Starter Kit, driven as BGM does: the `vga` timing
+# generator runs from the board clock and derives the 25 MHz pixel clock, the
+# 24-bit bus carries the design's colours padded with ones, and Terasic's I2C
+# configuration module programs the transmitter after reset. `config_table`
+# selects the register table: de10_nano (ADV7513 only) or c5gx (SSM2603 codec
+# + ADV7513 on the shared bus). The transmitter's audio inputs are parked by
+# the configuration's `tie:` entries (BGM: HDMI_I2S / LRCLK / MCLK / SCLK = 0).
+
+Peripheral:
+  id: hdmi_adv7513
+  description: ADV7513 parallel HDMI transmitter (24-bit RGB + I2C setup)
+  parameters:
+    bits_r: { type: int, default: 4 }
+    bits_g: { type: int, default: 4 }
+    bits_b: { type: int, default: 4 }
+    color_depth:
+      type: enum
+      values: [111, 444, 565, 888]
+      default: 444
+    config_table:
+      type: enum
+      values: [de10_nano, c5gx]
+      default: de10_nano
+  signals:
+    - { name: clk,     type: scalar, direction: output, comment: "HDMI_TX_CLK (pixel clock)" }
+    - { name: de,      type: scalar, direction: output }
+    - { name: hs,      type: scalar, direction: output }
+    - { name: vs,      type: scalar, direction: output }
+    - { name: d,       type: bus, width: 24, direction: output }
+    - { name: i2c_scl, type: scalar, direction: output }
+    - { name: i2c_sda, type: scalar, direction: inout }
+    - { name: int,     type: scalar, direction: input, comment: "HDMI_TX_INT" }
+  provides:
+    - capability: screen
+      params:
+        width: 640
+        height: 480
+        color_depth: $color_depth
+        bits_r: $bits_r
+        bits_g: $bits_g
+        bits_b: $bits_b
+  driver:
+    module: hdmi_adv7513
+    file: rtl/peripherals/hdmi_adv7513.sv
+    files:
+      - rtl/peripherals/vga.sv
+      - rtl/peripherals/I2C_HDMI_Config.v
+      - rtl/peripherals/I2C_HDMI_Config_c5gx.v
+      - rtl/peripherals/I2C_Controller.v
+      - rtl/peripherals/I2C_WRITE_WDATA.v
+    parameters:
+      CLK_MHZ:      context.clk_mhz
+      PIXEL_MHZ:    25
+      H_DISPLAY:    640
+      V_DISPLAY:    480
+      W_RED:        $bits_r
+      W_GREEN:      $bits_g
+      W_BLUE:       $bits_b
+      CONFIG_TABLE: $config_table
+    port_map:
+      clk:     context.clk
+      rst:     context.rst
+      red:     capability.screen.red
+      green:   capability.screen.green
+      blue:    capability.screen.blue
+      hpos:    capability.screen.x
+      vpos:    capability.screen.y
+      tx_clk:  pin.clk
+      tx_de:   pin.de
+      tx_hs:   pin.hs
+      tx_vs:   pin.vs
+      tx_d:    pin.d
+      i2c_scl: pin.i2c_scl
+      i2c_sda: pin.i2c_sda
+      tx_int:  pin.int
