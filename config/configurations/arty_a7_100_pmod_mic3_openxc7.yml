@@ -17,6 +17,8 @@ Configuration:
       width: 4
     bind:
       sw: onboard_switches
+    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+      switches: [0, 1, 2, 3]
   - peripheral: rgb_led
     bind:
       r: onboard_rgb_led_0.r
@@ -42,11 +44,15 @@ Configuration:
       width: 4
     bind:
       led: onboard_leds
+    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+      leds: [0, 1, 2, 3]
   - peripheral: button_array
     params:
       width: 4
     bind:
       btn: onboard_buttons
+    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+      buttons: [0, 1, 2, 3]
   - peripheral: uart_2wire
     bind:
       tx: onboard_uart.tx
@@ -64,6 +70,11 @@ Configuration:
       clk: "arduino_io[28]"
       stb: "arduino_io[29]"
       dio: "arduino_io[27]"
+    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+      buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+      switches: []
+      leds: [0, 1, 2, 3, 4, 5, 6, 7]
+      seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
   - peripheral: gpio_header   # from BGM arty_a7_100_pmod_mic3/board_specific_top.sv .gpio
     params:
       width: 30

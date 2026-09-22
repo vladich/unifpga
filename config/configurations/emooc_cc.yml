@@ -26,6 +26,8 @@ Configuration:
         width: 8
       bind:
         btn: onboard_buttons
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [0, 1, 2, 3, 4, 5, 6, ~]
     - peripheral: sw_bank
       params:
         width: 8

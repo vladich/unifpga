@@ -29,6 +29,8 @@ Configuration:
         width: 1
       bind:
         btn: onboard_button
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: []
 
   # External peripherals inferred from the variant directory name.
     - peripheral: dvi_12bit
@@ -45,6 +47,11 @@ Configuration:
         clk: "pmod_p2[6]"
         stb: "pmod_p2[7]"
         dio: "pmod_p2[5]"
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: gpio_header   # from BGM icebreaker_dvi_12b_tm1638_yosys/board_specific_top.sv .gpio
       params:
         width: 5

@@ -27,6 +27,8 @@ Configuration:
         width: 4
       bind:
         btn: onboard_buttons
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [0, 1, 2, 3]
     - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
       params:
         bits_r: 4
@@ -47,6 +49,8 @@ Configuration:
         width: 2
       bind:
         sw: onboard_switches
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        switches: []
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx

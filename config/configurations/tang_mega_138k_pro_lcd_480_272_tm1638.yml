@@ -22,11 +22,15 @@ Configuration:
         width: 4
       bind:
         btn: onboard_buttons
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: []
     - peripheral: led_bank
       params:
         width: 6
       bind:
         led: onboard_leds
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        leds: [0, 1, 2, 3, 4, 5]
     - peripheral: pmod_12pin
       bind:
         io: pmod_0
@@ -55,6 +59,11 @@ Configuration:
         dio: "pmod_2[5]"
         clk: "pmod_2[6]"
         stb: "pmod_2[7]"
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM tang_mega_138k_pro_lcd_480_272_tm1638/board_specific_top.sv
       bind:
         lr: "pmod_0[0]"
@@ -67,3 +76,8 @@ Configuration:
         bclk: "pmod_1[5]"
         sdata: "pmod_1[6]"
         lrclk: "pmod_1[7]"
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    "pmod_0[4]": 0
+    "pmod_0[5]": 1

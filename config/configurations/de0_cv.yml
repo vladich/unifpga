@@ -77,3 +77,8 @@ Configuration:
         width: 36
       bind:
         io: gpio_0
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    "gpio_0[1]": 0
+    "gpio_0[3]": 1

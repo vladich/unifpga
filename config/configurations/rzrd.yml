@@ -86,3 +86,8 @@ Configuration:
         io: onboard_char_lcd.rs
 
   # External peripherals inferred from the variant directory name.
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    "onboard_char_lcd.d[6]": 0
+    "onboard_char_lcd.d[4]": 1

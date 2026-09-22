@@ -29,6 +29,8 @@ Configuration:
         width: 10
       bind:
         sw: onboard_switches
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, ~]
     - peripheral: led_bank
       params:
         width: 10
@@ -87,3 +89,5 @@ Configuration:
   # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
   tie:
     onboard_vga.sync_n: 0
+    "gpio_0[1]": 0
+    "gpio_0[3]": 1

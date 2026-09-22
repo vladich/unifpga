@@ -94,3 +94,5 @@ Configuration:
   tie:
     onboard_mic.clk: 0
     onboard_mic.lrsel: 0
+    "pmod_jd[2]": 0
+    "pmod_jd[1]": 1

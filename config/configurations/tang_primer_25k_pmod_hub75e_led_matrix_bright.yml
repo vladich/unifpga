@@ -22,6 +22,8 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [0, 1]
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -52,6 +54,9 @@ Configuration:
         dio: "pmod_2[1]"
         clk: "pmod_2[2]"
         stb: "pmod_2[3]"
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM tang_primer_25k_pmod_hub75e_led_matrix_bright/board_specific_top.sv
       bind:
         lr: "gpio[0]"
@@ -69,3 +74,8 @@ Configuration:
         width: 38
       bind:
         io: gpio
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    "gpio[1]": 0
+    "gpio[3]": 1

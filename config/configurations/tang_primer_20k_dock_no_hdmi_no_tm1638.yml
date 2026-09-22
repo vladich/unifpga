@@ -36,6 +36,8 @@ Configuration:
         width: 5
       bind:
         btn: onboard_buttons
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        buttons: [0, 1, 2, 3, 4]
 
   # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic   # binds from BGM tang_primer_20k_dock_no_hdmi_no_tm1638/board_specific_top.sv
