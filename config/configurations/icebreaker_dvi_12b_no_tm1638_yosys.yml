@@ -8,6 +8,11 @@ Configuration:
   board: icebreaker
   toolchain: nextpnr_icestorm
 
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - key: 0
+
   attach:
     - peripheral: clock_input
       bind:

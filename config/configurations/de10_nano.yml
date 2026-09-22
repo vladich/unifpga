@@ -8,6 +8,11 @@ Configuration:
   board: de10_nano
   toolchain: quartus_prime_lite
 
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - switch_msb: true
+
   attach:
     - peripheral: clock_input
       params:

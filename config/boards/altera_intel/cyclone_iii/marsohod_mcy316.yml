@@ -23,7 +23,7 @@ Board:
         clk: "186"
     onboard_buttons:
       pins: ["152", "151"]
-    clk: { pins: "150" }
+    clk: { pins: "150", frequency_mhz: 50 }
     onboard_uart:
       pins:
         rx: "149"

@@ -13,7 +13,7 @@ Board:
     iostandard: 3.3-V LVTTL
 
   pinBanks:
-    clk: { pins: "23" }
+    clk: { pins: "23", frequency_mhz: 50 }
     onboard_buttons:
       pins: ["3", "7", "10", "11"]
     onboard_switches:

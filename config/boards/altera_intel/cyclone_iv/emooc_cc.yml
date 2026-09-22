@@ -13,7 +13,7 @@ Board:
     iostandard: 3.3-V LVTTL
 
   pinBanks:
-    clk: { pins: E1 }
+    clk: { pins: E1, frequency_mhz: 50 }
     onboard_buzzer: { pins: L3 }
     onboard_uart:
       pins:

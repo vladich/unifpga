@@ -12,7 +12,7 @@ Board:
     part: GW5AST-LV138FPG676AES
 
   pinBanks:
-    clk: { pins: P16 }
+    clk: { pins: P16, frequency_mhz: 50 }
     onboard_buttons:
       pins: [K16, F15, G15, G16]
     onboard_leds:

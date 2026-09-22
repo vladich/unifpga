@@ -11,7 +11,7 @@ Configuration:
   attach:
     - peripheral: clock_input
       bind:
-        clk: clk
+        clk: sys_clk
     - peripheral: reset_button
       bind:
         rst: cpu_resetn

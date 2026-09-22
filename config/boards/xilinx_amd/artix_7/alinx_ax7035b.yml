@@ -13,7 +13,7 @@ Board:
     iostandard: LVCMOS33
 
   pinBanks:
-    clk: { pins: Y18 }
+    clk: { pins: Y18, frequency_mhz: 50 }
     cpu_resetn: { pins: F20 }
     onboard_buttons:
       pins: [M13, K14, K13, L13]

@@ -14,7 +14,7 @@ Board:
     part: GW5A-LV25MG121
 
   pinBanks:
-    clk: { pins: E2 }
+    clk: { pins: E2, frequency_mhz: 50 }
     onboard_buttons:
       pins: [H11, H10]
     onboard_uart:

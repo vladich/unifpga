@@ -13,7 +13,7 @@ Board:
     iostandard: LVCMOS33
 
   pinBanks:
-    clk: { pins: P6 }
+    clk: { pins: P6, frequency_mhz: 25 }
     onboard_leds:
       pins: [T6]
     onboard_buttons:

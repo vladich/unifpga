@@ -5,6 +5,11 @@ Configuration:
   id: zybo_z7_openxc7
   board: zybo_z7
   toolchain: nextpnr_openxc7
+
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - switch_msb: true
   attach:
   - peripheral: clock_input
     params:

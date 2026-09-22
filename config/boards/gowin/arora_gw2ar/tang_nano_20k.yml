@@ -17,7 +17,7 @@ Board:
     part: GW2A-LV18QN88C8/I7
 
   pinBanks:
-    clk: { pins: "4" }
+    clk: { pins: "4", frequency_mhz: 27 }
     onboard_buttons:
       pins: ["88", "87"]
     onboard_leds:

@@ -13,7 +13,7 @@ Board:
     iostandard: LVCMOS33
 
   pinBanks:
-    clk: { pins: F22 }
+    clk: { pins: F22, frequency_mhz: 50 }
     cpu_resetn: { pins: AF9 }
     onboard_leds:
       pins: [D10, A10, B9, A8, J26, H26]

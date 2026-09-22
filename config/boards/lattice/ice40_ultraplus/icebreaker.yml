@@ -17,7 +17,7 @@ Board:
     part: iCE40UP5K-SG48
 
   pinBanks:
-    clk: { pins: "35" }
+    clk: { pins: "35", frequency_mhz: 12 }
     onboard_uart:
       pins:
         rx: "6"

@@ -7,6 +7,7 @@ Configuration:
   id: orangecrab_ecp5_yosys
   board: orangecrab_ecp5
   toolchain: nextpnr_trellis
+  part: 25F   # which of the board's chips this configuration targets
 
   attach:
     - peripheral: clock_input

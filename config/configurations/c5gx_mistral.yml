@@ -40,11 +40,12 @@ Configuration:
         width: 8
       bind:
         led: onboard_leds_green
-    - peripheral: seven_segment_8digit_shared
+    - peripheral: seven_segment_per_digit
+      params:
+        digits: 4
+        segs: 7
       bind:
-        segments: ['onboard_7seg.ca', 'onboard_7seg.cb', 'onboard_7seg.cc', 'onboard_7seg.cd', 'onboard_7seg.ce', 'onboard_7seg.cf', 'onboard_7seg.cg']
-        dp: onboard_7seg.dp
-        digits: onboard_7seg.anodes
+        hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3]
 
   # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic

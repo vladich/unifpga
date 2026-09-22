@@ -26,9 +26,11 @@ Configuration:
       bind:
         btn: onboard_buttons
     - peripheral: seven_segment_8digit_shared
+      params:
+        digits: 8
       bind:
-        segments: ['onboard_7seg.ca', 'onboard_7seg.cb', 'onboard_7seg.cc', 'onboard_7seg.cd', 'onboard_7seg.ce', 'onboard_7seg.cf', 'onboard_7seg.cg']
-        dp: onboard_7seg.dp
+        segments: ["onboard_7seg.segments[0]", "onboard_7seg.segments[1]", "onboard_7seg.segments[2]", "onboard_7seg.segments[3]", "onboard_7seg.segments[4]", "onboard_7seg.segments[5]", "onboard_7seg.segments[6]"]
+        dp: "onboard_7seg.segments[7]"
         digits: onboard_7seg.anodes
     - peripheral: uart_2wire
       bind:

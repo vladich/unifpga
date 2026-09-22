@@ -8,6 +8,11 @@ Configuration:
   board: zybo_z7
   toolchain: vivado
 
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - switch_msb: true
+
   attach:
     - peripheral: clock_input
       params:

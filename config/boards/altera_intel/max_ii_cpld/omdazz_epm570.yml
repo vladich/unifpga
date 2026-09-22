@@ -12,7 +12,7 @@ Board:
     part: EPM570T100C5
 
   pinBanks:
-    clk: { pins: "12" }
+    clk: { pins: "12", frequency_mhz: 50 }
     cpu_resetn: { pins: "41" }
     onboard_leds:
       pins: [null, "67", "66", "61", "58", "57", "56", "55", "54"]

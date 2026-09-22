@@ -20,7 +20,7 @@ Board:
     part: GW2A-LV18PG256C8/I7
 
   pinBanks:
-    clk: { pins: H11 }
+    clk: { pins: H11, frequency_mhz: 27 }
     onboard_leds:
       pins: [C13, A13, N16, N14, L14, L16]
     onboard_uart:

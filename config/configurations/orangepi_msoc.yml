@@ -8,6 +8,11 @@ Configuration:
   board: orangepi_msoc
   toolchain: gowin_standard
 
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - key: msb
+
   attach:
     - peripheral: clock_input
       bind:
@@ -32,8 +37,10 @@ Configuration:
       bind:
         btn: onboard_buttons
     - peripheral: seven_segment_8digit_shared
+      params:
+        digits: 8
       bind:
-        segments: ['onboard_7seg.ca', 'onboard_7seg.cb', 'onboard_7seg.cc', 'onboard_7seg.cd', 'onboard_7seg.ce', 'onboard_7seg.cf', 'onboard_7seg.cg']
+        segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
         dp: onboard_7seg.dp
         digits: onboard_7seg.anodes
 

@@ -14,7 +14,7 @@ Board:
     iostandard: 3.3-V LVTTL
 
   pinBanks:
-    clk: { pins: E1 }
+    clk: { pins: E1, frequency_mhz: 50 }
     cpu_resetn: { pins: N13 }
     onboard_buttons:
       pins: [null, null, M15, M16, E16]

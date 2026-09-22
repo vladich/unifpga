@@ -32,15 +32,10 @@ Configuration:
       g: onboard_rgb_led_17.g
       b: onboard_rgb_led_17.b
   - peripheral: seven_segment_8digit_shared
+    params:
+      digits: 8
     bind:
-      segments:
-      - onboard_7seg.ca
-      - onboard_7seg.cb
-      - onboard_7seg.cc
-      - onboard_7seg.cd
-      - onboard_7seg.ce
-      - onboard_7seg.cf
-      - onboard_7seg.cg
+      segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
       dp: onboard_7seg.dp
       digits: onboard_7seg.anodes
   - peripheral: reset_button

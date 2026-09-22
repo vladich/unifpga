@@ -8,6 +8,12 @@ Configuration:
   board: tang_nano_4k
   toolchain: gowin_eda
 
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - power_up: true
+      - any_key: true
+
   attach:
     - peripheral: clock_input
       bind:

@@ -11,7 +11,7 @@ Board:
     part: GW5AT-LV138PG484AC1/I0
 
   pinBanks:
-    clk: { pins: V18 }
+    clk: { pins: V18, frequency_mhz: 25 }
     onboard_leds:
       pins: [N13, P14, R14, N14, P15, P16, R16, P17, T18, R18, R17, W22, Y22, AA21, AB22, AB21]
     onboard_uart:

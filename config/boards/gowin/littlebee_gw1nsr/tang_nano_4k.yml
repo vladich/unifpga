@@ -12,7 +12,7 @@ Board:
     part: GW1NSR-LV4C
 
   pinBanks:
-    clk: { pins: "45" }
+    clk: { pins: "45", frequency_mhz: 27 }
     onboard_buttons:
       pins: ["15", "14"]
     onboard_led: { pins: "10" }

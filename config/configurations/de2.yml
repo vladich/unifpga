@@ -8,6 +8,11 @@ Configuration:
   board: de2
   toolchain: quartus2
 
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - switch_msb: true
+
   attach:
     - peripheral: clock_input
       params:
@@ -38,11 +43,12 @@ Configuration:
         width: 18
       bind:
         sw: onboard_switches
-    - peripheral: seven_segment_8digit_shared
+    - peripheral: seven_segment_per_digit
+      params:
+        digits: 8
+        segs: 7
       bind:
-        segments: ['onboard_7seg.ca', 'onboard_7seg.cb', 'onboard_7seg.cc', 'onboard_7seg.cd', 'onboard_7seg.ce', 'onboard_7seg.cf', 'onboard_7seg.cg']
-        dp: onboard_7seg.dp
-        digits: onboard_7seg.anodes
+        hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5, onboard_7seg.hex6, onboard_7seg.hex7]
     - peripheral: vga_4bit
       bind:
         r: onboard_vga.r

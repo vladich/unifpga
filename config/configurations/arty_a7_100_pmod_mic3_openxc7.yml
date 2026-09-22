@@ -5,6 +5,7 @@ Configuration:
   id: arty_a7_100_pmod_mic3_openxc7
   board: arty_a7
   toolchain: nextpnr_openxc7
+  part: 100t   # which of the board's chips this configuration targets
   attach:
   - peripheral: clock_input
     params:

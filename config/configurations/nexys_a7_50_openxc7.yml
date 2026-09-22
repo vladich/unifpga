@@ -5,6 +5,7 @@ Configuration:
   id: nexys_a7_50_openxc7
   board: nexys_a7
   toolchain: nextpnr_openxc7
+  part: 50t   # which of the board's chips this configuration targets
   attach:
   - peripheral: clock_input
     params:
@@ -32,15 +33,10 @@ Configuration:
       g: onboard_rgb_led_17.g
       b: onboard_rgb_led_17.b
   - peripheral: seven_segment_8digit_shared
+    params:
+      digits: 8
     bind:
-      segments:
-      - onboard_7seg.ca
-      - onboard_7seg.cb
-      - onboard_7seg.cc
-      - onboard_7seg.cd
-      - onboard_7seg.ce
-      - onboard_7seg.cf
-      - onboard_7seg.cg
+      segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
       dp: onboard_7seg.dp
       digits: onboard_7seg.anodes
   - peripheral: reset_button

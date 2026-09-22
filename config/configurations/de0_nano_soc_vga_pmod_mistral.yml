@@ -8,6 +8,9 @@ Configuration:
   toolchain: nextpnr_mistral
 
   attach:
+    - peripheral: clock_input   # added by tools/sync_from_bgm.py --clock
+      bind:
+        clk: fpga_clk1_50mhz
     - peripheral: button_array
       params:
         width: 2

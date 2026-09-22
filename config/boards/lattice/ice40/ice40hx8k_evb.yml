@@ -11,7 +11,7 @@ Board:
     part: iCE40HX8K-CT256
 
   pinBanks:
-    clk: { pins: J3 }
+    clk: { pins: J3, frequency_mhz: 100 }
     onboard_buttons:
       pins: [K11, P13, R15]
     onboard_leds:
