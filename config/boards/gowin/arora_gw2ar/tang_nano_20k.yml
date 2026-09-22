@@ -23,6 +23,13 @@ Board:
     gowin:
       set_device: "GW2AR-LV18QN88C8/I7 -name GW2AR-18 -device_version C"
       options: [use_sspi_as_gpio]
+  defaults:
+    # Gowin EDA locks banks 3, 6 and 7 of the GW2AR-18C at 3.3 V ("locked by
+    # other constraint or embedded port", CT1136) and types unconstrained pins
+    # LVCMOS18, so a CST without IO_TYPE (BGM's) does not build with gw_sh;
+    # Sipeed's examples type every pin LVCMOS33. Verified on mercury 2026-09-22.
+    iostandard: LVCMOS33
+    iostandard_reason: tool-required
   pinBanks:
     clk: { pins: "4", frequency_mhz: 27 }
     onboard_buttons:

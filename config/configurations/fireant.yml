@@ -7,6 +7,7 @@ Configuration:
   id: fireant
   board: fireant
   toolchain: efinity
+  manual: true   # no BGM variant; pinout from the Efinix Xyloni/Fireant schematic (PLAN.md section 6)
 
   attach:
     - peripheral: clock_input

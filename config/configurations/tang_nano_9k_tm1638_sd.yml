@@ -14,6 +14,17 @@ Configuration:
       - power_up: true
       - any_key: true
 
+  # Gowin IO_TYPE this BGM variant states beyond the board-wide ones (tools/sync_from_bgm.py --iotypes)
+  io_overrides:
+    clk: LVCMOS33
+    gpio: LVCMOS33
+    onboard_hdmi.clk_p: LVCMOS33
+    "onboard_hdmi.d_p[0]": LVCMOS33
+    "onboard_hdmi.d_p[1]": LVCMOS33
+    "onboard_hdmi.d_p[2]": LVCMOS33
+    onboard_microsd: LVCMOS33
+    onboard_uart: LVCMOS33
+
   attach:
     - peripheral: clock_input
       bind:

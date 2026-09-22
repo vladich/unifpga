@@ -9,8 +9,6 @@ Board:
     producer: Gowin
     family: Arora/GW2A
     part: GW2A-LV18PG256C8/I7
-  defaults:
-    iostandard: LVCMOS33
 
   # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):
   # set_device args verbatim (part, -name, -device_version) and the
@@ -20,17 +18,23 @@ Board:
       set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18 -device_version C"
       options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
   pinBanks:
-    clk: { pins: H11, frequency_mhz: 27 }
+    clk: { pins: H11, frequency_mhz: 27, iostandard: LVCMOS33 }
     onboard_switches:
+      iostandard: LVCMOS33
       active: low
       pins: [C7, D7]
     onboard_buttons:
+      iostandard: LVCMOS33
       pins: [T10, T2]
     gpio_3:
+      iostandard: LVCMOS33
       pins: [L8, P7, E10, D11, M6, R7, D10, F10]
     gpio_2:
+      iostandard: LVCMOS33
       pins: [F15, D16, C9, L12, E15, E14, A9, J11]
     gpio_1:
+      iostandard: LVCMOS33
       pins: [R16, P16, N16, L16, P15, N15, N14, L14]
     gpio_0:
+      iostandard: LVCMOS33
       pins: [T6, T7, T8, T9, P6, R8, P8, P9]

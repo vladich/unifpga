@@ -5,6 +5,7 @@ Configuration:
   id: gatemate_evb_a1
   board: gatemate_evb_a1
   toolchain: nextpnr_gatemate
+  manual: true   # no BGM variant; pinout from the Cologne Chip EVB-A1 manual (PLAN.md section 6)
 
   attach:
     - peripheral: clock_input

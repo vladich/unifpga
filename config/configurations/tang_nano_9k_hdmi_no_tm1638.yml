@@ -13,6 +13,10 @@ Configuration:
     sources:
       - power_up: true
 
+  # Gowin IO_TYPE this BGM variant states beyond the board-wide ones (tools/sync_from_bgm.py --iotypes)
+  io_overrides:
+    clk: LVCMOS33
+
   attach:
     - peripheral: clock_input
       bind:

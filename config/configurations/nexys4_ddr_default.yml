@@ -6,6 +6,7 @@ Configuration:
   description: Nexys 4 DDR with all on-board peripherals (no Pmod add-ons)
   board: nexys4_ddr
   toolchain: vivado
+  manual: true   # hand-written on the nexys4_ddr pinmap; BGM oracle nexys4_ddr (all on-board peripherals)
 
   attach:
     # ---- Clock & reset ----

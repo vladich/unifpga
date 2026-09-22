@@ -3,6 +3,7 @@ Configuration:
   description: Nexys 4 DDR + TM1638 module + INMP441 mic, both on Pmod JC
   board: nexys4_ddr
   toolchain: vivado
+  manual: true   # hand-written on the nexys4_ddr pinmap; BGM oracle nexys4_ddr_tm1638_inmp441_jc? (verify in section 6)
   attach:
   - peripheral: clock_input
     params:

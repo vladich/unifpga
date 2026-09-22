@@ -35,6 +35,8 @@ Configuration:
 
   # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds   # binds from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
+      params:
+        clock_serial_mhz: 250
       bind:
         clk_p: onboard_hdmi_0.clk_p
         d_p: onboard_hdmi_0.d_p

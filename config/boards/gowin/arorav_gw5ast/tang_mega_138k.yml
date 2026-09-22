@@ -9,21 +9,25 @@ Board:
     producer: Gowin
     family: AroraV/GW5AST
     part: GW5AST-LV138PG484AC1/I0
-  defaults:
-    iostandard: LVCMOS33
 
   # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
   toolchain_options:
     gowin:
-      set_device: "GW5AST-LV138PG484AC1/I0 -device_version C"
+      # BGM's board_specific.tcl says `-device_version C`; Gowin EDA 1.9.9.02
+      # (mercury) answers "device GW5AST-LV138PG484AC1/I0 has not version C"
+      # and builds without it (2026-09-22).
+      set_device: "GW5AST-LV138PG484AC1/I0"
+      set_device_reason: tool-required
       options: [use_sspi_as_gpio, use_cpu_as_gpio]
   pinBanks:
-    clk: { pins: V22, frequency_mhz: 50 }
+    clk: { pins: V22, frequency_mhz: 50, iostandard: LVCMOS33 }
     onboard_buttons:
+      iostandard: LVCMOS33
       pins: [AA13, AB13, Y12]
     onboard_lcd:
+      iostandard: LVCMOS33
       pins:
         ck: L19
         de: L14
@@ -33,15 +37,13 @@ Board:
         g: [K18, L21, M21, M22, N22, L18]
         b: [M18, N19, N18, K16, L16, M20]
     onboard_hdmi_0:
+      iostandard: LVCMOS33D
       pins:
         clk_p: "G15,G16"
         d_p: ["J14,H14", "J15,H15", "K17,J17"]
-      overrides:
-        "G15,G16": LVCMOS33D
-        "J14,H14": LVCMOS33D
-        "J15,H15": LVCMOS33D
-        "K17,J17": LVCMOS33D
     pmod_0:
+      iostandard: LVCMOS33
       pins: [P19, R19, T21, U21, P16, R17, R18, T18]
     pmod_1:
+      iostandard: LVCMOS33
       pins: [Y21, Y22, AB21, AB22, AA20, AA21, AA19, AB20]

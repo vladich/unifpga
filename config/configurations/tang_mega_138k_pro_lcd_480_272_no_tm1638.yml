@@ -47,6 +47,7 @@ Configuration:
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_480_272
       params:   # 6-6-6 bus, BGM w_red/w_green/w_blue = 6
+        clock_pixel_mhz: 8
         bits_r: 6
         bits_g: 6
         bits_b: 6

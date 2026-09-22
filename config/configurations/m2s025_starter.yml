@@ -5,6 +5,7 @@ Configuration:
   id: m2s025_starter
   board: m2s025_starter
   toolchain: libero_soc
+  manual: true   # no BGM variant; pinout from the SmartFusion2 Starter Kit schematic (PLAN.md section 6)
 
   attach:
     - peripheral: clock_input

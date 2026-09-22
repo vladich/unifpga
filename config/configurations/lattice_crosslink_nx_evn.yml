@@ -5,6 +5,7 @@ Configuration:
   id: lattice_crosslink_nx_evn
   board: lattice_crosslink_nx_evn
   toolchain: nextpnr_nexus
+  manual: true   # no BGM variant; pinout from the CrossLink-NX EVN user guide (PLAN.md section 6)
 
   attach:
     - peripheral: clock_input

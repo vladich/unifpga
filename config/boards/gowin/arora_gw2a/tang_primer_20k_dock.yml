@@ -26,6 +26,11 @@ Board:
     gowin:
       set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18C -device_version C"
       options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
+    # nextpnr-gowin (apicula) names this family GW2A-18 and rejects an rPLL
+    # whose DEVICE parameter says otherwise (BGM's yosys variant leaves the
+    # primitive default).
+    apicula:
+      rpll_device: GW2A-18
   pinBanks:
     clk: { pins: H11, frequency_mhz: 27 }
     onboard_leds:
