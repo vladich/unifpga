@@ -30,11 +30,6 @@ Configuration:
         frequency_mhz: 50
       bind:
         clk: clk50mhz
-    - peripheral: clock_input
-      params:
-        frequency_mhz: 125
-      bind:
-        clk: clk125mhz
     - peripheral: led_bank
       params:
         width: 8
