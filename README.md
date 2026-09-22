@@ -131,6 +131,7 @@ artifacts into `designs/`, `config/boards/`, and `config/configurations/`.
 | `tools/adapt_designs.py` | Mechanically rewrites BGM designs into uni-fpga form. |
 | `tools/curate_board.py` | Builds `config/boards/<id>.yml` from BGM constraint files. |
 | `tools/generate_variants.py` | Bootstraps `config/configurations/<id>.yml` from BGM directory naming. |
+| `tools/equiv_check.py` | Proves a configuration's generated top is the same circuit as BGM's board top: both sides co-simulated with Icarus on the physical pins under identical stimulus, every differing pin named with its port on each side (`remote --host <box>`, `summary`). `tools/equiv_lab` is the lab on both sides, `rtl/sim/equiv_stubs.sv` the extra vendor stand-ins. |
 | `toolchains/<id>/<id>.py` | Per-toolchain driver. Each defines `synthesize(...)` and `program(...)`. |
 
 ## Toolchain coverage
