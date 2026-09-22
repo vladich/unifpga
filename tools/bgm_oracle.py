@@ -719,6 +719,161 @@ def _pending_outputs(pending, skip):
                 yield expr
 
 
+_ASSIGN_ANY = re.compile(r"\bassign\s+(\{[^}]*\}|[A-Za-z_]\w*(?:\s*\[\s*\d+\s*\])?)\s*=\s*([^;]+);")
+_BUS_NAMES = {"abcdefgh": "seg", "digit": "dig", "lab_digit": "dig"}
+
+
+def seven_seg_map(text):
+    """{PORT or PORT[i] (upper-cased): (kind, bit, inverted)} for every
+    top-level port bit BGM drives from the shared seven-segment buses:
+    kind "seg" with the abcdefgh bit (7 = a, 0 = dp/h), "dig" with the digit
+    bit, or "const" with the driven value. Handles `assign SEG_DATA = ~
+    abcdefgh;`, `assign {CA, ..., DP} = ~ abcdefgh;`, `assign {DN, CN, BN,
+    AN} = ~ digit;`, `assign seg_a = ~ abcdefgh [7];`, `assign an = ~ digit;`,
+    `assign DIGIT_N = ~ { lab_digit, 1'b0 };`, `assign seg_sel = { digit[0],
+    digit[1] };` and `assign IO[14] = digit[0];`. A bus of parametric width
+    is reported as `NAME[*]` with an LSB-first item list that
+    expand_seven_seg_map() resolves over the located pins. Per-digit HEXn
+    boards yield nothing here."""
+    ports = top_ports(text)
+    width = {}
+    for m in re.finditer(r"^\s*(?:input|output|inout)\s+(?:logic\s+|wire\s+|reg\s+)?\[\s*([^:\]]+)\s*:\s*0\s*\]\s*([A-Za-z_]\w*)",
+                         text.split(");", 1)[0], re.M):
+        try:
+            width[m.group(2)] = int(m.group(1)) + 1
+        except ValueError:
+            width[m.group(2)] = None
+
+    def item(part, inv_outer):
+        """One rhs element -> ("bit", kind, bit, inv) | ("bus", kind, inv) | ("const", value)."""
+        r = " ".join(part.split())
+        m = re.match(r"^(~?)\s*(abcdefgh|digit|lab_digit)\s*$", r)
+        if m:
+            return ("bus", _BUS_NAMES[m.group(2)], bool(m.group(1)) != inv_outer)
+        m = re.match(r"^(~?)\s*(abcdefgh|digit|lab_digit)\s*\[\s*(\d+)\s*\]$", r)
+        if m:
+            return ("bit", _BUS_NAMES[m.group(2)], int(m.group(3)), bool(m.group(1)) != inv_outer)
+        m = re.match(r"^(~?)\s*1'b([01])$", r)
+        if m:
+            v = int(m.group(2))
+            return ("const", v ^ (1 if (bool(m.group(1)) != inv_outer) else 0))
+        return None
+
+    def items_of(rhs):
+        """LSB-first item list for an rhs, or None."""
+        r = " ".join(rhs.split())
+        m = re.match(r"^(~?)\s*\{(.*)\}$", r)
+        if m:
+            inv = bool(m.group(1))
+            parts = [item(p, inv) for p in m.group(2).split(",")]
+            if any(p is None for p in parts):
+                return None
+            return list(reversed(parts))
+        it = item(r, False)
+        return [it] if it else None
+
+    def lsb_items_to_map(name, items, w):
+        """Expand LSB-first items over bits 0..w-1 (w known) into `out`."""
+        idx = 0
+        for it in items:
+            if it[0] == "bus":
+                n = w - idx
+                for k in range(n):
+                    out["{}[{}]".format(name, idx + k)] = (it[1], k, it[2])
+                idx += n
+            elif it[0] == "bit":
+                out["{}[{}]".format(name, idx)] = (it[1], it[2], it[3])
+                idx += 1
+            else:
+                out["{}[{}]".format(name, idx)] = ("const", it[1], False)
+                idx += 1
+
+    out = {}
+    # `SWAP_BITS (SMG_Data, ~ abcdefgh)` (swap_bits.svh): lhs[i] = rhs[w-1-i]
+    for m in re.finditer(r"`SWAP_BITS\s*\(\s*([A-Za-z_]\w*)\s*,\s*(~?)\s*(abcdefgh|digit|lab_digit)\s*\)", text):
+        name, inv, kind = m.group(1), bool(m.group(2)), _BUS_NAMES[m.group(3)]
+        if name not in ports:
+            continue
+        w = width.get(name)
+        if w:
+            for i in range(w):
+                out["{}[{}]".format(name.upper(), i)] = (kind, w - 1 - i, inv)
+        else:
+            out[name.upper() + "[*]"] = ("items", [("busrev", kind, inv)], None)
+    for m in _ASSIGN_ANY.finditer(text):
+        lhs, rhs = m.group(1).strip(), m.group(2)
+        items = items_of(rhs)
+        if items is None:
+            continue
+        if lhs.startswith("{"):
+            names = [x.strip() for x in lhs[1:-1].split(",")]
+            names = list(reversed(names))                     # LSB first
+            # a single bus item on the rhs spans all the names
+            if len(items) == 1 and items[0][0] == "bus":
+                items = [("bit", items[0][1], k, items[0][2]) for k in range(len(names))]
+            if len(items) != len(names):
+                continue
+            for name, it in zip(names, items):
+                nm = re.match(r"^([A-Za-z_]\w*)(?:\s*\[\s*(\d+)\s*\])?$", name)
+                if not nm or nm.group(1) not in ports:
+                    continue
+                key = nm.group(1).upper() + ("[{}]".format(nm.group(2)) if nm.group(2) else "")
+                out[key] = (it[1], it[2], it[3]) if it[0] == "bit" else ("const", it[1], False)
+            continue
+        nm = re.match(r"^([A-Za-z_]\w*)(?:\s*\[\s*(\d+)\s*\])?$", lhs)
+        if not nm or nm.group(1) not in ports:
+            continue
+        name, idx = nm.group(1), nm.group(2)
+        if idx is not None:
+            if len(items) == 1 and items[0][0] == "bit":
+                it = items[0]
+                out["{}[{}]".format(name.upper(), idx)] = (it[1], it[2], it[3])
+            continue
+        w = width.get(name)
+        if len(items) == 1 and items[0][0] == "bit" and name not in width:
+            it = items[0]
+            out[name.upper()] = (it[1], it[2], it[3])          # scalar port
+        elif w:
+            lsb_items_to_map(name.upper(), items, w)
+        else:
+            out[name.upper() + "[*]"] = ("items", items, None)  # parametric width: expand over pins
+    return out
+
+
+def expand_seven_seg_map(seg_map, signal_pins):
+    """Resolve `NAME[*]` entries of seven_seg_map() over the `NAME[i]` signals
+    the constraint files locate; returns {SIGNAL_KEY: (kind, bit, inverted)}."""
+    out = {}
+    for key, val in seg_map.items():
+        if not key.endswith("[*]"):
+            out[key] = val
+            continue
+        base = key[:-3]
+        idxs = sorted(int(m.group(1)) for sig in signal_pins
+                      for m in [re.match(r"^{}\[(\d+)\]$".format(re.escape(base)), sig)] if m)
+        if not idxs:
+            continue
+        w = max(idxs) + 1
+        items = val[1]
+        idx = 0
+        for it in items:
+            if it[0] == "bus":
+                for k in range(w - idx):
+                    out["{}[{}]".format(base, idx + k)] = (it[1], k, it[2])
+                idx = w
+            elif it[0] == "busrev":
+                for k in range(w - idx):
+                    out["{}[{}]".format(base, idx + k)] = (it[1], w - 1 - idx - k, it[2])
+                idx = w
+            elif it[0] == "bit":
+                out["{}[{}]".format(base, idx)] = (it[1], it[2], it[3])
+                idx += 1
+            else:
+                out["{}[{}]".format(base, idx)] = ("const", it[1], False)
+                idx += 1
+    return out
+
+
 def lab_clock_source(text):
     """'pixel' when the lab runs on the PLL pixel clock (`localparam lab_mhz =
     pixel_mhz; assign clk = pixel_clk` — iCEBreaker DVI, Tang Primer 20K Dock

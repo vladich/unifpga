@@ -287,13 +287,27 @@ def apply_clock(paths, dry_run):
 # --seven-seg: bind the on-board 7-segment display by the pinmap's shape
 # ---------------------------------------------------------------------------
 
-def _seven_seg_attach(pinmap):
+def _bgm_seven_seg_by_pin(vdir):
+    """{normalized pin: (kind, bit, inverted)} from BGM's assigns (E5)."""
+    text = bgm_oracle.preprocess_variant(vdir).text
+    sig_pins = _bgm_signal_pins(vdir)
+    m = bgm_oracle.expand_seven_seg_map(bgm_oracle.seven_seg_map(text), sig_pins)
+    return {sig_pins[k]: v for k, v in m.items() if k in sig_pins}
+
+
+def _seven_seg_attach(pinmap, bgm_by_pin=None):
     """Render the attach block for onboard_7seg according to the pinmap shape,
-    or None when the board has no onboard_7seg bank."""
+    or None when the board has no onboard_7seg bank. With `bgm_by_pin` (BGM's
+    seven_seg_map by physical pin) the segment / dp / digit binds follow BGM's
+    bit order and the two polarities come from its inversions."""
     bank = ((pinmap or {}).get("pinBanks") or {}).get("onboard_7seg")
     pins = (bank or {}).get("pins")
     if not isinstance(pins, dict):
         return None
+    if bgm_by_pin:
+        block = _seven_seg_attach_from_bgm(pins, bgm_by_pin)
+        if block is not None:
+            return block
     hex_keys = sorted((k for k in pins if re.match(r"^hex\d+$", k)), key=lambda k: int(k[3:]))
     if hex_keys:
         segs = {len(pins[k]) for k in hex_keys}
@@ -355,11 +369,53 @@ def _reindent(block, item_indent):
     return "\n".join(out)
 
 
+def _seven_seg_attach_from_bgm(pins, bgm_by_pin):
+    """Binds for a shared display from BGM's per-pin map: segments a..g =
+    the pins BGM drives from abcdefgh[7..1], dp = abcdefgh[0], digits = the
+    pins BGM drives from digit[0..n-1]; polarity params from the inversions.
+    None when BGM's map does not cover the bank's pins."""
+    if any(re.match(r"^hex\d+$", k) for k in pins):
+        return None
+    refs = {}                                   # normalized pin -> bind ref
+    for sub, val in pins.items():
+        if isinstance(val, list):
+            for i, p in enumerate(val):
+                if p is not None:
+                    refs[_norm_pin(p)] = "onboard_7seg.{}[{}]".format(sub, i)
+        elif isinstance(val, str):
+            refs[_norm_pin(val)] = "onboard_7seg.{}".format(sub)
+    seg_pins = {bit: p for p, (kind, bit, _inv) in bgm_by_pin.items() if kind == "seg" and p in refs}
+    dig_pins = {bit: p for p, (kind, bit, _inv) in bgm_by_pin.items() if kind == "dig" and p in refs}
+    if not all(b in seg_pins for b in range(1, 8)) or not dig_pins:
+        return None
+    n_dig = max(dig_pins) + 1
+    if sorted(dig_pins) != list(range(n_dig)):
+        return None
+    seg_inv = {bgm_by_pin[p][2] for p in seg_pins.values()}
+    dig_inv = {bgm_by_pin[p][2] for p in dig_pins.values()}
+    if len(seg_inv) != 1 or len(dig_inv) != 1:
+        return None
+    lines = ["    - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)",
+             "      params:",
+             "        digits: {}".format(n_dig),
+             "        active: {}".format("low" if seg_inv.pop() else "high"),
+             "        digits_active: {}".format("low" if dig_inv.pop() else "high"),
+             "      bind:",
+             "        segments: [{}]".format(", ".join('"{}"'.format(refs[seg_pins[b]]) for b in range(7, 0, -1)))]
+    if 0 in seg_pins:
+        lines.append('        dp: "{}"'.format(refs[seg_pins[0]]))
+    lines.append("        digits: [{}]".format(", ".join('"{}"'.format(refs[dig_pins[b]]) for b in range(n_dig))))
+    return "\n".join(lines) + "\n"
+
+
 def apply_seven_seg(path, dry_run):
     original = open(path, encoding="utf-8").read()
     cfg = yaml.safe_load(original)["Configuration"]
     pinmap = config_init.read_board_pinmap(cfg["board"]) or {}
-    block = _seven_seg_attach(pinmap)
+    config_init._apply_pin_overrides(cfg["id"], cfg, pinmap)
+    vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+    bgm_by_pin = _bgm_seven_seg_by_pin(vdir) if vdir else None
+    block = _seven_seg_attach(pinmap, bgm_by_pin)
     lines = original.split("\n")
     starts = [i for i, l in enumerate(lines) if _ATTACH_START.match(l)]
     if not starts:

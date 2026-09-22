@@ -9,8 +9,12 @@ Peripheral:
     digits:
       type: int
       default: 8
-    active:
+    active:                  # segments and dp
       type: enum
+      values: [high, low]
+      default: low
+    digits_active:           # digit select; BGM: `an = ~ digit` (low) on Digilent,
+      type: enum             # `seg_sel = {digit[0], ...}` (high) on dk_dev_3c120n
       values: [high, low]
       default: low
   signals:
@@ -30,7 +34,11 @@ Peripheral:
   # `abcdefgh[0]` is h (the decimal point) — designs write '0' as
   # 8'b1111_1100. `segments[0]` is CA (segment a), `segments[6]` is CG.
   # Written per bit so the mapping is explicit and independent of whether
-  # `segments` is bound to a 7-wide bank or to a list of scalar pins.
+  # `segments` is bound to a 7-wide bank or to a list of scalar pins. Boards
+  # whose bus is index-aligned with abcdefgh (`SEG_DATA = ~ abcdefgh`: a on
+  # bit 7) bind `segments` to the list [bank[7], ..., bank[1]] and `dp` to
+  # bank[0]; tools/sync_from_bgm.py --seven-seg derives the order and both
+  # polarities from BGM's assigns (audit code SEG-MAP).
   pin_assigns:
     pin.segments[0]: capability.seven_segment.abcdefgh[7]   # a
     pin.segments[1]: capability.seven_segment.abcdefgh[6]   # b

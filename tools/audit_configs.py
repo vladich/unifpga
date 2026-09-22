@@ -39,6 +39,8 @@ Issue codes (see PLAN.md, section "Issue catalogue"):
              most boards; an invented LVCMOS33 on the Tang Nano 9K's 1.8 V
              bank 3 makes Gowin refuse the design, CT1136)
   SEG-HEX    per-digit (hexN) display bound as a shared display (no adapter)
+  SEG-MAP    a shared seven-segment pin gets another abcdefgh/digit bit or
+             polarity than in BGM's board_specific_top.sv (E5)
   RGB        rgb_led attached but design_top receives w_rgb_led = 0
 
 Retired codes (fixed at the source; E5 is now covered by co-simulation):
@@ -515,6 +517,47 @@ def analyze(cfg_id, cfg_text):
                 diffs.append("{}: ours {} vs BGM {}".format(pin, ours.get(pin), theirs))
         if diffs:
             add("IOTYPE", "{} pin(s), e.g. {}".format(len(diffs), "; ".join(diffs[:3])))
+
+    # ---- shared seven-segment bit map (E5): which abcdefgh / digit bit drives
+    #      each physical pin, and with which polarity, vs BGM's assigns ---------
+    if bgm_dir is not None and "seven_segment_8digit_shared" in attached_ids:
+        from tools import sync_from_bgm
+        sig_pins = sync_from_bgm._bgm_signal_pins(bgm_dir)
+        bgm_map = bgm_oracle.expand_seven_seg_map(bgm_oracle.seven_seg_map(top_text), sig_pins)
+        bgm_by_pin = {sig_pins[k]: v for k, v in bgm_map.items() if k in sig_pins}
+        if bgm_by_pin:
+            generated_top = codegen.emit_top_sv(resolved, strict=False)
+            ours_by_port = {}
+            for m in re.finditer(r"assign\s+(\{[^}]*\}|onboard_7seg_\w+(?:\[\d+\])?)\s*=\s*(~?)\s*\(?\s*cap_seven_segment_(abcdefgh|digit)(?:\[(\d+)\])?\s*\)?\s*;",
+                                 generated_top):
+                lhs, inv, src, bit = m.group(1), bool(m.group(2)), m.group(3), m.group(4)
+                kind = "seg" if src == "abcdefgh" else "dig"
+                if lhs.startswith("{"):     # list bind: {p[n-1], ..., p[0]} = bus (MSB first)
+                    names = [x.strip() for x in lhs[1:-1].split(",")]
+                    for i, name in enumerate(reversed(names)):
+                        ours_by_port[name] = (kind, i, inv)
+                elif bit is not None:
+                    ours_by_port[lhs] = (kind, int(bit), inv)
+                else:                       # whole bus: port[i] = src[i]
+                    for pin, ports_here in pins.items():
+                        for pp in ports_here:
+                            pm = re.match(r"^{}\[(\d+)\]$".format(re.escape(lhs)), pp)
+                            if pm:
+                                ours_by_port[pp] = (kind, int(pm.group(1)), inv)
+            ours_by_pin = {}
+            for pin, ports_here in pins.items():
+                for pp in ports_here:
+                    if pp in ours_by_port:
+                        ours_by_pin[sync_from_bgm._norm_pin(pin)] = ours_by_port[pp]
+            diffs = []
+            for pin in sorted(set(bgm_by_pin) | set(ours_by_pin)):
+                theirs = bgm_by_pin.get(pin)
+                if theirs and theirs[0] == "const" and ours_by_pin.get(pin) is None:
+                    continue        # BGM ties the pin off (zeowaa_wo_dig_0 digit 0); we leave it unbound
+                if theirs != ours_by_pin.get(pin):
+                    diffs.append("{}: ours {} vs BGM {}".format(pin, ours_by_pin.get(pin), theirs))
+            if diffs:
+                add("SEG-MAP", "{} pin(s), e.g. {}".format(len(diffs), "; ".join(diffs[:3])))
 
     # ---- peripheral-class issues ----------------------------------------------------
     if any(pid in _SEVEN_SEG_PERIPHERALS for pid in attached_ids):

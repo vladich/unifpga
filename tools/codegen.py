@@ -1293,6 +1293,21 @@ def _peripheral_active_polarity(perif, attach, pinmap=None):
     return pdef.get("default") or "high"
 
 
+def _signal_active_polarity(perif, attach, sig, default):
+    """Polarity of one pin signal: configuration `params.<sig>_active`, else
+    the peripheral parameter `<sig>_active`'s default, else `default`."""
+    if not sig:
+        return default
+    key = sig + "_active"
+    pdefs = perif.get("parameters") or {}
+    if key not in pdefs:
+        return default
+    cfg_params = attach.get("params") or {}
+    if key in cfg_params:
+        return cfg_params[key]
+    return (pdefs.get(key) or {}).get("default") or default
+
+
 def _peripheral_mirror(attach, pinmap):
     """True when the bank's bit order is reversed relative to the user's bus
     (BGM `SWAP_BITS (LED, ...)` on the Tang Nano 9K). Configuration
@@ -1400,8 +1415,11 @@ def _emit_passthrough(resolved, idx, attach, plans):
         lhs_resolved = _resolve_ref(lhs, attach, plans, bind, lhs_context=True, slice_for_idx=idx)
         rhs_resolved = _resolve_ref(rhs, attach, plans, bind, slice_for_idx=idx)
         # Only auto-invert when RHS comes from a capability (active-high
-        # user-perspective signal heading to an active-low pin).
-        wants_invert = (active == "low"
+        # user-perspective signal heading to an active-low pin). A signal
+        # with its own `<signal>_active` parameter (the shared display's
+        # `digits_active`) follows that instead of the peripheral-wide one.
+        sig_active = _signal_active_polarity(perif, attach, _pin_of(lhs), active)
+        wants_invert = (sig_active == "low"
                         and isinstance(rhs, str)
                         and rhs.lstrip("~ ").strip().startswith("capability."))
         if wants_invert:

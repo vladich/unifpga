@@ -214,8 +214,14 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     # (BGM's flow); `full` also runs the RTL simulation step, which fails
     # without a simulator ("Python exception running: efx_run_sim.py").
     flow = "map" if step == "elaborate" else "compile"
+    # BGM: the programmer step writes the bitstream only where --pgm_opts
+    # says (source = the placed-and-routed .lbf, dest = the .hex).
+    lbf = os.path.join("work_pnr", PROJECT_NAME + ".lbf")
+    hexfile = os.path.join("outflow", PROJECT_NAME + ".hex")
     cmd = ["python3", efx_run,
            "--flow", flow,
+           "--pgm_opts", "source=" + lbf,
+           "--pgm_opts", "dest=" + hexfile,
            "--family", family,
            "-d", device,
            "--output_dir", output,
@@ -242,7 +248,9 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return rc
 
     if step != "elaborate":
-        bit = os.path.join(output, "outflow", PROJECT_NAME + ".bit")
+        bit = os.path.join(output, "outflow", PROJECT_NAME + ".hex")
+        if not os.path.exists(bit):
+            bit = os.path.join(output, "outflow", PROJECT_NAME + ".bit")
         if os.path.exists(bit):
             log.info("Bitstream ready: %s", bit)
     return 0
