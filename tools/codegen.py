@@ -24,7 +24,7 @@ import logging
 import os
 import re
 import sys
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, namedtuple
 
 import yaml
 
@@ -266,23 +266,58 @@ def _clock_period_ns(clock):
 # ---------------------------------------------------------------------------
 
 def collect_clock_requirements(resolved):
-    """{name: {"mhz": float, "tolerance_pct": float, "users": [attach idx]}}.
-    A configuration may override a frequency with `params.clock_<name>_mhz`."""
+    """{name: {"mhz": float, "tolerance_pct": float, "users": [attach idx],
+    "from": source name or None, "divide": int or None}}.
+
+    A source clock is `{name: pixel, mhz: 9}`; a configuration may override
+    its frequency with `params.clock_<name>_mhz`. A derived clock is
+    `{name: pixel, from: serial, divide: 10}` (its frequency follows the
+    source's, so the override on `serial` moves both). Two peripherals may
+    request the same clock only with the same definition."""
+    cfg_id = resolved["configuration"]["id"]
     reqs = OrderedDict()
     for idx, attach in enumerate(resolved["peripherals"]):
         for c in attach["peripheral"].get("clocks") or []:
             name = c["name"]
-            mhz = float(c["mhz"])
-            override = (attach.get("params") or {}).get("clock_{}_mhz".format(name))
-            if override is not None:
-                mhz = float(override)
             tol = float(c.get("tolerance_pct", 0.5))
-            if name in reqs and abs(reqs[name]["mhz"] - mhz) > 1e-6:
-                raise CodegenError("Configuration {}: clock '{}' requested at {} MHz by {} and at {} MHz by {}"
-                                   .format(resolved["configuration"]["id"], name, reqs[name]["mhz"],
-                                           reqs[name]["users"], mhz, attach["peripheral_id"]))
-            reqs.setdefault(name, {"mhz": mhz, "tolerance_pct": tol, "users": []})["users"].append(idx)
+            if "from" in c:
+                entry = {"mhz": None, "from": c["from"], "divide": int(c["divide"])}
+            else:
+                mhz = float(c["mhz"])
+                override = (attach.get("params") or {}).get("clock_{}_mhz".format(name))
+                if override is not None:
+                    mhz = float(override)
+                entry = {"mhz": mhz, "from": None, "divide": None}
+            have = reqs.get(name)
+            if have is not None:
+                same = (have["from"] == entry["from"] and have["divide"] == entry["divide"]
+                        and (have["mhz"] is None) == (entry["mhz"] is None)
+                        and (have["mhz"] is None or abs(have["mhz"] - entry["mhz"]) < 1e-6))
+                if not same:
+                    raise CodegenError("Configuration {}: clock '{}' is defined differently by {} ({}) and {} ({})"
+                                       .format(cfg_id, name, have["users"], have, attach["peripheral_id"], entry))
+                have["users"].append(idx)
+                continue
+            entry["tolerance_pct"] = tol
+            entry["users"] = [idx]
+            reqs[name] = entry
+    for name, r in reqs.items():
+        if r["from"] is not None:
+            src = reqs.get(r["from"])
+            if src is None or src["from"] is not None:
+                raise CodegenError("Configuration {}: clock '{}' is derived from '{}', which is not a source clock"
+                                   .format(cfg_id, name, r["from"]))
+            if r["divide"] < 1:
+                raise CodegenError("Configuration {}: clock '{}' has divide {}".format(cfg_id, name, r["divide"]))
+            r["mhz"] = src["mhz"] / r["divide"]
     return reqs
+
+
+# Solutions for the non-PLL entries of the clock tree; all expose `f_out` like
+# the solver results so callers can treat every entry alike.
+ClockAlias   = namedtuple("ClockAlias",   "f_out source")            # == the board clock
+ClockDerived = namedtuple("ClockDerived", "f_out source divide")     # vendor clock divider
+MmcmOutput   = namedtuple("MmcmOutput",   "f_out index mmcm")        # one CLKOUT of a shared MMCM
 
 
 def _pll_vendor(board):
@@ -290,13 +325,39 @@ def _pll_vendor(board):
     producer = (board.get("PartProducer") or "").lower()
     family = (board.get("PartFamily") or "").lower()
     part = (board.get("Part") or "").upper()
-    if "gowin" in producer:
+    if "gowin" in producer or part.startswith("GW"):
         if part.startswith("GW5") or "gw5" in family or "arorav" in family:
             return "gowin_gw5"           # PLLA-based Gowin_PLL: not wrapped yet (P3.1b)
         return "gowin_rpll"
     if "lattice" in producer and "ice40" in family:
         return "ice40"
+    if ("xilinx" in producer or "amd" in producer or part.startswith(("XC7", "XA7"))) and (
+            part.startswith(("XC7", "XA7")) or "7" in family or "zynq" in family):
+        return "xilinx_mmcm"
     return None
+
+
+def _is_gowin_littlebee(board):
+    part = (board.get("Part") or "").upper()
+    family = (board.get("PartFamily") or "").lower()
+    return part.startswith("GW1N") or "littlebee" in family or "gw1n" in family
+
+
+def diff_buf_kind(resolved):
+    """Which differential output buffer rtl/io/diff_obuf.sv should use on this
+    board (`context.diff_buf`): the pinmap's `io.diff_obuf` when set, else by
+    family: ELVDS_OBUF on Gowin LittleBee (GW1N*), TLVDS_OBUF on Gowin Arora,
+    OBUFDS on Xilinx, pseudo-differential (`n = ~p`) elsewhere."""
+    io = resolved["board_pinmap"].get("io") or {}
+    if io.get("diff_obuf"):
+        return str(io["diff_obuf"])
+    board = resolved["board"]
+    vendor = _pll_vendor(board)
+    if vendor in ("gowin_rpll", "gowin_gw5"):
+        return "gowin_elvds" if _is_gowin_littlebee(board) else "gowin_tlvds"
+    if vendor == "xilinx_mmcm":
+        return "xilinx"
+    return "generic"
 
 
 def _gowin_rpll_device(resolved):
@@ -307,46 +368,104 @@ def _gowin_rpll_device(resolved):
     m_name = re.search(r"-name\s+(\S+)", args)
     m_ver = re.search(r'-device_version\s+("[^"]*"|\S+)', args)
     if m_name:
+        name = m_name.group(1)
         ver = (m_ver.group(1).strip('"') if m_ver else "")
-        return m_name.group(1) + ver
+        # BGM: `-name GW2A-18C -device_version C` -> DEVICE "GW2A-18C" (the
+        # name already carries the revision); `-name GW1NR-9 -device_version C`
+        # -> "GW1NR-9C".
+        return name if not ver or name.endswith(ver) else name + ver
     part = (resolved["board"].get("Part") or "").upper()
     m = re.match(r"^(GW\d[A-Z]*)-[A-Z]*(\d+)", part)
     return "{}-{}C".format(m.group(1), m.group(2)) if m else "GW1NR-9C"
 
 
+_GOWIN_CLKDIV = {2, 4, 5, 8, 10}          # rtl/pll/clkdiv_gowin.sv; 8 needs Arora
+
+
 def plan_clock_tree(resolved, plans=None):
-    """Resolve every requested clock to a PLL setting. Returns
-    [(name, req, vendor, solution)] or raises CodegenError with the reason
-    (unknown board clock, unsupported family, no divider solution)."""
+    """Resolve every requested clock. Returns [(name, req, kind, solution)]
+    where kind is the PLL wrapper ("gowin_rpll", "ice40", "xilinx_mmcm"),
+    "derived" (vendor clock divider on another clock), or "alias" (the clock
+    equals the board clock, so it is the board clock: BGM's Tang Nano 4K
+    feeds the DVI pixel clock straight from the 27 MHz oscillator). Every
+    solution has `f_out`. Raises CodegenError for an unknown board clock, an
+    unsupported family or divider, or an unreachable frequency."""
     reqs = collect_clock_requirements(resolved)
     if not reqs:
         return []
     cfg_id = resolved["configuration"]["id"]
+    board = resolved["board"]
     clock = resolve_clock(resolved, plans)
     if clock is None or clock["mhz"] is None:
         raise CodegenError("Configuration {}: peripherals need PLL clocks ({}) but the board clock "
                            "frequency is unknown".format(cfg_id, ", ".join(reqs)))
-    vendor = _pll_vendor(resolved["board"])
-    out = []
+    f_in = clock["mhz"]
+    vendor = _pll_vendor(board)
+
+    def same(a, b):
+        return abs(a - b) < 1e-6
+
+    sources = [(n, r) for n, r in reqs.items() if r["from"] is None and not same(r["mhz"], f_in)]
+    if sources and vendor is None:
+        raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper exists for {} / {} "
+                           "(PLAN.md P3.1)".format(cfg_id, sources[0][0], sources[0][1]["mhz"],
+                                                   board.get("PartProducer"), board.get("PartFamily")))
+    if sources and vendor == "gowin_gw5":
+        raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but the GW5 (AroraV) PLLA "
+                           "wrapper is not implemented yet (PLAN.md P3.1b)".format(cfg_id, sources[0][0],
+                                                                                    sources[0][1]["mhz"]))
+    out = OrderedDict()
+    # 1. clocks that already exist: the board clock itself
     for name, r in reqs.items():
+        if r["from"] is None and same(r["mhz"], f_in):
+            out[name] = (name, r, "alias", ClockAlias(f_in, "clk"))
+
+    # 2. PLL-generated source clocks
+    if vendor == "xilinx_mmcm" and sources:
+        # one MMCM makes every clock, derived ones included (clk_wiz style)
+        wanted = [(n, r) for n, r in reqs.items() if n not in out]
+        if len(wanted) > 3:
+            raise CodegenError("Configuration {}: {} PLL clocks requested, pll_xilinx_mmcm has 3 outputs"
+                               .format(cfg_id, len(wanted)))
+        tol = min(r["tolerance_pct"] for _n, r in wanted)
+        mmcm = pll_solver.xilinx_mmcm(f_in, [r["mhz"] for _n, r in wanted], tol)
+        if mmcm is None:
+            raise CodegenError("Configuration {}: no MMCM setting reaches {} MHz from {} MHz within {}%"
+                               .format(cfg_id, [r["mhz"] for _n, r in wanted], f_in, tol))
+        for i, (n, r) in enumerate(wanted):
+            out[n] = (n, r, "xilinx_mmcm", MmcmOutput(mmcm.f_outs[i], i, mmcm))
+    else:
+        for name, r in sources:
+            if vendor == "gowin_rpll":
+                sol = pll_solver.gowin_rpll(f_in, r["mhz"], r["tolerance_pct"])
+            else:   # ice40
+                sol = pll_solver.ice40_pll(f_in, r["mhz"], r["tolerance_pct"])
+            if sol is None:
+                raise CodegenError("Configuration {}: no {} PLL setting reaches {} MHz from {} MHz within {}%"
+                                   .format(cfg_id, vendor, r["mhz"], f_in, r["tolerance_pct"]))
+            out[name] = (name, r, vendor, sol)
+
+    # 3. derived clocks through a vendor divider
+    for name, r in reqs.items():
+        if name in out or r["from"] is None:
+            continue
+        if same(r["mhz"], f_in):
+            out[name] = (name, r, "alias", ClockAlias(f_in, "clk"))
+            continue
+        src_kind = out[r["from"]][2]
+        if src_kind == "alias":
+            raise CodegenError("Configuration {}: clock '{}' would divide the board clock by {}; no fabric "
+                               "divider is generated (declare it as a source clock instead)"
+                               .format(cfg_id, name, r["divide"]))
         if vendor == "gowin_rpll":
-            sol = pll_solver.gowin_rpll(clock["mhz"], r["mhz"], r["tolerance_pct"])
-        elif vendor == "ice40":
-            sol = pll_solver.ice40_pll(clock["mhz"], r["mhz"], r["tolerance_pct"])
-        elif vendor == "gowin_gw5":
-            raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but the GW5 "
-                               "(AroraV) PLLA wrapper is not implemented yet (PLAN.md P3.1b)"
-                               .format(cfg_id, name, r["mhz"]))
+            if r["divide"] not in _GOWIN_CLKDIV or (r["divide"] == 8 and _is_gowin_littlebee(board)):
+                raise CodegenError("Configuration {}: clock '{}' = {} / {} has no CLKDIV/CLKDIV2 combination "
+                                   "on this Gowin family".format(cfg_id, name, r["from"], r["divide"]))
+            out[name] = (name, r, "derived", ClockDerived(r["mhz"], r["from"], r["divide"]))
         else:
-            raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper "
-                               "exists for {} / {} (PLAN.md P3.1)".format(
-                                   cfg_id, name, r["mhz"], resolved["board"].get("PartProducer"),
-                                   resolved["board"].get("PartFamily")))
-        if sol is None:
-            raise CodegenError("Configuration {}: no {} PLL setting reaches {} MHz from {} MHz within {}%"
-                               .format(cfg_id, vendor, r["mhz"], clock["mhz"], r["tolerance_pct"]))
-        out.append((name, r, vendor, sol))
-    return out
+            raise CodegenError("Configuration {}: clock '{}' derived from '{}' needs a clock divider; none is "
+                               "generated for {} (PLAN.md P3.2)".format(cfg_id, name, r["from"], vendor))
+    return [out[n] for n in reqs]
 
 
 def lab_clock(resolved, plans=None):
@@ -369,8 +488,9 @@ def lab_clock(resolved, plans=None):
 
 
 # Emission state for the top being generated (codegen is single-threaded):
-# the lab clock net `context.clk` resolves to.
-_EMIT = {"lab_clk": "clk"}
+# the lab clock net `context.clk` resolves to, and the differential buffer
+# kind `context.diff_buf` renders as.
+_EMIT = {"lab_clk": "clk", "diff_buf": "generic"}
 
 
 def _emit_clock_tree(resolved, plans, clock, strict=True):
@@ -393,8 +513,42 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
     lines = ["    // ---- Clock tree: PLL-derived clocks requested by peripherals ----"]
     fin = clock["mhz"]
     fin_str = str(int(fin)) if float(fin).is_integer() else "{:g}".format(fin)
+    mmcm_done = False
     for name, r, vendor, sol in tree:
         net = "clk_" + name
+        if vendor == "alias":
+            lines.append("    wire {n} = clk;               // {f:g} MHz: the board clock itself".format(n=net, f=sol.f_out))
+            lines.append("    wire {n}_locked = 1'b1;".format(n=net))
+            continue
+        if vendor == "derived":
+            src = "clk_" + sol.source
+            lines.append("    wire {n};".format(n=net))
+            lines.append("    // {n}: {f:.4f} MHz = {s} / {d} (Gowin CLKDIV{d2})".format(
+                n=net, f=sol.f_out, s=src, d=sol.divide, d2="2 + CLKDIV 5" if sol.divide == 10 else ""))
+            lines.append("    clkdiv_gowin # (.DIV({d})) i_div_{name} (.clk_in({s}), .resetn({s}_locked), .clk_out({n}));"
+                         .format(d=sol.divide, name=name, s=src, n=net))
+            lines.append("    wire {n}_locked = {s}_locked;".format(n=net, s=src))
+            continue
+        if vendor == "xilinx_mmcm":
+            if not mmcm_done:
+                m = sol.mmcm
+                outs = [(n2, s2) for n2, _r2, v2, s2 in tree if v2 == "xilinx_mmcm"]
+                lines.append("    wire clk_mmcm_locked;")
+                lines.append("    wire " + ", ".join("clk_" + n2 for n2, _s2 in outs) + ";")
+                lines.append("    // MMCM: {fin} MHz / {d} * {mult} = VCO {vco:.1f} MHz; ".format(
+                    fin=fin_str, d=m.divclk, mult=m.mult, vco=m.f_vco) + "; ".join(
+                    "clk_{} = VCO / {} = {:.4f} MHz".format(n2, m.odivs[s2.index], s2.f_out) for n2, s2 in outs))
+                divs = list(m.odivs) + [1] * (3 - len(m.odivs))
+                ports = ["clk_" + n2 for n2, _s2 in outs] + [""] * (3 - len(outs))
+                lines.append("    pll_xilinx_mmcm # (.CLKIN_PERIOD({per:.3f}), .DIVCLK_DIVIDE({d}), .CLKFBOUT_MULT_F({mult}.0), "
+                             ".CLKOUT0_DIVIDE({o0}.0), .CLKOUT1_DIVIDE({o1}), .CLKOUT2_DIVIDE({o2})) i_mmcm "
+                             "(.clkin(clk), .clkout0({p0}), .clkout1({p1}), .clkout2({p2}), .lock(clk_mmcm_locked));".format(
+                                 per=1000.0 / fin, d=m.divclk, mult=m.mult, o0=divs[0], o1=divs[1], o2=divs[2],
+                                 p0=ports[0], p1=ports[1], p2=ports[2]))
+                for n2, _s2 in outs:
+                    lines.append("    wire clk_{}_locked = clk_mmcm_locked;".format(n2))
+                mmcm_done = True
+            continue
         lines.append("    wire {n}, {n}_locked;".format(n=net))
         if vendor == "gowin_rpll":
             lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz{})".format(
@@ -418,27 +572,36 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
     return lines
 
 
+_CLOCK_TREE_MODULES = (
+    ("pll_gowin_rpll",  os.path.join("rtl", "pll", "pll_gowin_rpll.sv")),
+    ("pll_ice40",       os.path.join("rtl", "pll", "pll_ice40.sv")),
+    ("pll_xilinx_mmcm", os.path.join("rtl", "pll", "pll_xilinx_mmcm.sv")),
+    ("clkdiv_gowin",    os.path.join("rtl", "pll", "clkdiv_gowin.sv")),
+)
+
+
 def pll_source_files(top_text):
-    """Repo-relative RTL files a generated top needs for its PLL wrappers."""
-    out = []
-    if "pll_gowin_rpll" in top_text:
-        out.append(os.path.join("rtl", "pll", "pll_gowin_rpll.sv"))
-    if "pll_ice40" in top_text:
-        out.append(os.path.join("rtl", "pll", "pll_ice40.sv"))
-    return out
+    """Repo-relative RTL files a generated top needs for its clock tree."""
+    return [rel for mod, rel in _CLOCK_TREE_MODULES if mod in top_text]
 
 
-def pll_source_paths(repo, generated_top):
-    """Absolute PLL wrapper paths for the toolchain source collectors: reads
-    the generated top and maps the wrapper modules it instantiates to
-    rtl/pll/*.sv (empty when the configuration has no PLL clock)."""
+def pll_source_paths(repo, generated_top, peripherals=None):
+    """Absolute extra source paths for the toolchain source collectors: the
+    clock-tree wrappers the generated top instantiates (rtl/pll/*.sv) and the
+    attached peripherals' `driver.files` (modules a driver file depends on,
+    e.g. hdmi_tmds_out -> dvi.sv + diff_obuf.sv)."""
     try:
         with open(generated_top) as fh:
             text = fh.read()
     except OSError:
-        return []
-    return [os.path.join(repo, rel) for rel in pll_source_files(text)
-            if os.path.exists(os.path.join(repo, rel))]
+        text = ""
+    rels = list(pll_source_files(text))
+    for attach in peripherals or []:
+        drv = (attach.get("peripheral") or {}).get("driver") or {}
+        for rel in drv.get("files") or []:
+            if rel not in rels:
+                rels.append(rel)
+    return [os.path.join(repo, rel) for rel in rels if os.path.exists(os.path.join(repo, rel))]
 
 
 def clock_driven_pins(resolved):
@@ -734,6 +897,7 @@ def emit_top_sv(resolved, strict=True):
             raise CodegenError("\n".join(problems))
     referenced_banks = collect_referenced_banks(resolved)
     _EMIT["lab_clk"] = lab_clock(resolved, plans)["net"]
+    _EMIT["diff_buf"] = diff_buf_kind(resolved)
 
     out = []
     out.append("// =============================================================================")
@@ -1345,6 +1509,8 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
         name = s[len("context."):]
         if name == "clk":
             name = _EMIT["lab_clk"]
+        elif name == "diff_buf":
+            return _sv_literal(_EMIT["diff_buf"])
         return invert + name + idx_suffix
     if s.startswith("clock."):
         return invert + "clk_" + s[len("clock."):] + idx_suffix
@@ -1624,13 +1790,9 @@ def emit_xdc(resolved):
 
 
 def _xdc_line(pin, port_expr, iostd):
-    pin_str = str(pin)
-    # Quote pin names that contain commas (Gowin diff pairs) — Vivado doesn't
-    # use those, but the harvested data may still carry them; warn.
-    if "," in pin_str:
-        return ("# WARNING: pin '{p}' for port '{port}' is a differential pair; "
-                "Vivado XDC needs the pair handled in the SV (LVDS / OBUFDS).".format(
-                    p=pin_str, port=port_expr))
+    # A "P,N" pair locates the P port; the N port has its own entry (its pin
+    # is the pair's second half) and Vivado checks both against the package.
+    pin_str = _pair_p(pin)
     return (
         "set_property -dict {{ PACKAGE_PIN {pin} IOSTANDARD {std} }} "
         "[get_ports {{ {port} }}];".format(pin=pin_str, std=iostd, port=port_expr)
@@ -1777,7 +1939,35 @@ def emit_ucf(resolved):
 
 
 def _pin_iostd(pin, overrides, default):
-    return overrides.get(pin) or default
+    return overrides.get(pin) or overrides.get(_pair_p(pin)) or default
+
+
+def _pair_p(pin):
+    """First (P) pin of a `"69,68"` differential pair, the pin itself otherwise."""
+    return str(pin).split(",", 1)[0].strip()
+
+
+def _pair_n_pins(pinmap, referenced):
+    """{N pin: P pin} for every "P,N" pair in the referenced banks, so the
+    emitters recognise the pair's N half when it also appears as its own
+    entry (`clk_n: "68"` next to `clk_p: "69,68"`)."""
+    out = {}
+    for bank_name in referenced:
+        bank = (pinmap.get("pinBanks") or {}).get(bank_name) or {}
+        pins = bank.get("pins")
+        vals = []
+        if isinstance(pins, str):
+            vals = [pins]
+        elif isinstance(pins, list):
+            vals = pins
+        elif isinstance(pins, dict):
+            for v in pins.values():
+                vals.extend(v if isinstance(v, list) else [v])
+        for v in vals:
+            if isinstance(v, str) and "," in v:
+                p, n = [x.strip() for x in v.split(",", 1)]
+                out[n] = p
+    return out
 
 
 def _bank_port_name(bank_ref):
@@ -1971,6 +2161,27 @@ def emit_cst(resolved):
     out.append("")
 
     referenced = collect_referenced_banks(resolved)
+    # Differential pairs: Gowin EDA locates a true/emulated LVDS pair through
+    # the P port alone (`IO_LOC "TMDS_CLK_P" 69,68;`, BGM) and infers the N
+    # port from the buffer; the open flow (apicula) wants both halves as
+    # plain IO_LOCs (BGM's _yosys variants); pseudo-differential outputs are
+    # two ordinary LVCMOS pins.
+    pair_style = "pair"
+    if resolved["toolchain"]["Id"].startswith("nextpnr_"):
+        pair_style = "split"
+    elif diff_buf_kind(resolved) == "generic":
+        pair_style = "lvcmos"
+    pair_n = _pair_n_pins(pinmap, referenced)
+
+    def lines_for(p, port, iot, explicit):
+        if isinstance(p, str) and "," in p:
+            return _cst_pair_lines(p, port, iot, explicit, pair_style)
+        if str(p) in pair_n:
+            if pair_style == "pair":
+                return ['// "{}" is the N half of the pair on {}'.format(port, pair_n[str(p)])]
+            if pair_style == "split":
+                return ['IO_LOC  "{}" {};'.format(port, p)]
+        return _cst_lines(p, port, iot)
 
     for bank_name in referenced:
         bank = (pinmap.get("pinBanks") or {}).get(bank_name)
@@ -1979,16 +2190,19 @@ def emit_cst(resolved):
             continue
         pins = bank.get("pins")
         overrides = bank.get("overrides") or {}
-        bank_iotype = _GOWIN_IOTYPE.get(bank.get("iostandard"), default_iotype)
+        explicit = bool(bank.get("iostandard"))
+        bank_iotype = (_GOWIN_IOTYPE.get(bank["iostandard"], bank["iostandard"]) if explicit
+                       else default_iotype)
 
         if isinstance(pins, str):
-            out.extend(_cst_lines(pins, bank_name, _pin_iostd(pins, overrides, bank_iotype)))
+            out.extend(lines_for(pins, bank_name, _pin_iostd(pins, overrides, bank_iotype),
+                                 explicit or pins in overrides))
         elif isinstance(pins, list):
             for i, p in enumerate(pins):
                 if p is None:
                     continue
                 port = "{}[{}]".format(bank_name, i)
-                out.extend(_cst_lines(p, port, _pin_iostd(p, overrides, bank_iotype)))
+                out.extend(lines_for(p, port, _pin_iostd(p, overrides, bank_iotype), explicit or p in overrides))
         elif isinstance(pins, dict):
             for sub, val in pins.items():
                 pname = "{}_{}".format(bank_name, sub)
@@ -1997,22 +2211,33 @@ def emit_cst(resolved):
                         if p is None:
                             continue
                         port = "{}[{}]".format(pname, i)
-                        out.extend(_cst_lines(p, port, _pin_iostd(p, overrides, bank_iotype)))
+                        out.extend(lines_for(p, port, _pin_iostd(p, overrides, bank_iotype),
+                                             explicit or p in overrides))
                 elif isinstance(val, str):
-                    out.extend(_cst_lines(val, pname, _pin_iostd(val, overrides, bank_iotype)))
+                    out.extend(lines_for(val, pname, _pin_iostd(val, overrides, bank_iotype),
+                                         explicit or val in overrides))
 
     out.append("")
     return "\n".join(out)
 
 
+def _cst_pair_lines(pin, port_expr, iotype, explicit, style):
+    p, n = [x.strip() for x in str(pin).split(",", 1)]
+    iot = _GOWIN_IOTYPE.get(iotype, iotype)
+    if style == "split":
+        return ['IO_LOC  "{}" {};'.format(port_expr, p)]
+    if style == "lvcmos":
+        return ['IO_LOC  "{}" {};'.format(port_expr, p), 'IO_PORT "{}" IO_TYPE={};'.format(port_expr, iot)]
+    lines = ['IO_LOC  "{}" {},{};'.format(port_expr, p, n)]
+    if explicit:      # e.g. marsohod3gw2: IO_TYPE=LVCMOS18D on the pair
+        lines.append('IO_PORT "{}" IO_TYPE={};'.format(port_expr, iot))
+    return lines
+
+
 def _cst_lines(pin, port_expr, iotype):
     pin_str = str(pin)
     if "," in pin_str:
-        # Gowin's differential-pair form, exactly as BGM writes it for TMDS
-        # (`IO_LOC "O_TMDS_CLK_P" 33,34;` with no IO_PORT line): the P port
-        # is located on the pair and the buffer type comes from the design.
-        p, n = [x.strip() for x in pin_str.split(",", 1)]
-        return ['IO_LOC  "{port}" {p},{n};'.format(port=port_expr, p=p, n=n)]
+        return _cst_pair_lines(pin_str, port_expr, iotype, False, "pair")
     iotype_resolved = _GOWIN_IOTYPE.get(iotype, iotype)
     return [
         'IO_LOC  "{port}" {pin};'.format(port=port_expr, pin=pin_str),

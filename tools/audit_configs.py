@@ -25,19 +25,22 @@ Issue codes (see PLAN.md, section "Issue catalogue"):
   NULL-PIN   a referenced bank has null entries (unconstrained port bits)
   WIDTH      params.width differs from the bound bank's pin count
   NO-VARIANT `_no_<x>` variant still attaches <x>
-  PLL        PLL-derived clock frequencies differ from BGM's (E7): the set of
-             frequencies BGM's gowin_rpll.v / SB_PLL40 settings produce vs the
-             set codegen's clock tree (peripheral `clocks:`) instantiates
+  PLL        PLL-derived clock frequencies differ from BGM's (E7), compared in
+             the pixel domain: every PLL output is divided by its integer
+             ratio to the pixel clock (1, 2, 5, 10), so BGM's 126 MHz DVI_TX
+             serial clock (5x DDR) and our 252 MHz (10x SDR dvi_top) both
+             read 25.2 MHz; a real difference (32.4 vs 33 MHz) still shows
   LAB-CLK    the lab (design_top, tm1638, resets) runs on a different clock
              than in BGM (`localparam lab_mhz = pixel_mhz` -> `lab_clock:`)
   DISPLAY    BGM's screen_width x screen_height differ from the attached
              display peripheral's (BGM tang_nano_9k_lcd_480_272_*_yosys build 800x480)
   GOWIN-OPT  BGM sets Gowin set_option flags the driver does not emit
-  DIFF-PAIR  a bound pin is a Gowin "P,N" pair the emitters skip
   SEG-HEX    per-digit (hexN) display bound as a shared display (no adapter)
   RGB        rgb_led attached but design_top receives w_rgb_led = 0
 
 Retired codes (fixed at the source; E5 is now covered by co-simulation):
+  DIFF-PAIR  (P3.2: pairs are located through the P port, N halves declared;
+              rtl/io/diff_obuf.sv drives them with the vendor buffer)
   SEG-ORDER  (P1.3: seven_segment_8digit_shared pin_assigns are per bit, a = abcdefgh[7])
   TM1638     (P1.3: tm1638_led_key bit-reverses abcdefgh into hgfedcba)
   GPIO-IN    (P1.6: design_top.gpio is a net concatenation of the header pins)
@@ -293,8 +296,6 @@ def analyze(cfg_id, cfg_text):
             + (" ..." if len(dups) > 4 else ""))
     if nulls:
         add("NULL-PIN", ", ".join(nulls[:4]) + (" ..." if len(nulls) > 4 else ""))
-    if any("," in p for p in pins):
-        add("DIFF-PAIR", ", ".join(sorted(p for p in pins if "," in p)[:3]))
     if any(str(p).startswith("PIN_") for p in pins):
         add("PIN-PREFIX")
 
@@ -330,12 +331,43 @@ def analyze(cfg_id, cfg_text):
     if bgm_dir is not None:
         pp_files = bgm_oracle.preprocess_variant(bgm_dir).files
         bgm_outs, unmodelled = bgm_oracle.pll_outputs(bgm_dir, top_text, pp_files)
-        bgm_set = sorted({round(m, 4) for _n, m, _v in bgm_outs})
+        pix_m = re.search(r"\bpixel_mhz\s*=\s*([0-9.]+)", top_text)
+        bgm_pixel = float(pix_m.group(1)) if pix_m else None
+
+        def pixel_domain(f, ref):
+            """f divided by its integer ratio (1/2/5/10) to the pixel clock."""
+            if ref:
+                k = f / ref
+                for cand in (1, 2, 5, 10):
+                    if abs(k - cand) / cand < 0.05:
+                        return round(f / cand, 4)
+            return round(f, 4)
+
+        # our pixel clock first: a BGM top without a pixel_mhz parameter
+        # (marsohod3gw2) is normalised against it
         try:
-            our_set = sorted(round(sol.f_out, 4) for _n, _r, _v, sol in codegen.plan_clock_tree(resolved))
+            tree = codegen.plan_clock_tree(resolved)
+            our_pixel = next((sol.f_out for n, _r, _v, sol in tree if n == "pixel"), None)
+        except codegen.CodegenError:
+            tree, our_pixel = None, None
+        bgm_pixel_set = {pixel_domain(m, bgm_pixel or our_pixel) for _n, m, _v in bgm_outs}
+        # Gowin's DVI_TX IP hides its serial PLL; when BGM feeds it the board
+        # clock as pixel clock (Tang Nano 4K: `.I_rgb_clk(clk)`) that clock is
+        # BGM's pixel-domain frequency.
+        for inst in bgm_oracle.instantiations(top_text, "DVI_TX_Top"):
+            if dict(inst["ports"]).get("I_rgb_clk", "").strip().lower() in ("clk", "clk_in") and bgm_clk_mhz(top_text):
+                bgm_pixel_set.add(round(bgm_clk_mhz(top_text), 4))
+        bgm_set = sorted(bgm_pixel_set)
+        if tree is not None:
+            our_set = sorted({pixel_domain(sol.f_out, our_pixel) for _n, _r, v, sol in tree if v != "alias"})
             our_note = ""
-        except codegen.CodegenError as exc:
-            our_set, our_note = [], " ({})".format(str(exc).split(": ", 1)[-1][:90])
+        else:
+            try:
+                codegen.plan_clock_tree(resolved)
+                our_note = ""
+            except codegen.CodegenError as exc:
+                our_note = " ({})".format(str(exc).split(": ", 1)[-1][:90])
+            our_set = []
         if unmodelled:
             add("PLL", "BGM {} not modelled by the oracle; ours {} MHz".format(sorted(set(unmodelled)), our_set))
         elif bgm_set != our_set:

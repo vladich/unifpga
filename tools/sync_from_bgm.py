@@ -523,7 +523,7 @@ _SV_MODULES = {
     "inmp441_mic_i2s_receiver_alt":   ("inmp441_i2s_mic", {"lr": "lr", "ws": "ws", "sck": "sck", "sd": "sd"}),
     "digilent_pmod_mic3_spi_receiver": ("pmod_mic3",      {"cs": "cs", "sck": "sclk", "sdo": "miso"}),
 }
-_SV_PERIPHERALS = {pid for pid, _ in _SV_MODULES.values()}
+_SV_PERIPHERALS = {pid for pid, _ in _SV_MODULES.values()} | {"hdmi_tmds"}
 
 _EXPR = re.compile(r"^~?\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[\s*(\d+)\s*\])?$")
 
@@ -549,34 +549,123 @@ def _bgm_signal_pins(vdir):
 
 
 def _pin_to_ref(pinmap):
-    """Reverse map: normalized pin -> bank ref usable in a bind."""
+    """Reverse map: normalized pin -> bank ref usable in a bind. A "P,N" pair
+    entry maps both the pair string and its P pin to the P ref (BGM
+    constrains TMDS either way: `69,68` under Gowin EDA, `69` under yosys)."""
     out = {}
+
+    def put(p, ref):
+        out.setdefault(_norm_pin(p), ref)
+        if "," in str(p):
+            out.setdefault(_norm_pin(str(p).split(",", 1)[0]), ref)
+
     for bank, b in (pinmap.get("pinBanks") or {}).items():
         pins = (b or {}).get("pins")
         if isinstance(pins, str):
-            out.setdefault(_norm_pin(pins), bank)
+            put(pins, bank)
         elif isinstance(pins, list):
             for i, p in enumerate(pins):
                 if p is not None:
-                    out.setdefault(_norm_pin(p), "{}[{}]".format(bank, i))
+                    put(p, "{}[{}]".format(bank, i))
         elif isinstance(pins, dict):
             for sub, v in pins.items():
                 if isinstance(v, list):
                     for i, p in enumerate(v):
                         if p is not None:
-                            out.setdefault(_norm_pin(p), "{}.{}[{}]".format(bank, sub, i))
+                            put(p, "{}.{}[{}]".format(bank, sub, i))
                 elif isinstance(v, str):
-                    out.setdefault(_norm_pin(v), "{}.{}".format(bank, sub))
+                    put(v, "{}.{}".format(bank, sub))
     return out
+
+
+_TMDS_MODULES = ("DVI_TX_Top", "dvi_top", "HDMI", "TMDS_encoder", "hdmi_tmds_out")
+_TMDS_PATTERNS = (
+    # TMDS_CLK_P, O_TMDS_CLK_N, TMDS_0_CLK_P
+    (re.compile(r"^(?:O_)?TMDS(?:_\d)?_(?:CLK|CLOCK)_([PN])$"), False),
+    # TMDS_D_P[0], O_TMDS_DATA_N[2], TMDS_0_D_P[1]
+    (re.compile(r"^(?:O_)?TMDS(?:_\d)?_(?:D|DATA)_([PN])\[(\d+)\]$"), True),
+    # TMDSp_clock / TMDSn_clock (tang_nano_9k_hdmi_no_ip_tm1638)
+    (re.compile(r"^TMDS([PN])_CLOCK$"), False),
+    # TMDSp[0] / TMDSn[2]
+    (re.compile(r"^TMDS([PN])\[(\d+)\]$"), True),
+)
+
+
+def _tmds_signal(key):
+    """(polarity 'p'/'n', index or None) for a BGM TMDS signal name, else None."""
+    for rx, indexed in _TMDS_PATTERNS:
+        m = rx.match(key)
+        if m:
+            return m.group(1).lower(), (int(m.group(2)) if indexed else None)
+    return None
+
+
+def _bgm_tmds_binds(text, sig_pins, rev, pinmap):
+    """hdmi_tmds binds when BGM's active text instantiates a TMDS transmitter:
+    every TMDS_CLK_P / TMDS_D_P[i] (and _N) signal of the constraint files
+    mapped to our pinmap by pin identity. Returns (binds, notes) or None."""
+    if not any(bgm_oracle.instantiations(text, m) for m in _TMDS_MODULES):
+        return None
+    # The Tang Nano 9K shares its TMDS pins with LARGE_LCD colour pins; a TMDS
+    # signal resolves to the HDMI bank when one claims the pin.
+    hdmi_banks = {b: v for b, v in (pinmap.get("pinBanks") or {}).items()
+                  if re.search(r"hdmi|tmds|dvi", b, re.I)}
+    rev_hdmi = _pin_to_ref({"pinBanks": hdmi_banks}) if hdmi_banks else {}
+    found, notes = {}, []
+    for key, pin in sig_pins.items():
+        parsed = _tmds_signal(key)
+        if parsed is None:
+            continue
+        pol, idx = parsed
+        sig = ("clk_" if idx is None else "d_") + pol
+        ref = rev_hdmi.get(pin) or rev.get(pin)
+        if ref is None:
+            notes.append("{}: pin {} is not in the pinmap".format(key, pin))
+            continue
+        if idx is None:
+            found[sig] = ref
+        else:
+            found.setdefault(sig, {})[idx] = ref
+    binds = {}
+    for sig, val in found.items():
+        if isinstance(val, dict):
+            n = max(val) + 1
+            if sorted(val) != list(range(n)):
+                notes.append("{}: BGM constrains bits {} only".format(sig, sorted(val)))
+                continue
+            refs = [val[i] for i in range(n)]
+            # collapse `bank.sub[0..n-1]` into the whole sub-bank
+            m0 = re.match(r"^(.*)\[0\]$", refs[0])
+            if m0 and all(r == "{}[{}]".format(m0.group(1), i) for i, r in enumerate(refs)):
+                binds[sig] = m0.group(1)
+            else:
+                binds[sig] = refs
+        else:
+            binds[sig] = val
+    # N halves BGM leaves to the tool (pair syntax): take them from our pinmap
+    for p_sig, n_sig in (("clk_p", "clk_n"), ("d_p", "d_n")):
+        if p_sig in binds and n_sig not in binds and isinstance(binds[p_sig], str):
+            bank_sub = binds[p_sig].rsplit(".", 1)
+            if len(bank_sub) == 2:
+                bank, sub = bank_sub
+                n_sub = sub[:-2] + "_n" if sub.endswith("_p") else None
+                pins = ((pinmap.get("pinBanks") or {}).get(bank) or {}).get("pins") or {}
+                if n_sub and isinstance(pins, dict) and n_sub in pins:
+                    binds[n_sig] = "{}.{}".format(bank, n_sub)
+    return binds, notes
 
 
 def _bgm_driver_binds(vdir, pinmap):
     """{peripheral id: ({signal: bank ref}, notes)} for every _SV_MODULES module
-    BGM instantiates in this variant's active text."""
+    BGM instantiates in this variant's active text, plus hdmi_tmds when BGM
+    instantiates a TMDS transmitter (binds by pin identity)."""
     text = bgm_oracle.preprocess_variant(vdir).text
     sig_pins = _bgm_signal_pins(vdir)
     rev = _pin_to_ref(pinmap)
     out = {}
+    tmds = _bgm_tmds_binds(text, sig_pins, rev, pinmap)
+    if tmds is not None:
+        out["hdmi_tmds"] = tmds
     for module, (pid, port_map) in _SV_MODULES.items():
         insts = bgm_oracle.instantiations(text, module)
         if not insts or pid in out:
@@ -603,6 +692,31 @@ def _bgm_driver_binds(vdir, pinmap):
                 continue
             binds[sig] = ref
         out[pid] = (binds, notes)
+    return out
+
+
+def _pins_of_ref(pinmap, ref):
+    """Normalized physical pins behind a bind ref (`bank`, `bank.sub`,
+    `bank[i]`, `bank.sub[i]`), both halves of a "P,N" pair."""
+    m = re.match(r"^([A-Za-z_][\w]*)(?:\.([\w]+))?(?:\[(\d+)\])?$", str(ref).strip().strip('"'))
+    if not m:
+        return set()
+    bank, sub, idx = m.group(1), m.group(2), m.group(3)
+    pins = ((pinmap.get("pinBanks") or {}).get(bank) or {}).get("pins")
+    if isinstance(pins, dict):
+        pins = pins.get(sub) if sub else None
+    if pins is None:
+        return set()
+    vals = pins if isinstance(pins, list) else [pins]
+    if idx is not None:
+        i = int(idx)
+        vals = [vals[i]] if i < len(vals) else []
+    out = set()
+    for v in vals:
+        if v is None:
+            continue
+        for half in str(v).split(","):
+            out.add(_norm_pin(half))
     return out
 
 
@@ -702,6 +816,37 @@ def apply_sv_binds(path, dry_run):
             lines[idx:idx] = block
             changes.append("added {} {}".format(pid, binds))
 
+    # 2b. a header passthrough (pmod_12pin) whose pins a derived driver bank
+    #     owns: BGM comments those header pins out (tang_primer_25k_pmod_hdmi
+    #     uses PMOD_0 as the DVI Pmod), so the passthrough goes.
+    driver_pins = set()
+    for pid, (binds, _notes) in derived.items():
+        for ref in binds.values():
+            for one in (ref if isinstance(ref, list) else [ref]):
+                driver_pins.update(_pins_of_ref(pinmap, one))
+    if driver_pins:
+        try:
+            cfg_now = yaml.safe_load("\n".join(lines))["Configuration"]
+        except Exception:
+            cfg_now = cfg
+        for a in cfg_now.get("attach") or []:
+            if a.get("peripheral") != "pmod_12pin":
+                continue
+            ref = (a.get("bind") or {}).get("io")
+            header_pins = _pins_of_ref(pinmap, ref) if isinstance(ref, str) else set()
+            # only when the driver owns the whole header; a partial overlap
+            # (TM1638 on three Pmod pins) is handled bit-wise by codegen
+            if not header_pins or not header_pins <= driver_pins:
+                continue
+            for i, j, _ in reversed(_find_attach_blocks(lines, "pmod_12pin")):
+                if re.search(r":\s*\"?%s\b" % re.escape(ref), "\n".join(lines[i:j])):
+                    del lines[i:j]
+                    changes.append("removed pmod_12pin on {} (its pins carry {} in BGM)".format(
+                        ref, ", ".join(sorted(pid for pid, (b, _n) in derived.items()
+                                              if any(_pins_of_ref(pinmap, r) & _pins_of_ref(pinmap, ref)
+                                                     for v in b.values() for r in (v if isinstance(v, list) else [v]))))))
+                    break
+
     # 3. a plain input passthrough (buttons/switches) sharing a pin with a
     #    driver peripheral: BGM's variant gives the pin to the module.
     text = "\n".join(lines)
@@ -712,7 +857,12 @@ def apply_sv_binds(path, dry_run):
     resolved = None
     try:
         peripherals = config_init.read_peripherals()
-        fake = {"configuration": cfg2, "board_pinmap": pinmap, "toolchain": {"Id": cfg2["toolchain"]},
+        try:
+            board = config_init.resolve_configuration(cfg2["id"])["board"]
+        except Exception:
+            board = {}
+        fake = {"configuration": cfg2, "board": board, "board_pinmap": pinmap,
+                "toolchain": {"Id": cfg2["toolchain"]},
                 "peripherals": [{"peripheral_id": a["peripheral"], "peripheral": peripherals[a["peripheral"]],
                                  "params": a.get("params") or {}, "bind": a.get("bind") or {}}
                                 for a in cfg2.get("attach") or []]}
@@ -967,7 +1117,51 @@ def apply_clock_tree(path, dry_run):
 
     # 2. pixel clock frequency
     outs, unmodelled = bgm_oracle.pll_outputs(vdir, t, pp.files)
-    if "pixel" in declared:
+    if "serial" in declared and not unmodelled:
+        # HDMI: BGM's serial clock is 5x (DVI_TX IP, DDR) or 10x (dvi_top,
+        # SDR) the pixel clock; ours is always 10x, so copy the pixel clock,
+        # not the serial one. 124.875 MHz on the Tang Nano 20K -> 24.975 MHz
+        # pixel -> serial 249.75 MHz here.
+        serial_outs = [o for o in outs if re.search(r"serial|x5|TMDS", o[0], re.I)]
+        pix_param = re.search(r"\bpixel_mhz\s*=\s*([0-9.]+)", t)
+        bgm_pixel = bgm_serial = ratio = None
+        if len(serial_outs) == 1:
+            bgm_serial = serial_outs[0][1]
+            if pix_param:
+                ratio = int(round(bgm_serial / float(pix_param.group(1))))
+            else:
+                # no pixel_mhz parameter (marsohod3gw2): 5x (DDR) or 10x (SDR),
+                # whichever gives a VGA-class pixel clock
+                ratio = next((k for k in (5, 10) if 20.0 <= bgm_serial / k <= 40.0), 0)
+            if ratio in (5, 10):
+                bgm_pixel = bgm_serial / ratio
+        elif not serial_outs:
+            # No PLL in the top (Tang Nano 4K: the DVI_TX IP makes its own
+            # serial clock) and the pixel clock is the board clock itself.
+            for inst in bgm_oracle.instantiations(t, "DVI_TX_Top"):
+                if dict(inst["ports"]).get("I_rgb_clk", "").strip().lower() in ("clk", "clk_in"):
+                    bgm_pixel, bgm_serial, ratio = bgm_oracle.clk_mhz(t), None, None
+        if bgm_pixel is not None:
+            if True:
+                for a in declared["serial"]:
+                    pid = a["peripheral_id"]
+                    c = next(c for c in a["peripheral"]["clocks"] if c["name"] == "serial")
+                    div = next((int(c2["divide"]) for c2 in a["peripheral"]["clocks"]
+                                if c2.get("from") == "serial"), 10)
+                    want = round(bgm_pixel * div, 6)
+                    if abs(want - float(c["mhz"])) > 1e-6:
+                        if _set_attach_param(lines, pid, None, "clock_serial_mhz", "{:g}".format(want)):
+                            changes.append("{}: clock_serial_mhz = {:g} (BGM pixel {:g} MHz{})".format(
+                                pid, want, bgm_pixel,
+                                " = serial {:g} / {}".format(bgm_serial, ratio) if bgm_serial else " = the board clock"))
+                    elif _del_attach_param(lines, pid, "clock_serial_mhz"):
+                        changes.append("{}: drop clock_serial_mhz (BGM pixel {:g} MHz = default)".format(pid, bgm_pixel))
+        elif bgm_serial is not None:
+            changes.append("WARNING: BGM serial clock {:g} MHz has no 5x/10x pixel clock; not copied".format(bgm_serial))
+    if "pixel" in declared and declared["pixel"][0]["peripheral"].get("clocks") and \
+            any(c.get("from") for a in declared["pixel"] for c in a["peripheral"]["clocks"] if c["name"] == "pixel"):
+        pass                                # derived pixel clock: handled through `serial`
+    elif "pixel" in declared:
         size = bgm_oracle.screen_size(t)
         plans = codegen.build_capability_plans(resolved)
         ours = (plans["screen"].params.get("width"), plans["screen"].params.get("height"))

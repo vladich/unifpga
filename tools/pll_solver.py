@@ -113,3 +113,59 @@ if __name__ == "__main__":
     f_in, f_out = float(sys.argv[1]), float(sys.argv[2])
     print("gowin rPLL:", gowin_rpll(f_in, f_out))
     print("iCE40:", ice40_pll(f_in, f_out))
+
+
+# ---------------------------------------------------------------------------
+# Xilinx 7-series MMCM (MMCME2_BASE), several outputs from one VCO
+# ---------------------------------------------------------------------------
+
+MMCM_PFD_MIN, MMCM_PFD_MAX = 10.0, 450.0
+MMCM_VCO_MIN, MMCM_VCO_MAX = 600.0, 1200.0     # -1 speed grade (the tightest)
+MMCM_DIVCLK_MAX = 106
+MMCM_MULT_MIN, MMCM_MULT_MAX = 2, 64
+MMCM_ODIV_MAX = 128
+
+XilinxMMCM = namedtuple("XilinxMMCM", "divclk mult odivs f_pfd f_vco f_outs errors")
+
+
+def xilinx_mmcm(f_in, f_outs, tolerance_pct=0.5):
+    """Integer DIVCLK_DIVIDE / CLKFBOUT_MULT_F and one integer CLKOUTn_DIVIDE
+    per requested output (up to 3), all from one VCO. Prefers exact outputs,
+    then the highest VCO (lowest jitter), then the smallest divider set.
+    Returns XilinxMMCM or None."""
+    if not f_outs or len(f_outs) > 3:
+        return None
+    best = None
+    for divclk in range(1, MMCM_DIVCLK_MAX + 1):
+        f_pfd = f_in / divclk
+        if f_pfd < MMCM_PFD_MIN:
+            break
+        if f_pfd > MMCM_PFD_MAX:
+            continue
+        for mult in range(MMCM_MULT_MIN, MMCM_MULT_MAX + 1):
+            f_vco = f_pfd * mult
+            if f_vco < MMCM_VCO_MIN:
+                continue
+            if f_vco > MMCM_VCO_MAX:
+                break
+            odivs, outs, errs = [], [], []
+            ok = True
+            for f_out in f_outs:
+                odiv = int(round(f_vco / f_out))
+                if odiv < 1 or odiv > MMCM_ODIV_MAX:
+                    ok = False
+                    break
+                f = f_vco / odiv
+                err = abs(f - f_out) / f_out * 100.0
+                if err > tolerance_pct:
+                    ok = False
+                    break
+                odivs.append(odiv)
+                outs.append(f)
+                errs.append(err)
+            if not ok:
+                continue
+            key = (round(max(errs), 9), -round(f_vco, 6), divclk + mult)
+            if best is None or key < best[0]:
+                best = (key, XilinxMMCM(divclk, mult, tuple(odivs), f_pfd, f_vco, tuple(outs), tuple(errs)))
+    return best[1] if best else None

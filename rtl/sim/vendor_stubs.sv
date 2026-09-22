@@ -112,4 +112,77 @@ module SB_PLL40_PAD
               .RESETB(RESETB), .BYPASS(BYPASS), .LOCK(LOCK));
 endmodule
 
+
+// ---- differential output buffers -------------------------------------------
+
+module TLVDS_OBUF (input I, output O, output OB);
+    assign O = I; assign OB = ~I;
+endmodule
+
+module ELVDS_OBUF (input I, output O, output OB);
+    assign O = I; assign OB = ~I;
+endmodule
+
+module OBUFDS # (parameter IOSTANDARD = "DEFAULT", parameter SLEW = "SLOW")
+    (input I, output O, output OB);
+    assign O = I; assign OB = ~I;
+endmodule
+
+
+// ---- Gowin clock dividers ---------------------------------------------------
+
+module CLKDIV2 (input HCLKIN, input RESETN, output reg CLKOUT);
+    initial CLKOUT = 0;
+    always @(posedge HCLKIN or negedge RESETN)
+        if (!RESETN) CLKOUT <= 0; else CLKOUT <= ~CLKOUT;
+endmodule
+
+module CLKDIV # (parameter DIV_MODE = "2", parameter GSREN = "false")
+    (input HCLKIN, input RESETN, input CALIB, output reg CLKOUT);
+    localparam integer N = (DIV_MODE == "8") ? 8 : (DIV_MODE == "5") ? 5 : (DIV_MODE == "4") ? 4 : 2;
+    integer cnt = 0;
+    initial CLKOUT = 0;
+    always @(posedge HCLKIN or negedge RESETN)
+        if (!RESETN) begin cnt <= 0; CLKOUT <= 0; end
+        else begin
+            cnt <= (cnt == N - 1) ? 0 : cnt + 1;
+            CLKOUT <= (cnt < N / 2) ? 1'b1 : 1'b0;   // N odd: high for (N+1)/2 cycles
+        end
+endmodule
+
+
+// ---- Xilinx MMCM + BUFG -----------------------------------------------------
+
+module BUFG (input I, output O);
+    assign O = I;
+endmodule
+
+module MMCME2_BASE
+# (
+    parameter BANDWIDTH = "OPTIMIZED", parameter real CLKIN1_PERIOD = 20.0,
+    parameter integer DIVCLK_DIVIDE = 1, parameter real CLKFBOUT_MULT_F = 20.0, parameter real CLKFBOUT_PHASE = 0.0,
+    parameter real CLKOUT0_DIVIDE_F = 4.0,
+    parameter integer CLKOUT1_DIVIDE = 1, CLKOUT2_DIVIDE = 1, CLKOUT3_DIVIDE = 1,
+    parameter integer CLKOUT4_DIVIDE = 1, CLKOUT5_DIVIDE = 1, CLKOUT6_DIVIDE = 1,
+    parameter real CLKOUT0_DUTY_CYCLE = 0.5, CLKOUT1_DUTY_CYCLE = 0.5, CLKOUT2_DUTY_CYCLE = 0.5,
+    parameter real CLKOUT0_PHASE = 0.0, CLKOUT1_PHASE = 0.0, CLKOUT2_PHASE = 0.0,
+    parameter CLKOUT4_CASCADE = "FALSE", parameter real REF_JITTER1 = 0.010, parameter STARTUP_WAIT = "FALSE"
+)
+(
+    input CLKIN1, input CLKFBIN, output CLKFBOUT, output CLKFBOUTB,
+    output reg CLKOUT0, output CLKOUT0B, output reg CLKOUT1, output CLKOUT1B,
+    output reg CLKOUT2, output CLKOUT2B, output CLKOUT3, output CLKOUT3B,
+    output CLKOUT4, output CLKOUT5, output CLKOUT6,
+    output reg LOCKED, input PWRDWN, input RST
+);
+    real t_vco;
+    initial begin CLKOUT0 = 0; CLKOUT1 = 0; CLKOUT2 = 0; LOCKED = 0; end
+    initial t_vco = CLKIN1_PERIOD * DIVCLK_DIVIDE / CLKFBOUT_MULT_F;
+    always #(t_vco * CLKOUT0_DIVIDE_F / 2.0) CLKOUT0 = ~CLKOUT0;
+    always #(t_vco * CLKOUT1_DIVIDE   / 2.0) CLKOUT1 = ~CLKOUT1;
+    always #(t_vco * CLKOUT2_DIVIDE   / 2.0) CLKOUT2 = ~CLKOUT2;
+    assign CLKFBOUT = CLKIN1;
+    initial #(CLKIN1_PERIOD * 16) LOCKED = 1;
+endmodule
+
 `endif

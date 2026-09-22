@@ -192,7 +192,7 @@ def preprocess_variant(vdir, defines=None, full_lab=True):
 
 _CLK_MHZ = re.compile(r"\bclk_mhz\s*=\s*([0-9.]+)")
 _RST = re.compile(r"\b(?:wire\s+rst|assign\s+rst)\s*=\s*([^;]+);")
-_PLL = re.compile(r"\b(Gowin_rPLL|Gowin_PLL|clk_wiz\w*|SB_PLL40_\w+|altpll|MMCME2_BASE|PLLE2_BASE|EHXPLLL)\b")
+_PLL = re.compile(r"\b(Gowin_rPLL(?:_\w+)?|Gowin_PLL|rPLL|clk_wiz\w*|SB_PLL40_\w+|altpll|MMCME2_BASE|PLLE2_BASE|EHXPLLL)\b")
 _MHZ_COMMENT = re.compile(r"//\s*([0-9]+(?:\.[0-9]+)?)\s*MHz", re.IGNORECASE)
 # `Module inst (`  |  `Module # ( ... ) inst (`  — the instance name is followed
 # by `(` and then a newline or a `.port` connection.
@@ -449,7 +449,7 @@ def _tcl_candidates(vdir):
 # ---------------------------------------------------------------------------
 
 _DEFPARAM = re.compile(r"defparam\s+\w+\.(\w+)\s*=\s*([^;]+);")
-_PLL_MODELLED = ("Gowin_rPLL", "SB_PLL40_PAD", "SB_PLL40_CORE")
+_PLL_MODELLED = ("Gowin_rPLL", "SB_PLL40_PAD", "SB_PLL40_CORE", "rPLL")
 
 
 def _pll_wrapper_files(vdir, files, names):
@@ -471,12 +471,12 @@ def _pll_wrapper_files(vdir, files, names):
     return out
 
 
-def rpll_settings(vdir, files=None):
+def rpll_settings(vdir, files=None, filename="gowin_rpll.v"):
     """Gowin rPLL dividers from the variant's gowin_rpll.v: {"FCLKIN",
     "IDIV_SEL", "FBDIV_SEL", "ODIV_SEL", "DYN_SDIV_SEL", "DEVICE", "file"}
     or None. CLKOUT = FCLKIN / (IDIV_SEL + 1) * (FBDIV_SEL + 1);
     CLKOUTD = CLKOUT / DYN_SDIV_SEL."""
-    for cand in _pll_wrapper_files(vdir, files, ("gowin_rpll.v",)):
+    for cand in _pll_wrapper_files(vdir, files, (filename,)):
         with open(cand, encoding="utf-8", errors="replace") as f:
             vals = {k: v.strip().strip('"') for k, v in _DEFPARAM.findall(f.read())}
         if "IDIV_SEL" in vals and "FBDIV_SEL" in vals:
@@ -499,13 +499,22 @@ def _vlit(s):
     return int(s)
 
 
+_DECL_LINE = re.compile(r"^\s*(?:wire|logic|reg)\b", re.M)
+
+
 def _net_used(text, net, ports):
-    """A PLL output is 'used' when it is a top port or appears beyond its wire
-    declaration and the PLL connection (`high_clk` on the Tang Nano 20K alt
-    variant is connected but dead)."""
+    """A PLL output is 'used' when it is a top port or appears in at least
+    two non-declaration places (the PLL connection plus one consumer):
+    `high_clk` on the Tang Nano 20K alt variant is connected but dead,
+    a7_lite_35t's implicit `serial_clk` net is connected and consumed."""
     if net in ports:
         return True
-    return len(re.findall(r"(?<![A-Za-z0-9_])%s(?![A-Za-z0-9_])" % re.escape(net), text)) >= 3
+    uses = 0
+    for line in text.splitlines():
+        if _DECL_LINE.match(line):
+            continue
+        uses += len(re.findall(r"(?<![A-Za-z0-9_])%s(?![A-Za-z0-9_])" % re.escape(net), line))
+    return uses >= 2
 
 
 def pll_outputs(vdir, text, files=None):
@@ -516,19 +525,67 @@ def pll_outputs(vdir, text, files=None):
     (GW5 Gowin_PLL, Xilinx clk_wiz, altpll, ...) and rPLLs without a wrapper file."""
     ports = top_ports(text)
     outs, unmodelled = [], []
-    for inst in instantiations(text, "Gowin_rPLL"):
-        st = rpll_settings(vdir, files)
-        if st is None:
-            unmodelled.append("Gowin_rPLL(no gowin_rpll.v)")
+    # Gowin_rPLL wrappers (gowin_rpll.v), including BGM's suffixed ones
+    # (Gowin_rPLL_250 / gowin_rpll_250.v on tang_nano_9k_hdmi_no_ip_tm1638).
+    # A wrapper clocked from another PLL's output (directly or through a
+    # BUFG) runs at that output's real frequency, not at its FCLKIN string.
+    aliases = {o: i for i, o in re.findall(r"\bBUFG\s+\w+\s*\(\s*\.I\s*\(\s*(\w+)\s*\)\s*,\s*\.O\s*\(\s*(\w+)\s*\)", text)}
+    pending = []
+    for wrapper in sorted(set(re.findall(r"\bGowin_rPLL(_\w+)?\b", text))):
+        module = "Gowin_rPLL" + (wrapper or "")
+        for inst in instantiations(text, module):
+            st = rpll_settings(vdir, files, "gowin_rpll{}.v".format((wrapper or "").lower()))
+            if st is None:
+                unmodelled.append("{}(no gowin_rpll{}.v)".format(module, (wrapper or "").lower()))
+                continue
+            clkin = dict(inst["ports"]).get("clkin", "")
+            pending.append((inst, st, aliases.get(clkin, clkin)))
+    known = {}
+    progress = True
+    while pending and progress:
+        progress = False
+        for item in list(pending):
+            inst, st, clkin = item
+            if clkin in known:
+                fin = known[clkin]
+            elif any(clkin == other_in for _i, _s, other_in in pending if _i is not inst) or \
+                    any(clkin == o_net for o_net in _pending_outputs(pending, inst)):
+                continue            # wait for the feeding PLL
+            else:
+                fin = st["FCLKIN"]
+            f_clkout = fin / (st["IDIV_SEL"] + 1) * (st["FBDIV_SEL"] + 1)
+            for port, expr in inst["ports"]:
+                if not expr:
+                    continue
+                f = f_clkout if port == "clkout" else f_clkout / st["DYN_SDIV_SEL"] if port == "clkoutd" else None
+                if f is None:
+                    continue
+                known[expr] = f
+                for alias_out, alias_in in aliases.items():
+                    if alias_in == expr:
+                        known[alias_out] = f
+                if _net_used(text, expr, ports):
+                    outs.append((expr, f, port))
+            pending.remove(item)
+            progress = True
+    # the raw rPLL primitive with inline parameters (BGM _yosys variants)
+    for inst in instantiations(text, "rPLL"):
+        params = dict(inst["params"])
+        try:
+            fclkin = float(params.get("FCLKIN", '"27"').strip('"'))
+            idiv, fbdiv = int(params.get("IDIV_SEL", "0")), int(params.get("FBDIV_SEL", "0"))
+            sdiv = int(params.get("DYN_SDIV_SEL", "2"))
+        except ValueError:
+            unmodelled.append("rPLL(params)")
             continue
-        f_clkout = st["FCLKIN"] / (st["IDIV_SEL"] + 1) * (st["FBDIV_SEL"] + 1)
+        f_clkout = fclkin / (idiv + 1) * (fbdiv + 1)
         for port, expr in inst["ports"]:
             if not expr or not _net_used(text, expr, ports):
                 continue
-            if port == "clkout":
+            if port == "CLKOUT":
                 outs.append((expr, f_clkout, "clkout"))
-            elif port == "clkoutd":
-                outs.append((expr, f_clkout / st["DYN_SDIV_SEL"], "clkoutd"))
+            elif port == "CLKOUTD":
+                outs.append((expr, f_clkout / sdiv, "clkoutd"))
     fin = clk_mhz(text)
     for mod in ("SB_PLL40_PAD", "SB_PLL40_CORE"):
         for inst in instantiations(text, mod):
@@ -545,10 +602,61 @@ def pll_outputs(vdir, text, files=None):
             for port, expr in inst["ports"]:
                 if port in ("PLLOUTCORE", "PLLOUTGLOBAL") and expr:
                     outs.append((expr, f, mod))
+    # Xilinx clk_wiz: MMCME2_ADV parameters in the generated clk_wiz_clk_wiz.v,
+    # wrapper ports clk_out1..3 = CLKOUT0..2 (a7_lite_35t: 250 / 50 / 25 MHz)
+    wiz_done = False
+    for inst in instantiations(text, "clk_wiz"):
+        st = clk_wiz_settings(vdir, files)
+        if st is None:
+            unmodelled.append("clk_wiz(no clk_wiz_clk_wiz.v)")
+            continue
+        f_vco = st["f_in"] / st["DIVCLK_DIVIDE"] * st["CLKFBOUT_MULT_F"]
+        for port, expr in inst["ports"]:
+            m = re.match(r"^clk_out(\d)$", port)
+            if not m or not expr:
+                continue
+            div = st["outputs"].get(int(m.group(1)) - 1)
+            if div and _net_used(text, expr, ports):
+                outs.append((expr, f_vco / div, port))
+        wiz_done = True
     for name in sorted(set(pll_instances(text))):
-        if name not in _PLL_MODELLED:
+        if name not in _PLL_MODELLED and not name.startswith("Gowin_rPLL_") and not (
+                wiz_done and name.startswith("clk_wiz")):
             unmodelled.append(name)
     return outs, unmodelled
+
+
+_WIZ_PARAM = re.compile(r"\.(CLKIN1_PERIOD|DIVCLK_DIVIDE|CLKFBOUT_MULT_F|CLKOUT0_DIVIDE_F|CLKOUT([1-6])_DIVIDE)\s*\(\s*([0-9.]+)\s*\)")
+
+
+def clk_wiz_settings(vdir, files=None):
+    """MMCM settings of a Vivado clk_wiz core: {"f_in", "DIVCLK_DIVIDE",
+    "CLKFBOUT_MULT_F", "outputs": {index: divide}} or None."""
+    for cand in _pll_wrapper_files(vdir, files, ("clk_wiz_clk_wiz.v",)):
+        with open(cand, encoding="utf-8", errors="replace") as f:
+            body = f.read()
+        vals, outs = {}, {}
+        for name, idx, val in _WIZ_PARAM.findall(body):
+            if name == "CLKOUT0_DIVIDE_F":
+                outs[0] = float(val)
+            elif idx:
+                outs[int(idx)] = float(val)
+            else:
+                vals[name] = float(val)
+        if "CLKIN1_PERIOD" in vals and "CLKFBOUT_MULT_F" in vals and outs:
+            return {"f_in": 1000.0 / vals["CLKIN1_PERIOD"], "DIVCLK_DIVIDE": vals.get("DIVCLK_DIVIDE", 1.0),
+                    "CLKFBOUT_MULT_F": vals["CLKFBOUT_MULT_F"], "outputs": outs, "file": cand}
+    return None
+
+
+
+def _pending_outputs(pending, skip):
+    for inst, _st, _in in pending:
+        if inst is skip:
+            continue
+        for port, expr in inst["ports"]:
+            if port in ("clkout", "clkoutd") and expr:
+                yield expr
 
 
 def lab_clock_source(text):

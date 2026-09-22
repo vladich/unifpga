@@ -125,9 +125,9 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
                 files.append(full)
                 seen.add(full)
 
-    # PLL wrappers (rtl/pll) the generated top instantiates for peripheral
-    # clocks (`clocks:` in the peripheral contract, P3.1).
-    for full in codegen.pll_source_paths(repo, generated_top):
+    # Clock-tree wrappers (rtl/pll) the generated top instantiates and the
+    # drivers' extra `files:` (P3.1 / P3.2).
+    for full in codegen.pll_source_paths(repo, generated_top, peripherals):
         if full not in seen:
             files.append(full)
             seen.add(full)
