@@ -15,10 +15,12 @@ Board:
 
   pinBanks:
     clk: { pins: "23", frequency_mhz: 50 }
-    cpu_reset: { pins: "25" }
+    cpu_reset: { pins: "25", active: low }
     onboard_buttons:
+      active: low
       pins: ["91", "90", "89", "88"]
     onboard_leds:
+      active: low
       pins: ["84", "85", "86", "87"]
     onboard_7seg:
       pins:

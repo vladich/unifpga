@@ -18,6 +18,7 @@ Board:
       pins:
         rx: M9
     onboard_buttons:
+      active: low
       pins: [P11, P12, Y15, Y16]
     cpu_resetn: { pins: AB24 }
     onboard_switches:

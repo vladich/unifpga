@@ -10,6 +10,13 @@ Board:
     family: AroraV/GW5AST
     part: GW5AT-LV138PG484AC1/I0
 
+  # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):
+  # set_device args verbatim (part, -name, -device_version) and the
+  # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  toolchain_options:
+    gowin:
+      set_device: "GW5AT-LV138PG484AC1/I0 -name GW5AT-138B -device_version B"
+      options: [use_cpu_as_gpio, use_sspi_as_gpio]
   pinBanks:
     clk: { pins: V18, frequency_mhz: 25 }
     onboard_leds:
@@ -21,6 +28,7 @@ Board:
     onboard_switches:
       pins: [U18, U17, W17, V17, AA19, AA18, AB18, AB20, V10, AB12, W10, AA11, AA10, AB11, AA9, AB10]
     onboard_buttons:
+      active: low
       pins: [V20, W19, W20, W21]
     onboard_7seg:
       pins:

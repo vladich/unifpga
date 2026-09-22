@@ -15,6 +15,7 @@ Board:
 
   pinBanks:
     onboard_buttons:
+      active: low
       pins: [AE9, AE12, AD9, AD11]
       overrides:
         AE9: 3.3-V LVTTL

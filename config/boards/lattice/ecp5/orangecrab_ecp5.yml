@@ -14,8 +14,10 @@ Board:
   pinBanks:
     clk: { pins: A9, frequency_mhz: 48 }
     onboard_leds:
+      active: low
       pins: [K4, M3, J3]
     onboard_buttons:
+      active: low
       pins: [J17, V17]
       overrides:
         J17: SSTL135_I

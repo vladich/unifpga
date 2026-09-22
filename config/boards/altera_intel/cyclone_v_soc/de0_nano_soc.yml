@@ -16,6 +16,7 @@ Board:
   pinBanks:
     fpga_clk1_50mhz: { pins: V11, frequency_mhz: 50 }
     onboard_buttons:
+      active: low
       pins: [AH17, AH16]
     onboard_switches:
       pins: [L10, L9, H6, H5]

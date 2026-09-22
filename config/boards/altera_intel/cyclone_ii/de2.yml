@@ -17,6 +17,7 @@ Board:
         tx: B25
         rx: C25
     onboard_buttons:
+      active: low
       pins: [G26, N23, P23, W26]
     onboard_leds:
       pins: [AE23, AF23, AB21, AC22, AD22, AD23, AD21, AC21, AA14, Y13, AA13, AC14, AD15, AE15, AF13, AE13, AE12, AD12]

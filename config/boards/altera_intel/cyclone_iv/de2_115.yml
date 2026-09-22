@@ -15,6 +15,7 @@ Board:
   pinBanks:
     clk50mhz: { pins: Y2, frequency_mhz: 50 }
     onboard_buttons:
+      active: low
       pins: [M23, M21, N21, R24]
     onboard_switches:
       pins: [AB28, AC28, AC27, AD27, AB27, AC26, AD26, AB26, AC25, AB25, AC24, AB24, AB23, AA24, AA23, AA22, Y24, Y23]

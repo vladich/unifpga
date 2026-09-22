@@ -13,11 +13,13 @@ Board:
 
   pinBanks:
     clk: { pins: "12", frequency_mhz: 50 }
-    cpu_resetn: { pins: "41" }
+    cpu_resetn: { pins: "41", active: low }
     onboard_leds:
+      active: low
       index_origin: 1
       pins: ["67", "66", "61", "58", "57", "56", "55", "54"]
     onboard_buttons:
+      active: low
       index_origin: 1
       pins: ["53", "52", "51", "50", "43", "42"]
     onboard_7seg:

@@ -11,9 +11,17 @@ Board:
     family: LittleBee/GW1NSR
     part: GW1NSR-LV4C
 
+  # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):
+  # set_device args verbatim (part, -name, -device_version) and the
+  # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  toolchain_options:
+    gowin:
+      set_device: "GW1NSR-LV4CQN48PC6/I5 -name GW1NSR-4 -device_version \"\""
+      options: [use_done_as_gpio, use_mspi_as_gpio]
   pinBanks:
     clk: { pins: "45", frequency_mhz: 27 }
     onboard_buttons:
+      active: low
       pins: ["15", "14"]
     onboard_led: { pins: "10" }
     onboard_serial_flash:

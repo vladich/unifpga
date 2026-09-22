@@ -9,8 +9,10 @@ Board:
       frequency_mhz: 50
       pins: PIN_E1
     cpu_resetn:
+      active: low
       pins: PIN_N13
     onboard_buttons:
+      active: low
       pins: [PIN_N13, PIN_M15, PIN_M16, PIN_E16]
     onboard_leds:
       pins: [PIN_E10, PIN_F9, PIN_C9, PIN_D9]

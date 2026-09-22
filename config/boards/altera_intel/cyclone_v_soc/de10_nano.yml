@@ -29,6 +29,7 @@ Board:
         int: AF11
         vs: V13
     onboard_buttons:
+      active: low
       pins: [AH17, AH16]
     onboard_switches:
       pins: [Y24, W24, W21, W20]

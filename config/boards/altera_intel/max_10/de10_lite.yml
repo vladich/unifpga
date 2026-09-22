@@ -16,6 +16,7 @@ Board:
   pinBanks:
     clk50mhz: { pins: P11, frequency_mhz: 50 }
     onboard_buttons:
+      active: low
       pins: [B8, A7]
       overrides:
         B8: 3.3 V Schmitt Trigger

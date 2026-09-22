@@ -24,10 +24,13 @@ Board:
         scl: R14
         sda: T15
     onboard_buttons:
+      active: low
       pins: [J14, J16, J15, K16, K15, L15, L16, J13]
     onboard_switches:
+      active: low
       pins: [R16, P15, P16, N15, N16, M12, N14, N13]
     onboard_leds:
+      active: low
       pins: [A5, B5, A4, B4, A3, B3, A2, C3, D15, D16, F15, F16, G15, G16, L13, L14]
     onboard_7seg:
       pins:

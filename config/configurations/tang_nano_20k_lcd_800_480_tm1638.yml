@@ -20,6 +20,7 @@ Configuration:
         clk: clk
     - peripheral: button_array
       params:
+        active: high
         width: 2
       bind:
         btn: onboard_buttons

@@ -24,6 +24,7 @@ Configuration:
         btn: onboard_buttons
     - peripheral: led_bank
       params:
+        mirror: true
         width: 6
       bind:
         led: onboard_leds

@@ -15,8 +15,9 @@ Board:
   pinBanks:
     clk50mhz: { pins: M9, frequency_mhz: 50 }
     onboard_buttons:
+      active: low
       pins: [U7, W9, M7, M6]
-    cpu_resetn: { pins: P22 }
+    cpu_resetn: { pins: P22, active: low }
     onboard_switches:
       pins: [U13, V13, T13, T12, AA15, AB15, AA14, AA13, AB13, AB12]
     onboard_leds:

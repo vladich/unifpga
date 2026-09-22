@@ -17,6 +17,7 @@ Board:
         tx: G12
         rx: F14
     onboard_buttons:
+      active: low
       pins: [R22, R21, T22, T21]
     onboard_leds:
       pins: [R20, R19, U19, Y19, T18, V19, Y18, U18, R18, R17]

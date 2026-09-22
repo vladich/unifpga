@@ -19,17 +19,27 @@ Board:
     family: Arora/GW2A
     part: GW2A-LV18PG256C8/I7
 
+  # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):
+  # set_device args verbatim (part, -name, -device_version) and the
+  # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  toolchain_options:
+    gowin:
+      set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18C -device_version C"
+      options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
   pinBanks:
     clk: { pins: H11, frequency_mhz: 27 }
     onboard_leds:
+      active: low
       pins: [C13, A13, N16, N14, L14, L16]
     onboard_uart:
       pins:
         tx: M11
         rx: T13
     onboard_switches:
+      active: low
       pins: [E9, E8, T4, T5]
     onboard_buttons:
+      active: low
       pins: [T10, T3, T2, D7, C7]
     gpio_3:
       pins: [A11, N6, N9, L9, B11, D11, N7, N8]

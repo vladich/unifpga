@@ -15,10 +15,13 @@ Board:
   pinBanks:
     clk: { pins: "23", frequency_mhz: 50 }
     onboard_buttons:
+      active: low
       pins: ["3", "7", "10", "11"]
     onboard_switches:
+      active: low
       pins: ["34", "33", "32", "31"]
     onboard_leds:
+      active: low
       pins: ["50", "49", "46", "44", "43", "42", "39", "38"]
     onboard_7seg:
       pins:

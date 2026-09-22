@@ -18,6 +18,7 @@ Board:
     clk3_50mhz: { pins: Y26, frequency_mhz: 50 }
     clk4_50mhz: { pins: K14, frequency_mhz: 50 }
     onboard_buttons:
+      active: low
       pins: [AA14, AA15, W15, Y16]
     onboard_switches:
       pins: [AB12, AC12, AF9, AF10, AD11, AD12, AE11, AC9, AD10, AE12]

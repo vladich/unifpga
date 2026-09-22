@@ -16,6 +16,7 @@ Board:
   pinBanks:
     clk50mhz: { pins: R8, frequency_mhz: 50 }
     onboard_buttons:
+      active: low
       pins: [J15, E1]
     onboard_switches:
       pins: [M1, T8, B9, M15]

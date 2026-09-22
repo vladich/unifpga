@@ -14,10 +14,11 @@ Board:
 
   pinBanks:
     clk50mhz: { pins: J19, frequency_mhz: 50 }
-    cpu_resetn: { pins: L18 }
+    cpu_resetn: { pins: L18, active: low }
     onboard_buttons:
       pins: [AA1, W1]
     onboard_leds:
+      active: low
       pins: [M18, N18]
     onboard_uart:
       pins:

@@ -42,7 +42,7 @@ Board:
         cg: L18
         dp: H15
         anodes: [J17, J18, T9, J14, P14, T14, K2, U13]
-    cpu_resetn: { pins: C12 }
+    cpu_resetn: { pins: C12, active: low }
     onboard_buttons:
       pins: [N17, M18, P17, M17, P18]
     pmod_ja:

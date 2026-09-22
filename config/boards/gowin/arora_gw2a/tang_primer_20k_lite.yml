@@ -12,9 +12,17 @@ Board:
   defaults:
     iostandard: LVCMOS33
 
+  # Gowin tool settings from BGM's board_specific.tcl (tools/sync_from_bgm.py --gowin-options):
+  # set_device args verbatim (part, -name, -device_version) and the
+  # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  toolchain_options:
+    gowin:
+      set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18 -device_version C"
+      options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
   pinBanks:
     clk: { pins: H11, frequency_mhz: 27 }
     onboard_switches:
+      active: low
       pins: [C7, D7]
     onboard_buttons:
       pins: [T10, T2]
