@@ -314,7 +314,10 @@ def analyze(cfg_id, cfg_text):
                 if perif["id"] in _SEVEN_SEG_PERIPHERALS:
                     add("SEG-BIND", "{} -> {}".format(sig, ref))
                 else:
-                    add("UNDECL", "{}.{} -> {}".format(perif["id"], sig, ref))
+                    if ((pinmap.get("pinBanks") or {}).get(bank) or {}).get("virtual"):
+                        pass        # virtual clock source (fireant's internal oscillator): no port by design
+                    else:
+                        add("UNDECL", "{}.{} -> {}".format(perif["id"], sig, ref))
         for sig, sdef in sig_defs.items():
             if sig not in bound and not sdef.get("optional"):
                 add("UNBOUND", "{}.{}".format(perif["id"], sig))

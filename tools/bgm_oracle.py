@@ -720,7 +720,8 @@ def _pending_outputs(pending, skip):
 
 
 _ASSIGN_ANY = re.compile(r"\bassign\s+(\{[^}]*\}|[A-Za-z_]\w*(?:\s*\[\s*\d+\s*\])?)\s*=\s*([^;]+);")
-_BUS_NAMES = {"abcdefgh": "seg", "digit": "dig", "lab_digit": "dig"}
+_BUS_NAMES = {"abcdefgh": "seg", "digit": "dig", "lab_digit": "dig", "hgfedcba": "seg"}
+_REVERSED_BUSES = {"hgfedcba"}     # BGM: `SWAP_BITS (hgfedcba, abcdefgh)`: hgfedcba[i] = abcdefgh[7 - i]
 
 
 def seven_seg_map(text):
@@ -747,12 +748,16 @@ def seven_seg_map(text):
     def item(part, inv_outer):
         """One rhs element -> ("bit", kind, bit, inv) | ("bus", kind, inv) | ("const", value)."""
         r = " ".join(part.split())
-        m = re.match(r"^(~?)\s*(abcdefgh|digit|lab_digit)\s*$", r)
+        m = re.match(r"^(~?)\s*(abcdefgh|digit|lab_digit|hgfedcba)\s*$", r)
         if m:
-            return ("bus", _BUS_NAMES[m.group(2)], bool(m.group(1)) != inv_outer)
-        m = re.match(r"^(~?)\s*(abcdefgh|digit|lab_digit)\s*\[\s*(\d+)\s*\]$", r)
+            kind = "busrev" if m.group(2) in _REVERSED_BUSES else "bus"
+            return (kind, _BUS_NAMES[m.group(2)], bool(m.group(1)) != inv_outer)
+        m = re.match(r"^(~?)\s*(abcdefgh|digit|lab_digit|hgfedcba)\s*\[\s*(\d+)\s*\]$", r)
         if m:
-            return ("bit", _BUS_NAMES[m.group(2)], int(m.group(3)), bool(m.group(1)) != inv_outer)
+            bit = int(m.group(3))
+            if m.group(2) in _REVERSED_BUSES:
+                bit = 7 - bit
+            return ("bit", _BUS_NAMES[m.group(2)], bit, bool(m.group(1)) != inv_outer)
         m = re.match(r"^(~?)\s*1'b([01])$", r)
         if m:
             v = int(m.group(2))
@@ -776,10 +781,11 @@ def seven_seg_map(text):
         """Expand LSB-first items over bits 0..w-1 (w known) into `out`."""
         idx = 0
         for it in items:
-            if it[0] == "bus":
+            if it[0] in ("bus", "busrev"):
                 n = w - idx
                 for k in range(n):
-                    out["{}[{}]".format(name, idx + k)] = (it[1], k, it[2])
+                    bit = (n - 1 - k) if it[0] == "busrev" else k
+                    out["{}[{}]".format(name, idx + k)] = (it[1], bit, it[2])
                 idx += n
             elif it[0] == "bit":
                 out["{}[{}]".format(name, idx)] = (it[1], it[2], it[3])
@@ -809,8 +815,10 @@ def seven_seg_map(text):
             names = [x.strip() for x in lhs[1:-1].split(",")]
             names = list(reversed(names))                     # LSB first
             # a single bus item on the rhs spans all the names
-            if len(items) == 1 and items[0][0] == "bus":
-                items = [("bit", items[0][1], k, items[0][2]) for k in range(len(names))]
+            if len(items) == 1 and items[0][0] in ("bus", "busrev"):
+                n = len(names)
+                items = [("bit", items[0][1], (n - 1 - k) if items[0][0] == "busrev" else k, items[0][2])
+                         for k in range(n)]
             if len(items) != len(names):
                 continue
             for name, it in zip(names, items):
