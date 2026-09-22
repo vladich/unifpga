@@ -23,6 +23,8 @@ Peripheral:
   driver:
     module: dvi_pmod_ddr_24b
     file: rtl/peripherals/dvi_pmod_ddr_24b.sv
+    files:
+      - rtl/peripherals/vga.sv          # the raster generator the Pmod driver instantiates
     parameters:
       clk_mhz:   25
       pixel_mhz: 25

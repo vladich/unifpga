@@ -1297,6 +1297,69 @@ def _attach_for_port(cfg, pinmap, sig_pins, port):
     return None
 
 
+def _source_bits(port, rng, sig_pins, params):
+    """LSB-first BGM port bits `PORT[i]` (upper-case keys of sig_pins) of a
+    lab source: a whole port (width from the top's parameters when the
+    constraint file names more bits than the port has), a slice, or a
+    concatenation (last element = LSB)."""
+    ports = port if isinstance(port, list) else [port]
+    out = []
+    for name in reversed(ports):
+        up = name.upper()
+        keys = sorted((k for k in sig_pins if k.split("[", 1)[0] == up),
+                      key=lambda k: int(k[k.index("[") + 1:-1]) if "[" in k else -1)
+        if keys == [up]:
+            out.append(up)
+            continue
+        idxs = [int(k[k.index("[") + 1:-1]) for k in keys if "[" in k]
+        if not idxs:
+            continue
+        w = params.get("w_" + name.lower()) if isinstance(port, str) else None
+        lo, hi = rng if (rng and isinstance(port, str)) else (0, (w - 1) if w else max(idxs))
+        for i in range(lo, hi + 1):
+            out.append("{}[{}]".format(up, i))
+    return out
+
+
+def _provider_pin_bits(resolved, pinmap, plans, cap):
+    """{norm pin: (provider index, provider bit)} over the board (driver-less)
+    providers of `cap`, in their bind order."""
+    from tools import codegen
+    out = {}
+    for pidx, perif, _p in plans[cap].providers:
+        if perif.get("id") == _TM_PID:
+            continue
+        attach = resolved["peripherals"][pidx]
+        sig = next((sg["name"] for sg in perif.get("signals", []) if sg.get("type") == "bus"), None)
+        ref = (attach.get("bind") or {}).get(sig) if sig else None
+        if ref is None:
+            continue
+        refs = ref if isinstance(ref, list) else [ref]
+        pins = []
+        for one in refs:
+            pins.extend(_ref_pins_in_order(pinmap, one))
+        if codegen._peripheral_mirror(attach, pinmap):
+            pins = list(reversed(pins))         # bank bit i is provider bit w-1-i
+        for bit, pin in enumerate(pins):
+            out.setdefault(pin, (pidx, bit))
+    return out
+
+
+def _ref_pins_in_order(pinmap, ref):
+    parts = _split_ref(ref)
+    if parts is None:
+        return []
+    bank, sub, idx = parts
+    vals = ((pinmap.get("pinBanks") or {}).get(bank) or {}).get("pins")
+    if isinstance(vals, dict):
+        vals = vals.get(sub) if sub else None
+    if isinstance(vals, list):
+        vals = vals if idx is None else [vals[idx]]
+    else:
+        vals = [vals]
+    return [sy._norm_pin(str(v).split(",")[0]) for v in vals if v is not None]
+
+
 def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     """{attach_index: {cap: [bits] or None-to-remove}} — the composition of
     the lab buses this configuration must have."""
@@ -1324,9 +1387,15 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
             notes.append("sw: BGM feeds the lab's sw from {} but no button_array owns it".format(port))
             return False
         w = int((attaches[idx].get("params") or {}).get("width") or 1)
-        lo, hi = rng if rng else (0, w - 1)
         param_changes.setdefault(idx, {})["as_switches"] = True
-        wanted[idx]["switches"] = [target_lo + (i - lo) if lo <= i <= hi else None for i in range(w)]
+        by_pin = _provider_pin_bits(resolved, pinmap, plans, "buttons")
+        bits = [None] * w
+        for lab, key in enumerate(_source_bits(port, rng, sig_pins, params)):
+            pin = sy._norm_pin(str(sig_pins.get(key, "")).split(",")[0]) if key in sig_pins else None
+            hit = by_pin.get(pin) if pin else None
+            if hit and hit[0] == idx and hit[1] < w:
+                bits[hit[1]] = target_lo + lab
+        wanted[idx]["switches"] = bits
         return True
 
     def board_providers(cap):
@@ -1412,26 +1481,37 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
             if not board:
                 notes.append("{}: BGM feeds the lab from {} but no board provider of {} is attached".format(lab_port, port, cap))
                 continue
-            if rng is None and not has_tm:
+            # BGM's source bits, LSB first, mapped onto our providers' bits by
+            # pin: a whole port, a slice (`SW [w_lab_sw - 1:0]`), a subset or a
+            # concatenation (`{ KEY2, KEY3, KEY4 }`, icebreaker's three of four
+            # buttons); bits BGM does not read get no lab bit
+            src_bits = _source_bits(port, rng, sig_pins, params)
+            by_pin = _provider_pin_bits(resolved, pinmap, plans, cap)
+            mapping = {pidx: [None] * w for pidx, w in board}
+            unmatched = []
+            for lab, key in enumerate(src_bits):
+                pin = sy._norm_pin(str(sig_pins.get(key, "")).split(",")[0]) if key in sig_pins else None
+                hit = by_pin.get(pin) if pin else None
+                if hit is None:
+                    unmatched.append(key)
+                    continue
+                pidx, bit = hit
+                if bit < len(mapping[pidx]):
+                    mapping[pidx][bit] = lab
+            if unmatched:
+                notes.append("{}: BGM reads {} on pins no {} provider covers".format(lab_port, unmatched[:4], cap))
+            default = {}
+            off = 0
+            for pidx, w in board:
+                default[pidx] = list(range(off, off + w))
+                off += w
+            if mapping == default and not has_tm:
                 set_default(cap)
                 continue
-            # the board providers in attach order form the port; keep the
-            # bits BGM's slice selects, drop the rest; the TM1638 takes none
-            lo, hi = rng if rng else (0, sum(w for _i, w in board) - 1)
-            n, lab = 0, 0
-            for pidx, w in board:
-                bits = []
-                for _b in range(w):
-                    if lo <= n <= hi:
-                        bits.append(lab)
-                        lab += 1
-                    else:
-                        bits.append(None)
-                    n += 1
+            for pidx, bits in mapping.items():
                 wanted[pidx][cap] = bits
-            if tm_idx is not None and cap in {e["capability"] for e in attaches[tm_idx].get("peripheral", {}).get("provides", [])} if False else tm_idx is not None:
-                if any(p == tm_idx for p, _perif, _pp in plans[cap].providers):
-                    wanted[tm_idx][cap] = []
+            if tm_idx is not None and any(p == tm_idx for p, _perif, _pp in plans[cap].providers):
+                wanted[tm_idx][cap] = []
         else:
             notes.append("{}: lab reads {!r} (not a port or the TM1638); left as is".format(lab_port, expr))
 

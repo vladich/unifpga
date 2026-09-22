@@ -26,6 +26,8 @@ Peripheral:
     # an SB_IO PIN_OUTPUT_DDR clock pin (0 / 1 = inverted pixel clock)
     module: dvi_pmod_12b
     file: rtl/peripherals/dvi_pmod_12b.sv
+    files:
+      - rtl/peripherals/vga.sv          # the raster generator the Pmod driver instantiates
     parameters:
       clk_mhz:   25
       pixel_mhz: 25
