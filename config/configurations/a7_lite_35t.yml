@@ -44,3 +44,11 @@ Configuration:
         ws: "gpio[5]"
         sck: "gpio[6]"
         sd: "gpio[7]"
+    - peripheral: hdmi_tmds   # binds from BGM a7_lite_35t/board_specific_top.sv
+      params:
+        clock_serial_mhz: 250
+      bind:
+        clk_p: onboard_hdmi.clk_p
+        d_p: onboard_hdmi.d_p
+        clk_n: onboard_hdmi.clk_n
+        d_n: onboard_hdmi.d_n

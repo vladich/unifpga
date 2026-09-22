@@ -25,13 +25,13 @@ Board:
         rx: U2
         tx: V2
     onboard_hdmi:
+      # TMDS pairs from the FGG484 package (IO_L14P/N_T2_SRCC_15, L9P/N, L11P/N,
+      # L4P/N); BGM's XDC constrains the P pins only, Vivado places the N halves.
+      iostandard: TMDS_33
       pins:
-        clk_p: L19
-        d_p: [K21, J20, G17]
-      overrides:
-        L19: TMDS_33
-        K21: TMDS_33
-        J20: TMDS_33
-        G17: TMDS_33
+        clk_p: "L19,L20"
+        clk_n: L20
+        d_p: ["K21,K22", "J20,J21", "G17,G18"]
+        d_n: [K22, J21, G18]
     gpio:
       pins: [F13, F14, E13, E14, D14, D15, E16, D16, D17, D21, G21, C22, B22]

@@ -39,4 +39,6 @@ Board:
     onboard_hdmi_0:
       pins:
         clk_p: "H5,J5"
+        clk_n: J5
         d_p: ["H8,H7", "G7,G8", "F5,G5"]
+        d_n: [H7, G8, G5]

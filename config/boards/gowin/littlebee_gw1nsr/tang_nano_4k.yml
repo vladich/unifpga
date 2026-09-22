@@ -35,7 +35,9 @@ Board:
     onboard_hdmi:
       pins:
         clk_p: "28,27"
+        clk_n: "27"
         d_p: ["30,29", "32,31", "35,34"]
+        d_n: ["29", "31", "34"]
     onboard_camera:
       index_origin: {data: 8}
       pins:

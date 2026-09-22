@@ -35,10 +35,14 @@ Configuration:
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: hdmi_tmds
+    - peripheral: hdmi_tmds   # binds from BGM tang_nano_20k_hdmi_tm1638/board_specific_top.sv
+      params:
+        clock_serial_mhz: 249.75
       bind:
         clk_p: onboard_hdmi.clk_p
         d_p: onboard_hdmi.d_p
+        clk_n: onboard_hdmi.clk_n
+        d_n: onboard_hdmi.d_n
     - peripheral: tm1638_led_key   # binds from BGM tang_nano_20k_hdmi_tm1638/board_specific_top.sv
       bind:
         dio: "gpio[0]"

@@ -28,19 +28,18 @@ Configuration:
         rx: onboard_uart.rx
     - peripheral: pmod_12pin
       bind:
-        io: pmod_0
-    - peripheral: pmod_12pin
-      bind:
         io: pmod_1
     - peripheral: pmod_12pin
       bind:
         io: pmod_2
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: hdmi_tmds
+    - peripheral: hdmi_tmds   # binds from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
       bind:
         clk_p: onboard_hdmi_0.clk_p
         d_p: onboard_hdmi_0.d_p
+        clk_n: onboard_hdmi_0.clk_n
+        d_n: onboard_hdmi_0.d_n
     - peripheral: tm1638_led_key   # binds from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
       bind:
         dio: "pmod_2[1]"

@@ -7,6 +7,7 @@ Configuration:
   id: tang_primer_20k_dock_hdmi_tm1638
   board: tang_primer_20k_dock
   toolchain: gowin_eda
+  lab_clock: pixel   # BGM: `localparam lab_mhz = pixel_mhz` (tools/sync_from_bgm.py --clock-tree)
 
   # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
   reset:
@@ -38,11 +39,11 @@ Configuration:
         btn: onboard_buttons
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: hdmi_tmds
+    - peripheral: hdmi_tmds   # binds from BGM tang_primer_20k_dock_hdmi_tm1638/board_specific_top.sv
       bind:
         clk_p: onboard_hdmi.clk_p
-        clk_n: onboard_hdmi.clk_n
         d_p: onboard_hdmi.d_p
+        clk_n: onboard_hdmi.clk_n
         d_n: onboard_hdmi.d_n
     - peripheral: tm1638_led_key   # binds from BGM tang_primer_20k_dock_hdmi_tm1638/board_specific_top.sv
       bind:
