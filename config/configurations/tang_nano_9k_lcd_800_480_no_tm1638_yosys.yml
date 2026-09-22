@@ -44,12 +44,7 @@ Configuration:
         ck: onboard_lcd.ck
         bl: onboard_lcd.bl
         init: onboard_lcd.init
-    - peripheral: tm1638_led_key
-      bind:
-        dio: "gpio[0]"
-        clk: "gpio[1]"
-        stb: "gpio[2]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_nano_9k_lcd_800_480_no_tm1638_yosys/board_specific_top.sv
       bind:
         lr: onboard_microsd.cs
         ws: onboard_microsd.mosi

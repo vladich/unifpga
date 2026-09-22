@@ -14,6 +14,7 @@ Configuration:
       - power_up: true
       - key: msb
 
+  # iCEBreaker P2 header: TM1638 + user gpio, LED/BTN break-off unused (BGM INSTANTIATE_TM1638 branch; see PLAN.md)
   attach:
     - peripheral: clock_input
       bind:
@@ -41,24 +42,14 @@ Configuration:
     - peripheral: pmod_12pin
       bind:
         io: pmod_p2
-    - peripheral: led_bank
-      params:
-        width: 5
-      bind:
-        led: onboard_leds
-    - peripheral: button_array
-      params:
-        width: 3
-      bind:
-        btn: onboard_buttons
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM icebreaker_no_dvi_tm1638_yosys/board_specific_top.sv
       bind:
         clk: "pmod_p2[6]"
         stb: "pmod_p2[7]"
         dio: "pmod_p2[5]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM icebreaker_no_dvi_tm1638_yosys/board_specific_top.sv
       bind:
         lr: "pmod_p1a[0]"
         ws: "pmod_p1a[1]"

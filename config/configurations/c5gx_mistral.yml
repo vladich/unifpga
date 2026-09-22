@@ -15,7 +15,6 @@ Configuration:
         clk: clk50mhz
     - peripheral: uart_2wire
       bind:
-        tx: onboard_uart.tx
         rx: onboard_uart.rx
     - peripheral: button_array
       params:
@@ -48,7 +47,7 @@ Configuration:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3]
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM c5gx/board_specific_top.sv
       bind:
         lr: "gpio[0]"
         ws: "gpio[2]"

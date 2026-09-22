@@ -48,7 +48,7 @@ Configuration:
         io: pmod_je
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM zybo_z7/board_specific_top.sv
       bind:
         clk: "pmod_je[1]"
         stb: "pmod_je[0]"

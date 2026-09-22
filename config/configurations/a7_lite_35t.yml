@@ -33,12 +33,12 @@ Configuration:
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM a7_lite_35t/board_specific_top.sv
       bind:
         dio: "gpio[0]"
         clk: "gpio[1]"
         stb: "gpio[2]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM a7_lite_35t/board_specific_top.sv
       bind:
         lr: "gpio[4]"
         ws: "gpio[5]"

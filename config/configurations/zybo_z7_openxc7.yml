@@ -43,8 +43,8 @@ Configuration:
   - peripheral: pmod_12pin
     bind:
       io: pmod_je
-  - peripheral: tm1638_led_key
+  - peripheral: tm1638_led_key   # binds from BGM zybo_z7/board_specific_top.sv
     bind:
-      clk: pmod_je[1]
-      stb: pmod_je[0]
-      dio: pmod_je[2]
+      clk: "pmod_je[1]"
+      stb: "pmod_je[0]"
+      dio: "pmod_je[2]"

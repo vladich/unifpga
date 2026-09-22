@@ -27,7 +27,15 @@ Configuration:
         width: 4
       bind:
         btn: onboard_buttons
-    - peripheral: vga_4bit
+    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        color_depth: 444
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -45,12 +53,7 @@ Configuration:
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: tm1638_led_key
-      bind:
-        clk: "gpio[0]"
-        stb: "gpio[1]"
-        dio: "gpio[2]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM karnix_ecp5_yosys/board_specific_top.sv
       bind:
         lr: "gpio[3]"
         ws: "gpio[4]"

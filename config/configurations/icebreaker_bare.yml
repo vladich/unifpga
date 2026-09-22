@@ -13,6 +13,7 @@ Configuration:
     sources:
       - key: 0
 
+  # iCEBreaker P2 header: LED/BTN break-off Pmod, no user gpio (BGM no-TM1638 branch; see PLAN.md)
   attach:
     - peripheral: clock_input
       bind:
@@ -37,9 +38,6 @@ Configuration:
     - peripheral: pmod_12pin
       bind:
         io: pmod_p1b
-    - peripheral: pmod_12pin
-      bind:
-        io: pmod_p2
     - peripheral: led_bank
       params:
         width: 5

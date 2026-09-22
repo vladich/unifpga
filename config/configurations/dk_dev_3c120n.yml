@@ -45,7 +45,7 @@ Configuration:
         rst: cpu_resetn
     - peripheral: seven_segment_8digit_shared
       params:
-        digits: 5
+        digits: 4
       bind:
         segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
         dp: onboard_7seg.dp

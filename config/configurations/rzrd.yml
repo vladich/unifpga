@@ -32,7 +32,15 @@ Configuration:
         segments: ["onboard_7seg.segments[0]", "onboard_7seg.segments[1]", "onboard_7seg.segments[2]", "onboard_7seg.segments[3]", "onboard_7seg.segments[4]", "onboard_7seg.segments[5]", "onboard_7seg.segments[6]"]
         dp: "onboard_7seg.segments[7]"
         digits: onboard_7seg.anodes
-    - peripheral: vga_4bit
+    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 1
+        pin_bits_g: 1
+        pin_bits_b: 1
+        color_depth: 444
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -41,10 +49,12 @@ Configuration:
         vs: onboard_vga.vs
     - peripheral: uart_2wire
       bind:
-        tx: onboard_uart.tx
         rx: onboard_uart.rx
+    - peripheral: inmp441_i2s_mic   # binds from BGM rzrd/board_specific_top.sv
+      bind:
+        lr: "onboard_char_lcd.d[5]"
+        ws: "onboard_char_lcd.d[3]"
+        sck: "onboard_char_lcd.d[1]"
+        sd: "onboard_char_lcd.d[2]"
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: pmod_mic3
-      bind:
-        cs: "gpio_pseudo_sdram[0]"

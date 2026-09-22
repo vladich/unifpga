@@ -15,9 +15,11 @@ Board:
     clk: { pins: "12", frequency_mhz: 50 }
     cpu_resetn: { pins: "41" }
     onboard_leds:
-      pins: [null, "67", "66", "61", "58", "57", "56", "55", "54"]
+      index_origin: 1
+      pins: ["67", "66", "61", "58", "57", "56", "55", "54"]
     onboard_buttons:
-      pins: [null, "53", "52", "51", "50", "43", "42"]
+      index_origin: 1
+      pins: ["53", "52", "51", "50", "43", "42"]
     onboard_7seg:
       pins:
         anodes: ["87", "86", "85", "84", "95", "92", "91", "89"]
@@ -27,8 +29,9 @@ Board:
         rx: "68"
         tx: "69"
     onboard_char_lcd:
+      index_origin: {d: 1}
       pins:
-        d: [null, "6", "5", "4", "3", "2", "1", "100", "99", "98", "97", "96"]
+        d: ["6", "5", "4", "3", "2", "1", "100", "99", "98", "97", "96"]
     onboard_vga:
       pins:
         hs: "7"

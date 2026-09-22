@@ -47,18 +47,21 @@ Configuration:
       segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
       dp: onboard_7seg.dp
       digits: onboard_7seg.anodes
-  - peripheral: vga_4bit
+  - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+    params:
+      bits_r: 4
+      bits_g: 4
+      bits_b: 4
+      pin_bits_r: 4
+      pin_bits_g: 4
+      pin_bits_b: 4
+      color_depth: 444
     bind:
       r: onboard_vga.r
       g: onboard_vga.g
       b: onboard_vga.b
       hs: onboard_vga.hs
       vs: onboard_vga.vs
-  - peripheral: pdm_mic
-    bind:
-      clk: onboard_mic.clk
-      data: onboard_mic.data
-      lrsel: onboard_mic.lrsel
   - peripheral: pwm_amp
     bind:
       pwm: onboard_pwm_amp.pwm
@@ -67,61 +70,6 @@ Configuration:
     bind:
       tx: onboard_uart.tx
       rx: onboard_uart.rx
-      cts: onboard_uart.cts
-      rts: onboard_uart.rts
-  - peripheral: usb_hid_host
-    bind:
-      clk: onboard_usb_hid.clk
-      data: onboard_usb_hid.data
-  - peripheral: ethernet_rmii_phy
-    bind:
-      mdc: onboard_ethernet_phy.mdc
-      mdio: onboard_ethernet_phy.mdio
-      rstn: onboard_ethernet_phy.rstn
-      crsdv: onboard_ethernet_phy.crsdv
-      rxerr: onboard_ethernet_phy.rxerr
-      rxd:
-      - onboard_ethernet_phy.rxd0
-      - onboard_ethernet_phy.rxd1
-      txen: onboard_ethernet_phy.txen
-      txd:
-      - onboard_ethernet_phy.txd0
-      - onboard_ethernet_phy.txd1
-      refclk: onboard_ethernet_phy.refclk
-      intn: onboard_ethernet_phy.intn
-  - peripheral: microsd_4bit
-    bind:
-      reset: onboard_microsd.reset
-      cd: onboard_microsd.cd
-      sck: onboard_microsd.sck
-      cmd: onboard_microsd.cmd
-      dat:
-      - onboard_microsd.dat0
-      - onboard_microsd.dat1
-      - onboard_microsd.dat2
-      - onboard_microsd.dat3
-  - peripheral: qspi_flash
-    bind:
-      dq:
-      - onboard_qspi_flash.dq0
-      - onboard_qspi_flash.dq1
-      - onboard_qspi_flash.dq2
-      - onboard_qspi_flash.dq3
-      csn: onboard_qspi_flash.csn
-  - peripheral: spi_accelerometer
-    bind:
-      miso: onboard_accelerometer.miso
-      mosi: onboard_accelerometer.mosi
-      sclk: onboard_accelerometer.sclk
-      csn: onboard_accelerometer.csn
-      int1: onboard_accelerometer.int1
-      int2: onboard_accelerometer.int2
-  - peripheral: i2c_temperature_sensor
-    bind:
-      scl: onboard_temp_sensor.scl
-      sda: onboard_temp_sensor.sda
-      int: onboard_temp_sensor.int
-      ct: onboard_temp_sensor.ct
   - peripheral: pmod_12pin
     bind:
       io: pmod_ja
@@ -134,7 +82,9 @@ Configuration:
   - peripheral: pmod_12pin
     bind:
       io: pmod_jd
-  - peripheral: pmod_diff
+  - peripheral: inmp441_i2s_mic   # binds from BGM nexys4_ddr/board_specific_top.sv
     bind:
-      p: pmod_xadc.p
-      n: pmod_xadc.n
+      lr: "pmod_jd[6]"
+      ws: "pmod_jd[5]"
+      sck: "pmod_jd[4]"
+      sd: "pmod_jd[0]"

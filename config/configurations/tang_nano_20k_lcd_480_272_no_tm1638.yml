@@ -43,13 +43,7 @@ Configuration:
         de: onboard_lcd.de
         ck: onboard_lcd.ck
         bl: onboard_lcd.bl
-        init: onboard_lcd.init
-    - peripheral: tm1638_led_key
-      bind:
-        dio: "gpio[0]"
-        clk: onboard_joystick.cs
-        stb: onboard_joystick.miso
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_nano_20k_lcd_480_272_no_tm1638/board_specific_top.sv
       bind:
         lr: "gpio[1]"
         ws: "gpio[2]"

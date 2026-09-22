@@ -45,7 +45,15 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5, onboard_7seg.hex6, onboard_7seg.hex7]
-    - peripheral: vga_4bit
+    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+      params:
+        bits_r: 8
+        bits_g: 8
+        bits_b: 8
+        pin_bits_r: 8
+        pin_bits_g: 8
+        pin_bits_b: 8
+        color_depth: 888
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -58,7 +66,7 @@ Configuration:
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM de2_115/board_specific_top.sv
       bind:
         lr: "gpio[0]"
         ws: "gpio[2]"

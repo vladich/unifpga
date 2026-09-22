@@ -28,7 +28,6 @@ Configuration:
     - peripheral: seven_segment_8digit_shared
       bind:
         segments: ['onboard_7seg.ca', 'onboard_7seg.cb', 'onboard_7seg.cc', 'onboard_7seg.cd', 'onboard_7seg.ce', 'onboard_7seg.cf', 'onboard_7seg.cg']
-        dp: onboard_7seg.dp
         digits: onboard_7seg.anodes
     - peripheral: vga_4bit
       bind:
@@ -43,6 +42,3 @@ Configuration:
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: pmod_mic3
-      bind:
-        cs: "gpio_1[26]"

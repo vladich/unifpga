@@ -44,7 +44,7 @@ Configuration:
         clk_n: onboard_hdmi.clk_n
         d_p: onboard_hdmi.d_p
         d_n: onboard_hdmi.d_n
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv
       bind:
         clk: "gpio_1[2]"
         stb: "gpio_1[3]"

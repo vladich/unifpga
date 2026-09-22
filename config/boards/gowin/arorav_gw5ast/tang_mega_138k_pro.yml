@@ -36,8 +36,10 @@ Board:
       pins:
         rx: V16
         tx: U16
+    # pmod_0[1] = N26 per BGM tang_mega_138k_pro_lcd_480_272_tm1638/board_specific.cst
+    # (the harvest had merged another variant's L22; PLAN.md P2.2)
     pmod_0:
-      pins: [N18, L22, R16, R17, M26, N17, L24, T24]
+      pins: [N18, N26, R16, R17, M26, N17, L24, T24]
     pmod_1:
       pins: [C24, E25, L17, H14, B24, D25, L18, H15]
     pmod_2:

@@ -46,7 +46,15 @@ Configuration:
       segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
       dp: onboard_7seg.dp
       digits: onboard_7seg.anodes
-  - peripheral: vga_4bit
+  - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+    params:
+      bits_r: 4
+      bits_g: 4
+      bits_b: 4
+      pin_bits_r: 4
+      pin_bits_g: 4
+      pin_bits_b: 4
+      color_depth: 444
     bind:
       r: onboard_vga.r
       g: onboard_vga.g
@@ -70,14 +78,9 @@ Configuration:
   - peripheral: pmod_12pin
     bind:
       io: pmod_jd
-  - peripheral: tm1638_led_key
+  - peripheral: inmp441_i2s_mic   # binds from BGM nexys4_ddr/board_specific_top.sv
     bind:
-      stb: pmod_jc[0]
-      clk: pmod_jc[1]
-      dio: pmod_jc[2]
-  - peripheral: inmp441_i2s_mic
-    bind:
-      sck: pmod_jc[3]
-      ws: pmod_jc[4]
-      sd: pmod_jc[5]
-      lr: pmod_jc[6]
+      lr: "pmod_jd[6]"
+      ws: "pmod_jd[5]"
+      sck: "pmod_jd[4]"
+      sd: "pmod_jd[0]"

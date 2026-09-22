@@ -186,11 +186,12 @@ Board:
         AJ6: SSTL-15 Class I
     onboard_fan_ctrl: { pins: AG27 }
     hsmc:
+      index_origin: {clkin_n: 1, clkin_p: 1, clkout_n: 1, clkout_p: 1}
       pins:
-        clkin_n: [null, AB27, G15]
-        clkin_p: [null, AA26, H15]
-        clkout_n: [null, E6, A10]
-        clkout_p: [null, E7, A11]
+        clkin_n: [AB27, G15]
+        clkin_p: [AA26, H15]
+        clkout_n: [E6, A10]
+        clkout_p: [E7, A11]
         clk_in0: J14
         clk_out0: AD29
         d: [C10, H13, C9, H12]

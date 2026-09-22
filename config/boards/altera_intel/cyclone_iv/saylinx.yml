@@ -17,7 +17,8 @@ Board:
     clk: { pins: E1, frequency_mhz: 50 }
     cpu_resetn: { pins: N13 }
     onboard_buttons:
-      pins: [null, null, M15, M16, E16]
+      index_origin: 2
+      pins: [M15, M16, E16]
     onboard_leds:
       pins: [D9, C9, F9, E10]
     onboard_7seg:

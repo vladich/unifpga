@@ -34,8 +34,11 @@ Board:
         segments: [C9, E9, D8, C8, D11, E8, E10, D9]
         anodes: [C14, D14, G11, F11, C11, D12]
     gpio_j7:
-      pins: [null, null, null, null, N5, P3, N3, T7, R7, T6, R6, T5, R5, T4, R4, T3, R3, T2, R1, P2, P1, N2, N1, L2, L1, J2, K1, G1, J1, null, G2, F1, F2, C2, B1, D3, D4, E5, D5]
+      index_origin: 4
+      pins: [N5, P3, N3, T7, R7, T6, R6, T5, R5, T4, R4, T3, R3, T2, R1, P2, P1, N2, N1, L2, L1, J2, K1, G1, J1, G2, F1, F2, C2, B1, D3, D4, E5, D5]
     gpio_p1:
-      pins: [null, null, C6, B6, A6, B7, A7, B8, A8, A9, B9, A11, B11, A12, B12, A13, B13, A14, B14, A15, B16, C15, C16]
+      index_origin: 2
+      pins: [C6, B6, A6, B7, A7, B8, A8, A9, B9, A11, B11, A12, B12, A13, B13, A14, B14, A15, B16, C15, C16]
     gpio_p2:
-      pins: [null, null, N6, R8, T8, T9, R9, T10, R10, T11, M11, N12, P8, N8, M8, M9, N9, P9, M10, R11, T13, R13, T14]
+      index_origin: 2
+      pins: [N6, R8, T8, T9, R9, T10, R10, T11, M11, N12, P8, N8, M8, M9, N9, P9, M10, R11, T13, R13, T14]

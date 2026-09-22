@@ -37,22 +37,31 @@ Configuration:
         io: pmod_2
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: hub75e_led_matrix
+    - peripheral: hub75e_led_matrix   # binds from BGM tang_primer_25k_pmod_vga/board_specific_top.sv (USE_HUB75E_LED_MATRIX)
+      params:
+        rows: 64
+        brightness: 1
       bind:
-        clk: clk
+        ck: "pmod_0[6]"
+        oe: "pmod_0[7]"
+        st: "pmod_0[2]"
         a: "pmod_0[4]"
+        b: "pmod_0[0]"
+        c: "pmod_0[5]"
+        d: "pmod_0[1]"
+        e: "pmod_1[3]"
         r1: "pmod_1[4]"
         r2: "pmod_1[6]"
         g1: "pmod_1[0]"
         g2: "pmod_1[2]"
         b1: "pmod_1[5]"
         b2: "pmod_1[7]"
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM tang_primer_25k_pmod_hub75e_led_matrix/board_specific_top.sv
       bind:
         dio: "pmod_2[1]"
         clk: "pmod_2[2]"
         stb: "pmod_2[3]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_primer_25k_pmod_hub75e_led_matrix/board_specific_top.sv
       bind:
         lr: "gpio[0]"
         ws: "gpio[2]"

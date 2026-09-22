@@ -66,11 +66,13 @@ Configuration:
   - peripheral: reset_button
     bind:
       rst: cpu_resetn
-  - peripheral: pmod_mic3
+  - peripheral: pmod_mic3   # binds from BGM arty_a7_100_pmod_mic3/board_specific_top.sv
     bind:
-      cs: pmod_jd[3]
-  - peripheral: tm1638_led_key
+      cs: "pmod_jd[4]"
+      sclk: "pmod_jd[7]"
+      miso: "pmod_jd[6]"
+  - peripheral: tm1638_led_key   # binds from BGM arty_a7_100_pmod_mic3/board_specific_top.sv
     bind:
-      clk: arduino_io[40]
-      stb: arduino_io[41]
-      dio: arduino_io[39]
+      clk: "arduino_io[28]"
+      stb: "arduino_io[29]"
+      dio: "arduino_io[27]"

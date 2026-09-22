@@ -44,12 +44,12 @@ Configuration:
         b: ["pmod_1[0]", "pmod_1[1]", "pmod_1[2]", "pmod_1[3]"]
         hs: "pmod_0[0]"
         vs: "pmod_0[1]"
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM tang_primer_25k_pmod_vga/board_specific_top.sv
       bind:
         dio: "pmod_2[1]"
         clk: "pmod_2[2]"
         stb: "pmod_2[3]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_primer_25k_pmod_vga/board_specific_top.sv
       bind:
         lr: "gpio[0]"
         ws: "gpio[2]"

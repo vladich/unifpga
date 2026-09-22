@@ -8,6 +8,13 @@ Configuration:
   board: tang_mega_138k_pro
   toolchain: gowin_standard
 
+  # BGM's two Tang Mega 138K Pro variants disagree on PMOD_0[1]: the tm1638
+  # variant's board_specific.cst says N26 (used by the board pinmap), this
+  # variant's says L22. Kept per variant so each matches its BGM oracle;
+  # the discrepancy should be reported upstream (PLAN.md).
+  pin_overrides:
+    pmod_0: [N18, L22, R16, R17, M26, N17, L24, T24]
+
   # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
   reset:
     sources:
@@ -39,22 +46,17 @@ Configuration:
 
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_480_272
+      params:   # 6-6-6 bus, BGM w_red/w_green/w_blue = 6
+        bits_r: 6
+        bits_g: 6
+        bits_b: 6
       bind:
         r: onboard_lcd.r
         g: onboard_lcd.g
         b: onboard_lcd.b
-        hs: onboard_lcd.hs
-        vs: onboard_lcd.vs
         de: onboard_lcd.de
         ck: onboard_lcd.ck
-        bl: onboard_lcd.bl
-        init: onboard_lcd.init
-    - peripheral: tm1638_led_key
-      bind:
-        dio: "pmod_2[5]"
-        clk: "pmod_2[6]"
-        stb: "pmod_2[7]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_mega_138k_pro_lcd_480_272_no_tm1638/board_specific_top.sv
       bind:
         lr: "pmod_0[0]"
         ws: "pmod_0[1]"

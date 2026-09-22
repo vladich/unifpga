@@ -32,7 +32,15 @@ Configuration:
         segments: ["onboard_7seg.segments[0]", "onboard_7seg.segments[1]", "onboard_7seg.segments[2]", "onboard_7seg.segments[3]", "onboard_7seg.segments[4]", "onboard_7seg.segments[5]", "onboard_7seg.segments[6]"]
         dp: "onboard_7seg.segments[7]"
         digits: onboard_7seg.anodes
-    - peripheral: vga_4bit
+    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+      params:
+        bits_r: 5
+        bits_g: 6
+        bits_b: 5
+        pin_bits_r: 5
+        pin_bits_g: 6
+        pin_bits_b: 5
+        color_depth: 565
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -45,6 +53,8 @@ Configuration:
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: pmod_mic3
+    - peripheral: pmod_mic3   # binds from BGM saylinx_pmod_mic3/board_specific_top.sv
       bind:
         cs: "gpio_1[26]"
+        sclk: "gpio_1[32]"
+        miso: "gpio_1[30]"

@@ -36,14 +36,16 @@ Board:
     cpu_resetn: { pins: C12 }
     onboard_buttons:
       pins: [E16, F15, T16, R10, V10]
+    # Pmod banks re-derived from BGM boards/nexys4/board_specific.xdc (JA[0..7]);
+    # the earlier curation had lost JA[0] and shifted the rest (PLAN.md P2.2).
     pmod_ja:
-      pins: [F14, D17, E17, G13, E18, C17, D18]
+      pins: [B13, F14, D17, E17, G13, C17, D18, E18]
     pmod_jb:
-      pins: [P15, V11, V15, K16, U11, R16, T9]
+      pins: [G14, P15, V11, V15, K16, R16, T9, U11]
     pmod_jc:
-      pins: [E7, J3, J4, K1, G6, E6, J2]
+      pins: [K2, E7, J3, J4, K1, E6, J2, G6]
     pmod_jd:
-      pins: [H1, G1, G3, H2, F3, G4, G2]
+      pins: [H4, H1, G1, G3, H2, G4, G2, F3]
     onboard_vga:
       pins:
         r: [A3, B4, C5, A4]

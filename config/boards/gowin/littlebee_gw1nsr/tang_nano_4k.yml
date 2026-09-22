@@ -29,10 +29,11 @@ Board:
         clk_p: "28,27"
         d_p: ["30,29", "32,31", "35,34"]
     onboard_camera:
+      index_origin: {data: 8}
       pins:
         scl: "44"
         sda: "46"
         vsync: "43"
         hsync: "42"
         pclk: "41"
-        data: [null, null, null, null, null, null, null, null, "39", "40"]
+        data: ["39", "40"]

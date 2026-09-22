@@ -45,9 +45,9 @@ Configuration:
         digits: onboard_7seg.anodes
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM emooc_cc/board_specific_top.sv
       bind:
-        lr: "gpio_p1[16]"
-        ws: "gpio_p1[17]"
-        sck: "gpio_p1[18]"
-        sd: "gpio_p1[19]"
+        lr: "gpio_p1[14]"
+        ws: "gpio_p1[15]"
+        sck: "gpio_p1[16]"
+        sd: "gpio_p1[17]"

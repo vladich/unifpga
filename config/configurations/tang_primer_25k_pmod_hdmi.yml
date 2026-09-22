@@ -41,12 +41,12 @@ Configuration:
       bind:
         clk_p: onboard_hdmi_0.clk_p
         d_p: onboard_hdmi_0.d_p
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
       bind:
         dio: "pmod_2[1]"
         clk: "pmod_2[2]"
         stb: "pmod_2[3]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
       bind:
         lr: "gpio[0]"
         ws: "gpio[2]"

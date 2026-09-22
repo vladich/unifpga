@@ -37,8 +37,8 @@ Configuration:
         io: pmod_jb
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM eclypse_z7/board_specific_top.sv
       bind:
         dio: "pmod_jb[5]"
         clk: "pmod_jb[6]"
-        stb: "pmod_jb[4]"
+        stb: "pmod_jb[7]"

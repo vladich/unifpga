@@ -61,9 +61,11 @@ Board:
     gpio_a_i:
       pins: ["209", "210", "211", "212"]
     gpio:
-      pins: [null, null, "21", "22", "37", "51", "52", null, "50", "49", "46", null, "55", "56", "38", "39", "63", "41", "43", "57", "64", "65", "44", "45"]
+      index_origin: 2
+      pins: ["21", "22", "37", "51", "52", "50", "49", "46", "55", "56", "38", "39", "63", "41", "43", "57", "64", "65", "44", "45"]
     gpio_i:
-      pins: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "32", "33", "34", "31"]
+      index_origin: 24
+      pins: ["32", "33", "34", "31"]
     gpio_b:
       pins: ["71", "70", "82", "81", "80", "69", "68", "72", "73", "76", "78"]
     gpio_b_i:

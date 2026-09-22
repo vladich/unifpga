@@ -35,9 +35,14 @@ Configuration:
         led: onboard_leds
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM de10_nano/board_specific_top.sv
       bind:
         lr: "gpio_0[0]"
         ws: "gpio_0[2]"
         sck: "gpio_0[4]"
         sd: "gpio_0[5]"
+    - peripheral: tm1638_led_key   # binds from BGM de10_nano/board_specific_top.sv
+      bind:
+        stb: "gpio_0[27]"
+        clk: "gpio_0[29]"
+        dio: "gpio_0[31]"

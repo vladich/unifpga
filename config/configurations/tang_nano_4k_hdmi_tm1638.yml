@@ -28,17 +28,15 @@ Configuration:
     - peripheral: hdmi_tmds
       bind:
         clk_p: onboard_hdmi.clk_p
-        clk_n: onboard_hdmi.clk_n
         d_p: onboard_hdmi.d_p
-        d_n: onboard_hdmi.d_n
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv
       bind:
         dio: onboard_serial_flash.do
         clk: onboard_serial_flash.di
         stb: onboard_serial_flash.clk
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv
       bind:
         lr: onboard_serial_flash.hold
         ws: onboard_serial_flash.wp
         sck: onboard_serial_flash.cs
-        sd: "onboard_camera.data[8]"
+        sd: "onboard_camera.data[0]"

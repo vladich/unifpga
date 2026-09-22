@@ -168,23 +168,25 @@ Board:
         a: [AC11, AH10, AA13, AC10, Y15, AF22, AF26, AF4, AD8, AG26, AH6, AD24, AF9, AA8, AC22, AE8, AF13, AB14, AF23, AG12, AB18, Y19, AG3, AE16, AB7]
         d: [J14, D6, J17, G7, F18, C6, H17, C18, D18, G16, G22, F12, D11, E24, H21, G9, A4, G13, H14, B8, C8, F7, B11, B22, A18, G8, J12, D9, C9, E7, H10, J10]
     hsma:
+      index_origin: {clk_in_p: 1, clk_out_p: 1, clk_in_n: 1, clk_out_n: 1}
       pins:
         clk_in0: AG14
-        clk_in_p: [null, Y2, J2]
+        clk_in_p: [Y2, J2]
         clk_out0: Y7
-        clk_out_p: [null, G6, D2]
+        clk_out_p: [G6, D2]
         d: [AB6, AF2, AE3, AC5]
         rx_led: AE1
         scl: AC3
         sda: AC1
         tx_led: AA3
-        clk_in_n: [null, Y1, J1]
-        clk_out_n: [null, G5, D1]
+        clk_in_n: [Y1, J1]
+        clk_out_n: [G5, D1]
         rx_d_n: [AB1, Y3, U4, W1, V1, U1, U5, R1, N3, L3, L1, K1, J5, H3, G3, F1, F3]
         rx_d_p: [AB2, Y4, U3, W2, V2, U2, U6, R2, N4, L4, L2, K2, J6, H4, G4, F2, E3]
         tx_d_n: [R6, V3, T3, R4, M7, P1, M3, M1, L6, L8, K3, J3, K7, G1, F4, E1, C2]
         tx_d_p: [R7, V4, T4, R3, M8, P2, M4, M2, L7, K8, K4, J4, J7, G2, F5, E2, D3]
     hsmb:
+      index_origin: {clk_in_n: 1, clk_in_p: 1, clk_out_n: 1, clk_out_p: 1}
       pins:
         clk_in0: A15
         clk_out0: J22
@@ -192,10 +194,10 @@ Board:
         scl: H25
         sda: H26
         tx_led: D28
-        clk_in_n: [null, J28, Y28]
-        clk_in_p: [null, J27, Y27]
-        clk_out_n: [null, AD26, AD28]
-        clk_out_p: [null, AC26, AD27]
+        clk_in_n: [J28, Y28]
+        clk_in_p: [J27, Y27]
+        clk_out_n: [AD26, AD28]
+        clk_out_p: [AC26, AD27]
         d: [G24, H23, G25, H24]
         rx_d_n: [F28, G28, K26, K28, L28, M28, P26, P28, R21, R23, T26, U28, V22, W27, V24, AB28, AC28]
         rx_d_p: [F27, G27, K25, K27, L27, M27, P25, P27, P21, R22, T25, U27, U22, W28, V23, AB27, AC27]
@@ -222,6 +224,7 @@ Board:
         clk: D14
     cpu_resetn: { pins: T21 }
     onboard_7seg:
+      index_origin: {anodes: 1}
       pins:
         ca: AD5
         cb: A3
@@ -232,7 +235,7 @@ Board:
         cg: AE6
         dp: AD4
         minus: G19
-        anodes: [null, B3, C5, E4, C3]
+        anodes: [B3, C5, E4, C3]
     onboard_speaker: { pins: H22 }
     onboard_buttons:
       pins: [AD7, AC12, AH3, AA12]

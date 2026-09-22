@@ -22,14 +22,9 @@ Configuration:
         width: 1
       bind:
         led: onboard_leds
-    - peripheral: button_array
-      params:
-        width: 1
-      bind:
-        btn: onboard_buttons
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM colorlight75b_tm1638_ecp5_yosys/board_specific_top.sv
       bind:
         clk: "gpio[0]"
         stb: "gpio[1]"

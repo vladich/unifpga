@@ -45,12 +45,7 @@ Configuration:
         digits: onboard_7seg.anodes
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: tm1638_led_key
-      bind:
-        dio: "gpio[3]"
-        clk: "gpio[5]"
-        stb: "gpio[7]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM orangepi_msoc/board_specific_top.sv
       bind:
         lr: "gpio[13]"
         ws: "gpio[15]"

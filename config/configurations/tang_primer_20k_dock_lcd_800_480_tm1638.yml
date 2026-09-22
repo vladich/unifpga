@@ -48,13 +48,12 @@ Configuration:
         de: onboard_lcd.de
         ck: onboard_lcd.ck
         bl: onboard_lcd.bl
-        init: onboard_lcd.init
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM tang_primer_20k_dock_lcd_800_480_tm1638/board_specific_top.sv
       bind:
         clk: "gpio_1[2]"
         stb: "gpio_1[3]"
         dio: "gpio_1[1]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM tang_primer_20k_dock_lcd_800_480_tm1638/board_specific_top.sv
       bind:
         lr: "gpio_0[2]"
         ws: "gpio_0[3]"

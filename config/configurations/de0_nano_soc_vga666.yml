@@ -41,12 +41,12 @@ Configuration:
         b: ["gpio_1[23]", "gpio_1[9]", "gpio_1[11]", "gpio_1[25]"]
         hs: "gpio_1[33]"
         vs: "gpio_1[35]"
-    - peripheral: tm1638_led_key
+    - peripheral: tm1638_led_key   # binds from BGM de0_nano_soc_vga666/board_specific_top.sv
       bind:
         clk: "gpio_0[27]"
         stb: "gpio_0[29]"
         dio: "gpio_0[31]"
-    - peripheral: inmp441_i2s_mic
+    - peripheral: inmp441_i2s_mic   # binds from BGM de0_nano_soc_vga666/board_specific_top.sv
       bind:
         lr: "gpio_0[0]"
         ws: "gpio_0[2]"
