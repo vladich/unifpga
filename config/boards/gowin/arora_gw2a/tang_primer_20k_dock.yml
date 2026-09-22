@@ -26,9 +26,13 @@ Board:
     yosys:
       synth_options: []
       loader_board: "tangprimer20k"
+      device_part: "GW2A-LV18PG256C8/I7"
+      device_family: "GW2A-18"
+      device_pack: "GW2A-18"
     gowin:
       set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18C -device_version C"
       options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
+      gprj_device: '<Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
     # nextpnr-gowin (apicula) names this family GW2A-18 and rejects an rPLL
     # whose DEVICE parameter says otherwise (BGM's yosys variant leaves the
     # primitive default).

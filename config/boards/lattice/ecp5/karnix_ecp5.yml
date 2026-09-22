@@ -17,6 +17,9 @@ Board:
     yosys:
       synth_options: [noabc9]
       loader_ftdi_channel: "0"
+      device_part: "25k"
+      device_pack: "CABGA256"
+      speed: "6"
   pinBanks:
     clk: { pins: B9, frequency_mhz: 25 }
     onboard_leds:

@@ -21,6 +21,8 @@ Board:
     yosys:
       synth_options: [dsp, noabc9]
       loader_board: "ice40_generic"
+      device_part: "up5k"
+      device_pack: "sg48"
   pinBanks:
     clk: { pins: "35", frequency_mhz: 12 }
     onboard_uart:

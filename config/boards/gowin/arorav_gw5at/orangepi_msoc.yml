@@ -17,6 +17,7 @@ Board:
     gowin:
       set_device: "GW5AT-LV138PG484AC1/I0 -name GW5AT-138B -device_version B"
       options: [use_cpu_as_gpio, use_sspi_as_gpio]
+      gprj_device: '<Device name="GW5AT-138B" pn="GW5AT-LV138PG484AC1/I0">gw5at138b-012</Device>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
   pinBanks:
     clk: { pins: V18, frequency_mhz: 25 }
     onboard_leds:

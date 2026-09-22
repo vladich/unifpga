@@ -15,12 +15,10 @@ Board:
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
   toolchain_options:
     gowin:
-      # BGM's board_specific.tcl says `-device_version C`; Gowin EDA 1.9.9.02
-      # (mercury) answers "device GW5AST-LV138PG484AC1/I0 has not version C"
-      # and builds without it (2026-09-22).
       set_device: "GW5AST-LV138PG484AC1/I0"
       set_device_reason: tool-required
       options: [use_sspi_as_gpio, use_cpu_as_gpio]
+      gprj_device: '<Device name="GW5AST-138C" pn="GW5AST-LV138PG484AC1/I0">gw5ast138c-007</Device>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
   pinBanks:
     clk: { pins: V22, frequency_mhz: 50, iostandard: LVCMOS33 }
     onboard_buttons:

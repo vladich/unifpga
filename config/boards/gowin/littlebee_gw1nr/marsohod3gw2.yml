@@ -17,6 +17,7 @@ Board:
     gowin:
       set_device: "GW1NR-LV9QN88PC6/I5 -name GW1NR-9 -device_version C"
       options: [use_done_as_gpio, use_mspi_as_gpio, use_sspi_as_gpio, use_ready_as_gpio, use_reconfign_as_gpio]
+      gprj_device: '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
   pinBanks:
     onboard_hdmi:
       # BGM: ELVDS_OBUF pairs with IO_TYPE=LVCMOS18D (1.8 V bank)

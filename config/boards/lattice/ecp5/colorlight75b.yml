@@ -16,6 +16,9 @@ Board:
   toolchain_options:
     yosys:
       synth_options: [noabc9]
+      device_part: "25k"
+      device_pack: "CABGA256"
+      speed: "6"
   pinBanks:
     clk: { pins: P6, frequency_mhz: 25 }
     onboard_leds:

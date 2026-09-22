@@ -18,6 +18,7 @@ Board:
     gowin:
       set_device: "GW1NSR-LV4CQN48PC6/I5 -name GW1NSR-4 -device_version \"\""
       options: [use_done_as_gpio, use_mspi_as_gpio]
+      gprj_device: '<Device id="GW1NSR-4C" package="QFN48P" speed="6" partNumber="GW1NSR-LV4CQN48PC6/I5"/>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
   pinBanks:
     clk: { pins: "45", frequency_mhz: 27 }
     onboard_buttons:

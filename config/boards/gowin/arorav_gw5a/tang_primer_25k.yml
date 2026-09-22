@@ -20,6 +20,7 @@ Board:
     gowin:
       set_device: "GW5A-LV25MG121NC1/I0 -device_version A"
       options: [use_cpu_as_gpio, use_i2c_as_gpio]
+      gprj_device: '<Device name="GW5A-25A" pn="GW5A-LV25MG121NC1/I0">gw5a25a-002</Device>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
   pinBanks:
     clk: { pins: E2, frequency_mhz: 50 }
     onboard_buttons:

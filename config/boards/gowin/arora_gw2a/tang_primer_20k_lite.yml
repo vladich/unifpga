@@ -17,6 +17,7 @@ Board:
     gowin:
       set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18 -device_version C"
       options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
+      gprj_device: '<Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
   pinBanks:
     clk: { pins: H11, frequency_mhz: 27, iostandard: LVCMOS33 }
     onboard_switches:

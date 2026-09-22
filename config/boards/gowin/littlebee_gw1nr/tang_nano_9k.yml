@@ -32,9 +32,13 @@ Board:
     yosys:
       synth_options: []
       loader_board: "tangnano9k"
+      device_part: "GW1NR-LV9QN88PC6/I5"
+      device_family: "GW1N-9C"
+      device_pack: "GW1N-9C"
     gowin:
       set_device: "GW1NR-LV9QN88PC6/I5 -name GW1NR-9 -device_version C"
       options: [use_mspi_as_gpio, use_sspi_as_gpio]
+      gprj_device: '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>'   # Gowin IDE project template (BGM fpga_project_01.gprj)
     apicula:
       rpll_device: GW1NR-9      # nextpnr-gowin: "wrong PLL device: GW1N-9C instead of GW1NR-9" (mercury 2026-09-22)
   pinBanks:
