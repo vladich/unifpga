@@ -23,14 +23,18 @@ Board:
       pins:
         rx: M9
     onboard_buttons:
+      iostandard: 1.2 V
       active: low
       pins: [P11, P12, Y15, Y16]
     cpu_resetn: { pins: AB24, iostandard: 3.3-V LVTTL }
     onboard_switches:
+      iostandard: 1.2 V
       pins: [AC9, AE10, AD13, AC8, W11, AB10, V10, AC10, Y11, AE19]
     onboard_leds:
+      iostandard: 2.5 V
       pins: [F7, F6, G6, G7, J8, J7, K10, K8, H7, J10]
     onboard_leds_green:
+      iostandard: 2.5 V
       pins: [L7, K6, D8, E9, A5, B6, H8, H9]
     onboard_hdmi_tx:
       pins:
@@ -41,9 +45,33 @@ Board:
         int: T12
         vs: U25
       overrides:
+        "AA24": 3.3-V LVTTL
+        "AA26": 3.3-V LVTTL
+        "AB25": 3.3-V LVTTL
+        "AB26": 3.3-V LVTTL
+        "AC25": 3.3-V LVTTL
+        "AD25": 3.3-V LVTTL
+        "N25": 3.3-V LVTTL
+        "P21": 3.3-V LVTTL
+        "P22": 3.3-V LVTTL
+        "P23": 3.3-V LVTTL
+        "P26": 3.3-V LVTTL
+        "R23": 3.3-V LVTTL
+        "R24": 3.3-V LVTTL
+        "R25": 3.3-V LVTTL
+        "R26": 3.3-V LVTTL
         "T12": 1.2 V
+        "T23": 3.3-V LVTTL
+        "T24": 3.3-V LVTTL
+        "T26": 3.3-V LVTTL
+        "U24": 3.3-V LVTTL
         "U25": 3.3-V LVTTL
         "U26": 3.3-V LVTTL
+        "V23": 3.3-V LVTTL
+        "V24": 3.3-V LVTTL
+        "V25": 3.3-V LVTTL
+        "W25": 3.3-V LVTTL
+        "W26": 3.3-V LVTTL
         "Y25": 3.3-V LVTTL
         "Y26": 3.3-V LVTTL
     onboard_7seg:
@@ -52,12 +80,42 @@ Board:
         hex1: [AA18, AD26, AB19, AE26, AE25, AC19, AF24]
         hex2: [AD7, AD6, U20, V22, V20, W21, W20]
         hex3: [Y24, Y23, AA23, AA22, AC24, AC23, AC22]
+      overrides:
+        "AA18": 1.2 V
+        "AA22": 3.3-V LVTTL
+        "AA23": 3.3-V LVTTL
+        "AB19": 1.2 V
+        "AC19": 1.2 V
+        "AC22": 3.3-V LVTTL
+        "AC23": 3.3-V LVTTL
+        "AC24": 3.3-V LVTTL
+        "AD26": 1.2 V
+        "AD6": 3.3-V LVTTL
+        "AD7": 3.3-V LVTTL
+        "AE25": 1.2 V
+        "AE26": 1.2 V
+        "AF24": 1.2 V
+        "U20": 3.3-V LVTTL
+        "V17": 1.2 V
+        "V18": 1.2 V
+        "V19": 1.2 V
+        "V20": 3.3-V LVTTL
+        "V22": 3.3-V LVTTL
+        "W18": 1.2 V
+        "W20": 3.3-V LVTTL
+        "W21": 3.3-V LVTTL
+        "Y18": 1.2 V
+        "Y19": 1.2 V
+        "Y20": 1.2 V
+        "Y23": 3.3-V LVTTL
+        "Y24": 3.3-V LVTTL
     onboard_i2c:
       iostandard: 2.5 V
       pins:
         scl: B7
         sda: G11
     gpio:
+      iostandard: 3.3-V LVTTL
       pins: [T21, D26, K25, E26, K26, M26, M21, P20, T22, T19, U19, U22, P8, R8, R9, R10, F26, Y9, G26, Y8, AA7, AA6]
     onboard_audio_codec:
       iostandard: 2.5 V

@@ -77,12 +77,31 @@ Board:
         active: E10
       overrides:
         "A10": SSTL-18 CLASS I
+        "A17": SSTL-18 CLASS I
         "A6": SSTL-18 CLASS I
+        "B12": SSTL-18 CLASS I
+        "C23": SSTL-18 CLASS I
+        "C26": SSTL-18 CLASS I
         "C7": SSTL-18 CLASS I
+        "D16": SSTL-18 CLASS I
+        "D19": SSTL-18 CLASS I
+        "D24": SSTL-18 CLASS I
+        "D25": SSTL-18 CLASS I
+        "D7": SSTL-18 CLASS I
+        "D8": SSTL-18 CLASS I
         "E10": 1.8 V
         "E21": SSTL-18 CLASS I
+        "E8": SSTL-18 CLASS I
         "F14": SSTL-18 CLASS I
+        "F15": SSTL-18 CLASS I
         "F8": SSTL-18 CLASS I
+        "G18": SSTL-18 CLASS I
+        "H15": SSTL-18 CLASS I
+        "H16": SSTL-18 CLASS I
+        "H8": SSTL-18 CLASS I
+        "J13": SSTL-18 CLASS I
+        "J15": SSTL-18 CLASS I
+        "J16": SSTL-18 CLASS I
     onboard_ddr2_bot:
       pins:
         wen: AE5
@@ -96,13 +115,33 @@ Board:
         active: AA14
       overrides:
         "AA14": 1.8 V
+        "AA16": SSTL-18 CLASS I
+        "AB10": SSTL-18 CLASS I
+        "AB12": SSTL-18 CLASS I
+        "AB22": SSTL-18 CLASS I
+        "AB8": SSTL-18 CLASS I
         "AC21": SSTL-18 CLASS I
+        "AC7": SSTL-18 CLASS I
+        "AD12": SSTL-18 CLASS I
         "AD21": SSTL-18 CLASS I
         "AE21": SSTL-18 CLASS I
         "AE24": SSTL-18 CLASS I
+        "AE4": SSTL-18 CLASS I
         "AE5": SSTL-18 CLASS I
+        "AE7": SSTL-18 CLASS I
+        "AF12": SSTL-18 CLASS I
+        "AF21": SSTL-18 CLASS I
+        "AF3": SSTL-18 CLASS I
+        "AF5": SSTL-18 CLASS I
         "AG4": SSTL-18 CLASS I
+        "AG6": SSTL-18 CLASS I
+        "AH12": SSTL-18 CLASS I
+        "AH4": SSTL-18 CLASS I
+        "Y12": SSTL-18 CLASS I
+        "Y13": SSTL-18 CLASS I
+        "Y14": SSTL-18 CLASS I
     onboard_ddr2:
+      iostandard: SSTL-18 CLASS I
       pins:
         dq: [AG22, AH21, AH22, AG21, AD17, AH23, AE19, AF24, AG18, AG17, AH18, AH17, AF15, AE17, AF16, AB16, AE11, AG11, AG10, AH11, AE9, AE12, AF10, AE13, AC8, AH7, AG8, AH8, AG7, AA10, AF7, AD10, A12, C14, A11, C13, D15, C12, E14, D13, B7, C11, A7, C10, E11, B6, H13, D10, C17, B19, B18, C19, D20, C16, A19, E17, C21, C22, A21, A22, C24, B21, D21, E18, E22, C25, A23, B25, A26, F21, B26, D22]
         dqs: [AE18, AF17, AF11, AE10, D12, E12, B17, D17, A25]
@@ -137,6 +176,8 @@ Board:
         dco: J1
         or: U6
         cs: R2
+      overrides:
+        "AF5": SSTL-18 CLASS I
     onboard_dac_a:
       pins:
         d: [F4, F5, G1, G2, K7, J7, J3, J4, K3, K4, L8, K8, L6, L7]
@@ -166,6 +207,7 @@ Board:
         rdybsyn: AG25
         resetn: AB20
     onboard_sram:
+      iostandard: 1.8 V
       pins:
         ben: [AF20, AH26, AE22, AB21]
         clk: AD22
@@ -175,14 +217,8 @@ Board:
         wait: [AG15, AH25]
         psn: B4
         advn: AA19
-      overrides:
-        "AA19": 1.8 V
-        "AB19": 1.8 V
-        "AD22": 1.8 V
-        "AD25": 1.8 V
-        "AE25": 1.8 V
-        "B4": 1.8 V
     onboard_flash_sram:
+      iostandard: 1.8 V
       pins:
         a: [AC11, AH10, AA13, AC10, Y15, AF22, AF26, AF4, AD8, AG26, AH6, AD24, AF9, AA8, AC22, AE8, AF13, AB14, AF23, AG12, AB18, Y19, AG3, AE16, AB7]
         d: [J14, D6, J17, G7, F18, C6, H17, C18, D18, G16, G22, F12, D11, E24, H21, G9, A4, G13, H14, B8, C8, F7, B11, B22, A18, G8, J12, D9, C9, E7, H10, J10]
@@ -242,6 +278,7 @@ Board:
       pins:
         de: AC24
     onboard_leds:
+      iostandard: 1.8 V
       pins: [AD15, AE20, AF18, AD19, AE15, AC17, AG19, AF19]
     onboard_max_ctrl:
       iostandard: 1.8 V
@@ -252,6 +289,7 @@ Board:
         clk: D14
     cpu_resetn: { pins: T21 }
     onboard_7seg:
+      iostandard: 1.8 V
       index_origin: {anodes: 1}
       pins:
         ca: AD5
@@ -264,20 +302,12 @@ Board:
         dp: AD4
         minus: G19
         anodes: [B3, C5, E4, C3]
-      overrides:
-        "A3": 1.8 V
-        "AD4": 1.8 V
-        "AD5": 1.8 V
-        "AE6": 1.8 V
-        "C4": 1.8 V
-        "D4": 1.8 V
-        "D5": 1.8 V
-        "E5": 1.8 V
-        "G19": 1.8 V
     onboard_speaker: { pins: H22 }
     onboard_buttons:
+      iostandard: 1.8 V
       pins: [AD7, AC12, AH3, AA12]
     onboard_switches:
+      iostandard: 1.8 V
       pins: [AC14, AD18, AG23, AC19, AD14, G20, AB15, AF25]
     onboard_usb:
       pins:
