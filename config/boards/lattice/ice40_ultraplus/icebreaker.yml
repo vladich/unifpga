@@ -20,6 +20,7 @@ Board:
   toolchain_options:
     yosys:
       synth_options: [dsp, noabc9]
+      loader_board: "ice40_generic"
   pinBanks:
     clk: { pins: "35", frequency_mhz: 12 }
     onboard_uart:

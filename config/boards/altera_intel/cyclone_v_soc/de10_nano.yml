@@ -16,6 +16,7 @@ Board:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   toolchain_options:
     quartus:
+      jtag_device_index: 2   # FPGA behind the HPS in the JTAG chain (BGM configure_fpga_quartus: P;file@2)
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""

@@ -15,6 +15,7 @@ Board:
   toolchain_options:
     yosys:
       synth_options: [noabc9]
+      loader_ftdi_channel: "1"
   pinBanks:
     clk: { pins: A9, frequency_mhz: 48 }
     onboard_leds:
