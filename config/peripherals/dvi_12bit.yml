@@ -25,6 +25,12 @@ Peripheral:
       PIXEL_MHZ: 25
       H_DISPLAY: 640
       V_DISPLAY: 480
+      W_RED:     4
+      W_GREEN:   4
+      W_BLUE:    4
+      W_RED_O:   4
+      W_GREEN_O: 4
+      W_BLUE_O:  4
     port_map:
       clk:        context.clk
       rst:        context.rst
@@ -32,11 +38,13 @@ Peripheral:
       vsync:      pin.vs
       hpos:       capability.screen.x
       vpos:       capability.screen.y
-      display_on:
+      display_on: pin.de      # data enable = active area
       pixel_clk:
+      red:        capability.screen.red
+      green:      capability.screen.green
+      blue:       capability.screen.blue
+      vga_r:      pin.r       # gated by display_on inside the driver
+      vga_g:      pin.g
+      vga_b:      pin.b
   pin_assigns:
-    pin.r:  capability.screen.red
-    pin.g:  capability.screen.green
-    pin.b:  capability.screen.blue
-    pin.ck: context.clk
-    pin.de: const.1   # always-on; refine when display_on is exposed
+    pin.ck: context.clk       # TODO P3.1: 25 MHz pixel clock from a PLL, as BGM does

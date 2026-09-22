@@ -23,7 +23,21 @@ module vga
               V_TOP               =  33,  // Vertical top border
 
               CLK_MHZ             =  50,  // Clock frequency (50 or 100 MHz)
-              PIXEL_MHZ           =  25   // Pixel clock frequency of VGA in MHz
+              PIXEL_MHZ           =  25,  // Pixel clock frequency of VGA in MHz
+
+              // Colour path: the user's channel widths (what design_top sees)
+              // and the board's pin widths. Mirrors what BGM's
+              // board_specific_top.sv does inline:
+              //   same width      -> vga_r = display_on ? red : '0
+              //   one pin         -> vga_r = display_on & (| red)   (omdazz, zeowaa, piswords6)
+              //   fewer pins      -> the MSBs, gated by display_on
+
+              W_RED               =   4,
+              W_GREEN             =   4,
+              W_BLUE              =   4,
+              W_RED_O             =   4,
+              W_GREEN_O           =   4,
+              W_BLUE_O            =   4
 )
 (
     input                           clk,
@@ -33,8 +47,39 @@ module vga
     output logic                    display_on,
     output logic [HPOS_WIDTH - 1:0] hpos,
     output logic [VPOS_WIDTH - 1:0] vpos,
-    output logic                    pixel_clk
+    output logic                    pixel_clk,
+
+    input        [W_RED     - 1:0]  red,
+    input        [W_GREEN   - 1:0]  green,
+    input        [W_BLUE    - 1:0]  blue,
+    output logic [W_RED_O   - 1:0]  vga_r,
+    output logic [W_GREEN_O - 1:0]  vga_g,
+    output logic [W_BLUE_O  - 1:0]  vga_b
 );
+
+    // Colour outputs gated by display_on (blanking), reduced to the pin width.
+
+    function automatic logic [W_RED_O - 1:0] reduce_r (input logic [W_RED - 1:0] v);
+        if (W_RED_O == W_RED)      return v;
+        else if (W_RED_O == 1)     return | v;
+        else                       return v [W_RED - 1 -: W_RED_O];
+    endfunction
+
+    function automatic logic [W_GREEN_O - 1:0] reduce_g (input logic [W_GREEN - 1:0] v);
+        if (W_GREEN_O == W_GREEN)  return v;
+        else if (W_GREEN_O == 1)   return | v;
+        else                       return v [W_GREEN - 1 -: W_GREEN_O];
+    endfunction
+
+    function automatic logic [W_BLUE_O - 1:0] reduce_b (input logic [W_BLUE - 1:0] v);
+        if (W_BLUE_O == W_BLUE)    return v;
+        else if (W_BLUE_O == 1)    return | v;
+        else                       return v [W_BLUE - 1 -: W_BLUE_O];
+    endfunction
+
+    assign vga_r = display_on ? reduce_r (red)   : '0;
+    assign vga_g = display_on ? reduce_g (green) : '0;
+    assign vga_b = display_on ? reduce_b (blue)  : '0;
 
     // Derived constants
 

@@ -35,10 +35,13 @@ Retired codes (fixed at the source; E5 is now covered by co-simulation):
   SEG-ORDER  (P1.3: seven_segment_8digit_shared pin_assigns are per bit, a = abcdefgh[7])
   TM1638     (P1.3: tm1638_led_key bit-reverses abcdefgh into hgfedcba)
   GPIO-IN    (P1.6: design_top.gpio is a net concatenation of the header pins)
+  HUB75      (P3.4: hub75e_led_matrix.yml matches the module; binds from BGM; the
+              validator's direction check covers the oscillator-as-output case)
+  PMOD-IDX, MIC3, NO-VARIANT(tm1638)  (superseded by SV-BIND-DIFF once
+              tools/sync_from_bgm.py --sv-binds derives these binds from BGM)
   POLARITY   BGM inverts keys/LEDs/switches for this board, config has no active:
-  PMOD-IDX   INMP441 / MIC3 bound on a Digilent Pmod (index translation suspect)
-  MIC3       pmod_mic3 attached (port names / 12-bit alignment)
-  HUB75      hub75e attached (port names, $rows, clock pin driven)
+  SV-BIND-DIFF  TM1638 / INMP441 / MIC3 attachment or pins differ from BGM's
+             board_specific_top.sv instantiation (compared by pin identity)
   DISPLAY    LCD/HDMI/DVI attached (pixel/serial clock from context.clk)
   PIN-PREFIX pinmap stores pins with a vendor prefix (PIN_x)
   HAND       hand-written configuration (not generated; must be re-derived)
@@ -85,11 +88,9 @@ _ORDERING_CODE = re.compile(r"^[A-Z0-9]+-[0-9][A-Z0-9]*$")   # XC7A35T-2FGG484I
 # ---------------------------------------------------------------------------
 
 def bgm_dir_for(cfg_id, board_id):
-    for cand in (cfg_id, board_id):
-        d = os.path.join(BGM_BOARDS, cand)
-        if os.path.isdir(d):
-            return d
-    return None
+    """BGM variant directory: the id, the id without an open-flow twin suffix
+    (`_openxc7`, `_mistral`, `_oxide`), then the board id."""
+    return bgm_oracle.variant_dir_for(cfg_id, board_id)
 
 
 def bgm_top_source(bgm_dir):
@@ -293,10 +294,32 @@ def analyze(cfg_id, cfg_text):
         add("PIN-PREFIX")
 
     # ---- variant-name contradictions ----------------------------------------------
-    for tag, perip in (("_no_tm1638", "tm1638_led_key"), ("_no_hdmi", "hdmi_tmds"),
-                       ("_no_dvi", "dvi_12bit"), ("_no_dvi", "dvi_24bit")):
+    for tag, perip in (("_no_hdmi", "hdmi_tmds"), ("_no_dvi", "dvi_12bit"), ("_no_dvi", "dvi_24bit")):
         if tag in cfg_id and perip in attached_ids:
             add("NO-VARIANT", "{} attached in {} variant".format(perip, tag))
+
+    # ---- driver peripherals vs BGM's instantiations (TM1638, INMP441, MIC3) --------
+    # E1/E6 for the peripherals BGM wires in board_specific_top.sv: same set of
+    # modules instantiated, same pins (compared by pin identity, so Pmod
+    # numbering conventions cannot fool it). Replaces the old presence codes
+    # PMOD-IDX / MIC3 / NO-VARIANT(tm1638).
+    if bgm_dir is not None:
+        from tools import sync_from_bgm
+        derived = sync_from_bgm._bgm_driver_binds(bgm_dir, pinmap)
+        have = {a["peripheral_id"]: (a.get("bind") or {}) for a in attaches
+                if a["peripheral_id"] in sync_from_bgm._SV_PERIPHERALS}
+        for pid in sorted(set(derived) | set(have)):
+            if pid not in derived:
+                add("SV-BIND-DIFF", "{} attached but BGM does not instantiate it".format(pid))
+            elif pid not in have:
+                if derived[pid][0]:
+                    add("SV-BIND-DIFF", "BGM instantiates {} on {} but it is not attached".format(pid, derived[pid][0]))
+            else:
+                want, _notes = derived[pid]
+                got = {k: str(v).strip('"') for k, v in have[pid].items()}
+                diff = {k: (got.get(k), v) for k, v in want.items() if got.get(k) != v}
+                if diff:
+                    add("SV-BIND-DIFF", "{}: {}".format(pid, diff))
 
     # ---- PLL / Gowin options ----------------------------------------------------
     plls = bgm_pll_instances(top_text)
@@ -329,18 +352,8 @@ def analyze(cfg_id, cfg_text):
     if problems:
         add("GEN-ERROR", "{} problem(s); first: {}".format(
             len(problems), problems[0].split(": ", 1)[-1][:110]))
-    if "pmod_mic3" in attached_ids:
-        add("MIC3")
-    if "hub75e_led_matrix" in attached_ids:
-        add("HUB75")
     if any(pid in _DISPLAY_PERIPHERALS for pid in attached_ids):
         add("DISPLAY", ", ".join(p for p in attached_ids if p in _DISPLAY_PERIPHERALS))
-    for a in attaches:
-        if a["peripheral_id"] in ("inmp441_i2s_mic", "pmod_mic3"):
-            for _sig, ref in _iter_bind_refs(a):
-                if re.match(r"^pmod_j[a-e]\[", ref):
-                    add("PMOD-IDX", "{} on {}".format(a["peripheral_id"], ref))
-                    break
 
     # ---- polarity --------------------------------------------------------------------
     hints = bgm_polarity_hints(top_text)

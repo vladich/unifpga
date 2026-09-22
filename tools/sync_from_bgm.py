@@ -103,7 +103,7 @@ def apply_reset(path, dry_run):
     text = original
     cfg = yaml.safe_load(text)["Configuration"]
     cid = cfg["id"]
-    vdir = bgm_oracle.variant_dir(cid, cfg["board"])
+    vdir = bgm_oracle.variant_dir_for(cid, cfg["board"])
     if vdir is None:
         return "skip (no BGM variant)"
     facts = bgm_oracle.summarize(vdir)
@@ -207,7 +207,7 @@ def apply_clock(paths, dry_run):
         cid = os.path.splitext(os.path.basename(path))[0]
         cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
         cfgs[cid] = (path, cfg)
-        vdir = bgm_oracle.variant_dir(cid, cfg["board"])
+        vdir = bgm_oracle.variant_dir_for(cid, cfg["board"])
         mhz = bgm_oracle.summarize(vdir)["clk_mhz"] if vdir else None
         if mhz is not None:
             board_mhz.setdefault(cfg["board"], {}).setdefault(mhz, []).append(cid)
@@ -378,6 +378,8 @@ def apply_seven_seg(path, dry_run):
         j += 1
     new_lines = lines[:i] + _reindent(block, item_indent).rstrip("\n").split("\n") + lines[j:]
     text = "\n".join(new_lines)
+    if not text.endswith("\n"):
+        text += "\n"
     if text == original:
         return "unchanged"
     if not dry_run:
@@ -385,9 +387,420 @@ def apply_seven_seg(path, dry_run):
     return "rewrote 7-segment attach: " + block.split("\n")[0].strip()
 
 
+# ---------------------------------------------------------------------------
+# --prune-optional: drop binds of optional signals whose pins do not exist
+# ---------------------------------------------------------------------------
+
+def apply_prune_optional(path, dry_run):
+    from tools import codegen
+    original = open(path, encoding="utf-8").read()
+    cfg = yaml.safe_load(original)["Configuration"]
+    pinmap = config_init.read_board_pinmap(cfg["board"]) or {}
+    config_init._apply_pin_overrides(cfg["id"], cfg, pinmap)
+    peripherals = config_init.read_peripherals()
+    lines = original.split("\n")
+    drop = []          # (peripheral id, signal, ref)
+    for a in cfg.get("attach") or []:
+        perif = peripherals.get(a.get("peripheral")) or {}
+        sig_defs = {s["name"]: s for s in perif.get("signals", [])}
+        for sig, ref in (a.get("bind") or {}).items():
+            sdef = sig_defs.get(sig)
+            if not sdef or not sdef.get("optional") or not isinstance(ref, str):
+                continue
+            parsed = codegen._parse_bank_ref(ref)
+            if parsed is None:
+                continue
+            if codegen._bank_pin(pinmap, *parsed) is None:
+                drop.append((a.get("peripheral"), sig, ref))
+    if not drop:
+        return "unchanged"
+    new_lines = []
+    for line in lines:
+        m = re.match(r"^\s{6,8}([A-Za-z_][A-Za-z0-9_]*):\s*([^#\n]+?)\s*(#.*)?$", line)
+        if m and any(m.group(1) == sig and m.group(2).strip().strip('"\'') == ref for _p, sig, ref in drop):
+            continue
+        new_lines.append(line)
+    text = "\n".join(new_lines)
+    if text == original:
+        return "unchanged"
+    if not dry_run:
+        open(path, "w", encoding="utf-8").write(text)
+    return "dropped optional binds without pins: " + ", ".join("{}.{}".format(p, s) for p, s, _ in drop)
+
+
+# ---------------------------------------------------------------------------
+# --vga: colour widths from the pinmap (pins) and BGM (user-visible bits)
+# ---------------------------------------------------------------------------
+
+_W_RE = re.compile(r"^\s*(?:localparam|parameter)?\s*(w_red|w_green|w_blue)\s*=\s*(\d+)", re.M)
+
+
+def _bgm_colour_bits(vdir):
+    if vdir is None:
+        return {}
+    text = bgm_oracle.preprocess_variant(vdir).text
+    out = {}
+    for m in _W_RE.finditer(text):
+        out.setdefault(m.group(1), int(m.group(2)))
+    return out
+
+
+def apply_vga(path, dry_run):
+    original = open(path, encoding="utf-8").read()
+    cfg = yaml.safe_load(original)["Configuration"]
+    if not any((a or {}).get("peripheral") == "vga_4bit" for a in cfg.get("attach") or []):
+        return "skip (no vga_4bit)"
+    pinmap = config_init.read_board_pinmap(cfg["board"]) or {}
+    vga = ((pinmap.get("pinBanks") or {}).get("onboard_vga") or {}).get("pins")
+    if not isinstance(vga, dict):
+        return "WARNING: pinmap has no onboard_vga dict bank"
+    vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+    bits = _bgm_colour_bits(vdir)
+    user = {c: bits.get("w_" + n, 4) for c, n in (("r", "red"), ("g", "green"), ("b", "blue"))}
+    if isinstance(vga.get("rgb"), list) and len(vga["rgb"]) == 3:
+        # BGM: VGA_RGB = display_on ? {|red, |green, |blue} : 0  -> [2]=r [1]=g [0]=b
+        pins = {"r": 1, "g": 1, "b": 1}
+        binds = {"r": '["onboard_vga.rgb[2]"]', "g": '["onboard_vga.rgb[1]"]', "b": '["onboard_vga.rgb[0]"]'}
+    else:
+        pins, binds = {}, {}
+        for c in "rgb":
+            v = vga.get(c)
+            if isinstance(v, list):
+                pins[c] = len(v)
+            elif isinstance(v, str):
+                pins[c] = 1
+            else:
+                return "WARNING: onboard_vga has no {} sub-key".format(c)
+            binds[c] = "onboard_vga." + c
+    hs = "onboard_vga.hs" if "hs" in vga else None
+    vs = "onboard_vga.vs" if "vs" in vga else None
+    if not hs or not vs:
+        return "WARNING: onboard_vga lacks hs/vs"
+    depth = {(4, 4, 4): 444, (8, 8, 8): 888, (5, 6, 5): 565, (1, 1, 1): 111}.get((user["r"], user["g"], user["b"]), 444)
+    block = ["    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue",
+             "      params:",
+             "        bits_r: {}".format(user["r"]), "        bits_g: {}".format(user["g"]), "        bits_b: {}".format(user["b"]),
+             "        pin_bits_r: {}".format(pins["r"]), "        pin_bits_g: {}".format(pins["g"]), "        pin_bits_b: {}".format(pins["b"]),
+             "        color_depth: {}".format(depth),
+             "      bind:",
+             "        r: {}".format(binds["r"]), "        g: {}".format(binds["g"]), "        b: {}".format(binds["b"]),
+             "        hs: {}".format(hs), "        vs: {}".format(vs)]
+    lines = original.split("\n")
+    start = re.compile(r"^( {2,4})- peripheral: vga_4bit\s*(#.*)?$")
+    starts = [i for i, l in enumerate(lines) if start.match(l)]
+    if not starts:
+        return "WARNING: could not find the vga_4bit attach line"
+    i = starts[0]
+    item_indent = start.match(lines[i]).group(1)
+    key_indent = item_indent + "  "
+    j = i + 1
+    while j < len(lines) and (lines[j].startswith(key_indent) or lines[j].strip() == "") \
+            and not lines[j].startswith(item_indent + "- "):
+        if lines[j].strip() == "" and j + 1 < len(lines) and not lines[j + 1].startswith(key_indent):
+            break
+        j += 1
+    new_lines = lines[:i] + _reindent("\n".join(block), item_indent).split("\n") + lines[j:]
+    text = "\n".join(new_lines)
+    if not text.endswith("\n"):
+        text += "\n"
+    if text == original:
+        return "unchanged"
+    if not dry_run:
+        open(path, "w", encoding="utf-8").write(text)
+    return "vga: bits {r}/{g}/{b}, pins {pr}/{pg}/{pb}{rgb}".format(
+        r=user["r"], g=user["g"], b=user["b"], pr=pins["r"], pg=pins["g"], pb=pins["b"],
+        rgb=" (rgb bank)" if "rgb" in vga else "")
+
+
+# ---------------------------------------------------------------------------
+# --sv-binds: driver peripherals bound exactly as BGM instantiates them
+# ---------------------------------------------------------------------------
+
+# BGM module -> (peripheral id, {module port: peripheral signal})
+_SV_MODULES = {
+    "tm1638_board_controller":        ("tm1638_led_key",  {"sio_clk": "clk", "sio_stb": "stb", "sio_data": "dio"}),
+    "inmp441_mic_i2s_receiver":       ("inmp441_i2s_mic", {"lr": "lr", "ws": "ws", "sck": "sck", "sd": "sd"}),
+    "inmp441_mic_i2s_receiver_alt":   ("inmp441_i2s_mic", {"lr": "lr", "ws": "ws", "sck": "sck", "sd": "sd"}),
+    "digilent_pmod_mic3_spi_receiver": ("pmod_mic3",      {"cs": "cs", "sck": "sclk", "sdo": "miso"}),
+}
+_SV_PERIPHERALS = {pid for pid, _ in _SV_MODULES.values()}
+
+_EXPR = re.compile(r"^~?\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[\s*(\d+)\s*\])?$")
+
+
+def _norm_pin(p):
+    return str(p).strip().strip('"').upper().replace("PIN_", "")
+
+
+def _bgm_signal_pins(vdir):
+    """{SIGNAL or SIGNAL[idx] (upper-cased): pin} from every constraint file of
+    the variant, primary file first (later files never override)."""
+    from tools import import_constraints as ic
+    out = {}
+    for path in ic.find_all_constraint_files(vdir):
+        try:
+            signals, _fmt = ic.parse_file(path)
+        except Exception:
+            continue
+        for name, entry in signals.items():
+            key = name.replace(" ", "").upper()
+            out.setdefault(key, _norm_pin(entry["pin"]))
+    return out
+
+
+def _pin_to_ref(pinmap):
+    """Reverse map: normalized pin -> bank ref usable in a bind."""
+    out = {}
+    for bank, b in (pinmap.get("pinBanks") or {}).items():
+        pins = (b or {}).get("pins")
+        if isinstance(pins, str):
+            out.setdefault(_norm_pin(pins), bank)
+        elif isinstance(pins, list):
+            for i, p in enumerate(pins):
+                if p is not None:
+                    out.setdefault(_norm_pin(p), "{}[{}]".format(bank, i))
+        elif isinstance(pins, dict):
+            for sub, v in pins.items():
+                if isinstance(v, list):
+                    for i, p in enumerate(v):
+                        if p is not None:
+                            out.setdefault(_norm_pin(p), "{}.{}[{}]".format(bank, sub, i))
+                elif isinstance(v, str):
+                    out.setdefault(_norm_pin(v), "{}.{}".format(bank, sub))
+    return out
+
+
+def _bgm_driver_binds(vdir, pinmap):
+    """{peripheral id: ({signal: bank ref}, notes)} for every _SV_MODULES module
+    BGM instantiates in this variant's active text."""
+    text = bgm_oracle.preprocess_variant(vdir).text
+    sig_pins = _bgm_signal_pins(vdir)
+    rev = _pin_to_ref(pinmap)
+    out = {}
+    for module, (pid, port_map) in _SV_MODULES.items():
+        insts = bgm_oracle.instantiations(text, module)
+        if not insts or pid in out:
+            continue
+        inst = insts[0]
+        binds, notes = {}, []
+        for port, expr in inst["ports"]:
+            sig = port_map.get(port)
+            if sig is None:
+                continue
+            m = _EXPR.match(expr.strip())
+            if not m:
+                notes.append("{}: expression {!r} not a port".format(port, expr))
+                continue
+            name, idx = m.group(1).upper(), m.group(2)
+            key = "{}[{}]".format(name, idx) if idx is not None else name
+            pin = sig_pins.get(key)
+            if pin is None:
+                notes.append("{}: BGM signal {} has no pin in the constraint files".format(port, key))
+                continue
+            ref = rev.get(pin)
+            if ref is None:
+                notes.append("{}: pin {} ({}) is not in the pinmap".format(port, pin, key))
+                continue
+            binds[sig] = ref
+        out[pid] = (binds, notes)
+    return out
+
+
+def _find_attach_blocks(lines, pid):
+    """[(start, end)] line ranges of `- peripheral: <pid>` items."""
+    start = re.compile(r"^( {2,4})- peripheral: " + re.escape(pid) + r"\s*(#.*)?$")
+    blocks = []
+    for i, l in enumerate(lines):
+        m = start.match(l)
+        if not m:
+            continue
+        item_indent = m.group(1)
+        key_indent = item_indent + "  "
+        j = i + 1
+        while j < len(lines) and (lines[j].startswith(key_indent) or lines[j].strip() == "") \
+                and not lines[j].startswith(item_indent + "- "):
+            if lines[j].strip() == "" and j + 1 < len(lines) and not lines[j + 1].startswith(key_indent):
+                break
+            j += 1
+        blocks.append((i, j, item_indent))
+    return blocks
+
+
+def _attach_item_indent(lines):
+    for l in lines:
+        m = re.match(r"^( {2,4})- peripheral:", l)
+        if m:
+            return m.group(1)
+    return "    "
+
+
+def _render_attach(pid, params, binds, comment, indent):
+    out = ["{}- peripheral: {}   # {}".format(indent, pid, comment)]
+    if params:
+        out.append(indent + "  params:")
+        for k, v in params.items():
+            out.append("{}    {}: {}".format(indent, k, v))
+    out.append(indent + "  bind:")
+    for k, v in binds.items():
+        out.append('{}    {}: "{}"'.format(indent, k, v) if any(c in v for c in "[],") else "{}    {}: {}".format(indent, k, v))
+    return out
+
+
+def apply_sv_binds(path, dry_run):
+    from tools import codegen
+    original = open(path, encoding="utf-8").read()
+    cfg = yaml.safe_load(original)["Configuration"]
+    vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+    if vdir is None:
+        return "skip (no BGM variant)"
+    pinmap = config_init.read_board_pinmap(cfg["board"]) or {}
+    config_init._apply_pin_overrides(cfg["id"], cfg, pinmap)
+    derived = _bgm_driver_binds(vdir, pinmap)
+    lines = original.split("\n")
+    item_indent = _attach_item_indent(lines)
+    changes, warnings = [], []
+    existing_params = {}
+    for a in cfg.get("attach") or []:
+        if a.get("peripheral") in _SV_PERIPHERALS:
+            existing_params[a["peripheral"]] = a.get("params") or {}
+
+    # 1. peripherals BGM does not instantiate here -> remove
+    for pid in sorted(_SV_PERIPHERALS - set(derived)):
+        for i, j, _ind in reversed(_find_attach_blocks(lines, pid)):
+            del lines[i:j]
+            changes.append("removed {} (BGM does not instantiate it in this variant)".format(pid))
+
+    # 1b. BGM feeds `mic` from the INMP441 and ties the on-board PDM microphone
+    #     off (`M_CLK = 0`, `M_LRSEL = 0` on the Nexys boards); audio_in is an
+    #     exclusive capability, so the PDM attach has to go.
+    if "inmp441_i2s_mic" in derived and derived["inmp441_i2s_mic"][0]:
+        for i, j, _ind in reversed(_find_attach_blocks(lines, "pdm_mic")):
+            del lines[i:j]
+            changes.append("removed pdm_mic (BGM drives mic from the INMP441 and ties the PDM mic off)")
+
+    # 2. peripherals BGM instantiates -> replace or append
+    comment = "binds from BGM {}/board_specific_top.sv".format(os.path.basename(vdir))
+    for pid, (binds, notes) in sorted(derived.items()):
+        warnings.extend("{}: {}".format(pid, n) for n in notes)
+        if not binds:
+            continue
+        block = _render_attach(pid, existing_params.get(pid, {}), binds, comment, item_indent)
+        blocks = _find_attach_blocks(lines, pid)
+        if blocks:
+            i, j, _ind = blocks[0]
+            lines[i:j] = block
+            for i2, j2, _ in reversed(blocks[1:]):
+                del lines[i2:j2]
+            changes.append("{} binds {}".format(pid, binds))
+        else:
+            # append after the last attach item
+            idx = len(lines)
+            for k in range(len(lines) - 1, -1, -1):
+                if lines[k].startswith(item_indent + "  ") or re.match(r"^ {2,4}- peripheral:", lines[k]):
+                    idx = k + 1
+                    break
+            lines[idx:idx] = block
+            changes.append("added {} {}".format(pid, binds))
+
+    # 3. a plain input passthrough (buttons/switches) sharing a pin with a
+    #    driver peripheral: BGM's variant gives the pin to the module.
+    text = "\n".join(lines)
+    try:
+        cfg2 = yaml.safe_load(text)["Configuration"]
+    except Exception as exc:
+        return "ERROR: rewrite produced invalid YAML: {}".format(exc)
+    resolved = None
+    try:
+        peripherals = config_init.read_peripherals()
+        fake = {"configuration": cfg2, "board_pinmap": pinmap, "toolchain": {"Id": cfg2["toolchain"]},
+                "peripherals": [{"peripheral_id": a["peripheral"], "peripheral": peripherals[a["peripheral"]],
+                                 "params": a.get("params") or {}, "bind": a.get("bind") or {}}
+                                for a in cfg2.get("attach") or []]}
+        resolved = fake
+    except KeyError:
+        pass
+    if resolved is not None:
+        for problem in codegen.validate_configuration(resolved):
+            m = re.search(r"port bit (\S+) is driven/bound by 2 peripherals: (\w+)#(\d+), (\w+)#(\d+)", problem)
+            if not m:
+                continue
+            pair = [(m.group(2), int(m.group(3))), (m.group(4), int(m.group(5)))]
+            passthrough = [(pid, i) for pid, i in pair if pid in ("button_array", "sw_bank")]
+            driver = [(pid, i) for pid, i in pair if pid in _SV_PERIPHERALS]
+            if passthrough and driver:
+                pid, _i = passthrough[0]
+                for i, j, _ in reversed(_find_attach_blocks(lines, pid)):
+                    if cfg2["attach"][_i].get("bind") and any(
+                            str(v) in "\n".join(lines[i:j]) for v in cfg2["attach"][_i]["bind"].values()):
+                        del lines[i:j]
+                        changes.append("removed {} (its pin {} belongs to {} in BGM)".format(pid, m.group(1), driver[0][0]))
+                        break
+        text = "\n".join(lines)
+
+    if warnings:
+        changes.append("WARNINGS: " + "; ".join(warnings))
+    if not text.endswith("\n"):
+        text += "\n"
+    if text == original:
+        return "unchanged" if not warnings else "unchanged; " + "; ".join(warnings)
+    if not dry_run:
+        open(path, "w", encoding="utf-8").write(text)
+    return "; ".join(changes)
+
+
+# ---------------------------------------------------------------------------
+# --prune-missing-banks: drop attaches whose every bind names an absent bank
+# ---------------------------------------------------------------------------
+
+def apply_prune_missing_banks(path, dry_run):
+    """Hand-written configurations (nexys4_ddr_default) attach peripherals on
+    banks the pinmap never had (USB-HID, Ethernet, QSPI, ...). Strict codegen
+    refuses them; BGM's top does not wire them either. Remove an attach when
+    none of its binds can resolve to an existing bank."""
+    from tools import codegen
+    original = open(path, encoding="utf-8").read()
+    cfg = yaml.safe_load(original)["Configuration"]
+    pinmap = config_init.read_board_pinmap(cfg["board"]) or {}
+    config_init._apply_pin_overrides(cfg["id"], cfg, pinmap)
+    banks = pinmap.get("pinBanks") or {}
+    lines = original.split("\n")
+    removed = []
+    for idx, a in reversed(list(enumerate(cfg.get("attach") or []))):
+        bind = a.get("bind") or {}
+        if not bind:
+            continue
+        refs = [one for ref in bind.values() for one in (ref if isinstance(ref, list) else [ref]) if isinstance(one, str)]
+        parsed = [codegen._parse_bank_ref(r) for r in refs]
+        if refs and all(p is not None and p[0] not in banks for p in parsed):
+            blocks = _find_attach_blocks(lines, a["peripheral"])
+            # pick the block whose text contains this attach's first bind value
+            first = str(refs[0])
+            for i, j, _ in reversed(blocks):
+                if first in "\n".join(lines[i:j]):
+                    del lines[i:j]
+                    removed.append("{} on {}".format(a["peripheral"], sorted({p[0] for p in parsed})))
+                    break
+    if not removed:
+        return "unchanged"
+    text = "\n".join(lines)
+    if not text.endswith("\n"):
+        text += "\n"
+    if not dry_run:
+        open(path, "w", encoding="utf-8").write(text)
+    return "removed attaches on banks the pinmap lacks: " + "; ".join(removed)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--reset", action="store_true", help="sync the reset policy")
+    p.add_argument("--sv-binds", action="store_true",
+                   help="bind TM1638 / INMP441 / Pmod MIC3 exactly as BGM's board_specific_top.sv instantiates them")
+    p.add_argument("--vga", action="store_true",
+                   help="set vga_4bit colour widths from the pinmap and BGM, rebind rgb-shaped banks")
+    p.add_argument("--prune-optional", action="store_true",
+                   help="drop binds of optional signals whose sub-key/pin does not exist")
+    p.add_argument("--prune-missing-banks", action="store_true",
+                   help="drop attaches whose binds all name banks absent from the pinmap")
     p.add_argument("--clock", action="store_true",
                    help="write BGM clk_mhz into the pinmaps' clock banks; add/repair clock_input attaches")
     p.add_argument("--seven-seg", action="store_true",
@@ -395,8 +808,10 @@ def main(argv=None):
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--only", nargs="*")
     args = p.parse_args(argv)
-    if not (args.reset or args.clock or args.seven_seg):
-        p.error("nothing to do: pass --reset, --clock and/or --seven-seg")
+    if not (args.reset or args.clock or args.seven_seg or args.vga or args.prune_optional
+            or args.sv_binds or args.prune_missing_banks):
+        p.error("nothing to do: pass one or more of --reset --clock --seven-seg --vga "
+                "--prune-optional --prune-missing-banks --sv-binds")
     if not bgm_oracle.has_bgm():
         print("BGM checkout not found at {}".format(bgm_oracle.BGM_BOARDS), file=sys.stderr)
         return 2
@@ -411,6 +826,14 @@ def main(argv=None):
             print("[reset] {:44s} {}".format(cid, apply_reset(path, args.dry_run)))
         if args.seven_seg:
             print("[7seg]  {:44s} {}".format(cid, apply_seven_seg(path, args.dry_run)))
+        if args.sv_binds:
+            print("[sv]    {:44s} {}".format(cid, apply_sv_binds(path, args.dry_run)))
+        if args.vga:
+            print("[vga]   {:44s} {}".format(cid, apply_vga(path, args.dry_run)))
+        if args.prune_optional:
+            print("[prune] {:44s} {}".format(cid, apply_prune_optional(path, args.dry_run)))
+        if args.prune_missing_banks:
+            print("[banks] {:44s} {}".format(cid, apply_prune_missing_banks(path, args.dry_run)))
     return 0
 
 

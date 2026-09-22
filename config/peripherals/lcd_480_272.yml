@@ -3,16 +3,21 @@
 Peripheral:
   id: lcd_480_272
   description: 480x272 RGB-parallel LCD with HSYNC/VSYNC/DE/CLK and optional backlight
+  # Colour bus width per channel: 5-6-5 on Tang Nano 9K/20K and Primer 20K
+  # Dock (BGM w_red = 5), 6-6-6 on Tang Mega 138K / 138K Pro (BGM w_red = 6).
+  # The user-visible width equals the pin width for these panels.
   parameters:
-    color_depth:
-      type: int
-      default: 16    # 5-6-5 RGB
+    bits_r: { type: int, default: 5 }
+    bits_g: { type: int, default: 6 }
+    bits_b: { type: int, default: 5 }
   signals:
-    - { name: r,    type: bus, width: 5, direction: output }
-    - { name: g,    type: bus, width: 6, direction: output }
-    - { name: b,    type: bus, width: 5, direction: output }
-    - { name: hs,   type: scalar, direction: output }
-    - { name: vs,   type: scalar, direction: output }
+    - { name: r,    type: bus, width: $bits_r, direction: output }
+    - { name: g,    type: bus, width: $bits_g, direction: output }
+    - { name: b,    type: bus, width: $bits_b, direction: output }
+    # hs/vs are optional: the Tang Mega 138K Pro adapter is wired DE-only (BGM
+    # tang_mega_138k_pro_lcd_480_272_tm1638/board_specific.cst has no LCD_HS/VS).
+    - { name: hs,   type: scalar, direction: output, optional: true }
+    - { name: vs,   type: scalar, direction: output, optional: true }
     - { name: de,   type: scalar, direction: output }
     - { name: ck,   type: scalar, direction: output }
     - { name: bl,   type: scalar, direction: output, optional: true, comment: "Backlight enable" }
@@ -23,6 +28,9 @@ Peripheral:
         width: 480
         height: 272
         color_depth: 565
+        bits_r: $bits_r
+        bits_g: $bits_g
+        bits_b: $bits_b
   driver:
     module: lcd_480_272
     file: rtl/peripherals/lcd_480_272.sv

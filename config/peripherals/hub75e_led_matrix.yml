@@ -1,5 +1,8 @@
 # HUB75E LED matrix panel (commonly 64x32 or 64x64 RGB LEDs). Uses 6 RGB
-# data lines (top + bottom halves), 5 row-select lines, plus clock/latch/output-enable.
+# data lines (top + bottom halves), 5 row-select lines (a..e), plus the panel
+# clock, latch and output-enable. Signal names follow the driver module and
+# BGM's board_specific_top.sv (`ck`, `oe`, `st`, `a`..`e`) so binds can be
+# read straight off BGM's instantiation.
 
 Peripheral:
   id: hub75e_led_matrix
@@ -7,48 +10,61 @@ Peripheral:
   parameters:
     rows:
       type: int
-      default: 32
-    address_width:
+      default: 64
+    brightness:
       type: int
-      default: 5
+      default: 1          # BGM's HUB75E_LED_MATRIX_BRIGHTNESS; the `_bright` variant raises it
   signals:
-    - { name: r1,  type: scalar, direction: output, comment: "Top half red" }
-    - { name: g1,  type: scalar, direction: output, comment: "Top half green" }
-    - { name: b1,  type: scalar, direction: output, comment: "Top half blue" }
-    - { name: r2,  type: scalar, direction: output, comment: "Bottom half red" }
-    - { name: g2,  type: scalar, direction: output, comment: "Bottom half green" }
-    - { name: b2,  type: scalar, direction: output, comment: "Bottom half blue" }
-    - { name: a,   type: bus, width: $address_width, direction: output, comment: "Row address" }
-    - { name: clk, type: scalar, direction: output, comment: "Pixel clock" }
-    - { name: lat, type: scalar, direction: output, comment: "Latch" }
-    - { name: oen, type: scalar, direction: output, comment: "Output enable, active low" }
+    - { name: r1, type: scalar, direction: output, comment: "Top half red" }
+    - { name: g1, type: scalar, direction: output, comment: "Top half green" }
+    - { name: b1, type: scalar, direction: output, comment: "Top half blue" }
+    - { name: r2, type: scalar, direction: output, comment: "Bottom half red" }
+    - { name: g2, type: scalar, direction: output, comment: "Bottom half green" }
+    - { name: b2, type: scalar, direction: output, comment: "Bottom half blue" }
+    - { name: a,  type: scalar, direction: output, comment: "Row address bit 0" }
+    - { name: b,  type: scalar, direction: output, comment: "Row address bit 1" }
+    - { name: c,  type: scalar, direction: output, comment: "Row address bit 2" }
+    - { name: d,  type: scalar, direction: output, comment: "Row address bit 3" }
+    - { name: e,  type: scalar, direction: output, optional: true, comment: "Row address bit 4 (64-row panels)" }
+    - { name: ck, type: scalar, direction: output, comment: "Panel shift clock (driver output, never the board oscillator)" }
+    - { name: st, type: scalar, direction: output, comment: "Latch / strobe" }
+    - { name: oe, type: scalar, direction: output, comment: "Output enable, active low" }
   provides:
     - capability: screen
       params:
         width: 64
-        height: $rows     # 32 or 64 typically
-        color_depth: 444  # one bit per channel × time-domain PWM by the driver
+        height: $rows
+        color_depth: 111  # one bit per channel, exactly as BGM drives these panels (w_red = 1)
   driver:
     module: hub75e_led_matrix
     file: rtl/peripherals/hub75e_led_matrix.sv
     parameters:
       clk_mhz:       context.clk_mhz
+      screen_width:  64
       screen_height: $rows
+      w_red:         1
+      w_green:       1
+      w_blue:        1
+      brightness:    $brightness
     port_map:
       clk:   context.clk
       rst:   context.rst
       x:     capability.screen.x
       y:     capability.screen.y
-      red:   capability.screen.red    # the SV ports are red/green/blue (no _i suffix)
+      red:   capability.screen.red
       green: capability.screen.green
       blue:  capability.screen.blue
-      r1:    pin.r1
-      g1:    pin.g1
-      b1:    pin.b1
-      r2:    pin.r2
-      g2:    pin.g2
-      b2:    pin.b2
+      ck:    pin.ck
+      oe:    pin.oe
+      st:    pin.st
       a:     pin.a
-      lat:   pin.lat
-      oen:   pin.oen
-      pclk:  pin.clk
+      b:     pin.b
+      c:     pin.c
+      d:     pin.d
+      e:     pin.e
+      r1:    pin.r1
+      r2:    pin.r2
+      g1:    pin.g1
+      g2:    pin.g2
+      b1:    pin.b1
+      b2:    pin.b2

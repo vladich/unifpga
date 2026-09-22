@@ -5,11 +5,16 @@
 Peripheral:
   id: hdmi_tmds
   description: HDMI / DVI digital video output (3 TMDS data pairs + 1 TMDS clock pair)
+  # Gowin boards describe each TMDS pair as one "P,N" pin on the P signal
+  # (BGM: `IO_LOC "O_TMDS_CLK_P" 33,34;`); the N signals then have no pin of
+  # their own and are optional. Boards with single-ended pseudo-differential
+  # wiring (iCEBreaker DVI Pmod) bind both halves.
+  # TODO P3.2: real differential output buffers per vendor instead of `~d_p`.
   signals:
     - { name: clk_p, type: scalar, direction: output }
-    - { name: clk_n, type: scalar, direction: output }
+    - { name: clk_n, type: scalar, direction: output, optional: true }
     - { name: d_p,   type: bus, width: 3, direction: output, comment: "Channels 0/1/2 = B/G/R" }
-    - { name: d_n,   type: bus, width: 3, direction: output }
+    - { name: d_n,   type: bus, width: 3, direction: output, optional: true }
   provides:
     - capability: screen
       params:

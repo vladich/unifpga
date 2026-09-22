@@ -18,9 +18,12 @@ Capability:
       description: Active pixel height.
     color_depth:
       type: enum
-      values: [444, 565, 888]
+      values: [111, 444, 565, 888]
       default: 444
-      description: Bits per RGB channel — 4-4-4 (12-bit), 5-6-5 (16-bit), 8-8-8 (24-bit).
+      description: Bits per RGB channel — 1-1-1 (HUB75 panels, 3-bit VGA), 4-4-4 (12-bit), 5-6-5 (16-bit), 8-8-8 (24-bit).
+    bits_r: { type: int, description: "Explicit red width (BGM w_red); overrides color_depth" }
+    bits_g: { type: int, description: "Explicit green width (BGM w_green)" }
+    bits_b: { type: int, description: "Explicit blue width (BGM w_blue)" }
   signals:
     - { name: x,     type: bus, direction: hw_to_user, comment: "X position; width = ceil(log2(screen_width))" }
     - { name: y,     type: bus, direction: hw_to_user, comment: "Y position; width = ceil(log2(screen_height))" }

@@ -59,6 +59,24 @@ def has_bgm():
     return os.path.isdir(BGM_BOARDS)
 
 
+# unifpga configuration ids that are open-flow twins of a vendor configuration
+# carry one of these suffixes; BGM has no directory for the twin, so the
+# oracle is the vendor variant's directory.
+_TWIN_SUFFIXES = ("_openxc7", "_mistral", "_oxide", "_nextpnr")
+
+
+def variant_dir_for(config_id, board_id=None):
+    """BGM variant directory for a configuration: the id itself, the id
+    without an open-flow twin suffix, then the board id."""
+    cands = [config_id]
+    for suf in _TWIN_SUFFIXES:
+        if config_id.endswith(suf):
+            cands.append(config_id[: -len(suf)])
+    if board_id:
+        cands.append(board_id)
+    return variant_dir(*cands)
+
+
 # ---------------------------------------------------------------------------
 # Minimal SystemVerilog preprocessor
 # ---------------------------------------------------------------------------
@@ -246,6 +264,79 @@ def instantiated_modules(text):
             continue
         names.append(mod)
     return names
+
+
+_INST_HEAD = re.compile(
+    r"^[ \t]*([A-Za-z_][A-Za-z0-9_]*)[ \t\r\n]*(#[ \t\r\n]*\()?", re.MULTILINE)
+
+
+def _balanced(text, start):
+    """Index just past the `)` matching the `(` at `start`, or -1."""
+    depth = 0
+    i = start
+    while i < len(text):
+        c = text[i]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return i + 1
+        i += 1
+    return -1
+
+
+_PORT_CONN = re.compile(r"\.\s*([A-Za-z_][A-Za-z0-9_]*)\s*\(", re.MULTILINE)
+
+
+def _split_connections(body):
+    """`.a ( X ), .b ( Y [3] ) ...` -> OrderedDict-like list of (port, expr)."""
+    out = []
+    i = 0
+    while True:
+        m = _PORT_CONN.search(body, i)
+        if not m:
+            break
+        end = _balanced(body, m.end() - 1)
+        if end < 0:
+            break
+        expr = body[m.end():end - 1]
+        expr = re.sub(r"//[^\n]*", "", expr)          # strip trailing comments
+        out.append((m.group(1), " ".join(expr.split())))
+        i = end
+    return out
+
+
+def instantiations(text, module):
+    """Every instantiation of `module` in the preprocessed text as
+    {"instance": name, "params": [(p, expr)], "ports": [(port, expr)]}."""
+    found = []
+    for m in re.finditer(r"(?<![A-Za-z0-9_])" + re.escape(module) + r"(?![A-Za-z0-9_])", text):
+        i = m.end()
+        # optional parameter block
+        j = i
+        while j < len(text) and text[j] in " \t\r\n":
+            j += 1
+        params = []
+        if j < len(text) and text[j] == "#":
+            k = text.find("(", j)
+            end = _balanced(text, k)
+            if end < 0:
+                continue
+            params = _split_connections(text[k + 1:end - 1])
+            j = end
+            while j < len(text) and text[j] in " \t\r\n":
+                j += 1
+        im = re.match(r"([A-Za-z_][A-Za-z0-9_]*)[ \t\r\n]*(\[[^\]]*\])?[ \t\r\n]*\(", text[j:])
+        if not im:
+            continue
+        k = j + im.end() - 1
+        end = _balanced(text, k)
+        if end < 0:
+            continue
+        found.append({"instance": im.group(1), "params": params,
+                      "ports": _split_connections(text[k + 1:end - 1])})
+    return found
 
 
 def polarity_hints(text):

@@ -769,8 +769,9 @@ def resolve_configuration(configuration_id):
 
     board_pinmap = read_board_pinmap(board_id)
     if board_pinmap is None:
-        raise ConfigError("Per-board YAML config/boards/{b}.yml is missing — re-run "
-                          "tools/curate_board.py".format(b=board_id))
+        raise ConfigError("Board '{b}' has no pinmap under config/boards/<producer>/<family>/ — "
+                          "re-run tools/curate_board.py".format(b=board_id))
+    _apply_pin_overrides(configuration_id, cfg, board_pinmap)
 
     attached = []
     for entry in cfg.get("attach", []) or []:
@@ -795,6 +796,47 @@ def resolve_configuration(configuration_id):
         "toolchain":     toolchains[toolchain_id],
         "peripherals":   attached,
     }
+
+
+def _apply_pin_overrides(configuration_id, cfg, pinmap):
+    """Apply the configuration's `pin_overrides:` to its (private copy of the)
+    board pinmap. A variant that wires a header differently from the board's
+    default (BGM's `tang_nano_20k_lcd_800_480_tm1638_alt` uses another LCD
+    adapter) says so here instead of getting a second board:
+
+        pin_overrides:
+          onboard_lcd.r:  ["42", "41", "49", "39", "38"]   # replace a sub-key
+          onboard_lcd.bl: null                             # remove a sub-key
+          pmod_x:         { pins: [..], frequency_mhz: 50 } # replace a whole bank
+    """
+    overrides = cfg.get("pin_overrides") or {}
+    if not overrides:
+        return
+    banks = pinmap.setdefault("pinBanks", {})
+    for ref, value in overrides.items():
+        parts = str(ref).split(".")
+        bank_name = parts[0]
+        sub = parts[1] if len(parts) > 1 else None
+        if len(parts) > 2:
+            raise ConfigError("Configuration '{c}': pin_overrides key {r!r} has more than one dot"
+                              .format(c=configuration_id, r=ref))
+        if sub is None:
+            if value is None:
+                banks.pop(bank_name, None)
+            elif isinstance(value, dict) and "pins" in value:
+                banks[bank_name] = value
+            else:
+                banks.setdefault(bank_name, {})["pins"] = value
+            continue
+        bank = banks.setdefault(bank_name, {"pins": {}})
+        pins = bank.get("pins")
+        if not isinstance(pins, dict):
+            raise ConfigError("Configuration '{c}': pin_overrides {r!r} names a sub-key but bank "
+                              "{b!r} is not a sub-keyed bank".format(c=configuration_id, r=ref, b=bank_name))
+        if value is None:
+            pins.pop(sub, None)
+        else:
+            pins[sub] = value
 
 
 def read_all(configuration_id=None):

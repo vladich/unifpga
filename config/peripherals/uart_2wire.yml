@@ -4,8 +4,10 @@
 Peripheral:
   id: uart_2wire
   description: 2-wire UART (TX, RX) with no flow control
+  # `tx` is optional: the Cyclone V GX starter kit routes only UART RX to the
+  # FPGA in BGM's board_specific.qsf (TX is commented out there).
   signals:
-    - { name: tx, type: scalar, direction: output, comment: "Transmit (host to peer)" }
+    - { name: tx, type: scalar, direction: output, optional: true, comment: "Transmit (host to peer)" }
     - { name: rx, type: scalar, direction: input,  comment: "Receive (peer to host)" }
   provides:
     - capability: serial_console

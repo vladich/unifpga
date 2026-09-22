@@ -3,14 +3,17 @@
 Peripheral:
   id: lcd_800_480
   description: 800x480 RGB-parallel LCD with HSYNC/VSYNC/DE/CLK and optional backlight
+  # BGM drives every 800x480 panel it supports (Tang Nano 9K/20K, Primer 20K
+  # Dock, Mega 138K) with a 5-6-5 bus: LCD_R[4:0], LCD_G[5:0], LCD_B[4:0],
+  # w_red = 5, w_green = 6, w_blue = 5. Same contract as lcd_480_272.
   parameters:
     color_depth:
       type: int
-      default: 24
+      default: 16    # 5-6-5 RGB
   signals:
-    - { name: r,    type: bus, width: 8, direction: output }
-    - { name: g,    type: bus, width: 8, direction: output }
-    - { name: b,    type: bus, width: 8, direction: output }
+    - { name: r,    type: bus, width: 5, direction: output }
+    - { name: g,    type: bus, width: 6, direction: output }
+    - { name: b,    type: bus, width: 5, direction: output }
     - { name: hs,   type: scalar, direction: output }
     - { name: vs,   type: scalar, direction: output }
     - { name: de,   type: scalar, direction: output }
@@ -22,7 +25,7 @@ Peripheral:
       params:
         width: 800
         height: 480
-        color_depth: 888
+        color_depth: 565
   driver:
     module: lcd_800_480
     file: rtl/peripherals/lcd_800_480.sv

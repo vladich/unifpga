@@ -205,10 +205,13 @@ SV_MODULE_TO_PERIPHERAL = {
                                       {"sck": "sck", "ws": "ws", "sd": "sd", "lr": "lr"}),
     "digilent_pmod_mic3_spi_receiver": ("pmod_mic3",
                                          {"cs": "cs", "sclk": "sclk", "miso": "miso"}),
+    # Module ports == peripheral signal names (ck/oe/st, a..e). The system
+    # `clk`/`rst` ports are context, not pins, and must not be mapped.
     "hub75e_led_matrix": ("hub75e_led_matrix",
                           {"r1": "r1", "g1": "g1", "b1": "b1",
                            "r2": "r2", "g2": "g2", "b2": "b2",
-                           "a": "a", "clk": "clk", "lat": "lat", "oen": "oen"}),
+                           "a": "a", "b": "b", "c": "c", "d": "d", "e": "e",
+                           "ck": "ck", "oe": "oe", "st": "st"}),
 }
 
 _PORT_RE = re.compile(

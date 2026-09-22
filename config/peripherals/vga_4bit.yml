@@ -1,12 +1,34 @@
-# 12-bit VGA (4 bits per channel) plus HSYNC/VSYNC. The standard Digilent VGA carrier.
+# VGA output with HSYNC/VSYNC and an R/G/B DAC of any width: the 4-4-4
+# Digilent/Pmod carriers (the historical default and the reason for the id),
+# the 8-8-8 DACs on DE1-SoC / DE2-115 / SoCKit, the 10-10-10 DAC on DE2, the
+# 5-6-5 resistor ladder on saylinx, and the one-bit-per-colour boards
+# (omdazz, rzrd, zeowaa, piswords6).
+#
+# Two width sets, both taken from the board and BGM:
+#   bits_*      what design_top sees (BGM's w_red / w_green / w_blue)
+#   pin_bits_*  how many pins the board has per channel
+# The `vga` driver gates the colours with display_on and reduces them to the
+# pin width the same way BGM's board_specific_top.sv does (OR-reduction for a
+# single pin, MSBs otherwise).
 
 Peripheral:
   id: vga_4bit
-  description: 12-bit VGA (4-4-4 R/G/B) with HSYNC/VSYNC
+  description: VGA output (HSYNC/VSYNC + R/G/B DAC of configurable width)
+  parameters:
+    bits_r:     { type: int, default: 4 }
+    bits_g:     { type: int, default: 4 }
+    bits_b:     { type: int, default: 4 }
+    pin_bits_r: { type: int, default: 4 }
+    pin_bits_g: { type: int, default: 4 }
+    pin_bits_b: { type: int, default: 4 }
+    color_depth:
+      type: enum
+      values: [111, 444, 565, 888]
+      default: 444      # informational; bits_* win when present
   signals:
-    - { name: r,  type: bus, width: 4, direction: output }
-    - { name: g,  type: bus, width: 4, direction: output }
-    - { name: b,  type: bus, width: 4, direction: output }
+    - { name: r,  type: bus, width: $pin_bits_r, direction: output }
+    - { name: g,  type: bus, width: $pin_bits_g, direction: output }
+    - { name: b,  type: bus, width: $pin_bits_b, direction: output }
     - { name: hs, type: scalar, direction: output }
     - { name: vs, type: scalar, direction: output }
   provides:
@@ -14,7 +36,10 @@ Peripheral:
       params:
         width: 640
         height: 480
-        color_depth: 444
+        color_depth: $color_depth
+        bits_r: $bits_r
+        bits_g: $bits_g
+        bits_b: $bits_b
   driver:
     module: vga
     file: rtl/peripherals/vga.sv
@@ -23,18 +48,24 @@ Peripheral:
       PIXEL_MHZ:  25
       H_DISPLAY:  640
       V_DISPLAY:  480
+      W_RED:      $bits_r
+      W_GREEN:    $bits_g
+      W_BLUE:     $bits_b
+      W_RED_O:    $pin_bits_r
+      W_GREEN_O:  $pin_bits_g
+      W_BLUE_O:   $pin_bits_b
     port_map:
       clk:        context.clk
       rst:        context.rst
       hsync:      pin.hs
       vsync:      pin.vs
-      hpos:       capability.screen.x   # raster position drives capability.x
+      hpos:       capability.screen.x
       vpos:       capability.screen.y
-      display_on: # codegen wires this to a local wire used by pin_assigns
-      pixel_clk:  # also unused by pin_assigns (could be exposed if board needs it)
-  # The `vga` module doesn't expose RGB ports — user's colour goes directly
-  # to pins, gated by display_on.
-  pin_assigns:
-    pin.r: capability.screen.red
-    pin.g: capability.screen.green
-    pin.b: capability.screen.blue
+      display_on:
+      pixel_clk:
+      red:        capability.screen.red
+      green:      capability.screen.green
+      blue:       capability.screen.blue
+      vga_r:      pin.r
+      vga_g:      pin.g
+      vga_b:      pin.b

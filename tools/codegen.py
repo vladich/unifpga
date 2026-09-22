@@ -437,6 +437,15 @@ def validate_configuration(resolved, plans=None):
     problems = []
     pin_to_bits = defaultdict(set)          # physical pin -> {port bit}
     bit_to_attaches = defaultdict(list)     # port bit -> [(idx, is_gpio_passthrough)]
+    bit_dirs = defaultdict(set)             # port bit -> {input, output} from non-gpio signals
+
+    banks = pinmap.get("pinBanks") or {}
+
+    def _is_virtual(ref):
+        # A `virtual: true` bank has no package pin (Efinity's internal
+        # oscillator on the FireAnt); nothing to constrain or collide with.
+        parsed = _parse_bank_ref(str(ref)) if isinstance(ref, str) else None
+        return bool(parsed and (banks.get(parsed[0]) or {}).get("virtual"))
 
     for idx, attach in enumerate(resolved["peripherals"]):
         perif = attach["peripheral"]
@@ -444,7 +453,10 @@ def validate_configuration(resolved, plans=None):
         sig_defs = {s["name"]: s for s in perif.get("signals", [])}
         bind = attach.get("bind") or {}
         for sig, ref in bind.items():
+            if _is_virtual(ref):
+                continue
             entries = _bind_pins(pinmap, ref)
+            sig_dir = (sig_defs.get(sig) or {}).get("direction")
             for port_bit, pin in entries:
                 if pin is None:
                     problems.append("{}: bind {} -> {}".format(
@@ -452,6 +464,8 @@ def validate_configuration(resolved, plans=None):
                     continue
                 pin_to_bits[str(pin)].add(port_bit)
                 bit_to_attaches[port_bit].append((idx, _is_gpio_passthrough(perif)))
+                if sig_dir in ("input", "output") and not _is_gpio_passthrough(perif):
+                    bit_dirs[port_bit].add(sig_dir)
             sdef = sig_defs.get(sig)
             if sdef is not None and sdef.get("type") == "bus" and isinstance(ref, str):
                 want = sdef.get("width")
@@ -476,6 +490,10 @@ def validate_configuration(resolved, plans=None):
         if len(non_gpio) > 1:
             names = ", ".join("{}#{}".format(resolved["peripherals"][i]["peripheral_id"], i) for i in non_gpio)
             problems.append("port bit {} is driven/bound by {} peripherals: {}".format(bit, len(non_gpio), names))
+    for bit, dirs in sorted(bit_dirs.items()):
+        if len(dirs) > 1:
+            problems.append("port bit {} is bound both as an input and as an output "
+                            "(e.g. a peripheral output on the board oscillator pin)".format(bit))
 
     clock = resolve_clock(resolved, plans)
     if clock is None:
@@ -760,8 +778,7 @@ def _signal_width(plan, sig):
             h = plan.params.get("height", 1) or 1
             return max(1, int(ceil(log2(max(2, h)))))
         if plan.id == "screen" and sig["name"] in ("red", "green", "blue"):
-            depth = plan.params.get("color_depth", 444)
-            return _channel_width(depth, sig["name"])
+            return _screen_channel_width(plan.params, sig["name"])
         return 1
     if isinstance(raw, str) and raw.startswith("$"):
         key = raw[1:]
@@ -772,7 +789,21 @@ def _signal_width(plan, sig):
     return int(raw)
 
 
+def _screen_channel_width(params, channel):
+    """User-visible bits for one colour channel: an explicit `bits_r/g/b`
+    capability param (BGM's w_red/w_green/w_blue) wins over `color_depth`."""
+    explicit = (params or {}).get("bits_" + channel[0])
+    if explicit:
+        return int(explicit)
+    return _channel_width((params or {}).get("color_depth", 444), channel)
+
+
 def _channel_width(depth, channel):
+    """Bits per colour channel for a screen `color_depth` (444 / 565 / 888,
+    plus 111 for one-bit-per-channel displays such as HUB75 panels and
+    resistor-less VGA)."""
+    if depth == 111:
+        return 1
     if depth == 444:
         return 4
     if depth == 565:
@@ -853,8 +884,13 @@ def _emit_passthrough(resolved, idx, attach, plans):
             pass
 
     # Apply pin_assigns from the peripheral YAML. For active-low peripherals,
-    # invert the RHS when both sides aren't already inverted.
+    # invert the RHS when both sides aren't already inverted. Optional pins
+    # the board does not have are skipped.
+    optional_unbound = _optional_unbound_pins(perif, bind)
     for lhs, rhs in (perif.get("pin_assigns") or {}).items():
+        if _pin_of(lhs) in optional_unbound or _pin_of(rhs) in optional_unbound:
+            lines.append("    // {} <- {}: optional pin not present on this board".format(lhs, rhs))
+            continue
         lhs_resolved = _resolve_ref(lhs, attach, plans, bind, lhs_context=True, slice_for_idx=idx)
         rhs_resolved = _resolve_ref(rhs, attach, plans, bind, slice_for_idx=idx)
         # Only auto-invert when RHS comes from a capability (active-high
@@ -891,10 +927,12 @@ def _emit_driver_instance(resolved, idx, attach, plans):
     # Driver port_map. `slice_for_idx` ensures that capability refs are
     # narrowed to THIS peripheral's slice when the capability is concat with
     # multiple providers (e.g. tm1638's `keys` port wires to its 8 of the
-    # combined switches bus, not the full bus).
+    # combined switches bus, not the full bus). A `pin.X` whose signal is
+    # optional and unbound (a panel without HSYNC pins) is left unconnected.
+    optional_unbound = _optional_unbound_pins(perif, bind)
     port_lines = []
     for port, ref in (drv.get("port_map") or {}).items():
-        if ref is None or ref == "":
+        if ref is None or ref == "" or _pin_of(ref) in optional_unbound:
             port_lines.append("        .{}()".format(port))
         else:
             port_lines.append("        .{}({})".format(
@@ -904,10 +942,28 @@ def _emit_driver_instance(resolved, idx, attach, plans):
 
     # pin_assigns (combinational connections outside the driver instance)
     for lhs, rhs in (perif.get("pin_assigns") or {}).items():
+        if _pin_of(lhs) in optional_unbound or _pin_of(rhs) in optional_unbound:
+            lines.append("    // {} <- {}: optional pin not present on this board".format(lhs, rhs))
+            continue
         lhs_resolved = _resolve_ref(lhs, attach, plans, bind, lhs_context=True, slice_for_idx=idx)
         rhs_resolved = _resolve_ref(rhs, attach, plans, bind, slice_for_idx=idx)
         lines.append("    assign {} = {};".format(lhs_resolved, rhs_resolved))
     return lines
+
+
+def _pin_of(ref):
+    """`pin.hs`, `~pin.hs`, `pin.d_p[0]` -> `hs` / `d_p`; anything else -> None."""
+    if not isinstance(ref, str):
+        return None
+    s = ref.strip().lstrip("~").strip()
+    if not s.startswith("pin."):
+        return None
+    return re.split(r"[\[\s]", s[len("pin."):], 1)[0]
+
+
+def _optional_unbound_pins(perif, bind):
+    return {s["name"] for s in perif.get("signals", [])
+            if s.get("optional") and s["name"] not in bind}
 
 
 def _bank_ref_to_port(ref):
@@ -1124,10 +1180,9 @@ def _emit_lab_top(resolved, plans):
     if plans["screen"].providers:
         sp = plans["screen"].params
         sw, sh = sp.get("width", 0), sp.get("height", 0)
-        depth = sp.get("color_depth", 444)
-        wr = _channel_width(depth, "red")
-        wg = _channel_width(depth, "green")
-        wb = _channel_width(depth, "blue")
+        wr = _screen_channel_width(sp, "red")
+        wg = _screen_channel_width(sp, "green")
+        wb = _screen_channel_width(sp, "blue")
     else:
         sw = sh = wr = wg = wb = 0
 
@@ -1637,7 +1692,11 @@ def emit_cst(resolved):
 def _cst_lines(pin, port_expr, iotype):
     pin_str = str(pin)
     if "," in pin_str:
-        return ["// WARNING: pin '{}' for port '{}' is a differential pair (skipped)".format(pin_str, port_expr)]
+        # Gowin's differential-pair form, exactly as BGM writes it for TMDS
+        # (`IO_LOC "O_TMDS_CLK_P" 33,34;` with no IO_PORT line): the P port
+        # is located on the pair and the buffer type comes from the design.
+        p, n = [x.strip() for x in pin_str.split(",", 1)]
+        return ['IO_LOC  "{port}" {p},{n};'.format(port=port_expr, p=p, n=n)]
     iotype_resolved = _GOWIN_IOTYPE.get(iotype, iotype)
     return [
         'IO_LOC  "{port}" {pin};'.format(port=port_expr, pin=pin_str),
