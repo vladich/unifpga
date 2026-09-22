@@ -1,3 +1,5 @@
+// unifpga: copied from basics-graphics-music (Terasic reference code); one change: the
+// register LUT's bare `always` became `always @*` (same synthesis result, lint-clean).
 // --------------------------------------------------------------------
 // Copyright (c) 2005 by Terasic Technologies Inc.
 // --------------------------------------------------------------------
@@ -152,7 +154,7 @@ begin
 end
 ////////////////////////////////////////////////////////////////////
 /////////////////////	Config Data LUT	  //////////////////////////
-always
+always @*    // unifpga: combinational LUT; the original bare `always` is rejected by iverilog
 begin
     case(LUT_INDEX)
     //  Audio Config Data: 7 bit reg address + 9 bits of data

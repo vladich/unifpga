@@ -16,7 +16,6 @@ A separate curation step groups raw signals into peripheral categories
 
 import argparse
 import os
-import fnmatch
 import re
 import sys
 from collections import OrderedDict
@@ -146,11 +145,19 @@ def parse_qsf(text):
         if pattern == "*":
             default_iostd = std
         elif "*" in pattern or "?" in pattern:
+            # Quartus wildcards: `*` any text, `?` one character; `[` `]` are
+            # literal bus brackets (`HDMI_TX_D[*]` is every index, not a
+            # character class as in fnmatch)
+            rx = re.compile("^" + re.escape(pattern).replace(r"\*", ".*").replace(r"\?", ".") + "$")
             for signal in pin_by_signal:
-                if fnmatch.fnmatchcase(signal, pattern):
+                if rx.match(signal):
                     iostd_by_signal[signal] = std
         else:
+            # `-to seven_seg_sel` names a bus as a whole too (dk_dev_3c120n)
             iostd_by_signal[pattern] = std
+            for signal in pin_by_signal:
+                if signal.startswith(pattern + "["):
+                    iostd_by_signal[signal] = std
 
     if default_iostd is not None:
         for signal in pin_by_signal:
