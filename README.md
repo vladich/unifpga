@@ -112,7 +112,7 @@ artifacts into `designs/`, `config/boards/`, and `config/configurations/`.
 | `config/board_producers.yml` | Registry of board makers (75 entries: Digilent, Terasic, Sipeed, Trenz, BittWare, …) with URL, country, founding year, categories, description. Each board's `BoardProducer:` references one of these by Id. |
 | `config/board_features.yml` | Vocabulary of board-feature tokens (91 entries across `memory`, `connectivity`, `display`, etc.). Boards may list `Features: [ethernet_1gbe, hdmi_out, pmod_x4, …]` for filtering / display. |
 | `config/configurations/<id>.yml` | Board × toolchain × peripheral attachments (134 configurations). |
-| `config/peripherals/*.yml` | 32 peripheral definitions (`led_bank`, `vga_4bit`, `pmod_12pin`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
+| `config/peripherals/*.yml` | 37 peripheral definitions (`led_bank`, `vga_4bit`, `pmod_12pin`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
 | `config/capabilities/*.yml` | 12 abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules. |
 | `rtl/peripherals/*.sv` | Driver SV modules for hardware peripherals (TM1638 controller, VGA, I²S mic, etc.). |
 | `rtl/peripherals/designs_common/*.sv` | Reusable helpers (`seven_segment_display`, `shift_reg`, `strobe_gen`, …). |
@@ -230,7 +230,7 @@ intended SKIP, not a failure.
 │   │   │   └── artix_7/<id>.yml  # per-board pinmaps
 │   │   └── ...                # 76 family catalogs, 65 pinmaps
 │   ├── configurations/<id>.yml # per-config peripheral attachments (134 configs)
-│   ├── peripherals/*.yml      # 32 peripheral definitions
+│   ├── peripherals/*.yml      # 37 peripheral definitions
 │   └── capabilities/*.yml     # 12 abstract capabilities
 ├── designs/<name>/design_top.sv  # 92 designs (BGM-derived)
 ├── rtl/
