@@ -1,0 +1,136 @@
+"""
+lab_bits — bit-mapped capability aggregation (BGM's TM1638 shares the lab's
+led / key buses with the board's own LEDs and keys instead of extending
+them) and the reset that reads the board's own keys.
+"""
+
+import logging
+import os
+import re
+import sys
+
+import pytest
+
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO)
+
+from config import init as config_init     # noqa: E402
+from tools import codegen                  # noqa: E402
+
+logging.disable(logging.CRITICAL)
+
+CFG = "tang_nano_9k_hdmi_tm1638"           # button_array (2), led_bank (6), tm1638_led_key
+
+
+def _resolved_with_lab_bits(**per_peripheral):
+    """The configuration with only the given lab_bits (the synced ones cleared)."""
+    r = config_init.resolve_configuration(CFG)
+    for a in r["peripherals"]:
+        a["lab_bits"] = dict(per_peripheral.get(a["peripheral_id"], {}))
+    return r
+
+
+def _pidx(r, pid):
+    return next(i for i, a in enumerate(r["peripherals"]) if a["peripheral_id"] == pid)
+
+
+def _lines(text, pattern):
+    return [l.strip() for l in text.splitlines() if re.search(pattern, l.strip())]
+
+
+def test_tm1638_duplicate_mode_like_bgm():
+    """BGM (INSTANTIATE_TM1638, DUPLICATE_TM1638_SIGNALS_WITH_REGULAR):
+    lab_key = tm_key, tm_led = lab_led, LED = w_led'(~ lab_led) — the board
+    LEDs show the low bits of the same bus, the board keys are reset only."""
+    r = _resolved_with_lab_bits(
+        button_array={"buttons": []},
+        led_bank={"leds": list(range(6))},
+        tm1638_led_key={"leds": list(range(8)), "buttons": list(range(8)),
+                        "switches": list(range(8)), "seven_segment": list(range(8))})
+    plans = codegen.build_capability_plans(r)
+    assert plans["buttons"].params["width"] == 8
+    assert plans["leds"].params["width"] == 8
+    text = codegen.emit_top_sv(r)
+    assert ".w_btn(8)," in text and ".w_led(8)," in text
+    assert "assign onboard_leds = ~ cap_leds_led[5:0];" in text            # contiguous run keeps the slice
+    assert ".ledr(cap_leds_led[7:0])," in text
+    # the lab's btn bits come from the TM1638's wire alone; the board keys' wire feeds nothing
+    tm, btn = _pidx(r, "tm1638_led_key"), _pidx(r, "button_array")
+    merge = _lines(text, r"^assign cap_buttons_btn\[\d+\] = ")
+    assert merge == ["assign cap_buttons_btn[{i}] = cap_buttons_btn__p{tm}[{i}];".format(i=i, tm=tm) for i in range(8)]
+    assert "cap_buttons_btn__p{}".format(btn) not in "\n".join(merge)
+    assert ".keys(cap_switches_sw__p{})".format(tm) in text
+    # the reset still comes from the board's keys, not the TM1638's
+    assert _lines(text, r"assign rst = ") == ["assign rst = rst_on_power_up | ((~ onboard_buttons[0]) | (~ onboard_buttons[1]));"]
+
+
+def test_non_contiguous_bits_are_wired_one_by_one():
+    r = _resolved_with_lab_bits(
+        button_array={"buttons": [5, 2]},
+        led_bank={"leds": [7, 6, 5, 4, 3, 2]},
+        tm1638_led_key={"leds": [0, 1, 2, 3, 4, 5, 6, 7], "buttons": [0, 1, 3, 4, 6, 7, 8, 9],
+                        "switches": list(range(8)), "seven_segment": list(range(8))})
+    text = codegen.emit_top_sv(r)
+    tm, btn = _pidx(r, "tm1638_led_key"), _pidx(r, "button_array")
+    assert "assign cap_buttons_btn__p{}[0] = ~ onboard_buttons[0];".format(btn) in text
+    assert "assign cap_buttons_btn[5] = cap_buttons_btn__p{}[0];".format(btn) in text
+    assert "assign cap_buttons_btn[2] = cap_buttons_btn__p{}[1];".format(btn) in text
+    assert "assign cap_buttons_btn[3] = cap_buttons_btn__p{}[2];".format(tm) in text
+    assert "assign onboard_leds[0] = ~ cap_leds_led[7];" in text
+    assert "assign onboard_leds[5] = ~ cap_leds_led[2];" in text
+    assert ".ledr(cap_leds_led[7:0])," in text
+    assert ".w_btn(10)," in text
+    assert ".keys(cap_switches_sw__p{})".format(tm) in text                # a driver writes its own wire
+
+
+def test_shared_input_bits_are_ored_like_bgm():
+    """arty: `lab_key [w_key - 1:0] |= KEY; lab_key [w_tm_key - 1:0] |= tm_key`."""
+    r = _resolved_with_lab_bits(button_array={"buttons": [0, 1]}, tm1638_led_key={"buttons": list(range(8))})
+    text = codegen.emit_top_sv(r)
+    tm, btn = _pidx(r, "tm1638_led_key"), _pidx(r, "button_array")
+    assert "assign cap_buttons_btn[0] = cap_buttons_btn__p{b}[0] | cap_buttons_btn__p{t}[0];".format(b=btn, t=tm) in text
+    assert "assign cap_buttons_btn[2] = cap_buttons_btn__p{t}[2];".format(t=tm) in text
+    assert ".w_btn(8)," in text
+
+
+def test_partial_mapping_leaves_provider_bits_unused():
+    """de10_lite: BGM's lab gets SW [8:0]; SW [9] is the reset only."""
+    r = config_init.resolve_configuration("de10_lite")
+    for a in r["peripherals"]:
+        if a["peripheral_id"] == "sw_bank":
+            a["lab_bits"] = {"switches": list(range(9)) + [None]}
+    text = codegen.emit_top_sv(r)
+    sw = _pidx(r, "sw_bank")
+    assert ".w_sw(9)," in text
+    assert "assign cap_switches_sw__p{}[9] = onboard_switches[9];".format(sw) in text
+    assert "assign cap_switches_sw[8] = cap_switches_sw__p{}[8];".format(sw) in text
+    assert not _lines(text, r"^assign cap_switches_sw\[9\]")
+    assert _lines(text, r"assign rst = ") == ["assign rst = (onboard_switches[9]);"]   # the pin, not a lab bit
+
+
+def test_lab_bits_errors():
+    with pytest.raises(codegen.CodegenError, match="every provider of leds needs it"):
+        codegen.build_capability_plans(_resolved_with_lab_bits(led_bank={"leds": list(range(6))}))
+    with pytest.raises(codegen.CodegenError, match="names 3 bits for a 2-bit"):
+        codegen.build_capability_plans(_resolved_with_lab_bits(
+            button_array={"buttons": [8, 9, 10]}, tm1638_led_key={"buttons": list(range(8))}))
+
+
+def test_reset_from_keys_reads_the_board_buttons():
+    """`any_key` is BGM's `| (~ KEY)`: the board's keys, whatever the TM1638 adds."""
+    r = config_init.resolve_configuration(CFG)
+    text = codegen.emit_top_sv(r)
+    assert _lines(text, r"assign rst = ") == ["assign rst = rst_on_power_up | ((~ onboard_buttons[0]) | (~ onboard_buttons[1]));"]
+    plans = codegen.build_capability_plans(r)
+    assert codegen._board_key_terms(r, plans) == ["(~ onboard_buttons[0])", "(~ onboard_buttons[1])"]
+
+
+def test_header_bits_reach_the_design_even_when_a_peripheral_drives_them():
+    """BGM: `.gpio ({ ARDUINO_IO, GPIO })` whole, microphone clocks included."""
+    r = config_init.resolve_configuration("de10_lite")
+    text = codegen.emit_top_sv(r)
+    gpio_line = next(l for l in text.splitlines() if l.strip().startswith(".gpio("))
+    assert "gpio_nc_" not in gpio_line
+    assert "gpio[0]" in gpio_line and "gpio[4]" in gpio_line
+    assert "also driven by another peripheral" in text
+    assert ".uart_rx(1'b0)" in text                                          # BGM leaves it unconnected = ground

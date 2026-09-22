@@ -992,6 +992,21 @@ def port_assigns(text):
     return {p: " ".join(e.split()) for p, e in _ASSIGN.findall(text) if p in ports}
 
 
+_ASSIGN_BIT = re.compile(r"\bassign\s+([A-Za-z_]\w*)\s*\[\s*(\d+)\s*\]\s*=\s*([^;]+);")
+
+
+def port_bit_assigns(text):
+    """port_assigns() plus the single bits: `assign GPIO [1] = 1'b0;` ->
+    {"GPIO[1]": "1'b0"} (BGM grounds and powers the microphone module
+    through header pins)."""
+    ports = top_ports(text)
+    out = dict(port_assigns(text))
+    for p, i, e in _ASSIGN_BIT.findall(text):
+        if p in ports:
+            out["{}[{}]".format(p, int(i))] = " ".join(e.split())
+    return out
+
+
 def summarize(vdir):
     """Facts about one BGM variant directory after preprocessing its top."""
     pp = preprocess_variant(vdir)

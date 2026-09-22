@@ -819,6 +819,11 @@ def resolve_configuration(configuration_id):
             "peripheral":    peripherals[perip_id],
             "params":        entry.get("params", {}) or {},
             "bind":          entry.get("bind", {}) or {},
+            # `lab_bits: {leds: [0, 1, ...]}` — which bits of the design's bus
+            # this provider occupies (BGM's TM1638 shares the lab's led/key
+            # buses with the board's own LEDs and keys instead of extending
+            # them); absent = the next free bits, in attach order
+            "lab_bits":      entry.get("lab_bits", {}) or {},
         })
 
     # `tie:` — pins the top drives with a constant or the reset (BGM's

@@ -2003,12 +2003,16 @@ def main(argv=None):
                         "attaches exactly as BGM's board_specific_top.sv (tools/sync_components.py)")
     p.add_argument("--iotypes", action="store_true",
                    help="Gowin IO_TYPE per pin from BGM's CST files into the pinmaps (defaults / bank / overrides)")
+    p.add_argument("--lab-bits", action="store_true",
+                   help="lab_bits: which bits of the lab's key / sw / led / digit buses each attach carries, from "
+                        "BGM's top (TM1638 shares the buses, the reset switch stays out; tools/sync_components.py)")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--only", nargs="*")
     args = p.parse_args(argv)
     if not (args.reset or args.clock or args.seven_seg or args.vga or args.prune_optional
             or args.sv_binds or args.prune_missing_banks or args.polarity or args.gowin_options
-            or args.clock_tree or args.iotypes or args.components or args.quartus_options or args.yosys_options):
+            or args.clock_tree or args.iotypes or args.components or args.quartus_options or args.yosys_options
+            or args.lab_bits):
         p.error("nothing to do: pass one or more of --reset --clock --seven-seg --vga "
                 "--prune-optional --prune-missing-banks --sv-binds --polarity --gowin-options --clock-tree "
                 "--iotypes --components")
@@ -2054,6 +2058,9 @@ def main(argv=None):
         if args.components:
             from tools import sync_components
             print("[comp]  {:44s} {}".format(cid, sync_components.apply_components(path, args.dry_run)))
+        if args.lab_bits:
+            from tools import sync_components
+            print("[bits]  {:44s} {}".format(cid, sync_components.apply_lab_bits(path, args.dry_run)))
     return 0
 
 
