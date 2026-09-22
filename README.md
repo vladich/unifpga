@@ -8,6 +8,15 @@ yosys+nextpnr flows (openxc7 for Xilinx 7-series, icestorm for iCE40, trellis
 for ECP5, apicula for Gowin, mistral for Cyclone V, himbaechel-gatemate for
 Cologne Chip GateMate) — without changing the design.
 
+> **Status (2026-09):** an audit against upstream BGM found the generated
+> hardware wrong on most configurations (7-segment wiring, clock frequency,
+> reset, GPIO direction, PLLs, TM1638 on `_no_tm1638` variants, ...).
+> The remediation plan is in [`PLAN.md`](PLAN.md); the per-configuration
+> state is in [`docs/board_issue_matrix.md`](docs/board_issue_matrix.md)
+> and is enforced as a ratchet by `tests/test_issue_gate.py`. Until a
+> configuration's row reads `clean` and it has passed the BGM parity check,
+> treat its output as unverified.
+
 ## Why it exists
 
 A typical FPGA design is married to one board's pinout, that board's display

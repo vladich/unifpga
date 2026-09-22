@@ -1,9 +1,9 @@
 """
-Mechanically adapt every design_top.sv from basics-graphics-music to the uni-fpga
-virtual-device interface.
+Mechanically adapt every lab_top.sv from basics-graphics-music to the uni-fpga
+virtual-device interface (written out as design_top.sv).
 
 For each design:
-  1. Read basics-graphics-music/designs/<section>/<design>/design_top.sv.
+  1. Read basics-graphics-music/labs/<section>/<lab>/lab_top.sv.
   2. Replace its module header (parameters + ports) with the uni-fpga
      canonical signature (matches rtl/peripherals/design_top_interface.sv).
   3. Inside the preserved body:
@@ -34,7 +34,9 @@ REPO = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BGM_DIR = os.environ.get(
     "UNIFPGA_BGM_DIR",
     os.path.normpath(os.path.join(REPO, "..", "basics-graphics-music")))
-BGM labs_VAR = os.path.join(BGM_DIR, "designs")
+# Upstream keeps the examples under labs/<section>/<lab>/lab_top.sv.
+BGM_LABS_DIR = os.path.join(BGM_DIR, "labs")
+UPSTREAM_TOP = "lab_top.sv"
 DESIGNS_OUT = os.path.join(REPO, "designs")
 
 SKIP_SECTIONS = {"8_unfinished", "99_experimental"}
@@ -201,7 +203,8 @@ def _split_module(text):
     counting; this handles nested parens inside parameter expressions like
     `$clog2 ( screen_width )`.
     """
-    m = re.search(r"^module\s+design_top\b", text, flags=re.MULTILINE)
+    # Upstream names the module `lab_top`; already-adapted files say `design_top`.
+    m = re.search(r"^module\s+(?:lab_top|design_top)\b", text, flags=re.MULTILINE)
     if not m:
         return None
     preamble_end = m.start()
@@ -412,7 +415,7 @@ def _section_and_lab(path):
     """Use the directory containing design_top.sv as the design name. Some sections
     nest designs in subgroups (4_microarchitecture/4_1_pipelines_1/<design>/), so
     we always pick the leaf directory."""
-    rel = os.path.relpath(path, BGM labs_VAR)
+    rel = os.path.relpath(path, BGM_LABS_DIR)
     parts = rel.split(os.sep)
     if len(parts) < 2:
         return None
@@ -457,7 +460,7 @@ def adapt_one(src_path, dry_run=False):
     siblings_text = ""
     src_dir = os.path.dirname(src_path)
     for name in os.listdir(src_dir):
-        if not name.endswith(".sv") or name in ("design_top.sv", "tb.sv"):
+        if not name.endswith(".sv") or name in (UPSTREAM_TOP, "design_top.sv", "tb.sv"):
             continue
         try:
             with open(os.path.join(src_dir, name)) as f:
@@ -482,7 +485,7 @@ def adapt_one(src_path, dry_run=False):
     out_text = (
         "// =============================================================================\n"
         "// {design} — auto-adapted by tools/adapt_designs.py from\n"
-        "//   basics-graphics-music/designs/{section}/{design}/design_top.sv\n"
+        "//   basics-graphics-music/labs/{section}/{design}/lab_top.sv\n"
         "// =============================================================================\n"
         "//\n"
         "{requires}"
@@ -515,7 +518,7 @@ def adapt_one(src_path, dry_run=False):
         for name in names:
             if not (name.endswith(".sv") or name.endswith(".svh") or name.endswith(".v")):
                 continue
-            if name in ("design_top.sv", "tb.sv"):
+            if name in (UPSTREAM_TOP, "design_top.sv", "tb.sv"):
                 continue
             src_file = os.path.join(root, name)
             with open(src_file) as f:
@@ -541,9 +544,9 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     src_paths = []
-    for root, _dirs, files in os.walk(BGM labs_VAR):
-        if "design_top.sv" in files:
-            src_paths.append(os.path.join(root, "design_top.sv"))
+    for root, _dirs, files in os.walk(BGM_LABS_DIR):
+        if UPSTREAM_TOP in files:
+            src_paths.append(os.path.join(root, UPSTREAM_TOP))
     src_paths.sort()
 
     counts = defaultdict(int)

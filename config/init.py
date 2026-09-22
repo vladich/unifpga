@@ -8,6 +8,7 @@ peripherals. Picking a configuration resolves to a fully-loaded object that
 synthesize.py and toolchain modules consume.
 """
 
+import copy
 import os
 import sys
 import logging
@@ -23,14 +24,49 @@ class ConfigError(Exception):
     """Raised when a configuration file is missing or malformed."""
 
 
+# ---------------------------------------------------------------------------
+# Parsed-YAML cache
+#
+# resolve_configuration() and the codegen call the read_* functions many times
+# per run (and the test-suite calls them ~134 times each). Parsing ~300 YAML
+# files on every call made one resolve take seconds. We cache the parsed
+# document per file, keyed on (mtime, size), and hand out deep copies so
+# callers that annotate the dicts (read_boards_catalog injects `_catalog_path`
+# etc.) never leak state into each other.
+# ---------------------------------------------------------------------------
+
+_yaml_cache = {}
+
+
+def _read_yaml_file(path):
+    """Parse `path` with yaml.safe_load, cached on the file's mtime and size.
+    Raises ConfigError on YAML errors. Returns a deep copy of the document."""
+    try:
+        st = os.stat(path)
+    except OSError as exc:
+        raise ConfigError("Config file not found: {p} ({e})".format(p=path, e=exc))
+    key = (st.st_mtime_ns, st.st_size)
+    cached = _yaml_cache.get(path)
+    if cached is None or cached[0] != key:
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            raise ConfigError("YAML parse error in {p}: {e}".format(p=path, e=exc))
+        cached = (key, data)
+        _yaml_cache[path] = cached
+    return copy.deepcopy(cached[1])
+
+
+def clear_cache():
+    """Drop every cached document (tests that rewrite config files call this)."""
+    _yaml_cache.clear()
+
+
 def _load_yaml(path, root_key):
     if not os.path.exists(path):
         raise ConfigError("Config file not found: {p}".format(p=path))
-    try:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-    except yaml.YAMLError as exc:
-        raise ConfigError("YAML parse error in {p}: {e}".format(p=path, e=exc))
+    data = _read_yaml_file(path)
     if data is None or root_key not in data:
         raise ConfigError("Missing root element '{k}' in {p}".format(k=root_key, p=path))
     return data[root_key]
@@ -46,11 +82,7 @@ def _load_yaml_dir(subdir, root_key, id_key):
         if not fname.endswith(".yml") or fname.startswith("_"):
             continue
         path = os.path.join(base, fname)
-        try:
-            with open(path) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError as exc:
-            raise ConfigError("YAML parse error in {p}: {e}".format(p=path, e=exc))
+        data = _read_yaml_file(path)
         if not data or root_key not in data:
             log.warning("Skipping %s — no '%s' root", path, root_key)
             continue
@@ -264,12 +296,7 @@ def read_mezzanines_catalog():
     """
     catalog = {}
     for fam_path, prod_name, fam_name in _walk_mezzanine_catalog_files():
-        try:
-            with open(fam_path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError as exc:
-            raise ConfigError(
-                "YAML parse error in {p}: {e}".format(p=fam_path, e=exc))
+        data = _read_yaml_file(fam_path) or {}
         for entry in (data.get("Mezzanines") or []):
             entry["_registry_path"] = fam_path
             entry["_producer_dir"]  = prod_name
@@ -376,11 +403,7 @@ def read_boards_catalog():
     config/boards/<producer>/<family>/<board_id>.yml."""
     out = {}
     for fam_path, prod_name, fam_slug in _walk_board_catalog_files():
-        try:
-            with open(fam_path) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError as exc:
-            raise ConfigError("YAML parse error in {p}: {e}".format(p=fam_path, e=exc))
+        data = _read_yaml_file(fam_path)
         if not data:
             continue
         producer = data.get("Producer")
@@ -424,11 +447,7 @@ def read_board_pinmap(board_id):
     path = os.path.join(dir_path, "boards", prod_dir, fam_dir, board_id + ".yml")
     if not os.path.exists(path):
         return None
-    try:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-    except yaml.YAMLError as exc:
-        raise ConfigError("YAML parse error in {p}: {e}".format(p=path, e=exc))
+    data = _read_yaml_file(path)
     return (data or {}).get("Board")
 
 
@@ -460,11 +479,7 @@ def read_chips():
     their family file when they don't declare their own."""
     out = {}
     for fam_path, prod_dir, fam_slug in _walk_chip_registry_files():
-        try:
-            with open(fam_path) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError as exc:
-            raise ConfigError("YAML parse error in {p}: {e}".format(p=fam_path, e=exc))
+        data = _read_yaml_file(fam_path)
         if not data:
             continue
         producer = data.get("Producer")
@@ -724,11 +739,33 @@ def resolve_configuration(configuration_id):
             if chip is None:
                 raise ConfigError("Board '{b}' references unknown chip '{c}'"
                                   .format(b=board_id, c=cid))
-            p = {"Part": chip.get("Part") or cid}
+            p = {"Part": chip.get("Part") or cid, "Id": cid}
             if name:
                 p["Name"] = name
             parts_list.append(p)
         board_resolved["Parts"] = parts_list
+        # Multi-die boards (Arty A7 35T/100T, Nexys A7 50T/100T, OrangeCrab
+        # 25F/85F): the configuration must say which die it targets. Without
+        # `part:` every driver used to fall back to Parts[0] silently.
+        wanted = cfg.get("part")
+        if wanted is not None:
+            w = str(wanted).strip().lower()
+            chosen = None
+            for p in parts_list:
+                if w in {str(p.get("Name", "")).lower(), str(p["Part"]).lower(), str(p["Id"]).lower()}:
+                    chosen = p
+                    break
+            if chosen is None:
+                raise ConfigError(
+                    "Configuration '{c}': part: {w!r} is not one of the board's chips ({opts})"
+                    .format(c=configuration_id, w=wanted,
+                            opts=", ".join("{}={}".format(p.get("Name", "?"), p["Id"]) for p in parts_list)))
+            board_resolved["Part"] = chosen["Part"]
+            board_resolved["PartName"] = chosen.get("Name")
+        else:
+            log.warning("Configuration '%s': board '%s' has %d chips but no part: is set; "
+                        "toolchains will default to %s (PLAN.md code PART)",
+                        configuration_id, board_id, len(parts_list), parts_list[0]["Part"])
 
     board_pinmap = read_board_pinmap(board_id)
     if board_pinmap is None:

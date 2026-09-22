@@ -8,28 +8,42 @@ Peripheral:
     digits:
       type: int
       required: true
+    segs:
+      type: int
+      default: 8          # 7 on boards whose HEX has no decimal point (DE0-CV)
     active:
       type: enum
       values: [high, low]
       default: low
+    latched:
+      type: bool
+      default: false      # true = digits keep their last pattern (all lit at once)
   signals:
-    - { name: hex, type: bus_of_bus, outer_width: $digits, inner_width: 8,
-        direction: output,
-        comment: "hex[d][s]: digit d, segment s (0..6 = a..g, 7 = decimal point)" }
+    # Bound to a list of per-digit banks, LSB first:
+    #   hex: [onboard_7seg.hex0, onboard_7seg.hex1, ...]
+    # Each element is a `segs`-wide bus with bit 0 = segment a (Terasic HEXn
+    # order); the driver port is the flat concatenation.
+    - { name: hex, type: bus, width: $digits, direction: output,
+        comment: "one entry per digit; each entry is a segs-wide bank (a..g[,dp])" }
   provides:
     - capability: seven_segment
       params:
         digits: $digits
   # Native per-digit hardware needs a fan-out adapter that broadcasts the
-  # currently-selected digit's abcdefgh value onto all hex[d] outputs (with
-  # the anode pattern routed elsewhere on the FPGA). The capability's
-  # shared-segments + digit-select model is preserved at the user level.
+  # currently-selected digit's abcdefgh value onto that digit's pins (BGM does
+  # the same in board_specific_top.sv). The capability's shared-segments +
+  # digit-select model is preserved at the user level.
   driver:
     module: seven_seg_shared_to_per_digit
     file: rtl/peripherals/seven_seg_shared_to_per_digit.sv
     parameters:
-      digits: $digits
+      digits:  $digits
+      segs:    $segs
+      active:  $active
+      latched: $latched
     port_map:
+      clk:      context.clk
+      rst:      context.rst
       abcdefgh: capability.seven_segment.abcdefgh
       digit:    capability.seven_segment.digit
       hex_o:    pin.hex

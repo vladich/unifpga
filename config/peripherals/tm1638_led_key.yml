@@ -35,7 +35,18 @@ Peripheral:
       keys:     capability.switches.sw  # the controller exposes one keys port;
                                         # codegen also fans it to buttons.btn
       ledr:     capability.leds.led
-      hgfedcba: capability.seven_segment.abcdefgh
+      # The controller's port is bit-reversed relative to the capability
+      # (`hgfedcba[0]` = a, `abcdefgh[7]` = a) — same SWAP_BITS as BGM's
+      # board_specific_top.sv. A list renders as a concat, first element MSB.
+      hgfedcba:
+        - "capability.seven_segment.abcdefgh[0]"   # -> hgfedcba[7] = h
+        - "capability.seven_segment.abcdefgh[1]"   # -> hgfedcba[6] = g
+        - "capability.seven_segment.abcdefgh[2]"
+        - "capability.seven_segment.abcdefgh[3]"
+        - "capability.seven_segment.abcdefgh[4]"
+        - "capability.seven_segment.abcdefgh[5]"
+        - "capability.seven_segment.abcdefgh[6]"
+        - "capability.seven_segment.abcdefgh[7]"   # -> hgfedcba[0] = a
       digit:    capability.seven_segment.digit
   pin_assigns:
     capability.buttons.btn: capability.switches.sw   # mirror keys to btn capability

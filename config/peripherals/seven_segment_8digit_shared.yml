@@ -15,7 +15,7 @@ Peripheral:
       default: low
   signals:
     - { name: segments, type: bus, width: 7, direction: output, comment: "CA, CB, CC, CD, CE, CF, CG" }
-    - { name: dp,       type: scalar, direction: output, comment: "Decimal point" }
+    - { name: dp,       type: scalar, direction: output, optional: true, comment: "Decimal point (some boards have none)" }
     - { name: digits,   type: bus, width: $digits, direction: output, comment: "Anode select, one-hot" }
   provides:
     - capability: seven_segment
@@ -24,8 +24,20 @@ Peripheral:
   driver: null
   # The peripheral pin signals (`segments`, `dp`, `digits`) don't share names
   # with the capability signals (`abcdefgh`, `digit`); the codegen wires them
-  # explicitly via pin_assigns. abcdefgh bit 7 is decimal point.
+  # explicitly via pin_assigns.
+  #
+  # Bit order follows basics-graphics-music: `abcdefgh[7]` is segment a and
+  # `abcdefgh[0]` is h (the decimal point) — designs write '0' as
+  # 8'b1111_1100. `segments[0]` is CA (segment a), `segments[6]` is CG.
+  # Written per bit so the mapping is explicit and independent of whether
+  # `segments` is bound to a 7-wide bank or to a list of scalar pins.
   pin_assigns:
-    pin.segments: capability.seven_segment.abcdefgh[6:0]
-    pin.dp:       capability.seven_segment.abcdefgh[7]
-    pin.digits:   capability.seven_segment.digit
+    pin.segments[0]: capability.seven_segment.abcdefgh[7]   # a
+    pin.segments[1]: capability.seven_segment.abcdefgh[6]   # b
+    pin.segments[2]: capability.seven_segment.abcdefgh[5]   # c
+    pin.segments[3]: capability.seven_segment.abcdefgh[4]   # d
+    pin.segments[4]: capability.seven_segment.abcdefgh[3]   # e
+    pin.segments[5]: capability.seven_segment.abcdefgh[2]   # f
+    pin.segments[6]: capability.seven_segment.abcdefgh[1]   # g
+    pin.dp:          capability.seven_segment.abcdefgh[0]   # h / decimal point
+    pin.digits:      capability.seven_segment.digit

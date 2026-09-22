@@ -405,7 +405,10 @@ def test_peripheral_port_map_references_well_formed():
         for port, ref in (drv.get("port_map") or {}).items():
             if ref is None:
                 continue   # port intentionally unconnected
-            _validate_ref(pid, "port_map[{}]".format(port), ref, pin_names, caps, provided)
+            # A list renders as a concatenation (first element = MSB); every
+            # element must be a valid reference on its own.
+            for one in (ref if isinstance(ref, list) else [ref]):
+                _validate_ref(pid, "port_map[{}]".format(port), one, pin_names, caps, provided)
 
 
 def test_peripheral_pin_assigns_well_formed():
@@ -463,16 +466,36 @@ def test_every_configuration_has_known_peripherals():
 # Codegen smoke test
 # ---------------------------------------------------------------------------
 
+def _known_issue_codes():
+    path = os.path.join(REPO_ROOT, "tests", "known_issues.yml")
+    with open(path, encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    return {k: set(v or []) for k, v in data.items()}
+
+
 def test_codegen_runs_for_every_configuration():
-    """Run the SV codegen on every configuration. The output is not validated
-    for synthesizability here, only that codegen completes without error and
-    produces something that looks like a SV module."""
+    """Run the SV codegen on every configuration.
+
+    Strict codegen (what synthesize.py uses) must succeed for every
+    configuration the issue baseline does not mark as `GEN-ERROR`, and must
+    refuse (CodegenError) every configuration it does mark, so a data fix that
+    lands without shrinking the baseline is caught, and a regression that
+    breaks a working configuration is caught too. Non-strict generation must
+    always produce something shaped like a module."""
     from tools import codegen
+    known = _known_issue_codes()
     for cfg_id in sorted(_configurations()):
+        expect_error = "GEN-ERROR" in known.get(cfg_id, set())
         try:
-            text = codegen.generate_for(cfg_id)
-        except Exception as exc:
-            raise AssertionError("codegen failed for {c}: {e}".format(c=cfg_id, e=exc))
+            text = codegen.generate_for(cfg_id, strict=True)
+            if expect_error:
+                raise AssertionError(
+                    "codegen for {c} succeeded but tests/known_issues.yml still lists GEN-ERROR; "
+                    "regenerate the baseline".format(c=cfg_id))
+        except codegen.CodegenError as exc:
+            if not expect_error:
+                raise AssertionError("strict codegen refused {c}: {e}".format(c=cfg_id, e=exc))
+            text = codegen.generate_for(cfg_id, strict=False)
         assert "module top" in text, "codegen for {c}: no 'module top'".format(c=cfg_id)
         assert "endmodule" in text, "codegen for {c}: no 'endmodule'".format(c=cfg_id)
         assert "design_top" in text, "codegen for {c}: no design_top instantiation".format(c=cfg_id)

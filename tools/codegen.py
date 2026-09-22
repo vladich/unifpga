@@ -35,6 +35,12 @@ log = logging.getLogger(__name__)
 REPO = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
+class CodegenError(Exception):
+    """A configuration cannot be turned into a correct top: unresolved bind,
+    duplicated pin, missing clock frequency, ... The message names the
+    configuration and the offending element."""
+
+
 # ---------------------------------------------------------------------------
 # Helpers for parsing references in YAML port_maps and configuration binds
 # ---------------------------------------------------------------------------
@@ -184,11 +190,78 @@ def build_capability_plans(resolved):
 
 
 # ---------------------------------------------------------------------------
+# Clock resolution (single source of truth for clk_mhz and create_clock)
+# ---------------------------------------------------------------------------
+
+_MHZ_IN_NAME = re.compile(r"(\d+(?:_\d+)?)mhz", re.IGNORECASE)
+
+
+def resolve_clock(resolved, plans=None):
+    """Return the system clock as a dict, or None when no clock provider is attached:
+
+        {"bank_ref": "clk",          # bind RHS as written in the configuration
+         "port":     "clk",          # generated top-level port name
+         "mhz":      100.0 or None,  # None when nothing declares a frequency
+         "source":   "configuration" | "pinmap" | "bank-name" | None}
+
+    Precedence: the attach's `frequency_mhz` param, then the pinmap bank's
+    `frequency_mhz`, then a `<n>mhz` token in the bank name. Every emitter and
+    the design_top parameter block must use this function so the constraint
+    period and the advertised `clk_mhz` can never disagree."""
+    if plans is None:
+        plans = build_capability_plans(resolved)
+    clk_plan = plans["clock"]
+    if not clk_plan.providers:
+        return None
+    pidx, _perif, cap_params = clk_plan.providers[0]
+    attach = resolved["peripherals"][pidx]
+    pinmap = resolved["board_pinmap"]
+    clk_bank = (attach.get("bind") or {}).get("clk")
+    if clk_bank is None:
+        # Heuristic fallback: first pin bank whose name looks like a clock.
+        for bank_name in (pinmap.get("pinBanks") or {}):
+            low = bank_name.lower()
+            if low.startswith("clk") or "clock" in low or low.startswith("osc"):
+                clk_bank = bank_name
+                break
+    if clk_bank is None:
+        log.warning("Configuration %s: no clock bound; using literal clk port",
+                    resolved["configuration"]["id"])
+        clk_bank = "clk"
+
+    mhz = (cap_params or {}).get("frequency_mhz")
+    source = "configuration" if mhz is not None else None
+    if mhz is None:
+        parsed = _parse_bank_ref(str(clk_bank))
+        bank = (pinmap.get("pinBanks") or {}).get(parsed[0]) if parsed else None
+        if isinstance(bank, dict) and bank.get("frequency_mhz") is not None:
+            mhz = bank["frequency_mhz"]
+            source = "pinmap"
+    if mhz is None:
+        m = _MHZ_IN_NAME.search(str(clk_bank))
+        if m:
+            mhz = float(m.group(1).replace("_", "."))
+            source = "bank-name"
+    if mhz is None:
+        log.warning("Configuration %s: clock bank %r has no frequency_mhz in the "
+                    "configuration or the pinmap; clk_mhz will default to 50 and no "
+                    "clock constraint will be emitted (see PLAN.md CLK-FREQ)",
+                    resolved["configuration"]["id"], clk_bank)
+    return {"bank_ref": clk_bank, "port": _bank_port_name(clk_bank),
+            "mhz": float(mhz) if mhz is not None else None, "source": source}
+
+
+def _clock_period_ns(clock):
+    return 1000.0 / float(clock["mhz"])
+
+
+# ---------------------------------------------------------------------------
 # Phase 2: plan FPGA top-level ports
 # ---------------------------------------------------------------------------
 
 def collect_referenced_banks(resolved):
-    """Return ordered set of bank names referenced by any peripheral binding."""
+    """Return ordered set of bank names referenced by any peripheral binding
+    or by a `reset.sources[].pin` entry."""
     banks = OrderedDict()
     for attach in resolved["peripherals"]:
         for ref in (attach.get("bind") or {}).values():
@@ -197,6 +270,8 @@ def collect_referenced_banks(resolved):
                 if parsed is None:
                     continue
                 banks[parsed[0]] = True
+    for bank in _reset_pin_banks(resolved):
+        banks[bank] = True
     return list(banks.keys())
 
 
@@ -239,6 +314,8 @@ def fpga_port_decls(resolved, referenced_banks):
 
 def _infer_pin_direction(resolved, bank_name, subkey):
     """Determine direction for a specific bank pin (or sub-keyed pin set)."""
+    if subkey is None and bank_name in _reset_pin_banks(resolved):
+        return "input"
     has_in = has_out = has_inout = False
     for attach in resolved["peripherals"]:
         perif = attach["peripheral"]
@@ -278,16 +355,155 @@ def _dir_kw(direction):
 
 
 # ---------------------------------------------------------------------------
+# Phase 2b: validation (the pin ledger)
+# ---------------------------------------------------------------------------
+
+def _bind_pins(pinmap, ref):
+    """Physical pins covered by one bind RHS, in port-bit order, as a list of
+    (port_bit_name, pin_or_None). Unknown bank/sub-key/index -> None entry."""
+    out = []
+    if isinstance(ref, list):
+        for el in ref:
+            out.extend(_bind_pins(pinmap, el))
+        return out
+    parsed = _parse_bank_ref(str(ref))
+    if parsed is None:
+        return [(str(ref), None)]
+    bank, sub, idx = parsed
+    val = _bank_pin(pinmap, bank, sub, idx)
+    if val is None and not (idx is None and isinstance(_bank_pin(pinmap, bank, sub, None), list)):
+        return [(_bank_ref_to_port(ref), None)]
+    if isinstance(val, list):
+        base = _bank_port_name(ref)
+        return [("{}[{}]".format(base, i), p) for i, p in enumerate(val)]
+    if isinstance(val, dict):
+        return [(_bank_ref_to_port(ref), None)]       # bound a whole dict bank: unsupported
+    return [(_bank_ref_to_port(ref), val)]
+
+
+def _describe_missing(pinmap, ref, port_bit):
+    """Explain why a bind element has no pin: unparsable, unknown bank,
+    unknown sub-key, index out of range, or an explicit null entry."""
+    refs = ref if isinstance(ref, list) else [ref]
+    # Find the element that produced this port bit.
+    for one in refs:
+        parsed = _parse_bank_ref(str(one))
+        if parsed is None:
+            return "{!r}: unparsable reference".format(one)
+        bank, sub, idx = parsed
+        banks = pinmap.get("pinBanks") or {}
+        if bank not in banks:
+            return "{!r}: bank {!r} does not exist in the pinmap".format(one, bank)
+        pins = (banks[bank] or {}).get("pins")
+        if sub is not None:
+            if not isinstance(pins, dict) or sub not in pins:
+                have = sorted(pins.keys()) if isinstance(pins, dict) else "a flat list"
+                return "{!r}: sub-key {!r} does not exist (bank has {})".format(one, sub, have)
+            pins = pins[sub]
+        if idx is not None:
+            if not isinstance(pins, list) or idx >= len(pins):
+                return "{!r}: index {} out of range".format(one, idx)
+            if pins[idx] is None:
+                return "{!r}: pin is null".format(one)
+            continue
+        if isinstance(pins, list) and any(p is None for p in pins):
+            return "{}: null entry in the pinmap list".format(port_bit)
+    return "{}: no pin".format(port_bit)
+
+
+def _is_gpio_passthrough(perif):
+    return perif.get("driver") is None and any(
+        p.get("capability") == "gpio" for p in perif.get("provides") or [])
+
+
+def validate_configuration(resolved, plans=None):
+    """Return a list of human-readable problems that make the generated top
+    incorrect. Empty list means the wiring is sound. Checked:
+
+      * every bind resolves to an existing bank / sub-key / index
+      * no bound pin is `null`
+      * a physical pin is constrained for one top port bit only
+      * a top port bit is used by at most one attachment, except a gpio
+        passthrough sharing it with a driver peripheral (the gpio bit is then
+        left dangling, see _gpio_connection)
+      * non-optional peripheral signals are bound
+      * `params.width` equals the bound bank's pin count
+      * a clock provider with a known frequency exists
+    """
+    if plans is None:
+        plans = build_capability_plans(resolved)
+    pinmap = resolved["board_pinmap"]
+    cfg_id = resolved["configuration"]["id"]
+    problems = []
+    pin_to_bits = defaultdict(set)          # physical pin -> {port bit}
+    bit_to_attaches = defaultdict(list)     # port bit -> [(idx, is_gpio_passthrough)]
+
+    for idx, attach in enumerate(resolved["peripherals"]):
+        perif = attach["peripheral"]
+        label = "{}#{}".format(perif["id"], idx)
+        sig_defs = {s["name"]: s for s in perif.get("signals", [])}
+        bind = attach.get("bind") or {}
+        for sig, ref in bind.items():
+            entries = _bind_pins(pinmap, ref)
+            for port_bit, pin in entries:
+                if pin is None:
+                    problems.append("{}: bind {} -> {}".format(
+                        label, sig, _describe_missing(pinmap, ref, port_bit)))
+                    continue
+                pin_to_bits[str(pin)].add(port_bit)
+                bit_to_attaches[port_bit].append((idx, _is_gpio_passthrough(perif)))
+            sdef = sig_defs.get(sig)
+            if sdef is not None and sdef.get("type") == "bus" and isinstance(ref, str):
+                want = sdef.get("width")
+                if isinstance(want, str) and want.startswith("$"):
+                    want = _eval_param(want, attach.get("params") or {}, perif)
+                parsed = _parse_bank_ref(ref)
+                have = _bank_width(pinmap, parsed[0], parsed[1]) if parsed and parsed[2] is None else 1
+                if want is not None and have is not None and int(want) != int(have):
+                    problems.append("{}: bind {} -> {!r}: signal is {} wide but the bank has {} pins"
+                                    .format(label, sig, ref, want, have))
+        for sig, sdef in sig_defs.items():
+            if sig not in bind and not sdef.get("optional"):
+                problems.append("{}: required signal {!r} is not bound".format(label, sig))
+
+    for pin, bits in sorted(pin_to_bits.items()):
+        if len(bits) > 1:
+            problems.append("pin {} is constrained for {} top ports: {}".format(pin, len(bits), ", ".join(sorted(bits))))
+    for bit, users in sorted(bit_to_attaches.items()):
+        if len(users) < 2:
+            continue
+        non_gpio = [i for i, g in users if not g]
+        if len(non_gpio) > 1:
+            names = ", ".join("{}#{}".format(resolved["peripherals"][i]["peripheral_id"], i) for i in non_gpio)
+            problems.append("port bit {} is driven/bound by {} peripherals: {}".format(bit, len(non_gpio), names))
+
+    clock = resolve_clock(resolved, plans)
+    if clock is None:
+        problems.append("no clock_input attachment")
+    elif clock["mhz"] is None:
+        problems.append("clock bank {!r} has no frequency_mhz (configuration or pinmap)".format(clock["bank_ref"]))
+
+    return ["Configuration {}: {}".format(cfg_id, p) for p in problems]
+
+
+# ---------------------------------------------------------------------------
 # Phase 3: emit SV
 # ---------------------------------------------------------------------------
 
-def emit_top_sv(resolved):
+def emit_top_sv(resolved, strict=True):
+    """Generate top.sv. With `strict` (the default, what synthesize.py uses)
+    any wiring problem found by validate_configuration() raises CodegenError
+    instead of producing a top that silently drops or shorts signals."""
     cfg = resolved["configuration"]
     board = resolved["board"]
     pinmap = resolved["board_pinmap"]
     toolchain = resolved["toolchain"]
 
     plans = build_capability_plans(resolved)
+    if strict:
+        problems = validate_configuration(resolved, plans)
+        if problems:
+            raise CodegenError("\n".join(problems))
     referenced_banks = collect_referenced_banks(resolved)
 
     out = []
@@ -313,6 +529,10 @@ def emit_top_sv(resolved):
 
     # ---- Capability bus declarations ----
     out.extend(_emit_capability_busses(plans))
+    out.append("")
+
+    # ---- Reset (may reference the switches / buttons buses) ----
+    out.extend(_emit_reset(resolved, plans))
     out.append("")
 
     # ---- Peripheral wiring (passthroughs + driver instances) ----
@@ -345,23 +565,11 @@ def _emit_context(resolved, plans):
     lines = []
     lines.append("    // ---- Context: clk, rst, rst_n ----")
 
-    clk_plan = plans["clock"]
     rst_plan = plans["reset"]
 
-    if clk_plan.providers:
-        clk_attach = resolved["peripherals"][clk_plan.providers[0][0]]
-        clk_bank = (clk_attach.get("bind") or {}).get("clk")
-        if clk_bank is None:
-            # Heuristic fallback: use the first FPGA pin bank whose name starts with `clk`.
-            for bank_name in (resolved["board_pinmap"].get("pinBanks") or {}):
-                if bank_name.lower().startswith("clk") or "clock" in bank_name.lower():
-                    clk_bank = bank_name
-                    break
-        if clk_bank is None:
-            log.warning("Configuration %s: no clock bound; using literal clk port",
-                        resolved["configuration"]["id"])
-            clk_bank = "clk"
-        clk_port = _bank_ref_to_port(clk_bank)
+    clock = resolve_clock(resolved, plans)
+    if clock is not None:
+        clk_port = _bank_ref_to_port(clock["bank_ref"])
         if clk_port == "clk":
             # FPGA top-level port is already named `clk`; emit nothing — the
             # port is directly visible as the system clock wire.
@@ -373,29 +581,145 @@ def _emit_context(resolved, plans):
                     resolved["configuration"]["id"])
         lines.append("    wire clk = 1'b0;   // TODO: no clock provider")
 
-    # Reset: OR all reset providers; invert if active=low.
-    if rst_plan.providers:
-        terms = []
-        for pidx, perif, _ in rst_plan.providers:
-            r_attach = resolved["peripherals"][pidx]
-            rst_bank = (r_attach.get("bind") or {}).get("rst")
-            if rst_bank is None:
-                continue
-            active = (r_attach.get("params") or {}).get("active") or "low"
-            ref = _bank_ref_to_port(rst_bank) if isinstance(rst_bank, str) else rst_bank
-            terms.append("(~ {})".format(ref) if active == "low" else "({})".format(ref))
-        lines.append("    wire rst   = {};".format(" | ".join(terms) if terms else "1'b0"))
-    else:
-        lines.append("    wire rst   = 1'b0;   // no reset provider")
+    # Reset: declared here, assigned by _emit_reset() once the capability
+    # buses it may depend on (switches, buttons) have been declared.
+    lines.append("    wire rst;")
     lines.append("    wire rst_n = ~ rst;")
 
-    # Advertise clk_mhz; default 50 if no provider supplies a frequency.
-    freq = None
-    if clk_plan.providers:
-        freq = clk_plan.params.get("frequency_mhz") or (clk_plan.providers[0][2] or {}).get("frequency_mhz")
-    if freq is None:
-        freq = 50
-    lines.append("    localparam int clk_mhz = {};".format(int(freq)))
+    # Advertise clk_mhz to the peripheral drivers (context.clk_mhz). Same
+    # value design_top receives (see _emit_lab_top); 50 only as a last resort.
+    lines.append("    localparam int clk_mhz = {};".format(_clk_mhz_int(clock)))
+    return lines
+
+
+def _clk_mhz_int(clock):
+    """Integer MHz for parameters; fractional board clocks are rare and the
+    interface parameter is an int (matches BGM's `parameter clk_mhz = 27`)."""
+    if clock is None or clock["mhz"] is None:
+        return 50
+    return int(round(clock["mhz"]))
+
+
+# ---- Reset policy ----------------------------------------------------------
+#
+# BGM derives `rst` per board in board_specific_top.sv: from a dedicated pin
+# (`~RESET_N`), from the top switch (`sw[w_sw-1]`), from any key
+# (`| (~KEY)`), from a power-up imitation, or an OR of those. The
+# configuration expresses the same policy declaratively:
+#
+#   reset:
+#     sources:
+#       - pin: cpu_resetn          # a bank ref; `active: low` unless stated
+#         active: low
+#       - switch_msb: true          # highest switch of the `switches` capability
+#       - switch: 3                 # a specific switch index
+#       - any_key: true             # OR of the `buttons` capability
+#       - key: msb                  # highest button, or an index (`key: 0`)
+#       - power_up: true            # imitate_reset_on_power_up
+#
+# `reset_button` attachments count as `pin` sources too. With nothing declared
+# the policy is `power_up`, never a constant 0.
+
+_RESET_KINDS = ("pin", "switch_msb", "switch", "any_key", "key", "power_up")
+
+
+def reset_sources(resolved, plans=None):
+    """Return the ordered list of (kind, detail) reset sources for a configuration."""
+    if plans is None:
+        plans = build_capability_plans(resolved)
+    sources = []
+    for pidx, perif, _ in plans["reset"].providers:
+        r_attach = resolved["peripherals"][pidx]
+        rst_bank = (r_attach.get("bind") or {}).get("rst")
+        if rst_bank is None:
+            continue
+        sources.append(("pin", {"ref": rst_bank,
+                                "active": _peripheral_active_polarity(perif, r_attach)}))
+    spec = resolved["configuration"].get("reset") or {}
+    for src in spec.get("sources") or []:
+        if isinstance(src, str):
+            src = {src: True}
+        if not isinstance(src, dict):
+            raise CodegenError("reset.sources entries must be mappings, got {!r}".format(src))
+        unknown = set(src) - set(_RESET_KINDS) - {"active"}
+        if unknown:
+            raise CodegenError("reset.sources: unknown keys {}".format(sorted(unknown)))
+        if src.get("pin"):
+            sources.append(("pin", {"ref": src["pin"], "active": src.get("active", "low")}))
+        if src.get("switch_msb"):
+            sources.append(("switch", {"index": "msb"}))
+        if "switch" in src and src["switch"] is not None and src["switch"] is not False:
+            sources.append(("switch", {"index": src["switch"]}))
+        if src.get("any_key"):
+            sources.append(("key", {"index": "any"}))
+        if "key" in src and src["key"] is not None and src["key"] is not False:
+            sources.append(("key", {"index": src["key"]}))
+        if src.get("power_up"):
+            sources.append(("power_up", {}))
+    if not sources:
+        sources.append(("power_up", {}))
+    return sources
+
+
+def _index_expr(bus, width, index, what, cfg_id):
+    """`msb` -> bus[width-1]; `any` -> (| bus); int -> bus[int]."""
+    if index == "any":
+        return "(| {})".format(bus)
+    if index == "msb":
+        return "{}[{}]".format(bus, int(width) - 1)
+    try:
+        i = int(index)
+    except (TypeError, ValueError):
+        raise CodegenError("Configuration {}: reset {} index must be msb, any or an integer, got {!r}"
+                           .format(cfg_id, what, index))
+    if not 0 <= i < int(width):
+        raise CodegenError("Configuration {}: reset {} index {} outside 0..{}"
+                           .format(cfg_id, what, i, int(width) - 1))
+    return "{}[{}]".format(bus, i)
+
+
+def _reset_pin_banks(resolved):
+    """Banks referenced by `reset.sources[].pin` entries (they must become
+    top-level input ports even though no peripheral binds them)."""
+    banks = []
+    spec = resolved["configuration"].get("reset") or {}
+    for src in spec.get("sources") or []:
+        if isinstance(src, dict) and src.get("pin"):
+            parsed = _parse_bank_ref(str(src["pin"]))
+            if parsed:
+                banks.append(parsed[0])
+    return banks
+
+
+def _emit_reset(resolved, plans):
+    lines = ["    // ---- Reset: OR of the configured sources, active-high ----"]
+    terms = []
+    for kind, d in reset_sources(resolved, plans):
+        if kind == "pin":
+            ref = _bank_ref_to_port(d["ref"]) if isinstance(d["ref"], str) else d["ref"]
+            terms.append("(~ {})".format(ref) if d["active"] == "low" else "({})".format(ref))
+        elif kind == "switch":
+            w = plans["switches"].params.get("width") if plans["switches"].providers else None
+            if not w:
+                log.warning("Configuration %s: reset from a switch but no switches capability",
+                            resolved["configuration"]["id"])
+                continue
+            terms.append(_index_expr("cap_switches_sw", w, d["index"], "switch",
+                                     resolved["configuration"]["id"]))
+        elif kind == "key":
+            w = plans["buttons"].params.get("width") if plans["buttons"].providers else None
+            if not w:
+                log.warning("Configuration %s: reset from a key but no buttons capability",
+                            resolved["configuration"]["id"])
+                continue
+            terms.append(_index_expr("cap_buttons_btn", w, d["index"], "key",
+                                     resolved["configuration"]["id"]))
+        elif kind == "power_up":
+            lines.append("    wire rst_on_power_up;")
+            lines.append("    imitate_reset_on_power_up i_imitate_reset_on_power_up "
+                         "(.clk (clk), .rst (rst_on_power_up));")
+            terms.append("rst_on_power_up")
+    lines.append("    assign rst = {};".format(" | ".join(terms) if terms else "1'b0"))
     return lines
 
 
@@ -408,6 +732,12 @@ def _emit_capability_busses(plans):
             continue
         for sig in plan.cap.get("signals", []):
             sig_name = sig["name"]
+            if sig.get("direction") == "inout":
+                # Bidirectional capabilities (gpio) are not buffered through a
+                # wire: an `assign` is one-way. design_top's port is connected
+                # straight to the pin nets (see _gpio_connection).
+                lines.append("    // {}.{}: bidirectional, wired directly to design_top".format(cap_id, sig_name))
+                continue
             if sig.get("type") == "scalar":
                 lines.append("    wire cap_{}_{};".format(cap_id, sig_name))
             else:
@@ -503,6 +833,11 @@ def _emit_passthrough(resolved, idx, attach, plans):
                 cap_sig_name = cap_sig["name"]
                 pin_sig_name = cap_sig_name
                 if pin_sig_name not in bind:
+                    continue
+                if cap_sig.get("direction") == "inout":
+                    hi, lo = offset + width - 1, offset
+                    lines.append("    // {}[{}:{}] <-> {} (bidirectional, connected at design_top)"
+                                 .format(cap_id, hi, lo, _attach_label(attach)))
                     continue
                 pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind)
                 if width == 1:
@@ -622,10 +957,22 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
         if bound is None:
             return invert + pin_sig + idx_suffix
         if isinstance(bound, list):
-            # Multi-pin peripheral signal: emit a concat of the bank pins.
-            # Convention: list[0] is bit 0 (LSB-first in YAML).
+            # Multi-pin peripheral signal bound to a list of bank refs.
+            # Convention: list[0] is bit 0 (LSB-first in YAML). An index
+            # suffix selects list elements (a concat cannot be indexed in SV).
+            if idx_suffix:
+                m_idx = re.match(r"^\[(\d+)(?::(\d+))?\]$", idx_suffix)
+                hi = int(m_idx.group(1))
+                lo = int(m_idx.group(2)) if m_idx.group(2) is not None else hi
+                if hi >= len(bound) or lo > hi:
+                    raise CodegenError("pin.{} index {} out of range for a {}-element bind"
+                                       .format(pin_sig, idx_suffix, len(bound)))
+                if hi == lo:
+                    return invert + _bank_ref_to_port(bound[hi])
+                inner = ", ".join(_bank_ref_to_port(b) for b in reversed(bound[lo:hi + 1]))
+                return invert + "{" + inner + "}"
             inner = ", ".join(_bank_ref_to_port(b) for b in reversed(bound))
-            return invert + "{" + inner + "}" + idx_suffix
+            return invert + "{" + inner + "}"
         return invert + _bank_ref_to_port(bound) + idx_suffix
     if s.startswith("capability."):
         rest = s[len("capability."):]
@@ -650,19 +997,126 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
     if s.startswith("const."):
         v = s[len("const."):]
         return invert + ("1'b" + v if v in ("0", "1") else v) + idx_suffix
+    if s.startswith("$"):
+        # Peripheral-instance parameter (configuration `params:` or the YAML
+        # default), rendered as an SV literal: ints/floats verbatim, booleans
+        # as 1/0, strings quoted.
+        v = _eval_param(s, attach.get("params") or {}, attach.get("peripheral"))
+        if v is None:
+            raise CodegenError("{}: parameter {} has no value and no default".format(
+                attach.get("peripheral_id", "?"), s))
+        return invert + _sv_literal(v) + idx_suffix
     return invert + s + idx_suffix
+
+
+def _sv_literal(v):
+    if isinstance(v, bool):
+        return "1'b1" if v else "1'b0"
+    if isinstance(v, (int, float)):
+        return str(v)
+    return '"{}"'.format(str(v).replace('"', '\\"'))
+
+
+# ---- Bidirectional gpio -------------------------------------------------------
+
+def _bind_bit_ports(resolved, ref):
+    """Expand one bind RHS into the list of generated top port bits it covers,
+    LSB first: `pmod_ja` -> [pmod_ja[0], ..., pmod_ja[7]]; `pmod_ja[3]` ->
+    [pmod_ja[3]]; `onboard_uart.tx` -> [onboard_uart_tx]. Lists expand element-wise."""
+    pinmap = resolved["board_pinmap"]
+    if isinstance(ref, list):
+        out = []
+        for el in ref:
+            out.extend(_bind_bit_ports(resolved, el))
+        return out
+    parsed = _parse_bank_ref(str(ref))
+    if parsed is None:
+        return []
+    bank, sub, idx = parsed
+    if idx is not None:
+        return [_bank_ref_to_port(ref)]
+    width = _bank_width(pinmap, bank, sub)
+    base = _bank_port_name(ref)
+    if width is None:
+        return []
+    if width == 1 and not isinstance(_bank_pin(pinmap, bank, sub, None), list):
+        return [base]
+    return ["{}[{}]".format(base, i) for i in range(width)]
+
+
+def _claimed_port_bits(resolved, plans, gpio_indices):
+    """Port bits used by any attachment other than the gpio providers. A gpio
+    bit whose pin is claimed (a mic on pmod_ja[6], a TM1638 on gpio[0..2]) is
+    left dangling on the design side so nothing double-drives the pad while the
+    user's gpio numbering stays identical to the board header."""
+    claimed = set()
+    for idx, attach in enumerate(resolved["peripherals"]):
+        if idx in gpio_indices:
+            continue
+        for ref in (attach.get("bind") or {}).values():
+            claimed.update(_bind_bit_ports(resolved, ref))
+    return claimed
+
+
+def _gpio_connection(resolved, plans):
+    """Return (expression, declaration_lines) for design_top's `gpio` port, or
+    (None, []) when no provider exists."""
+    plan = plans["gpio"]
+    if not plan.providers:
+        return None, []
+    sig = next((s for s in plan.cap.get("signals", []) if s.get("direction") == "inout"), None)
+    if sig is None:
+        return None, []
+    gpio_indices = {pidx for pidx, _p, _params in plan.providers}
+    claimed = _claimed_port_bits(resolved, plans, gpio_indices)
+
+    bits = [None] * int(plan.params.get("width", 0) or 0)
+    decls = []
+    for pidx, perif, _params in plan.providers:
+        attach = resolved["peripherals"][pidx]
+        ref = (attach.get("bind") or {}).get(sig["name"])
+        if ref is None:
+            continue
+        ports = _bind_bit_ports(resolved, ref)
+        offset, width = plan.offsets[pidx], plan.widths[pidx]
+        if len(ports) != width:
+            log.warning("Configuration %s: %s provides %d gpio bits but its bind %r covers %d pins",
+                        resolved["configuration"]["id"], perif["id"], width, ref, len(ports))
+        for i in range(width):
+            n = offset + i
+            if n >= len(bits):
+                break
+            port = ports[i] if i < len(ports) else None
+            if port is None or port in claimed:
+                decls.append("    wire gpio_nc_{};   // {}".format(
+                    n, "pin claimed by another peripheral" if port else "no pin on this header position"))
+                bits[n] = "gpio_nc_{}".format(n)
+            else:
+                bits[n] = port
+    for n, b in enumerate(bits):
+        if b is None:
+            decls.append("    wire gpio_nc_{};".format(n))
+            bits[n] = "gpio_nc_{}".format(n)
+    expr = "{" + ", ".join(reversed(bits)) + "}" if bits else None
+    return expr, decls
 
 
 # ---- design_top instantiation -----------------------------------------------
 
 def _emit_lab_top(resolved, plans):
     lines = ["    // ---- User logic (design_top) ----"]
+    gpio_expr, gpio_decls = _gpio_connection(resolved, plans)
+    if gpio_decls:
+        lines.append("    // gpio bits without a usable pin (claimed by a driver peripheral, or")
+        lines.append("    // absent on this header) are left dangling so numbering matches the board.")
+        lines.extend(gpio_decls)
 
     cap_widths = {
         "switches":      plans["switches"].params.get("width", 0)      if plans["switches"].providers else 0,
         "buttons":       plans["buttons"].params.get("width", 0)       if plans["buttons"].providers else 0,
         "leds":          plans["leds"].params.get("width", 0)          if plans["leds"].providers else 0,
-        "rgb_leds":      plans["rgb_leds"].params.get("width", 0)      if plans["rgb_leds"].providers else 0,
+        # rgb_leds is concat-aggregated on `count` (see _PRIMARY_PARAM), not `width`.
+        "rgb_leds":      plans["rgb_leds"].params.get("count", 0)      if plans["rgb_leds"].providers else 0,
         "seven_segment": plans["seven_segment"].params.get("digits", 0) if plans["seven_segment"].providers else 0,
         "gpio":          plans["gpio"].params.get("width", 0)          if plans["gpio"].providers else 0,
     }
@@ -677,20 +1131,10 @@ def _emit_lab_top(resolved, plans):
     else:
         sw = sh = wr = wg = wb = 0
 
-    clk_mhz = (plans["clock"].providers[0][2] or {}).get("frequency_mhz") if plans["clock"].providers else None
-    if clk_mhz is None:
-        # Fallback: try to parse the clock bank name (e.g. "clk100mhz" -> 100).
-        if plans["clock"].providers:
-            clk_attach = resolved["peripherals"][plans["clock"].providers[0][0]]
-            clk_bank = (clk_attach.get("bind") or {}).get("clk", "")
-            m = re.search(r"(\d+)mhz", str(clk_bank).lower())
-            if m:
-                clk_mhz = int(m.group(1))
-        if clk_mhz is None:
-            clk_mhz = 50
+    clk_mhz = _clk_mhz_int(resolve_clock(resolved, plans))
 
     params = [
-        ("clk_mhz",       int(clk_mhz)),
+        ("clk_mhz",       clk_mhz),
         ("w_sw",          cap_widths["switches"]),
         ("w_btn",         cap_widths["buttons"]),
         ("w_led",         cap_widths["leds"]),
@@ -729,7 +1173,7 @@ def _emit_lab_top(resolved, plans):
         "        .sound(cap_audio_out_sample)"     if plans["audio_out"].providers else "        .sound()",
         "        .uart_rx(cap_serial_console_rx)"  if plans["serial_console"].providers else "        .uart_rx(1'b1)",
         "        .uart_tx(cap_serial_console_tx)"  if plans["serial_console"].providers else "        .uart_tx()",
-        "        .gpio(cap_gpio_io)"               if plans["gpio"].providers     else "        .gpio()",
+        "        .gpio({})".format(gpio_expr)      if gpio_expr                   else "        .gpio()",
     ]
     lines.append(",\n".join(port_lines))
     lines.append("    );")
@@ -798,24 +1242,16 @@ def emit_xdc(resolved):
     # ---- Clock create_clock entries ----
     out.append("")
     out.append("# ---- Clock definitions ----")
-    for pidx, perif, params in plans["clock"].providers:
-        attach = resolved["peripherals"][pidx]
-        clk_bank = (attach.get("bind") or {}).get("clk")
-        if clk_bank is None:
-            continue
-        port = _bank_port_name(clk_bank)
-        freq = (params or {}).get("frequency_mhz")
-        if freq is None:
-            m = re.search(r"(\d+)mhz", str(clk_bank).lower())
-            if m:
-                freq = int(m.group(1))
-        if freq is None:
-            continue
-        period_ns = 1000.0 / float(freq)
+    clock = resolve_clock(resolved, plans)
+    if clock is not None and clock["mhz"] is not None:
+        period_ns = _clock_period_ns(clock)
         out.append(
             "create_clock -name sys_clk_{f}mhz -period {p:.3f} -waveform {{0 {h:.3f}}} "
-            "[get_ports {{ {port} }}];".format(f=int(freq), p=period_ns, h=period_ns/2.0, port=port)
+            "[get_ports {{ {port} }}];".format(f=_clk_mhz_int(clock), p=period_ns,
+                                                h=period_ns / 2.0, port=clock["port"])
         )
+    else:
+        out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
 
     out.append("")
     return "\n".join(out)
@@ -887,22 +1323,12 @@ def emit_xdc_simple(resolved):
 
     # Clock create_clock entries
     out.append("")
-    for pidx, perif, params in plans["clock"].providers:
-        attach = resolved["peripherals"][pidx]
-        clk_bank = (attach.get("bind") or {}).get("clk")
-        if clk_bank is None:
-            continue
-        port = _bank_port_name(clk_bank)
-        freq = (params or {}).get("frequency_mhz")
-        if freq is None:
-            m = re.search(r"(\d+)mhz", str(clk_bank).lower())
-            if m:
-                freq = int(m.group(1))
-        if freq is None:
-            continue
-        period_ns = 1000.0 / float(freq)
+    clock = resolve_clock(resolved, plans)
+    if clock is not None and clock["mhz"] is not None:
         out.append("create_clock -name sys_clk_{f}mhz -period {p:.3f} [get_ports {{{port}}}]".format(
-            f=int(freq), p=period_ns, port=port))
+            f=_clk_mhz_int(clock), p=_clock_period_ns(clock), port=clock["port"]))
+    else:
+        out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
 
     out.append("")
     return "\n".join(out)
@@ -970,24 +1396,15 @@ def emit_ucf(resolved):
     # ---- Clock period constraints ----
     out.append("")
     out.append("# ---- Clock definitions ----")
-    for pidx, perif, params in plans["clock"].providers:
-        attach = resolved["peripherals"][pidx]
-        clk_bank = (attach.get("bind") or {}).get("clk")
-        if clk_bank is None:
-            continue
-        port = _bank_port_name(clk_bank)
-        port_ucf = port.replace("[", "<").replace("]", ">")
-        freq = (params or {}).get("frequency_mhz")
-        if freq is None:
-            m = re.search(r"(\d+)mhz", str(clk_bank).lower())
-            if m:
-                freq = int(m.group(1))
-        if freq is None:
-            continue
-        period_ns = 1000.0 / float(freq)
-        tnm = "sys_clk_{}mhz".format(int(freq))
+    clock = resolve_clock(resolved, plans)
+    if clock is not None and clock["mhz"] is not None:
+        port_ucf = clock["port"].replace("[", "<").replace("]", ">")
+        tnm = "sys_clk_{}mhz".format(_clk_mhz_int(clock))
         out.append('NET "{port}" TNM_NET = "{tnm}";'.format(port=port_ucf, tnm=tnm))
-        out.append('TIMESPEC TS_{tnm} = PERIOD "{tnm}" {p:.3f} ns HIGH 50%;'.format(tnm=tnm, p=period_ns))
+        out.append('TIMESPEC TS_{tnm} = PERIOD "{tnm}" {p:.3f} ns HIGH 50%;'.format(
+            tnm=tnm, p=_clock_period_ns(clock)))
+    else:
+        out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
 
     out.append("")
     return "\n".join(out)
@@ -1131,24 +1548,15 @@ def emit_sdc(resolved):
     out.append("# =============================================================================")
     out.append("")
 
-    for pidx, perif, params in plans["clock"].providers:
-        attach = resolved["peripherals"][pidx]
-        clk_bank = (attach.get("bind") or {}).get("clk")
-        if clk_bank is None:
-            continue
-        port = _bank_port_name(clk_bank)
-        freq = (params or {}).get("frequency_mhz")
-        if freq is None:
-            m = re.search(r"(\d+)mhz", str(clk_bank).lower())
-            if m:
-                freq = int(m.group(1))
-        if freq is None:
-            continue
-        period_ns = 1000.0 / float(freq)
+    clock = resolve_clock(resolved, plans)
+    if clock is not None and clock["mhz"] is not None:
         out.append(
             "create_clock -name sys_clk_{f}mhz -period {p:.3f} "
-            "[get_ports {{{port}}}]".format(f=int(freq), p=period_ns, port=port)
+            "[get_ports {{{port}}}]".format(f=_clk_mhz_int(clock), p=_clock_period_ns(clock),
+                                            port=clock["port"])
         )
+    else:
+        out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
 
     if toolchain_id.startswith("quartus"):
         out.append("derive_pll_clocks -create_base_clocks")
@@ -1299,6 +1707,14 @@ def emit_lpf(resolved):
                         out.extend(_lpf_lines(p, port, _pin_iostd(p, overrides, bank_iotype), iotype_map))
                 elif isinstance(val, str):
                     out.extend(_lpf_lines(val, pname, _pin_iostd(val, overrides, bank_iotype), iotype_map))
+
+    # Clock frequency for nextpnr-ecp5's timing analysis.
+    out.append("")
+    clock = resolve_clock(resolved)
+    if clock is not None and clock["mhz"] is not None:
+        out.append('FREQUENCY PORT "{port}" {f:g} MHZ;'.format(port=clock["port"], f=clock["mhz"]))
+    else:
+        out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
 
     out.append("")
     return "\n".join(out)
@@ -1560,21 +1976,13 @@ def emit_pcf(resolved):
                 elif isinstance(val, str):
                     out.append("set_io -nowarn {} {}".format(pname, val))
 
-    # Frequency hints for the timing analyzer (optional but cheap).
+    # Frequency hint for the timing analyzer.
     out.append("")
-    for pidx, perif, params in plans["clock"].providers:
-        attach = resolved["peripherals"][pidx]
-        clk_bank = (attach.get("bind") or {}).get("clk")
-        if clk_bank is None:
-            continue
-        port = _bank_port_name(clk_bank)
-        freq = (params or {}).get("frequency_mhz")
-        if freq is None:
-            m = re.search(r"(\d+)mhz", str(clk_bank).lower())
-            if m:
-                freq = int(m.group(1))
-        if freq is not None:
-            out.append("set_frequency {} {}".format(port, freq))
+    clock = resolve_clock(resolved, plans)
+    if clock is not None and clock["mhz"] is not None:
+        out.append("set_frequency {} {:g}".format(clock["port"], clock["mhz"]))
+    else:
+        out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
 
     out.append("")
     return "\n".join(out)
@@ -1708,23 +2116,17 @@ def emit_pdc(resolved):
                 elif isinstance(val, str):
                     _emit(pname, val)
 
-    # Clock period(s) — the parser also accepts create_clock, which keeps the
+    # Clock period — the parser also accepts create_clock, which keeps the
     # timing analyser honest.
     out.append("")
-    for pidx, perif, params in plans["clock"].providers:
-        attach = resolved["peripherals"][pidx]
-        clk_bank = (attach.get("bind") or {}).get("clk")
-        if clk_bank is None:
-            continue
-        port = _bank_port_name(clk_bank)
-        freq = (params or {}).get("frequency_mhz")
-        if freq is None:
-            continue
-        period_ns = 1000.0 / float(freq)
+    clock = resolve_clock(resolved, plans)
+    if clock is not None and clock["mhz"] is not None:
         out.append(
             'create_clock -period {p:.3f} -name sys_clk_{f}mhz [get_ports {{{port}}}]'
-            .format(f=int(freq), p=period_ns, port=port)
+            .format(f=_clk_mhz_int(clock), p=_clock_period_ns(clock), port=clock["port"])
         )
+    else:
+        out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
 
     out.append("")
     return "\n".join(out)
@@ -1796,9 +2198,9 @@ def emit_ccf(resolved):
 # Driver
 # ---------------------------------------------------------------------------
 
-def generate_for(configuration_id):
+def generate_for(configuration_id, strict=True):
     resolved = config_init.resolve_configuration(configuration_id)
-    return emit_top_sv(resolved)
+    return emit_top_sv(resolved, strict=strict)
 
 
 def generate_xdc_for(configuration_id):

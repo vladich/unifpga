@@ -97,10 +97,19 @@ def main(argv=None):
 
     try:
         # Generate the top-level Verilog wrapper from the configuration.
+        # Strict mode: a configuration whose binds do not resolve, whose pins
+        # collide, or whose clock frequency is unknown is refused (exit 3)
+        # rather than turned into a top that silently loses signals.
         from tools import codegen
         top_path = os.path.join(output_folder, "top.sv")
+        try:
+            top_text = codegen.emit_top_sv(resolved)
+        except codegen.CodegenError as exc:
+            log.error("Configuration '%s' cannot be built (see PLAN.md, GEN-ERROR):\n%s",
+                      cfg["id"], exc)
+            return 3
         with open(top_path, "w") as f:
-            f.write(codegen.emit_top_sv(resolved))
+            f.write(top_text)
         log.info("Wrote generated top to %s", top_path)
 
         module_name = "toolchains.{id}.{id}".format(id=toolchain["Id"])
