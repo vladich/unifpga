@@ -48,11 +48,19 @@ def _build_parser():
     p.add_argument("--program", action="store_true",
                    help="After successful synthesis, download the bitstream "
                         "to the connected board (calls toolchain.program()).")
+    p.add_argument("--list-toolchains", action="store_true",
+                   help="Report where every toolchain in config/toolchains.yml was found "
+                        "(InstallDir pin, vendor environment variable, PATH, or the default "
+                        "install directories, as BGM's setup scripts search them) and exit.")
     return p
 
 
 def main(argv=None):
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    if "--list-toolchains" in (sys.argv[1:] if argv is None else argv):
+        from tools import toolchain_detect
+        print("\n".join(toolchain_detect.report(config.init.read_toolchains())))
+        return 0
     args = _build_parser().parse_args(argv)
 
     try:
@@ -72,6 +80,16 @@ def main(argv=None):
 
     log.info("Configuration: %s  (board: %s, toolchain: %s, %d peripherals)",
              cfg["id"], board["Id"], toolchain["Id"], len(peripherals))
+    if toolchain.get("DetectSource"):
+        log.info("Toolchain %s: %s (%s)", toolchain["Id"], toolchain.get("InstallDir") or
+                 ", ".join(toolchain.get("BinDirs") or []), toolchain["DetectSource"])
+    else:
+        for note in toolchain.get("DetectNotes") or []:
+            log.warning("Toolchain %s: %s", toolchain["Id"], note)
+    # BGM exports the tool directories into PATH; the drivers resolve their
+    # binaries with shutil.which(), so the found directories go first.
+    for d in reversed(toolchain.get("BinDirs") or []):
+        os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
 
     if args.output is None:
         output_folder = tempfile.mkdtemp(prefix="unifpga_{}_".format(cfg["id"]))

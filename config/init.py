@@ -673,6 +673,31 @@ def is_compatible(boards, chips, board_id, toolchain_id):
     return False
 
 
+def resolve_toolchain_install(toolchain):
+    """Copy of a toolchains.yml entry with the install resolved the way BGM's
+    setup scripts do it (tools/toolchain_detect.py): the `InstallDir` pin
+    when it exists, else the vendor environment variable, PATH, then the
+    default install parents. Adds `BinDirs` (for PATH), `Bins`,
+    `DetectSource` and `DetectNotes`; leaves `InstallDir` as written when
+    nothing is found so the driver's own error message still names it."""
+    tc = dict(toolchain)
+    try:
+        from tools import toolchain_detect
+    except ImportError:              # config/ imported without the repo root on sys.path
+        return tc
+    det = toolchain_detect.detect(tc["Id"], pin=tc.get("InstallDir"))
+    tc["DetectSource"] = det.source
+    tc["DetectNotes"] = list(det.notes)
+    tc["BinDirs"] = list(det.bin_dirs)
+    tc["Bins"] = dict(det.bins)
+    if det.found:
+        if det.install_dir:
+            tc["InstallDir"] = det.install_dir
+        if det.version and not tc.get("Version"):
+            tc["Version"] = det.version
+    return tc
+
+
 def resolve_configuration(configuration_id):
     """
     Look up a configuration by id and return a fully-resolved bundle:
@@ -793,7 +818,7 @@ def resolve_configuration(configuration_id):
         "configuration": cfg,
         "board":         board_resolved,
         "board_pinmap":  board_pinmap,
-        "toolchain":     toolchains[toolchain_id],
+        "toolchain":     resolve_toolchain_install(toolchains[toolchain_id]),
         "peripherals":   attached,
     }
 
