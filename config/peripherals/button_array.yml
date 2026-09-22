@@ -11,10 +11,19 @@ Peripheral:
       type: enum
       values: [high, low]
       default: high
+    as_switches:
+      type: bool
+      default: false        # BGM boards without switches feed the lab's sw from the keys (`.sw ( lab_key )`)
   signals:
     - { name: btn, type: bus, width: $width, direction: input }
   provides:
     - capability: buttons
       params:
         width: $width
+    - capability: switches
+      when: $as_switches
+      params:
+        width: $width
+      signal_map:
+        sw: btn             # the switches bus reads the same pins
   driver: null   # codegen inverts when active=low

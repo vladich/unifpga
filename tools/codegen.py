@@ -153,7 +153,7 @@ def build_capability_plans(resolved):
     for idx, attach in enumerate(resolved["peripherals"]):
         perif = attach["peripheral"]
         params = attach.get("params") or {}
-        for entry in perif.get("provides") or []:
+        for entry in _active_provides(perif, params):
             cap_id = entry["capability"]
             plan = plans[cap_id]
             cap_params_spec = entry.get("params") or {}
@@ -201,6 +201,20 @@ def build_capability_plans(resolved):
             plan.params = {}
 
     return plans
+
+
+def _active_provides(perif, params):
+    """The peripheral's provides entries whose `when:` parameter (if any) is
+    true for this attach (button_array: switches only with as_switches)."""
+    out = []
+    for entry in perif.get("provides") or []:
+        cond = entry.get("when")
+        if cond is not None:
+            v = _eval_param(cond, params, perif) if isinstance(cond, str) else cond
+            if not v or str(v).lower() in ("false", "0", "no", "none"):
+                continue
+        out.append(entry)
+    return out
 
 
 def _mapped_signal(plan, sig_name):
@@ -1623,18 +1637,20 @@ def _emit_passthrough(resolved, idx, attach, plans):
 
     open_drain = bool((attach.get("params") or {}).get("open_drain"))
 
-    for entry in perif.get("provides") or []:
+    for entry in _active_provides(perif, attach.get("params") or {}):
         cap_id = entry["capability"]
         plan = plans[cap_id]
+        sig_map = entry.get("signal_map") or {}
         if open_drain and plan.aggregation == "concat":
             # BGM colorlight: `LED [0] = lab_led [0] ? 1'b0 : 1'bz` — an LED
             # that is on drives its active level, an LED that is off floats
             drive = "1'b0" if active == "low" else "1'b1"
             for cap_sig in plan.cap.get("signals", []):
                 cap_sig_name = cap_sig["name"]
-                if cap_sig_name not in bind or cap_sig.get("direction") != "user_to_hw":
+                pin_sig_name = sig_map.get(cap_sig_name, cap_sig_name)
+                if pin_sig_name not in bind or cap_sig.get("direction") != "user_to_hw":
                     continue
-                pin_bits = _bind_bit_ports(resolved, bind[cap_sig_name])
+                pin_bits = _bind_bit_ports(resolved, bind[pin_sig_name])
                 if mirror:
                     pin_bits = list(reversed(pin_bits))
                 cap_base = "cap_{}_{}".format(cap_id, cap_sig_name)
@@ -1648,7 +1664,7 @@ def _emit_passthrough(resolved, idx, attach, plans):
         if plan.aggregation in ("exclusive", "broadcast"):
             for cap_sig in plan.cap.get("signals", []):
                 cap_sig_name = cap_sig["name"]
-                pin_sig_name = cap_sig_name
+                pin_sig_name = sig_map.get(cap_sig_name, cap_sig_name)
                 if pin_sig_name not in bind:
                     continue
                 pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind)
@@ -1663,9 +1679,10 @@ def _emit_passthrough(resolved, idx, attach, plans):
             bits = plan.bits[idx]
             for cap_sig in plan.cap.get("signals", []):
                 cap_sig_name = cap_sig["name"]
-                if cap_sig_name not in bind or cap_sig.get("direction") == "inout":
+                pin_sig_name = sig_map.get(cap_sig_name, cap_sig_name)
+                if pin_sig_name not in bind or cap_sig.get("direction") == "inout":
                     continue
-                pin_bits = _bind_bit_ports(resolved, bind[cap_sig_name])
+                pin_bits = _bind_bit_ports(resolved, bind[pin_sig_name])
                 if mirror:
                     pin_bits = list(reversed(pin_bits))
                 cap_base = "cap_{}_{}".format(cap_id, cap_sig_name)
@@ -1691,7 +1708,7 @@ def _emit_passthrough(resolved, idx, attach, plans):
             width = plan.widths[idx]
             for cap_sig in plan.cap.get("signals", []):
                 cap_sig_name = cap_sig["name"]
-                pin_sig_name = cap_sig_name
+                pin_sig_name = sig_map.get(cap_sig_name, cap_sig_name)
                 if pin_sig_name not in bind:
                     continue
                 if cap_sig.get("direction") == "inout":

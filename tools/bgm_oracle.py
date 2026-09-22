@@ -364,10 +364,50 @@ def strip_comments(text):
     return re.sub(r"//[^\n]*", "", text)
 
 
+_PORT_WORDS = {"input", "output", "inout", "logic", "wire", "reg", "tri", "signed", "unsigned", "int", "integer", "bit"}
+
+
 def top_ports(text):
-    """Names declared as top-level ports in the preprocessed board top."""
+    """Names declared as top-level ports in the preprocessed board top,
+    including the continuation names of `input KEY2, KEY3, KEY4,`."""
     head = text.split(");", 1)[0]
-    return set(_PORT_DECL.findall(head))
+    names = set(_PORT_DECL.findall(head))
+    # the port list proper: after the module's `(` that follows the parameter block
+    m = re.search(r"\bmodule\s+[A-Za-z_]\w*", head)
+    if m:
+        i = m.end()
+        while i < len(head) and head[i].isspace():
+            i += 1
+        if head.startswith("#", i):
+            j = head.find("(", i)
+            i = _balanced(head, j) if j >= 0 else i
+            while i < len(head) and head[i].isspace():
+                i += 1
+        if head.startswith("(", i):
+            body = head[i + 1:]
+            cur_dir, depth, chunk, chunks = None, 0, [], []
+            for ch in body:
+                if ch in "([{":
+                    depth += 1
+                elif ch in ")]}":
+                    depth -= 1
+                if ch == "," and depth == 0:
+                    chunks.append("".join(chunk))
+                    chunk = []
+                else:
+                    chunk.append(ch)
+            chunks.append("".join(chunk))
+            for c in chunks:
+                c = c.strip()
+                dm = re.match(r"(input|output|inout)\b", c)
+                if dm:
+                    cur_dir = dm.group(1)
+                if not cur_dir:
+                    continue
+                ids = [w for w in re.findall(r"[A-Za-z_]\w*", re.sub(r"\[[^\]]*\]", " ", c)) if w not in _PORT_WORDS]
+                if ids:
+                    names.add(ids[-1])
+    return names
 
 
 def port_polarity(text):

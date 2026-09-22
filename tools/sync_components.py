@@ -1255,6 +1255,12 @@ def _tm_signal_names(text):
 def _source_kind(src, ports, params, tm_names=None):
     """('tm' | 'board' | 'other', port, (lo, hi) or None) for a resolved lab
     connection: tm_key / tm_key [7:0] -> tm; ~ KEY, SW [8:0] -> board."""
+    cm = re.match(r"^~?\s*\{([^{}]*)\}$", src)
+    if cm:
+        names = [t.strip().lstrip("~ ").strip() for t in cm.group(1).split(",")]
+        if names and all(re.match(r"^[A-Za-z_]\w*$", n) and n in ports for n in names):
+            return "board", names, None            # MSB first, every element a port
+        return "other", None, None
     m = re.match(r"^~?\s*([A-Za-z_]\w*)\s*(?:\[\s*([^\]:]+?)\s*(?::\s*([^\]]+?))?\s*\])?$", src)
     if not m:
         return "other", None, None
@@ -1273,6 +1279,24 @@ def _source_kind(src, ports, params, tm_names=None):
     return "other", name, rng
 
 
+def _attach_for_port(cfg, pinmap, sig_pins, port):
+    """Index of the attach whose binds cover the pins of BGM port `port`
+    (all of the port's constrained bits), or None."""
+    names = {n.upper() for n in (port if isinstance(port, list) else [port])}
+    port_pins = {sy._norm_pin(h) for k, p in sig_pins.items() if k.split("[", 1)[0] in names
+                 for h in str(p).split(",")}
+    if not port_pins:
+        return None
+    for i, a in enumerate(cfg.get("attach") or []):
+        pins = set()
+        for ref in (a.get("bind") or {}).values():
+            for one in (ref if isinstance(ref, list) else [ref]):
+                pins |= sy._pins_of_ref(pinmap, one)
+        if pins and port_pins <= pins:
+            return i
+    return None
+
+
 def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     """{attach_index: {cap: [bits] or None-to-remove}} — the composition of
     the lab buses this configuration must have."""
@@ -1280,7 +1304,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     inst = bgm_oracle.instantiations(text, "lab_top")
     if not inst:
         notes.append("no lab_top instantiation in the active top")
-        return {}
+        return {}, {}
     conns = dict(inst[0]["ports"])
     ports = bgm_oracle.top_ports(text)
     params = _top_params(text)
@@ -1289,6 +1313,21 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     tm_idx = next((i for i, a in enumerate(attaches) if a.get("peripheral") == _TM_PID), None)
     has_tm = tm_idx is not None and bool(re.search(r"\btm1638_board_controller\b", text))
     wanted = {i: {} for i in range(len(attaches))}
+    param_changes = {}          # attach index -> {param: value} (button_array as_switches)
+    pinmap = resolved["board_pinmap"]
+
+    def keys_as_switches(port, rng, target_lo=0):
+        """BGM feeds the lab's sw from the board keys: the button_array that
+        owns that port provides switches too (as_switches) on these bits."""
+        idx = _attach_for_port(cfg, pinmap, sig_pins, port)
+        if idx is None or attaches[idx].get("peripheral") != "button_array":
+            notes.append("sw: BGM feeds the lab's sw from {} but no button_array owns it".format(port))
+            return False
+        w = int((attaches[idx].get("params") or {}).get("width") or 1)
+        lo, hi = rng if rng else (0, w - 1)
+        param_changes.setdefault(idx, {})["as_switches"] = True
+        wanted[idx]["switches"] = [target_lo + (i - lo) if lo <= i <= hi else None for i in range(w)]
+        return True
 
     def board_providers(cap):
         out = []
@@ -1305,10 +1344,12 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     # ---- key and sw: what the lab reads -----------------------------------
     for lab_port, cap in (("key", "buttons"), ("sw", "switches")):
         expr = conns.get(lab_port)
-        if expr is None or not plans[cap].providers:
+        if expr is None:
             continue
-        if not expr.strip():
-            # `.sw ( )`: the lab reads nothing on this bus (colorlight)
+        if not plans[cap].providers and cap != "switches":
+            continue                # (switches may still come from the keys)
+        if not expr.strip() or re.match(r"^\s*(?:\d*'[bdh]?0+|'0|0)\s*$", expr):
+            # `.sw ( )` / `.sw ( '0 )`: the lab reads nothing on this bus (colorlight, orangecrab)
             for pidx, _perif, _p in plans[cap].providers:
                 wanted[pidx][cap] = []
             continue
@@ -1330,6 +1371,10 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
                         lo, hi = rng if rng else (0, _TM_WIDTH - 1)
                         wanted[tm_idx][cap] = [target_lo + (i - lo) if lo <= i <= hi else None for i in range(_TM_WIDTH)]
                     else:
+                        if not board and cap == "switches":
+                            if not keys_as_switches(port, rng, target_lo):
+                                break
+                            continue
                         if not board:
                             notes.append("{}: BGM ORs {} in but no board provider of {} is attached".format(lab_port, port, cap))
                             break
@@ -1351,6 +1396,19 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
                 wanted[pidx][cap] = []
         elif kind == "board":
             board = board_providers(cap)
+            owner = _attach_for_port(cfg, pinmap, sig_pins, port)
+            owner_pid = attaches[owner].get("peripheral") if owner is not None else None
+            if cap == "switches" and (not board or owner_pid == "button_array"):
+                # the keys are the switches (`.sw ( lab_key )`, lab_key = ~ KEY):
+                # the button_array provides them, a switch bank BGM does not
+                # read (omdazz, ax7035b) carries no lab bit
+                if keys_as_switches(port, rng):
+                    for pidx, _w in board:
+                        if pidx != owner:
+                            wanted[pidx][cap] = []
+                    if tm_idx is not None and any(p == tm_idx for p, _perif, _pp in plans[cap].providers):
+                        wanted[tm_idx][cap] = []
+                continue
             if not board:
                 notes.append("{}: BGM feeds the lab from {} but no board provider of {} is attached".format(lab_port, port, cap))
                 continue
@@ -1418,7 +1476,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
         else:
             for pidx, w in board_providers(cap):
                 wanted[pidx][cap] = list(range(w))
-    return wanted
+    return wanted, param_changes
 
 
 def _current_lab_bits(attaches):
@@ -1483,6 +1541,42 @@ def _write_lab_bits(lines, attaches, wanted):
     return changes
 
 
+def _set_attach_params(lines, attaches, changes_by_idx):
+    """Add / replace `key: value` entries in the params: of the given attaches."""
+    out = []
+    order = {}
+    for i, a in enumerate(attaches):
+        pid = a.get("peripheral")
+        order[i] = (pid, sum(1 for b in attaches[:i] if b.get("peripheral") == pid))
+    for i in sorted(changes_by_idx, reverse=True):
+        pid, occ = order[i]
+        blocks = sy._find_attach_blocks(lines, pid)
+        if occ >= len(blocks):
+            continue
+        b0, b1, indent = blocks[occ]
+        for key, value in changes_by_idx[i].items():
+            rendered = "{}    {}: {}".format(indent, key, "true" if value is True else value)
+            done = False
+            for k in range(b0, b1):
+                if re.match(r"^{}    {}:".format(indent, re.escape(key)), lines[k]):
+                    done = lines[k] != rendered
+                    lines[k] = rendered
+                    break
+            else:
+                for k in range(b0, b1):
+                    if lines[k].strip() == "params:":
+                        lines.insert(k + 1, rendered)
+                        done = True
+                        break
+                else:
+                    lines.insert(b0 + 1, indent + "  params:")
+                    lines.insert(b0 + 2, rendered)
+                    done = True
+            if done:
+                out.append("{}#{} params.{} = {}".format(pid, occ, key, value))
+    return out
+
+
 def apply_lab_bits(path, dry_run):
     original = open(path, encoding="utf-8").read()
     cfg = yaml.safe_load(original)["Configuration"]
@@ -1511,9 +1605,13 @@ def apply_lab_bits(path, dry_run):
                     bound_banks.add(parts[0])
     rev = _Rev(pinmap, bound_banks)
     notes = []
-    wanted = _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes)
+    wanted, param_changes = _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes)
     lines = original.split("\n")
-    changes = _write_lab_bits(lines, cfg.get("attach") or [], wanted)
+    # params first (they do not move the lab_bits blocks), then the bits
+    changes = _set_attach_params(lines, cfg.get("attach") or [], {
+        i: {k: v for k, v in ch.items() if (cfg["attach"][i].get("params") or {}).get(k) != v}
+        for i, ch in param_changes.items()})
+    changes = [c for c in changes if c] + _write_lab_bits(lines, cfg.get("attach") or [], wanted)
     if changes and not dry_run:
         new = "\n".join(lines)
         yaml.safe_load(new)                      # must still parse

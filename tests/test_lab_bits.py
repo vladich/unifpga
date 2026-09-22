@@ -134,3 +134,23 @@ def test_header_bits_reach_the_design_even_when_a_peripheral_drives_them():
     assert "gpio[0]" in gpio_line and "gpio[4]" in gpio_line
     assert "also driven by another peripheral" in text
     assert ".uart_rx(1'b0)" in text                                          # BGM leaves it unconnected = ground
+
+
+def test_keys_double_as_switches_like_bgm():
+    """omdazz: `.key ( ~ KEY_SW )`, `.sw ( ~ KEY_SW )` — the button array also
+    provides the lab's sw (as_switches), a gated provides entry reading the
+    same pins."""
+    r = config_init.resolve_configuration("omdazz")
+    btn = next(a for a in r["peripherals"] if a["peripheral_id"] == "button_array")
+    assert btn["params"].get("as_switches") is True and btn["lab_bits"] == {"switches": [0, 1, 2, 3]}
+    text = codegen.emit_top_sv(r)
+    assert ".w_sw(4)," in text and ".w_btn(4)," in text
+    plans = codegen.build_capability_plans(r)
+    assert [p[1]["id"] for p in plans["switches"].providers] == ["button_array"]
+    i = _pidx(r, "button_array")
+    assert "assign cap_switches_sw__p{}[0] = ~ onboard_buttons[0];".format(i) in text
+    assert "assign cap_switches_sw[3] = cap_switches_sw__p{}[3];".format(i) in text
+    # without the parameter the entry is inactive
+    btn["params"] = dict(btn["params"], as_switches=False)
+    btn["lab_bits"] = {}
+    assert not codegen.build_capability_plans(r)["switches"].providers

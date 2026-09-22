@@ -375,6 +375,8 @@ def _bgm_sources(dirs):
             for name in sorted(names):
                 if not name.endswith((".sv", ".v")) or name == "tb.sv" or name.endswith("_bb.v"):
                     continue
+                if name.startswith("tb_"):
+                    continue            # labs/common/tb_lcd_display.sv: a second, unconnected lab instance
                 path = os.path.join(root, name)
                 if _is_protected(path):
                     continue
@@ -415,6 +417,23 @@ def _stage_bgm_patches(files, out_dir):
 
 _MODULE_DECL = re.compile(r"^\s*module\s+([A-Za-z_]\w*)", re.M)
 _MODULE_BLOCK = re.compile(r"^module\s+([A-Za-z_]\w*).*?^endmodule[ \t]*$", re.M | re.S)
+
+
+def _dedupe_modules(files):
+    """Keep the first file that defines each module (the variant's own copy
+    before a sibling's, a board's before the shared peripherals)."""
+    seen, out = set(), []
+    for path in files:
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                mods = set(_MODULE_DECL.findall(f.read()))
+        except OSError:
+            mods = set()
+        if mods and mods <= seen:
+            continue
+        seen |= mods
+        out.append(path)
+    return out
 
 
 def _defined_modules(files):
@@ -550,8 +569,13 @@ def cmd_generate(args):
             d0 = os.path.dirname(os.path.abspath(fpath))
             if d0 != os.path.abspath(vdir) and d0.startswith(os.path.abspath(bgm_root)) and d0 not in chain_dirs:
                 chain_dirs.append(d0)
-        gold_files = _bgm_sources([bgm_lab_dir, vdir] + chain_dirs +
-                                  [os.path.join(bgm_root, "peripherals"), os.path.join(bgm_root, "labs", "common")])
+        # the included sibling's directory contributes its IP wrappers (a
+        # `_yosys` twin's gowin_rpll.v), not its top, which the variant's
+        # own top already includes textually; one definition per module
+        chain_files = [f for f in _bgm_sources(chain_dirs) if os.path.basename(f) != "board_specific_top.sv"]
+        gold_files = _dedupe_modules(_bgm_sources([bgm_lab_dir, vdir]) + chain_files +
+                                     _bgm_sources([os.path.join(bgm_root, "peripherals"),
+                                                   os.path.join(bgm_root, "labs", "common")]))
         gold_files, patched = _stage_bgm_patches(gold_files, d)
         gold_stub_text, gold_dropped = _stub_text_without(_defined_modules(gold_files))
         with open(os.path.join(d, "gold_stubs.sv"), "w") as f:
@@ -744,7 +768,8 @@ def _merge(gold, gate, n_cmp):
 
 def _compile(side, entry, roots, d, log):
     s = entry[side]
-    cmd = ["iverilog", "-g2012", "-Wno-timescale", "-o", os.path.join(d, side + ".vvp")]
+    # -s: the testbench is the only root, whatever else is left uninstantiated
+    cmd = ["iverilog", "-g2012", "-Wno-timescale", "-s", "equiv_tb", "-o", os.path.join(d, side + ".vvp")]
     for df in s["defines"]:
         cmd.append("-D" + df)
     for inc in s["incdirs"]:
