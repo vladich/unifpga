@@ -449,14 +449,26 @@ def sim_sources(design_dir):
     """The files BGM's run_icarus_verilog compiles, transposed: the design
     directory's *.sv / *.v (tb.sv included), the design-common helpers, and
     the peripheral models the design directory does not shadow."""
-    files = sorted(glob.glob(os.path.join(design_dir, "*.sv")) + glob.glob(os.path.join(design_dir, "*.v")))
-    common = os.path.join(REPO, "rtl", "peripherals", "designs_common")
-    files += sorted(glob.glob(os.path.join(common, "*.sv")))
+    rtl = os.path.join(REPO, "rtl")
+    files = [os.path.join(rtl, "sim", "bgm_timescale.sv")]          # `timescale 1 ns / 1 ps first, as config.svh did
+    files += sorted(glob.glob(os.path.join(design_dir, "*.sv")) + glob.glob(os.path.join(design_dir, "*.v")))
+    files += sorted(glob.glob(os.path.join(design_dir, "cpu", "*.sv")) + glob.glob(os.path.join(design_dir, "cpu", "*.v")))
+    # BGM compiles peripherals/*.sv too (its LCD testbenches instantiate the
+    # panel timing modules); only tb's hierarchy is elaborated (-s tb), so
+    # unreferenced models cost nothing
+    local = {os.path.basename(f) for f in files}
+    for sub, pattern in (("peripherals/designs_common", "*.sv"), ("peripherals", "*.sv"), ("peripherals", "*.v"),
+                         ("io", "*.sv"), ("pll", "*.sv"), ("sim", "*.sv")):
+        files += sorted(f for f in glob.glob(os.path.join(rtl, sub, pattern))
+                        if os.path.basename(f) != "design_top_interface.sv" and os.path.basename(f) not in local)
     return files
 
 
 def sim_command(design_dir, out_dir, lang="-g2012"):
-    return (["iverilog", lang, "-s", "tb", "-o", os.path.join(out_dir, "a.out"),
+    # BGM's labs/common/config.svh defines SIMULATION under `ifdef __ICARUS__
+    # (fifo_monitor and other simulation-only modules sit behind it); the
+    # include itself is stripped from the adapted sources
+    return (["iverilog", lang, "-D", "SIMULATION", "-s", "tb", "-o", os.path.join(out_dir, "a.out"),
              "-I", design_dir, "-I", os.path.join(design_dir, "cpu"),
              "-I", os.path.join(REPO, "rtl", "peripherals"),
              "-I", os.path.join(REPO, "rtl", "peripherals", "designs_common")]
@@ -489,6 +501,8 @@ def cmd_sim(args):
     print("Simulating {} ...  output: {}".format(os.path.basename(design_dir), _shown(out)))
     log_path = os.path.join(out, LOG_NAME)
     with open(log_path, "w", encoding="utf-8") as log:
+        log.write("# " + " ".join(cmd) + "\n")
+        log.flush()
         rc = subprocess.run(cmd, cwd=out, stdout=log, stderr=subprocess.STDOUT).returncode
         if rc == 0:
             rc = subprocess.run(["vvp", os.path.join(out, "a.out")], cwd=out, stdout=log, stderr=subprocess.STDOUT).returncode

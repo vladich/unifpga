@@ -23,6 +23,7 @@ Skipped sections: 8_unfinished/, 99_experimental/ — incomplete in the source.
 """
 
 import os
+import shutil
 import re
 import sys
 from collections import defaultdict
@@ -94,7 +95,9 @@ SLOW_CLK_INSERT = """
     // Original basics-graphics-music labs received `slow_clk` as a port. The
     // uni-fpga virtual device doesn't expose one, so derive a ~1 Hz tick from
     // the system clock.
-    localparam int W_SLOW_CLK_DIV = $clog2(clk_mhz * 1_000_000);
+    // clk_mhz <= 1 is BGM's testbench setting (tb.sv passes clk as slow_clk):
+    // a two-bit divider keeps the simulation short.
+    localparam int W_SLOW_CLK_DIV = (clk_mhz > 1) ? $clog2(clk_mhz * 1_000_000) : 2;
     logic [W_SLOW_CLK_DIV - 1 : 0] slow_clk_div;
     logic                          slow_clk;
     always_ff @(posedge clk or posedge rst)
@@ -449,11 +452,14 @@ def adapt_one(src_path, dry_run=False):
         if re.search(r"\b" + pname + r"\b", body_new):
             legacy_params.append((pname, default))
     injection = ""
+    header = CANONICAL_HEADER
     if legacy_params:
-        injection = "    // Legacy basics-graphics-music parameters re-injected as localparams\n"
-        for pname, default in legacy_params:
-            injection += "    localparam int {p} = {d};\n".format(p=pname, d=default)
-        injection += "\n"
+        # module parameters, not localparams: BGM's tb overrides them
+        # (`.strobe_to_update_xy_counter_width (2)` keeps the game simulation short)
+        extra = ",\n                  // legacy basics-graphics-music parameters (BGM's tb overrides them)" + \
+            ",".join("\n                  {p:<13} = {d}".format(p=pname, d=default) for pname, default in legacy_params)
+        header = re.sub(r"(w_y = \(screen_height > 0\) \? \$clog2\(screen_height\) : 1)", r"\1" + extra.replace("\\", "\\\\"), header, count=1)
+        assert header != CANONICAL_HEADER, "legacy parameter injection point"
 
     # Also include sibling helper SV files when inferring requirements —
     # game_sprite_display.sv, spectrum.sv, etc. use RGB / x / y indirectly.
@@ -498,7 +504,7 @@ def adapt_one(src_path, dry_run=False):
         "{post}"
     ).format(design=lab_name, section=section,
              preamble=preamble.strip() + ("\n\n" if preamble.strip() else ""),
-             header=CANONICAL_HEADER,
+             header=header,
              injection=injection,
              body=body_new.rstrip(),
              requires=requires_block,
@@ -516,11 +522,17 @@ def adapt_one(src_path, dry_run=False):
     for root, _dirs, names in os.walk(src_dir):
         rel_root = os.path.relpath(root, src_dir)
         for name in names:
-            if not (name.endswith(".sv") or name.endswith(".svh") or name.endswith(".v")):
+            data_file = name.endswith((".vh", ".mem", ".mem8", ".hex", ".dat"))     # `include and $readmemh inputs (yrv)
+            if not (name.endswith(".sv") or name.endswith(".svh") or name.endswith(".v") or data_file):
                 continue
             if name in (UPSTREAM_TOP, "design_top.sv", "tb.sv"):
                 continue
             src_file = os.path.join(root, name)
+            if data_file:
+                dest_dir = out_dir if rel_root == "." else os.path.join(out_dir, rel_root)
+                os.makedirs(dest_dir, exist_ok=True)
+                shutil.copyfile(src_file, os.path.join(dest_dir, name))
+                continue
             with open(src_file) as f:
                 content = f.read()
             content = _strip_includes(content)
@@ -535,13 +547,137 @@ def adapt_one(src_path, dry_run=False):
     return ("ok", lab_name, "wrote " + out_dir)
 
 
+# ---------------------------------------------------------------------------
+# Testbenches (BGM labs/<section>/<lab>/tb.sv -> designs/<lab>/tb.sv)
+# ---------------------------------------------------------------------------
+# BGM's tb instantiates lab_top with `key` / `w_key` and feeds `slow_clk`
+# from the tb clock; design_top calls those `btn` / `w_btn` and derives
+# slow_clk itself (a two-bit divider when clk_mhz <= 1, the tb's setting).
+_TB_SUBS = [
+    (re.compile(r"\bi_lab_top\b"), "i_design_top"),
+    (re.compile(r"\blab_top\b"), "design_top"),
+    (re.compile(r"\bw_key\b"), "w_btn"),
+    (re.compile(r"\bkey\b"), "btn"),
+    (re.compile(r"\.mic(\s*\()"), r".mic_sample\1"),       # design_top's microphone port
+]
+_TB_EXTRAS = ("gtkwave.tcl", "surfer.scr")
+
+
+def adapt_testbench_text(text):
+    text = _strip_includes(text)
+    # the slow_clk connection has no port to go to
+    text = re.sub(r"^[ \t]*\.slow_clk\s*\([^)]*\)\s*,?[ \t]*\r?\n", "", text, flags=re.M)
+    text = re.sub(r"\.slow_clk\s*\([^)]*\)\s*,?\s*", "", text)   # the same on a one-line instantiation
+    text = re.sub(r",(\s*)\)", r"\1)", text)          # a dropped last connection
+    for pat, rep in _TB_SUBS:
+        text = pat.sub(rep, text)
+    return text
+
+
+_TB_DEFAULT_PARAMS = ("clk_mhz", "w_sw", "w_led", "w_digit", "w_gpio", "w_rgb_led",
+                      "screen_width", "screen_height", "w_red", "w_green", "w_blue")
+
+
+def lab_top_param_defaults(lab_top_text):
+    """{name: default text} from BGM lab_top's parameter list (w_key -> w_btn)."""
+    m = re.search(r"^module\s+lab_top\s*#\s*\((.*?)^\)", lab_top_text, re.S | re.M)
+    if not m:
+        return {}
+    out = {}
+    for pm in re.finditer(r"\b(\w+)\s*=\s*([^,\n]+?)\s*(?:,|$)", m.group(1), re.M):
+        name, val = pm.group(1), pm.group(2).strip()
+        if name in ("parameter", "int"):
+            continue
+        out["w_btn" if name == "w_key" else name] = val
+    return out
+
+
+def inject_tb_param_defaults(text, defaults):
+    """BGM's tb relies on lab_top's defaults (w_red = 4, screen_width = 640);
+    design_top's canonical defaults are 0, so the values the tb does not set
+    are written into the design_top instantiation's parameter block."""
+    m = re.search(r"(design_top\s*\n?\s*#\s*\()(.*?)(\)\s*\n\s*i_design_top)", text, re.S)
+    if not m:
+        m2 = re.search(r"design_top(\s+)i_design_top", text)
+        if not m2:
+            return text
+        block_params = {}
+        head, body, tail = "design_top\n    # (", "", ")\n    i_design_top"
+        text = text[:m2.start()] + head + "\n    " + tail + text[m2.end():]
+        m = re.search(r"(design_top\s*\n?\s*#\s*\()(.*?)(\)\s*\n\s*i_design_top)", text, re.S)
+    body = m.group(2)
+    present = set(re.findall(r"\.(\w+)\s*\(", body))
+    add = [(n, defaults[n]) for n in _TB_DEFAULT_PARAMS
+           if n in defaults and n not in present and not re.search(r"\$clog2|screen_|w_x|w_y", defaults[n])
+           or (n in defaults and n not in present and n in ("screen_width", "screen_height", "w_red", "w_green", "w_blue"))]
+    add = [(n, v) for n, v in add if re.fullmatch(r"[\w']+", v)]
+    if not add:
+        return text
+    lines = "".join("        .{:<14}( {} ),\n".format(n, v) for n, v in add)
+    stripped = body.rstrip()
+    sep = ",\n" if stripped and not stripped.endswith(",") else "\n"
+    new_body = stripped + sep + "        // defaults of BGM's lab_top the testbench relies on\n" + lines.rstrip(",\n") + "\n    "
+    return text[:m.start(2)] + new_body + text[m.end(2):]
+
+
+def adapt_testbench(src_tb, dry_run=False):
+    section_lab = _section_and_lab(src_tb)
+    if section_lab is None:
+        return ("skipped", src_tb, "outside labs/")
+    section, lab_name = section_lab
+    out_dir = os.path.join(DESIGNS_OUT, lab_name)
+    if not os.path.isfile(os.path.join(out_dir, "design_top.sv")):
+        return ("skipped", lab_name, "no adapted design")
+    text = adapt_testbench_text(_read(src_tb))
+    lab_top_path = os.path.join(os.path.dirname(src_tb), UPSTREAM_TOP)
+    if os.path.isfile(lab_top_path):
+        text = inject_tb_param_defaults(text, lab_top_param_defaults(_read(lab_top_path)))
+    out_text = ("// =============================================================================\n"
+                "// {lab} testbench — auto-adapted by tools/adapt_designs.py --testbenches from\n"
+                "//   basics-graphics-music/labs/{section}/{lab}/tb.sv\n"
+                "//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)\n"
+                "// =============================================================================\n\n"
+                "{text}").format(lab=lab_name, section=section, text=text.lstrip("\n"))
+    if dry_run:
+        return ("ok", lab_name, "would write {}/tb.sv".format(out_dir))
+    with open(os.path.join(out_dir, "tb.sv"), "w") as f:
+        f.write(out_text)
+    src_dir = os.path.dirname(src_tb)
+    for name in _TB_EXTRAS:
+        if os.path.isfile(os.path.join(src_dir, name)):
+            with open(os.path.join(src_dir, name)) as f:
+                content = f.read()
+            for pat, rep in _TB_SUBS:
+                content = pat.sub(rep, content)
+            with open(os.path.join(out_dir, name), "w") as f:
+                f.write(content)
+    return ("ok", lab_name, "wrote {}/tb.sv".format(out_dir))
+
+
 def main(argv=None):
     import argparse
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--section", help="adapt only this section (e.g. 1_basics)")
+    p.add_argument("--testbenches", action="store_true",
+                   help="adapt BGM's tb.sv (and gtkwave.tcl / surfer.scr) into designs/<lab>/ instead of lab_top.sv")
     args = p.parse_args(argv)
+
+    if args.testbenches:
+        counts = defaultdict(int)
+        for root, _dirs, files in sorted(os.walk(BGM_LABS_DIR)):
+            if "tb.sv" not in files:
+                continue
+            sec_lab = _section_and_lab(os.path.join(root, "tb.sv"))
+            if args.section and (sec_lab is None or sec_lab[0] != args.section):
+                continue
+            status, name, msg = adapt_testbench(os.path.join(root, "tb.sv"), dry_run=args.dry_run)
+            counts[status] += 1
+            if status != "ok":
+                print("  - {}: {}".format(name, msg))
+        print("Testbenches: ok={ok}  skipped={sk}".format(ok=counts["ok"], sk=counts["skipped"]))
+        return 0
 
     src_paths = []
     for root, _dirs, files in os.walk(BGM_LABS_DIR):

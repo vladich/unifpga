@@ -28,7 +28,7 @@ cd designs/1_06_binary_counter
 BGM lab script | `unifpga` command
 --- | ---
 `01_clean.bash` | `unifpga clean` (`--all`: every design)
-`02_simulate_rtl.bash` | `unifpga sim` (Icarus Verilog on `tb.sv`, then gtkwave / surfer)
+`02_simulate_rtl.bash` | `unifpga sim` (Icarus Verilog on the design's `tb.sv`, imported from BGM for 88 designs, then gtkwave / surfer)
 `03_synthesize_for_fpga.bash` + `04_configure_fpga.bash` | `unifpga program` (`unifpga build` stops after the bitstream)
 `05_run_gui_for_fpga_synthesis.bash` | `unifpga gui`
 `06_choose_another_fpga_board.bash` | `unifpga board`
