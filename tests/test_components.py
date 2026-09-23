@@ -106,7 +106,7 @@ def test_wm8731_and_adv7513_generate():
     assert "wm8731_i2s_out # (.clk_mhz(clk_mhz), .in_res(16))" in top
     assert "inout  onboard_i2c_sdat" in top
     paths = codegen.pll_source_paths(REPO, os.devnull, r["peripherals"])
-    assert os.path.join(REPO, "rtl", "peripherals", "I2C_AUDIO_Config.v") in paths
+    assert os.path.join(REPO, "rtl", "peripherals", "i2c_reg_writer.sv") in paths
     assert os.path.join(REPO, "rtl", "peripherals", "i2s_audio_out.sv") in paths
 
     r = config_init.resolve_configuration("de10_nano")

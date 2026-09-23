@@ -1,13 +1,11 @@
 // =============================================================================
 // wm8731_i2s_out — the on-board Wolfson WM8731 audio codec of the Terasic
 // DE1 / DE2 / DE2-115 / DE1-SoC used as an I2S DAC: i2s_audio_out feeds the
-// DAC lines and
-// Terasic's I2C_AUDIO_Config programs the codec registers once after reset.
+// DAC lines and i2c_reg_writer programs the codec registers once after reset.
 //
 //     i2s_audio_out # (.clk_mhz (clk_mhz)) i_audio_out (
 //         .mclk (AUD_XCK), .bclk (AUD_BCLK), .lrclk (AUD_DACLRCK), .sdata (AUD_DACDAT));
-//     I2C_AUDIO_Config i_i2c_codec_conf (.iCLK (clk), .iRST_N (~ rst),
-//         .I2C_SCLK (I2C_SCLK), .I2C_SDAT (I2C_SDAT), .READY ());
+//     i2c_reg_writer # (.TABLE (...)) i_conf (.scl (I2C_SCLK), .sda (I2C_SDAT), ...);
 // =============================================================================
 
 module wm8731_i2s_out
@@ -43,13 +41,22 @@ module wm8731_i2s_out
         .sdata   ( dac_dat  )
     );
 
-    I2C_AUDIO_Config i_conf
+    `include "wm8731_init_table.svh"
+
+    i2c_reg_writer
+    # (
+        .CLK_MHZ ( clk_mhz           ),
+        .N       ( WM8731_INIT_N     ),
+        .TABLE   ( WM8731_INIT_TABLE )
+    )
+    i_conf
     (
-        .iCLK     ( clk      ),
-        .iRST_N   ( ~ reset  ),
-        .I2C_SCLK ( i2c_sclk ),
-        .I2C_SDAT ( i2c_sdat ),
-        .READY    (          )
+        .clk     ( clk      ),
+        .rst     ( reset    ),
+        .restart ( 1'b0     ),
+        .scl     ( i2c_sclk ),
+        .sda     ( i2c_sdat ),
+        .done    (          )
     );
 
 endmodule
