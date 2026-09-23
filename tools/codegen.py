@@ -1459,9 +1459,6 @@ def reset_sources(resolved, plans=None):
         for kind, d in sources:
             if kind == "pin":
                 d["sync"] = sync
-                d["sync_assert"] = bool(spec.get("sync_assert"))
-    elif spec.get("sync_assert"):
-        raise CodegenError("reset.sync_assert needs reset.sync")
     return sources
 
 
@@ -1564,17 +1561,6 @@ def _emit_reset(resolved, plans):
                 # asserts with the pin and deasserts n clocks after it releases
                 k, low = int(d["sync"]), d["active"] == "low"
                 net = "rst_sync_{}".format(len(terms))
-                if d.get("sync_assert"):
-                    # a7_lite's xpm_cdc_async_rst polarity slip: rst rises k
-                    # clocks after the pin asserts and falls as it releases
-                    lines.append("    // {}: asserted {} clock(s) after the pin, released with it (BGM's xpm_cdc_async_rst "
-                                 "keeps RST_ACTIVE_HIGH = 0)".format(ref, k))
-                    lines.append("    logic [{}:0] {};".format(k - 1, net))
-                    lines.append("    always_ff @ (posedge {} or {} {})".format(_EMIT.get("lab_clk", "clk"), "posedge" if low else "negedge", ref))
-                    lines.append("        if ({}{}) {} <= '0;".format("" if low else "! ", ref, net))
-                    lines.append("        else {} <= {};".format(net, "1'b1" if k == 1 else "{{ {} [{}:0], 1'b1 }}".format(net, k - 2)))
-                    terms.append("({} [{}])".format(net, k - 1))
-                    continue
                 lines.append("    // {}: asserted with the pin, released {} clock(s) after it (synchronised deassertion)".format(ref, k))
                 lines.append("    logic [{}:0] {};".format(k - 1, net))
                 lines.append("    always_ff @ (posedge {} or {} {})".format(_EMIT.get("lab_clk", "clk"), "negedge" if low else "posedge", ref))

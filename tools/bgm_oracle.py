@@ -284,7 +284,7 @@ def reset_sync_asserts(text):
     (~ RESETN))` keeps the default RST_ACTIVE_HIGH = 0, so src_arst and
     dest_arst are active low while the lab reads dest_arst as active-high rst
     — rst rises DEST_SYNC_FF clocks after the button goes down and falls with
-    it (an upstream polarity slip; the overlay reproduces it)."""
+    it (an upstream polarity slip: --reset reports it and keeps a normal synchroniser)."""
     for inst in instantiations(text, "xpm_cdc_async_rst"):
         if dict(inst["ports"]).get("dest_arst", "").strip() == "rst":
             return str(dict(inst["params"]).get("RST_ACTIVE_HIGH", "0")).strip() in ("0", "1'b0", "0'b0")

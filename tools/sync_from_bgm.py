@@ -84,6 +84,19 @@ def reset_policy_for(cfg, pinmap, facts):
             "sync_assert": bool(facts.get("reset_sync_asserts"))}, " | ".join(facts["reset_exprs"])
 
 
+def _record_bug(cid, vdir, key, description, dry_run):
+    """Record / clear an upstream bug in the overlay's bgm_bugs (not reproduced);
+    returns change notes."""
+    from tools import bgm_overlay
+    have = ((bgm_overlay.load(cid) or {}).get("bgm_bugs") or {}).get(key)
+    if have == description:
+        return ["WARNING (BGM bug, not copied): " + description] if description else []
+    if not dry_run:
+        bgm_overlay.set_bug(cid, os.path.basename(vdir), key, description)
+    return ["bgm_bugs.{} {} (overlay){}".format(key, "recorded" if description else "cleared",
+                                                ": " + description if description else "")]
+
+
 def _has_reset_button(cfg):
     return any((a or {}).get("peripheral") == "reset_button" for a in cfg.get("attach") or [])
 
@@ -178,12 +191,16 @@ def apply_reset(path, dry_run):
         changes.append("note: BGM uses only a dedicated pin; overlay reset sources left as is")
     if policy.get("sync"):
         want["sync"] = int(policy["sync"])
-        if policy.get("sync_assert"):
-            want["sync_assert"] = True     # a7_lite: xpm_cdc_async_rst's polarity slip
     if dict(want) != existing:
         changes.append("reset = {} (overlay)".format(dict(want)))
         if not dry_run:
             bgm_overlay.update(cid, os.path.basename(vdir), reset=(want or None))
+    # a7_lite: xpm_cdc_async_rst keeps RST_ACTIVE_HIGH = 0 while driving the
+    # active-high rst — an upstream bug, reported, not copied
+    changes.extend(_record_bug(cid, vdir, "reset_polarity", (
+        "xpm_cdc_async_rst keeps its default active-low polarity but drives the active-high rst: the reset "
+        "asserts 4 clocks after the button and releases with it; unifpga keeps a normal synchroniser")
+        if policy.get("sync_assert") else None, dry_run))
 
     # 3. the TM1638 controller on a reset of its own (Tang Primer 25K:
     #    `.rst ( tm_rst )`, the power-up reset without the TM1638's own key)
@@ -691,13 +708,15 @@ def apply_vga(path, dry_run):
         from tools import bgm_overlay
         cur = bgm_overlay.attach_override(bgm_overlay.load(cfg["id"]) or {}, "vga_4bit", 0, create=False) or {}
         cur_bind = dict(cur.get("bind") or {})
-        want_bind = {"g": binds["b"].strip('"'), "b": binds["g"].strip('"')} if swapped else {}
-        if {k: cur_bind.get(k) for k in ("g", "b") if k in cur_bind} != want_bind:
+        # an upstream bug: reported, not copied (an earlier overlay swap is removed)
+        if any(k in cur_bind for k in ("g", "b")):
             if not dry_run:
                 bgm_overlay.set_attach(cfg["id"], "vga_4bit", 0, variant=os.path.basename(vdir),
-                                       bind=(want_bind or {"g": bgm_overlay.REMOVE, "b": bgm_overlay.REMOVE}))
-            notes.append("overlay: green / blue {} (BGM's top {} them)".format(
-                "swapped" if swapped else "no longer swapped", "swaps" if swapped else "does not swap"))
+                                       bind={"g": bgm_overlay.REMOVE, "b": bgm_overlay.REMOVE})
+            notes.append("overlay: green / blue swap removed")
+        notes.extend(_record_bug(cfg["id"], vdir, "vga_colour_swap", (
+            "the top drives the green VGA pins from blue and the blue pins from green; unifpga keeps them "
+            "straight") if swapped else None, dry_run))
     if text == original:
         return "; ".join(notes) if notes else "unchanged"
     if not dry_run:
@@ -1516,26 +1535,11 @@ def apply_clock_tree(path, dry_run):
             changes.append("note: BGM PLL {} not modelled; pixel clock left at the peripheral default".format(unmodelled))
         elif size is not None and size != ours:
             # BGM's tang_nano_9k_lcd_480_272_tm1638_yosys defines USE_LCD_800_480: the
-            # directory says one panel, the build drives the other. The build is
-            # what BGM ships; the configuration follows it when a peripheral of
-            # that size exists for the same pins.
-            swap = {(800, 480): "lcd_800_480", (480, 272): "lcd_480_272"}.get(size)
-            cur_pid = next((a["peripheral_id"] for a in declared["pixel"]), None)
-            if swap and cur_pid in ("lcd_480_272", "lcd_800_480") and swap != cur_pid \
-                    and swap in config_init.read_peripherals():
-                if not dry_run:
-                    new_lines = [re.sub(r"^(\s*- peripheral: ){}(\s|$)".format(re.escape(cur_pid)), r"\g<1>" + swap + r"\2", l)
-                                 for l in lines]
-                    if new_lines != lines:
-                        open(path, "w", encoding="utf-8").write("\n".join(new_lines))
-                        config_init.clear_cache()
-                        again = apply_clock_tree(path, dry_run)
-                        return "{} -> {} (BGM builds {}x{}); {}".format(cur_pid, swap, size[0], size[1], again)
-                changes.append("{} -> {} (BGM builds {}x{}; the clock follows on the next pass)".format(
-                    cur_pid, swap, size[0], size[1]))
-            else:
-                changes.append("WARNING: BGM builds {}x{} but the configuration attaches {}x{}; pixel clock "
-                               "({} MHz) not copied".format(size[0], size[1], ours[0], ours[1], mhz))
+            # directory says one panel, the build drives the other — an upstream
+            # bug, reported, not copied (the configuration keeps its panel)
+            changes.extend(_record_bug(cid, vdir, "lcd_size", "the variant is for the {}x{} panel but its top "
+                                       "builds the {}x{} one; unifpga drives the {}x{} panel".format(
+                                           ours[0], ours[1], size[0], size[1], ours[0], ours[1]), dry_run))
         elif mhz is None:
             changes.append("WARNING: cannot tell which PLL output is the pixel clock: {}".format(_fmt_outs(outs)))
         else:
@@ -1546,23 +1550,18 @@ def apply_clock_tree(path, dry_run):
                 if mhz > 4 * default or mhz < default / 4:
                     # BGM tang_nano_9k_lcd_480_272_no_tm1638_yosys ships the
                     # 800x480 gowin_rpll.v but its top takes the 480x272 branch
-                    # (CLKOUT = 129.6 MHz on LARGE_LCD_CK): an upstream bug. The
-                    # configuration keeps the panel's clock; the BGM overlay
-                    # carries the clock BGM actually builds, for parity.
+                    # (129.6 MHz on the panel's clock): an upstream bug, reported,
+                    # not copied — the configuration keeps the panel's clock
                     from tools import bgm_overlay
-                    st = bgm_oracle.rpll_settings(vdir)
-                    which = next((o[2] for o in outs if len(o) > 2 and abs(float(o[1]) - float(mhz)) < 1e-6), None)
-                    params = OrderedDict([("clock_pixel_mhz", mhz)])
-                    if st and which in ("clkout", "clkoutd"):
-                        params["clock_pixel_pll"] = OrderedDict([("idiv", st["IDIV_SEL"]), ("fbdiv", st["FBDIV_SEL"]),
-                                                                 ("odiv", st["ODIV_SEL"]), ("sdiv", st["DYN_SDIV_SEL"]),
-                                                                 ("clkoutd", which == "clkoutd")])
                     cur = bgm_overlay.attach_override(bgm_overlay.load(cid) or {}, pid, 0, create=False) or {}
-                    if dict((cur.get("params") or {})) .get("clock_pixel_mhz") != mhz:
+                    if any(k in (cur.get("params") or {}) for k in ("clock_pixel_mhz", "clock_pixel_pll")):
                         if not dry_run:
-                            bgm_overlay.set_attach(cid, pid, 0, params=params, variant=os.path.basename(vdir))
-                        changes.append("overlay {}: clock_pixel_mhz = {:g} (BGM's PLL / branch mismatch, upstream bug; "
-                                       "the configuration keeps the panel's {:g} MHz)".format(pid, mhz, default))
+                            bgm_overlay.set_attach(cid, pid, 0, params={"clock_pixel_mhz": None, "clock_pixel_pll": None},
+                                                   variant=os.path.basename(vdir))
+                        changes.append("overlay {}: BGM's mis-clocked panel no longer copied".format(pid))
+                    changes.extend(_record_bug(cid, vdir, "lcd_clock", "the top clocks the {} at {:g} MHz "
+                                               "(it ships another panel's gowin_rpll.v); unifpga keeps {:g} MHz"
+                                               .format(pid, mhz, default), dry_run))
                     continue
                 if abs(mhz - default) > 1e-6:
                     if _set_attach_param(lines, pid, None, "clock_pixel_mhz", "{:g}".format(mhz)):

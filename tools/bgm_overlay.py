@@ -20,14 +20,14 @@ buses concatenated in attach order, power-up reset, is generated instead).
       configuration: <id>
       variant: <boards/<variant> in BGM>
       reset:            { sources: [...], sync: 2 }  # codegen's reset vocabulary; sync = flops
-                                                      # between the pin releasing and rst (c5gx);
-                                                      # sync_assert: true delays the assertion instead
-                                                      # (a7_lite's xpm_cdc_async_rst polarity slip)
+                                                      # between the pin releasing and rst (c5gx)
       lab_clock:        pixel
       uart_rx:          0 | 1                         # what the lab reads when no UART pin is wired
       tie:              { <ref>: rst | ~rst | 0 | 1 } # pins BGM drives from its reset, or ties
                                                       # off instead of using the component
       lab_width:        { buttons: 8 }                # a lab bus wider than the bits wired to it
+      bgm_bugs:         { <key>: <text> }             # upstream bugs found, reported, NOT reproduced
+                                                      # (documentation; apply() ignores it)
       attach:                                         # per attach, by peripheral and occurrence
         - { peripheral: tm1638_led_key, index: 0,
             lab_bits: {buttons: [0, 1, ...], ...},   # bits of the lab bus this attach carries
@@ -60,7 +60,7 @@ CONFIG_DIR = os.path.join(REPO, "config", "configurations")
 
 OVERLAY_PARAMS = ("as_switches", "mirror", "direction", "mirror_screen", "rst")   # attach params that are BGM conventions
 REMOVE = object()                                          # set_attach(bind=...): delete an override
-_TOP_KEYS = ("reset", "lab_clock", "uart_rx", "tie", "lab_width", "attach")
+_TOP_KEYS = ("reset", "lab_clock", "uart_rx", "tie", "lab_width", "attach", "bgm_bugs")
 _RST_TIE = re.compile(r"^\s*~?\s*rst\s*$")
 
 
@@ -156,6 +156,23 @@ def update(configuration_id, variant=None, **fields):
         else:
             data[key] = value
     return save(configuration_id, data, variant)
+
+
+def set_bug(configuration_id, variant, key, description):
+    """Record (description) or clear (None) one upstream bug a sync slice found
+    in BGM's source under `bgm_bugs: {key: text}`. Documentation only: apply()
+    ignores it; tools/equiv_check.py prints it next to the board's result.
+    Returns True when the overlay changed."""
+    data = load(configuration_id) or {}
+    bugs = OrderedDict(data.get("bgm_bugs") or {})
+    if bugs.get(key) == description:
+        return False
+    if description is None:
+        bugs.pop(key, None)
+    else:
+        bugs[key] = description
+    update(configuration_id, variant, bgm_bugs=(bugs or None))
+    return True
 
 
 def attach_override(data, peripheral, index, create=True):

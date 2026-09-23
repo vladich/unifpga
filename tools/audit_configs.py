@@ -743,6 +743,11 @@ def render_details(rows):
         out.append("### {}  ({} / {})".format(r["id"], r["board"], r["toolchain"]))
         for code, detail in r["issues"].items():
             out.append("- `{}`{}".format(code, (": " + detail) if detail else ""))
+        # upstream bugs the sync found in BGM and did not reproduce: a finding
+        # above may be unifpga doing the correct thing where BGM does not
+        from tools import bgm_overlay
+        for bug in ((bgm_overlay.load(r["id"]) or {}).get("bgm_bugs") or {}).values():
+            out.append("- BGM bug, not reproduced: {}".format(bug))
         out.append("")
     return "\n".join(out)
 

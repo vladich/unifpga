@@ -905,6 +905,9 @@ def cmd_generate(args):
             "gate_only": [p for p in all_pins if p in gate_map and p not in gold_map],
             "stubs_dropped": {"gold": sorted(gold_dropped), "gate": sorted(gate_dropped)},
             "bgm_patched": patched,
+            # upstream bugs the sync found and did not reproduce (config/bgm/<id>.yml)
+            "bgm_bugs": list((((__import__("tools.bgm_overlay", fromlist=["load"]).load(cfg_id)) or {})
+                              .get("bgm_bugs") or {}).values()),
             "gold_unknown_keys": sorted(set(gold_unknown)),
             "gate_unknown_keys": sorted(set(gate_unknown)),
             "gold": {"files": [_rel(p, roots) for p in gold_files], "incdirs": [_rel(p, roots) for p in gold_inc],
@@ -1153,6 +1156,7 @@ def _run_one(entry, roots, out, keep_logs=True):
         res["status"] = entry.get("status", "SKIPPED")
         return res
     res["bgm_patched"] = entry.get("bgm_patched") or []
+    res["bgm_bugs"] = entry.get("bgm_bugs") or []
     d = os.path.join(out, cfg_id)
     t0 = time.time()
     with open(os.path.join(d, "run.log"), "w") as log:
@@ -1310,6 +1314,9 @@ def _print_summary(results, verbose=False):
         print(line)
         for rep in r.get("gold_repairs") or []:
             print("      gold repaired: {}".format(rep))
+        if st not in ("PASS", "PASS-REPAIRED"):
+            for bug in r.get("bgm_bugs") or []:
+                print("      BGM bug, not reproduced: {}".format(bug))
         if st == "DIFF":
             for m in r["mismatch_pins"][:12]:
                 print("      {:<10} gold {:<28} gate {:<28} {:>8} cycles from {} (gold {} / gate {})".format(

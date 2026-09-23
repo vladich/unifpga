@@ -120,10 +120,11 @@ def test_a7_lite_hdmi_uses_one_mmcm_and_tmds_33():
     assert "pll_xilinx_mmcm # (.CLKIN_PERIOD(20.000), .DIVCLK_DIVIDE(1), .CLKFBOUT_MULT_F(20.0), " \
            ".CLKOUT0_DIVIDE(4.0), .CLKOUT1_DIVIDE(40), .CLKOUT2_DIVIDE(20))" in top
     assert ".clkout0(clk_serial), .clkout1(clk_pixel), .clkout2(clk_lab)" in top
-    # xpm_cdc_async_rst with its default active-low polarity driving the
-    # active-high rst: asserted 4 clocks after the button, released with it
-    assert "always_ff @ (posedge clk_lab or posedge cpu_resetn)" in top
-    assert "if (cpu_resetn) rst_sync_0 <= '0;" in top and "assign rst = (rst_sync_0 [3]);" in top
+    # xpm_cdc_async_rst: BGM's polarity slip (default active-low driving the
+    # active-high rst) is detected and reported, not copied — a normal
+    # synchroniser, asserted with the button and released 4 clocks after it
+    assert "always_ff @ (posedge clk_lab or negedge cpu_resetn)" in top
+    assert "if (! cpu_resetn) rst_sync_0 <= '0;" in top and "assign rst = (~ rst_sync_0 [3]);" in top
     from tools import bgm_oracle
     xpm = "xpm_cdc_async_rst i_x (.dest_clk ( clk ), .dest_arst ( rst ), .src_arst ( ~ RESETN ));"
     assert bgm_oracle.reset_sync_asserts(xpm) is True
