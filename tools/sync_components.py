@@ -171,11 +171,17 @@ def _element_keys(el, sig_pins, text):
     if not m:
         return None
     name, hi, lo = m.group(1), m.group(2), m.group(3)
-    if hi is not None:
+    ports = bgm_oracle.top_ports(text)
+    if name not in ports and name.upper() in {p.upper() for p in ports}:
+        # Verilog is case-sensitive: tang_nano_20k_hdmi's `.gpio (gpio)` is the
+        # internal wire `gpio`, not the port GPIO (whose pins the wire never sees)
+        keys = None
+    elif hi is not None:
         hi = int(hi)
         lo = int(lo) if lo is not None else hi
         return ["{}[{}]".format(name.upper(), i) for i in range(max(hi, lo), min(hi, lo) - 1, -1)]
-    keys = _bus_keys(name, sig_pins)
+    else:
+        keys = _bus_keys(name, sig_pins)
     if keys:
         return keys
     # a wire the top assigns to a port slice: `assign GPIO_P2 [14:6] = lab_gpio;`
@@ -329,8 +335,18 @@ def gpio_bits(text, raw_text, sig_pins, rev, defines=None):
     params = _top_params(text)
     keys, notes = [], []
     w_gpio = params.get("w_gpio")
+    ranges = _port_ranges(text, params)
     for el in elements:
         ek = _element_keys(el, sig_pins, text)
+        pm = re.match(r"^([A-Za-z_]\w*)$", el.strip())
+        if ek and pm and pm.group(1).upper() in ranges and pm.group(1) in bgm_oracle.top_ports(text):
+            lo, hi = ranges[pm.group(1).upper()]
+            have = {k for k in ek}
+            full = ["{}[{}]".format(pm.group(1).upper(), i) for i in range(hi, lo - 1, -1)]
+            if len(full) > len(ek) and set(ek) <= set(full):
+                ek = [k if k in have else None for k in full]     # unplaced bits read nothing
+                notes.append("gpio {}: {} of {} bits have no pin; they read nothing".format(
+                    pm.group(1), len(full) - len(have), len(full)))
         if ek is None:
             gw = _gap_width(el, text, sig_pins, params)
             if gw:
@@ -2058,7 +2074,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     lab_width = {}              # cap -> lab bus width when BGM passes the lab more bits than it wires
     pinmap = resolved["board_pinmap"]
 
-    def keys_as_switches(port, rng, target_lo=0):
+    def keys_as_switches(port, rng, target_lo=0, swapped=False):
         """BGM feeds the lab's sw from the board keys: the button_array that
         owns that port provides switches too (as_switches) on these bits."""
         idx = _attach_for_port(cfg, pinmap, sig_pins, port)
@@ -2069,11 +2085,12 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
         param_changes.setdefault(idx, {})["as_switches"] = True
         by_pin = _provider_pin_bits(resolved, pinmap, plans, "buttons")
         bits = [None] * w
-        for lab, key in enumerate(_source_bits(port, rng, sig_pins, params, ranges)):
+        src = _source_bits(port, rng, sig_pins, params, ranges)
+        for lab, key in enumerate(src):
             pin = sy._norm_pin(str(sig_pins.get(key, "")).split(",")[0]) if key in sig_pins else None
             hit = by_pin.get(pin) if pin else None
             if hit and hit[0] == idx and hit[1] < w:
-                bits[hit[1]] = target_lo + lab
+                bits[hit[1]] = target_lo + ((len(src) - 1 - lab) if swapped else lab)
         wanted[idx]["switches"] = bits
         return True
 
@@ -2101,6 +2118,10 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
             for pidx, _perif, _p in plans[cap].providers:
                 wanted[pidx][cap] = []
             continue
+        # `SWAP_BITS (lab_key, ~ key_in)` (ax7035b, the Tang Nano 9K's REVERSE_KEY):
+        # the lab's bit i is the source's bit n - 1 - i; _follow() keeps the
+        # source, the reversal is applied to the positions below
+        swapped = bool(re.search(r"SWAP_BITS\s*\(\s*" + re.escape(expr.strip()) + r"\s*,", text))
         kind, port, rng = _source_kind(_follow(text, expr), ports, params, tm_names)
         if kind == "other":
             terms = _or_terms(text, " ".join(expr.split()), ports, params, tm_names)
@@ -2120,7 +2141,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
                         wanted[tm_idx][cap] = [target_lo + (i - lo) if lo <= i <= hi else None for i in range(_TM_WIDTH)]
                     else:
                         if not board and cap == "switches":
-                            if not keys_as_switches(port, rng, target_lo):
+                            if not keys_as_switches(port, rng, target_lo, swapped):
                                 break
                             continue
                         if not board:
@@ -2150,7 +2171,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
                 # the keys are the switches (`.sw ( lab_key )`, lab_key = ~ KEY):
                 # the button_array provides them, a switch bank BGM does not
                 # read (omdazz, ax7035b) carries no lab bit
-                if keys_as_switches(port, rng):
+                if keys_as_switches(port, rng, 0, swapped):
                     for pidx, _w in board:
                         if pidx != owner:
                             wanted[pidx][cap] = []
@@ -2181,7 +2202,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
                     continue
                 pidx, bit = hit
                 if bit < len(mapping[pidx]):
-                    mapping[pidx][bit] = lab
+                    mapping[pidx][bit] = (len(src_bits) - 1 - lab) if swapped else lab
             if unmatched:
                 notes.append("{}: BGM reads {} on pins no {} provider covers".format(lab_port, unmatched[:4], cap))
             default = {}

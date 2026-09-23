@@ -691,7 +691,11 @@ def analyze(cfg_id, cfg_text):
                     continue
                 eff = codegen._peripheral_active_polarity(a["peripheral"], a, pinmap)
                 eff_mirror = codegen._peripheral_mirror(a, pinmap)
-                if eff != d["active"] or bool(eff_mirror) != bool(d["mirror"]):
+                # an input bus's order (BGM's `SWAP_BITS (lab_key, ~ key_in)`, or a
+                # `{ KEY2, KEY3, KEY4 }` concatenation) is placed bit by bit by
+                # lab_bits, which the co-simulation proves; no mirror flag to compare
+                mirror_matters = a["peripheral_id"] not in ("button_array", "sw_bank")
+                if eff != d["active"] or (mirror_matters and bool(eff_mirror) != bool(d["mirror"])):
                     add("POLARITY", "{}.{}: unifpga {}{} vs BGM {}{} (ports {})".format(
                         a["peripheral_id"], bank, eff, " mirrored" if eff_mirror else "",
                         d["active"], " mirrored" if d["mirror"] else "", d["ports"]))

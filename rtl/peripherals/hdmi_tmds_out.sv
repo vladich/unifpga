@@ -15,7 +15,9 @@
 //                 generator (x / y / syncs) runs on: "serial" (Gowin DVI_TX
 //                 boards), "lab" (Tang Nano 4K, colorlight, marsohod3gw2) or
 //                 "pixel" (Tang Primer 25K), with that clock's MHz for its
-//                 pixel enable — so x / y advance exactly when BGM's do.
+//                 pixel enable — so x / y advance exactly when BGM's do; "dvi"
+//                 is dvi_top's own dvi_sync on the pixel clock, as on the
+//                 boards where BGM instantiates dvi_top itself (a7_lite).
 //
 // Channel order follows the DVI spec and BGM: d[0] = blue, d[1] = green,
 // d[2] = red.
@@ -65,7 +67,8 @@ module hdmi_tmds_out
     dvi_top
     # (
         .TIMING_MHZ ( TIMING_MHZ ),
-        .PIXEL_MHZ  ( PIXEL_MHZ  )
+        .PIXEL_MHZ  ( PIXEL_MHZ  ),
+        .GENERATOR  ( (TIMING == "dvi") ? "dvi" : "vga" )
     )
     i_dvi_top
     (

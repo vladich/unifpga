@@ -628,8 +628,26 @@ def apply_vga(path, dry_run):
     text = "\n".join(new_lines)
     if not text.endswith("\n"):
         text += "\n"
+    # BGM nexys4: `vgaBlue = display_on ? green : '0; vgaGreen = display_on ? blue : '0;`
+    # — the board top swaps the two channels. That is BGM's wiring, not the
+    # board's: the overlay swaps the binds so the generated top matches it.
+    notes = []
+    if vdir is not None:
+        t = bgm_oracle.strip_comments(bgm_oracle.preprocess_variant(vdir).text)
+        swapped = bool(re.search(r"\bassign\s+\w*[Gg]reen\w*\s*=\s*display_on\s*\?\s*blue\b", t)
+                       and re.search(r"\bassign\s+\w*[Bb]lue\w*\s*=\s*display_on\s*\?\s*green\b", t))
+        from tools import bgm_overlay
+        cur = bgm_overlay.attach_override(bgm_overlay.load(cfg["id"]) or {}, "vga_4bit", 0, create=False) or {}
+        cur_bind = dict(cur.get("bind") or {})
+        want_bind = {"g": binds["b"].strip('"'), "b": binds["g"].strip('"')} if swapped else {}
+        if {k: cur_bind.get(k) for k in ("g", "b") if k in cur_bind} != want_bind:
+            if not dry_run:
+                bgm_overlay.set_attach(cfg["id"], "vga_4bit", 0, variant=os.path.basename(vdir),
+                                       bind=(want_bind or {"g": bgm_overlay.REMOVE, "b": bgm_overlay.REMOVE}))
+            notes.append("overlay: green / blue {} (BGM's top {} them)".format(
+                "swapped" if swapped else "no longer swapped", "swaps" if swapped else "does not swap"))
     if text == original:
-        return "unchanged"
+        return "; ".join(notes) if notes else "unchanged"
     if not dry_run:
         open(path, "w", encoding="utf-8").write(text)
     return "vga: bits {r}/{g}/{b}, pins {pr}/{pg}/{pb}{rgb}".format(
@@ -1373,13 +1391,18 @@ def apply_clock_tree(path, dry_run):
         vgas = bgm_oracle.instantiations(t, "vga")
         vclk = dict(vgas[0]["ports"]).get("clk", "").strip() if vgas else ""
         lab_net = bgm_oracle.lab_clock_source(t)
-        if vclk:
+        if bgm_oracle.instantiations(t, "dvi_top"):
+            vclk, want_timing = "dvi_top", "dvi"
+        if vclk == "dvi_top":
+            pass
+        elif vclk:
             if vclk.lower() in ("clk", bgm_clock_port_name(t).lower()) or (lab_net == "pixel" and vclk == "clk"):
                 want_timing = "lab"
             elif re.search(r"pixel", vclk, re.I) and not re.search(r"serial", vclk, re.I):
                 want_timing = "pixel"
             else:
                 want_timing = "serial"
+        if vclk:
             cur = next(((a.get("params") or {}).get("timing") for a in cfg.get("attach") or []
                         if a.get("peripheral") == "hdmi_tmds"), None)
             if want_timing != (cur or "serial"):
@@ -1498,6 +1521,26 @@ def apply_polarity(paths, dry_run):
                         and any(bank in str(v) for v in (a.get("bind") or {}).values())), None)
             if pid is None:
                 continue
+            if pid in ("button_array", "sw_bank"):
+                # an input bus's order is placed bit by bit by --lab-bits
+                # (`SWAP_BITS (lab_key, ~ key_in)` gives buttons [3, 2, 1, 0]);
+                # a mirror flag on top would reverse it twice — none, and an
+                # earlier one cleared
+                d = dict(d, mirror=False)
+                from tools import bgm_overlay
+                occ = 0
+                for a in cfg.get("attach") or []:
+                    if a.get("peripheral") != pid:
+                        continue
+                    if any(bank in str(v) for v in (a.get("bind") or {}).values()):
+                        break
+                    occ += 1
+                cur = bgm_overlay.attach_override(bgm_overlay.load(cfg["id"]) or {}, pid, occ, create=False)
+                if cur and (cur.get("params") or {}).get("mirror"):
+                    if not dry_run:
+                        bgm_overlay.set_attach(cfg["id"], pid, occ, params={"mirror": None},
+                                               variant=os.path.basename(vdir) if vdir else None)
+                    notes.append("{}.{} mirror cleared (the order is lab_bits')".format(pid, bank))
             if d["mirror"]:
                 # a mirrored bit order (BGM's SWAP_BITS) is a BGM convention: overlay
                 from tools import bgm_overlay

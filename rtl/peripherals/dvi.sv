@@ -9,7 +9,12 @@ module dvi_top
     // colorlight) or the pixel clock itself (Tang Primer 25K): TIMING_MHZ is
     // that clock's frequency, the pixel enable is TIMING_MHZ / PIXEL_MHZ.
     parameter int TIMING_MHZ = 252,
-    parameter int PIXEL_MHZ  = 25
+    parameter int PIXEL_MHZ  = 25,
+    // "vga": the generator above; "dvi": this module's own dvi_sync on the
+    // pixel clock (x / y zero outside the visible area, hsync / vsync
+    // registered) — what BGM's boards that instantiate dvi_top get (a7_lite,
+    // tang_primer_20k_dock_hdmi_*_yosys)
+    parameter     GENERATOR  = "vga"
 )
 (
     input  logic               serial_clk_i,
@@ -46,34 +51,48 @@ module dvi_top
 
     // BGM's vga timing generator (rtl/peripherals/vga.sv): hpos / vpos count
     // through the blanking, hsync / vsync active low, display_on = DE.
-    logic [9:0] hpos10, vpos10;
-    assign x_o = hpos10 [X_POS_W - 1:0];
-    assign y_o = vpos10 [Y_POS_W - 1:0];
+    generate
+        if (GENERATOR == "dvi") begin : g_dvi_sync
+            dvi_sync i_dvi_sync (
+                .clk_i           ( pixel_clk_i   ),
+                .rst_i           ( rst_i         ),
+                .hsync_o         ( hsync         ),
+                .vsync_o         ( vsync         ),
+                .pixel_x_o       ( x_o           ),
+                .pixel_y_o       ( y_o           ),
+                .visible_range_o ( visible_range )
+            );
+        end else begin : g_vga
+            logic [9:0] hpos10, vpos10;
+            assign x_o = hpos10 [X_POS_W - 1:0];
+            assign y_o = vpos10 [Y_POS_W - 1:0];
 
-    vga
-    # (
-        .CLK_MHZ   ( TIMING_MHZ   ),
-        .PIXEL_MHZ ( PIXEL_MHZ    ),
-        .H_DISPLAY ( SCREEN_H_RES ),
-        .V_DISPLAY ( SCREEN_V_RES )
-    )
-    i_vga
-    (
-        .clk        ( timing_clk_i  ),
-        .rst        ( rst_i         ),
-        .hsync      ( hsync         ),
-        .vsync      ( vsync         ),
-        .display_on ( visible_range ),
-        .hpos       ( hpos10        ),
-        .vpos       ( vpos10        ),
-        .pixel_clk  (               ),
-        .red        ( '0            ),
-        .green      ( '0            ),
-        .blue       ( '0            ),
-        .vga_r      (               ),
-        .vga_g      (               ),
-        .vga_b      (               )
-    );
+            vga
+            # (
+                .CLK_MHZ   ( TIMING_MHZ   ),
+                .PIXEL_MHZ ( PIXEL_MHZ    ),
+                .H_DISPLAY ( SCREEN_H_RES ),
+                .V_DISPLAY ( SCREEN_V_RES )
+            )
+            i_vga
+            (
+                .clk        ( timing_clk_i  ),
+                .rst        ( rst_i         ),
+                .hsync      ( hsync         ),
+                .vsync      ( vsync         ),
+                .display_on ( visible_range ),
+                .hpos       ( hpos10        ),
+                .vpos       ( vpos10        ),
+                .pixel_clk  (               ),
+                .red        ( '0            ),
+                .green      ( '0            ),
+                .blue       ( '0            ),
+                .vga_r      (               ),
+                .vga_g      (               ),
+                .vga_b      (               )
+            );
+        end
+    endgenerate
 
     // ------------------------------------------------------------------------
     // Encode

@@ -645,8 +645,11 @@ def test_screenless_lab_keeps_bgm_widths_and_mirrored_keys():
     top = codegen.emit_top_sv(r)
     assert ".screen_width(640)," in top and ".screen_height(480)," in top and ".w_red(4)," in top
     btn = next(a for a in r["peripherals"] if a["peripheral_id"] == "button_array")
-    assert btn["params"].get("mirror") is True
-    assert "mirrored" in top and "assign cap_buttons_btn__p" in top or "~ onboard_buttons" in top
+    assert btn["lab_bits"] == {"buttons": [3, 2, 1, 0], "switches": [3, 2, 1, 0]}   # SWAP_BITS: placed, not mirrored
+    assert btn["params"].get("mirror") is None
+    i = next(k for k, a in enumerate(r["peripherals"]) if a["peripheral_id"] == "button_array")
+    assert "assign cap_buttons_btn__p{}[0] = ~ onboard_buttons[0];".format(i) in top
+    assert "assign cap_buttons_btn[3] = cap_buttons_btn__p{}[0];".format(i) in top
 
 
 def test_check_power_up_model_and_undefined_status():
@@ -691,3 +694,35 @@ def test_tmds_timing_follows_bgm_vga_clock():
     assert cg._resolve_ref("clock.serial.mhz", {"peripheral_id": "x"}, {}, {}) == "252"
     with pytest.raises(cg.CodegenError):
         cg._resolve_ref("clock.other.mhz", {"peripheral_id": "x"}, {}, {})
+
+
+def test_gpio_wire_named_like_a_port_and_partly_placed_port():
+    """tang_nano_20k_hdmi: `.gpio (gpio)` is the internal wire, not the port
+    GPIO; tang_nano_9k_hdmi: GPIO [9:0] with pins for [5:0] only keeps its
+    ten bits (the top four read nothing)."""
+    text20 = ("module board_specific_top # (parameter w_gpio = 5)\n(\n    inout [w_gpio - 1:0] GPIO\n);\n"
+              "wire [w_gpio - 1:0] gpio;\nlab_top i (.gpio (gpio));\n")
+    sig_pins = {"GPIO[{}]".format(i): "P{}".format(i) for i in range(5)}
+    pinmap = {"pinBanks": {"gpio": {"pins": ["P{}".format(i) for i in range(5)]}}}
+    rev = sc._Rev(pinmap, set())
+    bits, notes = sc.gpio_bits(text20, text20, sig_pins, rev)
+    assert bits == [(None, None)] * 5 and sc.gpio_attaches(bits, pinmap) == []
+    text9 = "module board_specific_top # (parameter w_gpio = 10)\n(\n    inout [w_gpio - 1:0] GPIO\n);\nlab_top i (.gpio (GPIO));\n"
+    sig6 = {"GPIO[{}]".format(i): "P{}".format(i) for i in range(6)}
+    pinmap6 = {"pinBanks": {"gpio": {"pins": ["P{}".format(i) for i in range(6)]}}}
+    bits, notes = sc.gpio_bits(text9, text9, sig6, sc._Rev(pinmap6, set()))
+    assert [b[0] for b in bits] == ["gpio[{}]".format(i) for i in range(6)] + [None] * 4
+    assert sc.gpio_placement(bits, pinmap6) == (None, 10)
+    r = config_init.resolve_configuration("tang_nano_20k_hdmi_tm1638")
+    assert r["configuration"]["lab_width"]["gpio"] == 5
+    assert not any(a["peripheral_id"] in ("gpio_header", "pmod_12pin") for a in r["peripherals"])
+    r = config_init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
+    assert r["configuration"]["lab_width"]["gpio"] == 10 and ".w_gpio(10)" in codegen.emit_top_sv(r)
+
+
+def test_dvi_timing_where_bgm_instantiates_dvi_top():
+    for cid in ("a7_lite_35t", "tang_primer_20k_dock_hdmi_tm1638_yosys"):
+        r = config_init.resolve_configuration(cid)
+        hdmi = next(a for a in r["peripherals"] if a["peripheral_id"] == "hdmi_tmds")
+        assert hdmi["params"].get("timing") == "dvi", cid
+        assert '.TIMING("dvi")' in codegen.emit_top_sv(r)
