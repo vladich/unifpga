@@ -6,6 +6,8 @@
 BGM:
   configuration: orangecrab_ecp5_yosys
   variant: orangecrab_ecp5_yosys
+  lab_width:
+    gpio: 8
   attach:
   - peripheral: sw_bank
     index: 0

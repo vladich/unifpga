@@ -9,6 +9,8 @@ BGM:
   reset:
     sources:
     - tm_key: msb
+  lab_width:
+    gpio: 12
   attach:
   - peripheral: button_array
     index: 0

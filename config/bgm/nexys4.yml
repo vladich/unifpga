@@ -15,6 +15,8 @@ BGM:
     onboard_rgb_led_2.b: 0
     onboard_pwm_amp.pwm: 0
     onboard_pwm_amp.sd: 0
+  lab_width:
+    gpio: 32
   attach:
   - peripheral: pwm_amp
     index: 0

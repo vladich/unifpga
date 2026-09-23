@@ -11,6 +11,7 @@ BGM:
     - key: msb
   lab_width:
     switches: 8
+    gpio: 32
   attach:
   - peripheral: led_bank
     index: 0

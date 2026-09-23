@@ -10,3 +10,5 @@ BGM:
     sources:
     - key: msb
   lab_clock: pixel
+  lab_width:
+    gpio: 32

@@ -9,3 +9,5 @@ BGM:
   reset:
     sources:
     - key: msb
+  lab_width:
+    gpio: 32

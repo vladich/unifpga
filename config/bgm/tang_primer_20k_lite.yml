@@ -10,6 +10,8 @@ BGM:
     sources:
     - tm_key: msb
   uart_rx: 0
+  lab_width:
+    gpio: 32
   attach:
   - peripheral: sw_bank
     index: 0

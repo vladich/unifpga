@@ -13,6 +13,8 @@ BGM:
     onboard_rgb_led_17.b: 0
     onboard_rgb_led_17.g: 0
     onboard_rgb_led_17.r: 0
+  lab_width:
+    gpio: 32
   attach:
   - peripheral: button_array
     index: 0

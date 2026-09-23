@@ -7,3 +7,5 @@ BGM:
   configuration: dk_dev_3c120n
   variant: dk_dev_3c120n
   uart_rx: 1
+  lab_width:
+    gpio: 1

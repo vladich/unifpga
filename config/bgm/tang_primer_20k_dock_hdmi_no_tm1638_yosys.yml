@@ -12,3 +12,4 @@ BGM:
   lab_clock: pixel
   lab_width:
     switches: 5
+    gpio: 32

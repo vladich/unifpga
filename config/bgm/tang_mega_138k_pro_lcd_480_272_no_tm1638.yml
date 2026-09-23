@@ -17,3 +17,7 @@ BGM:
       switches: [0, 1, 2, 3]
     params:
       as_switches: true
+  - peripheral: lcd_480_272
+    index: 0
+    params:
+      mirror_screen: true
