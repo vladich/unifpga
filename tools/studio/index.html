@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>unifpga board editor</title>
+<link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<header id="toolbar">
+  <label>Board <select id="board"></select></label>
+  <label>Setup <select id="setup"></select></label>
+  <button id="new-setup" class="edit">New…</button>
+  <label class="edit">Toolchain <select id="toolchain"></select></label>
+  <label class="edit">Add <select id="add-module"></select></label>
+  <button id="add" class="edit">Add module</button>
+  <button id="save" class="edit">Save</button>
+  <label class="edit">Design <select id="design"></select></label>
+  <button id="project" class="edit">Generate project</button>
+  <span id="status"></span>
+</header>
+<main>
+  <section id="drawing"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></section>
+  <aside id="side">
+    <div id="hint">Click a design port bit, a header pin, a wire, a module or an on-board device to trace it.</div>
+    <div id="details"></div>
+    <h3>Problems</h3><ul id="problems"></ul>
+  </aside>
+</main>
+<section id="tables">
+  <h3>Connections</h3>
+  <table id="connections"><thead><tr><th>design port</th><th>provider</th><th>module pin</th>
+    <th>signal</th><th>header pin</th><th>pinmap</th><th>FPGA pin</th></tr></thead><tbody></tbody></table>
+  <details><summary>Generated configuration</summary><pre id="config-text"></pre></details>
+</section>
+<script src="studio.js"></script>
+</body>
+</html>

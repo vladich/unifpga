@@ -701,20 +701,23 @@ def cmd_setup(args):
 
 
 def cmd_view(args):
-    """Write a drawing of a setup (or, with --board, a board layout) as HTML."""
-    from tools import setup as su, viewer
+    """Write the board editor's page for a setup (or, with --board, a board)
+    with its data inlined, read-only."""
+    from tools import setup as su, studio
     out = args.output or "{}.html".format(args.id)
     try:
-        path = viewer.write_page(out, board_id=args.id) if args.board else viewer.write_page(out, setup_id=args.id)
-    except su.SetupError as exc:
+        page = studio.standalone_page(board_id=args.id) if args.board else studio.standalone_page(setup_id=args.id)
+    except (su.SetupError, studio.ApiError) as exc:
         raise CliError(str(exc))
-    print("wrote {}".format(path))
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(page)
+    print("wrote {}".format(os.path.abspath(out)))
     return 0
 
 
 def cmd_serve(args):
-    from tools import viewer
-    viewer.serve(port=args.port)
+    from tools import studio
+    studio.serve(port=args.port)
     return 0
 
 
@@ -792,12 +795,12 @@ def build_parser():
     st.add_argument("action", choices=["check", "generate", "derive"])
     st.add_argument("ids", nargs="*", help="setup / configuration ids (check: default all)")
 
-    vw = sub.add_parser("view", help="draw a setup (or a board with --board) as an HTML page")
+    vw = sub.add_parser("view", help="write a read-only page drawing a setup (or a board with --board)")
     vw.add_argument("id", help="setup id, or board id with --board")
     vw.add_argument("--board", action="store_true", help="the id is a board: draw its layout")
     vw.add_argument("-o", "--output", help="output file (default: <id>.html)")
 
-    sv = sub.add_parser("serve", help="serve the board and setup drawings on a local web page")
+    sv = sub.add_parser("serve", help="the board editor on a local web page (http://127.0.0.1:8765/)")
     sv.add_argument("--port", type=int, default=8765)
     return p
 

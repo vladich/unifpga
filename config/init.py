@@ -699,7 +699,7 @@ def resolve_toolchain_install(toolchain):
     return tc
 
 
-def resolve_configuration(configuration_id):
+def resolve_configuration(configuration_id, configuration=None):
     """
     Look up a configuration by id and return a fully-resolved bundle:
 
@@ -715,13 +715,20 @@ def resolve_configuration(configuration_id):
           ],
         }
 
+    `configuration`: resolve this Configuration dict instead of the file of
+    that id (an unsaved setup in the board editor); its profile, if any,
+    still applies.
+
     Raises ConfigError on any inconsistency.
     """
-    configurations = read_configurations()
-    if configuration_id not in configurations:
-        raise ConfigError("Unknown configuration '{c}'. Run init_settings.py to pick one."
-                          .format(c=configuration_id))
-    cfg = configurations[configuration_id]
+    if configuration is not None:
+        cfg = copy.deepcopy(configuration)
+    else:
+        configurations = read_configurations()
+        if configuration_id not in configurations:
+            raise ConfigError("Unknown configuration '{c}'. Run init_settings.py to pick one."
+                              .format(c=configuration_id))
+        cfg = configurations[configuration_id]
 
     boards = read_boards_catalog()
     toolchains = read_toolchains()
@@ -806,7 +813,7 @@ def resolve_configuration(configuration_id):
             board_resolved["Part"] = tool_part
 
     attached = []
-    for entry in cfg.get("attach", []) or []:
+    for attach_index, entry in enumerate(cfg.get("attach", []) or []):
         perip_id = entry.get("peripheral")
         if perip_id is None:
             raise ConfigError("Configuration '{c}': an attach entry has no peripheral"
@@ -824,6 +831,9 @@ def resolve_configuration(configuration_id):
             # buses with the board's own LEDs and keys instead of extending
             # them); absent = the next free bits, in attach order
             "lab_bits":      entry.get("lab_bits", {}) or {},
+            # position in the configuration's attach list (a profile may drop
+            # attaches; tools/trace.py relates providers back to it)
+            "attach_index":  attach_index,
         })
 
     # design-wiring profile (config/profiles/<id>.yml, config/profile.py): how

@@ -124,11 +124,26 @@ Setup:
 ```
 
 ```bash
-./unifpga setup check          # each setup generates its configuration exactly; rig errors
+./unifpga serve                # the board editor: http://127.0.0.1:8765/
+./unifpga setup check          # each setup generates its configuration (data and text); rig errors
+./unifpga setup generate [id]  # write config/configurations/<id>.yml from the setup
 ./unifpga setup derive <id>    # write a setup from an existing configuration
-./unifpga view <setup id>      # a schematic drawing as HTML (--board <board> for a board alone)
-./unifpga serve                # the drawings on a local web page, http://127.0.0.1:8765/
+./unifpga view <setup id>      # the same drawing as a read-only HTML file (--board <board> for a board alone)
 ```
+
+The board editor draws three columns: the virtual device `design_top` sees
+(its ports and bits), the board (on-board devices, connectors with numbered
+pins) and the add-on modules with their wires. Click a design bit, a header
+pin, a wire, a module or a device to trace it end to end (design bit → part →
+module pin → header pin → pinmap entry → FPGA pin); the table under the
+drawing lists every connection. Editing: add a module, click one of its pins
+and then a header pin to wire it (or pick the pin from a list), disconnect,
+remove, reorder, use an on-board device or not, hand a connector to the design
+as gpio, set parameters. Each edit is checked by the build's own code; Save
+writes the setup and its configuration, Generate project writes the
+SystemVerilog project for a chosen design (`designs/<design>/run/<setup>/`:
+`top.sv`, constraints, toolchain project; downloadable as a zip). Links can
+open a selection directly: `/?setup=<id>&sel=vbit:leds:led:2`, `sel=pin:jd:7`.
 
 The check reports pins used twice (connectors that share FPGA pins with an
 on-board connector included), module signals the peripheral does not have,
