@@ -1030,6 +1030,122 @@ def _compile(side, entry, roots, d, log):
     return proc.returncode, errors, widths
 
 
+_ERR_LINE = re.compile(r"^(\S+?):(\d+): (?:error: )?(.*)$")
+
+
+def _inst_span(lines, start):
+    """(first, last) line indices of the instantiation beginning at `start`
+    (0-based): up to the line holding its closing `);`."""
+    depth, i = 0, start
+    while i < len(lines):
+        depth += lines[i].count("(") - lines[i].count(")")
+        if i > start and depth <= 0 and ");" in lines[i]:
+            return start, i
+        i += 1
+    return start, len(lines) - 1
+
+
+def _repair_one(lines, lineno, msg):
+    """One behaviour-neutral repair of a BGM source Icarus rejects, at the
+    reported line; returns a note, or None when the error is not one of
+    these forms (the failure then stands as BGM's):
+      - an empty connection to a port lab_top does not have (`.hsync ( )`,
+        dk_dev_3c120n / qmtech_kintex_7: ports only experimental labs have);
+      - the same connection repeated verbatim (`.x ( x )` twice, ice40hx8k);
+      - a scalar wire declared again as a scalar wire (`wire hsync, vsync,
+        display_on` after `wire display_on`, Tang Primer 25K VGA / HDMI)."""
+    i = lineno - 1
+    m = re.match(r"port ``(\w+)'' is not a port of (\w+)\.", msg)
+    if m:
+        first, last = _inst_span(lines, i)
+        for k in range(first, last + 1):
+            # empty, or a constant (qmtech_kintex_7: `.vsync ( '0 )`)
+            new = re.sub(r"\.\s*" + re.escape(m.group(1)) + r"\s*\(\s*(?:\d*'[bdh]?[01]+|'[01]|[01])?\s*\)\s*,?",
+                         "", lines[k], count=1)
+            if new != lines[k]:
+                lines[k] = new
+                return "removed the constant / empty .{} — {} has no such port".format(m.group(1), m.group(2))
+        return None
+    m = re.match(r"port ``(\w+)'' already bound\.", msg)
+    if m:
+        first, last = _inst_span(lines, i)
+        pat = re.compile(r"\.\s*" + re.escape(m.group(1)) + r"\s*\(([^()]*)\)\s*,?")
+        seen = None
+        for k in range(first, last + 1):
+            hit = pat.search(lines[k])
+            if not hit:
+                continue
+            expr = " ".join(hit.group(1).split())
+            if seen is None:
+                seen = expr
+            elif expr == seen:
+                lines[k] = lines[k][:hit.start()] + lines[k][hit.end():]
+                return "removed the repeated .{} ( {} )".format(m.group(1), expr)
+            else:
+                return None                     # two different connections: BGM's error
+        return None
+    m = re.match(r"'(\w+)' has already been declared in this scope\.", msg)
+    if m:
+        name = m.group(1)
+        dm = re.match(r"^(\s*wire\s+)([A-Za-z_][\w\s,]*);\s*$", lines[i])
+        earlier = any(re.match(r"^\s*wire\s+(?:[A-Za-z_]\w*\s*,\s*)*" + re.escape(name) + r"\s*[,;]", l)
+                      for l in lines[:i])
+        if not dm or not earlier:
+            return None                          # a range or another kind: not the same net
+        names = [n.strip() for n in dm.group(2).split(",")]
+        if name not in names:
+            return None
+        names.remove(name)
+        lines[i] = (dm.group(1) + ", ".join(names) + ";") if names else ""
+        return "dropped the second declaration of scalar wire {}".format(name)
+    return None
+
+
+def _repair_gold(entry, roots, d, errors):
+    """Apply _repair_one to every error it recognises: the file's copy goes to
+    <run>/bgm_patched (a listed file is substituted, an included one is found
+    there first on the include path). [(file, line, note)], empty when any
+    error is not repairable."""
+    by_file, notes = {}, []
+    for e in errors:
+        m = _ERR_LINE.match(e.strip())
+        if not m or "error(s) during elaboration" in e:
+            continue
+        by_file.setdefault(m.group(1), []).append((int(m.group(2)), m.group(3)))
+    if not by_file:
+        return []
+    pdir = os.path.join(d, "bgm_patched")
+    os.makedirs(pdir, exist_ok=True)
+    edits = {}
+    for path, errs in by_file.items():
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                lines = f.read().split("\n")
+        except OSError:
+            return []
+        for lineno, msg in sorted(set(errs), reverse=True):
+            note = _repair_one(lines, lineno, msg)
+            if note is None:
+                return []
+            notes.append((os.path.basename(path), lineno, note))
+        edits[path] = lines
+    s = entry["gold"]
+    for path, lines in edits.items():
+        dst = os.path.join(pdir, os.path.basename(path))
+        with open(dst, "w") as f:
+            f.write("\n".join(lines))
+        hit = False
+        for k, ref in enumerate(s["files"]):
+            if os.path.abspath(_resolve(ref, roots)) == os.path.abspath(path) or \
+                    os.path.basename(_resolve(ref, roots)) == os.path.basename(path) and \
+                    os.path.dirname(os.path.abspath(path)) == os.path.abspath(pdir):
+                s["files"][k] = {"root": "abs", "path": dst}
+                hit = True
+        if not hit and not any(_resolve(i, roots) == pdir for i in s["incdirs"]):
+            s["incdirs"].insert(0, {"root": "abs", "path": pdir})
+    return notes
+
+
 def _run_one(entry, roots, out, keep_logs=True):
     cfg_id = entry["id"]
     res = {"id": cfg_id, "toolchain": entry.get("toolchain"), "variant": entry.get("variant")}
@@ -1041,8 +1157,19 @@ def _run_one(entry, roots, out, keep_logs=True):
     t0 = time.time()
     with open(os.path.join(d, "run.log"), "w") as log:
         notes = []
+        repairs = []
         for side in ("gold", "gate"):
             rc, errors, widths = _compile(side, entry, roots, d, log)
+            for _attempt in range(3):
+                if rc == 0 or side != "gold":
+                    break
+                fixed = _repair_gold(entry, roots, d, errors)
+                if not fixed:
+                    break
+                repairs += fixed
+                log.write("---- gold repaired: {}\n".format("; ".join("{}:{} {}".format(*r) for r in fixed)))
+                rc, errors, widths = _compile(side, entry, roots, d, log)
+            res["gold_repairs"] = ["{}:{} {}".format(*r) for r in repairs]
             if rc != 0:
                 res.update({"status": "COMPILE-FAIL-" + side, "errors": errors[:8], "seconds": round(time.time() - t0, 1)})
                 return res
@@ -1088,10 +1215,11 @@ def _run_one(entry, roots, out, keep_logs=True):
                                 if len(moved[i][0]) <= 1 and len(moved[i][1]) <= 1]
         res["gold_only"] = entry["gold_only"]
         res["gate_only"] = entry["gate_only"]
-        res["status"] = "DIFF" if diffs else "PASS"
-        if any("EQUIV-PROBE" in l and "cyc=20000" in l and "rst=x" in l for l in gold.other):
-            # BGM's lab never left x (its reset is undefined for the whole
-            # run): x compared with x proves nothing
+        res["status"] = "DIFF" if diffs else ("PASS-REPAIRED" if res.get("gold_repairs") else "PASS")
+        if any("EQUIV-PROBE" in l and "cyc=20000" in l and re.search(r"\brst=x|\bcnt=[0-9a-f]*x", l)
+               for l in gold.other) and not diffs:
+            # BGM's lab never left x (its reset or its counter is undefined
+            # for the whole run): x compared with x proves nothing
             res["status"] = "UNDEFINED"
     for side in ("gold", "gate"):
         try:
@@ -1117,7 +1245,8 @@ def cmd_run(args):
     with open(os.path.join(out, "results.json"), "w") as f:
         json.dump({"lab": manifest["lab"], "cycles": manifest["cycles"], "results": results}, f, indent=1)
     _print_summary(results, verbose=args.verbose)
-    return 0 if all(r["status"] == "PASS" for r in results if r["status"] not in ("NO-ORACLE", "NO-LAB-TOP")) else 1
+    return 0 if all(r["status"] in ("PASS", "PASS-REPAIRED") for r in results
+                    if r["status"] not in ("NO-ORACLE", "NO-LAB-TOP")) else 1
 
 
 # ---------------------------------------------------------------------------
@@ -1169,7 +1298,7 @@ def _print_summary(results, verbose=False):
         if st in ("NO-ORACLE", "NO-LAB-TOP") and not verbose:
             continue
         line = "  {:<44} {:<18}".format(r["id"], st)
-        if st == "PASS":
+        if st in ("PASS", "PASS-REPAIRED"):
             line += " {} pins, {} cycles, {}s".format(r.get("n_cmp"), r.get("cycles"), r.get("seconds"))
         elif st == "DIFF":
             line += " {} of {} pins differ ({} cycles, {}s)".format(len(r["mismatch_pins"]), r["n_cmp"],
@@ -1179,6 +1308,8 @@ def _print_summary(results, verbose=False):
         elif r.get("errors"):
             line += " " + (r["errors"][0] or "")[:110]
         print(line)
+        for rep in r.get("gold_repairs") or []:
+            print("      gold repaired: {}".format(rep))
         if st == "DIFF":
             for m in r["mismatch_pins"][:12]:
                 print("      {:<10} gold {:<28} gate {:<28} {:>8} cycles from {} (gold {} / gate {})".format(
@@ -1186,7 +1317,7 @@ def _print_summary(results, verbose=False):
                     m["gold_values"], m["gate_values"]))
             if len(r["mismatch_pins"]) > 12:
                 print("      ... {} more".format(len(r["mismatch_pins"]) - 12))
-        if verbose and st in ("PASS", "DIFF"):
+        if verbose and st in ("PASS", "PASS-REPAIRED", "DIFF"):
             for m in (r.get("serial_mismatch_pins") or [])[:8]:
                 print("      TMDS  {:<8} gold {:<26} gate {:<26} {:>8} cycles (not judged)".format(
                     m["pin"], str(m["gold"]), str(m["gate"]), m["cycles"]))

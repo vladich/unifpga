@@ -403,7 +403,7 @@ def _seven_seg_attach(pinmap, bgm_by_pin=None):
 
 
 # Generated configurations indent list items by 4, hand-written twins by 2.
-_ATTACH_START = re.compile(r"^( {2,4})- peripheral: (seven_segment_8digit_shared|seven_segment_per_digit)\s*$")
+_ATTACH_START = re.compile(r"^( {2,4})- peripheral: (seven_segment_8digit_shared|seven_segment_per_digit)\s*(#.*)?$")
 
 
 def _reindent(block, item_indent):
@@ -466,11 +466,18 @@ def apply_seven_seg(path, dry_run):
     config_init._apply_pin_overrides(cfg["id"], cfg, pinmap)
     vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
     bgm_by_pin = _bgm_seven_seg_by_pin(vdir) if vdir else None
-    block = _seven_seg_attach(pinmap, bgm_by_pin)
     lines = original.split("\n")
     starts = [i for i, l in enumerate(lines) if _ATTACH_START.match(l)]
     if not starts:
         return "skip (no 7-segment attach)"
+    if "onboard_7seg" not in (pinmap.get("pinBanks") or {}):
+        return "skip (the display is not on an onboard_7seg bank; --components owns it)"
+    bank_pins = ((pinmap.get("pinBanks") or {}).get("onboard_7seg") or {}).get("pins")
+    shared = isinstance(bank_pins, dict) and not any(re.match(r"^hex\d+$", k) for k in bank_pins)
+    if vdir and shared and _seven_seg_attach_from_bgm(bank_pins, bgm_by_pin or {}) is None:
+        # never replace a BGM-derived attach with the generic layout
+        return "unchanged (BGM's 7-segment assigns not understood; left as is)"
+    block = _seven_seg_attach(pinmap, bgm_by_pin)
     if block is None:
         return "WARNING: pinmap onboard_7seg shape not understood"
     i = starts[0]

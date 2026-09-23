@@ -941,13 +941,18 @@ def seven_seg_map(text):
     expand_seven_seg_map() resolves over the located pins. Per-digit HEXn
     boards yield nothing here."""
     ports = top_ports(text)
-    width = {}
-    for m in re.finditer(r"^\s*(?:input|output|inout)\s+(?:logic\s+|wire\s+|reg\s+)?\[\s*([^:\]]+)\s*:\s*0\s*\]\s*([A-Za-z_]\w*)",
+    width, lsb = {}, {}
+    for m in re.finditer(r"^\s*(?:input|output|inout)\s+(?:logic\s+|wire\s+|reg\s+)?\[\s*([^:\]]+?)\s*:\s*(\d+)\s*\]\s*([A-Za-z_]\w*)",
                          text.split(");", 1)[0], re.M):
+        lo = int(m.group(2))
         try:
-            width[m.group(2)] = int(m.group(1)) + 1
+            hi = int(m.group(1))
         except ValueError:
-            width[m.group(2)] = None
+            hi = None                   # parametric (`[w_digit : 1]`): expanded over the located pins
+        if hi is not None and hi < lo:
+            continue                    # ascending (`[0:7] SEG`, omdazz): as before, by located pins
+        lsb[m.group(3)] = lo
+        width[m.group(3)] = hi + 1 if (hi is not None and lo == 0) else None
 
     def item(part, inv_outer):
         """One rhs element -> ("bit", kind, bit, inv) | ("bus", kind, inv) | ("const", value)."""
@@ -1009,7 +1014,7 @@ def seven_seg_map(text):
             for i in range(w):
                 out["{}[{}]".format(name.upper(), i)] = (kind, w - 1 - i, inv)
         else:
-            out[name.upper() + "[*]"] = ("items", [("busrev", kind, inv)], None)
+            out[name.upper() + "[*]"] = ("items", [("busrev", kind, inv)], lsb.get(name))
     for m in _ASSIGN_ANY.finditer(text):
         lhs, rhs = m.group(1).strip(), m.group(2)
         items = items_of(rhs)
@@ -1048,7 +1053,7 @@ def seven_seg_map(text):
         elif w:
             lsb_items_to_map(name.upper(), items, w)
         else:
-            out[name.upper() + "[*]"] = ("items", items, None)  # parametric width: expand over pins
+            out[name.upper() + "[*]"] = ("items", items, lsb.get(name))  # parametric width: expand over pins
     return out
 
 
@@ -1065,9 +1070,11 @@ def expand_seven_seg_map(seg_map, signal_pins):
                       for m in [re.match(r"^{}\[(\d+)\]$".format(re.escape(base)), sig)] if m)
         if not idxs:
             continue
+        # the port's declared LSB (dk_dev_3c120n: `seven_seg_sel [w_digit : 1]`)
+        lo = val[2] if len(val) > 2 and val[2] is not None else 0
         w = max(idxs) + 1
         items = val[1]
-        idx = 0
+        idx = lo
         for it in items:
             if it[0] == "bus":
                 for k in range(w - idx):

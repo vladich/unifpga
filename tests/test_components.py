@@ -854,3 +854,31 @@ def test_marsohod3gw2_forms():
     r["configuration"]["reset"]["sources"][0]["bank"] = "no_such_bank"
     with pytest.raises(codegen.CodegenError):
         codegen.emit_top_sv(r, strict=True)
+
+
+def test_gold_repairs_are_narrow():
+    """The checker repairs only behaviour-neutral BGM source errors Icarus
+    rejects: an empty connection to a port the lab lacks, a verbatim repeated
+    connection, a scalar wire declared twice; anything else stays BGM's."""
+    from tools import equiv_check as ec
+    inst = ["    lab_top i_lab_top", "    (", "        .clk ( clk ),", "        .x ( x ),", "        .x ( x ),",
+            "        .hsync (  ),", "        .y ( y )", "    );"]
+    lines = list(inst)
+    assert "hsync" in ec._repair_one(lines, 1, "port ``hsync'' is not a port of i_lab_top.")
+    assert all(".hsync" not in l for l in lines)
+    assert "repeated" in ec._repair_one(lines, 1, "port ``x'' already bound.")
+    assert sum(".x (" in l for l in lines) == 1
+    lines = list(inst)
+    lines[4] = "        .x ( x2 ),"
+    assert ec._repair_one(lines, 1, "port ``x'' already bound.") is None
+    lines = list(inst)
+    lines[5] = "        .hsync ( '0 ),"
+    assert "hsync" in ec._repair_one(lines, 1, "port ``hsync'' is not a port of i_lab_top.")
+    lines = list(inst)
+    lines[5] = "        .hsync ( hs ),"
+    assert ec._repair_one(lines, 1, "port ``hsync'' is not a port of i_lab_top.") is None
+    decl = ["    wire display_on;", "    wire [3:0] a;", "    wire hsync, vsync, display_on, pixel_clk;"]
+    assert "display_on" in ec._repair_one(decl, 3, "'display_on' has already been declared in this scope.")
+    assert decl[2] == "    wire hsync, vsync, pixel_clk;"
+    wide = ["    wire [7:0] lab_led;", "    wire [5:0] lab_led;"]
+    assert ec._repair_one(wide, 2, "'lab_led' has already been declared in this scope.") is None

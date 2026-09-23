@@ -634,6 +634,19 @@ def adv7513_attach(text, sig_pins, rev):
 
 # ---------------------------------------------------------------- ties
 
+def _declared_width(text, name, params):
+    """Width of a net the top declares: `wire [a:b] name` -> |a - b| + 1,
+    `wire x, name, y;` / `logic name;` -> 1; None when not found or unevaluable."""
+    m = re.search(r"\b(?:wire|logic|reg)\s*\[\s*([^\]:]+?)\s*:\s*([^\]]+?)\s*\]\s*(?:[A-Za-z_]\w*\s*,\s*)*"
+                  + re.escape(name) + r"\b", text)
+    if m:
+        hi, lo = _eval_int(m.group(1), params), _eval_int(m.group(2), params)
+        return abs(hi - lo) + 1 if hi is not None and lo is not None else None
+    if re.search(r"\b(?:wire|logic|reg)\s+(?:[A-Za-z_]\w*\s*,\s*)*" + re.escape(name) + r"\s*[,;=]", text):
+        return 1
+    return None
+
+
 def _concat_const_bits(text, sig_pins):
     """{PORT[i]: "1'b0"|"1'b1"} for the constant elements of a whole-port
     concatenation assign: de2_115 `LEDG = { { $bits (LEDG) - w_lab_led { 1'b0 } },
@@ -672,13 +685,18 @@ def _concat_const_bits(text, sig_pins):
                 widths.append(k * int(rm.group(2)))
                 consts.append((k * int(rm.group(2)), (int(rm.group(3)) * ((1 << (k * int(rm.group(2)))) - 1))))
             else:
-                name = re.match(r"^~?\s*([A-Za-z_]\w*)", el)
                 w = None
-                if name:
+                cast = re.match(r"^~?\s*(\d+)\s*'\s*\(", el)       # `4' ( green_corrected )`
+                name = re.match(r"^~?\s*([A-Za-z_]\w*)\s*$", el) or re.match(r"^~?\s*([A-Za-z_]\w*)", el)
+                if cast:
+                    w = int(cast.group(1))
+                elif name:
                     n = name.group(1)
-                    w = params.get("w_" + n) or params.get("w_" + n.replace("lab_", "lab_")) or params.get(n)
+                    w = params.get("w_" + n) or params.get(n)
                     if w is None and n.startswith("lab_"):
                         w = params.get("w_lab_" + n[4:])
+                    if w is None and re.match(r"^~?\s*[A-Za-z_]\w*\s*$", el):
+                        w = _declared_width(text, n, params)     # `vsync`: a declared net
                 widths.append(w)
                 consts.append(None)
         if widths.count(None) > 1:
@@ -1833,7 +1851,7 @@ def apply_components(path, dry_run):
             bgm_overlay.set_attach(cfg["id"], pid, k, drop=want_drop, variant=os.path.basename(vdir))
         changes.append("{}#{} {} (overlay: BGM ties every pin of it)".format(pid, k, "dropped" if want_drop else "kept again"))
     cur_ties = OrderedDict((k, str(v)) for k, v in (cfg.get("tie") or {}).items())
-    if OrderedDict((k, str(v)) for k, v in ties.items()) != cur_ties:
+    if dict((k, str(v)) for k, v in ties.items()) != dict(cur_ties):
         lines = _strip_tie_block(lines)
         while lines and lines[-1].strip() == "":
             lines.pop()
