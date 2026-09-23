@@ -646,6 +646,61 @@ def cmd_designs(args):
     return 0
 
 
+def cmd_setup(args):
+    """setup check: every setup generates its configuration exactly and has no
+    rig errors. setup derive <id>...: write config/setups/<id>.yml from the
+    configuration (its board needs a layout)."""
+    from tools import setup as su
+    if args.action == "derive":
+        configurations = config.init.read_configurations()
+        for cid in args.ids:
+            if cid not in configurations:
+                raise CliError("unknown configuration '{}'".format(cid))
+            cfg = configurations[cid]
+            diffs = su.check_roundtrip(cfg)
+            if diffs:
+                raise CliError("{} does not round-trip:\n  {}".format(cid, "\n  ".join(diffs)))
+            print("wrote {}".format(_shown(su.write_setup(su.derive(cfg)))))
+        return 0
+    setups = su.read_setups()
+    ids = args.ids or sorted(setups)
+    configurations = config.init.read_configurations()
+    failed = 0
+    for sid in ids:
+        if sid not in setups:
+            raise CliError("unknown setup '{}'".format(sid))
+        problems = su.validate(setups[sid])
+        cfg = configurations.get(sid)
+        if cfg is None:
+            problems.append(("error", "no configuration {} to compare with".format(sid)))
+        elif su.generate(setups[sid]) != cfg:
+            problems.append(("error", "does not generate config/configurations/{}.yml".format(sid)))
+        errors = [m for level, m in problems if level == "error"]
+        failed += bool(errors)
+        print("{:<48} {}".format(sid, "FAIL" if errors else "ok"))
+        for level, msg in problems:
+            print("    {}: {}".format(level, msg))
+    return 1 if failed else 0
+
+
+def cmd_view(args):
+    """Write a drawing of a setup (or, with --board, a board layout) as HTML."""
+    from tools import setup as su, viewer
+    out = args.output or "{}.html".format(args.id)
+    try:
+        path = viewer.write_page(out, board_id=args.id) if args.board else viewer.write_page(out, setup_id=args.id)
+    except su.SetupError as exc:
+        raise CliError(str(exc))
+    print("wrote {}".format(path))
+    return 0
+
+
+def cmd_serve(args):
+    from tools import viewer
+    viewer.serve(port=args.port)
+    return 0
+
+
 COMMANDS = {
     "board": cmd_board,
     "build": cmd_build,
@@ -656,6 +711,9 @@ COMMANDS = {
     "clean": cmd_clean,
     "tools": cmd_tools,
     "designs": cmd_designs,
+    "setup": cmd_setup,
+    "view": cmd_view,
+    "serve": cmd_serve,
 }
 
 
@@ -711,6 +769,18 @@ def build_parser():
 
     sub.add_parser("tools", help="report where each toolchain was found (or why not)")
     sub.add_parser("designs", help="list the designs under designs/")
+
+    st = sub.add_parser("setup", help="check setups (config/setups/) or derive one from a configuration")
+    st.add_argument("action", choices=["check", "derive"])
+    st.add_argument("ids", nargs="*", help="setup / configuration ids (check: default all)")
+
+    vw = sub.add_parser("view", help="draw a setup (or a board with --board) as an HTML page")
+    vw.add_argument("id", help="setup id, or board id with --board")
+    vw.add_argument("--board", action="store_true", help="the id is a board: draw its layout")
+    vw.add_argument("-o", "--output", help="output file (default: <id>.html)")
+
+    sv = sub.add_parser("serve", help="serve the board and setup drawings on a local web page")
+    sv.add_argument("--port", type=int, default=8765)
     return p
 
 

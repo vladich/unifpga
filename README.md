@@ -85,6 +85,7 @@ by Yuri Panchul and contributors; see
 | `config/board_producers.yml` | Registry of board makers (75 entries: Digilent, Terasic, Sipeed, Trenz, BittWare, …) with URL, country, founding year, categories, description. Each board's `BoardProducer:` references one of these by Id. |
 | `config/board_features.yml` | Vocabulary of board-feature tokens (91 entries across `memory`, `connectivity`, `display`, etc.). Boards may list `Features: [ethernet_1gbe, hdmi_out, pmod_x4, …]` for filtering / display. |
 | `config/configurations/<id>.yml` | Board × toolchain × peripheral attachments (134 configurations): the hardware, what sits on which pins, polarity, widths, clocks, I/O standards. |
+| `config/layouts/<board>.yml`, `config/modules/<id>.yml`, `config/setups/<id>.yml`, `config/connectors.yml` | Boards as rigs (preview, two boards): connectors and on-board devices, add-on module pinouts, and setups that generate configurations; `tools/setup.py`, drawings by `tools/viewer.py`. |
 | `config/profiles/<id>.yml` | Design-wiring profile: how a configuration's hardware is presented to `design_top` (which key resets, a TM1638 as the key/led/digit bus, keys as switches, mirrored bits, the lab clock, pins that follow the reset, what `uart_rx` reads with no UART pin, a bus wider than the bits wired to it (`lab_width`), components tied off (`drop`), the HEX decimal point routed onto LEDs (`bind`), a header the design only drives (`direction: out`)). Applied on top of the configuration by default; `synthesize.py --no-profile` (or `UNIFPGA_PROFILE=0`) generates the generic composition. |
 | `config/peripherals/*.yml` | 37 peripheral definitions (`led_bank`, `vga_4bit`, `pmod_12pin`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
 | `config/capabilities/*.yml` | 12 abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules. |
@@ -96,6 +97,45 @@ by Yuri Panchul and contributors; see
 | `tools/lint_generated.py` | Lints every generated top with Verilator (locally or `remote --host <box>`). |
 | `tools/verify_pinmap_against_vendor.py` | Checks board pinmaps against the vendor constraint files (Digilent XDC so far). |
 | `toolchains/<id>/<id>.py` | Per-toolchain driver. Each defines `synthesize(...)` and `program(...)`. |
+
+## Boards as rigs (preview)
+
+For the Arty A7 and the Tang Primer 20K Dock a configuration can also be read
+as the physical rig it describes: the board's connectors and on-board devices
+(`config/layouts/<board>.yml`), the add-on modules and their pinouts
+(`config/modules/`), and a setup that says what is used and which module pin
+goes to which connector pin (`config/setups/<id>.yml`):
+
+```yaml
+Setup:
+  id: arty_a7_35_pmod_mic3
+  board: arty_a7
+  toolchain: vivado
+  part: 35t
+  use:
+    - onboard: clock
+    - onboard: leds
+    - module: digilent_pmod_mic3
+      plug: {connector: jd, row: 2}
+    - module: tm1638_led_key
+      wires: {CLK: ck.IO40, STB: ck.IO41, DIO: ck.IO39}
+    - gpio: ck
+      params: {width: 30}
+```
+
+```bash
+./unifpga setup check          # each setup generates its configuration exactly; rig errors
+./unifpga setup derive <id>    # write a setup from an existing configuration
+./unifpga view <setup id>      # a schematic drawing as HTML (--board <board> for a board alone)
+./unifpga serve                # the drawings on a local web page, http://127.0.0.1:8765/
+```
+
+The check reports pins used twice (connectors that share FPGA pins with an
+on-board connector included), module signals the peripheral does not have,
+required signals left unwired and supply-voltage mismatches. Connector pin
+numbers come from the vendors' files (Digilent's Arty XDC, Sipeed's Dock
+schematic); module pinouts not checked against a vendor document say so
+(`verified: false`).
 
 ## Toolchain coverage
 
