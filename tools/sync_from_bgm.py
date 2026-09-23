@@ -157,6 +157,20 @@ def apply_reset(path, dry_run):
         if not dry_run:
             bgm_overlay.update(cid, os.path.basename(vdir), reset=(want or None))
 
+    # 3. the TM1638 controller on a reset of its own (Tang Primer 25K:
+    #    `.rst ( tm_rst )`, the power-up reset without the TM1638's own key)
+    if any((a or {}).get("peripheral") == "tm1638_led_key" for a in cfg.get("attach") or []):
+        tm = bgm_oracle.tm1638_reset(bgm_oracle.strip_comments(bgm_oracle.preprocess_variant(vdir).text))
+        want_rst = "context.rst_on_power_up" if tm == "power_up" else None
+        if tm not in (None, "power_up"):
+            changes.append("WARNING: BGM resets the TM1638 from {!r}; not modelled".format(tm))
+        cur = bgm_overlay.attach_override(bgm_overlay.load(cid) or {}, "tm1638_led_key", 0, create=False) or {}
+        if (cur.get("params") or {}).get("rst") != want_rst:
+            if not dry_run:
+                bgm_overlay.set_attach(cid, "tm1638_led_key", 0, params={"rst": want_rst},
+                                       variant=os.path.basename(vdir))
+            changes.append("tm1638_led_key rst -> {} (overlay)".format(want_rst or "the lab reset"))
+
     if not changes:
         return "unchanged"
     if not dry_run and text != original:

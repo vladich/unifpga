@@ -803,3 +803,21 @@ def test_lab_gpio_wider_than_its_wiring():
         r = config_init.resolve_configuration(cid)
         top = codegen.emit_top_sv(r)
         assert ".w_gpio({})".format(w) in top and "gpio_nc_{}".format(w - 1) in top, cid
+
+
+def test_tm1638_on_the_power_up_reset():
+    """BGM Tang Primer 25K: `rst = tm_rst | tm_key [7]` with `tm_rst =
+    rst_on_power_up`, and the TM1638 controller on tm_rst alone — its own
+    key resets the lab, not the controller."""
+    from tools import bgm_oracle
+    text = ("wire tm_rst;\nassign tm_rst = rst_on_power_up;\nwire rst = tm_rst | tm_key [w_tm_key - 1];\n"
+            "tm1638_board_controller # (.clk_mhz (clk_mhz)) i_tm1638 (.clk ( clk ), .rst ( tm_rst ), .keys ( tm_key ));\n")
+    assert bgm_oracle.classify_reset(bgm_oracle.reset_exprs(text)) == {"power_up", "tm_key_msb"}
+    assert bgm_oracle.tm1638_reset(text) == "power_up"
+    assert bgm_oracle.tm1638_reset(text.replace(".rst ( tm_rst )", ".rst ( rst )")) is None
+    r = config_init.resolve_configuration("tang_primer_25k_pmod_hub75e_led_matrix")
+    top = codegen.emit_top_sv(r)
+    i = next(k for k, a in enumerate(r["peripherals"]) if a["peripheral_id"] == "tm1638_led_key")
+    inst = top[top.index("i_tm1638_led_key_{} (".format(i)):]
+    assert inst[:inst.index(");")].count(".rst(rst_on_power_up)") == 1
+    assert "assign rst = rst_on_power_up |" in top

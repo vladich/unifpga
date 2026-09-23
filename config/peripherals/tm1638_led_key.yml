@@ -11,6 +11,11 @@ Peripheral:
     - { name: dio,  type: scalar, direction: inout,  comment: "Bidirectional data" }
   # The TM1638 controller chip provides FOUR user-visible capabilities through
   # one 3-wire serial bus. The driver multiplexes them internally.
+  parameters:
+    # What resets the controller: the lab reset, or (BGM Tang Primer 25K:
+    # `.rst ( tm_rst )`, tm_rst = rst_on_power_up) the power-up reset alone,
+    # so a TM1638 key that resets the lab does not also clear the keys
+    rst: { type: string, default: context.rst }
   provides:
     - capability: switches
       params: { width: 8 }
@@ -28,7 +33,7 @@ Peripheral:
       w_digit: 8
     port_map:
       clk:      context.clk
-      rst:      context.rst
+      rst:      $rst
       sio_stb:  pin.stb
       sio_clk:  pin.clk
       sio_data: pin.dio

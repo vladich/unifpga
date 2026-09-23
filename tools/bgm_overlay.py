@@ -58,7 +58,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OVERLAY_DIR = os.path.join(REPO, "config", "bgm")
 CONFIG_DIR = os.path.join(REPO, "config", "configurations")
 
-OVERLAY_PARAMS = ("as_switches", "mirror", "direction", "mirror_screen")   # attach params that are BGM conventions
+OVERLAY_PARAMS = ("as_switches", "mirror", "direction", "mirror_screen", "rst")   # attach params that are BGM conventions
 REMOVE = object()                                          # set_attach(bind=...): delete an override
 _TOP_KEYS = ("reset", "lab_clock", "uart_rx", "tie", "lab_width", "attach")
 _RST_TIE = re.compile(r"^\s*~?\s*rst\s*$")

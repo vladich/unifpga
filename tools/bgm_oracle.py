@@ -225,11 +225,22 @@ def clk_mhz(text):
     return float(m.group(1)) if m else None
 
 
+def _expand_aliases(expr, text):
+    """One level of `wire x = e;` / `assign x = e;` substituted into a reset
+    expression (Tang Primer 25K: `rst = tm_rst | tm_key [..]`, `tm_rst =
+    rst_on_power_up`) so classify_reset sees the sources behind the alias."""
+    def sub(m):
+        name = m.group(0)
+        d = re.search(r"\b(?:wire|assign)\s+(?:\[[^\]]*\]\s*)?" + re.escape(name) + r"\s*=\s*([^;]+);", text)
+        return "( {} )".format(" ".join(d.group(1).split())) if d and name != "rst" else name
+    return re.sub(r"\b(?!rst_on_power_up\b)[a-z]\w*_rst\b", sub, expr)
+
+
 def reset_exprs(text):
     """Every `wire rst = <expr>;` / `assign rst = <expr>;` left after
     preprocessing (normally one), plus the source of an xpm_cdc_async_rst
     whose dest_arst is rst (a7_lite: `.src_arst (~ RESETN)`)."""
-    out = [x.strip() for x in _RST.findall(text)]
+    out = [_expand_aliases(x.strip(), text) for x in _RST.findall(text)]
     for inst in instantiations(text, "xpm_cdc_async_rst"):
         ports = dict(inst["ports"])
         if ports.get("dest_arst", "").strip() == "rst" and ports.get("src_arst", "").strip():
@@ -252,6 +263,18 @@ def reset_sync_stages(text):
                 return int(params.get("DEST_SYNC_FF", "4"))
             except ValueError:
                 return 4
+    return None
+
+
+def tm1638_reset(text):
+    """The net BGM resets the TM1638 controller from when it is not the lab's
+    rst (Tang Primer 25K: `.rst ( tm_rst )`, tm_rst = rst_on_power_up):
+    'power_up', or None."""
+    for inst in instantiations(text, "tm1638_board_controller"):
+        net = dict(inst["ports"]).get("rst", "").strip()
+        if net and net != "rst":
+            e = _expand_aliases(net, text)
+            return "power_up" if re.sub(r"[()\s]", "", e) == "rst_on_power_up" else e
     return None
 
 
