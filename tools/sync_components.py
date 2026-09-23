@@ -1000,6 +1000,50 @@ def _sync_blocks(lines, pid, wanted, have, comment, indent, changes, label=None)
                                         [b for _p, b in wanted] or "none"))
 
 
+def _take_mirror(want):
+    """Pop `mirror` out of the wanted attaches' params ([(pid, params, bind)] or
+    [(params, bind)]); returns {index: True} for the mirrored ones."""
+    out = {}
+    for k, entry in enumerate(want):
+        params = entry[1] if len(entry) == 3 else entry[0]
+        if params.pop("mirror", False):
+            out[k] = True
+    return out
+
+
+def _with_overlay_mirror(cid, pid, occ, attach):
+    """The attach dict with the overlay's mirror flag merged into its params
+    (the configuration no longer carries it)."""
+    from tools import bgm_overlay
+    e = bgm_overlay.attach_override(bgm_overlay.load(cid) or {}, pid, occ, create=False) or {}
+    if (e.get("params") or {}).get("mirror"):
+        a = dict(attach)
+        a["params"] = dict(a.get("params") or {}, mirror=True)
+        return a
+    return attach
+
+
+def _overlay_mirrors(cid, vdir, want, mirrors, dry_run):
+    """Write the mirrored bit order of each wanted attach (by peripheral and
+    occurrence) into the overlay; returns change notes."""
+    from tools import bgm_overlay
+    changes = []
+    occ = {}
+    for k, entry in enumerate(want):
+        pid = entry[0] if len(entry) == 3 else "led_bank"
+        i = occ.get(pid, 0)
+        occ[pid] = i + 1
+        cur = bgm_overlay.attach_override(bgm_overlay.load(cid) or {}, pid, i, create=False) or {}
+        have = bool((cur.get("params") or {}).get("mirror"))
+        wanted = bool(mirrors.get(k))
+        if have != wanted:
+            if not dry_run:
+                bgm_overlay.set_attach(cid, pid, i, params={"mirror": True if wanted else None},
+                                       variant=os.path.basename(vdir) if vdir else None)
+            changes.append("{}#{} mirror {} -> {} (overlay)".format(pid, i, have, wanted))
+    return changes
+
+
 def _bind_key(bind):
     return json.dumps({k: (v if isinstance(v, list) else str(v).strip('"')) for k, v in bind.items()}, sort_keys=True)
 
@@ -1135,10 +1179,11 @@ def apply_components(path, dry_run):
     warnings.extend("gpio: " + n for n in notes)
     if bits is not None:
         want = gpio_attaches(bits, pinmap)
+        gpio_mirror = _take_mirror(want)
         have = [(a["peripheral"], a.get("params") or {}, {k: (v if isinstance(v, list) else str(v).strip('"'))
                                                           for k, v in (a.get("bind") or {}).items()})
                 for a in cfg.get("attach") or [] if a.get("peripheral") in _GPIO_PERIPHERALS]
-        norm = lambda lst: [(p, {k: v for k, v in pr.items() if k in ("width", "mirror")}, b) for p, pr, b in lst]
+        norm = lambda lst: [(p, {k: v for k, v in pr.items() if k == "width"}, b) for p, pr, b in lst]
         if norm(have) != norm(want):
             for pid in _GPIO_PERIPHERALS:
                 _remove_blocks(lines, pid)
@@ -1146,13 +1191,16 @@ def apply_components(path, dry_run):
                 _append_after_attaches(lines, _render(pid, params, binds, comment + " .gpio", indent), indent)
             changes.append("gpio {} -> {}".format([(p, b["io"]) for p, _pr, b in have],
                                                    [(p, b["io"]) for p, _pr, b in want] or "none"))
+        changes.extend(_overlay_mirrors(cfg["id"], vdir, want, gpio_mirror, dry_run))
 
     # ---- LEDs ----------------------------------------------------------------
     lbits, notes = led_bits(text, sig_pins, rev)
     warnings.extend("led: " + n for n in notes)
     if lbits is not None:
         want = led_attaches(lbits, pinmap)
-        cur = [a for a in cfg.get("attach") or [] if a.get("peripheral") == "led_bank"]
+        led_mirror = _take_mirror(want)
+        cur = [_with_overlay_mirror(cfg["id"], "led_bank", k, a)
+               for k, a in enumerate(a for a in cfg.get("attach") or [] if a.get("peripheral") == "led_bank")]
         # an LED bank BGM's top drives with its own logic rather than the lab's
         # led bus (de2_115: LEDR is a 7-seg dp emulation, the lab gets LEDG [7:0])
         # stays declared; --lab-bits gives it no lab bit
@@ -1170,10 +1218,16 @@ def apply_components(path, dry_run):
             if pins and not (pins & want_pins) and pins <= declared_pins:
                 want.append((OrderedDict((k, v) for k, v in (a.get("params") or {}).items()),
                              {"led": (b["led"] if isinstance(b["led"], list) else str(b["led"]).strip('"'))}))
-        want_dicts = [{"params": dict(p), "bind": b} for p, b in want]
+        want_dicts = [dict({"params": dict(p), "bind": b}, **({"_mirror": True} if led_mirror.get(k) else {}))
+                      for k, (p, b) in enumerate(want)]
+        for d in want_dicts:
+            if d.pop("_mirror", False):
+                d["params"] = dict(d["params"], mirror=True)
         if _led_signature(cur, pinmap) != _led_signature(want_dicts, pinmap):
-            _sync_blocks(lines, "led_bank", want, [(a.get("params") or {}, a.get("bind") or {}) for a in cur],
+            _sync_blocks(lines, "led_bank", want,
+                         [({k: v for k, v in (a.get("params") or {}).items() if k != "mirror"}, a.get("bind") or {}) for a in cur],
                          comment, indent, changes)
+        changes.extend(_overlay_mirrors(cfg["id"], vdir, [("led_bank", p, b) for p, b in want], led_mirror, dry_run))
         # a passthrough on pins the lab led bus now owns (Eclypse Z7: BGM uses
         # the two RGB LEDs as six plain LEDs) is an invented component
         led_pins = set()
@@ -1253,6 +1307,17 @@ def apply_components(path, dry_run):
     for ref, v in extra_ties.items():
         if not (sy._pins_of_ref(pinmap, ref) & bound):
             ties.setdefault(ref, v)
+    # a pin that follows the reset is a BGM convention (overlay); a constant
+    # is a wiring fact of the attached module (configuration)
+    from tools import bgm_overlay
+    rst_ties = OrderedDict((k, v) for k, v in ties.items() if str(v).replace(" ", "") in ("rst", "~rst"))
+    ties = OrderedDict((k, v) for k, v in ties.items() if k not in rst_ties)
+    overlay = bgm_overlay.load(cfg["id"]) or {}
+    cur_rst = OrderedDict((k, str(v)) for k, v in (overlay.get("tie") or {}).items())
+    if OrderedDict((k, str(v)) for k, v in rst_ties.items()) != cur_rst:
+        if not dry_run:
+            bgm_overlay.update(cfg["id"], os.path.basename(vdir), tie=(rst_ties or None))
+        changes.append("overlay tie {} -> {}".format(dict(cur_rst) or "none", dict(rst_ties) or "none"))
     cur_ties = OrderedDict((k, str(v)) for k, v in (cfg.get("tie") or {}).items())
     if OrderedDict((k, str(v)) for k, v in ties.items()) != cur_ties:
         lines = _strip_tie_block(lines)
@@ -1861,17 +1926,32 @@ def apply_lab_bits(path, dry_run):
     rev = _Rev(pinmap, bound_banks)
     notes = []
     wanted, param_changes = _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes)
-    lines = original.split("\n")
-    # params first (they do not move the lab_bits blocks), then the bits
-    changes = _set_attach_params(lines, cfg.get("attach") or [], {
-        i: {k: v for k, v in ch.items() if (cfg["attach"][i].get("params") or {}).get(k) != v}
-        for i, ch in param_changes.items()})
-    changes = [c for c in changes if c] + _write_lab_bits(lines, cfg.get("attach") or [], wanted)
-    if changes and not dry_run:
-        new = "\n".join(lines)
-        yaml.safe_load(new)                      # must still parse
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(new)
+    # the lab bus composition and keys-as-switches are BGM conventions: overlay
+    from tools import bgm_overlay
+    attaches = cfg.get("attach") or []
+    overlay = bgm_overlay.load(cfg["id"]) or {}
+    occ_of, occ = {}, {}
+    for i, a in enumerate(attaches):
+        pid = a.get("peripheral")
+        occ_of[i] = occ.get(pid, 0)
+        occ[pid] = occ_of[i] + 1
+    changes = []
+    for i, a in enumerate(attaches):
+        pid = a.get("peripheral")
+        cur = bgm_overlay.attach_override(overlay, pid, occ_of[i], create=False) or {}
+        cur_bits = {c: list(b) for c, b in (cur.get("lab_bits") or {}).items()}
+        want_bits = OrderedDict((c, list(b)) for c, b in (wanted.get(i) or {}).items() if b is not None)
+        cur_params = dict(cur.get("params") or {})
+        want_params = {k: v for k, v in (param_changes.get(i) or {}).items()}
+        new_params = {k: v for k, v in want_params.items() if cur_params.get(k) != v}
+        if {c: list(b) for c, b in want_bits.items()} == cur_bits and not new_params:
+            continue
+        if not dry_run:
+            bgm_overlay.set_attach(cfg["id"], pid, occ_of[i], lab_bits=(want_bits if want_bits else {}),
+                                   params=new_params or None, variant=os.path.basename(vdir))
+        changes.append("{}#{} lab_bits {} -> {}{}".format(
+            pid, occ_of[i], cur_bits or "none", {c: list(b) for c, b in want_bits.items()} or "none",
+            "; params " + str(new_params) if new_params else ""))
     out = "; ".join(changes) if changes else "unchanged"
     if notes:
         out += " | " + "; ".join(notes)

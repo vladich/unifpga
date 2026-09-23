@@ -134,31 +134,21 @@ def apply_reset(path, dry_run):
             else:
                 changes.append("WARNING: could not find `attach:` to insert reset_button")
 
-    # 2. reset: block (replace an existing one)
+    # 2. the reset policy is a BGM convention: it goes to the overlay
+    from tools import bgm_overlay
     sources = policy["sources"]
-    existing = cfg.get("reset")
-    if sources:
-        block = _render_reset_block(sources)
-        if existing is not None and block in text:
-            sources = None          # already exactly what we would write
-    if sources:
-        if existing is not None:
-            # remove the old block (our comment line, `  reset:` and its
-            # indented children) so the sync stays idempotent
-            text = re.sub(r"(?m)(?:^  # Reset policy derived[^\n]*\n)?^  reset:\n(?:^ {4,}.*\n)*\n?", "", text)
-        # insert after the `toolchain:`/`part:` header lines
-        m = re.search(r"^(  toolchain: .*\n(?:  part: .*\n)?)", text, re.M)
-        if not m:
-            changes.append("WARNING: no toolchain: line; reset block not inserted")
-        else:
-            text = text[:m.end()] + "\n" + block + text[m.end():]
-            changes.append("reset.sources = {}".format(sources))
-    elif existing is not None:
-        changes.append("note: BGM uses only a dedicated pin; existing reset: block left as is")
+    overlay = bgm_overlay.load(cid) or {}
+    existing = (overlay.get("reset") or {}).get("sources")
+    if sources and sources != existing:
+        changes.append("reset.sources = {} (overlay)".format(sources))
+        if not dry_run:
+            bgm_overlay.update(cid, os.path.basename(vdir), reset={"sources": sources})
+    elif not sources and existing is not None:
+        changes.append("note: BGM uses only a dedicated pin; overlay reset left as is")
 
-    if not changes or text == original:
+    if not changes:
         return "unchanged"
-    if not dry_run:
+    if not dry_run and text != original:
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
     return "; ".join(changes)
@@ -1189,28 +1179,22 @@ def apply_clock_tree(path, dry_run):
             declared.setdefault(c["name"], []).append(a)
 
     # 1. lab clock
+    # the lab clock choice is a BGM convention: it goes to the overlay
+    from tools import bgm_overlay
     want = bgm_oracle.lab_clock_source(t)
-    have = cfg.get("lab_clock")
-    idx = next((k for k, l in enumerate(lines) if re.match(r"^  lab_clock:", l)), None)
+    have = (bgm_overlay.load(cfg["id"]) or {}).get("lab_clock")
     if want == "pixel":
         if "pixel" not in declared:
             changes.append("WARNING: BGM runs the lab on the pixel clock ({} MHz) but no attached peripheral "
                            "declares clock 'pixel' (HDMI: PLAN.md P3.2)".format(bgm_oracle.lab_mhz(t)))
         elif have != "pixel":
-            if idx is not None:
-                lines[idx] = _LAB_CLOCK_LINE
-            else:
-                hdr = next((k for k, l in enumerate(lines) if re.match(r"^  (toolchain|part):", l)), None)
-                while hdr is not None and hdr + 1 < len(lines) and re.match(r"^  (toolchain|part):", lines[hdr + 1]):
-                    hdr += 1
-                if hdr is None:
-                    changes.append("WARNING: no toolchain: line; lab_clock not inserted")
-                else:
-                    lines[hdr + 1:hdr + 1] = [_LAB_CLOCK_LINE]
-            changes.append("lab_clock: pixel ({} MHz)".format(bgm_oracle.lab_mhz(t)))
-    elif have is not None and idx is not None:
-        del lines[idx]
-        changes.append("drop lab_clock (BGM lab runs on the board clock)")
+            if not dry_run:
+                bgm_overlay.update(cfg["id"], os.path.basename(vdir), lab_clock="pixel")
+            changes.append("lab_clock: pixel ({} MHz) (overlay)".format(bgm_oracle.lab_mhz(t)))
+    elif have is not None:
+        if not dry_run:
+            bgm_overlay.update(cfg["id"], os.path.basename(vdir), lab_clock=None)
+        changes.append("drop lab_clock (BGM lab runs on the board clock) (overlay)")
 
     # 2. pixel clock frequency
     outs, unmodelled = bgm_oracle.pll_outputs(vdir, t, pp.files)
@@ -1410,8 +1394,22 @@ def apply_polarity(paths, dry_run):
                         and any(bank in str(v) for v in (a.get("bind") or {}).values())), None)
             if pid is None:
                 continue
-            if d["mirror"] and _set_attach_param(lines, pid, bank, "mirror", True):
-                notes.append("{}.{} mirror: true".format(pid, bank))
+            if d["mirror"]:
+                # a mirrored bit order (BGM's SWAP_BITS) is a BGM convention: overlay
+                from tools import bgm_overlay
+                occ = 0
+                for a in cfg.get("attach") or []:
+                    if a.get("peripheral") != pid:
+                        continue
+                    if any(bank in str(v) for v in (a.get("bind") or {}).values()):
+                        break
+                    occ += 1
+                cur = bgm_overlay.attach_override(bgm_overlay.load(cfg["id"]) or {}, pid, occ, create=False)
+                if not (cur and (cur.get("params") or {}).get("mirror")):
+                    if not dry_run:
+                        bgm_overlay.set_attach(cfg["id"], pid, occ, params={"mirror": True},
+                                               variant=os.path.basename(vdir) if vdir else None)
+                    notes.append("{}.{} mirror: true (overlay)".format(pid, bank))
             if (cfg["board"], bank) in conflicts and d["active"] is not None:
                 if _set_attach_param(lines, pid, bank, "active", d["active"]):
                     notes.append("{}.{} active: {} (variant-specific)".format(pid, bank, d["active"]))

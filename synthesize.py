@@ -62,6 +62,8 @@ def main(argv=None):
         print("\n".join(toolchain_detect.report(config.init.read_toolchains())))
         return 0
     args = _build_parser().parse_args(argv)
+    if getattr(args, "no_bgm_overlay", False):
+        os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
 
     try:
         resolved = config.init.read_or_init(args.configuration)

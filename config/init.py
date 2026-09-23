@@ -826,6 +826,18 @@ def resolve_configuration(configuration_id):
             "lab_bits":      entry.get("lab_bits", {}) or {},
         })
 
+    # BGM parity overlay (config/bgm/<id>.yml, tools/bgm_overlay.py): BGM's
+    # lab conventions — reset policy, lab bus composition, lab clock, bit
+    # mirroring, pins that follow the reset — applied on top of the generic
+    # configuration unless UNIFPGA_BGM_OVERLAY=0.
+    try:
+        from tools import bgm_overlay
+    except ImportError:              # config/ imported without the repo root on sys.path
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from tools import bgm_overlay
+    if bgm_overlay.enabled():
+        cfg = bgm_overlay.apply(cfg, attached, bgm_overlay.load(configuration_id))
+
     # `tie:` — pins the top drives with a constant or the reset (BGM's
     # `assign M_CLK = 1'b0`, `assign ARDUINO_RESET_N = ~ rst`), one pin_tie
     # attach each so they are declared, driven and constrained.
