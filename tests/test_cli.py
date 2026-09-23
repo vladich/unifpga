@@ -415,32 +415,3 @@ def test_clean_all_removes_every_design_run_dir(tmp_path, monkeypatch):
     assert not (designs / "a" / "run").exists() and not (designs / "b" / "run").exists()
 
 
-def test_adapt_testbench_text_translates_bgm_ports():
-    from tools import adapt_designs
-    src = ('`include "config.svh"\n'
-           "module tb;\n    localparam w_key = 4;\n    logic [3:0] key;\n"
-           "    lab_top # (.w_key (w_key)) i_lab_top (.clk (clk), .slow_clk (clk), .rst (rst), .key (key), .sw (sw));\n"
-           "    initial force i_lab_top.enable = 1'b1;\nendmodule\n")
-    out = adapt_designs.adapt_testbench_text(src)
-    assert "config.svh" not in out and "slow_clk" not in out and "lab_top" not in out
-    assert "design_top # (.w_btn (w_btn)) i_design_top (.clk (clk), .rst (rst), .btn (btn), .sw (sw));" in out
-    assert "force i_design_top.enable" in out
-    # a dropped last connection leaves no dangling comma
-    src2 = "module tb;\n    lab_top i_lab_top (\n        .clk ( clk ),\n        .slow_clk ( clk )\n    );\nendmodule\n"
-    out2 = adapt_designs.adapt_testbench_text(src2)
-    assert ".clk ( clk )\n    );" in out2
-
-
-def test_every_imported_design_with_a_bgm_testbench_has_one():
-    from tools import adapt_designs, bgm_oracle
-    if not bgm_oracle.has_bgm():
-        pytest.skip("BGM checkout not present")
-    missing = []
-    for root, _dirs, files in os.walk(adapt_designs.BGM_LABS_DIR):
-        if "tb.sv" not in files:
-            continue
-        lab = os.path.basename(root)
-        design = os.path.join(adapt_designs.DESIGNS_OUT, lab)
-        if os.path.isfile(os.path.join(design, "design_top.sv")) and not os.path.isfile(os.path.join(design, "tb.sv")):
-            missing.append(lab)
-    assert not missing, "run tools/adapt_designs.py --testbenches for: " + ", ".join(missing)

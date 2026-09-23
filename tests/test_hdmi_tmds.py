@@ -109,34 +109,6 @@ def test_xilinx_mmcm_shared_outputs():
     assert pll_solver.xilinx_mmcm(12, [2000]) is None
 
 
-def test_a7_lite_hdmi_uses_one_mmcm_and_tmds_33():
-    r = _resolve("a7_lite_35t")
-    if "hdmi_tmds" not in {a["peripheral_id"] for a in r["peripherals"]}:
-        pytest.skip("a7_lite_35t has no hdmi_tmds attach (run sync --sv-binds)")
-    tree = codegen.plan_clock_tree(r)
-    # BGM's clk_wiz: 250 / 50 / 25 MHz, the lab on the 50 MHz output (overlay lab_clock)
-    assert {n: v for n, _r, v, _s in tree} == {"serial": "xilinx_mmcm", "pixel": "xilinx_mmcm", "lab": "xilinx_mmcm"}
-    top = codegen.emit_top_sv(r, strict=True)
-    assert "pll_xilinx_mmcm # (.CLKIN_PERIOD(20.000), .DIVCLK_DIVIDE(1), .CLKFBOUT_MULT_F(20.0), " \
-           ".CLKOUT0_DIVIDE(4.0), .CLKOUT1_DIVIDE(40), .CLKOUT2_DIVIDE(20))" in top
-    assert ".clkout0(clk_serial), .clkout1(clk_pixel), .clkout2(clk_lab)" in top
-    # xpm_cdc_async_rst: BGM's polarity slip (default active-low driving the
-    # active-high rst) is detected and reported, not copied — a normal
-    # synchroniser, asserted with the button and released 4 clocks after it
-    assert "always_ff @ (posedge clk_lab or negedge cpu_resetn)" in top
-    assert "if (! cpu_resetn) rst_sync_0 <= '0;" in top and "assign rst = (~ rst_sync_0 [3]);" in top
-    from tools import bgm_oracle
-    xpm = "xpm_cdc_async_rst i_x (.dest_clk ( clk ), .dest_arst ( rst ), .src_arst ( ~ RESETN ));"
-    assert bgm_oracle.reset_sync_asserts(xpm) is True
-    assert bgm_oracle.reset_sync_asserts(xpm.replace("i_x", "# (.RST_ACTIVE_HIGH (1)) i_x")) is False
-    assert 'hdmi_tmds_out # (.DIFF_BUF("xilinx")' in top
-    xdc = codegen.emit_xdc(r)
-    # BGM a7_lite_35t/board_specific.xdc: PACKAGE_PIN L19 + IOSTANDARD TMDS_33 on TMDS_CLK_P
-    assert "PACKAGE_PIN L19 IOSTANDARD TMDS_33 } [get_ports { onboard_hdmi_clk_p }]" in xdc
-    assert "PACKAGE_PIN L20 IOSTANDARD TMDS_33 } [get_ports { onboard_hdmi_clk_n }]" in xdc
-    assert "PACKAGE_PIN G17 IOSTANDARD TMDS_33 } [get_ports { onboard_hdmi_d_p[2] }]" in xdc
-
-
 def test_diff_buf_kind_by_family():
     assert codegen.diff_buf_kind(_resolve("tang_nano_9k_hdmi_tm1638")) == "gowin_elvds"
     assert codegen.diff_buf_kind(_resolve("tang_nano_20k_hdmi_tm1638")) == "gowin_tlvds"

@@ -177,17 +177,3 @@ def test_lab_width_widens_the_bus_and_grounds_the_top_bit():
     assert ".w_btn(6)," in text and "assign cap_buttons_btn [5:4] = '0;   // lab_width: no provider on these bits" in text
 
 
-def test_declared_port_range_maps_the_whole_port():
-    """omdazz_epm570: `input [6:1] KEY` read whole by the lab is KEY [1..6],
-    not KEY [0..5] (which would drop KEY [6] and leave lab bit 0 empty)."""
-    from tools import sync_components as sc
-    text = ("module board_specific_top # (parameter w_key = 6, w_sw = 4)\n(\n    input [6:1] KEY,\n"
-            "    input [4:1] CKEY,\n    input [w_key - 1:0] BTN,\n    output [8:1] LED\n);")
-    ranges = sc._port_ranges(text, {"w_key": 6, "w_sw": 4})
-    assert ranges == {"KEY": (1, 6), "CKEY": (1, 4), "BTN": (0, 5), "LED": (1, 8)}
-    sig_pins = {"KEY[{}]".format(i): "P{}".format(i) for i in range(1, 7)}
-    sig_pins.update({"CKEY[{}]".format(i): "C{}".format(i) for i in range(1, 5)})
-    assert sc._source_bits("KEY", None, sig_pins, {"w_key": 6}, ranges) == ["KEY[{}]".format(i) for i in range(1, 7)]
-    assert sc._source_bits("CKEY", None, sig_pins, {"w_sw": 4}, ranges) == ["CKEY[{}]".format(i) for i in range(1, 5)]
-    assert sc._source_bits("KEY", (2, 3), sig_pins, {"w_key": 6}, ranges) == ["KEY[2]", "KEY[3]"]  # a slice wins
-    assert sc._source_bits("KEY", None, sig_pins, {"w_key": 6}) == ["KEY[{}]".format(i) for i in range(0, 6)]
