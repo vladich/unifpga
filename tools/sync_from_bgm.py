@@ -78,7 +78,7 @@ def reset_policy_for(cfg, pinmap, facts):
     if "tm_key_msb" in kinds:
         sources.append({"tm_key": "msb"})
     need_pin = "pin" in kinds
-    return {"sources": sources, "_need_pin": need_pin}, " | ".join(facts["reset_exprs"])
+    return {"sources": sources, "_need_pin": need_pin, "sync": facts.get("reset_sync")}, " | ".join(facts["reset_exprs"])
 
 
 def _has_reset_button(cfg):
@@ -134,17 +134,25 @@ def apply_reset(path, dry_run):
             else:
                 changes.append("WARNING: could not find `attach:` to insert reset_button")
 
-    # 2. the reset policy is a BGM convention: it goes to the overlay
+    # 2. the reset policy is a BGM convention: it goes to the overlay — the
+    #    sources beyond the dedicated pin, and a synchronised deassertion
+    #    (c5gx's rstn_ff chain, a7_lite's xpm_cdc_async_rst)
     from tools import bgm_overlay
     sources = policy["sources"]
     overlay = bgm_overlay.load(cid) or {}
-    existing = (overlay.get("reset") or {}).get("sources")
-    if sources and sources != existing:
-        changes.append("reset.sources = {} (overlay)".format(sources))
+    existing = dict(overlay.get("reset") or {})
+    want = OrderedDict()
+    if sources:
+        want["sources"] = sources
+    elif existing.get("sources") is not None:
+        want["sources"] = existing["sources"]      # BGM uses only a dedicated pin; left as is
+        changes.append("note: BGM uses only a dedicated pin; overlay reset sources left as is")
+    if policy.get("sync"):
+        want["sync"] = int(policy["sync"])
+    if dict(want) != existing:
+        changes.append("reset = {} (overlay)".format(dict(want)))
         if not dry_run:
-            bgm_overlay.update(cid, os.path.basename(vdir), reset={"sources": sources})
-    elif not sources and existing is not None:
-        changes.append("note: BGM uses only a dedicated pin; overlay reset left as is")
+            bgm_overlay.update(cid, os.path.basename(vdir), reset=(want or None))
 
     if not changes:
         return "unchanged"
@@ -495,6 +503,27 @@ def _bgm_colour_bits(vdir):
     return out
 
 
+def _vga_colour_form(text):
+    """(gate, registered) — how BGM's top drives the VGA colour pins:
+    `VGA_R = display_on ? red : '0` / `display_on & (| red)` gates (basys3,
+    nexys4, omdazz); `reg_vga_r <= display_on ? red : '0` also registers
+    (de0_nano); `.red (VGA_R)` straight from the lab, a DAC blanked through
+    BLANK_N (de1_soc, sockit, de2_115) or an ungated header (emooc), does
+    not gate."""
+    t = bgm_oracle.strip_comments(text)
+    if re.search(r"\w+\s*<=\s*display_on\s*\?\s*red\b", t):
+        return True, True
+    if re.search(r"=\s*display_on\s*(?:\?\s*red\b|&\s*\(\s*\|\s*red\b)", t):
+        return True, False
+    for inst in bgm_oracle.instantiations(t, "lab_top"):
+        red = dict(inst["ports"]).get("red", "").strip()
+        if red and red in bgm_oracle.top_ports(t):
+            return False, False                     # the lab drives the pins directly
+        if red and re.search(r"\bassign\s+\w+\s*(?:\[[^\]]*\])?\s*=\s*" + re.escape(red) + r"\s*;", t):
+            return False, False                     # through a wire, still ungated
+    return True, False
+
+
 def apply_vga(path, dry_run):
     original = open(path, encoding="utf-8").read()
     cfg = yaml.safe_load(original)["Configuration"]
@@ -527,14 +556,23 @@ def apply_vga(path, dry_run):
     if not hs or not vs:
         return "WARNING: onboard_vga lacks hs/vs"
     depth = {(4, 4, 4): 444, (8, 8, 8): 888, (5, 6, 5): 565, (1, 1, 1): 111}.get((user["r"], user["g"], user["b"]), 444)
+    gate, registered = _vga_colour_form(bgm_oracle.preprocess_variant(vdir).text) if vdir else (True, False)
     block = ["    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue",
              "      params:",
              "        bits_r: {}".format(user["r"]), "        bits_g: {}".format(user["g"]), "        bits_b: {}".format(user["b"]),
              "        pin_bits_r: {}".format(pins["r"]), "        pin_bits_g: {}".format(pins["g"]), "        pin_bits_b: {}".format(pins["b"]),
-             "        color_depth: {}".format(depth),
-             "      bind:",
+             "        color_depth: {}".format(depth)]
+    if not gate:
+        block.append("        gate: false        # BGM drives the colours ungated (a DAC blanked through BLANK_N)")
+    if registered:
+        block.append("        registered: true   # BGM registers the colours and syncs")
+    # binds --components owns on the same attach (the DAC's BLANK_N / CLK) stay
+    cur = next((a for a in cfg.get("attach") or [] if (a or {}).get("peripheral") == "vga_4bit"), {}) or {}
+    extra = [(k, v) for k, v in (cur.get("bind") or {}).items() if k in ("blank_n", "clk")]
+    block += ["      bind:",
              "        r: {}".format(binds["r"]), "        g: {}".format(binds["g"]), "        b: {}".format(binds["b"]),
              "        hs: {}".format(hs), "        vs: {}".format(vs)]
+    block += ["        {}: {}".format(k, v) for k, v in extra]
     lines = original.split("\n")
     start = re.compile(r"^( {2,4})- peripheral: vga_4bit\s*(#.*)?$")
     starts = [i for i, l in enumerate(lines) if start.match(l)]

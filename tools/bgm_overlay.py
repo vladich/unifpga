@@ -19,7 +19,8 @@ buses concatenated in attach order, power-up reset, is generated instead).
     BGM:
       configuration: <id>
       variant: <boards/<variant> in BGM>
-      reset:            { sources: [...] }           # codegen's reset vocabulary
+      reset:            { sources: [...], sync: 2 }  # codegen's reset vocabulary; sync = flops
+                                                      # between the pin releasing and rst (c5gx)
       lab_clock:        pixel
       uart_rx:          0 | 1                         # what the lab reads when no UART pin is wired
       tie:              { <ref>: rst | ~rst | 0 | 1 } # pins BGM drives from its reset, or ties
@@ -33,6 +34,7 @@ buses concatenated in attach order, power-up reset, is generated instead).
         - { peripheral: seven_segment_per_digit, index: 0,
             bind: {dp: [onboard_leds[4], ...]},       # a signal BGM routes onto other pins
             params: {dp_active: low} }
+        - { peripheral: lcd_480_272, index: 0, bind: {hs: null, vs: null} }   # signals BGM ties off
 
 tools/sync_from_bgm.py writes these files (--reset --clock-tree --polarity
 --components --lab-bits); tools/equiv_check.py proves the result against
@@ -53,6 +55,7 @@ OVERLAY_DIR = os.path.join(REPO, "config", "bgm")
 CONFIG_DIR = os.path.join(REPO, "config", "configurations")
 
 OVERLAY_PARAMS = ("as_switches", "mirror", "direction")   # attach params that are BGM conventions
+REMOVE = object()                                          # set_attach(bind=...): delete an override
 _TOP_KEYS = ("reset", "lab_clock", "uart_rx", "tie", "lab_width", "attach")
 _RST_TIE = re.compile(r"^\s*~?\s*rst\s*$")
 
@@ -175,8 +178,10 @@ def set_attach(configuration_id, peripheral, index, lab_bits=None, params=None, 
     if bind:
         cur = OrderedDict(e.get("bind") or {})
         for k, v in bind.items():
-            if v is None:
+            if v is REMOVE:
                 cur.pop(k, None)
+            elif v is None:
+                cur[k] = None                     # null: unbind the signal
             else:
                 cur[k] = list(v) if isinstance(v, (list, tuple)) else v
         if cur:
@@ -259,8 +264,16 @@ def apply(cfg, attached, overlay):
                     a["params"] = dict(a.get("params") or {}, **e["params"])
                 if e.get("bind"):
                     # a signal BGM routes somewhere the hardware description
-                    # does not (the HEX decimal point onto the top LEDs)
-                    a["bind"] = dict(a.get("bind") or {}, **e["bind"])
+                    # does not (the HEX decimal point onto the top LEDs); null
+                    # unbinds an optional signal BGM ties off instead
+                    # (tang_nano_20k's LCD_HS / LCD_VS)
+                    b = dict(a.get("bind") or {})
+                    for k, v in e["bind"].items():
+                        if v is None:
+                            b.pop(k, None)
+                        else:
+                            b[k] = v
+                    a["bind"] = b
     for a in dropped:
         attached.remove(a)
     return cfg

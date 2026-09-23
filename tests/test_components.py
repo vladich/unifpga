@@ -490,3 +490,127 @@ def test_partially_used_led_bank_stays_whole():
     assert leds["params"]["width"] == 10 and leds["bind"] == {"led": "onboard_leds"}
     assert leds["lab_bits"] == {"leds": [0, 1, 2, 3, None, None, None, None, None, None]}
     assert ".w_led(4)," in codegen.emit_top_sv(r)
+
+
+def test_gpio_gaps_keep_bgm_numbering():
+    """arty: `.gpio ({ck_io41, .., ck_io26, dummy_ck_io25_14, ck_io13, .., ck_io0})`
+    — the 12-bit wire is a gap the lab's numbering jumps over; zybo's
+    `wire [w_gpio - 1:0] gpio` is a bus wired to nothing at all."""
+    text = ("module board_specific_top # (parameter w_gpio = 6)\n(\n    inout [1:0] A,\n    inout [1:0] B\n);\n"
+            "wire [1:0] dummy;\nlab_top i_lab_top (.gpio ({ B, dummy, A }));\n")
+    sig_pins = {"A[0]": "P0", "A[1]": "P1", "B[0]": "P2", "B[1]": "P3"}
+    pinmap = {"pinBanks": {"hdr_a": {"pins": ["P0", "P1"]}, "hdr_b": {"pins": ["P2", "P3"]}}}
+    rev = sc._Rev(pinmap, set())
+    bits, notes = sc.gpio_bits(text, text, sig_pins, rev)
+    assert [b[0] for b in bits] == ["hdr_a[0]", "hdr_a[1]", None, None, "hdr_b[0]", "hdr_b[1]"]
+    assert any("carries no pins: 2 lab bits" in n for n in notes)
+    assert [(p, b["io"]) for p, _pr, b in sc.gpio_attaches(bits, pinmap)] == [("gpio_header", "hdr_a"), ("gpio_header", "hdr_b")]
+    assert sc.gpio_placement(bits, pinmap) == ([[0, 1], [4, 5]], 6)
+    # no gap: the plain concatenation
+    bits2 = [b for b in bits if b[0] is not None]
+    assert sc.gpio_placement(bits2, pinmap) == (None, 4)
+    # only a wire: no attach, a lab_width
+    text3 = "module board_specific_top # (parameter w_gpio = 8)\n(\n    input CLK\n);\nwire [w_gpio - 1:0] gpio;\nlab_top i (.gpio (gpio));\n"
+    bits3, _n = sc.gpio_bits(text3, text3, {"CLK": "C1"}, rev)
+    assert bits3 == [(None, None)] * 8 and sc.gpio_placement(bits3, pinmap) == (None, 8)
+    # codegen: the arty header's bits sit where BGM puts them, the gap reads nothing
+    r = config_init.resolve_configuration("arty_a7_35")
+    hdr = next(a for a in r["peripherals"] if a["peripheral_id"] == "gpio_header")
+    assert hdr["lab_bits"]["gpio"][:2] == [41, 40] and hdr["lab_bits"]["gpio"][-1] == 0
+    top = codegen.emit_top_sv(r)
+    assert ".w_gpio(42)" in top and "wire gpio_nc_16;" in top and "wire gpio_nc_27;" in top
+    gpio_line = next(l for l in top.splitlines() if l.strip().startswith(".gpio("))
+    assert gpio_line.strip().startswith(".gpio({arduino_io[0], arduino_io[1],")
+    # zybo: eight dangling bits, no header
+    r = config_init.resolve_configuration("zybo_z7")
+    assert not any(a["peripheral_id"] in ("gpio_header", "pmod_12pin") for a in r["peripherals"])
+    top = codegen.emit_top_sv(r)
+    assert ".w_gpio(8)" in top and ".gpio({gpio_nc_7, gpio_nc_6, gpio_nc_5, gpio_nc_4, gpio_nc_3, gpio_nc_2, gpio_nc_1, gpio_nc_0})" in top
+
+
+def test_synchronised_reset_deassertion():
+    """c5gx: `rstn_ff <= {rstn_ff [0], 1'b1}; rst = ~ rstn_ff [1]` (2 flops);
+    a7_lite: xpm_cdc_async_rst (4). The overlay's reset.sync."""
+    from tools import bgm_oracle
+    t = "logic [1:0] rstn_ff;\nwire rst = ~rstn_ff[1];\nalways_ff @(posedge clk or negedge arst_n) if (!arst_n) rstn_ff <= '0; else rstn_ff <= {rstn_ff[0], 1'b1};"
+    assert bgm_oracle.reset_sync_stages(t) == 2
+    t2 = "xpm_cdc_async_rst i_x (.dest_clk (clk), .dest_arst (rst), .src_arst (~ RESETN));"
+    assert bgm_oracle.reset_sync_stages(t2) == 4 and bgm_oracle.reset_exprs(t2) == ["~ RESETN"]
+    assert bgm_oracle.reset_sync_stages("wire rst = ~ RESET_N;") is None
+    r = config_init.resolve_configuration("c5gx")
+    assert r["configuration"]["reset"].get("sync") == 2
+    top = codegen.emit_top_sv(r)
+    assert "logic [1:0] rst_sync_0;" in top
+    assert "always_ff @ (posedge clk or negedge cpu_resetn)" in top
+    assert "if (! cpu_resetn) rst_sync_0 <= '0;" in top and "else rst_sync_0 <= { rst_sync_0 [0:0], 1'b1 };" in top
+    assert "assign rst = (~ rst_sync_0 [1]);" in top
+    r = config_init.resolve_configuration("a7_lite_35t")
+    assert r["configuration"]["reset"].get("sync") == 4 and "logic [3:0] rst_sync_0;" in codegen.emit_top_sv(r)
+    r["configuration"] = dict(r["configuration"], reset={"sync": 0})
+    with pytest.raises(codegen.CodegenError):
+        codegen.emit_top_sv(r)
+
+
+def test_vga_colour_forms():
+    """BGM gates the colours with display_on on resistor ladders, passes them
+    raw to a DAC blanked through BLANK_N (de1_soc), and registers them on the
+    de0_nano ("to remove the glitches")."""
+    from tools import sync_from_bgm as sy
+    assert sy._vga_colour_form("assign VGA_R = display_on ? red : '0;") == (True, False)
+    assert sy._vga_colour_form("assign VGA_R = display_on & ( | red );") == (True, False)
+    assert sy._vga_colour_form("reg_vga_r <= display_on ? red : '0;") == (True, True)
+    assert sy._vga_colour_form("module board_specific_top (output [7:0] VGA_R);\nlab_top i (.red (VGA_R));") == (False, False)
+    for cid, gate, registered in (("de1_soc", False, False), ("de0_nano_vga_pmod", True, True), ("emooc_cc", False, False), ("omdazz", True, False)):
+        r = config_init.resolve_configuration(cid)
+        vga = next(a for a in r["peripherals"] if a["peripheral_id"] == "vga_4bit")
+        assert bool(vga["params"].get("gate", True)) is gate and bool(vga["params"].get("registered", False)) is registered, cid
+        top = codegen.emit_top_sv(r)
+        assert (".GATE(1'b0)" in top) is (not gate) and (".REGISTERED(1'b1)" in top) is registered
+
+
+def test_i2s_dac_format_and_hdmi_widths_follow_bgm():
+    """tang_primer_20k_dock: `i2s_audio_out # (.align_right (1'b1), .offset_by_one_cycle (1'b0))`
+    (PT8211); de10_nano / c5gx: HDMI_TX_D carries 8-bit colours."""
+    r = config_init.resolve_configuration("tang_primer_20k_dock_hdmi_tm1638")
+    dac = next(a for a in r["peripherals"] if a["peripheral_id"] == "i2s_audio_out")
+    assert dac["params"].get("align_right") == 1 and dac["params"].get("offset_by_one_cycle") == 0
+    assert ".align_right(1), .offset_by_one_cycle(0)" in codegen.emit_top_sv(r)
+    for cid in ("de10_nano", "c5gx"):
+        r = config_init.resolve_configuration(cid)
+        hdmi = next(a for a in r["peripherals"] if a["peripheral_id"] == "hdmi_adv7513")
+        assert hdmi["params"].get("bits_r") == 8 and hdmi["params"].get("bits_b") == 8
+        assert ".W_RED(8), .W_GREEN(8), .W_BLUE(8)" in codegen.emit_top_sv(r)
+
+
+def test_optional_signal_bgm_ties_off_is_unbound():
+    """tang_nano_20k LCD: `.LCD_HSYNC ( )` with `assign LCD_HS = 1'b0` — the
+    overlay unbinds hs / vs (the driver's own outputs) and ties the pins; the
+    backlight, a pin the peripheral drives from its `bl` parameter, stays
+    bound and follows that parameter (--clock-tree)."""
+    r = config_init.resolve_configuration("tang_nano_20k_lcd_480_272_no_tm1638")
+    lcd = next(a for a in r["peripherals"] if a["peripheral_id"] == "lcd_480_272")
+    assert "hs" not in lcd["bind"] and "vs" not in lcd["bind"] and lcd["bind"]["bl"] == "onboard_lcd.bl"
+    assert r["configuration"]["tie"].get("onboard_lcd.hs") == 0 and r["configuration"]["tie"].get("onboard_lcd.vs") == 0
+    assert "onboard_lcd.bl" not in (r["configuration"].get("tie") or {})
+    top = codegen.emit_top_sv(r)
+    assert ".LCD_HSYNC()" in top and "assign onboard_lcd_hs = 1'b0;" in top and "assign onboard_lcd_bl = 1'b1;" in top
+    os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
+    try:
+        config_init.clear_cache()
+        r0 = config_init.resolve_configuration("tang_nano_20k_lcd_480_272_no_tm1638")
+    finally:
+        os.environ.pop("UNIFPGA_BGM_OVERLAY", None)
+        config_init.clear_cache()
+    lcd0 = next(a for a in r0["peripherals"] if a["peripheral_id"] == "lcd_480_272")
+    assert lcd0["bind"]["hs"] == "onboard_lcd.hs"
+
+
+def test_equivalence_testbench_starts_in_reset():
+    from tools import equiv_check as ec
+    gate_map = {"P1": ("onboard_buttons", 0), "P2": ("onboard_switches", 9), "P3": ("cpu_resetn", None), "P4": ("onboard_leds", 0)}
+    text = "assign rst = rst_on_power_up | ((~ onboard_buttons[0]) | (onboard_switches[9])) | (~ cpu_resetn);"
+    assert ec.reset_levels(text, gate_map) == {"P1": 0, "P2": 1, "P3": 0}
+    assert ec.reset_levels("assign rst = rst_on_power_up;", gate_map) == {}
+    klass = {"C": "CLOCK", "P1": "INPUT", "P2": "INPUT", "P4": "OUTPUT"}
+    tb = ec.testbench_text("w", ["C", "P1", "P2", "P4"], klass, {"C": 50.0}, "C", ["P4"], 100, {"P1": 0, "P2": 1})
+    assert "localparam [N_IN - 1:0] RST_INIT = 2'b10;" in tb and "in_v [k] = RST_INIT [k];" in tb

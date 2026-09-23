@@ -227,8 +227,32 @@ def clk_mhz(text):
 
 def reset_exprs(text):
     """Every `wire rst = <expr>;` / `assign rst = <expr>;` left after
-    preprocessing (normally one)."""
-    return [x.strip() for x in _RST.findall(text)]
+    preprocessing (normally one), plus the source of an xpm_cdc_async_rst
+    whose dest_arst is rst (a7_lite: `.src_arst (~ RESETN)`)."""
+    out = [x.strip() for x in _RST.findall(text)]
+    for inst in instantiations(text, "xpm_cdc_async_rst"):
+        ports = dict(inst["ports"])
+        if ports.get("dest_arst", "").strip() == "rst" and ports.get("src_arst", "").strip():
+            out.append(" ".join(ports["src_arst"].split()))
+    return out
+
+
+def reset_sync_stages(text):
+    """Flops between the reset pin releasing and `rst` deasserting: BGM
+    c5gx's `logic [1:0] rstn_ff ... rst = ~rstn_ff[1]` (2), a7_lite's
+    xpm_cdc_async_rst (DEST_SYNC_FF, default 4); None when rst follows the
+    pin combinationally."""
+    m = re.search(r"\b(?:logic|reg|wire)\s*\[\s*(\d+)\s*:\s*0\s*\]\s*(rstn?_ff\w*|rstn?_sync\w*)\b", text)
+    if m and re.search(r"\brst\s*=\s*~?\s*" + re.escape(m.group(2)) + r"\s*\[", text):
+        return int(m.group(1)) + 1
+    for inst in instantiations(text, "xpm_cdc_async_rst"):
+        if dict(inst["ports"]).get("dest_arst", "").strip() == "rst":
+            params = dict(inst["params"])
+            try:
+                return int(params.get("DEST_SYNC_FF", "4"))
+            except ValueError:
+                return 4
+    return None
 
 
 def classify_reset(exprs):
@@ -1067,6 +1091,7 @@ def summarize(vdir):
         "clk_mhz": clk_mhz(text),
         "reset_exprs": rst,
         "reset_kinds": sorted(classify_reset(rst)),
+        "reset_sync": reset_sync_stages(text),
         "pll_instances": pll_instances(text),
         "pll_output_mhz": pll_output_mhz(text),
         "pll_outputs": pll_outputs(vdir, text, pp.files)[0],

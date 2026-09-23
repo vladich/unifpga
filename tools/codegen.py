@@ -1355,6 +1355,13 @@ def reset_sources(resolved, plans=None):
             sources.append(("power_up", {}))
     if not sources:
         sources.append(("power_up", {}))
+    sync = spec.get("sync")
+    if sync is not None:
+        if not isinstance(sync, int) or isinstance(sync, bool) or sync < 1:
+            raise CodegenError("reset.sync must be a positive integer (flops), got {!r}".format(sync))
+        for kind, d in sources:
+            if kind == "pin":
+                d["sync"] = sync
     return sources
 
 
@@ -1448,6 +1455,18 @@ def _emit_reset(resolved, plans):
     for kind, d in reset_sources(resolved, plans):
         if kind == "pin":
             ref = _bank_ref_to_port(d["ref"]) if isinstance(d["ref"], str) else d["ref"]
+            if d.get("sync"):
+                # BGM (c5gx: `rstn_ff`, a7_lite: xpm_cdc_async_rst): the reset
+                # asserts with the pin and deasserts n clocks after it releases
+                k, low = int(d["sync"]), d["active"] == "low"
+                net = "rst_sync_{}".format(len(terms))
+                lines.append("    // {}: asserted with the pin, released {} clock(s) after it (synchronised deassertion)".format(ref, k))
+                lines.append("    logic [{}:0] {};".format(k - 1, net))
+                lines.append("    always_ff @ (posedge {} or {} {})".format(_EMIT.get("lab_clk", "clk"), "negedge" if low else "posedge", ref))
+                lines.append("        if ({}{}) {} <= '0;".format("! " if low else "", ref, net))
+                lines.append("        else {} <= {};".format(net, "1'b1" if k == 1 else "{{ {} [{}:0], 1'b1 }}".format(net, k - 2)))
+                terms.append("(~ {} [{}])".format(net, k - 1))
+                continue
             terms.append("(~ {})".format(ref) if d["active"] == "low" else "({})".format(ref))
         elif kind == "switch":
             # BGM's `rst = SW [w_sw - 1]` is the physical switch, whether or
@@ -2144,11 +2163,16 @@ def _gpio_connection(resolved, plans):
     """Return (expression, declaration_lines) for design_top's `gpio` port, or
     (None, []) when no provider exists."""
     plan = plans["gpio"]
-    if not plan.providers:
-        return None, []
     sig = next((s for s in plan.cap.get("signals", []) if s.get("direction") == "inout"), None)
     if sig is None:
         return None, []
+    if not plan.providers:
+        # BGM zybo / ax7035b: the lab gets a w_gpio-wide bus wired to nothing
+        w = _lab_width(resolved, plan)
+        if not w:
+            return None, []
+        decls = ["    wire gpio_nc_{};".format(i) for i in range(w)]
+        return "{" + ", ".join("gpio_nc_{}".format(i) for i in reversed(range(w))) + "}", decls
     gpio_indices = {pidx for pidx, _p, _params in plan.providers}
     claimed = _claimed_port_bits(resolved, plans, gpio_indices)
 
@@ -2160,10 +2184,17 @@ def _gpio_connection(resolved, plans):
         if ref is None:
             continue
         ports = _bind_bit_ports(resolved, ref)
-        if pidx not in plan.offsets:
-            raise CodegenError("Configuration {}: lab_bits is not supported on the gpio capability"
-                               .format(resolved["configuration"]["id"]))
-        offset, width = plan.offsets[pidx], plan.widths[pidx]
+        if pidx in plan.offsets:
+            offset, width = plan.offsets[pidx], plan.widths[pidx]
+            places = list(range(offset, offset + width))
+        elif pidx in plan.bits:
+            # lab_bits: BGM's numbering when pinless elements sit between the
+            # pins (arty's dummy_ck_io25_14); an unmapped pin reaches no bit
+            width = plan.widths[pidx]
+            places = list(plan.bits[pidx])
+        else:
+            raise CodegenError("Configuration {}: gpio provider {} has neither an offset nor lab_bits"
+                               .format(resolved["configuration"]["id"], perif["id"]))
         if len(ports) != width:
             log.warning("Configuration %s: %s provides %d gpio bits but its bind %r covers %d pins",
                         resolved["configuration"]["id"], perif["id"], width, ref, len(ports))
@@ -2175,9 +2206,9 @@ def _gpio_connection(resolved, plans):
             decls.append("    wire [{}:0] {};   // {}: direction out, the design drives these pins"
                          .format(width - 1, out_net, _attach_label(attach)))
         for i in range(width):
-            n = offset + i
-            if n >= len(bits):
-                break
+            n = places[i]
+            if n is None or n >= len(bits):
+                continue
             port = ports[i] if i < len(ports) else None
             if port is None:
                 decls.append("    wire gpio_nc_{};   // no pin on this header position".format(n))
@@ -2218,7 +2249,8 @@ def _emit_lab_top(resolved, plans):
         # rgb_leds is concat-aggregated on `count` (see _PRIMARY_PARAM), not `width`.
         "rgb_leds":      plans["rgb_leds"].params.get("count", 0)      if plans["rgb_leds"].providers else 0,
         "seven_segment": plans["seven_segment"].params.get("digits", 0) if plans["seven_segment"].providers else 0,
-        "gpio":          plans["gpio"].params.get("width", 0)          if plans["gpio"].providers else 0,
+        "gpio":          plans["gpio"].params.get("width", 0)          if plans["gpio"].providers
+                         else _lab_width(resolved, plans["gpio"]),
     }
 
     if plans["screen"].providers:

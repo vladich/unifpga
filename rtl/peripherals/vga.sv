@@ -37,7 +37,16 @@ module vga
               W_BLUE              =   4,
               W_RED_O             =   4,
               W_GREEN_O           =   4,
-              W_BLUE_O            =   4
+              W_BLUE_O            =   4,
+
+              // How the colours reach the pins (BGM's boards differ):
+              //   GATE = 1          vga_r = display_on ? red : '0  (basys3, nexys4, omdazz)
+              //   GATE = 0          vga_r = red — a DAC with BLANK_N (de1_soc,
+              //                     sockit, de2_115) or an ungated header (emooc)
+              //   REGISTERED = 1    colours and syncs through a flop, async
+              //                     reset (de0_nano: "to remove the glitches")
+              GATE                =   1,
+              REGISTERED          =   0
 )
 (
     input                           clk,
@@ -78,9 +87,39 @@ module vga
         else                      assign blue_o = blue [W_BLUE - 1 -: W_BLUE_O];
     endgenerate
 
-    assign vga_r = display_on ? red_o   : '0;
-    assign vga_g = display_on ? green_o : '0;
-    assign vga_b = display_on ? blue_o  : '0;
+    wire [W_RED_O   - 1:0] red_d   = (GATE && ! display_on) ? '0 : red_o;
+    wire [W_GREEN_O - 1:0] green_d = (GATE && ! display_on) ? '0 : green_o;
+    wire [W_BLUE_O  - 1:0] blue_d  = (GATE && ! display_on) ? '0 : blue_o;
+
+    logic hsync_d, vsync_d;
+
+    generate
+        if (REGISTERED) begin : g_registered
+            always_ff @ (posedge clk or posedge rst)
+                if (rst)
+                begin
+                    vga_r <= '0;
+                    vga_g <= '0;
+                    vga_b <= '0;
+                    vsync <= '0;
+                    hsync <= '0;
+                end
+                else
+                begin
+                    vga_r <= red_d;
+                    vga_g <= green_d;
+                    vga_b <= blue_d;
+                    vsync <= vsync_d;
+                    hsync <= hsync_d;
+                end
+        end else begin : g_combinational
+            assign vga_r = red_d;
+            assign vga_g = green_d;
+            assign vga_b = blue_d;
+            assign hsync = hsync_d;
+            assign vsync = vsync_d;
+        end
+    endgenerate
 
     // Derived constants
 
@@ -150,18 +189,18 @@ module vga
     begin
         if (rst)
         begin
-            hsync       <= 1'b0;
-            vsync       <= 1'b0;
+            hsync_d     <= 1'b0;
+            vsync_d     <= 1'b0;
             display_on  <= 1'b0;
             hpos        <= 1'b0;
             vpos        <= 1'b0;
         end
         else if (clk_en)
         begin
-            hsync       <= ~ (    d_hpos >= H_SYNC_START
+            hsync_d     <= ~ (    d_hpos >= H_SYNC_START
                                && d_hpos <= H_SYNC_END   );
 
-            vsync       <= ~ (    d_vpos >= V_SYNC_START
+            vsync_d     <= ~ (    d_vpos >= V_SYNC_START
                                && d_vpos <= V_SYNC_END   );
 
             display_on  <=   (    d_hpos <  H_DISPLAY

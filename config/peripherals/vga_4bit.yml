@@ -25,6 +25,13 @@ Peripheral:
       type: enum
       values: [111, 444, 565, 888]
       default: 444      # informational; bits_* win when present
+    gate:
+      type: bool
+      default: true     # colours 0 outside the display (resistor ladders); false with a DAC
+                        # driven through blank_n (DE1-SoC, SoCKit, DE2-115) or an ungated header
+    registered:
+      type: bool
+      default: false    # colours and syncs through a flop (DE0-Nano: "to remove the glitches")
   signals:
     - { name: r,  type: bus, width: $pin_bits_r, direction: output }
     - { name: g,  type: bus, width: $pin_bits_g, direction: output }
@@ -58,6 +65,8 @@ Peripheral:
       W_RED_O:    $pin_bits_r
       W_GREEN_O:  $pin_bits_g
       W_BLUE_O:   $pin_bits_b
+      GATE:       $gate
+      REGISTERED: $registered
     port_map:
       clk:        context.clk
       rst:        context.rst

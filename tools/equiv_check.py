@@ -286,10 +286,36 @@ def wrapper_text(wrap_name, inner, ports, bits, pins, klass):
     return "\n".join(lines) + "\n"
 
 
-def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles):
+_RST_TERM = re.compile(r"\((~\s*)?([A-Za-z_]\w*(?:\[\d+\])?)\)")
+
+
+def reset_levels(gate_text, gate_map):
+    """{pin: 0 | 1} — the level that asserts the reset on each input pin the
+    generated top's `assign rst = ...` reads directly (`(~ onboard_buttons[0])`
+    -> 0, `(onboard_switches[9])` -> 1). The testbench holds those pins there
+    for its first phase so both sides start in reset: BGM's flops that are
+    only ever cleared by rst (de1's LEDR) would otherwise sit at x until the
+    stimulus happens to reset them, where ours are constants."""
+    m = re.search(r"\bassign\s+rst\s*=\s*([^;]+);", gate_text)
+    if not m:
+        return {}
+    by_bit = {}
+    for pin, (port, idx) in gate_map.items():
+        by_bit["{}[{}]".format(port, idx) if idx is not None else port] = pin
+    out = {}
+    for inv, name in _RST_TERM.findall(m.group(1)):
+        pin = by_bit.get(name)
+        if pin is not None:
+            out[pin] = 0 if inv else 1
+    return out
+
+
+def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles, rst_levels=None):
     """The stimulus / trace testbench; identical text on both sides except
-    the wrapper module name."""
+    the wrapper module name. `rst_levels` {pin: level}: held during the
+    first phase (cycles 0..999) so both designs start in reset."""
     in_pins = [p for p in pins if klass[p] in ("INPUT", "INOUT")]
+    rst_levels = rst_levels or {}
     n_in = len(in_pins)
     n_cmp = len(cmp_pins)
     main_half = 500.0 / clocks[main_pin]
@@ -311,7 +337,10 @@ def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles):
     for pin, mhz in clocks.items():
         L.append("    always #({:.6f}) {} = ~ {};".format(500.0 / mhz, _pname(pin), _pname(pin)))
     L.append("")
-    L.append("    reg [N_IN - 1:0] in_v = '0;")
+    init = "".join("1" if rst_levels.get(p) else "0" for p in reversed(in_pins)) or "0"
+    L.append("    // the first stimulus phase: every input 0 except the reset pins, held asserted")
+    L.append("    localparam [N_IN - 1:0] RST_INIT = {}'b{};".format(max(len(in_pins), 1), init))
+    L.append("    reg [N_IN - 1:0] in_v = RST_INIT;")
     for k, pin in enumerate(in_pins):
         if klass[pin] == "INPUT":
             L.append("    assign {} = in_v [{}];".format(_pname(pin), k))
@@ -364,7 +393,7 @@ def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles):
         if (cycle %% 4 == 0) begin
             for (k = 0; k < N_IN; k = k + 1) begin
                 if (cycle < 1000)
-                    in_v [k] = 1'b0;
+                    in_v [k] = RST_INIT [k];
                 else if (cycle < 2000)
                     in_v [k] = 1'b1;
                 else if (cycle < 2000 + N_IN * WALK)
@@ -800,7 +829,8 @@ def cmd_generate(args):
             with open(os.path.join(d, side + "_w.sv"), "w") as f:
                 f.write(wrapper_text(wrap, inner, ports, port_bits(pmap), all_pins, klass))
             with open(os.path.join(d, side + "_tb.sv"), "w") as f:
-                f.write(testbench_text(wrap, all_pins, klass, clocks, main_pin, cmp_pins, args.cycles))
+                f.write(testbench_text(wrap, all_pins, klass, clocks, main_pin, cmp_pins, args.cycles,
+                                       reset_levels(gate_text, gate_map)))
 
         entry.update({
             "status": "ready",
