@@ -28,6 +28,7 @@ Configuration:
         dio: "onboard_buttons[0]"
     - peripheral: hdmi_tmds   # binds from BGM colorlight75b_tm1638_ecp5_yosys/board_specific_top.sv
       params:
+        timing: lab
         clock_serial_mhz: 250
       bind:
         d_p: onboard_hdmi.d_p

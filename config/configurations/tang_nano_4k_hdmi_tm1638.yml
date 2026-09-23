@@ -21,6 +21,7 @@ Configuration:
   # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds   # binds from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv
       params:
+        timing: lab
         clock_serial_mhz: 270
       bind:
         clk_p: onboard_hdmi.clk_p

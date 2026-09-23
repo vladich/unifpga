@@ -30,6 +30,7 @@ Configuration:
         clk: clk
     - peripheral: led_bank
       params:
+        active: high
         width: 6
       bind:
         led: onboard_leds

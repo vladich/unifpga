@@ -22,6 +22,7 @@ Board:
   pinBanks:
     clk: { pins: P6, frequency_mhz: 25 }
     onboard_leds:
+      active: low
       pins: [T6]
     onboard_buttons:
       pins: [R7]

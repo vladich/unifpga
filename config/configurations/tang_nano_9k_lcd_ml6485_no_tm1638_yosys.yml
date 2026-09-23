@@ -30,6 +30,7 @@ Configuration:
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_ml6485   # LARGE_LCD_* pins: BGM's USE_LCD_480_272_ML6485 branch drives these, never SMALL_LCD_*
       params:
+        clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}
         bl: const.0
       bind:
         r: onboard_lcd.r

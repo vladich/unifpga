@@ -279,6 +279,7 @@ Board:
       pins:
         de: AC24
     onboard_leds:
+      active: low
       iostandard: 1.8 V
       pins: [AD15, AE20, AF18, AD19, AE15, AC17, AG19, AF19]
     onboard_max_ctrl:
@@ -288,7 +289,7 @@ Board:
         oen: E25
         wen: C15
         clk: D14
-    cpu_resetn: { pins: T21 }
+    cpu_resetn: { pins: T21, active: low }
     onboard_7seg:
       iostandard: 1.8 V
       index_origin: {anodes: 1}
@@ -305,6 +306,7 @@ Board:
         anodes: [B3, C5, E4, C3]
     onboard_speaker: { pins: H22 }
     onboard_buttons:
+      active: low
       iostandard: 1.8 V
       pins: [AD7, AC12, AH3, AA12]
     onboard_switches:

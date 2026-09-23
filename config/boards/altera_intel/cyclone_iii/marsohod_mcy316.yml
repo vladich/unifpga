@@ -36,6 +36,7 @@ Board:
         we: "109"
         clk: "186"
     onboard_buttons:
+      active: low
       pins: ["152", "151"]
     clk: { pins: "150", frequency_mhz: 50 }
     onboard_uart:

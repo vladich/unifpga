@@ -30,8 +30,8 @@ Board:
         rx: "6"
         tx: "9"
     onboard_button: { pins: "10", active: low }
-    onboard_led_red: { pins: "11" }
-    onboard_led_green: { pins: "37" }
+    onboard_led_red: { pins: "11", active: low }
+    onboard_led_green: { pins: "37", active: low }
     onboard_rgb_led_0:
       pins:
         r: "39"

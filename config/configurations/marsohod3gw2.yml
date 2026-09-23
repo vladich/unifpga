@@ -24,6 +24,7 @@ Configuration:
         clk: clk
     - peripheral: hdmi_tmds   # binds from BGM marsohod3gw2/board_specific_top.sv
       params:
+        timing: lab
         clock_serial_mhz: 250
       bind:
         d_p: onboard_hdmi.d_p

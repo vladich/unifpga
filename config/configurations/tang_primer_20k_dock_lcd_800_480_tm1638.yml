@@ -14,6 +14,7 @@ Configuration:
         clk: clk
     - peripheral: led_bank
       params:
+        active: high
         width: 6
       bind:
         led: onboard_leds
@@ -35,6 +36,7 @@ Configuration:
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_800_480
       params:
+        clock_pixel_pll: {idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false}
         bl: context.rst_n
       bind:
         r: onboard_lcd.r

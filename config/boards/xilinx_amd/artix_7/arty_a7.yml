@@ -57,4 +57,4 @@ Board:
     arduino_io:
       index_origin: 0
       pins: [V15, U16, P14, T11, R12, T14, T15, T16, N15, M16, V17, U18, R17, P17, U11, V16, M13, R10, R11, R13, R15, P15, R16, N16, N14, U17, T18, R18, P18, N17]
-    cpu_resetn: { pins: C2 }
+    cpu_resetn: { pins: C2, active: low }

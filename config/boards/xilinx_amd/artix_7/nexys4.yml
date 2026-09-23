@@ -33,7 +33,7 @@ Board:
         segments: [L3, N1, L5, L4, K3, M2, L6]
         dp: M4
         anodes: [N6, M6, M3, N5, N2, N4, L1, M1]
-    cpu_resetn: { pins: C12 }
+    cpu_resetn: { pins: C12, active: low }
     onboard_buttons:
       pins: [E16, F15, T16, R10, V10]
     # Pmod banks re-derived from BGM boards/nexys4/board_specific.xdc (JA[0..7]);

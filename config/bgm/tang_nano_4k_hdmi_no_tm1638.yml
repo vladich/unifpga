@@ -14,6 +14,8 @@ BGM:
   - peripheral: button_array
     index: 0
     lab_bits:
-      switches: [0, 1]
+      buttons: [1, 0]
+      switches: [1, 0]
     params:
       as_switches: true
+      mirror: true

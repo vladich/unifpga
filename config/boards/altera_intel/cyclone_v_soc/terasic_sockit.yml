@@ -28,7 +28,7 @@ Board:
       iostandard: 3.3-V LVTTL
       pins: [AF10, AD10, AE11, AD7]
     clk50mhz: { pins: K14, frequency_mhz: 50, iostandard: 2.5 V }
-    cpu_resetn: { pins: AD27, iostandard: 3.3-V LVTTL }
+    cpu_resetn: { pins: AD27, iostandard: 3.3-V LVTTL, active: low }
     onboard_switches:
       iostandard: 2.5 V
       pins: [W25, V25, AC28, AC29]

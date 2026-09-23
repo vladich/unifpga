@@ -30,6 +30,8 @@ Configuration:
 
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_800_480
+      params:
+        clock_pixel_pll: {idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false}
       bind:
         r: onboard_lcd.r
         g: onboard_lcd.g

@@ -22,6 +22,7 @@ Configuration:
         clk: clk
     - peripheral: button_array
       params:
+        active: high
         width: 2
       bind:
         btn: onboard_buttons
@@ -38,6 +39,7 @@ Configuration:
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_800_480
       params:
+        clock_pixel_pll: {idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}
         clock_pixel_mhz: 48.9375
       bind:
         r: onboard_lcd.r
