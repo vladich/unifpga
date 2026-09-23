@@ -1,0 +1,9 @@
+# BGM parity overlay for qmtech_kintex_7_openxc7: how basics-graphics-music's boards/qmtech_kintex_7/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/qmtech_kintex_7_openxc7.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: qmtech_kintex_7_openxc7
+  variant: qmtech_kintex_7
+  uart_rx: 0

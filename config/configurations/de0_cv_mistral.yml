@@ -76,6 +76,10 @@ Configuration:
         width: 36
       bind:
         io: gpio_0
+    - peripheral: uart_2wire   # from BGM de0_cv/board_specific_top.sv (UART on header pins)
+      bind:
+        tx: "gpio_1[35]"
+        rx: "gpio_1[34]"
 
   # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
   tie:

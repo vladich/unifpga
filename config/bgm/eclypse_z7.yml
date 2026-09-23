@@ -9,6 +9,7 @@ BGM:
   reset:
     sources:
     - key: 0
+  uart_rx: 0
   attach:
   - peripheral: button_array
     index: 0

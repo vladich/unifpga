@@ -9,6 +9,7 @@ BGM:
   reset:
     sources:
     - switch_msb: true
+  uart_rx: 1
   attach:
   - peripheral: sw_bank
     index: 0

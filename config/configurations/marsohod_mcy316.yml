@@ -17,10 +17,6 @@ Configuration:
     - peripheral: clock_input
       bind:
         clk: clk
-    - peripheral: uart_2wire
-      bind:
-        tx: onboard_uart.tx
-        rx: onboard_uart.rx
     - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
       params:
         digits: 4

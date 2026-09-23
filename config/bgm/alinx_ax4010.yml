@@ -6,6 +6,7 @@
 BGM:
   configuration: alinx_ax4010
   variant: alinx_ax4010
+  uart_rx: 0
   attach:
   - peripheral: button_array
     index: 0

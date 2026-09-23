@@ -9,6 +9,17 @@ BGM:
   reset:
     sources:
     - switch_msb: true
+  tie:
+    onboard_leds[0]: 0
+    onboard_leds[1]: 0
+    onboard_leds[2]: 0
+    onboard_leds[3]: 0
+    onboard_leds[4]: 0
+    onboard_leds[5]: 0
+    onboard_leds[6]: 0
+    onboard_leds[7]: 0
+    onboard_leds[8]: 0
+    onboard_leds[9]: 0
   attach:
   - peripheral: sw_bank
     index: 0
@@ -23,3 +34,8 @@ BGM:
     lab_bits:
       leds: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
         null, null, null]
+  - peripheral: seven_segment_per_digit
+    index: 0
+    bind:
+      dp: ['onboard_leds[10]', 'onboard_leds[11]', 'onboard_leds[12]', 'onboard_leds[13]', 'onboard_leds[14]',
+        'onboard_leds[15]', 'onboard_leds[16]', 'onboard_leds[17]']

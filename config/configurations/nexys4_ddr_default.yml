@@ -71,6 +71,8 @@ Configuration:
     # ---- Audio ----
 
     - peripheral: pwm_amp
+      params:
+        open_drain: true
       bind:
         pwm: onboard_pwm_amp.pwm
         sd:  onboard_pwm_amp.sd

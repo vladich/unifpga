@@ -6,6 +6,13 @@
 BGM:
   configuration: c5gx_mistral
   variant: c5gx
+  tie:
+    onboard_leds[0]: 0
+    onboard_leds[1]: 0
+    onboard_leds[2]: 0
+    onboard_leds[3]: 0
+    onboard_leds[4]: 0
+    onboard_leds[5]: 0
   attach:
   - peripheral: sw_bank
     index: 0
@@ -19,3 +26,7 @@ BGM:
     index: 1
     lab_bits:
       leds: [null, null, null, null, null, null, null, null, null, null]
+  - peripheral: seven_segment_per_digit
+    index: 0
+    bind:
+      dp: ['onboard_leds[6]', 'onboard_leds[7]', 'onboard_leds[8]', 'onboard_leds[9]']

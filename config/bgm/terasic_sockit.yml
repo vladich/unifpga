@@ -1,0 +1,9 @@
+# BGM parity overlay for terasic_sockit: how basics-graphics-music's boards/terasic_sockit/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/terasic_sockit.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: terasic_sockit
+  variant: terasic_sockit
+  uart_rx: 0

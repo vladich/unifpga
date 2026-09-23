@@ -65,6 +65,8 @@ Configuration:
       hs: onboard_vga.hs
       vs: onboard_vga.vs
   - peripheral: pwm_amp
+    params:
+      open_drain: true
     bind:
       pwm: onboard_pwm_amp.pwm
       sd: onboard_pwm_amp.sd

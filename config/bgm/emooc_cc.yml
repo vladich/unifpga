@@ -9,8 +9,16 @@ BGM:
   reset:
     sources:
     - key: msb
+  tie:
+    gpio_p2[12]: 0
+  lab_width:
+    buttons: 8
   attach:
   - peripheral: button_array
     index: 0
     lab_bits:
       buttons: [0, 1, 2, 3, 4, 5, 6, null]
+  - peripheral: gpio_header
+    index: 0
+    params:
+      direction: out

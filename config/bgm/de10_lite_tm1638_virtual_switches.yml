@@ -9,6 +9,7 @@ BGM:
   reset:
     sources:
     - switch_msb: true
+  uart_rx: 0
   tie:
     arduino_reset_n: ~rst
   attach:

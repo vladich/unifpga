@@ -22,10 +22,6 @@ Configuration:
         width: 6
       bind:
         led: onboard_leds
-    - peripheral: uart_2wire
-      bind:
-        tx: onboard_uart.tx
-        rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
     - peripheral: lcd_800_480

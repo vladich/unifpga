@@ -9,6 +9,7 @@ BGM:
   reset:
     sources:
     - tm_key: msb
+  uart_rx: 0
   attach:
   - peripheral: led_bank
     index: 0

@@ -6,7 +6,20 @@
 BGM:
   configuration: nexys_a7_50_openxc7
   variant: nexys_a7_50
+  tie:
+    onboard_rgb_led_16.b: 0
+    onboard_rgb_led_16.g: 0
+    onboard_rgb_led_16.r: 0
+    onboard_rgb_led_17.b: 0
+    onboard_rgb_led_17.g: 0
+    onboard_rgb_led_17.r: 0
   attach:
+  - peripheral: rgb_led
+    index: 0
+    drop: true
+  - peripheral: rgb_led
+    index: 1
+    drop: true
   - peripheral: button_array
     index: 0
     lab_bits:

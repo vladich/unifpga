@@ -10,6 +10,8 @@ BGM:
     sources:
     - key: msb
   lab_clock: pixel
+  lab_width:
+    switches: 8
   attach:
   - peripheral: led_bank
     index: 0

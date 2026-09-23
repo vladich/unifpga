@@ -6,6 +6,7 @@
 BGM:
   configuration: alinx_ax301
   variant: alinx_ax301
+  uart_rx: 0
   attach:
   - peripheral: button_array
     index: 0
