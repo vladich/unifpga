@@ -462,26 +462,55 @@ def _stage_bgm_headers(inc_dirs, out_dir):
     return (pdir if staged else None), staged
 
 
+_SIBLING_INCLUDE = re.compile(r'`include\s+"\.\./([^/"]+)/board_specific_top\.sv"')
+
+
+def _patched_text(path, out_dir, patched, seen):
+    """The Icarus-ready text of a BGM source: Terasic's `always begin`
+    look-up tables get `always @*` (the edit rtl/peripherals carries for our
+    copies), $bits / $left / SWAP_BITS are resolved (_icarus_rewrite), and a
+    top that includes a sibling's top (`../X/board_specific_top.sv`) gets the
+    sibling staged too and the include pointed at that copy. None when the
+    file needs no change."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            text = f.read()
+    except OSError:
+        return None
+    new = _ALWAYS_NO_EVENT.sub(lambda m: m.group(1) + "always @*" + (" " + m.group(2) if m.group(2) else ""), text)
+    new = _icarus_rewrite(new)
+
+    def include(m):
+        sib = os.path.normpath(os.path.join(os.path.dirname(path), "..", m.group(1), "board_specific_top.sv"))
+        name = m.group(1) + "__board_specific_top.sv"
+        if sib not in seen:
+            seen.add(sib)
+            sib_text = _patched_text(sib, out_dir, patched, seen)
+            if sib_text is None:
+                try:
+                    with open(sib, "r", encoding="utf-8", errors="replace") as f:
+                        sib_text = f.read()
+                except OSError:
+                    return m.group(0)
+            pdir = os.path.join(out_dir, "bgm_patched")
+            os.makedirs(pdir, exist_ok=True)
+            with open(os.path.join(pdir, name), "w") as f:
+                f.write(sib_text)
+            patched.append(name)
+        return '`include "{}"'.format(name)
+
+    new = _SIBLING_INCLUDE.sub(include, new)
+    return new if new != text else None
+
+
 def _stage_bgm_patches(files, out_dir):
-    """Icarus refuses Terasic's `always begin case (...)` look-up tables (an
-    always without event control); the vendor tools read them as
-    combinational. Such files are copied next to the run with `always @*`,
-    the same edit rtl/peripherals carries for our copies. Returns the file
-    list with the copies substituted and the names of the patched files."""
-    staged, patched = [], []
+    """Copies of the BGM sources Icarus needs edited (see _patched_text),
+    written next to the run; returns the file list with the copies
+    substituted and the names of the patched files."""
+    staged, patched, seen = [], [], set()
     for path in files:
-        try:
-            with open(path, "r", encoding="utf-8", errors="replace") as f:
-                text = f.read()
-        except OSError:
-            staged.append(path)
-            continue
-        if not (_ALWAYS_NO_EVENT.search(text) or _LEFT.search(text) or _BITS.search(text) or _SWAP.search(text)):
-            staged.append(path)
-            continue
-        new = _ALWAYS_NO_EVENT.sub(lambda m: m.group(1) + "always @*" + (" " + m.group(2) if m.group(2) else ""), text)
-        new = _icarus_rewrite(new)
-        if new == text:
+        new = _patched_text(path, out_dir, patched, seen)
+        if new is None:
             staged.append(path)
             continue
         pdir = os.path.join(out_dir, "bgm_patched")
