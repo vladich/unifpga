@@ -1126,6 +1126,11 @@ def validate_configuration(resolved, plans=None):
         # is neither driven nor read by this attach: BGM puts the HEX decimal
         # point (seven_segment_per_digit's dp) on those LEDs
         lab_lists = [list(b or []) for b in (attach.get("lab_bits") or {}).values()]
+        if lab_lists and (attach.get("params") or {}).get("mirror"):
+            # both would reverse the bank: lab_bits places every bit already
+            # (`leds: [3, 2, 1, 0]`), a mirror flag on top undoes it
+            problems.append("{}: params.mirror and lab_bits both order the bank; lab_bits places every bit, "
+                            "drop the mirror".format(label))
 
         def unmapped(k):
             # explicit null, or past the end of a short list (_plan_lab_bits pads with None)

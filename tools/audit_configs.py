@@ -694,7 +694,7 @@ def analyze(cfg_id, cfg_text):
                 # an input bus's order (BGM's `SWAP_BITS (lab_key, ~ key_in)`, or a
                 # `{ KEY2, KEY3, KEY4 }` concatenation) is placed bit by bit by
                 # lab_bits, which the co-simulation proves; no mirror flag to compare
-                mirror_matters = a["peripheral_id"] not in ("button_array", "sw_bank")
+                mirror_matters = a["peripheral_id"] not in ("button_array", "sw_bank", "led_bank")
                 if eff != d["active"] or (mirror_matters and bool(eff_mirror) != bool(d["mirror"])):
                     add("POLARITY", "{}.{}: unifpga {}{} vs BGM {}{} (ports {})".format(
                         a["peripheral_id"], bank, eff, " mirrored" if eff_mirror else "",

@@ -652,6 +652,32 @@ def test_screenless_lab_keeps_bgm_widths_and_mirrored_keys():
     assert "assign cap_buttons_btn[3] = cap_buttons_btn__p{}[0];".format(i) in top
 
 
+def test_reversed_led_bank_is_placed_not_mirrored(tmp_path):
+    """`SWAP_BITS (LED, ~ lab_led)` (ax7035b, the Tang Nano 9K without a
+    TM1638): --lab-bits places leds [3, 2, 1, 0]; neither --components nor
+    --polarity may add a mirror flag on top (it would reverse the bank twice),
+    and the validator refuses the pair."""
+    text = ("module board_specific_top # (parameter w_led = 4)\n(\n    input clk, output [w_led - 1:0] LED\n);\n"
+            "wire [w_led - 1:0] lab_led;\n`SWAP_BITS ( LED , ~ lab_led );\nlab_top i (.led (lab_led));\n")
+    sig_pins = {"LED[{}]".format(i): "L{}".format(i) for i in range(4)}
+    pinmap = {"pinBanks": {"onboard_leds": {"pins": ["L0", "L1", "L2", "L3"]}}}
+    rev = sc._Rev(pinmap, set())
+    bits, notes = sc.led_bits(text, sig_pins, rev)
+    want = sc.led_attaches(bits, pinmap)
+    assert [b for _p, b in want] == [{"led": "onboard_leds"}]
+    assert sc._take_mirror(want) == {0: True} and "mirror" not in want[0][0]
+    for cid in ("alinx_ax7035b", "tang_nano_9k_lcd_480_272_no_tm1638"):
+        r = config_init.resolve_configuration(cid)
+        led = next(a for a in r["peripherals"] if a["peripheral_id"] == "led_bank")
+        w = len(led["lab_bits"]["leds"])
+        assert led["lab_bits"]["leds"] == list(range(w - 1, -1, -1)) and led["params"].get("mirror") is None, cid
+        top = codegen.emit_top_sv(r)
+        assert "assign onboard_leds[0] = ~ cap_leds_led[{}];".format(w - 1) in top, cid
+        assert not codegen.validate_configuration(r), cid
+        led["params"] = dict(led["params"], mirror=True)
+        assert any("params.mirror and lab_bits" in p for p in codegen.validate_configuration(r)), cid
+
+
 def test_check_power_up_model_and_undefined_status():
     from tools import equiv_check as ec
     src = "module tm1638_board_controller # (parameter clk_mhz = 50)\n(\n    input clk,\n    output logic [7:0] keys\n);\n    always_ff @ (posedge clk) keys <= '0;\nendmodule\n"

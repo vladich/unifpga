@@ -1553,11 +1553,11 @@ def apply_polarity(paths, dry_run):
                         and any(bank in str(v) for v in (a.get("bind") or {}).values())), None)
             if pid is None:
                 continue
-            if pid in ("button_array", "sw_bank"):
-                # an input bus's order is placed bit by bit by --lab-bits
-                # (`SWAP_BITS (lab_key, ~ key_in)` gives buttons [3, 2, 1, 0]);
-                # a mirror flag on top would reverse it twice — none, and an
-                # earlier one cleared
+            if pid in ("button_array", "sw_bank", "led_bank"):
+                # a lab bus's order is placed bit by bit by --lab-bits
+                # (`SWAP_BITS (lab_key, ~ key_in)` gives buttons [3, 2, 1, 0],
+                # `SWAP_BITS (LED, ~ lab_led)` leds [3, 2, 1, 0]); a mirror flag
+                # on top would reverse it twice — none, and an earlier one cleared
                 d = dict(d, mirror=False)
                 from tools import bgm_overlay
                 occ = 0

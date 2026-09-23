@@ -1566,16 +1566,17 @@ def apply_components(path, dry_run):
             if pins and not (pins & want_pins) and pins <= declared_pins:
                 want.append((OrderedDict((k, v) for k, v in (a.get("params") or {}).items()),
                              {"led": (b["led"] if isinstance(b["led"], list) else str(b["led"]).strip('"'))}))
-        want_dicts = [dict({"params": dict(p), "bind": b}, **({"_mirror": True} if led_mirror.get(k) else {}))
-                      for k, (p, b) in enumerate(want)]
-        for d in want_dicts:
-            if d.pop("_mirror", False):
-                d["params"] = dict(d["params"], mirror=True)
-        if _led_signature(cur, pinmap) != _led_signature(want_dicts, pinmap):
+        # a reversed bank (`SWAP_BITS (LED, ~ lab_led)`, iCEBreaker's LED5 =
+        # led [0]) is placed bit by bit by --lab-bits (leds [3, 2, 1, 0]); a
+        # mirror flag on top would reverse it twice — none, an earlier one cleared
+        want_dicts = [{"params": dict(p), "bind": b} for p, b in want]
+        cur_plain = [dict(a, params={k: v for k, v in (a.get("params") or {}).items() if k != "mirror"})
+                     for a in cur]
+        if _led_signature(cur_plain, pinmap) != _led_signature(want_dicts, pinmap):
             _sync_blocks(lines, "led_bank", want,
                          [({k: v for k, v in (a.get("params") or {}).items() if k != "mirror"}, a.get("bind") or {}) for a in cur],
                          comment, indent, changes)
-        changes.extend(_overlay_mirrors(cfg["id"], vdir, [("led_bank", p, b) for p, b in want], led_mirror, dry_run))
+        changes.extend(_overlay_mirrors(cfg["id"], vdir, [("led_bank", p, b) for p, b in want], {}, dry_run))
         # a passthrough on pins the lab led bus now owns (Eclypse Z7: BGM uses
         # the two RGB LEDs as six plain LEDs) is an invented component
         led_pins = set()
