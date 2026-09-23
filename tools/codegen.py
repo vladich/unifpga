@@ -422,6 +422,15 @@ def collect_clock_requirements(resolved):
             entry["tolerance_pct"] = tol
             entry["users"] = [idx]
             reqs[name] = entry
+    # `lab_clock: {name: lab, mhz: 50}`: the lab on a PLL output of its own
+    # (BGM a7_lite: clk_wiz's 50 MHz clk_out2 from the 50 MHz oscillator)
+    lc = resolved["configuration"].get("lab_clock")
+    if isinstance(lc, dict):
+        if not {"name", "mhz"} <= set(lc) or lc["name"] in reqs:
+            raise CodegenError("Configuration {}: lab_clock {!r} must be {{name, mhz}} with a name no "
+                               "peripheral uses".format(cfg_id, lc))
+        reqs[lc["name"]] = {"mhz": float(lc["mhz"]), "from": None, "divide": None,
+                            "tolerance_pct": 0.5, "users": [], "pll_output": True}
     for name, r in reqs.items():
         if r["from"] is not None:
             src = reqs.get(r["from"])
@@ -644,7 +653,11 @@ def plan_clock_tree(resolved, plans=None):
     def same(a, b):
         return abs(a - b) < 1e-6
 
-    sources = [(n, r) for n, r in reqs.items() if r["from"] is None and not same(r["mhz"], f_in)]
+    # a clock at the board's own frequency is the board clock, unless it must
+    # come out of the PLL (the lab clock BGM takes from clk_wiz: phase-aligned
+    # with the PLL's other outputs, not with the pin)
+    aliased = lambda r: same(r["mhz"], f_in) and not r.get("pll_output")
+    sources = [(n, r) for n, r in reqs.items() if r["from"] is None and not aliased(r)]
     if sources and vendor is None:
         raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper exists for {} / {} "
                            "(PLAN.md P3.1)".format(cfg_id, sources[0][0], sources[0][1]["mhz"],
@@ -652,7 +665,7 @@ def plan_clock_tree(resolved, plans=None):
     out = OrderedDict()
     # 1. clocks that already exist: the board clock itself
     for name, r in reqs.items():
-        if r["from"] is None and same(r["mhz"], f_in):
+        if r["from"] is None and aliased(r):
             out[name] = (name, r, "alias", ClockAlias(f_in, "clk"))
 
     # 2. PLL-generated source clocks
@@ -727,10 +740,13 @@ def lab_clock(resolved, plans=None):
     the board oscillator (`clk`). A configuration whose BGM twin runs the lab
     on a PLL clock (`localparam lab_mhz = pixel_mhz; assign clk = pixel_clk`
     on the iCEBreaker DVI and Tang Primer 20K Dock LCD/HDMI variants) says
-    `lab_clock: pixel` and the whole lab moves to `clk_pixel`.
+    `lab_clock: pixel` and the whole lab moves to `clk_pixel`; `lab_clock:
+    {name: lab, mhz: 50}` asks the clock tree for a PLL output of its own.
     Returns {"net", "mhz", "name"} (name None for the board clock)."""
     clock = resolve_clock(resolved, plans)
     name = resolved["configuration"].get("lab_clock")
+    if isinstance(name, dict):
+        name = name.get("name")
     if not name:
         return {"net": "clk", "mhz": clock["mhz"] if clock else None, "name": None}
     reqs = collect_clock_requirements(resolved)
@@ -1438,6 +1454,9 @@ def reset_sources(resolved, plans=None):
         for kind, d in sources:
             if kind == "pin":
                 d["sync"] = sync
+                d["sync_assert"] = bool(spec.get("sync_assert"))
+    elif spec.get("sync_assert"):
+        raise CodegenError("reset.sync_assert needs reset.sync")
     return sources
 
 
@@ -1536,6 +1555,17 @@ def _emit_reset(resolved, plans):
                 # asserts with the pin and deasserts n clocks after it releases
                 k, low = int(d["sync"]), d["active"] == "low"
                 net = "rst_sync_{}".format(len(terms))
+                if d.get("sync_assert"):
+                    # a7_lite's xpm_cdc_async_rst polarity slip: rst rises k
+                    # clocks after the pin asserts and falls as it releases
+                    lines.append("    // {}: asserted {} clock(s) after the pin, released with it (BGM's xpm_cdc_async_rst "
+                                 "keeps RST_ACTIVE_HIGH = 0)".format(ref, k))
+                    lines.append("    logic [{}:0] {};".format(k - 1, net))
+                    lines.append("    always_ff @ (posedge {} or {} {})".format(_EMIT.get("lab_clk", "clk"), "posedge" if low else "negedge", ref))
+                    lines.append("        if ({}{}) {} <= '0;".format("" if low else "! ", ref, net))
+                    lines.append("        else {} <= {};".format(net, "1'b1" if k == 1 else "{{ {} [{}:0], 1'b1 }}".format(net, k - 2)))
+                    terms.append("({} [{}])".format(net, k - 1))
+                    continue
                 lines.append("    // {}: asserted with the pin, released {} clock(s) after it (synchronised deassertion)".format(ref, k))
                 lines.append("    logic [{}:0] {};".format(k - 1, net))
                 lines.append("    always_ff @ (posedge {} or {} {})".format(_EMIT.get("lab_clk", "clk"), "negedge" if low else "posedge", ref))

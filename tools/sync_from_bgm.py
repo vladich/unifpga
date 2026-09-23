@@ -78,7 +78,8 @@ def reset_policy_for(cfg, pinmap, facts):
     if "tm_key_msb" in kinds:
         sources.append({"tm_key": "msb"})
     need_pin = "pin" in kinds
-    return {"sources": sources, "_need_pin": need_pin, "sync": facts.get("reset_sync")}, " | ".join(facts["reset_exprs"])
+    return {"sources": sources, "_need_pin": need_pin, "sync": facts.get("reset_sync"),
+            "sync_assert": bool(facts.get("reset_sync_asserts"))}, " | ".join(facts["reset_exprs"])
 
 
 def _has_reset_button(cfg):
@@ -149,6 +150,8 @@ def apply_reset(path, dry_run):
         changes.append("note: BGM uses only a dedicated pin; overlay reset sources left as is")
     if policy.get("sync"):
         want["sync"] = int(policy["sync"])
+        if policy.get("sync_assert"):
+            want["sync_assert"] = True     # a7_lite: xpm_cdc_async_rst's polarity slip
     if dict(want) != existing:
         changes.append("reset = {} (overlay)".format(dict(want)))
         if not dry_run:
@@ -1346,6 +1349,16 @@ def apply_clock_tree(path, dry_run):
             if not dry_run:
                 bgm_overlay.update(cfg["id"], os.path.basename(vdir), lab_clock="pixel")
             changes.append("lab_clock: pixel ({} MHz) (overlay)".format(bgm_oracle.lab_mhz(t)))
+    elif want == "pll":
+        # a7_lite: `clk_wiz (.clk_out2 ( clk ))` — the lab on a PLL output of
+        # its own at clk_mhz, phase-aligned with the other outputs
+        mhz = bgm_oracle.lab_mhz(t)
+        lab = {"name": "lab", "mhz": int(mhz) if float(mhz).is_integer() else mhz}
+        if have != lab:
+            if not dry_run:
+                bgm_overlay.update(cfg["id"], os.path.basename(vdir), lab_clock=lab)
+            changes.append("lab_clock: {{name: lab, mhz: {}}} (BGM's {}) (overlay)".format(
+                lab["mhz"], ".".join(bgm_oracle.lab_clock_pll(t))))
     elif have is not None:
         if not dry_run:
             bgm_overlay.update(cfg["id"], os.path.basename(vdir), lab_clock=None)

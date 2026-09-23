@@ -20,7 +20,9 @@ buses concatenated in attach order, power-up reset, is generated instead).
       configuration: <id>
       variant: <boards/<variant> in BGM>
       reset:            { sources: [...], sync: 2 }  # codegen's reset vocabulary; sync = flops
-                                                      # between the pin releasing and rst (c5gx)
+                                                      # between the pin releasing and rst (c5gx);
+                                                      # sync_assert: true delays the assertion instead
+                                                      # (a7_lite's xpm_cdc_async_rst polarity slip)
       lab_clock:        pixel
       uart_rx:          0 | 1                         # what the lab reads when no UART pin is wired
       tie:              { <ref>: rst | ~rst | 0 | 1 } # pins BGM drives from its reset, or ties

@@ -463,6 +463,8 @@ def analyze(cfg_id, cfg_text):
             add("PLL", "BGM {} MHz vs ours {} MHz{}".format(bgm_set, our_set, our_note))
         want_lab = bgm_oracle.lab_clock_source(top_text)
         have_lab = cfg.get("lab_clock") or "board"
+        if isinstance(have_lab, dict):
+            have_lab = "pll"
         bgm_lab_mhz = bgm_oracle.lab_mhz(top_text)
         try:
             our_lab_mhz = codegen.lab_clock(resolved)["mhz"]

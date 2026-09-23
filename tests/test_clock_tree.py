@@ -181,3 +181,22 @@ def test_ecp5_hdmi_serial_pll_and_pixel_alias():
     assert "wire clk_pixel = clk;" in top
     assert 'hdmi_tmds_out # (.DIFF_BUF("generic")' in top          # pseudo-differential pairs, as BGM's hdmi.v
     assert codegen.pll_source_files(top) == [os.path.join("rtl", "pll", "pll_ecp5.sv")]
+
+
+def test_lab_clock_on_a_pll_output_of_its_own():
+    """BGM a7_lite: `clk_wiz (.clk_out2 ( clk ))` — the lab runs on a 50 MHz
+    MMCM output, not on the 50 MHz pin; the overlay's `lab_clock: {name: lab,
+    mhz: 50}` asks for that output instead of aliasing the board clock."""
+    from tools import bgm_oracle
+    text = ("module board_specific_top (input CLK_50M);\nwire clk;\n"
+            "clk_wiz i_clk_wiz (.clk_out1 ( serial_clk ), .clk_out2 ( clk ), .clk_in1 ( CLK_50M ));\n"
+            "lab_top i_lab_top (.clk ( clk ));\nendmodule\n")
+    assert bgm_oracle.lab_clock_pll(text) == ("clk_wiz", "clk_out2")
+    assert bgm_oracle.lab_clock_source(text) == "pll"
+    assert bgm_oracle.lab_clock_source(text.replace(".clk_out2 ( clk )", ".clk_out2 ( other )")) == "board"
+    r = _resolve("a7_lite_35t")
+    assert r["configuration"]["lab_clock"] == {"name": "lab", "mhz": 50}
+    kinds = {n: v for n, _r, v, _s in codegen.plan_clock_tree(r)}
+    assert kinds["lab"] == "xilinx_mmcm"
+    top = codegen.emit_top_sv(r, strict=True)
+    assert ".clkout2(clk_lab)" in top and "wire clk_lab = clk;" not in top

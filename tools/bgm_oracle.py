@@ -255,6 +255,19 @@ def reset_sync_stages(text):
     return None
 
 
+def reset_sync_asserts(text):
+    """True when BGM's synchroniser delays the reset's *assertion* instead of
+    its release: a7_lite's `xpm_cdc_async_rst (.dest_arst (rst), .src_arst
+    (~ RESETN))` keeps the default RST_ACTIVE_HIGH = 0, so src_arst and
+    dest_arst are active low while the lab reads dest_arst as active-high rst
+    — rst rises DEST_SYNC_FF clocks after the button goes down and falls with
+    it (an upstream polarity slip; the overlay reproduces it)."""
+    for inst in instantiations(text, "xpm_cdc_async_rst"):
+        if dict(inst["ports"]).get("dest_arst", "").strip() == "rst":
+            return str(dict(inst["params"]).get("RST_ACTIVE_HIGH", "0")).strip() in ("0", "1'b0", "0'b0")
+    return False
+
+
 def classify_reset(exprs):
     """Map BGM reset expressions to the unifpga reset-policy source kinds.
 
@@ -1041,12 +1054,35 @@ def expand_seven_seg_map(seg_map, signal_pins):
     return out
 
 
+_PLL_MODULE = re.compile(r"clk_wiz|pll|mmcm|dcm", re.I)
+
+
+def lab_clock_pll(text):
+    """(module, port) when lab_top's clk is an output of a PLL instance (a7_lite:
+    `clk_wiz i_clk_wiz (.clk_out2 ( clk ), .clk_in1 ( CLK_50M ))`), else None."""
+    t = strip_comments(text)
+    labs = instantiations(t, "lab_top")
+    clk = next((e for p, e in labs[0]["ports"] if p == "clk"), "").strip() if labs else ""
+    if not re.match(r"^[A-Za-z_]\w*$", clk):
+        return None
+    for m in re.finditer(r"\b([A-Za-z_]\w*)\s*(?:#\s*\((?:[^()]|\([^()]*\))*\)\s*)?[A-Za-z_]\w*\s*\(([^;]*?)\)\s*;", t):
+        if not _PLL_MODULE.search(m.group(1)):
+            continue
+        pm = re.search(r"\.(\w*out\w*)\s*\(\s*" + re.escape(clk) + r"\s*\)", m.group(2), re.I)
+        if pm:
+            return m.group(1), pm.group(1)
+    return None
+
+
 def lab_clock_source(text):
     """'pixel' when the lab runs on the PLL pixel clock (`localparam lab_mhz =
     pixel_mhz; assign clk = pixel_clk` — iCEBreaker DVI, Tang Primer 20K Dock
-    LCD/HDMI), else 'board'."""
+    LCD/HDMI), 'pll' when its clk is another PLL output at clk_mhz (a7_lite's
+    clk_wiz), else 'board'."""
     m = re.search(r"localparam\s+lab_mhz\s*=\s*([A-Za-z_]\w*)", text)
-    return "pixel" if m and m.group(1) == "pixel_mhz" else "board"
+    if m and m.group(1) == "pixel_mhz":
+        return "pixel"
+    return "pll" if lab_clock_pll(text) else "board"
 
 
 def lab_mhz(text):
@@ -1103,6 +1139,7 @@ def summarize(vdir):
         "reset_exprs": rst,
         "reset_kinds": sorted(classify_reset(rst)),
         "reset_sync": reset_sync_stages(text),
+        "reset_sync_asserts": reset_sync_asserts(text),
         "pll_instances": pll_instances(text),
         "pll_output_mhz": pll_output_mhz(text),
         "pll_outputs": pll_outputs(vdir, text, pp.files)[0],
