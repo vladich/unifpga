@@ -655,6 +655,66 @@ def apply_vga(path, dry_run):
         rgb=" (rgb bank)" if "rgb" in vga else "")
 
 
+def screen_mirrored(text):
+    """(x, y) mirrored for BGM's lab: `.x ( mirrored_x )` with `mirrored_x =
+    w_x' (screen_width - 1 - x)` (Tang Mega 138K, orangepi), or the expression
+    written into the port. The inactive `MIRROR_LCD` branch is gone after
+    preprocessing."""
+    t = bgm_oracle.strip_comments(text)
+    out = []
+    for axis, extent in (("x", "screen_width"), ("y", "screen_height")):
+        form = extent + r"\s*-\s*1\s*-\s*" + axis + r"\b"
+        hit = False
+        for inst in bgm_oracle.instantiations(t, "lab_top"):
+            expr = next((e for p, e in inst["ports"] if p == axis), "").strip()
+            if re.search(form, expr) or (re.match(r"^\w+$", expr) and re.search(
+                    r"\b" + re.escape(expr) + r"\s*=\s*[^;]*" + form, t)):
+                hit = True
+        out.append(hit)
+    return tuple(out)
+
+
+def _screen_peripherals():
+    ids = set()
+    for f in glob.glob(os.path.join(REPO, "config", "peripherals", "*.yml")):
+        d = (yaml.safe_load(open(f, encoding="utf-8")) or {}).get("Peripheral") or {}
+        if any((e or {}).get("capability") == "screen" for e in d.get("provides") or []):
+            ids.add(d.get("id"))
+    return ids
+
+
+def apply_screen_mirror(path, dry_run):
+    """Overlay `mirror_screen: true` on the screen provider where BGM hands
+    the lab mirrored coordinates (a BGM convention for a panel mounted
+    rotated; the configuration keeps the panel's own orientation)."""
+    cfg = yaml.safe_load(open(path, encoding="utf-8"))["Configuration"]
+    screens = _screen_peripherals()
+    occ, target = {}, None
+    for a in cfg.get("attach") or []:
+        pid = (a or {}).get("peripheral")
+        k = occ.get(pid, 0)
+        occ[pid] = k + 1
+        if pid in screens and target is None:
+            target = (pid, k)
+    if target is None:
+        return "skip (no screen)"
+    vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
+    if vdir is None:
+        return "skip (no BGM variant)"
+    mx, my = screen_mirrored(bgm_oracle.preprocess_variant(vdir).text)
+    if mx != my:
+        return "WARNING: BGM mirrors only {} (mirror_screen flips both)".format("x" if mx else "y")
+    from tools import bgm_overlay
+    cur = bgm_overlay.attach_override(bgm_overlay.load(cfg["id"]) or {}, target[0], target[1], create=False) or {}
+    have = bool((cur.get("params") or {}).get("mirror_screen"))
+    if have == mx:
+        return "unchanged"
+    if not dry_run:
+        bgm_overlay.set_attach(cfg["id"], target[0], target[1], params={"mirror_screen": True if mx else None},
+                               variant=os.path.basename(vdir))
+    return "overlay {}#{} mirror_screen {} -> {}".format(target[0], target[1], have, mx)
+
+
 # ---------------------------------------------------------------------------
 # --sv-binds: driver peripherals bound exactly as BGM instantiates them
 # ---------------------------------------------------------------------------
@@ -2160,6 +2220,8 @@ def main(argv=None):
                    help="bind TM1638 / INMP441 / Pmod MIC3 exactly as BGM's board_specific_top.sv instantiates them")
     p.add_argument("--vga", action="store_true",
                    help="set vga_4bit colour widths from the pinmap and BGM, rebind rgb-shaped banks")
+    p.add_argument("--screen-mirror", action="store_true",
+                   help="overlay mirror_screen where BGM hands the lab screen_width - 1 - x / screen_height - 1 - y")
     p.add_argument("--prune-optional", action="store_true",
                    help="drop binds of optional signals whose sub-key/pin does not exist")
     p.add_argument("--prune-missing-banks", action="store_true",
@@ -2189,7 +2251,7 @@ def main(argv=None):
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--only", nargs="*")
     args = p.parse_args(argv)
-    if not (args.reset or args.clock or args.seven_seg or args.vga or args.prune_optional
+    if not (args.reset or args.clock or args.seven_seg or args.vga or args.screen_mirror or args.prune_optional
             or args.sv_binds or args.prune_missing_banks or args.polarity or args.gowin_options
             or args.clock_tree or args.iotypes or args.components or args.quartus_options or args.yosys_options
             or args.lab_bits):
@@ -2229,6 +2291,8 @@ def main(argv=None):
             print("[sv]    {:44s} {}".format(cid, apply_sv_binds(path, args.dry_run)))
         if args.vga:
             print("[vga]   {:44s} {}".format(cid, apply_vga(path, args.dry_run)))
+        if args.screen_mirror:
+            print("[mirr]  {:44s} {}".format(cid, apply_screen_mirror(path, args.dry_run)))
         if args.prune_optional:
             print("[prune] {:44s} {}".format(cid, apply_prune_optional(path, args.dry_run)))
         if args.prune_missing_banks:

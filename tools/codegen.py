@@ -1907,6 +1907,9 @@ def _emit_driver_instance(resolved, idx, attach, plans):
     formats = drv.get("port_format") or {}
     open_drain = bool((attach.get("params") or {}).get("open_drain"))
     out_sigs = {s["name"] for s in perif.get("signals", []) if s.get("direction") == "output"}
+    # BGM's Tang Mega 138K / orangepi tops hand the lab `screen_width - 1 - x`
+    # and `screen_height - 1 - y` (`mirrored_x`): the panel is mounted rotated
+    mirror_screen = bool((attach.get("params") or {}).get("mirror_screen"))
 
     # Driver parameters
     param_decls = []
@@ -1940,6 +1943,15 @@ def _emit_driver_instance(resolved, idx, attach, plans):
             post.extend(_format_conversion(net, w, fmt.get("encoding", "signed"),
                                            _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx),
                                            _capability_ref_width(ref, plans, attach)))
+        elif mirror_screen and re.match(r"^\s*capability\.screen\.[xy]\s*$", str(ref)):
+            axis = str(ref).strip()[-1]
+            net = "{}_{}".format(inst_name, port)
+            w = _capability_ref_width(ref, plans, attach)
+            extent = int(plans["screen"].params.get("width" if axis == "x" else "height", 0))
+            pre.append("    wire [{}:0] {};".format(w - 1, net))
+            port_lines.append("        .{}({})".format(port, net))
+            post.append("    assign {} = {}'({} - 1 - {});   // mirrored (mirror_screen)".format(
+                _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx), w, extent, net))
         elif open_drain and _pin_of(ref) in out_sigs:
             # Digilent AUD_PWM (board datasheet: 0 V is 1'b0, 3.3 V is high-Z):
             # the driver's output is 0 or floats, never driven high

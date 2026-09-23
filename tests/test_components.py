@@ -752,3 +752,53 @@ def test_dvi_timing_where_bgm_instantiates_dvi_top():
         hdmi = next(a for a in r["peripherals"] if a["peripheral_id"] == "hdmi_tmds")
         assert hdmi["params"].get("timing") == "dvi", cid
         assert '.TIMING("dvi")' in codegen.emit_top_sv(r)
+
+
+def test_mirrored_screen_coordinates():
+    """BGM's Tang Mega 138K tops pass the lab `mirrored_x = w_x' (screen_width
+    - 1 - x)` (the panel is mounted rotated); the 9K's `ifdef MIRROR_LCD`
+    branch is never taken. The overlay's mirror_screen gives the same."""
+    from tools import sync_from_bgm as sy
+    text = ("module board_specific_top;\nwire [w_x - 1:0] mirrored_x = w_x' (screen_width  - 1 - x);\n"
+            "wire [w_y - 1:0] mirrored_y = w_y' (screen_height - 1 - y);\n"
+            "lab_top i_lab_top (.x ( mirrored_x ), .y ( mirrored_y ));\nendmodule\n")
+    assert sy.screen_mirrored(text) == (True, True)
+    assert sy.screen_mirrored(text.replace(".x ( mirrored_x ), .y ( mirrored_y )", ".x ( x ), .y ( y )")) == (False, False)
+    r = config_init.resolve_configuration("tang_mega_138k_pro_lcd_480_272_tm1638")
+    lcd = next(a for a in r["peripherals"] if a["peripheral_id"] == "lcd_480_272")
+    assert lcd["params"].get("mirror_screen") is True
+    top = codegen.emit_top_sv(r)
+    assert ".x(i_lcd_480_272_{0}_x)".format(r["peripherals"].index(lcd)) in top
+    assert "assign cap_screen_x = 9'(480 - 1 - i_lcd_480_272_{0}_x);".format(r["peripherals"].index(lcd)) in top
+    assert "assign cap_screen_y = 9'(272 - 1 - i_lcd_480_272_{0}_y);".format(r["peripherals"].index(lcd)) in top
+    r9 = config_init.resolve_configuration("tang_nano_9k_lcd_480_272_tm1638")
+    assert "mirror_screen" not in codegen.emit_top_sv(r9)
+
+
+def test_testbench_forces_the_lab_reset_at_power_up():
+    """A lab whose reset only a TM1638 key raises (Tang Mega 138K) never
+    leaves x in Icarus; the testbench holds the top's lab reset net for the
+    first phase on both sides, as the FPGA's power-up state would."""
+    from tools import equiv_check as ec
+    gold = "module board_specific_top;\nwire rst;\nlab_top i_lab_top (.clk (clk), .rst ( rst ));\nendmodule\n"
+    assert ec.lab_reset_net(gold) == "rst"
+    assert ec.lab_reset_net(gold.replace(".rst ( rst )", ".rst ( ~ rst_n )")) is None
+    tb = ec.testbench_text("gold_w", ["A1", "B1"], {"A1": "CLOCK", "B1": "OUTPUT"}, {"A1": 50.0}, "A1", ["B1"],
+                           100, {}, rst_net="rst")
+    assert "force dut.u.rst = 1'b1; wait (cycle >= 1000); release dut.u.rst;" in tb
+    assert "force" not in ec.testbench_text("gold_w", ["A1", "B1"], {"A1": "CLOCK", "B1": "OUTPUT"}, {"A1": 50.0},
+                                            "A1", ["B1"], 100, {})
+
+
+def test_lab_gpio_wider_than_its_wiring():
+    """BGM passes lab_top `w_gpio = 24` with a 16-bit `{ PMOD_1, PMOD_0 }`
+    (Tang Mega 138K) or nothing at all (basys3 `.gpio ( )`): the lab's upper
+    bits float; lab_width.gpio keeps BGM's width."""
+    text = ("module board_specific_top # (parameter w_gpio = 24)\n(\n    inout [7:0] PMOD_0, inout [7:0] PMOD_1\n);\n"
+            "lab_top # (.w_gpio ( w_gpio )) i_lab_top (.gpio ( { PMOD_1, PMOD_0 } ));\nendmodule\n")
+    assert sc._lab_gpio_width(text) == 24
+    assert sc._lab_gpio_width(text.replace(".w_gpio ( w_gpio )", ".w_gpio ( 2 /* w_gpio */ )")) == 2
+    for cid, w in (("tang_mega_138k_lcd_480_272_tm1638", 24), ("basys3", 24)):
+        r = config_init.resolve_configuration(cid)
+        top = codegen.emit_top_sv(r)
+        assert ".w_gpio({})".format(w) in top and "gpio_nc_{}".format(w - 1) in top, cid

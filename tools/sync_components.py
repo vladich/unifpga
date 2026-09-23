@@ -373,6 +373,17 @@ def gpio_bits(text, raw_text, sig_pins, rev, defines=None):
     return list(reversed([b for b in bits if b[0] is not None or b[1] is None])), notes
 
 
+def _lab_gpio_width(text):
+    """The w_gpio BGM passes lab_top (evaluated with the top's parameters), or None."""
+    text = bgm_oracle.strip_comments(text)
+    params = _top_params(text)
+    for inst in bgm_oracle.instantiations(text, "lab_top"):
+        expr = dict(inst["params"]).get("w_gpio")
+        if expr is not None:
+            return _eval_int(expr, params)
+    return None
+
+
 def gpio_placement(bits, pinmap):
     """([design bits per attach in gpio_attaches() order] or None, total):
     where each attach's pins sit in BGM's gpio numbering when gaps (pinless
@@ -1465,6 +1476,9 @@ def apply_components(path, dry_run):
         # w_gpio is the zero extension (overlay ties)
         gpio_out_only, gpio_zero_ties = gpio_assign_form(text, raw, sig_pins, rev, pp.defines)
         placement, gpio_total = gpio_placement(bits, pinmap)
+        # `.w_gpio ( 24 )` on a 16-bit `{ PMOD_1, PMOD_0 }` (Tang Mega 138K):
+        # the lab's bits above the concatenation float
+        gpio_total = max(gpio_total, _lab_gpio_width(text) or 0)
         from tools import bgm_overlay
         occ = {}
         for k, (pid, _params, _b) in enumerate(want):

@@ -310,12 +310,29 @@ def reset_levels(gate_text, gate_map):
     return out
 
 
-def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles, rst_levels=None):
+def lab_reset_net(gold_text):
+    """The net BGM's top feeds lab_top's rst from (`.rst ( rst )`), or None
+    when it is an expression the testbench cannot force."""
+    from tools import bgm_oracle
+    for inst in bgm_oracle.instantiations(gold_text, "lab_top"):
+        expr = next((e for p, e in inst["ports"] if p == "rst"), "").strip()
+        if re.match(r"^[A-Za-z_]\w*$", expr):
+            return expr
+    return None
+
+
+def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles, rst_levels=None, rst_net=None):
     """The stimulus / trace testbench; identical text on both sides except
     the wrapper module name. `rst_levels` {pin: level}: held during the
-    first phase (cycles 0..999) so both designs start in reset."""
+    first phase (cycles 0..999) so both designs start in reset. `rst_net`:
+    the top's lab reset net, forced high for that phase too — an FPGA's
+    flops power up at their initial value, Icarus's at x, and a lab whose
+    reset only a TM1638 key can raise would otherwise compare x with x."""
     in_pins = [p for p in pins if klass[p] in ("INPUT", "INOUT")]
     rst_levels = rst_levels or {}
+    power_up = ("    // power-up: the lab starts from its reset state (see the docstring)\n"
+                "    initial begin force dut.u.{0} = 1'b1; wait (cycle >= 1000); release dut.u.{0}; end\n"
+                .format(rst_net)) if rst_net else ""
     n_in = len(in_pins)
     n_cmp = len(cmp_pins)
     main_half = 500.0 / clocks[main_pin]
@@ -374,6 +391,7 @@ def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles, r
     endfunction
 
     initial for (k = 0; k < N_IN; k = k + 1) in_h [k] = 0;
+%s
 
     // Sample the compared pins a half period after the DUT's clock edge,
     // then change the inputs a quarter period later so the DUT sees them at
@@ -409,7 +427,7 @@ def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles, r
     end
 
 endmodule
-""" % (_pname(main_pin), main_half / 2.0))
+""" % (power_up, _pname(main_pin), main_half / 2.0))
     return "\n".join(L)
 
 
@@ -864,13 +882,15 @@ def cmd_generate(args):
                           "gate_dir": gate_ports[t[0]]["dir"] if t else None})
         cmp_pins = [p for p in all_pins if klass[p] in ("OUTPUT", "INOUT") and p in gold_map and p in gate_map]
 
+        gold_rst = lab_reset_net(gold_text)
         for side, wrap, inner, ports, pmap in (("gold", "gold_w", GOLD_TOP, gold_ports, gold_map),
                                                ("gate", "gate_w", GATE_TOP, gate_ports, gate_map)):
             with open(os.path.join(d, side + "_w.sv"), "w") as f:
                 f.write(wrapper_text(wrap, inner, ports, port_bits(pmap), all_pins, klass))
             with open(os.path.join(d, side + "_tb.sv"), "w") as f:
                 f.write(testbench_text(wrap, all_pins, klass, clocks, main_pin, cmp_pins, args.cycles,
-                                       reset_levels(gate_text, gate_map)))
+                                       reset_levels(gate_text, gate_map),
+                                       rst_net=(gold_rst if side == "gold" else "rst") if gold_rst else None))
 
         entry.update({
             "status": "ready",
