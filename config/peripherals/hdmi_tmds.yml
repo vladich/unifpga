@@ -8,7 +8,7 @@
 # implementation BGM ships for a7_lite_35t and the tang_primer_20k_dock
 # `_yosys` variant; where BGM uses Gowin's encrypted DVI_TX IP (5x DDR
 # serializer, 126 MHz) the pixel clock is the same and only the serializer
-# clock differs (PLAN.md D13).
+# clock differs.
 #
 # Pins: a Gowin pinmap writes each pair as one "P,N" entry on the P signal
 # (`clk_p: "69,68"`) plus the N pin on its own (`clk_n: "68"`); the top

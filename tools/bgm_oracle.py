@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Read-only access to the basics-graphics-music (BGM) checkout as the oracle for
-what a board must look like (PLAN.md, sections 1 and 7).
+what a board must look like.
 
 BGM keeps one directory per board *variant* under boards/<variant>/ with the
 vendor constraint files and a hand-written `board_specific_top.sv`. Variants

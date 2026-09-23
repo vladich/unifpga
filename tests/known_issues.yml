@@ -1,4 +1,4 @@
-# Known per-configuration issue codes (see PLAN.md, tools/audit_configs.py).
+# Known per-configuration issue codes (see tools/audit_configs.py).
 # tests/test_issue_gate.py fails when a configuration gains a code that is
 # not listed here, or when a listed code no longer applies (then the fix
 # landed: regenerate with `tools/audit_configs.py --write-baseline`).

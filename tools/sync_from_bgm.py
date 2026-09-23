@@ -2,7 +2,7 @@
 """
 Bring existing configurations in line with facts read from the BGM oracle
 (tools/bgm_oracle.py). This is the incremental precursor of the
-Verilog-driven generator planned in PLAN.md P2.4: it edits
+Verilog-driven generator: it edits
 config/configurations/<id>.yml in place, one fact class at a time, and is
 idempotent.
 
@@ -1448,7 +1448,7 @@ def apply_clock_tree(path, dry_run):
     if want == "pixel":
         if "pixel" not in declared:
             changes.append("WARNING: BGM runs the lab on the pixel clock ({} MHz) but no attached peripheral "
-                           "declares clock 'pixel' (HDMI: PLAN.md P3.2)".format(bgm_oracle.lab_mhz(t)))
+                           "declares clock 'pixel'".format(bgm_oracle.lab_mhz(t)))
         elif have != "pixel":
             if not dry_run:
                 bgm_overlay.update(cfg["id"], os.path.basename(vdir), lab_clock="pixel")

@@ -8,7 +8,7 @@ Configuration:
   board: icebreaker
   toolchain: nextpnr_icestorm
 
-  # iCEBreaker P2 header: TM1638 + user gpio, LED/BTN break-off unused (BGM INSTANTIATE_TM1638 branch; see PLAN.md)
+  # iCEBreaker P2 header: TM1638 + user gpio, LED/BTN break-off unused (BGM INSTANTIATE_TM1638 branch)
   attach:
     - peripheral: clock_input
       bind:

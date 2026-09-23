@@ -128,7 +128,7 @@ def main(argv=None):
         try:
             top_text = codegen.emit_top_sv(resolved)
         except codegen.CodegenError as exc:
-            log.error("Configuration '%s' cannot be built (see PLAN.md, GEN-ERROR):\n%s",
+            log.error("Configuration '%s' cannot be built (audit code GEN-ERROR):\n%s",
                       cfg["id"], exc)
             return 3
         with open(top_path, "w") as f:

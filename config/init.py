@@ -790,7 +790,7 @@ def resolve_configuration(configuration_id):
             board_resolved["PartName"] = chosen.get("Name")
         else:
             log.warning("Configuration '%s': board '%s' has %d chips but no part: is set; "
-                        "toolchains will default to %s (PLAN.md code PART)",
+                        "toolchains will default to %s (audit code PART)",
                         configuration_id, board_id, len(parts_list), parts_list[0]["Part"])
 
     board_pinmap = read_board_pinmap(board_id)

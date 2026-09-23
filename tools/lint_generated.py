@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Lint stage (PLAN.md P0.5 / section 8 stage A): generate `top.sv` for every
+Lint stage: generate `top.sv` for every
 configuration and compile it together with the peripheral RTL and one design
 using iverilog (`-g2012`). Catches undeclared identifiers, width mismatches,
 missing modules and syntax slips in what codegen emits, without any vendor

@@ -354,7 +354,7 @@ def resolve_clock(resolved, plans=None):
     if mhz is None:
         log.warning("Configuration %s: clock bank %r has no frequency_mhz in the "
                     "configuration or the pinmap; clk_mhz will default to 50 and no "
-                    "clock constraint will be emitted (see PLAN.md CLK-FREQ)",
+                    "clock constraint will be emitted (audit code CLK-FREQ)",
                     resolved["configuration"]["id"], clk_bank)
     return {"bank_ref": clk_bank, "port": _bank_port_name(clk_bank),
             "mhz": float(mhz) if mhz is not None else None, "source": source}
@@ -659,8 +659,8 @@ def plan_clock_tree(resolved, plans=None):
     aliased = lambda r: same(r["mhz"], f_in) and not r.get("pll_output")
     sources = [(n, r) for n, r in reqs.items() if r["from"] is None and not aliased(r)]
     if sources and vendor is None:
-        raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper exists for {} / {} "
-                           "(PLAN.md P3.1)".format(cfg_id, sources[0][0], sources[0][1]["mhz"],
+        raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper exists for {} / {}"
+                           .format(cfg_id, sources[0][0], sources[0][1]["mhz"],
                                                    board.get("PartProducer"), board.get("PartFamily")))
     out = OrderedDict()
     # 1. clocks that already exist: the board clock itself
@@ -731,7 +731,7 @@ def plan_clock_tree(resolved, plans=None):
             out[name] = (name, r, "derived", ClockDerived(r["mhz"], r["from"], r["divide"]))
         else:
             raise CodegenError("Configuration {}: clock '{}' derived from '{}' needs a clock divider; none is "
-                               "generated for {} (PLAN.md P3.2)".format(cfg_id, name, r["from"], vendor))
+                               "generated for {}".format(cfg_id, name, r["from"], vendor))
     return [out[n] for n in reqs]
 
 

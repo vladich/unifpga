@@ -2,7 +2,7 @@
 Ratchet gate over the per-configuration issue matrix (tools/audit_configs.py).
 
 tests/known_issues.yml records, per configuration, the issue codes that are
-currently accepted as known debt (PLAN.md tracks their burn-down). This test
+currently accepted as known debt. This test
 fails in two situations:
 
   1. A configuration exhibits a code that is NOT in its baseline entry — a

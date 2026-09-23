@@ -6,10 +6,10 @@ For every config/configurations/<id>.yml this tool resolves the configuration,
 runs the codegen, and checks it against (a) the board pinmap and (b) the
 upstream basics-graphics-music (BGM) board directory that acts as the oracle.
 It prints one row per configuration with the issue codes that apply, plus a
-legend and per-code counts. It is the burn-down tracker for PLAN.md: a
+legend and per-code counts. It is the burn-down tracker: a
 configuration is "clean" when it has no codes left.
 
-Issue codes (see PLAN.md, section "Issue catalogue"):
+Issue codes:
 
   SEG-BIND   7-segment binds reference sub-keys the pinmap does not have
   UNDECL     generated top references identifiers no port declares
@@ -779,7 +779,7 @@ def write_baseline(rows, path=BASELINE_PATH):
     tests/test_issue_gate.py ratchets against."""
     data = OrderedDict((r["id"], sorted(r["issues"])) for r in rows)
     with open(path, "w", encoding="utf-8") as f:
-        f.write("# Known per-configuration issue codes (see PLAN.md, tools/audit_configs.py).\n")
+        f.write("# Known per-configuration issue codes (see tools/audit_configs.py).\n")
         f.write("# tests/test_issue_gate.py fails when a configuration gains a code that is\n")
         f.write("# not listed here, or when a listed code no longer applies (then the fix\n")
         f.write("# landed: regenerate with `tools/audit_configs.py --write-baseline`).\n")

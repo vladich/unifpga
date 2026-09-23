@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Toolchain auto-detection (PLAN.md P4.1 / D12), the same search BGM's
+Toolchain auto-detection, the same search BGM's
 scripts/steps/00_setup_*.source_bash perform, in one place:
 
     1. the `InstallDir` pin from config/toolchains.yml when it exists

@@ -37,7 +37,7 @@ Board:
     onboard_buttons:
       pins: [E16, F15, T16, R10, V10]
     # Pmod banks re-derived from BGM boards/nexys4/board_specific.xdc (JA[0..7]);
-    # the earlier curation had lost JA[0] and shifted the rest (PLAN.md P2.2).
+    # the earlier curation had lost JA[0] and shifted the rest.
     pmod_ja:
       pins: [B13, F14, D17, E17, G13, C17, D18, E18]
     pmod_jb:

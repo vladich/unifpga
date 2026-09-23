@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compact `null` gaps out of pinmap pin lists (PLAN.md decision D6, task P2.2).
+Compact `null` gaps out of pinmap pin lists.
 
 Imported constraint files number buses the way the vendor did (`LED[8:1]`,
 `LCD_R[7:3]`, `ck_io0..13, 26..41`), and the curator kept the gaps as `null`

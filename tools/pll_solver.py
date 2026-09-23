@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PLL parameter solver (PLAN.md P3.1, decision D8).
+PLL parameter solver.
 
 Peripherals declare the clocks they need (`clocks: [{name: pixel, mhz: 9}]`);
 codegen instantiates one generic per-vendor PLL wrapper per distinct frequency
