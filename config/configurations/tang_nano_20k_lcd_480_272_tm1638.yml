@@ -8,12 +8,6 @@ Configuration:
   board: tang_nano_20k
   toolchain: gowin_eda
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - power_up: true
-      - any_key: true
-
   attach:
     - peripheral: clock_input
       bind:
@@ -24,15 +18,11 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: []
     - peripheral: led_bank
       params:
         width: 6
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0, 1, 2, 3, 4, 5]
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -54,11 +44,6 @@ Configuration:
         dio: "gpio[0]"
         clk: onboard_joystick.cs
         stb: onboard_joystick.miso
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: [0, 1, 2, 3, 4, 5, 6, 7]
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM tang_nano_20k_lcd_480_272_tm1638/board_specific_top.sv
       bind:
         lr: "gpio[1]"

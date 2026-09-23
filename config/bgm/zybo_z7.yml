@@ -1,0 +1,31 @@
+# BGM parity overlay for zybo_z7: how basics-graphics-music's boards/zybo_z7/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/zybo_z7.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: zybo_z7
+  variant: zybo_z7
+  reset:
+    sources:
+    - switch_msb: true
+  attach:
+  - peripheral: sw_bank
+    index: 0
+    lab_bits:
+      switches: [0, 1, 2, null]
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, 3]
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [0, 1, 2, 3]
+  - peripheral: tm1638_led_key
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+      switches: []
+      leds: [0, 1, 2, 3, 4, 5, 6, 7]
+      seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]

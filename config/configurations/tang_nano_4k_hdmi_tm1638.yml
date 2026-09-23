@@ -8,12 +8,6 @@ Configuration:
   board: tang_nano_4k
   toolchain: gowin_eda
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - power_up: true
-      - any_key: true
-
   attach:
     - peripheral: clock_input
       bind:
@@ -23,8 +17,6 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: []
 
   # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds   # binds from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv
@@ -40,11 +32,6 @@ Configuration:
         dio: onboard_serial_flash.do
         clk: onboard_serial_flash.di
         stb: onboard_serial_flash.clk
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: [0, 1, 2, 3, 4, 5, 6, 7]
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM tang_nano_4k_hdmi_tm1638/board_specific_top.sv
       bind:
         lr: onboard_serial_flash.hold
@@ -72,5 +59,3 @@ Configuration:
         width: 1
       bind:
         led: onboard_led
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0]

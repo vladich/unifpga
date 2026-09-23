@@ -22,15 +22,11 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: []
     - peripheral: led_bank
       params:
         width: 2
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0, 1]
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -42,11 +38,6 @@ Configuration:
         dio: "gpio[0]"
         clk: "gpio[1]"
         stb: "gpio[2]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: [0, 1, 2, 3, 4, 5, 6, 7]
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM a7_lite_35t/board_specific_top.sv
       bind:
         lr: "gpio[4]"

@@ -8,12 +8,6 @@ Configuration:
   board: icebreaker
   toolchain: nextpnr_icestorm
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - power_up: true
-      - tm_key: msb
-
   # iCEBreaker P2 header: TM1638 + user gpio, LED/BTN break-off unused (BGM INSTANTIATE_TM1638 branch; see PLAN.md)
   attach:
     - peripheral: clock_input
@@ -28,8 +22,6 @@ Configuration:
         width: 1
       bind:
         btn: onboard_button
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: []
 
   # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key   # binds from BGM icebreaker_no_dvi_tm1638_yosys/board_specific_top.sv
@@ -37,11 +29,6 @@ Configuration:
         clk: "pmod_p2[6]"
         stb: "pmod_p2[7]"
         dio: "pmod_p2[5]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: [0, 1, 2, 3, 4, 5, 6, 7]
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM icebreaker_no_dvi_tm1638_yosys/board_specific_top.sv
       bind:
         lr: "pmod_p1a[0]"

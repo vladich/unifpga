@@ -8,11 +8,6 @@ Configuration:
   board: orangepi_msoc
   toolchain: gowin_standard
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - key: msb
-
   attach:
     - peripheral: clock_input
       bind:

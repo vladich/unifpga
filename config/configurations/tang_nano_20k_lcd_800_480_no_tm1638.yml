@@ -8,24 +8,16 @@ Configuration:
   board: tang_nano_20k
   toolchain: gowin_eda
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - power_up: true
-
   attach:
     - peripheral: clock_input
       bind:
         clk: clk
     - peripheral: button_array
       params:
-        as_switches: true
         active: high
         width: 2
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: [0, 1]
     - peripheral: led_bank
       params:
         width: 6

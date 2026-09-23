@@ -8,11 +8,6 @@ Configuration:
   board: zybo_z7
   toolchain: vivado
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - switch_msb: true
-
   attach:
     - peripheral: clock_input
       params:
@@ -24,22 +19,16 @@ Configuration:
         width: 4
       bind:
         sw: onboard_switches
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: [0, 1, 2, ~]
     - peripheral: button_array
       params:
         width: 4
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3]
     - peripheral: led_bank
       params:
         width: 4
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0, 1, 2, 3]
 
   # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key   # binds from BGM zybo_z7/board_specific_top.sv
@@ -47,11 +36,6 @@ Configuration:
         clk: "pmod_je[1]"
         stb: "pmod_je[0]"
         dio: "pmod_je[2]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: []
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: i2s_audio_out   # from BGM zybo_z7/board_specific_top.sv
       bind:
         mclk: "pmod_jb[0]"

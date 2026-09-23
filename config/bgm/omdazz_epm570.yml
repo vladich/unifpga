@@ -1,0 +1,17 @@
+# BGM parity overlay for omdazz_epm570: how basics-graphics-music's boards/omdazz_epm570/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/omdazz_epm570.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: omdazz_epm570
+  variant: omdazz_epm570
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [1, 2, 3, 4, 5, null]
+  - peripheral: sw_bank
+    index: 0
+    lab_bits:
+      switches: [1, 2, 3, 4]

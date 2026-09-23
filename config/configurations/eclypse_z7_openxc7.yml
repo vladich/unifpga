@@ -6,10 +6,6 @@ Configuration:
   board: eclypse_z7
   toolchain: nextpnr_openxc7
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - key: 0
   attach:
   - peripheral: clock_input
     bind:
@@ -19,57 +15,38 @@ Configuration:
       width: 2
     bind:
       btn: onboard_buttons
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      buttons: []
   - peripheral: tm1638_led_key   # binds from BGM eclypse_z7/board_specific_top.sv
     bind:
       dio: "pmod_jb[5]"
       clk: "pmod_jb[6]"
       stb: "pmod_jb[7]"
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-      switches: [0, 1, 2, 3, 4, 5, 6, 7]
-      leds: [0, 1, 2, 3, 4, 5, 6, 7]
-      seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
   - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
     params:
       width: 1
     bind:
       led: onboard_rgb_led_1.r
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      leds: [0]
   - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
     params:
       width: 1
     bind:
       led: onboard_rgb_led_1.g
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      leds: [1]
   - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
     params:
       width: 1
     bind:
       led: onboard_rgb_led_1.b
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      leds: [2]
   - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
     params:
       width: 1
     bind:
       led: onboard_rgb_led_0.r
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      leds: [3]
   - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
     params:
       width: 1
     bind:
       led: onboard_rgb_led_0.g
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      leds: [4]
   - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
     params:
       width: 1
     bind:
       led: onboard_rgb_led_0.b
-    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-      leds: [5]

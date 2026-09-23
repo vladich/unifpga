@@ -1,0 +1,26 @@
+# BGM parity overlay for icebreaker_bare: how basics-graphics-music's boards/icebreaker_bare/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/icebreaker_bare.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: icebreaker_bare
+  variant: icebreaker_bare
+  reset:
+    sources:
+    - key: 0
+  attach:
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [4, 3, 2, 1, 0]
+    params:
+      mirror: true
+  - peripheral: led_bank
+    index: 1
+    lab_bits:
+      leds: [5]
+  - peripheral: led_bank
+    index: 2
+    lab_bits:
+      leds: [6]

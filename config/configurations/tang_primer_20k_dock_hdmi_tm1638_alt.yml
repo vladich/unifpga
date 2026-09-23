@@ -7,12 +7,6 @@ Configuration:
   id: tang_primer_20k_dock_hdmi_tm1638_alt
   board: tang_primer_20k_dock
   toolchain: gowin_eda
-  lab_clock: pixel   # BGM: `localparam lab_mhz = pixel_mhz` (tools/sync_from_bgm.py --clock-tree)
-
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - key: msb
 
   # Gowin IO_TYPE this BGM variant states beyond the board-wide ones (tools/sync_from_bgm.py --iotypes)
   io_overrides:
@@ -43,8 +37,6 @@ Configuration:
         width: 6
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0, 1, 2, 3, 4, 5]
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -54,15 +46,11 @@ Configuration:
         width: 4
       bind:
         sw: onboard_switches
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: [0, 1, 2, 3]
     - peripheral: button_array
       params:
         width: 5
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: []
 
   # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds   # binds from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv
@@ -78,11 +66,6 @@ Configuration:
         clk: "gpio_1[2]"
         stb: "gpio_1[3]"
         dio: "gpio_1[1]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: []
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: i2s_audio_out   # from BGM tang_primer_20k_dock_hdmi_tm1638_alt/board_specific_top.sv
       bind:
         bclk: onboard_headphone.bck

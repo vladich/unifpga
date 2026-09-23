@@ -7,12 +7,6 @@ Configuration:
   id: tang_primer_20k_dock_lcd_800_480_no_tm1638
   board: tang_primer_20k_dock
   toolchain: gowin_eda
-  lab_clock: pixel   # BGM: `localparam lab_mhz = pixel_mhz` (tools/sync_from_bgm.py --clock-tree)
-
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - key: msb
 
   attach:
     - peripheral: clock_input

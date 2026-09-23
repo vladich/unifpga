@@ -8,11 +8,6 @@ Configuration:
   board: ice40hx8k_evb
   toolchain: nextpnr_icestorm
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - tm_key: msb
-
   attach:
     - peripheral: clock_input
       bind:
@@ -22,22 +17,16 @@ Configuration:
         width: 3
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: []
     - peripheral: led_bank
       params:
         width: 2
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0, 1]
     - peripheral: sw_bank
       params:
         width: 2
       bind:
         sw: onboard_switches
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: []
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -64,11 +53,6 @@ Configuration:
         clk: "gpio[0]"
         stb: "gpio[1]"
         dio: "gpio[2]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: []
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM ice40hx8k_evb_yosys/board_specific_top.sv
       bind:
         lr: "gpio[3]"

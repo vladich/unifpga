@@ -1,0 +1,18 @@
+# BGM parity overlay for de10_lite_tm1638_virtual_switches: how basics-graphics-music's boards/de10_lite_tm1638_virtual_switches/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/de10_lite_tm1638_virtual_switches.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: de10_lite_tm1638_virtual_switches
+  variant: de10_lite_tm1638_virtual_switches
+  reset:
+    sources:
+    - switch_msb: true
+  tie:
+    arduino_reset_n: ~rst
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [0, 1]

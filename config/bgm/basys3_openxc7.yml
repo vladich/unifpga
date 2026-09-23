@@ -1,0 +1,20 @@
+# BGM parity overlay for basys3_openxc7: how basics-graphics-music's boards/basys3/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/basys3_openxc7.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: basys3_openxc7
+  variant: basys3
+  reset:
+    sources:
+    - switch_msb: true
+  attach:
+  - peripheral: sw_bank
+    index: 0
+    lab_bits:
+      switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, null]
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [1, 3, 2, 0, 4]

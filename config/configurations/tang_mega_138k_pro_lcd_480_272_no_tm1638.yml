@@ -15,23 +15,15 @@ Configuration:
   pin_overrides:
     pmod_0: [N18, L22, R16, R17, M26, N17, L24, T24]
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - key: msb
-
   attach:
     - peripheral: clock_input
       bind:
         clk: clk
     - peripheral: button_array
       params:
-        as_switches: true
         width: 4
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: [0, 1, 2, 3]
     - peripheral: led_bank
       params:
         width: 6

@@ -8,11 +8,6 @@ Configuration:
   board: de10_lite
   toolchain: quartus_prime_lite
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - switch_msb: true
-
   attach:
     - peripheral: clock_input
       params:
@@ -24,8 +19,6 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1]
     - peripheral: sw_bank
       params:
         width: 10
@@ -84,6 +77,5 @@ Configuration:
 
   # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
   tie:
-    arduino_reset_n: ~rst
     "gpio[1]": 0
     "gpio[3]": 1

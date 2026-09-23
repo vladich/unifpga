@@ -8,24 +8,15 @@ Configuration:
   board: tang_primer_25k
   toolchain: gowin_standard
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - tm_key: msb
-
   attach:
     - peripheral: clock_input
       bind:
         clk: clk
     - peripheral: button_array
       params:
-        as_switches: true
         width: 2
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1]
-        switches: [0, 1]
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -45,11 +36,6 @@ Configuration:
         dio: "pmod_2[1]"
         clk: "pmod_2[2]"
         stb: "pmod_2[3]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: [0, 1, 2, 3, 4, 5, 6, 7]
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM tang_primer_25k_pmod_hdmi/board_specific_top.sv
       bind:
         lr: "gpio[0]"

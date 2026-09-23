@@ -1,0 +1,27 @@
+# BGM parity overlay for tang_mega_138k_pro_lcd_480_272_tm1638: how basics-graphics-music's boards/tang_mega_138k_pro_lcd_480_272_tm1638/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/tang_mega_138k_pro_lcd_480_272_tm1638.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: tang_mega_138k_pro_lcd_480_272_tm1638
+  variant: tang_mega_138k_pro_lcd_480_272_tm1638
+  reset:
+    sources:
+    - tm_key: msb
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: []
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [0, 1, 2, 3, 4, 5]
+  - peripheral: tm1638_led_key
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+      switches: [0, 1, 2, 3, 4, 5, 6, 7]
+      leds: [0, 1, 2, 3, 4, 5, 6, 7]
+      seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]

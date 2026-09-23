@@ -1,0 +1,24 @@
+# BGM parity overlay for tang_nano_9k_lcd_ml6485_no_tm1638_yosys: how basics-graphics-music's boards/tang_nano_9k_lcd_ml6485_no_tm1638_yosys/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/tang_nano_9k_lcd_ml6485_no_tm1638_yosys.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: tang_nano_9k_lcd_ml6485_no_tm1638_yosys
+  variant: tang_nano_9k_lcd_ml6485_no_tm1638_yosys
+  reset:
+    sources:
+    - power_up: true
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      switches: [0, 1]
+    params:
+      as_switches: true
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [5, 4, 3, 2, 1, 0]
+    params:
+      mirror: true

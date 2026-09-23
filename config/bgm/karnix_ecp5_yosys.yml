@@ -1,0 +1,16 @@
+# BGM parity overlay for karnix_ecp5_yosys: how basics-graphics-music's boards/karnix_ecp5_yosys/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/karnix_ecp5_yosys.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: karnix_ecp5_yosys
+  variant: karnix_ecp5_yosys
+  reset:
+    sources:
+    - key: msb
+  attach:
+  - peripheral: sw_bank
+    index: 0
+    lab_bits:
+      switches: []

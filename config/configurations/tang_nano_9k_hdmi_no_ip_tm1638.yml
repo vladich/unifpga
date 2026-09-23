@@ -8,12 +8,6 @@ Configuration:
   board: tang_nano_9k
   toolchain: gowin_eda
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - power_up: true
-      - any_key: true
-
   # Gowin IO_TYPE this BGM variant states beyond the board-wide ones (tools/sync_from_bgm.py --iotypes)
   io_overrides:
     clk: LVCMOS33
@@ -35,15 +29,11 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: []
     - peripheral: led_bank
       params:
         width: 6
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0, 1, 2, 3, 4, 5]
     - peripheral: uart_2wire
       bind:
         tx: onboard_uart.tx
@@ -61,11 +51,6 @@ Configuration:
         dio: "gpio[0]"
         clk: "gpio[1]"
         stb: "gpio[2]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: [0, 1, 2, 3, 4, 5, 6, 7]
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: inmp441_i2s_mic   # binds from BGM tang_nano_9k_hdmi_no_ip_tm1638/board_specific_top.sv
       bind:
         lr: onboard_microsd.cs

@@ -8,11 +8,6 @@ Configuration:
   board: colorlight75b
   toolchain: nextpnr_trellis
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - tm_key: msb
-
   attach:
     - peripheral: clock_input
       bind:
@@ -24,8 +19,6 @@ Configuration:
         open_drain: true
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0]
 
   # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key   # binds from BGM colorlight75b_tm1638_ecp5_yosys/board_specific_top.sv
@@ -33,11 +26,6 @@ Configuration:
         clk: "gpio[0]"
         stb: "gpio[1]"
         dio: "onboard_buttons[0]"
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
-        switches: []
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
-        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: hdmi_tmds   # binds from BGM colorlight75b_tm1638_ecp5_yosys/board_specific_top.sv
       params:
         clock_serial_mhz: 250

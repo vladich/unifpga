@@ -1,0 +1,16 @@
+# BGM parity overlay for emooc_cc: how basics-graphics-music's boards/emooc_cc/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/emooc_cc.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: emooc_cc
+  variant: emooc_cc
+  reset:
+    sources:
+    - key: msb
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, 3, 4, 5, 6, null]

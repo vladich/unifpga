@@ -8,11 +8,6 @@ Configuration:
   board: de2_115
   toolchain: quartus_prime_lite
 
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - switch_msb: true
-
   attach:
     - peripheral: clock_input
       params:
@@ -29,22 +24,16 @@ Configuration:
         width: 18
       bind:
         sw: onboard_switches
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, ~]
     - peripheral: led_bank   # from BGM de2_115/board_specific_top.sv
       params:
         width: 8
       bind:
         led: ["onboard_leds_green[0]", "onboard_leds_green[1]", "onboard_leds_green[2]", "onboard_leds_green[3]", "onboard_leds_green[4]", "onboard_leds_green[5]", "onboard_leds_green[6]", "onboard_leds_green[7]"]
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [0, 1, 2, 3, 4, 5, 6, 7]
     - peripheral: led_bank   # from BGM de2_115/board_specific_top.sv
       params:
         width: 18
       bind:
         led: onboard_leds
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        leds: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     - peripheral: seven_segment_per_digit
       params:
         digits: 8

@@ -1,16 +1,10 @@
 # de1_soc_mistral retargeted to nextpnr_mistral (open-source Cyclone V flow).
 # Mirrors de1_soc — only the toolchain differs.
 
-
 Configuration:
   id: de1_soc_mistral
   board: de1_soc
   toolchain: nextpnr_mistral
-
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - switch_msb: true
 
   attach:
     - peripheral: clock_input
@@ -28,8 +22,6 @@ Configuration:
         width: 10
       bind:
         sw: onboard_switches
-      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
-        switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, ~]
     - peripheral: led_bank
       params:
         width: 10

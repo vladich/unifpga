@@ -1,0 +1,24 @@
+# BGM parity overlay for icebreaker_dvi_12b_no_tm1638_yosys: how basics-graphics-music's boards/icebreaker_dvi_12b_no_tm1638_yosys/board_specific_top.sv
+# derives its reset and composes lab_top's buses on this board. BGM's lab conventions, not
+# facts about the hardware; config/configurations/icebreaker_dvi_12b_no_tm1638_yosys.yml stays generic and config/init.py
+# applies this on top of it (synthesize.py --no-bgm-overlay turns it off).
+# Written by tools/sync_from_bgm.py, proved by tools/equiv_check.py; do not edit by hand.
+BGM:
+  configuration: icebreaker_dvi_12b_no_tm1638_yosys
+  variant: icebreaker_dvi_12b_no_tm1638_yosys
+  reset:
+    sources:
+    - key: 0
+  lab_clock: pixel
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [null]
+  - peripheral: button_array
+    index: 1
+    lab_bits:
+      buttons: [0, 1, 2]
+      switches: [0, 1, 2]
+    params:
+      as_switches: true
