@@ -73,3 +73,5 @@ output_files/
 
 # Claude Code runtime state
 .claude/
+PLAN.md
+docs/
