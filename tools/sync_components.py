@@ -1403,6 +1403,23 @@ def apply_components(path, dry_run):
         for _p, b in want:
             for one in (b["led"] if isinstance(b["led"], list) else [b["led"]]):
                 want_pins |= sy._pins_of_ref(pinmap, one)
+        # a bank BGM's lab uses only part of (de0_cv: LEDR [3:0]; LEDR [9:4]
+        # show the HEX decimal point) stays whole — the hardware has ten LEDs;
+        # --lab-bits marks the bits the lab does not reach
+        for k, (p, b) in enumerate(want):
+            wpins = set()
+            for one in (b["led"] if isinstance(b["led"], list) else [b["led"]]):
+                wpins |= sy._pins_of_ref(pinmap, one)
+            for a in cur:
+                cb = (a.get("bind") or {}).get("led")
+                cpins = set()
+                for one in (cb if isinstance(cb, list) else [cb]):
+                    cpins |= sy._pins_of_ref(pinmap, str(one).strip('"'))
+                if wpins < cpins and (cpins - wpins) <= declared_pins \
+                        and (p.get("active") == (a.get("params") or {}).get("active")):
+                    want[k] = (OrderedDict((kk, v) for kk, v in (a.get("params") or {}).items() if kk != "mirror"),
+                               {"led": (cb if isinstance(cb, list) else str(cb).strip('"'))})
+                    break
         for a in cur:
             b = a.get("bind") or {}
             refs = b.get("led")

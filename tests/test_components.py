@@ -479,3 +479,14 @@ def test_led_bits_from_a_sliced_left_hand_side():
     pinmap = {"pinBanks": {"onboard_leds": {"pins": ["P{}".format(i) for i in range(10)]}}}
     bits, notes = sc.led_bits(text, sig_pins, sc._Rev(pinmap, set()))
     assert bits == [("onboard_leds[{}]".format(i), False, False) for i in range(4)] and not notes
+
+
+def test_partially_used_led_bank_stays_whole():
+    """de0_cv: BGM's lab drives LEDR [3:0]; the bank keeps its ten LEDs in
+    the configuration (hardware), the overlay marks the six the lab does
+    not reach (--lab-bits) and puts the HEX decimal point on them."""
+    r = config_init.resolve_configuration("de0_cv")
+    leds = next(a for a in r["peripherals"] if a["peripheral_id"] == "led_bank")
+    assert leds["params"]["width"] == 10 and leds["bind"] == {"led": "onboard_leds"}
+    assert leds["lab_bits"] == {"leds": [0, 1, 2, 3, None, None, None, None, None, None]}
+    assert ".w_led(4)," in codegen.emit_top_sv(r)
