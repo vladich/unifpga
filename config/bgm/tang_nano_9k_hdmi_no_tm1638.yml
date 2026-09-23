@@ -9,6 +9,8 @@ BGM:
   reset:
     sources:
     - power_up: true
+  lab_width:
+    gpio: 10
   attach:
   - peripheral: button_array
     index: 0
@@ -17,4 +19,3 @@ BGM:
       switches: [1, 0]
     params:
       as_switches: true
-      mirror: true

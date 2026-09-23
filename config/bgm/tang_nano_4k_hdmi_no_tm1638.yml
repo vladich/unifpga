@@ -18,4 +18,3 @@ BGM:
       switches: [1, 0]
     params:
       as_switches: true
-      mirror: true

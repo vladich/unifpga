@@ -49,8 +49,3 @@ Configuration:
         lrclk: onboard_headphone.ws
         sdata: onboard_headphone.din
         pa_en: onboard_pa_enable
-    - peripheral: gpio_header   # from BGM tang_nano_20k_hdmi_no_tm1638/board_specific_top.sv .gpio
-      params:
-        width: 5
-      bind:
-        io: gpio

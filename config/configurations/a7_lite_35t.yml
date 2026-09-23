@@ -46,6 +46,7 @@ Configuration:
         sd: "gpio[7]"
     - peripheral: hdmi_tmds   # binds from BGM a7_lite_35t/board_specific_top.sv
       params:
+        timing: dvi
         clock_serial_mhz: 250
       bind:
         clk_p: onboard_hdmi.clk_p
