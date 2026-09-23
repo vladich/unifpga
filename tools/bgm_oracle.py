@@ -465,11 +465,19 @@ def port_polarity(text):
     for m in re.finditer(r"\bassign\s+([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*=\s*\(?\s*\w+\s*(?:\[[^\]]*\])?\s*\?\s*1'b([01])\s*:\s*1'bz", text):
         if m.group(2) == "0":
             mark(m.group(1), inverted=True)
-    for m in re.finditer(r"SWAP_BITS\s*\(\s*([A-Za-z_]\w*)\s*,\s*(~?)", text):
-        mark(m.group(1), inverted=bool(m.group(2)), mirrored=True)
-    # Input side: ~ PORT, ~ PORT [..], ~ { P1, P2, ... }
-    for m in re.finditer(r"~\s*([A-Za-z_]\w*)\b", text):
+    for m in re.finditer(r"SWAP_BITS\s*\(\s*([A-Za-z_]\w*)\s*,\s*(~?)\s*([A-Za-z_]\w*)", text):
+        if m.group(1) in ports:
+            mark(m.group(1), inverted=bool(m.group(2)), mirrored=True)
+        else:
+            # `SWAP_BITS (lab_key, ~ key_in)` (ax7035b): the port is the source
+            mark(m.group(3), inverted=bool(m.group(2)), mirrored=True)
+    # Input side: ~ PORT, ~ PORT [..], ~ { P1, P2, ... }, ! PORT
+    for m in re.finditer(r"[~!]\s*([A-Za-z_]\w*)\b", text):
         mark(m.group(1), inverted=True)
+    # through an alias: `wire arst_n = CPU_RESET_n; ... if (!arst_n)` (c5gx)
+    for m in re.finditer(r"\b(?:wire|logic)\s+([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)\s*;", text):
+        if m.group(2) in ports and re.search(r"[~!]\s*" + re.escape(m.group(1)) + r"\b", text):
+            mark(m.group(2), inverted=True)
     for m in re.finditer(r"~\s*\{([^}]*)\}", text):
         for name in re.findall(r"[A-Za-z_]\w*", m.group(1)):
             mark(name, inverted=True)
@@ -479,8 +487,11 @@ def port_polarity(text):
 def polarity_hints(text):
     """Which user-level signal classes BGM inverts or mirrors for this variant."""
     hints = set()
-    if re.search(r"\.key\s*\(\s*~", text) or re.search(r"~\s*KEY\b", text):
+    if re.search(r"\.key\s*\(\s*~", text) or re.search(r"~\s*KEY\b", text) \
+            or re.search(r"SWAP_BITS\s*\(\s*\w*key\w*\s*,\s*~", text, re.I):
         hints.add("keys~")
+    if re.search(r"SWAP_BITS\s*\(\s*\w*key\w*\s*,", text, re.I):
+        hints.add("keys-mirrored")
     if re.search(r"\.sw\s*\(\s*~", text):
         hints.add("sw~")
     if re.search(r"\bLED\w*\s*=\s*~", text) or re.search(r"assign\s+LED\w*\s*=\s*~", text):

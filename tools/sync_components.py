@@ -2246,12 +2246,27 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
             lbits, lnotes = led_bits(text, sig_pins, rev)
             notes.extend("led: " + n for n in lnotes)
             if lbits is None:
-                # a form led_bits() does not read (colorlight's open-drain
-                # `LED[0] = lab_led[0] ? 1'b0 : 1'bz`): the board LEDs are
-                # the low bits, as in every BGM top that shares with a TM1638
+                # led_bits() read no assignment of the lab's led to a port. Either
+                # BGM's active text drives the board LEDs in a form it does not
+                # parse (the board LEDs are then the low bits, as in every BGM top
+                # that shares with a TM1638), or it does not drive them at all
+                # (tang_primer_20k_dock: `assign LED = ~ lab_led` only in the
+                # branch without the TM1638): then they carry no lab bit and stay
+                # undriven, as in BGM
+                led_ports = set()
+                for pidx, _w in board_providers(cap):
+                    bind = (resolved["peripherals"][pidx].get("bind") or {}).get("led")
+                    for one in (bind if isinstance(bind, list) else [bind]):
+                        for pin in sy._pins_of_ref(pinmap, str(one).strip('"')):
+                            led_ports |= {k.split("[", 1)[0] for k, p in sig_pins.items()
+                                          if sy._norm_pin(str(p).split(",")[0]) == pin}
+                driven = any(re.search(r"\bassign\s+" + re.escape(pt) + r"\b|SWAP_BITS\s*\(\s*" + re.escape(pt)
+                                       + r"\b|\b" + re.escape(pt) + r"\s*(?:\[[^\]]*\])?\s*<=", text, re.I)
+                             for pt in led_ports)
                 for pidx, w in board_providers(cap):
-                    wanted[pidx][cap] = list(range(w))
-                notes.append("led: board LEDs taken as lab_led's low bits (assign form not parsed)")
+                    wanted[pidx][cap] = list(range(w)) if driven else [None] * w
+                notes.append("led: board LEDs taken as lab_led's low bits (assign form not parsed)" if driven
+                             else "led: BGM's active text drives the board LEDs nowhere; no lab bit")
                 continue
             by_ref = {}
             for bit, (ref, _inv, _od) in enumerate(lbits or []):

@@ -614,3 +614,80 @@ def test_equivalence_testbench_starts_in_reset():
     klass = {"C": "CLOCK", "P1": "INPUT", "P2": "INPUT", "P4": "OUTPUT"}
     tb = ec.testbench_text("w", ["C", "P1", "P2", "P4"], klass, {"C": 50.0}, "C", ["P4"], 100, {"P1": 0, "P2": 1})
     assert "localparam [N_IN - 1:0] RST_INIT = 2'b10;" in tb and "in_v [k] = RST_INIT [k];" in tb
+
+
+def test_exact_rpll_dividers_from_bgm():
+    """tang_nano_9k_lcd_800_480: BGM's gowin_rpll.v takes the 32.4 MHz LCD
+    clock from CLKOUTD (64.8 MHz / 2); our solver reached 32.4 MHz on CLKOUT
+    with other dividers and the LCD counters drifted against BGM's."""
+    from tools import pll_solver
+    r = {"mhz": 32.4, "tolerance_pct": 0.5, "pll": {"idiv": 4, "fbdiv": 23, "odiv": 4, "sdiv": 4, "clkoutd": True}}
+    sol = codegen._pinned_rpll("cfg", "pixel", 27.0, r)
+    assert (sol.idiv, sol.fbdiv, sol.odiv, sol.sdiv, sol.use_clkoutd) == (4, 23, 4, 4, True)
+    assert abs(sol.f_out - 32.4) < 1e-9 and abs(sol.f_clkout - 129.6) < 1e-9
+    with pytest.raises(codegen.CodegenError):
+        codegen._pinned_rpll("cfg", "pixel", 27.0, dict(r, mhz=9.0))
+    r = config_init.resolve_configuration("tang_nano_9k_lcd_800_480_tm1638")
+    lcd = next(a for a in r["peripherals"] if a["peripheral_id"] == "lcd_800_480")
+    assert lcd["params"]["clock_pixel_pll"] == {"idiv": 4, "fbdiv": 23, "odiv": 4, "sdiv": 4, "clkoutd": True}
+    top = codegen.emit_top_sv(r)
+    assert ".IDIV_SEL(4), .FBDIV_SEL(23), .ODIV_SEL(4), .DYN_SDIV_SEL(4), .USE_CLKOUTD(1'b1)" in top
+
+
+def test_screenless_lab_keeps_bgm_widths_and_mirrored_keys():
+    """alinx_ax7035b: no display, yet BGM passes w_x = $clog2 (640); the keys
+    are `SWAP_BITS (lab_key, ~ key_in)`: active low (pinmap) and mirrored (overlay)."""
+    from tools import bgm_oracle
+    pol = bgm_oracle.port_polarity("module board_specific_top\n(\n    input [3:0] key_in\n);\n`SWAP_BITS ( lab_key , ~ key_in  );\n")
+    assert pol.get("key_in") == {"inverted": True, "mirrored": True}
+    r = config_init.resolve_configuration("alinx_ax7035b")
+    assert not r["peripherals"] or not any(a["peripheral_id"].startswith("vga") for a in r["peripherals"])
+    top = codegen.emit_top_sv(r)
+    assert ".screen_width(640)," in top and ".screen_height(480)," in top and ".w_red(4)," in top
+    btn = next(a for a in r["peripherals"] if a["peripheral_id"] == "button_array")
+    assert btn["params"].get("mirror") is True
+    assert "mirrored" in top and "assign cap_buttons_btn__p" in top or "~ onboard_buttons" in top
+
+
+def test_check_power_up_model_and_undefined_status():
+    from tools import equiv_check as ec
+    src = "module tm1638_board_controller # (parameter clk_mhz = 50)\n(\n    input clk,\n    output logic [7:0] keys\n);\n    always_ff @ (posedge clk) keys <= '0;\nendmodule\n"
+    out = ec._powerup_text(src)
+    assert "initial keys = '0;" in out and out.index("initial keys") > out.index(");") and ec._powerup_text(out) == out
+    assert ec._powerup_text("module other (input a);\nendmodule\n") == "module other (input a);\nendmodule\n"
+
+
+def test_vga_colour_form_more_cases():
+    from tools import sync_from_bgm as sy
+    arty = ("module board_specific_top (output [7:0] jb, output [7:0] jc);\n"
+            "lab_top i_lab (.red (jb [7:4]), .green (jc [7:4]), .blue (jb [3:0]));\n"
+            "vga i_vga (.hsync (jc [0]), .vsync (jc [1]), .display_on ( ));\n")
+    assert sy._vga_colour_form(arty) == (False, False)
+    soc = "module board_specific_top (inout [35:0] GPIO_1);\nlab_top i (.red (red));\nassign GPIO_1 [13] = red [0];\n"
+    assert sy._vga_colour_form(soc) == (False, False)
+    assert sy._vga_colour_form("assign VGA_R = display_on ? red : '0;\nvga i_vga (.display_on (display_on));") == (True, False)
+
+
+def test_tmds_timing_follows_bgm_vga_clock():
+    """The TMDS driver's x / y come from BGM's `vga` on the clock BGM runs it
+    on: the serial clock (Gowin DVI_TX boards), the lab clock (Tang Nano 4K,
+    colorlight), with that clock's MHz for the pixel enable."""
+    for cid, timing, mhz in (("tang_nano_9k_hdmi_tm1638", "serial", 252), ("tang_nano_4k_hdmi_no_tm1638", "lab", "clk_mhz"),
+                             ("colorlight75b_tm1638_ecp5_yosys", "lab", "clk_mhz")):
+        r = config_init.resolve_configuration(cid)
+        hdmi = next(a for a in r["peripherals"] if a["peripheral_id"] == "hdmi_tmds")
+        assert hdmi["params"].get("timing", "serial") == timing, cid
+        top = codegen.emit_top_sv(r)
+        inst = next(l for l in top.splitlines() if "hdmi_tmds_out #" in l)
+        assert '.TIMING("{}")'.format(timing) in inst, inst
+        if timing == "serial":
+            assert ".SERIAL_MHZ({})".format(mhz) in inst and ".PIXEL_MHZ(25)" in inst, inst
+        else:
+            assert ".LAB_MHZ({})".format(mhz) in inst, inst
+        assert ".lab_clk_i(clk)" in top or ".lab_clk_i(clk_pixel)" in top
+    # the ref form
+    from tools import codegen as cg
+    cg._EMIT["clock_mhz"] = {"serial": 252}
+    assert cg._resolve_ref("clock.serial.mhz", {"peripheral_id": "x"}, {}, {}) == "252"
+    with pytest.raises(cg.CodegenError):
+        cg._resolve_ref("clock.other.mhz", {"peripheral_id": "x"}, {}, {})

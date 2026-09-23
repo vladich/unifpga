@@ -19,8 +19,10 @@ Peripheral:
     - { name: r,    type: bus, width: 5, direction: output }
     - { name: g,    type: bus, width: 6, direction: output }
     - { name: b,    type: bus, width: 5, direction: output }
-    - { name: hs,   type: scalar, direction: output }
-    - { name: vs,   type: scalar, direction: output }
+    # hs/vs are optional: the Tang Nano 20K runs the panel DE-only (BGM ties
+    # LCD_HS / LCD_VS to 0 with the driver's HSYNC / VSYNC unconnected)
+    - { name: hs,   type: scalar, direction: output, optional: true }
+    - { name: vs,   type: scalar, direction: output, optional: true }
     - { name: de,   type: scalar, direction: output }
     - { name: ck,   type: scalar, direction: output }
     - { name: bl,   type: scalar, direction: output, optional: true }

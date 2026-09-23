@@ -34,6 +34,13 @@ Peripheral:
   # clock is divided from the serial one (Gowin CLKDIV2 + CLKDIV 5 as in BGM's
   # yosys variant; a second MMCM output on Xilinx; the board clock itself when
   # it already runs at 1/10 of the serial clock — Tang Nano 4K at 27 MHz).
+  parameters:
+    timing:
+      type: enum
+      values: [serial, lab, pixel]
+      default: serial     # the clock BGM's `vga` timing generator runs on (x / y / syncs):
+                          # the serial clock (Gowin DVI_TX boards), the lab clock (Tang Nano 4K,
+                          # colorlight, marsohod3gw2) or the pixel clock (Tang Primer 25K)
   clocks:
     - { name: serial, mhz: 252 }
     - { name: pixel, from: serial, divide: 10 }
@@ -42,12 +49,18 @@ Peripheral:
     file: rtl/peripherals/hdmi_tmds_out.sv
     files:
       - rtl/peripherals/dvi.sv
+      - rtl/peripherals/vga.sv
       - rtl/io/diff_obuf.sv
     parameters:
-      DIFF_BUF: context.diff_buf
+      DIFF_BUF:   context.diff_buf
+      TIMING:     $timing
+      SERIAL_MHZ: clock.serial.mhz
+      PIXEL_MHZ:  clock.pixel.mhz
+      LAB_MHZ:    context.clk_mhz
     port_map:
       serial_clk_i: clock.serial
       pixel_clk_i:  clock.pixel
+      lab_clk_i:    context.clk
       rst_i:        context.rst
       red_i:        capability.screen.red
       green_i:      capability.screen.green

@@ -69,8 +69,12 @@ def test_clock_frequency_override_per_configuration():
     r = _resolve("tang_nano_9k_lcd_480_272_no_tm1638")
     a = _attach(r, "lcd_480_272")
     a.setdefault("params", {})["clock_pixel_mhz"] = 32.4
+    a["params"].pop("clock_pixel_pll", None)      # BGM's exact dividers belong to BGM's frequency
     tree = codegen.plan_clock_tree(r)
     assert abs(tree[0][3].f_out - 32.4) < 1e-9
+    a["params"]["clock_pixel_pll"] = {"idiv": 2, "fbdiv": 0, "odiv": 48}   # 9 MHz, not 32.4
+    with pytest.raises(codegen.CodegenError):
+        codegen.plan_clock_tree(r)
 
 
 def test_conflicting_clock_requests_are_an_error():
@@ -175,5 +179,5 @@ def test_ecp5_hdmi_serial_pll_and_pixel_alias():
     top = codegen.emit_top_sv(r, strict=True)
     assert "pll_ecp5 # (.CLKI_DIV(1), .CLKFB_DIV(5), .CLKOP_DIV(4), .CLKOS_DIV(2)) i_pll_serial" in top
     assert "wire clk_pixel = clk;" in top
-    assert 'hdmi_tmds_out # (.DIFF_BUF("generic"))' in top          # pseudo-differential pairs, as BGM's hdmi.v
+    assert 'hdmi_tmds_out # (.DIFF_BUF("generic")' in top          # pseudo-differential pairs, as BGM's hdmi.v
     assert codegen.pll_source_files(top) == [os.path.join("rtl", "pll", "pll_ecp5.sv")]

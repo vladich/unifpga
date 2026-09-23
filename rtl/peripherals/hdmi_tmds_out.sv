@@ -11,6 +11,11 @@
 //   serial_clk_i  10 x pixel (252 MHz for 640x480 at 25.2 MHz)
 //   pixel_clk_i   serial / 10 (Gowin CLKDIV, Xilinx MMCM output, or the board
 //                 clock itself when the frequencies coincide — Tang Nano 4K)
+//   lab_clk_i     the lab clock; TIMING picks which clock BGM's `vga` timing
+//                 generator (x / y / syncs) runs on: "serial" (Gowin DVI_TX
+//                 boards), "lab" (Tang Nano 4K, colorlight, marsohod3gw2) or
+//                 "pixel" (Tang Primer 25K), with that clock's MHz for its
+//                 pixel enable — so x / y advance exactly when BGM's do.
 //
 // Channel order follows the DVI spec and BGM: d[0] = blue, d[1] = green,
 // d[2] = red.
@@ -18,11 +23,16 @@
 
 module hdmi_tmds_out
 # (
-    parameter DIFF_BUF = "generic"
+    parameter     DIFF_BUF   = "generic",
+    parameter     TIMING     = "serial",
+    parameter int SERIAL_MHZ = 252,
+    parameter int PIXEL_MHZ  = 25,
+    parameter int LAB_MHZ    = 27
 )
 (
     input               serial_clk_i,
     input               pixel_clk_i,
+    input               lab_clk_i,
     input               rst_i,
 
     input        [7:0]  red_i,
@@ -40,10 +50,28 @@ module hdmi_tmds_out
 
     wire red_serial, green_serial, blue_serial;
 
-    dvi_top i_dvi_top
+    wire timing_clk;
+    generate
+        if (TIMING == "lab") begin : g_timing_lab
+            assign timing_clk = lab_clk_i;
+        end else if (TIMING == "pixel") begin : g_timing_pixel
+            assign timing_clk = pixel_clk_i;
+        end else begin : g_timing_serial
+            assign timing_clk = serial_clk_i;
+        end
+    endgenerate
+    localparam int TIMING_MHZ = (TIMING == "lab") ? LAB_MHZ : (TIMING == "pixel") ? PIXEL_MHZ : SERIAL_MHZ;
+
+    dvi_top
+    # (
+        .TIMING_MHZ ( TIMING_MHZ ),
+        .PIXEL_MHZ  ( PIXEL_MHZ  )
+    )
+    i_dvi_top
     (
         .serial_clk_i   ( serial_clk_i ),
         .pixel_clk_i    ( pixel_clk_i  ),
+        .timing_clk_i   ( timing_clk   ),
         .rst_i          ( rst_i        ),
         .red_i          ( red_i        ),
         .green_i        ( green_i      ),

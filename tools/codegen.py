@@ -386,11 +386,20 @@ def collect_clock_requirements(resolved):
                 if override is not None:
                     mhz = float(override)
                 entry = {"mhz": mhz, "from": None, "divide": None}
+                # `clock_<name>_pll: {idiv, fbdiv, odiv, sdiv, clkoutd}`: the exact
+                # Gowin rPLL dividers (BGM's gowin_rpll.v) instead of the solver's
+                pll = (attach.get("params") or {}).get("clock_{}_pll".format(name))
+                if pll is not None:
+                    if not isinstance(pll, dict) or not {"idiv", "fbdiv", "odiv"} <= set(pll):
+                        raise CodegenError("Configuration {}: clock_{}_pll must map idiv / fbdiv / odiv [/ sdiv, clkoutd], got {!r}"
+                                           .format(cfg_id, name, pll))
+                    entry["pll"] = dict(pll)
             have = reqs.get(name)
             if have is not None:
                 same = (have["from"] == entry["from"] and have["divide"] == entry["divide"]
                         and (have["mhz"] is None) == (entry["mhz"] is None)
-                        and (have["mhz"] is None or abs(have["mhz"] - entry["mhz"]) < 1e-6))
+                        and (have["mhz"] is None or abs(have["mhz"] - entry["mhz"]) < 1e-6)
+                        and have.get("pll") == entry.get("pll"))
                 if not same:
                     raise CodegenError("Configuration {}: clock '{}' is defined differently by {} ({}) and {} ({})"
                                        .format(cfg_id, name, have["users"], have, attach["peripheral_id"], entry))
@@ -458,6 +467,29 @@ def diff_buf_kind(resolved):
     if vendor == "xilinx_mmcm":
         return "xilinx"
     return "generic"
+
+
+def _pinned_rpll(cfg_id, name, f_in, r):
+    """A GowinRPLL solution from the configuration's exact dividers
+    (`clock_<name>_pll`, BGM's gowin_rpll.v): the same frequency the solver
+    would reach, and the same edges as BGM's PLL — CLKOUT versus CLKOUTD
+    (CLKOUT / sdiv) start and toggle differently in simulation."""
+    p = r["pll"]
+    try:
+        idiv, fbdiv, odiv = int(p["idiv"]), int(p["fbdiv"]), int(p["odiv"])
+        sdiv = int(p.get("sdiv", 2))
+        use_clkoutd = bool(p.get("clkoutd", False))
+    except (TypeError, ValueError):
+        raise CodegenError("Configuration {}: clock_{}_pll dividers must be integers: {!r}".format(cfg_id, name, p))
+    f_pfd = f_in / (idiv + 1)
+    f_clkout = f_pfd * (fbdiv + 1)
+    f_vco = f_clkout * odiv
+    f_out = f_clkout / sdiv if use_clkoutd else f_clkout
+    err = abs(f_out - r["mhz"]) / r["mhz"] * 100.0 if r["mhz"] else 0.0
+    if err > r["tolerance_pct"]:
+        raise CodegenError("Configuration {}: clock_{}_pll gives {:.4f} MHz, {:.2f}% from the requested {:g} MHz"
+                           .format(cfg_id, name, f_out, err, r["mhz"]))
+    return pll_solver.GowinRPLL(idiv, fbdiv, odiv, sdiv, use_clkoutd, f_pfd, f_vco, f_clkout, f_out, err)
 
 
 def _gowin_rpll_primitive(board):
@@ -626,7 +658,9 @@ def plan_clock_tree(resolved, plans=None):
             out[n] = (n, r, vendor, MmcmOutput(multi.f_outs[i], i, multi))
     else:
         for name, r in sources:
-            if vendor == "gowin_rpll":
+            if vendor == "gowin_rpll" and r.get("pll"):
+                sol = _pinned_rpll(cfg_id, name, f_in, r)
+            elif vendor == "gowin_rpll":
                 # Gowin EDA: "suitable VCO range 500 MHz to 1250 MHz" on GW2AR-18C;
                 # BGM's GW1NR-9C settings sit as low as 432 MHz.
                 vco = (400.0, 1200.0) if _is_gowin_littlebee(board) else (500.0, 1250.0)
@@ -1209,6 +1243,12 @@ def emit_top_sv(resolved, strict=True):
     if tree_lines:
         out.extend(tree_lines)
         out.append("")
+    # the solved frequencies, for drivers that need them as parameters
+    # (`clock.<name>.mhz`: hdmi_tmds's vga timing generator on the serial clock)
+    try:
+        _EMIT["clock_mhz"] = {name: int(round(sol.f_out)) for name, _r, _v, sol in plan_clock_tree(resolved, plans)}
+    except CodegenError:
+        _EMIT["clock_mhz"] = {}
 
     # ---- Reset (may reference the switches / buttons buses) ----
     out.extend(_emit_reset(resolved, plans))
@@ -2071,7 +2111,14 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
             return _sv_literal(_EMIT["diff_buf"])
         return invert + name + idx_suffix
     if s.startswith("clock."):
-        return invert + "clk_" + s[len("clock."):] + idx_suffix
+        name = s[len("clock."):]
+        if name.endswith(".mhz"):
+            mhz = (_EMIT.get("clock_mhz") or {}).get(name[:-len(".mhz")])
+            if mhz is None:
+                raise CodegenError("{}: {} — the clock tree defines no clock {!r}".format(
+                    attach.get("peripheral_id", "?"), s, name[:-len(".mhz")]))
+            return invert + str(mhz) + idx_suffix
+        return invert + "clk_" + name + idx_suffix
     if s.startswith("const."):
         v = s[len("const."):]
         return invert + ("1'b" + v if v in ("0", "1") else v) + idx_suffix
@@ -2260,7 +2307,10 @@ def _emit_lab_top(resolved, plans):
         wg = _screen_channel_width(sp, "green")
         wb = _screen_channel_width(sp, "blue")
     else:
-        sw = sh = wr = wg = wb = 0
+        # no display: BGM's lab_top defaults (screen_width 640, screen_height
+        # 480, 4-bit colours) — the lab's x / y stay 10 / 9 bits wide, as
+        # every BGM board top passes them (ax7035b: `w_x = $clog2 (screen_width)`)
+        sw, sh, wr, wg, wb = 640, 480, 4, 4, 4
 
     lab = lab_clock(resolved, plans)
     clk_mhz = _lab_mhz_int(lab, resolve_clock(resolved, plans))

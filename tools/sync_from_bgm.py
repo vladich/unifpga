@@ -166,6 +166,38 @@ def apply_reset(path, dry_run):
 # --clock: board clock frequency into the pinmap, clock attach into configs
 # ---------------------------------------------------------------------------
 
+def bgm_clock_port_name(text):
+    """The board oscillator port BGM's `wire clk = <PORT>;` reads (CLK, CLOCK_50, CLK_50M ...), or ''."""
+    m = re.search(r"\bwire\s+clk\s*=\s*([A-Za-z_]\w*)\s*;", text)
+    return m.group(1) if m else ""
+
+
+def _rpll_param_text(vdir, outs, mhz):
+    """`{idiv: .., fbdiv: .., odiv: .., sdiv: .., clkoutd: ..}` for the BGM
+    Gowin_rPLL output at `mhz`, or None when BGM's PLL is not an rPLL the
+    oracle read."""
+    st = bgm_oracle.rpll_settings(vdir)
+    if st is None or mhz is None:
+        return None
+    which = next((o[2] for o in outs if len(o) > 2 and abs(float(o[1]) - float(mhz)) < 1e-6), None)
+    if which not in ("clkout", "clkoutd"):
+        return None
+    return "{{idiv: {}, fbdiv: {}, odiv: {}, sdiv: {}, clkoutd: {}}}".format(
+        st["IDIV_SEL"], st["FBDIV_SEL"], st["ODIV_SEL"], st["DYN_SDIV_SEL"], "true" if which == "clkoutd" else "false")
+
+
+def _sync_rpll_param(lines, pid, clock, vdir, outs, mhz):
+    """Set / drop `params.clock_<clock>_pll` on the attach; change notes."""
+    key = "clock_{}_pll".format(clock)
+    want = _rpll_param_text(vdir, outs, mhz)
+    if want is not None:
+        if _set_attach_param(lines, pid, None, key, want):
+            return ["{}: {} = {} (BGM's gowin_rpll.v)".format(pid, key, want)]
+    elif _del_attach_param(lines, pid, key):
+        return ["{}: drop {} (BGM's PLL is not an rPLL)".format(pid, key)]
+    return []
+
+
 def _pinmap_path(board_id):
     entry = config_init.read_boards_catalog().get(board_id)
     if entry is None:
@@ -515,12 +547,17 @@ def _vga_colour_form(text):
         return True, True
     if re.search(r"=\s*display_on\s*(?:\?\s*red\b|&\s*\(\s*\|\s*red\b)", t):
         return True, False
+    ports = bgm_oracle.top_ports(t)
     for inst in bgm_oracle.instantiations(t, "lab_top"):
         red = dict(inst["ports"]).get("red", "").strip()
-        if red and red in bgm_oracle.top_ports(t):
-            return False, False                     # the lab drives the pins directly
-        if red and re.search(r"\bassign\s+\w+\s*(?:\[[^\]]*\])?\s*=\s*" + re.escape(red) + r"\s*;", t):
-            return False, False                     # through a wire, still ungated
+        m = re.match(r"^([A-Za-z_]\w*)\s*(\[[^\]]*\])?$", red)
+        if m and m.group(1) in ports:
+            return False, False                     # the lab drives the pins directly (arty: `.red (jb [7:4])`)
+        if red and re.search(r"\bassign\s+\w+\s*(?:\[[^\]]*\])?\s*=\s*" + re.escape(red) + r"\s*(?:\[[^\]]*\])?\s*;", t):
+            return False, False                     # a port bit from the colour, ungated (de0_nano_soc)
+    for inst in bgm_oracle.instantiations(t, "vga"):
+        if not dict(inst["ports"]).get("display_on", "").strip():
+            return False, False                     # nothing to gate with (emooc, arty)
     return True, False
 
 
@@ -1036,9 +1073,10 @@ def derive_bank_polarity(vdir, pinmap, cfg):
     banks the configuration's passthrough peripherals bind, from the ports BGM
     inverts / bit-swaps in this variant's active branch (by pin identity)."""
     text = bgm_oracle.preprocess_variant(vdir).text
-    inv = bgm_oracle.port_polarity(text)
+    # constraint keys are upper-case; BGM's ports are not always (ax7035b: key_in)
+    inv = {k.upper(): v for k, v in bgm_oracle.port_polarity(text).items()}
     body = text.split(");", 1)[1] if ");" in text else text
-    referenced = set(re.findall(r"\b([A-Za-z_]\w*)\b", body))
+    referenced = {r.upper() for r in re.findall(r"\b([A-Za-z_]\w*)\b", body)}
     sig_pins = _bgm_signal_pins(vdir)
     rev = _pin_to_ref(pinmap)
     # BGM port -> banks (a port like KEY[3:0] covers several pins). A port the
@@ -1322,6 +1360,34 @@ def apply_clock_tree(path, dry_run):
                         changes.append("{}: clock_pixel_mhz = {:g} (BGM {})".format(pid, mhz, _fmt_outs(outs)))
                 elif _del_attach_param(lines, pid, "clock_pixel_mhz"):
                     changes.append("{}: drop clock_pixel_mhz (BGM uses the default {:g})".format(pid, default))
+                # the exact rPLL dividers and output BGM uses: our solver reaches
+                # the same frequency, but CLKOUT and CLKOUTD (CLKOUT / sdiv) do
+                # not toggle alike, and the LCD counters drift against BGM's
+                changes.extend(_sync_rpll_param(lines, pid, "pixel", vdir, outs, mhz))
+
+    # 2b. which clock BGM's `vga` timing generator runs on for a DVI / HDMI
+    #     transmitter: the serial clock (Gowin DVI_TX boards), the lab clock
+    #     (Tang Nano 4K, colorlight, marsohod3gw2) or the pixel clock — the
+    #     hdmi_tmds attach's `timing`
+    if any(a["peripheral_id"] == "hdmi_tmds" for a in resolved["peripherals"]):
+        vgas = bgm_oracle.instantiations(t, "vga")
+        vclk = dict(vgas[0]["ports"]).get("clk", "").strip() if vgas else ""
+        lab_net = bgm_oracle.lab_clock_source(t)
+        if vclk:
+            if vclk.lower() in ("clk", bgm_clock_port_name(t).lower()) or (lab_net == "pixel" and vclk == "clk"):
+                want_timing = "lab"
+            elif re.search(r"pixel", vclk, re.I) and not re.search(r"serial", vclk, re.I):
+                want_timing = "pixel"
+            else:
+                want_timing = "serial"
+            cur = next(((a.get("params") or {}).get("timing") for a in cfg.get("attach") or []
+                        if a.get("peripheral") == "hdmi_tmds"), None)
+            if want_timing != (cur or "serial"):
+                if want_timing == "serial":
+                    if _del_attach_param(lines, "hdmi_tmds", "timing"):
+                        changes.append("hdmi_tmds: drop timing (BGM's vga runs on the serial clock)")
+                elif _set_attach_param(lines, "hdmi_tmds", None, "timing", want_timing):
+                    changes.append("hdmi_tmds: timing = {} (BGM's vga runs on {})".format(want_timing, vclk))
 
     # 3. LCD backlight / init from BGM's assigns on the same pins
     assigns = bgm_oracle.port_assigns(t)

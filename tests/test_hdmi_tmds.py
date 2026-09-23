@@ -39,7 +39,7 @@ def test_gowin_hdmi_serial_pll_and_clkdiv_pixel_clock():
     assert 400.0 <= sol.f_vco <= 1200.0
     assert 'DEVICE("GW1NR-9C")' in top
     assert "clkdiv_gowin # (.DIV(10)) i_div_pixel (.clk_in(clk_serial), .resetn(clk_serial_locked), .clk_out(clk_pixel));" in top
-    assert 'hdmi_tmds_out # (.DIFF_BUF("gowin_elvds"))' in top      # LittleBee: ELVDS_OBUF
+    assert 'hdmi_tmds_out # (.DIFF_BUF("gowin_elvds")' in top      # LittleBee: ELVDS_OBUF
     assert ".serial_clk_i(clk_serial)" in top and ".pixel_clk_i(clk_pixel)" in top
     assert ".tmds_clk_p(onboard_hdmi_clk_p)" in top and ".tmds_d_p(onboard_hdmi_d_p)" in top
     assert set(codegen.pll_source_files(top)) == {
@@ -68,7 +68,7 @@ def test_apicula_cst_lists_both_halves():
     assert 'IO_LOC  "onboard_hdmi_d_p[0]" H14;' in cst
     assert 'IO_LOC  "onboard_hdmi_d_n[0]" H16;' in cst
     top = codegen.emit_top_sv(r, strict=True)
-    assert 'hdmi_tmds_out # (.DIFF_BUF("gowin_tlvds"))' in top     # Arora: TLVDS_OBUF
+    assert 'hdmi_tmds_out # (.DIFF_BUF("gowin_tlvds")' in top     # Arora: TLVDS_OBUF
 
 
 def test_pixel_clock_equal_to_board_clock_is_an_alias():
@@ -110,7 +110,7 @@ def test_a7_lite_hdmi_uses_one_mmcm_and_tmds_33():
     assert "pll_xilinx_mmcm # (.CLKIN_PERIOD(20.000), .DIVCLK_DIVIDE(1), .CLKFBOUT_MULT_F(20.0), " \
            ".CLKOUT0_DIVIDE(4.0), .CLKOUT1_DIVIDE(40), .CLKOUT2_DIVIDE(1))" in top
     assert ".clkout0(clk_serial), .clkout1(clk_pixel)" in top
-    assert 'hdmi_tmds_out # (.DIFF_BUF("xilinx"))' in top
+    assert 'hdmi_tmds_out # (.DIFF_BUF("xilinx")' in top
     xdc = codegen.emit_xdc(r)
     # BGM a7_lite_35t/board_specific.xdc: PACKAGE_PIN L19 + IOSTANDARD TMDS_33 on TMDS_CLK_P
     assert "PACKAGE_PIN L19 IOSTANDARD TMDS_33 } [get_ports { onboard_hdmi_clk_p }]" in xdc

@@ -538,6 +538,7 @@ def _patched_text(path, out_dir, patched, seen):
         return None
     new = _ALWAYS_NO_EVENT.sub(lambda m: m.group(1) + "always @*" + (" " + m.group(2) if m.group(2) else ""), text)
     new = _icarus_rewrite(new)
+    new = _powerup_text(new)
 
     def include(m):
         sib = os.path.normpath(os.path.join(os.path.dirname(path), "..", m.group(1), "board_specific_top.sv"))
@@ -560,6 +561,44 @@ def _patched_text(path, out_dir, patched, seen):
 
     new = _SIBLING_INCLUDE.sub(include, new)
     return new if new != text else None
+
+
+_TM1638_MODULE = re.compile(r"(\bmodule\s+tm1638_board_controller\b.*?\)\s*;)", re.S)
+_POWERUP_KEYS = "\n    initial keys = '0;   // equiv_check: the FPGA's power-up state (rst = tm_key [..] is x forever otherwise)"
+
+
+def _powerup_text(text):
+    """The TM1638 controller's key register starts at 0, as the FPGA's flops
+    do: BGM's boards that reset from the module's own key (`rst = tm_key
+    [w_tm_key - 1]`, the controller itself reset by rst) never leave x in a
+    simulation otherwise — on either side, which compared x with x."""
+    if "initial keys = '0" in text:
+        return text
+    return _TM1638_MODULE.sub(lambda m: m.group(1) + _POWERUP_KEYS, text, count=1)
+
+
+def _stage_powerup(files, out_dir, subdir):
+    """Copies of the sources (either side) that carry the simulation power-up
+    model; returns the file list with the copies substituted."""
+    staged = []
+    for path in files:
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                text = f.read()
+        except OSError:
+            staged.append(path)
+            continue
+        new = _powerup_text(text)
+        if new == text:
+            staged.append(path)
+            continue
+        pdir = os.path.join(out_dir, subdir)
+        os.makedirs(pdir, exist_ok=True)
+        dst = os.path.join(pdir, os.path.basename(path))
+        with open(dst, "w") as f:
+            f.write(new)
+        staged.append(dst)
+    return staged
 
 
 def _stage_bgm_patches(files, out_dir):
@@ -717,6 +756,7 @@ def cmd_generate(args):
                 seen.add(ap)
                 uniq.append(ap)
         gate_files = uniq
+        gate_files = _stage_powerup(gate_files, d, "gate_patched")
         gate_stub_text, gate_dropped = _stub_text_without(_defined_modules(gate_files))
         with open(os.path.join(d, "gate_stubs.sv"), "w") as f:
             f.write(gate_stub_text)
@@ -1026,6 +1066,10 @@ def _run_one(entry, roots, out, keep_logs=True):
         res["gold_only"] = entry["gold_only"]
         res["gate_only"] = entry["gate_only"]
         res["status"] = "DIFF" if diffs else "PASS"
+        if any("EQUIV-PROBE" in l and "cyc=20000" in l and "rst=x" in l for l in gold.other):
+            # BGM's lab never left x (its reset is undefined for the whole
+            # run): x compared with x proves nothing
+            res["status"] = "UNDEFINED"
     for side in ("gold", "gate"):
         try:
             os.remove(os.path.join(d, side + ".vvp"))
