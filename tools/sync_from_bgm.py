@@ -1356,8 +1356,27 @@ def apply_clock_tree(path, dry_run):
         if unmodelled:
             changes.append("note: BGM PLL {} not modelled; pixel clock left at the peripheral default".format(unmodelled))
         elif size is not None and size != ours:
-            changes.append("WARNING: BGM builds {}x{} but the configuration attaches {}x{}; pixel clock "
-                           "({} MHz) not copied".format(size[0], size[1], ours[0], ours[1], mhz))
+            # BGM's tang_nano_9k_lcd_480_272_tm1638_yosys defines USE_LCD_800_480: the
+            # directory says one panel, the build drives the other. The build is
+            # what BGM ships; the configuration follows it when a peripheral of
+            # that size exists for the same pins.
+            swap = {(800, 480): "lcd_800_480", (480, 272): "lcd_480_272"}.get(size)
+            cur_pid = next((a["peripheral_id"] for a in declared["pixel"]), None)
+            if swap and cur_pid in ("lcd_480_272", "lcd_800_480") and swap != cur_pid \
+                    and swap in config_init.read_peripherals():
+                if not dry_run:
+                    new_lines = [re.sub(r"^(\s*- peripheral: ){}(\s|$)".format(re.escape(cur_pid)), r"\g<1>" + swap + r"\2", l)
+                                 for l in lines]
+                    if new_lines != lines:
+                        open(path, "w", encoding="utf-8").write("\n".join(new_lines))
+                        config_init.clear_cache()
+                        again = apply_clock_tree(path, dry_run)
+                        return "{} -> {} (BGM builds {}x{}); {}".format(cur_pid, swap, size[0], size[1], again)
+                changes.append("{} -> {} (BGM builds {}x{}; the clock follows on the next pass)".format(
+                    cur_pid, swap, size[0], size[1]))
+            else:
+                changes.append("WARNING: BGM builds {}x{} but the configuration attaches {}x{}; pixel clock "
+                               "({} MHz) not copied".format(size[0], size[1], ours[0], ours[1], mhz))
         elif mhz is None:
             changes.append("WARNING: cannot tell which PLL output is the pixel clock: {}".format(_fmt_outs(outs)))
         else:
@@ -1368,10 +1387,23 @@ def apply_clock_tree(path, dry_run):
                 if mhz > 4 * default or mhz < default / 4:
                     # BGM tang_nano_9k_lcd_480_272_no_tm1638_yosys ships the
                     # 800x480 gowin_rpll.v but its top takes the 480x272 branch
-                    # (CLKOUT = 129.6 MHz on LARGE_LCD_CK): an upstream bug,
-                    # not a frequency to copy.
-                    changes.append("WARNING: BGM pixel clock {:g} MHz is implausible for {} (default {:g} MHz); "
-                                   "not copied (upstream PLL/branch mismatch?)".format(mhz, pid, default))
+                    # (CLKOUT = 129.6 MHz on LARGE_LCD_CK): an upstream bug. The
+                    # configuration keeps the panel's clock; the BGM overlay
+                    # carries the clock BGM actually builds, for parity.
+                    from tools import bgm_overlay
+                    st = bgm_oracle.rpll_settings(vdir)
+                    which = next((o[2] for o in outs if len(o) > 2 and abs(float(o[1]) - float(mhz)) < 1e-6), None)
+                    params = OrderedDict([("clock_pixel_mhz", mhz)])
+                    if st and which in ("clkout", "clkoutd"):
+                        params["clock_pixel_pll"] = OrderedDict([("idiv", st["IDIV_SEL"]), ("fbdiv", st["FBDIV_SEL"]),
+                                                                 ("odiv", st["ODIV_SEL"]), ("sdiv", st["DYN_SDIV_SEL"]),
+                                                                 ("clkoutd", which == "clkoutd")])
+                    cur = bgm_overlay.attach_override(bgm_overlay.load(cid) or {}, pid, 0, create=False) or {}
+                    if dict((cur.get("params") or {})) .get("clock_pixel_mhz") != mhz:
+                        if not dry_run:
+                            bgm_overlay.set_attach(cid, pid, 0, params=params, variant=os.path.basename(vdir))
+                        changes.append("overlay {}: clock_pixel_mhz = {:g} (BGM's PLL / branch mismatch, upstream bug; "
+                                       "the configuration keeps the panel's {:g} MHz)".format(pid, mhz, default))
                     continue
                 if abs(mhz - default) > 1e-6:
                     if _set_attach_param(lines, pid, None, "clock_pixel_mhz", "{:g}".format(mhz)):

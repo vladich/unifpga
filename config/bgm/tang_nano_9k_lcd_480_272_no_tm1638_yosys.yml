@@ -23,3 +23,13 @@ BGM:
       leds: [5, 4, 3, 2, 1, 0]
     params:
       mirror: true
+  - peripheral: lcd_480_272
+    index: 0
+    params:
+      clock_pixel_mhz: 129.6
+      clock_pixel_pll:
+        idiv: 4
+        fbdiv: 23
+        odiv: 4
+        sdiv: 4
+        clkoutd: false
