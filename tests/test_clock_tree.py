@@ -157,10 +157,10 @@ def test_gw5_pll_wrapper_for_arora_v():
     assert ".clkout0(clk_pixel)" in top
     r = _resolve("tang_primer_25k_pmod_hdmi")
     kinds = {n: v for n, _r, v, _s in codegen.plan_clock_tree(r)}
-    assert kinds == {"serial": "gowin_gw5", "pixel": "gowin_gw5"}
+    assert kinds == {"serial": "gowin_gw5", "pixel": "gowin_gw5", "timing": "gowin_gw5"}
     top = codegen.emit_top_sv(r, strict=True)
-    assert '.PRIMITIVE("PLLA")' in top and ".clkout0(clk_serial), .clkout1(clk_pixel)" in top
-    assert '.CLKOUT1_EN("TRUE")' in top
+    assert '.PRIMITIVE("PLLA")' in top and ".clkout0(clk_serial), .clkout1(clk_pixel), .clkout2(clk_timing)" in top
+    assert '.CLKOUT1_EN("TRUE")' in top and '.CLKOUT2_EN("TRUE")' in top
 
 
 def test_gw5_solver_matches_bgm_ipc():

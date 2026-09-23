@@ -136,6 +136,16 @@ def _eval_param(spec, peripheral_params, peripheral_def=None):
     return spec
 
 
+def clock_active(clock_def, attach):
+    """A contract clock's `when: {<param>: value | [values]}` holds for this
+    attach (hdmi_tmds's `timing` clock exists only with `timing: serial`)."""
+    for key, want in (clock_def.get("when") or {}).items():
+        have = _eval_param("$" + key, attach.get("params") or {}, attach.get("peripheral"))
+        if have not in (want if isinstance(want, list) else [want]):
+            return False
+    return True
+
+
 _PRIMARY_PARAM = {
     "switches":      "width",
     "buttons":       "width",
@@ -376,6 +386,8 @@ def collect_clock_requirements(resolved):
     reqs = OrderedDict()
     for idx, attach in enumerate(resolved["peripherals"]):
         for c in attach["peripheral"].get("clocks") or []:
+            if not clock_active(c, attach):
+                continue
             name = c["name"]
             tol = float(c.get("tolerance_pct", 0.5))
             if "from" in c:
@@ -2135,6 +2147,9 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
                 raise CodegenError("{}: {} — the clock tree defines no clock {!r}".format(
                     attach.get("peripheral_id", "?"), s, name[:-len(".mhz")]))
             return invert + str(mhz) + idx_suffix
+        decl = next((c for c in (attach.get("peripheral") or {}).get("clocks") or [] if c.get("name") == name), None)
+        if decl is not None and not clock_active(decl, attach):
+            return "1'b0"                  # a clock this attach's parameters leave out
         return invert + "clk_" + name + idx_suffix
     if s.startswith("const."):
         v = s[len("const."):]

@@ -1330,7 +1330,8 @@ def apply_clock_tree(path, dry_run):
     declared = {}
     for a in resolved["peripherals"]:
         for c in a["peripheral"].get("clocks") or []:
-            declared.setdefault(c["name"], []).append(a)
+            if codegen.clock_active(c, a):
+                declared.setdefault(c["name"], []).append(a)
 
     # 1. lab clock
     # the lab clock choice is a BGM convention: it goes to the overlay

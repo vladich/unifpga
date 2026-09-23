@@ -45,6 +45,9 @@ Peripheral:
   clocks:
     - { name: serial, mhz: 252 }
     - { name: pixel, from: serial, divide: 10 }
+    # BGM's Gowin DVI_TX boards run `vga` on their 5x DDR serial clock (125
+    # MHz); ours is 10x SDR, so the timing generator gets serial / 2
+    - { name: timing, from: serial, divide: 2, when: { timing: serial } }
   driver:
     module: hdmi_tmds_out
     file: rtl/peripherals/hdmi_tmds_out.sv
@@ -62,6 +65,7 @@ Peripheral:
       serial_clk_i: clock.serial
       pixel_clk_i:  clock.pixel
       lab_clk_i:    context.clk
+      timing_clk_i: clock.timing
       rst_i:        context.rst
       red_i:        capability.screen.red
       green_i:      capability.screen.green

@@ -331,7 +331,10 @@ def testbench_text(wrap_name, pins, klass, clocks, main_pin, cmp_pins, cycles, r
     in_pins = [p for p in pins if klass[p] in ("INPUT", "INOUT")]
     rst_levels = rst_levels or {}
     power_up = ("    // power-up: the lab starts from its reset state (see the docstring)\n"
-                "    initial begin force dut.u.{0} = 1'b1; wait (cycle >= 1000); release dut.u.{0}; end\n"
+                "    // low, then high at 0.5 ns: an asynchronous-reset flop sees a clean edge once every\n"
+                "    // process waits on it (an x -> 1 at time 0 races them), before any clock edge\n"
+                "    initial begin force dut.u.{0} = 1'b0; #0.5 force dut.u.{0} = 1'b1;\n"
+                "        wait (cycle >= 1000); release dut.u.{0}; end\n"
                 .format(rst_net)) if rst_net else ""
     n_in = len(in_pins)
     n_cmp = len(cmp_pins)

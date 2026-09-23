@@ -11,9 +11,12 @@
 //   serial_clk_i  10 x pixel (252 MHz for 640x480 at 25.2 MHz)
 //   pixel_clk_i   serial / 10 (Gowin CLKDIV, Xilinx MMCM output, or the board
 //                 clock itself when the frequencies coincide — Tang Nano 4K)
+//   timing_clk_i  serial / 2 when TIMING = "serial": BGM's Gowin DVI_TX
+//                 boards run `vga` on their 5x DDR serial clock (125 MHz),
+//                 ours is 10x SDR (250 MHz); tied off otherwise
 //   lab_clk_i     the lab clock; TIMING picks which clock BGM's `vga` timing
 //                 generator (x / y / syncs) runs on: "serial" (Gowin DVI_TX
-//                 boards), "lab" (Tang Nano 4K, colorlight, marsohod3gw2) or
+//                 boards, on timing_clk_i), "lab" (Tang Nano 4K, colorlight, marsohod3gw2) or
 //                 "pixel" (Tang Primer 25K), with that clock's MHz for its
 //                 pixel enable — so x / y advance exactly when BGM's do; "dvi"
 //                 is dvi_top's own dvi_sync on the pixel clock, as on the
@@ -35,6 +38,7 @@ module hdmi_tmds_out
     input               serial_clk_i,
     input               pixel_clk_i,
     input               lab_clk_i,
+    input               timing_clk_i,
     input               rst_i,
 
     input        [7:0]  red_i,
@@ -58,11 +62,14 @@ module hdmi_tmds_out
             assign timing_clk = lab_clk_i;
         end else if (TIMING == "pixel") begin : g_timing_pixel
             assign timing_clk = pixel_clk_i;
-        end else begin : g_timing_serial
-            assign timing_clk = serial_clk_i;
+        end else if (TIMING == "serial") begin : g_timing_serial
+            assign timing_clk = timing_clk_i;
+        end else begin : g_timing_dvi
+            assign timing_clk = serial_clk_i;     // unused: dvi_sync runs on the pixel clock
         end
     endgenerate
-    localparam int TIMING_MHZ = (TIMING == "lab") ? LAB_MHZ : (TIMING == "pixel") ? PIXEL_MHZ : SERIAL_MHZ;
+    localparam int TIMING_MHZ = (TIMING == "lab") ? LAB_MHZ : (TIMING == "pixel") ? PIXEL_MHZ
+                              : (TIMING == "serial") ? SERIAL_MHZ / 2 : SERIAL_MHZ;
 
     dvi_top
     # (

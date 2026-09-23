@@ -785,7 +785,8 @@ def test_testbench_forces_the_lab_reset_at_power_up():
     assert ec.lab_reset_net(gold.replace(".rst ( rst )", ".rst ( ~ rst_n )")) is None
     tb = ec.testbench_text("gold_w", ["A1", "B1"], {"A1": "CLOCK", "B1": "OUTPUT"}, {"A1": 50.0}, "A1", ["B1"],
                            100, {}, rst_net="rst")
-    assert "force dut.u.rst = 1'b1; wait (cycle >= 1000); release dut.u.rst;" in tb
+    assert "force dut.u.rst = 1'b0; #0.5 force dut.u.rst = 1'b1;" in tb
+    assert "wait (cycle >= 1000); release dut.u.rst; end" in tb
     assert "force" not in ec.testbench_text("gold_w", ["A1", "B1"], {"A1": "CLOCK", "B1": "OUTPUT"}, {"A1": 50.0},
                                             "A1", ["B1"], 100, {})
 

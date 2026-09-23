@@ -31,8 +31,14 @@ def test_gowin_hdmi_serial_pll_and_clkdiv_pixel_clock():
     r = _resolve("tang_nano_9k_hdmi_tm1638")
     tree = codegen.plan_clock_tree(r)
     assert [(n, v, round(s.f_out, 4)) for n, _r, v, s in tree] == \
-        [("serial", "gowin_rpll", 252.0), ("pixel", "derived", 25.2)]
+        [("serial", "gowin_rpll", 252.0), ("pixel", "derived", 25.2), ("timing", "derived", 126.0)]
     top = codegen.emit_top_sv(r, strict=True)
+    # BGM runs `vga` on its 5x DDR serial clock: serial / 2 through CLKDIV2
+    assert "clkdiv_gowin # (.DIV(2)) i_div_timing (.clk_in(clk_serial)" in top and ".timing_clk_i(clk_timing)" in top
+    # the clock exists only with timing: serial
+    r4 = _resolve("tang_nano_4k_hdmi_tm1638")
+    assert "timing" not in [n for n, _r, _v, _s in codegen.plan_clock_tree(r4)]
+    assert ".timing_clk_i(1'b0)" in codegen.emit_top_sv(r4, strict=True)
     # BGM tang_primer_20k_dock_hdmi_tm1638_yosys: rPLL IDIV 2 / FBDIV 27 -> 252 MHz (ODIV is the solver's choice)
     assert ".IDIV_SEL(2), .FBDIV_SEL(27), .ODIV_SEL(4)" in top
     sol = tree[0][3]
