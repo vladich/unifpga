@@ -1,4 +1,5 @@
 # Configuration 'tang_primer_20k_dock_no_hdmi_tm1638'.
+# Generated from config/setups/tang_primer_20k_dock_no_hdmi_tm1638.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_primer_20k_dock_no_hdmi_tm1638
@@ -29,8 +30,6 @@ Configuration:
         width: 5
       bind:
         btn: onboard_buttons
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         clk: "gpio_1[2]"

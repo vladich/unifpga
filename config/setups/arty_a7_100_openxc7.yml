@@ -5,7 +5,10 @@ Setup:
   id: arty_a7_100_openxc7
   board: arty_a7
   toolchain: nextpnr_openxc7
-  part: 100t
+  part: "100t"
+  notes:
+    - "arty_a7_100_openxc7 retargeted to nextpnr_openxc7 (open-source flow)."
+    - "Mirrors arty_a7_100 — only the toolchain differs."
   use:
     - onboard: clock
     - onboard: switches

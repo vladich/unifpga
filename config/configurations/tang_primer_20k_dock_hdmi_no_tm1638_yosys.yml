@@ -1,4 +1,5 @@
 # Configuration 'tang_primer_20k_dock_hdmi_no_tm1638_yosys'.
+# Generated from config/setups/tang_primer_20k_dock_hdmi_no_tm1638_yosys.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_primer_20k_dock_hdmi_no_tm1638_yosys
@@ -44,8 +45,6 @@ Configuration:
         width: 5
       bind:
         btn: onboard_buttons
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds
       params:
         timing: dvi

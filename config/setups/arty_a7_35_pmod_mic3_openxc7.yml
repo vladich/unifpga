@@ -5,7 +5,10 @@ Setup:
   id: arty_a7_35_pmod_mic3_openxc7
   board: arty_a7
   toolchain: nextpnr_openxc7
-  part: 35t
+  part: "35t"
+  notes:
+    - "arty_a7_35_pmod_mic3_openxc7 retargeted to nextpnr_openxc7 (open-source flow)."
+    - "Mirrors arty_a7_35_pmod_mic3 — only the toolchain differs."
   use:
     - onboard: clock
     - onboard: switches
@@ -18,7 +21,7 @@ Setup:
     - onboard: uart
     - onboard: reset
     - module: digilent_pmod_mic3
-      plug: {connector: jd, row: 2}
+      wires: {'1': jd.7, '4': jd.10, '3': jd.9}
     - module: tm1638_led_key
       wires: {CLK: ck.IO40, STB: ck.IO41, DIO: ck.IO39}
     - gpio: ck
