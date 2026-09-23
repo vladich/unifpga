@@ -31,12 +31,7 @@ Configuration:
         sw: onboard_switches
       lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
         switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, ~]
-    - peripheral: led_bank
-      params:
-        width: 10
-      bind:
-        led: onboard_leds
-    - peripheral: led_bank
+    - peripheral: led_bank   # from BGM c5gx/board_specific_top.sv
       params:
         width: 8
       bind:

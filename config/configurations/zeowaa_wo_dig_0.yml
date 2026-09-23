@@ -86,3 +86,4 @@ Configuration:
   tie:
     "gpio[4]": 0
     "gpio[2]": 1
+    "onboard_7seg.anodes[0]": 1

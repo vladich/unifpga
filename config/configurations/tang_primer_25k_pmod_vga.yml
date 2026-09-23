@@ -11,7 +11,7 @@ Configuration:
   # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
   reset:
     sources:
-      - key: msb
+      - tm_key: msb
 
   attach:
     - peripheral: clock_input

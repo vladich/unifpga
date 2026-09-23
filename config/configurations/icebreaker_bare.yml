@@ -38,18 +38,24 @@ Configuration:
         mirror: true
       bind:
         led: onboard_leds
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        leds: [4, 3, 2, 1, 0]
     - peripheral: led_bank   # from BGM icebreaker_bare/board_specific_top.sv
       params:
         width: 1
         active: low
       bind:
         led: onboard_led_green
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        leds: [5]
     - peripheral: led_bank   # from BGM icebreaker_bare/board_specific_top.sv
       params:
         width: 1
         active: low
       bind:
         led: onboard_led_red
+      lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+        leds: [6]
     - peripheral: button_array
       params:
         width: 3

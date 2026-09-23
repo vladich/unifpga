@@ -7,13 +7,13 @@ Configuration:
   id: icebreaker_dvi_12b_tm1638_yosys
   board: icebreaker
   toolchain: nextpnr_icestorm
-  lab_clock: pixel   # BGM: `localparam lab_mhz = pixel_mhz` (tools/sync_from_bgm.py --clock-tree)
 
   # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
   reset:
     sources:
       - power_up: true
-      - key: msb
+      - tm_key: msb
+  lab_clock: pixel   # BGM: `localparam lab_mhz = pixel_mhz` (tools/sync_from_bgm.py --clock-tree)
 
   # iCEBreaker P2 header: TM1638 + user gpio, LED/BTN break-off unused (BGM INSTANTIATE_TM1638 branch; see PLAN.md)
   attach:

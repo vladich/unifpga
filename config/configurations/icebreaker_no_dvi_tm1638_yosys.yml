@@ -12,7 +12,7 @@ Configuration:
   reset:
     sources:
       - power_up: true
-      - key: msb
+      - tm_key: msb
 
   # iCEBreaker P2 header: TM1638 + user gpio, LED/BTN break-off unused (BGM INSTANTIATE_TM1638 branch; see PLAN.md)
   attach:

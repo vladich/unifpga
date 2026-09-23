@@ -27,6 +27,8 @@ Configuration:
       mirror: true
     bind:
       led: onboard_leds
+    lab_bits:   # bits of the lab bus this component carries (BGM's board top; tools/sync_from_bgm.py --lab-bits)
+      leds: [3, 2, 1, 0]
   - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
     params:
       digits: 6

@@ -8,6 +8,11 @@ Configuration:
   board: tang_nano_20k
   toolchain: gowin_eda
 
+  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
+  reset:
+    sources:
+      - tm_key: msb
+
   # This variant uses a different LCD adapter wiring (BGM
   # tang_nano_20k_lcd_800_480_tm1638_alt/board_specific.cst): LCD_R[2] sits on
   # pin 49, which the board's default bank uses for the backlight, and there
@@ -15,11 +20,6 @@ Configuration:
   pin_overrides:
     onboard_lcd.r: ["42", "41", "49", "39", "38"]
     onboard_lcd.bl: null
-
-  # Reset policy derived from BGM's board_specific_top.sv (tools/sync_from_bgm.py --reset)
-  reset:
-    sources:
-      - key: msb
 
   attach:
     - peripheral: clock_input

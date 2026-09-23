@@ -28,16 +28,11 @@ Configuration:
         width: 4
       bind:
         btn: onboard_buttons
-    - peripheral: led_bank
+    - peripheral: led_bank   # from BGM de2/board_specific_top.sv
       params:
-        width: 18
+        width: 8
       bind:
-        led: onboard_leds
-    - peripheral: led_bank
-      params:
-        width: 9
-      bind:
-        led: onboard_leds_green
+        led: ["onboard_leds_green[0]", "onboard_leds_green[1]", "onboard_leds_green[2]", "onboard_leds_green[3]", "onboard_leds_green[4]", "onboard_leds_green[5]", "onboard_leds_green[6]", "onboard_leds_green[7]"]
     - peripheral: sw_bank
       params:
         width: 18
@@ -100,3 +95,4 @@ Configuration:
     onboard_vga.sync: 0
     "gpio_1[1]": 0
     "gpio_1[3]": 1
+    "onboard_leds_green[8]": 0
