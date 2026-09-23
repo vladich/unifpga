@@ -387,6 +387,36 @@ def _bgm_sources(dirs):
 
 
 _ALWAYS_NO_EVENT = re.compile(r"^(\s*)always\s*(begin\b|$)", re.M)
+_LEFT = re.compile(r"\$left\s*\(\s*([A-Za-z_]\w*)\s*\)")
+
+
+def _stage_bgm_headers(inc_dirs, out_dir):
+    """Patched copies of the `.svh` headers that need the same edits
+    (peripherals/swap_bits.svh uses $left); the staging directory goes first
+    on the include path so it shadows the originals."""
+    pdir = os.path.join(out_dir, "bgm_patched")
+    staged = []
+    for d in inc_dirs:
+        try:
+            names = os.listdir(d)
+        except OSError:
+            continue
+        for name in names:
+            if not name.endswith(".svh"):
+                continue
+            path = os.path.join(d, name)
+            try:
+                with open(path, "r", encoding="utf-8", errors="replace") as f:
+                    text = f.read()
+            except OSError:
+                continue
+            if not _LEFT.search(text):
+                continue
+            os.makedirs(pdir, exist_ok=True)
+            with open(os.path.join(pdir, name), "w") as f:
+                f.write(_LEFT.sub(lambda m: "($bits ({}) - 1)".format(m.group(1)), text))
+            staged.append(name)
+    return (pdir if staged else None), staged
 
 
 def _stage_bgm_patches(files, out_dir):
@@ -403,10 +433,14 @@ def _stage_bgm_patches(files, out_dir):
         except OSError:
             staged.append(path)
             continue
-        if not _ALWAYS_NO_EVENT.search(text):
+        if not _ALWAYS_NO_EVENT.search(text) and not _LEFT.search(text):
             staged.append(path)
             continue
         new = _ALWAYS_NO_EVENT.sub(lambda m: m.group(1) + "always @*" + (" " + m.group(2) if m.group(2) else ""), text)
+        # Icarus 12 evaluates `$left (net)` in a constant context to x (BGM's
+        # SWAP_BITS macro and the Terasic hgfedcba reversal); BGM's vectors
+        # are [N-1:0], so $left is $bits - 1
+        new = _LEFT.sub(lambda m: "($bits ({}) - 1)".format(m.group(1)), new)
         pdir = os.path.join(out_dir, "bgm_patched")
         os.makedirs(pdir, exist_ok=True)
         dst = os.path.join(pdir, os.path.basename(path))
@@ -579,12 +613,16 @@ def cmd_generate(args):
                                      _bgm_sources([os.path.join(bgm_root, "peripherals"),
                                                    os.path.join(bgm_root, "labs", "common")]))
         gold_files, patched = _stage_bgm_patches(gold_files, d)
+        hdr_dir, hdr_patched = _stage_bgm_headers([bgm_lab_dir, vdir] + chain_dirs +
+                                                  [os.path.join(bgm_root, "peripherals"),
+                                                   os.path.join(bgm_root, "labs", "common")], d)
+        patched += hdr_patched
         gold_stub_text, gold_dropped = _stub_text_without(_defined_modules(gold_files))
         with open(os.path.join(d, "gold_stubs.sv"), "w") as f:
             f.write(gold_stub_text)
         gold_files.append(os.path.join(d, "gold_stubs.sv"))
-        gold_inc = [bgm_lab_dir, os.path.join(bgm_root, "peripherals"), os.path.join(bgm_root, "labs", "common"),
-                    vdir] + extra_inc
+        gold_inc = ([hdr_dir] if hdr_dir else []) + [bgm_lab_dir, os.path.join(bgm_root, "peripherals"),
+                                                      os.path.join(bgm_root, "labs", "common"), vdir] + extra_inc
         defines = ["SIMULATION"] + sorted(bgm_oracle.FULL_LAB_DEFINES)
 
         # ---- ports and pins
