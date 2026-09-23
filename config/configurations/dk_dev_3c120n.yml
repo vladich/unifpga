@@ -41,13 +41,13 @@ Configuration:
         rst: cpu_resetn
     - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
       params:
-        digits: 3
+        digits: 4
         active: low
         digits_active: high
       bind:
         segments: ["onboard_7seg.ca", "onboard_7seg.cb", "onboard_7seg.cc", "onboard_7seg.cd", "onboard_7seg.ce", "onboard_7seg.cf", "onboard_7seg.cg"]
         dp: "onboard_7seg.dp"
-        digits: ["onboard_7seg.anodes[2]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[0]"]
+        digits: ["onboard_7seg.anodes[3]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[0]"]
     - peripheral: button_array
       params:
         width: 4

@@ -57,3 +57,5 @@ Configuration:
   tie:
     "gpio[1]": 0
     "gpio[3]": 1
+    "pmod_0[2]": 0
+    "pmod_0[3]": 0
