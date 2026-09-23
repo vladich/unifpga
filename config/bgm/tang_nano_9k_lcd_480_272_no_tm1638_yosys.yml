@@ -21,13 +21,6 @@ BGM:
     index: 0
     lab_bits:
       leds: [5, 4, 3, 2, 1, 0]
-  - peripheral: lcd_480_272
-    index: 0
-    params:
-      clock_pixel_mhz: 129.6
-      clock_pixel_pll:
-        idiv: 4
-        fbdiv: 23
-        odiv: 4
-        sdiv: 4
-        clkoutd: false
+  bgm_bugs:
+    lcd_clock: the top clocks the lcd_480_272 at 129.6 MHz (it ships another panel's gowin_rpll.v); unifpga
+      keeps 9 MHz

@@ -28,10 +28,8 @@ Configuration:
         rx: onboard_uart.rx
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: lcd_800_480
+    - peripheral: lcd_480_272
       params:
-        clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}
-        clock_pixel_mhz: 32.4
         bl: const.0
       bind:
         r: onboard_lcd.r
