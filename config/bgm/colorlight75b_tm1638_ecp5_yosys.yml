@@ -9,6 +9,7 @@ BGM:
   reset:
     sources:
     - tm_key: msb
+    - pll_lock: serial
   uart_rx: 0
   lab_width:
     gpio: 2
