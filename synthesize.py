@@ -43,6 +43,9 @@ def _build_parser():
                    help="Output folder for board-specific and toolchain-specific artifacts. "
                         "If omitted, a temp dir is created and deleted on exit unless "
                         "--keep-temp-dir is set.")
+    p.add_argument("--no-bgm-overlay", action="store_true",
+                   help="ignore config/bgm/<configuration>.yml (BGM's lab conventions): generate the generic "
+                        "composition, buses concatenated in attach order, power-up reset")
     p.add_argument("--keep-temp-dir", action="store_true",
                    help="Keep the auto-created temp output dir instead of deleting it")
     p.add_argument("--program", action="store_true",
