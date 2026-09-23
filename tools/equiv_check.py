@@ -388,6 +388,45 @@ def _bgm_sources(dirs):
 
 _ALWAYS_NO_EVENT = re.compile(r"^(\s*)always\s*(begin\b|$)", re.M)
 _LEFT = re.compile(r"\$left\s*\(\s*([A-Za-z_]\w*)\s*\)")
+_BITS = re.compile(r"\$bits\s*\(\s*([A-Za-z_]\w*)\s*\)")
+_SWAP = re.compile(r"`SWAP_BITS\s*\(\s*([A-Za-z_]\w*)\s*,\s*(~?)\s*([A-Za-z_]\w*)\s*\)\s*;?")
+
+
+def _net_msb_expr(text, name):
+    """The MSB expression of `wire [EXPR:0] name` / `output logic [EXPR:0]
+    name` in this file, or None."""
+    m = re.search(r"\[\s*([^\]:]+?)\s*:\s*0\s*\]\s*" + re.escape(name) + r"\b", text)
+    return m.group(1).strip() if m else None
+
+
+def _icarus_rewrite(text):
+    """Icarus 12 evaluates $bits / $left of a *net* in a constant context to
+    0 (a [w-1:0] wire's $bits is 0, a generate loop over it runs no
+    iteration), which silently empties BGM's SWAP_BITS macro and the
+    Terasic hgfedcba reversal. Rewrite them from the net's own declaration:
+    $left (n) -> (EXPR), $bits (n) -> ((EXPR) + 1), `SWAP_BITS (dst, src) ->
+    an explicit generate over dst's range. Nets whose declaration this file
+    does not show are left alone."""
+    def left(m):
+        e = _net_msb_expr(text, m.group(1))
+        return "({})".format(e) if e is not None else m.group(0)
+
+    def bits(m):
+        e = _net_msb_expr(text, m.group(1))
+        return "(({}) + 1)".format(e) if e is not None else m.group(0)
+
+    def swap(m):
+        dst, inv, src = m.group(1), m.group(2), m.group(3)
+        e = _net_msb_expr(text, dst)
+        if e is None:
+            return m.group(0)
+        return ("generate genvar {d}_i; for ({d}_i = 0; {d}_i <= ({e}); {d}_i ++) begin : {d}_label "
+                "assign {d} [{d}_i] = {inv}{s} [({e}) - {d}_i]; end endgenerate").format(d=dst, e=e, inv=inv, s=src)
+
+    out = _SWAP.sub(swap, text)
+    out = _LEFT.sub(left, out)
+    out = _BITS.sub(bits, out)
+    return out
 
 
 def _stage_bgm_headers(inc_dirs, out_dir):
@@ -410,11 +449,15 @@ def _stage_bgm_headers(inc_dirs, out_dir):
                     text = f.read()
             except OSError:
                 continue
-            if not _LEFT.search(text):
+            if not _SWAP.search(text) and "define SWAP_BITS" not in text:
                 continue
+            # the macro's call sites are expanded in the staged tops; a header
+            # copy that keeps the guard but defines nothing makes any call site
+            # this staging missed a visible compile error instead of silence
             os.makedirs(pdir, exist_ok=True)
             with open(os.path.join(pdir, name), "w") as f:
-                f.write(_LEFT.sub(lambda m: "($bits ({}) - 1)".format(m.group(1)), text))
+                f.write("`ifndef SWAP_BITS_SVH\n`define SWAP_BITS_SVH\n// expanded per call site by tools/equiv_check.py "
+                        "(Icarus evaluates $bits of a net to 0 in a generate bound)\n`endif\n")
             staged.append(name)
     return (pdir if staged else None), staged
 
@@ -433,14 +476,14 @@ def _stage_bgm_patches(files, out_dir):
         except OSError:
             staged.append(path)
             continue
-        if not _ALWAYS_NO_EVENT.search(text) and not _LEFT.search(text):
+        if not (_ALWAYS_NO_EVENT.search(text) or _LEFT.search(text) or _BITS.search(text) or _SWAP.search(text)):
             staged.append(path)
             continue
         new = _ALWAYS_NO_EVENT.sub(lambda m: m.group(1) + "always @*" + (" " + m.group(2) if m.group(2) else ""), text)
-        # Icarus 12 evaluates `$left (net)` in a constant context to x (BGM's
-        # SWAP_BITS macro and the Terasic hgfedcba reversal); BGM's vectors
-        # are [N-1:0], so $left is $bits - 1
-        new = _LEFT.sub(lambda m: "($bits ({}) - 1)".format(m.group(1)), new)
+        new = _icarus_rewrite(new)
+        if new == text:
+            staged.append(path)
+            continue
         pdir = os.path.join(out_dir, "bgm_patched")
         os.makedirs(pdir, exist_ok=True)
         dst = os.path.join(pdir, os.path.basename(path))
