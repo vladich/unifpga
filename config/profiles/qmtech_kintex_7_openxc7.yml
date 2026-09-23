@@ -1,0 +1,6 @@
+# Design-wiring profile for qmtech_kintex_7_openxc7: how the example designs use the hardware
+# described in config/configurations/qmtech_kintex_7_openxc7.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: qmtech_kintex_7_openxc7
+  uart_rx: 0

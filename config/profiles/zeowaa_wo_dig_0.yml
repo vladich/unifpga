@@ -1,0 +1,13 @@
+# Design-wiring profile for zeowaa_wo_dig_0: how the example designs use the hardware
+# described in config/configurations/zeowaa_wo_dig_0.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: zeowaa_wo_dig_0
+  reset:
+    sources:
+    - key: msb
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, null]

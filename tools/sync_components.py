@@ -2498,11 +2498,11 @@ def apply_lab_bits(path, dry_run):
         return "skip (no BGM variant)"
     from tools import codegen, bgm_overlay
     config_init.clear_cache()
-    bgm_overlay.KEEP_DROPPED = True         # resolved index == attach index (see bgm_overlay)
+    bgm_overlay.set_keep_dropped(True)      # resolved index == attach index (see config/profile.py)
     try:
         resolved = config_init.resolve_configuration(cfg["id"])
     finally:
-        bgm_overlay.KEEP_DROPPED = False
+        bgm_overlay.set_keep_dropped(False)
         config_init.clear_cache()
     try:
         plans = codegen.build_capability_plans(resolved)

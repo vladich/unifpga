@@ -1,0 +1,21 @@
+# Design-wiring profile for icebreaker_bare: how the example designs use the hardware
+# described in config/configurations/icebreaker_bare.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: icebreaker_bare
+  reset:
+    sources:
+    - key: 0
+  attach:
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [4, 3, 2, 1, 0]
+  - peripheral: led_bank
+    index: 1
+    lab_bits:
+      leds: [5]
+  - peripheral: led_bank
+    index: 2
+    lab_bits:
+      leds: [6]

@@ -1,0 +1,26 @@
+# Design-wiring profile for tang_primer_25k_pmod_vga: how the example designs use the hardware
+# described in config/configurations/tang_primer_25k_pmod_vga.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: tang_primer_25k_pmod_vga
+  reset:
+    sources:
+    - power_up: true
+    - tm_key: msb
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [0, 1]
+      switches: [0, 1]
+    params:
+      as_switches: true
+  - peripheral: tm1638_led_key
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+      switches: [0, 1, 2, 3, 4, 5, 6, 7]
+      leds: [0, 1, 2, 3, 4, 5, 6, 7]
+      seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
+    params:
+      rst: context.rst_on_power_up

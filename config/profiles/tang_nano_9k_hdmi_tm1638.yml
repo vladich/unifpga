@@ -1,0 +1,27 @@
+# Design-wiring profile for tang_nano_9k_hdmi_tm1638: how the example designs use the hardware
+# described in config/configurations/tang_nano_9k_hdmi_tm1638.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: tang_nano_9k_hdmi_tm1638
+  reset:
+    sources:
+    - power_up: true
+    - any_key: true
+  lab_width:
+    gpio: 10
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: []
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [0, 1, 2, 3, 4, 5]
+  - peripheral: tm1638_led_key
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+      switches: [0, 1, 2, 3, 4, 5, 6, 7]
+      leds: [0, 1, 2, 3, 4, 5, 6, 7]
+      seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]

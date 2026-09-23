@@ -43,9 +43,9 @@ def _build_parser():
                    help="Output folder for board-specific and toolchain-specific artifacts. "
                         "If omitted, a temp dir is created and deleted on exit unless "
                         "--keep-temp-dir is set.")
-    p.add_argument("--no-bgm-overlay", action="store_true",
-                   help="ignore config/bgm/<configuration>.yml (BGM's lab conventions): generate the generic "
-                        "composition, buses concatenated in attach order, power-up reset")
+    p.add_argument("--no-profile", action="store_true",
+                   help="ignore config/profiles/<configuration>.yml (the design-wiring profile): generate the "
+                        "generic composition, buses concatenated in attach order, power-up reset")
     p.add_argument("--keep-temp-dir", action="store_true",
                    help="Keep the auto-created temp output dir instead of deleting it")
     p.add_argument("--program", action="store_true",
@@ -65,8 +65,8 @@ def main(argv=None):
         print("\n".join(toolchain_detect.report(config.init.read_toolchains())))
         return 0
     args = _build_parser().parse_args(argv)
-    if getattr(args, "no_bgm_overlay", False):
-        os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
+    if getattr(args, "no_profile", False):
+        os.environ["UNIFPGA_PROFILE"] = "0"
 
     try:
         resolved = config.init.read_or_init(args.configuration)

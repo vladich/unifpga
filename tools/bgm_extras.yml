@@ -1,0 +1,268 @@
+a7_lite_35t:
+  bgm_bugs:
+    reset_polarity: 'xpm_cdc_async_rst keeps its default active-low polarity but drives the active-high
+      rst: the reset asserts 4 clocks after the button and releases with it; unifpga keeps a normal synchroniser'
+  variant: a7_lite_35t
+a7_lite_35t_openxc7:
+  bgm_bugs:
+    reset_polarity: 'xpm_cdc_async_rst keeps its default active-low polarity but drives the active-high
+      rst: the reset asserts 4 clocks after the button and releases with it; unifpga keeps a normal synchroniser'
+  variant: a7_lite_35t
+alinx_ax301:
+  variant: alinx_ax301
+alinx_ax4010:
+  variant: alinx_ax4010
+alinx_ax7035b:
+  variant: alinx_ax7035b
+alinx_ax7035b_openxc7:
+  variant: alinx_ax7035b
+arty_a7_100:
+  variant: arty_a7_100
+arty_a7_100_openxc7:
+  variant: arty_a7_100
+arty_a7_100_pmod_mic3:
+  variant: arty_a7_100_pmod_mic3
+arty_a7_100_pmod_mic3_openxc7:
+  variant: arty_a7_100_pmod_mic3
+arty_a7_35:
+  variant: arty_a7_35
+arty_a7_35_openxc7:
+  variant: arty_a7_35
+arty_a7_35_pmod_mic3:
+  variant: arty_a7_35_pmod_mic3
+arty_a7_35_pmod_mic3_openxc7:
+  variant: arty_a7_35_pmod_mic3
+basys3:
+  variant: basys3
+basys3_openxc7:
+  variant: basys3
+c5gx:
+  variant: c5gx
+c5gx_mistral:
+  variant: c5gx
+colorlight75b_tm1638_ecp5_yosys:
+  variant: colorlight75b_tm1638_ecp5_yosys
+de0:
+  variant: de0
+de0_cv:
+  variant: de0_cv
+de0_cv_mistral:
+  variant: de0_cv
+de0_nano_soc_vga666:
+  variant: de0_nano_soc_vga666
+de0_nano_soc_vga666_mistral:
+  variant: de0_nano_soc_vga666
+de0_nano_soc_vga_pmod:
+  variant: de0_nano_soc_vga_pmod
+de0_nano_soc_vga_pmod_mistral:
+  variant: de0_nano_soc_vga_pmod
+de0_nano_vga666:
+  variant: de0_nano_vga666
+de0_nano_vga_pmod:
+  variant: de0_nano_vga_pmod
+de1:
+  variant: de1
+de10_lite:
+  variant: de10_lite
+de10_lite_tm1638_virtual_switches:
+  variant: de10_lite_tm1638_virtual_switches
+de10_nano:
+  variant: de10_nano
+de10_nano_mistral:
+  variant: de10_nano
+de1_soc:
+  variant: de1_soc
+de1_soc_mistral:
+  variant: de1_soc
+de2:
+  variant: de2
+de2_115:
+  variant: de2_115
+dk_dev_3c120n:
+  variant: dk_dev_3c120n
+eclypse_z7:
+  variant: eclypse_z7
+eclypse_z7_openxc7:
+  variant: eclypse_z7
+emooc_cc:
+  variant: emooc_cc
+ice40hx8k_evb_yosys:
+  variant: ice40hx8k_evb_yosys
+icebreaker_bare:
+  variant: icebreaker_bare
+icebreaker_dvi_12b_no_tm1638_yosys:
+  variant: icebreaker_dvi_12b_no_tm1638_yosys
+icebreaker_dvi_12b_tm1638_yosys:
+  variant: icebreaker_dvi_12b_tm1638_yosys
+icebreaker_dvi_24b_no_tm1638_yosys:
+  variant: icebreaker_dvi_24b_no_tm1638_yosys
+icebreaker_dvi_24b_tm1638_yosys:
+  variant: icebreaker_dvi_24b_tm1638_yosys
+icebreaker_no_dvi_no_tm1638_yosys:
+  variant: icebreaker_no_dvi_no_tm1638_yosys
+icebreaker_no_dvi_tm1638_yosys:
+  variant: icebreaker_no_dvi_tm1638_yosys
+karnix_ecp5_yosys:
+  variant: karnix_ecp5_yosys
+marsohod3gw2:
+  variant: marsohod3gw2
+nexys4:
+  bgm_bugs:
+    vga_colour_swap: the top drives the green VGA pins from blue and the blue pins from green; unifpga
+      keeps them straight
+  variant: nexys4
+nexys4_ddr:
+  variant: nexys4_ddr
+nexys4_ddr_default:
+  variant: nexys4_ddr
+nexys4_ddr_default_openxc7:
+  variant: nexys4_ddr
+nexys4_ddr_openxc7:
+  variant: nexys4_ddr
+nexys4_ddr_tm1638_inmp441_jc:
+  variant: nexys4_ddr
+nexys4_ddr_tm1638_inmp441_jc_openxc7:
+  variant: nexys4_ddr
+nexys4_openxc7:
+  bgm_bugs:
+    vga_colour_swap: the top drives the green VGA pins from blue and the blue pins from green; unifpga
+      keeps them straight
+  variant: nexys4
+nexys_a7:
+  variant: nexys_a7
+nexys_a7_100:
+  variant: nexys_a7_100
+nexys_a7_100_openxc7:
+  variant: nexys_a7_100
+nexys_a7_50:
+  variant: nexys_a7_50
+nexys_a7_50_openxc7:
+  variant: nexys_a7_50
+nexys_a7_openxc7:
+  variant: nexys_a7
+omdazz:
+  variant: omdazz
+omdazz_pmod_mic3:
+  variant: omdazz_pmod_mic3
+orangecrab_ecp5_yosys:
+  variant: orangecrab_ecp5_yosys
+orangepi_msoc:
+  variant: orangepi_msoc
+piswords6:
+  variant: piswords6
+qmtech_kintex_7:
+  variant: qmtech_kintex_7
+qmtech_kintex_7_openxc7:
+  variant: qmtech_kintex_7
+rzrd:
+  variant: rzrd
+rzrd_pmod_mic3:
+  variant: rzrd_pmod_mic3
+saylinx:
+  variant: saylinx
+saylinx_pmod_mic3:
+  variant: saylinx_pmod_mic3
+tang_mega_138k_lcd_480_272_tm1638:
+  variant: tang_mega_138k_lcd_480_272_tm1638
+tang_mega_138k_pro_lcd_480_272_no_tm1638:
+  variant: tang_mega_138k_pro_lcd_480_272_no_tm1638
+tang_mega_138k_pro_lcd_480_272_tm1638:
+  variant: tang_mega_138k_pro_lcd_480_272_tm1638
+tang_nano_20k_hdmi_no_tm1638:
+  variant: tang_nano_20k_hdmi_no_tm1638
+tang_nano_20k_hdmi_tm1638:
+  variant: tang_nano_20k_hdmi_tm1638
+tang_nano_20k_lcd_480_272_no_tm1638:
+  variant: tang_nano_20k_lcd_480_272_no_tm1638
+tang_nano_20k_lcd_480_272_tm1638:
+  variant: tang_nano_20k_lcd_480_272_tm1638
+tang_nano_20k_lcd_800_480_no_tm1638:
+  variant: tang_nano_20k_lcd_800_480_no_tm1638
+tang_nano_20k_lcd_800_480_tm1638:
+  variant: tang_nano_20k_lcd_800_480_tm1638
+tang_nano_20k_lcd_800_480_tm1638_alt:
+  variant: tang_nano_20k_lcd_800_480_tm1638_alt
+tang_nano_4k_hdmi_no_tm1638:
+  variant: tang_nano_4k_hdmi_no_tm1638
+tang_nano_4k_hdmi_tm1638:
+  variant: tang_nano_4k_hdmi_tm1638
+tang_nano_9k_hdmi_no_ip_tm1638:
+  variant: tang_nano_9k_hdmi_no_ip_tm1638
+tang_nano_9k_hdmi_no_tm1638:
+  variant: tang_nano_9k_hdmi_no_tm1638
+tang_nano_9k_hdmi_tm1638:
+  variant: tang_nano_9k_hdmi_tm1638
+tang_nano_9k_lcd_480_272_no_tm1638:
+  variant: tang_nano_9k_lcd_480_272_no_tm1638
+tang_nano_9k_lcd_480_272_no_tm1638_yosys:
+  bgm_bugs:
+    lcd_clock: the top clocks the lcd_480_272 at 129.6 MHz (it ships another panel's gowin_rpll.v); unifpga
+      keeps 9 MHz
+  variant: tang_nano_9k_lcd_480_272_no_tm1638_yosys
+tang_nano_9k_lcd_480_272_tm1638:
+  variant: tang_nano_9k_lcd_480_272_tm1638
+tang_nano_9k_lcd_480_272_tm1638_hackathon:
+  variant: tang_nano_9k_lcd_480_272_tm1638_hackathon
+tang_nano_9k_lcd_480_272_tm1638_yosys:
+  bgm_bugs:
+    lcd_size: the variant is for the 480x272 panel but its top builds the 800x480 one; unifpga drives
+      the 480x272 panel
+  variant: tang_nano_9k_lcd_480_272_tm1638_yosys
+tang_nano_9k_lcd_800_480_no_tm1638:
+  variant: tang_nano_9k_lcd_800_480_no_tm1638
+tang_nano_9k_lcd_800_480_no_tm1638_yosys:
+  variant: tang_nano_9k_lcd_800_480_no_tm1638_yosys
+tang_nano_9k_lcd_800_480_tm1638:
+  variant: tang_nano_9k_lcd_800_480_tm1638
+tang_nano_9k_lcd_800_480_tm1638_hackathon:
+  variant: tang_nano_9k_lcd_800_480_tm1638_hackathon
+tang_nano_9k_lcd_800_480_tm1638_yosys:
+  variant: tang_nano_9k_lcd_800_480_tm1638_yosys
+tang_nano_9k_lcd_ml6485_no_tm1638_yosys:
+  variant: tang_nano_9k_lcd_ml6485_no_tm1638_yosys
+tang_nano_9k_lcd_ml6485_tm1638_yosys:
+  variant: tang_nano_9k_lcd_ml6485_tm1638_yosys
+tang_nano_9k_tm1638_sd:
+  variant: tang_nano_9k_tm1638_sd
+tang_primer_20k_dock_hdmi_no_tm1638:
+  variant: tang_primer_20k_dock_hdmi_no_tm1638
+tang_primer_20k_dock_hdmi_no_tm1638_yosys:
+  variant: tang_primer_20k_dock_hdmi_no_tm1638_yosys
+tang_primer_20k_dock_hdmi_tm1638:
+  variant: tang_primer_20k_dock_hdmi_tm1638
+tang_primer_20k_dock_hdmi_tm1638_alt:
+  variant: tang_primer_20k_dock_hdmi_tm1638_alt
+tang_primer_20k_dock_hdmi_tm1638_yosys:
+  variant: tang_primer_20k_dock_hdmi_tm1638_yosys
+tang_primer_20k_dock_lcd_800_480_no_tm1638:
+  variant: tang_primer_20k_dock_lcd_800_480_no_tm1638
+tang_primer_20k_dock_lcd_800_480_tm1638:
+  variant: tang_primer_20k_dock_lcd_800_480_tm1638
+tang_primer_20k_dock_lcd_800_480_tm1638_alt:
+  variant: tang_primer_20k_dock_lcd_800_480_tm1638_alt
+tang_primer_20k_dock_no_hdmi_no_tm1638:
+  variant: tang_primer_20k_dock_no_hdmi_no_tm1638
+tang_primer_20k_dock_no_hdmi_tm1638:
+  variant: tang_primer_20k_dock_no_hdmi_tm1638
+tang_primer_20k_lite:
+  variant: tang_primer_20k_lite
+tang_primer_25k_pmod_hdmi:
+  variant: tang_primer_25k_pmod_hdmi
+tang_primer_25k_pmod_hub75e_led_matrix:
+  variant: tang_primer_25k_pmod_hub75e_led_matrix
+tang_primer_25k_pmod_hub75e_led_matrix_bright:
+  variant: tang_primer_25k_pmod_hub75e_led_matrix_bright
+tang_primer_25k_pmod_vga:
+  variant: tang_primer_25k_pmod_vga
+terasic_sockit:
+  variant: terasic_sockit
+terasic_sockit_mistral:
+  variant: terasic_sockit
+zeowaa:
+  variant: zeowaa
+zeowaa_wo_dig_0:
+  variant: zeowaa_wo_dig_0
+zybo_z7:
+  variant: zybo_z7
+zybo_z7_openxc7:
+  variant: zybo_z7

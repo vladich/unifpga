@@ -365,17 +365,17 @@ def test_open_drain_pwm_and_eight_bit_sample():
     assert not any(a["peripheral_id"] == "rgb_led" for a in r["peripherals"])
     assert "assign onboard_rgb_led_16_r = 1'b0;" in top and "assign onboard_rgb_led_17_b = 1'b0;" in top
     assert ".w_rgb_led(0)," in top
-    # without the overlay the hardware is back
-    from tools import bgm_overlay
-    os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
+    # without the profile the hardware is back
+    from config import profile
+    os.environ["UNIFPGA_PROFILE"] = "0"
     try:
         config_init.clear_cache()
         r0 = config_init.resolve_configuration("nexys_a7_100")
     finally:
-        os.environ.pop("UNIFPGA_BGM_OVERLAY", None)
+        os.environ.pop("UNIFPGA_PROFILE", None)
         config_init.clear_cache()
     assert sum(1 for a in r0["peripherals"] if a["peripheral_id"] == "rgb_led") == 2
-    assert bgm_overlay.enabled()
+    assert profile.enabled()
 
 
 def test_gpio_header_direction_out_and_header_uart():
@@ -435,12 +435,12 @@ def test_decimal_point_on_the_top_leds():
     top = codegen.emit_top_sv(r)
     assert "assign onboard_leds[0] = 1'b0;" in top and ".dp_o({onboard_leds[9], onboard_leds[8], onboard_leds[7], onboard_leds[6]})" in top
     # without the overlay the dp is unconnected and the LEDs are the lab's
-    os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
+    os.environ["UNIFPGA_PROFILE"] = "0"
     try:
         config_init.clear_cache()
         r0 = config_init.resolve_configuration("de0_cv")
     finally:
-        os.environ.pop("UNIFPGA_BGM_OVERLAY", None)
+        os.environ.pop("UNIFPGA_PROFILE", None)
         config_init.clear_cache()
     seg0 = next(a for a in r0["peripherals"] if a["peripheral_id"] == "seven_segment_per_digit")
     assert "dp" not in seg0["bind"]
@@ -594,12 +594,12 @@ def test_optional_signal_bgm_ties_off_is_unbound():
     assert "onboard_lcd.bl" not in (r["configuration"].get("tie") or {})
     top = codegen.emit_top_sv(r)
     assert ".LCD_HSYNC()" in top and "assign onboard_lcd_hs = 1'b0;" in top and "assign onboard_lcd_bl = 1'b1;" in top
-    os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
+    os.environ["UNIFPGA_PROFILE"] = "0"
     try:
         config_init.clear_cache()
         r0 = config_init.resolve_configuration("tang_nano_20k_lcd_480_272_no_tm1638")
     finally:
-        os.environ.pop("UNIFPGA_BGM_OVERLAY", None)
+        os.environ.pop("UNIFPGA_PROFILE", None)
         config_init.clear_cache()
     lcd0 = next(a for a in r0["peripherals"] if a["peripheral_id"] == "lcd_480_272")
     assert lcd0["bind"]["hs"] == "onboard_lcd.hs"

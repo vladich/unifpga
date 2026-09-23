@@ -1,0 +1,8 @@
+# Design-wiring profile for dk_dev_3c120n: how the example designs use the hardware
+# described in config/configurations/dk_dev_3c120n.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: dk_dev_3c120n
+  uart_rx: 1
+  lab_width:
+    gpio: 1

@@ -1,0 +1,11 @@
+# Design-wiring profile for tang_primer_20k_dock_hdmi_no_tm1638: how the example designs use the hardware
+# described in config/configurations/tang_primer_20k_dock_hdmi_no_tm1638.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: tang_primer_20k_dock_hdmi_no_tm1638
+  reset:
+    sources:
+    - key: msb
+  lab_clock: pixel
+  lab_width:
+    gpio: 32

@@ -1,0 +1,20 @@
+# Design-wiring profile for tang_nano_9k_lcd_800_480_no_tm1638: how the example designs use the hardware
+# described in config/configurations/tang_nano_9k_lcd_800_480_no_tm1638.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: tang_nano_9k_lcd_800_480_no_tm1638
+  reset:
+    sources:
+    - power_up: true
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [1, 0]
+      switches: [1, 0]
+    params:
+      as_switches: true
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [5, 4, 3, 2, 1, 0]

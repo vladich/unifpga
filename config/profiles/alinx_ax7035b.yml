@@ -1,0 +1,19 @@
+# Design-wiring profile for alinx_ax7035b: how the example designs use the hardware
+# described in config/configurations/alinx_ax7035b.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: alinx_ax7035b
+  lab_width:
+    gpio: 68
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [3, 2, 1, 0]
+      switches: [3, 2, 1, 0]
+    params:
+      as_switches: true
+  - peripheral: led_bank
+    index: 0
+    lab_bits:
+      leds: [3, 2, 1, 0]

@@ -1,0 +1,19 @@
+# Design-wiring profile for basys3_openxc7: how the example designs use the hardware
+# described in config/configurations/basys3_openxc7.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: basys3_openxc7
+  reset:
+    sources:
+    - switch_msb: true
+  lab_width:
+    gpio: 24
+  attach:
+  - peripheral: sw_bank
+    index: 0
+    lab_bits:
+      switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, null]
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [1, 3, 2, 0, 4]

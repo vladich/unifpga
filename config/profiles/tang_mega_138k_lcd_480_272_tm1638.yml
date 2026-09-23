@@ -1,0 +1,27 @@
+# Design-wiring profile for tang_mega_138k_lcd_480_272_tm1638: how the example designs use the hardware
+# described in config/configurations/tang_mega_138k_lcd_480_272_tm1638.yml (reset, buses, clock). Applied on
+# top of it by config/init.py; synthesize.py --no-profile turns it off.
+Profile:
+  configuration: tang_mega_138k_lcd_480_272_tm1638
+  reset:
+    sources:
+    - tm_key: msb
+  uart_rx: 0
+  lab_width:
+    gpio: 24
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: []
+  - peripheral: tm1638_led_key
+    index: 0
+    lab_bits:
+      buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+      switches: [0, 1, 2, 3, 4, 5, 6, 7]
+      leds: [0, 1, 2, 3, 4, 5, 6, 7]
+      seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
+  - peripheral: lcd_480_272
+    index: 0
+    params:
+      mirror_screen: true
