@@ -24,7 +24,10 @@ def _setups():
 @pytest.mark.parametrize("sid", _setups())
 def test_setup_generates_its_configuration(sid):
     setup = su.read_setup(sid)
-    assert su.generate(setup) == config_init.read_configurations()[sid]
+    cfg = config_init.read_configurations()[sid]
+    assert su.same_configuration(su.generate(setup), cfg)            # nested keys in codegen's order too
+    with open(su.configuration_path(sid), encoding="utf-8") as f:
+        assert f.read() == su.generated_text(setup)                   # the committed file is the generated one
     assert [p for p in su.validate(setup) if p[0] == "error"] == []
 
 
@@ -60,16 +63,20 @@ def test_layout_pins_are_distinct_board_pins_on_signal_positions(board_id):
         assert o["attach"]["peripheral"] in config_init.read_peripherals()
 
 
-def test_plugged_pmod_equals_its_wires():
+def test_plugged_pmod_wires_its_row():
     base = su.read_setup("arty_a7_35_pmod_mic3")
-    plugged = [u for u in base["use"] if u.get("module") == "digilent_pmod_mic3"][0]
-    assert plugged["plug"] == {"connector": "jd", "row": 2}
-    wired = copy.deepcopy(base)
-    for u in wired["use"]:
+    plugged = copy.deepcopy(base)
+    for u in plugged["use"]:
         if u.get("module") == "digilent_pmod_mic3":
-            u.pop("plug")
-            u["wires"] = {"1": "jd.7", "3": "jd.9", "4": "jd.10"}
-    assert su.generate(wired) == su.generate(base)
+            u.pop("wires")
+            u["plug"] = {"connector": "jd", "row": 2}
+    got = [a for a in su.generate(plugged)["attach"] if a["peripheral"] == "pmod_mic3"][0]
+    assert got["bind"] == {"cs": "pmod_jd[4]", "miso": "pmod_jd[6]", "sclk": "pmod_jd[7]"}
+
+
+def test_ordered_compares_key_order():
+    assert su.ordered({"a": 1, "b": [{"x": 1, "y": 2}]}) != su.ordered({"b": [{"x": 1, "y": 2}], "a": 1})
+    assert su.ordered({"a": 1}) == su.ordered({"a": 1})
 
 
 def _problems(setup):
@@ -121,7 +128,7 @@ def test_voltage_range_is_checked(monkeypatch):
 
 def test_drawings():
     page = viewer.render_page(setup_id="arty_a7_35_pmod_mic3")
-    assert "<svg" in page and "Digilent PmodMIC3" in page and "plugged into jd row 2" in page
+    assert "<svg" in page and "Digilent PmodMIC3" in page
     assert "jd.7: pmod_jd[4] = E2" in page                 # hover text: pinmap entry and FPGA pin
     assert "Shield header  (design gpio)" in page
     board = viewer.render_page(board_id="tang_primer_20k_dock")

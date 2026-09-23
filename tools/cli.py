@@ -647,10 +647,24 @@ def cmd_designs(args):
 
 
 def cmd_setup(args):
-    """setup check: every setup generates its configuration exactly and has no
-    rig errors. setup derive <id>...: write config/setups/<id>.yml from the
+    """setup check: every setup generates its configuration (data and text) and
+    has no rig errors. setup generate [id...]: write config/configurations/<id>.yml
+    from the setup. setup derive <id>...: write config/setups/<id>.yml from the
     configuration (its board needs a layout)."""
     from tools import setup as su
+    if args.action == "generate":
+        setups = su.read_setups()
+        for sid in args.ids or sorted(setups):
+            if sid not in setups:
+                raise CliError("unknown setup '{}'".format(sid))
+            path = su.configuration_path(sid)
+            text = su.generated_text(setups[sid])
+            old = open(path, encoding="utf-8").read() if os.path.exists(path) else None
+            if old != text:
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(text)
+                print("wrote {}".format(_shown(path)))
+        return 0
     if args.action == "derive":
         configurations = config.init.read_configurations()
         for cid in args.ids:
@@ -673,8 +687,11 @@ def cmd_setup(args):
         cfg = configurations.get(sid)
         if cfg is None:
             problems.append(("error", "no configuration {} to compare with".format(sid)))
-        elif su.generate(setups[sid]) != cfg:
+        elif not su.same_configuration(su.generate(setups[sid]), cfg):
             problems.append(("error", "does not generate config/configurations/{}.yml".format(sid)))
+        elif open(su.configuration_path(sid), encoding="utf-8").read() != su.generated_text(setups[sid]):
+            problems.append(("error", "config/configurations/{}.yml differs from its setup's text "
+                                      "(./unifpga setup generate {})".format(sid, sid)))
         errors = [m for level, m in problems if level == "error"]
         failed += bool(errors)
         print("{:<48} {}".format(sid, "FAIL" if errors else "ok"))
@@ -770,8 +787,9 @@ def build_parser():
     sub.add_parser("tools", help="report where each toolchain was found (or why not)")
     sub.add_parser("designs", help="list the designs under designs/")
 
-    st = sub.add_parser("setup", help="check setups (config/setups/) or derive one from a configuration")
-    st.add_argument("action", choices=["check", "derive"])
+    st = sub.add_parser("setup", help="check setups (config/setups/), generate their configurations, "
+                                      "or derive a setup from a configuration")
+    st.add_argument("action", choices=["check", "generate", "derive"])
     st.add_argument("ids", nargs="*", help="setup / configuration ids (check: default all)")
 
     vw = sub.add_parser("view", help="draw a setup (or a board with --board) as an HTML page")

@@ -135,7 +135,7 @@ def _module_attach(connectors, layout, modules, use):
     wires = use.get("wires")
     if "plug" in use:
         wires = plug_wires(connectors, layout, module, use["plug"])
-    bind, vectors = {}, {}
+    order, scalars, vectors = [], {}, {}      # bind keeps the wires' order (codegen emits in it)
     for pin, where in (wires or {}).items():
         sig = module["pins"].get(str(pin))
         if sig is None:
@@ -144,11 +144,19 @@ def _module_attach(connectors, layout, modules, use):
             continue
         ref = pin_ref(layout, where)
         m = _INDEXED.match(sig)
+        name = m.group(1) if m else sig
+        if name not in order:
+            order.append(name)
         if m:
-            vectors.setdefault(m.group(1), {})[int(m.group(2))] = ref
+            vectors.setdefault(name, {})[int(m.group(2))] = ref
         else:
-            bind[sig] = ref
-    for name, bits in vectors.items():
+            scalars[name] = ref
+    bind = {}
+    for name in order:
+        if name in scalars:
+            bind[name] = scalars[name]
+            continue
+        bits = vectors[name]
         if sorted(bits) != list(range(len(bits))):
             raise SetupError("module '{}': {} is not wired bit 0 upwards".format(module["id"], name))
         bind[name] = [bits[i] for i in range(len(bits))]
@@ -170,10 +178,13 @@ def generate(setup):
     attach = []
     for use in setup.get("use") or []:
         if "onboard" in use:
-            a = copy.deepcopy(onboard_item(layout, use["onboard"])["attach"])
-            if use.get("params"):
-                a["params"] = dict(a.get("params") or {}, **use["params"])
-            attach.append(a)
+            t = onboard_item(layout, use["onboard"])["attach"]
+            params = dict(t.get("params") or {}, **(use.get("params") or {}))
+            a = {"peripheral": t["peripheral"]}
+            if params:
+                a["params"] = params
+            a["bind"] = copy.deepcopy(t["bind"])
+            attach.append(copy.deepcopy(a))
         elif "module" in use:
             attach.append(_module_attach(connectors, layout, modules, use))
         elif "gpio" in use:
@@ -245,7 +256,7 @@ def _as_plug(connectors, layout, module, wires):
     rows = (connectors.get(connector(layout, conn_id)["type"]) or {}).get("rows") or []
     for r in range(len(rows)):
         plug = {"connector": conn_id, "row": r + 1}
-        if plug_wires(connectors, layout, module, plug) == wires:
+        if list(plug_wires(connectors, layout, module, plug).items()) == list(wires.items()):
             return plug
     return None
 
@@ -266,7 +277,8 @@ def derive(configuration):
         use = None
         for o in layout.get("onboard") or []:
             t = o["attach"]
-            if t["peripheral"] == a["peripheral"] and t.get("bind") == a.get("bind"):
+            if t["peripheral"] == a["peripheral"] and ordered(t.get("bind")) == ordered(a.get("bind")) \
+                    and list(a) == [k for k in ("peripheral", "params", "bind") if k in a]:
                 use = {"onboard": o["id"]}
                 base, have = _params(t), _params(a)
                 if have != base:
@@ -274,6 +286,9 @@ def derive(configuration):
                         use = None           # a template parameter dropped: not an override
                         continue
                     use["params"] = {k: v for k, v in have.items() if base.get(k) != v}
+                if list(dict(base, **use.get("params", {}))) != list(have):
+                    use = None                   # the configuration orders its params otherwise
+                    continue
                 break
         if use is None and a["peripheral"] == "gpio_header" and (a.get("bind") or {}).get("io") in banks \
                 and set(a["bind"]) == {"io"}:
@@ -285,6 +300,9 @@ def derive(configuration):
         if use is None:
             use = {"raw": copy.deepcopy(a)}
         uses.append(use)
+    notes = file_notes(configuration["id"])
+    if notes:
+        setup["notes"] = notes
     setup["use"] = uses
     extra = {k: copy.deepcopy(v) for k, v in configuration.items()
              if k not in ("id", "board", "toolchain", "part", "attach")}
@@ -293,21 +311,58 @@ def derive(configuration):
     return setup
 
 
+_STANDARD_NOTE = re.compile(r"^(Configuration '.*'\.|Generated from config/setups/.*)$")
+
+
+def file_notes(config_id):
+    """The comment lines heading config/configurations/<id>.yml other than the
+    ones emit_configuration() writes itself."""
+    notes = []
+    path = configuration_path(config_id)
+    if not os.path.exists(path):
+        return notes
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            if not line.startswith("#"):
+                break
+            text = line[1:].strip()
+            if text and not _STANDARD_NOTE.match(text):
+                notes.append(text)
+    return notes
+
+
+def ordered(value):
+    """`value` with every mapping as a list of (key, value) pairs, so that two
+    values compare equal only with their keys in the same order (codegen emits
+    ports and constraints in bind / params order)."""
+    if isinstance(value, dict):
+        return [(k, ordered(v)) for k, v in value.items()]
+    if isinstance(value, list):
+        return [ordered(v) for v in value]
+    return value
+
+
+def same_configuration(a, b):
+    """Equal configurations: the same top-level keys, and each value equal with
+    its nested keys in the same order (the top-level order does not matter)."""
+    return set(a) == set(b) and all(ordered(a[k]) == ordered(b[k]) for k in a)
+
+
 def check_roundtrip(configuration):
-    """[] when derive() then generate() gives `configuration` back; else the
-    differences, one line each."""
+    """[] when derive() then generate() gives `configuration` back, keys in
+    the same order; else the differences, one line each."""
     got = generate(derive(configuration))
     diffs = []
     for k in sorted(set(got) | set(configuration)):
         if k == "attach":
             continue
-        if got.get(k) != configuration.get(k):
+        if ordered(got.get(k)) != ordered(configuration.get(k)):
             diffs.append("{}: {!r} != {!r}".format(k, got.get(k), configuration.get(k)))
     ga, ca = got.get("attach") or [], configuration.get("attach") or []
     if len(ga) != len(ca):
         diffs.append("attach count {} != {}".format(len(ga), len(ca)))
     for i, (g, c) in enumerate(zip(ga, ca)):
-        if g != c:
+        if ordered(g) != ordered(c):
             diffs.append("attach {} ({}): {!r} != {!r}".format(i, c.get("peripheral"), g, c))
     return diffs
 
@@ -408,7 +463,10 @@ def dump_setup(setup):
          "", "Setup:"]
     for k in ("id", "board", "toolchain", "part"):
         if setup.get(k) is not None:
-            L.append("  {}: {}".format(k, setup[k]))
+            L.append("  {}: {}".format(k, _scalar(setup[k])))
+    if setup.get("notes"):
+        L.append("  notes:")
+        L.extend("    - {}".format(_scalar(n)) for n in setup["notes"])
     L.append("  use:")
     for use in setup.get("use") or []:
         head = next(k for k in ("onboard", "module", "gpio", "raw") if k in use)
@@ -433,3 +491,88 @@ def write_setup(setup):
     with open(path, "w", encoding="utf-8") as f:
         f.write(dump_setup(setup))
     return path
+
+
+# ---------------------------------------------------------------------------
+# configuration files
+# ---------------------------------------------------------------------------
+
+_PLAIN = re.compile(r"^[A-Za-z_][\w.\-/ ]*$")
+_TOP_COMMENTS = {
+    "io_overrides": "Gowin IO_TYPE this configuration states beyond the board-wide ones",
+    "tie": "Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`",
+}
+
+
+def _scalar(v):
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if v is None:
+        return "null"
+    if isinstance(v, (int, float)):
+        return repr(v)
+    s = str(v)
+    if _PLAIN.match(s) and s not in ("true", "false", "null", "yes", "no", "on", "off") and not s.endswith(" "):
+        return s
+    import json
+    return json.dumps(s, ensure_ascii=False)
+
+
+def _inline(v):
+    if isinstance(v, list):
+        return "[" + ", ".join(_inline(x) for x in v) + "]"
+    if isinstance(v, dict):
+        return "{" + ", ".join("{}: {}".format(_scalar(k), _inline(x)) for k, x in v.items()) + "}"
+    return _scalar(v)
+
+
+def _block(lines, indent, mapping):
+    for k, v in mapping.items():
+        if isinstance(v, dict) and v and not any(isinstance(x, (dict, list)) for x in v.values()) and indent >= 8:
+            lines.append("{}{}: {}".format(" " * indent, _scalar(k), _inline(v)))
+        elif isinstance(v, dict):
+            lines.append("{}{}:".format(" " * indent, _scalar(k)))
+            _block(lines, indent + 2, v)
+        else:
+            lines.append("{}{}: {}".format(" " * indent, _scalar(k), _inline(v)))
+
+
+def emit_configuration(cfg, notes=None):
+    """The text of config/configurations/<id>.yml for a configuration dict."""
+    L = ["# Configuration '{}'.".format(cfg["id"])]
+    L += ["# " + n for n in (notes or [])]
+    L += ["# Generated from config/setups/{}.yml (./unifpga setup generate); edit the setup.".format(cfg["id"]),
+          "", "Configuration:"]
+    for k in ("id", "board", "toolchain"):
+        L.append("  {}: {}".format(k, _scalar(cfg[k])))
+    if cfg.get("part") is not None:
+        L.append("  part: {}   # which of the board's chips this configuration targets".format(_scalar(cfg["part"])))
+    rest = [k for k in cfg if k not in ("id", "board", "toolchain", "part", "attach")]
+    for k in [k for k in rest if k != "tie"]:
+        L.append("")
+        if k in _TOP_COMMENTS:
+            L.append("  # " + _TOP_COMMENTS[k])
+        _block(L, 2, {k: cfg[k]})
+    L += ["", "  attach:"]
+    for a in cfg.get("attach") or []:
+        first = True
+        for k, v in a.items():
+            prefix = "    - " if first else "      "
+            first = False
+            if isinstance(v, dict):
+                L.append("{}{}:".format(prefix, k))
+                _block(L, 8, v)
+            else:
+                L.append("{}{}: {}".format(prefix, k, _inline(v)))
+    if "tie" in cfg:
+        L += ["", "  # " + _TOP_COMMENTS["tie"]]
+        _block(L, 2, {"tie": cfg["tie"]})
+    return "\n".join(L) + "\n"
+
+
+def configuration_path(config_id):
+    return os.path.join(CONFIG_DIR, "configurations", config_id + ".yml")
+
+
+def generated_text(setup):
+    return emit_configuration(generate(setup), setup.get("notes"))
