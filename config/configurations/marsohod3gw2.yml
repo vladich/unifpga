@@ -22,6 +22,20 @@ Configuration:
     - peripheral: clock_input
       bind:
         clk: clk
+    - peripheral: uart_2wire   # the FT2232H bridge's second channel (BGM: UART_RX = FTB0, FTB1 = UART_TX)
+      bind:
+        tx: onboard_ft_bridge.b1
+        rx: onboard_ft_bridge.b0
+    - peripheral: button_array   # the 7-segment add-on shield's four keys on IO[8..11], active low
+      params:
+        width: 4
+        active: low
+      bind:
+        btn: ["gpio[11]", "gpio[10]", "gpio[9]", "gpio[8]"]
+    - peripheral: adc_8bit_mic   # the on-board 8-bit parallel ADC (ADC_D / ADC_CLK)
+      bind:
+        d: onboard_adc.d
+        clk: onboard_adc.clk
     - peripheral: hdmi_tmds   # binds from BGM marsohod3gw2/board_specific_top.sv
       params:
         timing: lab
@@ -40,3 +54,10 @@ Configuration:
         segments: ["gpio[6]", "gpio[7]", "gpio[4]", "gpio[2]", "gpio[0]", "gpio[5]", "gpio[3]"]
         dp: "gpio[1]"
         digits: ["gpio[14]", "gpio[12]", "gpio[13]", "gpio[15]"]
+
+  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  tie:
+    "gpio[16]": 0
+    "gpio[17]": 0
+    "gpio[18]": 0
+    "gpio[19]": 0

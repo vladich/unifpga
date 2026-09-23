@@ -6,4 +6,21 @@
 BGM:
   configuration: marsohod3gw2
   variant: marsohod3gw2
-  uart_rx: 0
+  reset:
+    sources:
+    - any_key: true
+      bank: onboard_buttons
+    - pll_lock: serial
+  attach:
+  - peripheral: button_array
+    index: 0
+    lab_bits:
+      buttons: [null, null]
+  - peripheral: button_array
+    index: 1
+    lab_bits:
+      buttons: [0, 1, 2, 3]
+  - peripheral: adc_8bit_mic
+    index: 0
+    params:
+      clock: clock.pixel
