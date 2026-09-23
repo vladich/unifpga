@@ -1,25 +1,28 @@
 # efinix_t20_bga169_devkit pin map.
-# Source: LiteX-Boards platform file
-#   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/efinix_trion_t20_bga256_dev_kit.py
+# Source: Efinix's T20F169 dev-kit example in Efinity 2023.2
+#   (ipm/ip/efx_spi_loader/fpga/T20F169_devkit/jtag_spi_flash_loader.peri.xml).
+# Pins are GPIO def names, as Efinity references them (see fireant.yml). Only
+# the pins that example uses are listed; the kit has more LEDs and buttons.
 
 Board:
   id: efinix_t20_bga169_devkit
+  fpga:
+    producer: Efinix
+    family: Trion
+    part: T20F169
+  defaults:
+    iostandard: "3.3 V LVTTL / LVCMOS"
+
   pinBanks:
-    sys_clk:
-      pins: L13
-    onboard_switches:
-      pins: [H14, H15, H16]
-    onboard_leds:
-      pins: [D14, E13, G13, F14, N14, N16, P15, M14]
-    qspi_flash_clk:
+    # ext_clkin: the 50 MHz reference of PLL_TR1 (conn_type alternate); it
+    # reaches the fabric only through that PLL.
+    clk:              { pins: "GPIOR_76", frequency_mhz: 50 }
+    onboard_reset:    { pins: "GPIOL_12", active: low }     # rstn
+    onboard_leds:                                           # led[0..3]
+      pins: ["GPIOB_TXP06", "GPIOB_TXN09", "GPIOB_TXP08", "GPIOB_RXN04"]
+    spi_flash:
       pins:
-        pin: M3
-    qspi_flash_cs_n:
-      pins:
-        pin: P3
-    qspi_flash_miso:
-      pins:
-        pin: N1
-    qspi_flash_mosi:
-      pins:
-        pin: L3
+        sclk: "GPIOL_01"
+        nss:  "GPIOL_00"
+        mosi: "GPIOL_08"
+        miso: "GPIOL_09"

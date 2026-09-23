@@ -1,15 +1,33 @@
 # xilinx_zcu208 pin map.
-# Source: LiteX-Boards platform file
-#   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_zcu216.py
+# Source: AMD's ZCU208 board files (Vivado XilinxBoardStore
+#   boards/Xilinx/zcu208/production/2.0/part0_pins.xml + board.xml, Apache-2.0).
 
 Board:
   id: xilinx_zcu208
   pinBanks:
-    onboard_leds:
-      pins: [C13, D14, D12, D13, AW18, AV18, BA19, AP21]
+    onboard_leds:                 # GPIO_LED_0_LS .. GPIO_LED_7_LS
+      iostandard: LVCMOS12
+      pins: [AR19, AT17, AR17, AU19, AU20, AW21, AV21, AV17]
+    onboard_buttons:              # GPIO_SW_C, GPIO_SW_W, GPIO_SW_S, GPIO_SW_E, GPIO_SW_N
+      iostandard: LVCMOS18
+      pins: [L23, L22, A25, G24, D20]
+    dip_switches_1v2:             # GPIO_DIP_SW0, GPIO_DIP_SW1
+      iostandard: LVCMOS12
+      pins: [M18, L14]
+    dip_switches_1v8:             # GPIO_DIP_SW2 .. GPIO_DIP_SW7
+      iostandard: LVCMOS18
+      pins: [AF15, AP15, N21, N20, AW5, AW6]
+    onboard_uart:                 # uart2_PL
+      iostandard: LVCMOS12
+      pins:
+        tx: AT9
+        rx: AR8
+    sys_clk_p:                    # user_si570_c0_sysclk (programmable, 300 MHz default)
+      iostandard: DIFF_SSTL12
+      frequency_mhz: 300
+      pins:
+        pin: AP20
     sys_clk_n:
+      iostandard: DIFF_SSTL12
       pins:
-        pin: G11
-    sys_clk_p:
-      pins:
-        pin: G12
+        pin: AP19

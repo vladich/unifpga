@@ -22,7 +22,14 @@ Licence: [`LICENSES/BSD-2-Clause-litex-boards.txt`](LICENSES/BSD-2-Clause-litex-
 Copyright 2012-2026 Enjoy-Digital and the LiteX-Hub community.
 Source: https://github.com/litex-hub/litex-boards
 
-Pin assignments in the board files `alchitry_au`, `alchitry_cu`, `alchitry_pt`, `alinx_ax7203`, `avnet_aes_ku040_db`, `bunnie_netv2`, `colorlight_i9_plus`, `digilent_atlys`, `digilent_pynq_z1`, `efinix_t120_bga576_devkit`, `efinix_t20_bga169_devkit`, `efinix_t20_mipi_devkit`, `efinix_ti375_devkit`, `efinix_topaz_tz170_j484_devkit`, `enclustra_mercury_xu5`, `fomu_pvt`, `lattice_certusnx_versa`, `lattice_certuspro_nx_evn`, `lattice_certuspro_nx_vvml`, `lattice_crosslink_nx_evn`, `numato_aller`, `numato_nereid`, `panologic_g2`, `papilio_pro`, `qmtech_c4_starter`, `qmtech_cyclone_ep4cgx150_core`, `sipeed_tang_console`, `terasic_max10_deca`, `tinyfpga_bx`, `trenz_te0725`, `trenz_te0890`, `tul_pynq_z2`, `xilinx_ac701`, `xilinx_alveo_u200`, `xilinx_alveo_u250`, `xilinx_alveo_u280`, `xilinx_kc705`, `xilinx_kcu105`, `xilinx_kcu116`, `xilinx_sp605`, `xilinx_vc707`, `xilinx_vcu118`, `xilinx_vcu128`, `xilinx_zc706`, `xilinx_zcu102`, `xilinx_zcu104`, `xilinx_zcu106`, `xilinx_zcu208`.
+Pin assignments in the board files `alchitry_au`, `alchitry_cu`, `alchitry_pt`, `alinx_ax7203`, `avnet_aes_ku040_db`, `bunnie_netv2`, `colorlight_i9_plus`, `digilent_atlys`, `digilent_pynq_z1`, `efinix_t120_bga576_devkit`, `efinix_t20_mipi_devkit`, `efinix_ti375_devkit`, `efinix_topaz_tz170_j484_devkit`, `enclustra_mercury_xu5`, `fomu_pvt`, `lattice_certusnx_versa`, `lattice_certuspro_nx_evn`, `lattice_certuspro_nx_vvml`, `lattice_crosslink_nx_evn`, `numato_aller`, `numato_nereid`, `panologic_g2`, `papilio_pro`, `qmtech_c4_starter`, `qmtech_cyclone_ep4cgx150_core`, `sipeed_tang_console`, `terasic_max10_deca`, `tinyfpga_bx`, `trenz_te0725`, `trenz_te0890`, `tul_pynq_z2`, `xilinx_ac701`, `xilinx_alveo_u200`, `xilinx_alveo_u250`, `xilinx_alveo_u280`, `xilinx_kc705`, `xilinx_kcu105`, `xilinx_kcu116`, `xilinx_sp605`, `xilinx_vc707`, `xilinx_vcu118`, `xilinx_vcu128`, `xilinx_zc706`, `xilinx_zcu102`, `xilinx_zcu104`, `xilinx_zcu106`.
+
+## AMD board files (Apache-2.0)
+
+Licence: [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt), Copyright (C) 2023 Advanced Micro Devices, Inc.
+Source: the ZCU208 board files shipped with Vivado (XilinxBoardStore `boards/Xilinx/zcu208/production/2.0`).
+
+Pin assignments in the board file `xilinx_zcu208`.
 
 ## Digilent XDC (MIT)
 
@@ -48,4 +55,5 @@ Pin assignments taken from vendor documents or example projects that state no li
 
 - Alinx example repositories (https://github.com/alinxalinx): `alinx_ax7010`, `alinx_ax7100`, `alinx_ax7101`, `alinx_ax7102`, `alinx_ax7103`, `alinx_ax7450`, `alinx_axu15eg`, `alinx_axu2cga`, `alinx_axu2cgb`, `alinx_axu4ev_p`, `alinx_axu5ev_p`, `alinx_axu9eg`, `alinx_z19`, `alinx_z19_p`, `alinx_z7_p`;
 - Alinx board documentation: `alinx_av7k300`, `alinx_av7k325`, `alinx_ax1006`, `alinx_ax1016`, `alinx_ax1025`, `alinx_ax309`, `alinx_ax515`, `alinx_ax7015`, `alinx_ax7020`, `alinx_ax7021`, `alinx_ax7325`, `alinx_ax7350`, `alinx_ax7z010`, `alinx_ax7z020`, `alinx_ax7z035`, `alinx_ax7z045`, `alinx_ax7z100b`, `alinx_axau15`, `alinx_axau25`, `alinx_axsu35`, `alinx_axvu13f`, `alinx_axvu13g`, `alinx_axvu13p`, `alinx_fx200`, `alinx_hea13`, `alinx_vd100`;
+- Efinix's T20F169 dev-kit example project shipped with Efinity: `efinix_t20_bga169_devkit`.
 - Terasic and other vendor user manuals: `alinx_ax7035`, `alinx_ax7050`, `terasic_de10_agilex`, `terasic_de10_pro`, `terasic_de10_pro_stratix10_gx`, `terasic_de23_lite`, `terasic_de25_nano`, `terasic_de25_standard`.
