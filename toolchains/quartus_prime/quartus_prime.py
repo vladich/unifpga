@@ -209,6 +209,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     lib64 = os.path.join(install_dir, "linux64")
     if os.path.isdir(lib64):
         env["LD_LIBRARY_PATH"] = lib64 + ":" + env.get("LD_LIBRARY_PATH", "")
+    _preload_allocator(env, toolchain)
     with open(log_path, "w") as logf:
         try:
             rc = subprocess.run(cmd, cwd=output, env=env,
@@ -225,6 +226,38 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     if bitstream:
         log.info("Bitstream ready: %s", bitstream)
     return 0
+
+
+# Quartus II 13.x on Linux replaces malloc with its bundled TBB allocator
+# (linux64/libtbbmalloc_proxy.so.2). On a large part (EP3C120) quartus_fit
+# deadlocks in it: BackRefIdx::newBackRef mallocs, re-enters newBackRef and
+# spins in sched_yield on the lock it already holds (route-lookahead matrix
+# allocation), so the fitter sits at 100 % CPU with no output. A standalone
+# allocator preloaded ahead of the proxy takes malloc over and the fit
+# finishes (dk_dev_3c120n: 15 s).
+_ALLOCATORS = ("libjemalloc.so.2", "libtcmalloc_minimal.so.4", "libmimalloc.so.2")
+_LIB_DIRS = ("/usr/lib/x86_64-linux-gnu", "/usr/lib64", "/usr/lib", "/usr/local/lib")
+
+
+def _preload_allocator(env, toolchain, lib_dirs=_LIB_DIRS, system=None):
+    """Put a standalone malloc on LD_PRELOAD for Quartus II 13.x on Linux.
+    $UNIFPGA_QUARTUS_MALLOC names the library to use, or `off` to skip.
+    Returns the library preloaded, or None."""
+    if (system or os.uname().sysname) != "Linux" or not str(toolchain.get("Version") or "").startswith("13"):
+        return None
+    choice = env.get("UNIFPGA_QUARTUS_MALLOC")
+    if choice == "off":
+        return None
+    candidates = [choice] if choice else [os.path.join(d, name) for name in _ALLOCATORS for d in lib_dirs]
+    lib = next((c for c in candidates if os.path.isfile(c)), None)
+    if lib is None:
+        log.warning("Quartus II 13.x: no standalone malloc found (%s); quartus_fit can hang on large "
+                    "parts inside its bundled TBB allocator. Install jemalloc or set "
+                    "UNIFPGA_QUARTUS_MALLOC to a malloc library.", ", ".join(_ALLOCATORS))
+        return None
+    env["LD_PRELOAD"] = lib + (" " + env["LD_PRELOAD"] if env.get("LD_PRELOAD") else "")
+    log.info("Quartus II 13.x: preloading %s instead of the bundled TBB malloc", lib)
+    return lib
 
 
 def _find_bitstream(output):
