@@ -1,7 +1,6 @@
 // =============================================================================
-// 3_7_waveform_generator testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/3_music/3_7_waveform_generator/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 3_7_waveform_generator testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;
@@ -41,7 +40,7 @@ module tb;
         .w_digit ( w_digit ),
         // TODO .w_sound ( w_sound ),
         .w_gpio  ( w_gpio  ),
-        // defaults of BGM's lab_top the testbench relies on
+        // parameter defaults the testbench relies on
         .screen_width  ( 640 ),
         .screen_height ( 480 ),
         .w_red         ( 4 ),

@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_10_snail_fsm — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/1_basics/1_10_snail_fsm/lab_top.sv
+// 1_10_snail_fsm
 // =============================================================================
 //
 

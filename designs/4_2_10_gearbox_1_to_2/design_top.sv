@@ -1,6 +1,5 @@
 // =============================================================================
-// 4_2_10_gearbox_1_to_2 — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/4_microarchitecture/4_2_10_gearbox_1_to_2/lab_top.sv
+// 4_2_10_gearbox_1_to_2
 // =============================================================================
 //
 // requires:
@@ -50,11 +49,10 @@ module design_top
     inout        [w_gpio   - 1 : 0]  gpio
 );
 
-    // ---- slow_clk derivation (auto-inserted by adapt_designs.py) -------------
-    // Original basics-graphics-music labs received `slow_clk` as a port. The
-    // uni-fpga virtual device doesn't expose one, so derive a ~1 Hz tick from
+    // ---- slow_clk derivation --------------------------------------------------
+    // design_top has no `slow_clk` port, so derive a ~1 Hz tick from
     // the system clock.
-    // clk_mhz <= 1 is BGM's testbench setting (tb.sv passes clk as slow_clk):
+    // clk_mhz <= 1 is the testbench setting (tb.sv passes clk as slow_clk):
     // a two-bit divider keeps the simulation short.
     localparam int W_SLOW_CLK_DIV = (clk_mhz > 1) ? $clog2(clk_mhz * 1_000_000) : 2;
     logic [W_SLOW_CLK_DIV - 1 : 0] slow_clk_div;

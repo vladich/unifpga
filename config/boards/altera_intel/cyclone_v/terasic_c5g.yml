@@ -1,6 +1,4 @@
 # terasic_c5g pin map.
-# Source: basics-graphics-music repo
-#   https://raw.githubusercontent.com/yuri-panchul/basics-graphics-music/main/boards/c5gx/board_specific.qsf
 
 Board:
   id: terasic_c5g

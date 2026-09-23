@@ -1,7 +1,6 @@
 // =============================================================================
-// 4_2_7_ff_fifo_wrapped_in_valid_ready testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/4_microarchitecture/4_2_7_ff_fifo_wrapped_in_valid_ready/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 4_2_7_ff_fifo_wrapped_in_valid_ready testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb

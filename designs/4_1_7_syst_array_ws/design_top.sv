@@ -1,6 +1,5 @@
 // =============================================================================
-// 4_1_7_syst_array_ws — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/4_microarchitecture/4_1_7_syst_array_ws/lab_top.sv
+// 4_1_7_syst_array_ws
 // =============================================================================
 //
 

@@ -15,37 +15,37 @@ Configuration:
       width: 2
     bind:
       btn: onboard_buttons
-  - peripheral: tm1638_led_key   # binds from BGM eclypse_z7/board_specific_top.sv
+  - peripheral: tm1638_led_key
     bind:
       dio: "pmod_jb[5]"
       clk: "pmod_jb[6]"
       stb: "pmod_jb[7]"
-  - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
+  - peripheral: led_bank
     params:
       width: 1
     bind:
       led: onboard_rgb_led_1.r
-  - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
+  - peripheral: led_bank
     params:
       width: 1
     bind:
       led: onboard_rgb_led_1.g
-  - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
+  - peripheral: led_bank
     params:
       width: 1
     bind:
       led: onboard_rgb_led_1.b
-  - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
+  - peripheral: led_bank
     params:
       width: 1
     bind:
       led: onboard_rgb_led_0.r
-  - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
+  - peripheral: led_bank
     params:
       width: 1
     bind:
       led: onboard_rgb_led_0.g
-  - peripheral: led_bank   # from BGM eclypse_z7/board_specific_top.sv
+  - peripheral: led_bank
     params:
       width: 1
     bind:

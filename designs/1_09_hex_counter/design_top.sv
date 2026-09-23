@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_09_hex_counter — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/1_basics/1_09_hex_counter/lab_top.sv
+// 1_09_hex_counter
 // =============================================================================
 //
 // requires:

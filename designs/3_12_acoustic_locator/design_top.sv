@@ -1,6 +1,5 @@
 // =============================================================================
-// 3_12_acoustic_locator — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/3_music/3_12_acoustic_locator/lab_top.sv
+// 3_12_acoustic_locator
 // =============================================================================
 //
 // requires:

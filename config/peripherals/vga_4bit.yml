@@ -4,12 +4,11 @@
 # 5-6-5 resistor ladder on saylinx, and the one-bit-per-colour boards
 # (omdazz, rzrd, zeowaa, piswords6).
 #
-# Two width sets, both taken from the board and BGM:
-#   bits_*      what design_top sees (BGM's w_red / w_green / w_blue)
+# Two width sets, both taken from the board:
+#   bits_*      what design_top sees (w_red / w_green / w_blue)
 #   pin_bits_*  how many pins the board has per channel
 # The `vga` driver gates the colours with display_on and reduces them to the
-# pin width the same way BGM's board_specific_top.sv does (OR-reduction for a
-# single pin, MSBs otherwise).
+# pin width (OR-reduction for a single pin, MSBs otherwise).
 
 Peripheral:
   id: vga_4bit
@@ -38,7 +37,7 @@ Peripheral:
     - { name: b,  type: bus, width: $pin_bits_b, direction: output }
     - { name: hs, type: scalar, direction: output }
     - { name: vs, type: scalar, direction: output }
-    # DAC boards (DE2-115, DE1-SoC, SoCKit, DE2): BGM drives VGA_BLANK_N with
+    # DAC boards (DE2-115, DE1-SoC, SoCKit, DE2): VGA_BLANK_N is driven with
     # display_on and VGA_CLK with the pixel clock; VGA_SYNC_N is a `tie:`.
     - { name: blank_n, type: scalar, direction: output, optional: true, comment: "ADV7123 BLANK_N = display_on" }
     - { name: clk,     type: scalar, direction: output, optional: true, comment: "ADV7123 pixel clock" }

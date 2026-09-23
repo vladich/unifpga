@@ -1,6 +1,5 @@
 // =============================================================================
-// 3_5_2_synth_channel — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/3_music/3_5_2_synth_channel/lab_top.sv
+// 3_5_2_synth_channel
 // =============================================================================
 //
 // requires:

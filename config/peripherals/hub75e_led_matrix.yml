@@ -1,8 +1,7 @@
 # HUB75E LED matrix panel (commonly 64x32 or 64x64 RGB LEDs). Uses 6 RGB
 # data lines (top + bottom halves), 5 row-select lines (a..e), plus the panel
-# clock, latch and output-enable. Signal names follow the driver module and
-# BGM's board_specific_top.sv (`ck`, `oe`, `st`, `a`..`e`) so binds can be
-# read straight off BGM's instantiation.
+# clock, latch and output-enable. Signal names follow the driver module
+# (`ck`, `oe`, `st`, `a`..`e`).
 
 Peripheral:
   id: hub75e_led_matrix
@@ -13,7 +12,7 @@ Peripheral:
       default: 64
     brightness:
       type: int
-      default: 1          # BGM's HUB75E_LED_MATRIX_BRIGHTNESS; the `_bright` variant raises it
+      default: 1          # HUB75E_LED_MATRIX_BRIGHTNESS; the `_bright` variant raises it
   signals:
     - { name: r1, type: scalar, direction: output, comment: "Top half red" }
     - { name: g1, type: scalar, direction: output, comment: "Top half green" }
@@ -34,7 +33,7 @@ Peripheral:
       params:
         width: 64
         height: $rows
-        color_depth: 111  # one bit per channel, exactly as BGM drives these panels (w_red = 1)
+        color_depth: 111  # one bit per channel (w_red = 1)
   driver:
     module: hub75e_led_matrix
     file: rtl/peripherals/hub75e_led_matrix.sv

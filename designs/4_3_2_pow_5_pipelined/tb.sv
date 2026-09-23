@@ -1,7 +1,6 @@
 // =============================================================================
-// 4_3_2_pow_5_pipelined testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/4_microarchitecture/4_3_2_pow_5_pipelined/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 4_3_2_pow_5_pipelined testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb

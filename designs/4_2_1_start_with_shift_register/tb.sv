@@ -1,7 +1,6 @@
 // =============================================================================
-// 4_2_1_start_with_shift_register testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/4_microarchitecture/4_2_1_start_with_shift_register/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 4_2_1_start_with_shift_register testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;

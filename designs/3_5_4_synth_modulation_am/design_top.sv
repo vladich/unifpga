@@ -1,6 +1,5 @@
 // =============================================================================
-// 3_5_4_synth_modulation_am — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/3_music/3_5_4_synth_modulation_am/lab_top.sv
+// 3_5_4_synth_modulation_am
 // =============================================================================
 //
 

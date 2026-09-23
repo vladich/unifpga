@@ -1,7 +1,6 @@
 // =============================================================================
-// 4_3_4_pow_5_pipelined_with_credit_counter testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/4_microarchitecture/4_3_4_pow_5_pipelined_with_credit_counter/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 4_3_4_pow_5_pipelined_with_credit_counter testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb

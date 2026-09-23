@@ -1,11 +1,11 @@
 # Parallel-RGB HDMI transmitter (Analog Devices ADV7513) of the Terasic
-# DE10-Nano and Cyclone V GX Starter Kit, driven as BGM does: the `vga` timing
+# DE10-Nano and Cyclone V GX Starter Kit: the `vga` timing
 # generator runs from the board clock and derives the 25 MHz pixel clock, the
 # 24-bit bus carries the design's colours padded with ones, and Terasic's I2C
 # configuration module programs the transmitter after reset. `config_table`
 # selects the register table: de10_nano (ADV7513 only) or c5gx (SSM2603 codec
 # + ADV7513 on the shared bus). The transmitter's audio inputs are parked by
-# the configuration's `tie:` entries (BGM: HDMI_I2S / LRCLK / MCLK / SCLK = 0).
+# the configuration's `tie:` entries (HDMI_I2S / LRCLK / MCLK / SCLK = 0).
 
 Peripheral:
   id: hdmi_adv7513

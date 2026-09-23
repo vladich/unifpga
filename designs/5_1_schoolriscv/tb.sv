@@ -1,7 +1,6 @@
 // =============================================================================
-// 5_1_schoolriscv testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/5_cpu/5_1_schoolriscv/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 5_1_schoolriscv testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 //

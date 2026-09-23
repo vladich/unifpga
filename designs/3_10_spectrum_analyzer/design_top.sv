@@ -1,6 +1,5 @@
 // =============================================================================
-// 3_10_spectrum_analyzer — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/3_music/3_10_spectrum_analyzer/lab_top.sv
+// 3_10_spectrum_analyzer
 // =============================================================================
 //
 // requires:

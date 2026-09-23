@@ -1,5 +1,5 @@
 # fireant pin map.
-# Hand-curated from basics-graphics-music/boards/fireant/board_specific.peri.xml.
+# Hand-curated from the Efinity board_specific.peri.xml.
 # Efinity differs from XDC/QSF/CST/PCF/LPF in two ways: pins are referenced by
 # GPIO def name (GPIOR_NN), not physical ball/pad number; and the design clock
 # is sourced from an internal oscillator (T8F81 has no external clock pin —

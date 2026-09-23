@@ -54,23 +54,23 @@ Configuration:
   - peripheral: reset_button
     bind:
       rst: cpu_resetn
-  - peripheral: tm1638_led_key   # binds from BGM arty_a7_35/board_specific_top.sv
+  - peripheral: tm1638_led_key
     bind:
       clk: "arduino_io[28]"
       stb: "arduino_io[29]"
       dio: "arduino_io[27]"
-  - peripheral: inmp441_i2s_mic   # binds from BGM arty_a7_35/board_specific_top.sv
+  - peripheral: inmp441_i2s_mic
     bind:
       lr: "pmod_jd[5]"
       ws: "pmod_jd[4]"
       sck: "pmod_jd[7]"
       sd: "pmod_jd[6]"
-  - peripheral: gpio_header   # from BGM arty_a7_35/board_specific_top.sv .gpio
+  - peripheral: gpio_header
     params:
       width: 30
     bind:
       io: arduino_io
-  - peripheral: vga_4bit   # from BGM arty_a7_35/board_specific_top.sv (VGA on header pins)
+  - peripheral: vga_4bit
     params:
       bits_r: 4
       bits_g: 4

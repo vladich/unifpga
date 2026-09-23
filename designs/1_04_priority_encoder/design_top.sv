@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_04_priority_encoder — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/1_basics/1_04_priority_encoder/lab_top.sv
+// 1_04_priority_encoder
 // =============================================================================
 //
 // requires:

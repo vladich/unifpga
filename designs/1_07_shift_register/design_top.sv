@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_07_shift_register — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/1_basics/1_07_shift_register/lab_top.sv
+// 1_07_shift_register
 // =============================================================================
 //
 

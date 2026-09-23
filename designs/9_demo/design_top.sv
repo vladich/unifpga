@@ -1,6 +1,5 @@
 // =============================================================================
-// 9_demo — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/9_events/9_demo/lab_top.sv
+// 9_demo
 // =============================================================================
 //
 // requires:

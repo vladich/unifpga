@@ -1,7 +1,6 @@
 // =============================================================================
 // Lab 05 — Seven-segment display: a single letter
 //
-// Adapted from basics-graphics-music/designs/1_basics/1_05_7seven_segment_letter.
 // Displays "F" (when btn[0] is released) or "P" (when pressed) on the first
 // digit position of a multi-digit shared-segment 7-segment display.
 //

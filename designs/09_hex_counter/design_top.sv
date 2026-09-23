@@ -1,8 +1,7 @@
 // =============================================================================
 // Lab 09 — Hex counter on the 7-segment display
 //
-// Adapted from basics-graphics-music/designs/1_basics/1_09_hex_counter. Drives the
-// shared-segment 7-segment display with a hex value that increments slowly
+// Drives the shared-segment 7-segment display with a hex value that increments slowly
 // enough to be visible. Uses a tiny inline 7-seg multiplexer/decoder so the
 // design is self-contained (no external helper module).
 // =============================================================================

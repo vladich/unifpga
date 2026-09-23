@@ -27,18 +27,18 @@ Configuration:
       width: 4
     bind:
       led: onboard_leds
-  - peripheral: tm1638_led_key   # binds from BGM zybo_z7/board_specific_top.sv
+  - peripheral: tm1638_led_key
     bind:
       clk: "pmod_je[1]"
       stb: "pmod_je[0]"
       dio: "pmod_je[2]"
-  - peripheral: i2s_audio_out   # from BGM zybo_z7/board_specific_top.sv
+  - peripheral: i2s_audio_out
     bind:
       mclk: "pmod_jb[0]"
       bclk: "pmod_jb[2]"
       lrclk: "pmod_jb[1]"
       sdata: "pmod_jb[3]"
-  - peripheral: vga_4bit   # from BGM zybo_z7/board_specific_top.sv (VGA on header pins)
+  - peripheral: vga_4bit
     params:
       bits_r: 4
       bits_g: 4

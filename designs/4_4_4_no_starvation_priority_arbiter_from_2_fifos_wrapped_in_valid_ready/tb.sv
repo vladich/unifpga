@@ -1,7 +1,6 @@
 // =============================================================================
-// 4_4_4_no_starvation_priority_arbiter_from_2_fifos_wrapped_in_valid_ready testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/4_microarchitecture/4_4_4_no_starvation_priority_arbiter_from_2_fifos_wrapped_in_valid_ready/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 4_4_4_no_starvation_priority_arbiter_from_2_fifos_wrapped_in_valid_ready testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;
@@ -30,7 +29,7 @@ module tb;
         .w_led   ( w_led   ),
         .w_digit ( w_digit ),
         .w_gpio  ( w_gpio  ),
-        // defaults of BGM's lab_top the testbench relies on
+        // parameter defaults the testbench relies on
         .screen_width  ( 640 ),
         .screen_height ( 480 ),
         .w_red         ( 4 ),

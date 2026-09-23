@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_05_7seven_segment_letter — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/1_basics/1_05_7seven_segment_letter/lab_top.sv
+// 1_05_7seven_segment_letter
 // =============================================================================
 //
 // requires:

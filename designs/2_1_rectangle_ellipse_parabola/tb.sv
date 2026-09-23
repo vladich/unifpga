@@ -1,7 +1,6 @@
 // =============================================================================
-// 2_1_rectangle_ellipse_parabola testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/2_graphics/2_1_rectangle_ellipse_parabola/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 2_1_rectangle_ellipse_parabola testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
     // Shows the image on the VGA screen using signal lines in Wave Analyzer

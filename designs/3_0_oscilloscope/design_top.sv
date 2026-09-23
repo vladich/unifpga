@@ -1,6 +1,5 @@
 // =============================================================================
-// 3_0_oscilloscope — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/3_music/3_0_oscilloscope/lab_top.sv
+// 3_0_oscilloscope
 // =============================================================================
 //
 // requires:

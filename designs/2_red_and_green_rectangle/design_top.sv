@@ -1,6 +1,5 @@
 // =============================================================================
-// 2_red_and_green_rectangle — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/9_events/2_red_and_green_rectangle/lab_top.sv
+// 2_red_and_green_rectangle
 // =============================================================================
 //
 // requires:

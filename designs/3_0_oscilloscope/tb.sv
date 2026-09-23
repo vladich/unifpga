@@ -1,7 +1,6 @@
 // =============================================================================
-// 3_0_oscilloscope testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/3_music/3_0_oscilloscope/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 3_0_oscilloscope testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 // This testbench is for microphone module only
@@ -92,7 +91,7 @@ module tb;
         .w_led   ( w_led   ),
         .w_digit ( w_digit ),
         .w_gpio  ( w_gpio  ),
-        // defaults of BGM's lab_top the testbench relies on
+        // parameter defaults the testbench relies on
         .screen_width  ( 640 ),
         .screen_height ( 480 ),
         .w_red         ( 4 ),

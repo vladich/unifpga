@@ -13,8 +13,8 @@ Capability:
       type: int
       description: Number of digit positions exposed (sum across providers).
   signals:
-    # 8 = 7 segments (a..g) + decimal point. Bit ordering matches
-    # basics-graphics-music's `abcdefgh` convention so designs port unchanged:
+    # 8 = 7 segments (a..g) + decimal point. Bit ordering follows the
+    # `abcdefgh` convention so designs port unchanged:
     # bit 7 = a, bit 6 = b, ..., bit 1 = g, bit 0 = h (decimal point).
     # Segment patterns are active-high here; providers invert for
     # common-anode hardware.

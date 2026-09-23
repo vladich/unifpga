@@ -709,7 +709,7 @@ Devices:
     Datasheet: null
     PeripheralDrivers:
       - pwm_amp
-    Notes: Trivial PWM-to-RC-filter audio output — many BGM-style boards drive a speaker this way.
+    Notes: Trivial PWM-to-RC-filter audio output — many hobby boards drive a speaker this way.
   - Id: realtek_alc662
     Name: Realtek ALC662 Audio Codec
     Manufacturer: Realtek
@@ -987,7 +987,7 @@ Devices:
       - dvi_24bit
       - dvi_12bit
       - hdmi_tmds
-    Notes: TMDS pairs driven straight from FPGA IOBs (BGM-style). No external transmitter.
+    Notes: TMDS pairs driven straight from FPGA IOBs. No external transmitter.
   - Id: univision_ug2832hsweg04
     Name: Univision UG-2832HSWEG04 OLED (SSD1306)
     Manufacturer: Univision Tech

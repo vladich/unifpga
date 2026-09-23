@@ -1,6 +1,5 @@
 // =============================================================================
-// 3_11_microphone_monitor — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/3_music/3_11_microphone_monitor/lab_top.sv
+// 3_11_microphone_monitor
 // =============================================================================
 //
 // requires:

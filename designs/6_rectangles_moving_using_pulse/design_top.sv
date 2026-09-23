@@ -1,6 +1,5 @@
 // =============================================================================
-// 6_rectangles_moving_using_pulse — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/9_events/6_rectangles_moving_using_pulse/lab_top.sv
+// 6_rectangles_moving_using_pulse
 // =============================================================================
 //
 // requires:

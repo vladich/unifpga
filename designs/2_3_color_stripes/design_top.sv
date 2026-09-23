@@ -1,6 +1,5 @@
 // =============================================================================
-// 2_3_color_stripes — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/2_graphics/2_3_color_stripes/lab_top.sv
+// 2_3_color_stripes
 // =============================================================================
 //
 // requires:

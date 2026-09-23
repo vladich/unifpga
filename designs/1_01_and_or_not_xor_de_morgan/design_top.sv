@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_01_and_or_not_xor_de_morgan — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/1_basics/1_01_and_or_not_xor_de_morgan/lab_top.sv
+// 1_01_and_or_not_xor_de_morgan
 // =============================================================================
 //
 // requires:

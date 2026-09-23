@@ -1,9 +1,9 @@
 # I²S stereo DAC output: a PCM5102A module or Digilent Pmod AMP3 on a header,
 # or the on-board headphone DAC + LPA4809 amplifier of the Tang Nano 20K /
-# Tang Primer 20K dock. The driver is BGM's peripherals/i2s_audio_out.sv
+# Tang Primer 20K dock. The driver is rtl/peripherals/i2s_audio_out.sv
 # (mono sample duplicated on both channels; MCLK:BCLK:LRCLK = 256:64:1).
 #
-# BGM wires it on ~50 boards — header pins, LCD/camera pins repurposed as
+# It is wired on ~50 boards — header pins, LCD/camera pins repurposed as
 # GPIO, Pmod JB and JC at once — so `audio_out` is a broadcast capability:
 # several instances (and a PWM amplifier) may listen to the same samples.
 
@@ -15,7 +15,7 @@ Peripheral:
     offset_by_one_cycle: { type: int, default: 1, description: "0 for the PT8211 DAC" }
     loud:                { type: int, default: 0, description: "1 doubles the sample (clips)" }
   signals:
-    - { name: mclk,  type: scalar, direction: output, optional: true, comment: "Master clock; BGM leaves it unconnected on DACs that do not need it" }
+    - { name: mclk,  type: scalar, direction: output, optional: true, comment: "Master clock; left unconnected on DACs that do not need it" }
     - { name: bclk,  type: scalar, direction: output, comment: "Bit clock" }
     - { name: lrclk, type: scalar, direction: output, comment: "Word select (32-bit L, 32-bit R)" }
     - { name: sdata, type: scalar, direction: output, comment: "Serial data" }
@@ -40,4 +40,4 @@ Peripheral:
       lrclk:   pin.lrclk
       sdata:   pin.sdata
   pin_assigns:
-    pin.pa_en: const.1     # BGM: assign PA_EN = 1'b1
+    pin.pa_en: const.1     # assign PA_EN = 1'b1

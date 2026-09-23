@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_08_7segment_word — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/1_basics/1_08_7segment_word/lab_top.sv
+// 1_08_7segment_word
 // =============================================================================
 //
 // requires:

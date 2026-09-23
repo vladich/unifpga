@@ -14,10 +14,10 @@
 #                   the user has
 #   InstallDir:     optional pin for where the toolchain lives locally; `~`
 #                   and `$VAR` expand at read time. When the pin is empty or
-#                   does not exist, tools/toolchain_detect.py finds the install
-#                   the way BGM's setup scripts do: the vendor environment
-#                   variable (XILINX_VIVADO, QUARTUS_ROOTDIR, GOWIN_VERSION_DIR,
-#                   EFINITY_HOME, OSS_CAD_SUITE), the tool on $PATH, then the
+#                   does not exist, tools/toolchain_detect.py finds the
+#                   install: the vendor environment variable (XILINX_VIVADO,
+#                   QUARTUS_ROOTDIR, GOWIN_VERSION_DIR, EFINITY_HOME,
+#                   OSS_CAD_SUITE), the tool on $PATH, then the
 #                   default install parents ($HOME, /opt, /tools; /Applications
 #                   on macOS; /c /d /e on Windows) with the newest version.
 #                   `python3 synthesize.py --list-toolchains` shows the result.

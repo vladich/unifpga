@@ -1,7 +1,6 @@
 // =============================================================================
-// 6_3_cordic testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/6_misc/6_3_cordic/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 6_3_cordic testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;

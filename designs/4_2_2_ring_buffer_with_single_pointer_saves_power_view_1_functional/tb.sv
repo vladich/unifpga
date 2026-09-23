@@ -1,7 +1,6 @@
 // =============================================================================
-// 4_2_2_ring_buffer_with_single_pointer_saves_power_view_1_functional testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/4_microarchitecture/4_2_2_ring_buffer_with_single_pointer_saves_power_view_1_functional/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 4_2_2_ring_buffer_with_single_pointer_saves_power_view_1_functional testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;

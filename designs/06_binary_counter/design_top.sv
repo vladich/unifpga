@@ -1,7 +1,6 @@
 // =============================================================================
 // Lab 06 — Binary counter
 //
-// Adapted from basics-graphics-music/designs/1_basics/1_06_binary_counter.
 // Drives the LED bus from a free-running counter clocked by `clk`. Useful for
 // verifying the clock frequency announced by the configuration matches the
 // board's actual oscillator.

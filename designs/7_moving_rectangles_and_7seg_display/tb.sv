@@ -1,7 +1,6 @@
 // =============================================================================
-// 7_moving_rectangles_and_7seg_display testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/9_events/7_moving_rectangles_and_7seg_display/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 7_moving_rectangles_and_7seg_display testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;
@@ -30,7 +29,7 @@ module tb;
         .w_led   ( w_led   ),
         .w_digit ( w_digit ),
         .w_gpio  ( w_gpio  ),
-        // defaults of BGM's lab_top the testbench relies on
+        // parameter defaults the testbench relies on
         .screen_width  ( 640 ),
         .screen_height ( 480 ),
         .w_red         ( 4 ),

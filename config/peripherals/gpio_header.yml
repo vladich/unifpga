@@ -1,6 +1,6 @@
 # A pin header exposed to the design as bidirectional GPIO: the 40-pin GPIO_0 /
 # GPIO_1 connectors of the DE boards, Arduino / Raspberry-Pi style connectors,
-# Sipeed GPIO rows, a Pmod used bare. This is BGM's `.gpio ( { GPIO_0, GPIO_1 } )`
+# Sipeed GPIO rows, a Pmod used bare. This is the `.gpio ( { GPIO_0, GPIO_1 } )`
 # connection: the width is the header's pin count, bits a driver peripheral
 # claims (TM1638, microphone, I2S DAC) are left dangling on the design side so
 # the numbering stays that of the board.
@@ -17,7 +17,7 @@ Peripheral:
     direction:
       type: enum
       values: [inout, out]
-      default: inout        # out: the design only drives the pins (BGM emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio`)
+      default: inout        # out: the design only drives the pins (emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio`)
   signals:
     - { name: io, type: bus, width: $width, direction: inout }
   provides:

@@ -1,6 +1,5 @@
 // =============================================================================
-// 5_4_yrv_plus — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/designs/5_cpu/5_4_yrv_plus/design_top.sv
+// 5_4_yrv_plus
 // =============================================================================
 //
 // requires:

@@ -17,7 +17,7 @@ Configuration:
       width: 6
     bind:
       led: onboard_leds
-  - peripheral: seven_segment_8digit_shared   # bit order and polarity from BGM's assigns (sync --seven-seg)
+  - peripheral: seven_segment_8digit_shared
     params:
       digits: 4
       active: high
@@ -31,7 +31,7 @@ Configuration:
       width: 4
     bind:
       btn: ["onboard_buttons[0]", "onboard_buttons[1]", "onboard_buttons[2]", "onboard_buttons[3]"]
-  - peripheral: button_array   # BTN_E on the core board (1.8 V bank), active low (BGM: ~ BTN_E)
+  - peripheral: button_array   # BTN_E on the core board (1.8 V bank), active low
     params:
       width: 1
       active: low

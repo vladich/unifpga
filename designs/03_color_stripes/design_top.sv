@@ -1,10 +1,9 @@
 // =============================================================================
 // Lab 03 — Color stripes (graphics)
 //
-// Adapted from basics-graphics-music/designs/2_graphics/2_3_color_stripes. Draws
-// vertical stripes of cycling RGB colours. Demonstrates the screen capability:
-// the design receives raster (x, y) from the screen provider and computes the
-// pixel colour combinationally.
+// Draws vertical stripes of cycling RGB colours. Demonstrates the screen
+// capability: the design receives raster (x, y) from the screen provider and
+// computes the pixel colour combinationally.
 // =============================================================================
 //
 // requires:

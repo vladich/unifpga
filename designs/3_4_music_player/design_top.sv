@@ -1,6 +1,5 @@
 // =============================================================================
-// 3_4_music_player — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/3_music/3_4_music_player/lab_top.sv
+// 3_4_music_player
 // =============================================================================
 //
 

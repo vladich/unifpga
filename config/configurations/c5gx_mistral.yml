@@ -28,12 +28,12 @@ Configuration:
         width: 10
       bind:
         sw: onboard_switches
-    - peripheral: led_bank   # from BGM c5gx/board_specific_top.sv
+    - peripheral: led_bank
       params:
         width: 8
       bind:
         led: onboard_leds_green
-    - peripheral: led_bank   # from BGM c5gx/board_specific_top.sv
+    - peripheral: led_bank
       params:
         width: 10
       bind:
@@ -46,19 +46,19 @@ Configuration:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3]
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: inmp441_i2s_mic   # binds from BGM c5gx/board_specific_top.sv
+    - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio[0]"
         ws: "gpio[2]"
         sck: "gpio[4]"
         sd: "gpio[5]"
-    - peripheral: i2s_audio_out   # from BGM c5gx/board_specific_top.sv
+    - peripheral: i2s_audio_out
       bind:
         mclk: onboard_audio_codec.xck
         bclk: onboard_audio_codec.bclk
         lrclk: onboard_audio_codec.dac_lrck
         sdata: onboard_audio_codec.dac_dat
-    - peripheral: hdmi_adv7513   # from BGM c5gx/board_specific_top.sv
+    - peripheral: hdmi_adv7513
       params:
         bits_r: 8
         bits_g: 8
@@ -73,13 +73,13 @@ Configuration:
         i2c_scl: onboard_i2c.scl
         i2c_sda: onboard_i2c.sda
         int: onboard_hdmi_tx.int
-    - peripheral: gpio_header   # from BGM c5gx/board_specific_top.sv .gpio
+    - peripheral: gpio_header
       params:
         width: 22
       bind:
         io: gpio
 
-  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:
     "gpio[1]": 0
     "gpio[3]": 1

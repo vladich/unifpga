@@ -7,7 +7,7 @@ Configuration:
   toolchain: nextpnr_mistral
 
   attach:
-    - peripheral: clock_input   # added by tools/sync_from_bgm.py --clock
+    - peripheral: clock_input
       bind:
         clk: fpga_clk1_50mhz
     - peripheral: button_array
@@ -27,7 +27,7 @@ Configuration:
         led: onboard_leds
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: vga_4bit   # from BGM de0_nano_soc_vga_pmod/board_specific_top.sv (VGA on header pins)
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -42,30 +42,30 @@ Configuration:
         b: ["gpio_1[17]", "gpio_1[15]", "gpio_1[13]", "gpio_1[11]"]
         hs: "gpio_1[5]"
         vs: "gpio_1[7]"
-    - peripheral: inmp441_i2s_mic   # binds from BGM de0_nano_soc_vga_pmod/board_specific_top.sv
+    - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_0[0]"
         ws: "gpio_0[2]"
         sck: "gpio_0[4]"
         sd: "gpio_0[5]"
-    - peripheral: tm1638_led_key   # binds from BGM de0_nano_soc_vga_pmod/board_specific_top.sv
+    - peripheral: tm1638_led_key
       bind:
         clk: "gpio_0[27]"
         stb: "gpio_0[29]"
         dio: "gpio_0[31]"
-    - peripheral: i2s_audio_out   # from BGM de0_nano_soc_vga_pmod/board_specific_top.sv
+    - peripheral: i2s_audio_out
       bind:
         mclk: "gpio_1[32]"
         bclk: "gpio_1[30]"
         lrclk: "gpio_1[26]"
         sdata: "gpio_1[28]"
-    - peripheral: gpio_header   # from BGM de0_nano_soc_vga_pmod/board_specific_top.sv .gpio
+    - peripheral: gpio_header
       params:
         width: 36
       bind:
         io: gpio_0
 
-  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:
     "gpio_0[1]": 0
     "gpio_0[3]": 1

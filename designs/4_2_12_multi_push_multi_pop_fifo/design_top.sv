@@ -1,6 +1,5 @@
 // =============================================================================
-// 4_2_12_multi_push_multi_pop_fifo — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/4_microarchitecture/4_2_12_multi_push_multi_pop_fifo/lab_top.sv
+// 4_2_12_multi_push_multi_pop_fifo
 // =============================================================================
 //
 // requires:

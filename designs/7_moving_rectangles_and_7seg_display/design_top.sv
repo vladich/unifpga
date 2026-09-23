@@ -1,6 +1,5 @@
 // =============================================================================
-// 7_moving_rectangles_and_7seg_display — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/9_events/7_moving_rectangles_and_7seg_display/lab_top.sv
+// 7_moving_rectangles_and_7seg_display
 // =============================================================================
 //
 // requires:

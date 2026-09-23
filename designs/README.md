@@ -1,8 +1,7 @@
 # Lab examples
 
-Adapted from `basics-graphics-music/designs/`. Each design is a self-contained
-`design_top.sv` that targets the canonical uni-fpga virtual-device interface
-(see `rtl/peripherals/design_top_interface.sv`).
+Each design is a self-contained `design_top.sv` that targets the canonical
+uni-fpga virtual-device interface (see `rtl/peripherals/design_top_interface.sv`).
 
 To build a design on a particular board:
 
@@ -18,9 +17,10 @@ without a vendor toolchain installed).
 
 ## Adaptation rules
 
-When porting a design from `basics-graphics-music`, apply these changes:
+When porting a design written against the `lab_top` interface, apply these
+changes:
 
-| basics-graphics-music | uni-fpga | Why |
+| `lab_top` | uni-fpga | Why |
 |---|---|---|
 | `w_key`, `key` | `w_btn`, `btn` | The canonical capability is `buttons` |
 | `slow_clk` (port) | derive locally from `clk` | uni-fpga doesn't expose a slow clock |

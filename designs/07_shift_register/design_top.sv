@@ -1,7 +1,6 @@
 // =============================================================================
 // Lab 07 — Shift register (light moving across the LED bar)
 //
-// Adapted from basics-graphics-music/designs/1_basics/1_07_shift_register.
 // A button-controlled bit shifts through the LED bus, refreshed at ~6 Hz.
 // =============================================================================
 //

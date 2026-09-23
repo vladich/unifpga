@@ -1,7 +1,6 @@
 // =============================================================================
-// 3_10_spectrum_analyzer testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/3_music/3_10_spectrum_analyzer/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 3_10_spectrum_analyzer testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;

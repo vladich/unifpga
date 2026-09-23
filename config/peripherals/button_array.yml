@@ -13,7 +13,7 @@ Peripheral:
       default: high
     as_switches:
       type: bool
-      default: false        # BGM boards without switches feed the lab's sw from the keys (`.sw ( lab_key )`)
+      default: false        # boards without switches feed the lab's sw from the keys (`.sw ( lab_key )`)
   signals:
     - { name: btn, type: bus, width: $width, direction: input }
   provides:

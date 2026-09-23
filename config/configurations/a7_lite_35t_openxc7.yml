@@ -28,18 +28,18 @@ Configuration:
     bind:
       tx: onboard_uart.tx
       rx: onboard_uart.rx
-  - peripheral: tm1638_led_key   # binds from BGM a7_lite_35t/board_specific_top.sv
+  - peripheral: tm1638_led_key
     bind:
       dio: "gpio[0]"
       clk: "gpio[1]"
       stb: "gpio[2]"
-  - peripheral: inmp441_i2s_mic   # binds from BGM a7_lite_35t/board_specific_top.sv
+  - peripheral: inmp441_i2s_mic
     bind:
       lr: "gpio[4]"
       ws: "gpio[5]"
       sck: "gpio[6]"
       sd: "gpio[7]"
-  - peripheral: hdmi_tmds   # binds from BGM a7_lite_35t/board_specific_top.sv
+  - peripheral: hdmi_tmds
     params:
       timing: dvi
       clock_serial_mhz: 250
@@ -48,13 +48,13 @@ Configuration:
       d_p: onboard_hdmi.d_p
       clk_n: onboard_hdmi.clk_n
       d_n: onboard_hdmi.d_n
-  - peripheral: i2s_audio_out   # from BGM a7_lite_35t/board_specific_top.sv
+  - peripheral: i2s_audio_out
     bind:
       mclk: "gpio[9]"
       bclk: "gpio[10]"
       lrclk: "gpio[11]"
       sdata: "gpio[12]"
-  - peripheral: gpio_header   # from BGM a7_lite_35t/board_specific_top.sv .gpio
+  - peripheral: gpio_header
     params:
       width: 13
     bind:

@@ -1,6 +1,5 @@
 // =============================================================================
-// 6_3_cordic — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/6_misc/6_3_cordic/lab_top.sv
+// 6_3_cordic
 // =============================================================================
 //
 // requires:

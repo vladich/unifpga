@@ -3,24 +3,24 @@
 Peripheral:
   id: lcd_800_480
   description: 800x480 RGB-parallel LCD with HSYNC/VSYNC/DE/CLK and optional backlight
-  # BGM drives every 800x480 panel it supports (Tang Nano 9K/20K, Primer 20K
-  # Dock, Mega 138K) with a 5-6-5 bus: LCD_R[4:0], LCD_G[5:0], LCD_B[4:0],
+  # Every supported 800x480 panel (Tang Nano 9K/20K, Primer 20K Dock, Mega
+  # 138K) is driven with a 5-6-5 bus: LCD_R[4:0], LCD_G[5:0], LCD_B[4:0],
   # w_red = 5, w_green = 6, w_blue = 5. Same contract as lcd_480_272.
   parameters:
     color_depth:
       type: int
       default: 16    # 5-6-5 RGB
-    # Backlight / init pin drivers; BGM differs per board (`1'b0` on Tang
-    # Nano 9K / 20K alt, `~ rst` on Tang Primer 20K Dock). Copied per
-    # configuration by tools/sync_from_bgm.py --clock-tree.
+    # Backlight / init pin drivers; they differ per board (`1'b0` on Tang
+    # Nano 9K / 20K alt, `~ rst` on Tang Primer 20K Dock) and are set per
+    # configuration.
     bl:   { type: string, default: const.1 }
     init: { type: string, default: const.0 }
   signals:
     - { name: r,    type: bus, width: 5, direction: output }
     - { name: g,    type: bus, width: 6, direction: output }
     - { name: b,    type: bus, width: 5, direction: output }
-    # hs/vs are optional: the Tang Nano 20K runs the panel DE-only (BGM ties
-    # LCD_HS / LCD_VS to 0 with the driver's HSYNC / VSYNC unconnected)
+    # hs/vs are optional: the Tang Nano 20K runs the panel DE-only (LCD_HS /
+    # LCD_VS tied to 0 with the driver's HSYNC / VSYNC unconnected)
     - { name: hs,   type: scalar, direction: output, optional: true }
     - { name: vs,   type: scalar, direction: output, optional: true }
     - { name: de,   type: scalar, direction: output }
@@ -33,7 +33,7 @@ Peripheral:
         width: 800
         height: 480
         color_depth: 565
-  # 33 MHz pixel clock from a PLL on the board clock (BGM: Gowin_rPLL
+  # 33 MHz pixel clock from a PLL on the board clock (Gowin_rPLL
   # 27 -> 33 MHz on the Tang Nano 20K / Primer 20K Dock, 32.4 or 33.33 MHz on
   # the Tang Nano 9K variants). Codegen exposes it as `clock.pixel`.
   clocks:

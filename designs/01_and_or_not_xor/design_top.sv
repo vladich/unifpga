@@ -1,8 +1,7 @@
 // =============================================================================
 // Lab 01 — AND, OR, NOT, XOR, De Morgan's laws
 //
-// Adapted from basics-graphics-music/designs/1_basics/1_01_and_or_not_xor_de_morgan.
-// Differences from the original:
+// Differences from the original lab:
 //   - `key`     -> `btn`     (the canonical name in uni-fpga's virtual device)
 //   - dropped `slow_clk`     (derive locally if needed)
 //   - dropped `mic`          (renamed to `mic_sample`/`mic_valid`; not used here)

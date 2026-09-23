@@ -1,6 +1,5 @@
 // =============================================================================
-// 2_8_crash_course_basics_and_graphics — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/2_graphics/2_8_crash_course_basics_and_graphics/lab_top.sv
+// 2_8_crash_course_basics_and_graphics
 // =============================================================================
 //
 // requires:

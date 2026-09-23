@@ -1,7 +1,6 @@
 // =============================================================================
-// 2_4_game testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/2_graphics/2_4_game/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 2_4_game testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;
@@ -32,7 +31,7 @@ module tb;
         .w_gpio  ( w_gpio  ),
 
         .strobe_to_update_xy_counter_width (1),
-        // defaults of BGM's lab_top the testbench relies on
+        // parameter defaults the testbench relies on
         .screen_width  ( 640 ),
         .screen_height ( 480 ),
         .w_red         ( 4 ),

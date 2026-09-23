@@ -29,24 +29,24 @@ Configuration:
         led: onboard_leds
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: inmp441_i2s_mic   # binds from BGM de10_nano/board_specific_top.sv
+    - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_0[0]"
         ws: "gpio_0[2]"
         sck: "gpio_0[4]"
         sd: "gpio_0[5]"
-    - peripheral: tm1638_led_key   # binds from BGM de10_nano/board_specific_top.sv
+    - peripheral: tm1638_led_key
       bind:
         stb: "gpio_0[27]"
         clk: "gpio_0[29]"
         dio: "gpio_0[31]"
-    - peripheral: i2s_audio_out   # from BGM de10_nano/board_specific_top.sv
+    - peripheral: i2s_audio_out
       bind:
         mclk: "gpio_0[17]"
         bclk: "gpio_0[15]"
         lrclk: "gpio_0[11]"
         sdata: "gpio_0[13]"
-    - peripheral: hdmi_adv7513   # from BGM de10_nano/board_specific_top.sv
+    - peripheral: hdmi_adv7513
       params:
         bits_r: 8
         bits_g: 8
@@ -60,13 +60,13 @@ Configuration:
         i2c_scl: onboard_hdmi_tx.i2c_scl
         i2c_sda: onboard_hdmi_tx.i2c_sda
         int: onboard_hdmi_tx.int
-    - peripheral: gpio_header   # from BGM de10_nano/board_specific_top.sv .gpio
+    - peripheral: gpio_header
       params:
         width: 36
       bind:
         io: gpio_0
 
-  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:
     onboard_hdmi_tx.i2s: 0
     onboard_hdmi_tx.lrclk: 0

@@ -7,7 +7,7 @@ Configuration:
   id: mojo_v3
   board: mojo_v3
   toolchain: ise
-  manual: true   # no BGM variant; pinout from the Mojo v3 schematic
+  manual: true   # pinout from the Mojo v3 schematic
 
   attach:
     - peripheral: clock_input

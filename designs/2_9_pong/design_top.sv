@@ -1,6 +1,5 @@
 // =============================================================================
-// 2_9_pong — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/2_graphics/2_9_pong/lab_top.sv
+// 2_9_pong
 // =============================================================================
 //
 // requires:

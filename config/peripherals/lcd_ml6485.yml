@@ -1,10 +1,8 @@
 # 480x272 RGB-parallel LCD with the ML6485 controller (Tang Nano 9K
-# `lcd_ml6485` variants). BGM drives it through the same LARGE_LCD_* pins as
-# the plain 480x272 panel (boards/tang_nano_9k_lcd_480_272_tm1638/
-# board_specific_top.sv, `USE_LCD_480_272_ML6485` branch) with the
-# `lcd_480_272_ml6485` timing module and the 800x480 PLL setting
-# (Gowin_rPLL CLKOUTD = 32.4 MHz). It is not a serial (SPI) display: the
-# SMALL_LCD_* pins are declared but never driven in BGM.
+# `lcd_ml6485` variants), driven through the same LARGE_LCD_* pins as the
+# plain 480x272 panel with the `lcd_480_272_ml6485` timing module and the
+# 800x480 PLL setting (Gowin_rPLL CLKOUTD = 32.4 MHz). It is not a serial
+# (SPI) display: the SMALL_LCD_* pins are declared but never driven.
 
 Peripheral:
   id: lcd_ml6485
@@ -34,7 +32,7 @@ Peripheral:
         bits_r: $bits_r
         bits_g: $bits_g
         bits_b: $bits_b
-  # BGM clocks this panel from the 800x480 PLL setting: 27 MHz -> CLKOUT
+  # The panel is clocked from the 800x480 PLL setting: 27 MHz -> CLKOUT
   # 129.6 MHz -> CLKOUTD / 4 = 32.4 MHz (annotated "33.33 MHz" in the top).
   clocks:
     - { name: pixel, mhz: 32.4 }

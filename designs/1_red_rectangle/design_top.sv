@@ -1,6 +1,5 @@
 // =============================================================================
-// 1_red_rectangle — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/9_events/1_red_rectangle/lab_top.sv
+// 1_red_rectangle
 // =============================================================================
 //
 // requires:

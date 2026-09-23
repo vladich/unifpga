@@ -1,7 +1,6 @@
 // =============================================================================
-// 9_5_make_shift_register_low_power testbench — auto-adapted by tools/adapt_designs.py --testbenches from
-//   basics-graphics-music/labs/9_events/9_5_make_shift_register_low_power/tb.sv
-//   (lab_top -> design_top, key -> btn; slow_clk is derived inside design_top)
+// 9_5_make_shift_register_low_power testbench
+//   (slow_clk is derived inside design_top)
 // =============================================================================
 
 module tb;

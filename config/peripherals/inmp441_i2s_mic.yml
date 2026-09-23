@@ -1,5 +1,5 @@
 # INMP441 omnidirectional MEMS microphone with I²S interface. Frequently
-# attached via a Pmod header in basics-graphics-music labs.
+# attached via a Pmod header.
 
 Peripheral:
   id: inmp441_i2s_mic

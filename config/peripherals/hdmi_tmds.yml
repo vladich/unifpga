@@ -1,12 +1,11 @@
 # HDMI / DVI output over TMDS: three data pairs plus the clock pair.
 #
-# Driver: rtl/peripherals/hdmi_tmds_out.sv = BGM's `dvi_top` (sync, TMDS
-# encoders, 10:1 SDR serializers on a 10x pixel clock) plus one vendor
-# differential buffer per pair (rtl/io/diff_obuf.sv, kind from
+# Driver: rtl/peripherals/hdmi_tmds_out.sv = `dvi_top` (rtl/peripherals/dvi.sv:
+# sync, TMDS encoders, 10:1 SDR serializers on a 10x pixel clock) plus one
+# vendor differential buffer per pair (rtl/io/diff_obuf.sv, kind from
 # `context.diff_buf`: ELVDS_OBUF on Gowin LittleBee, TLVDS_OBUF on Gowin
-# Arora, OBUFDS on Xilinx, pseudo-differential elsewhere). This is the open
-# implementation BGM ships for a7_lite_35t and the tang_primer_20k_dock
-# `_yosys` variant; where BGM uses Gowin's encrypted DVI_TX IP (5x DDR
+# Arora, OBUFDS on Xilinx, pseudo-differential elsewhere). This is an open
+# implementation; compared with Gowin's encrypted DVI_TX IP (5x DDR
 # serializer, 126 MHz) the pixel clock is the same and only the serializer
 # clock differs.
 #
@@ -31,22 +30,22 @@ Peripheral:
         height: 480
         color_depth: 888
   # 640x480@60: 25.2 MHz pixel clock, 252 MHz serial (10x, SDR). The pixel
-  # clock is divided from the serial one (Gowin CLKDIV2 + CLKDIV 5 as in BGM's
-  # yosys variant; a second MMCM output on Xilinx; the board clock itself when
+  # clock is divided from the serial one (Gowin CLKDIV2 + CLKDIV 5; a second
+  # MMCM output on Xilinx; the board clock itself when
   # it already runs at 1/10 of the serial clock — Tang Nano 4K at 27 MHz).
   parameters:
     timing:
       type: enum
       values: [serial, lab, pixel, dvi]
-      default: serial     # the clock BGM's `vga` timing generator runs on (x / y / syncs):
+      default: serial     # the clock the `vga` timing generator runs on (x / y / syncs):
                           # the serial clock (Gowin DVI_TX boards), the lab clock (Tang Nano 4K,
                           # colorlight, marsohod3gw2) or the pixel clock (Tang Primer 25K); `dvi`
-                          # is dvi_top's own dvi_sync, as where BGM instantiates dvi_top (a7_lite)
+                          # is dvi_top's own dvi_sync, as when dvi_top is instantiated directly (a7_lite)
   clocks:
     - { name: serial, mhz: 252 }
     - { name: pixel, from: serial, divide: 10 }
-    # BGM's Gowin DVI_TX boards run `vga` on their 5x DDR serial clock (125
-    # MHz); ours is 10x SDR, so the timing generator gets serial / 2, phase-
+    # Gowin DVI_TX designs run `vga` on their 5x DDR serial clock (125 MHz);
+    # ours is 10x SDR, so the timing generator gets serial / 2, phase-
     # aligned with it (aligned: the rPLL's CLKOUTD, not a CLKDIV the lock starts)
     - { name: timing, from: serial, divide: 2, aligned: true, when: { timing: serial } }
   driver:

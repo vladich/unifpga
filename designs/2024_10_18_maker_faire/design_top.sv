@@ -1,7 +1,5 @@
 // =============================================================================
-// 2024_10_18_maker_faire — aggregator demo from
-//   basics-graphics-music/designs/9_events/2024_10_18_maker_faire/
-// Hand-curated (no auto-adapt source); BGM dir is an aggregator with subdirs.
+// 2024_10_18_maker_faire — aggregator demo (hand-curated)
 // =============================================================================
 //
 // requires:

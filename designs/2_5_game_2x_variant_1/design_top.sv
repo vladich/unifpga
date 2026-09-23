@@ -1,6 +1,5 @@
 // =============================================================================
-// 2_5_game_2x_variant_1 — auto-adapted by tools/adapt_designs.py from
-//   basics-graphics-music/labs/2_graphics/2_5_game_2x_variant_1/lab_top.sv
+// 2_5_game_2x_variant_1
 // =============================================================================
 //
 // requires:
@@ -25,7 +24,7 @@ module design_top
                   w_gpio        = 0,
                   w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
                   w_y = (screen_height > 0) ? $clog2(screen_height) : 1,
-                  // legacy basics-graphics-music parameters (BGM's tb overrides them)
+                  // legacy parameters (the testbench overrides them)
                   strobe_to_update_xy_counter_width = 23
 )
 (

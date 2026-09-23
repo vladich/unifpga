@@ -37,7 +37,7 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from BGM w_red/w_green/w_blue
+    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
       params:
         bits_r: 4
         bits_g: 4
@@ -54,34 +54,34 @@ Configuration:
         vs: onboard_vga.vs
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: inmp441_i2s_mic   # binds from BGM de0_cv/board_specific_top.sv
+    - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_0[0]"
         ws: "gpio_0[2]"
         sck: "gpio_0[4]"
         sd: "gpio_0[5]"
-    - peripheral: i2s_audio_out   # from BGM de0_cv/board_specific_top.sv
+    - peripheral: i2s_audio_out
       bind:
         mclk: "gpio_0[33]"
         bclk: "gpio_0[31]"
         lrclk: "gpio_0[27]"
         sdata: "gpio_0[29]"
-    - peripheral: gpio_header   # from BGM de0_cv/board_specific_top.sv .gpio
+    - peripheral: gpio_header
       params:
         width: 36
       bind:
         io: gpio_1
-    - peripheral: gpio_header   # from BGM de0_cv/board_specific_top.sv .gpio
+    - peripheral: gpio_header
       params:
         width: 36
       bind:
         io: gpio_0
-    - peripheral: uart_2wire   # from BGM de0_cv/board_specific_top.sv (UART on header pins)
+    - peripheral: uart_2wire
       bind:
         tx: "gpio_1[35]"
         rx: "gpio_1[34]"
 
-  # Pins BGM's top drives with a constant or the reset — `assign PIN = 1'b0` / `~ rst` (tools/sync_from_bgm.py --components)
+  # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:
     "gpio_0[1]": 0
     "gpio_0[3]": 1

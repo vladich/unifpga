@@ -1,5 +1,5 @@
 # A board pin the top drives with a constant or with the reset and nothing
-# else: BGM's `assign M_CLK = 1'b0` (parks the on-board PDM microphone),
+# else: `assign M_CLK = 1'b0` (parks the on-board PDM microphone),
 # `assign LCD_BL = 1'b0`, `assign speaker_out = '0`, `assign ARDUINO_RESET_N =
 # ~ rst`. Configurations write these as
 #
@@ -9,12 +9,12 @@
 #       arduino_reset_n:   ~rst
 #
 # and config/init.py expands each entry into one attach of this peripheral,
-# so the pin is declared, driven and constrained exactly as in BGM. Values:
+# so the pin is declared, driven and constrained. Values:
 # 0, 1, rst, ~rst (also accepted: const.0, context.rst, ~context.rst).
 
 Peripheral:
   id: pin_tie
-  description: Pin driven with a constant or the reset (BGM `assign PIN = 1'b0` / `~ rst`)
+  description: Pin driven with a constant or the reset (`assign PIN = 1'b0` / `~ rst`)
   parameters:
     value:
       type: string
