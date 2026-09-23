@@ -105,6 +105,11 @@ module altpll
     always #(t_in * clk5_divide_by / clk5_multiply_by / 2.0) q [5] = ~ q [5];
 
     initial #(t_in * 16) lck = 1'b1;
+    // first rising edge 1 ns after time 0: a flop with an asynchronous reset
+    // that is low from time 0 (BGM's one-cycle imitate_reset_on_power_up)
+    // then resets on a clock edge inside the pulse instead of depending on
+    // the simulator's ordering of the initial x -> 0 transition
+    initial #1 q = 6'b111111;
 
     assign clk          = areset ? '0 : q [width_clock - 1:0];
     assign locked       = lck & ~ areset;
@@ -170,6 +175,7 @@ module MMCME2_ADV
 );
     localparam real T_VCO = (CLKIN1_PERIOD > 0.0 ? CLKIN1_PERIOD : 20.0) * DIVCLK_DIVIDE / CLKFBOUT_MULT_F;
     initial begin CLKOUT0 = 0; CLKOUT1 = 0; CLKOUT2 = 0; CLKOUT3 = 0; LOCKED = 0; end
+    initial #1 begin CLKOUT0 = 1'b1; CLKOUT1 = 1'b1; CLKOUT2 = 1'b1; CLKOUT3 = 1'b1; end
     always #(T_VCO * CLKOUT0_DIVIDE_F / 2.0) CLKOUT0 = ~CLKOUT0;
     always #(T_VCO * CLKOUT1_DIVIDE   / 2.0) CLKOUT1 = ~CLKOUT1;
     always #(T_VCO * CLKOUT2_DIVIDE   / 2.0) CLKOUT2 = ~CLKOUT2;

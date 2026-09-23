@@ -3,6 +3,10 @@
 Peripheral:
   id: pwm_amp
   description: Mono PWM audio output to on-board class-D amplifier
+  parameters:
+    open_drain:
+      type: bool
+      default: false        # Digilent Nexys AUD_PWM (board datasheet): 1'b0 for 0 V, high-Z for 3.3 V
   signals:
     - { name: pwm, type: scalar, direction: output, comment: "PWM-modulated audio" }
     - { name: sd,  type: scalar, direction: output, comment: "Shutdown control (active low)" }
@@ -12,11 +16,11 @@ Peripheral:
     module: audio_pwm
     file: rtl/peripherals/audio_pwm.sv
     parameters:
-      data_w: 16
+      data_w: 8             # the top 8 bits of the 16-bit sample: a 390 kHz carrier at 100 MHz, not 1.5 kHz
     port_map:
       clk_i:  context.clk
       rst_i:  context.rst
-      data_i: capability.audio_out.sample
+      data_i: capability.audio_out.sample[15:8]
       pwm_o:  pin.pwm
   # The amp's shutdown line isn't a driver port — codegen assigns it directly.
   pin_assigns:

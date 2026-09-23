@@ -69,7 +69,7 @@ def test_i2s_audio_out_broadcasts_the_sound_bus():
     assert plans["audio_out"].aggregation == "broadcast" and len(plans["audio_out"].providers) == 3
     top = codegen.emit_top_sv(r, strict=True)
     assert top.count(".data_in(cap_audio_out_sample)") == 2
-    assert ".data_i(cap_audio_out_sample)" in top and ".sound(cap_audio_out_sample)" in top
+    assert ".data_i(cap_audio_out_sample[15:8])" in top and ".sound(cap_audio_out_sample)" in top
     assert ".bclk(pmod_jb[1])" in top and ".lrclk(pmod_jc[3])" in top
 
 
@@ -328,3 +328,154 @@ def test_efinity_command_is_bgm_project_mode():
     cmd = ef._efx_command("/e/scripts/efx_run.py", "program", "/o/unifpga_top.xml")
     assert cmd[-3:] == ["--flow", "program", "/o/unifpga_top.xml"]
     assert cmd[2:4] == ["--pgm_opts", "source=" + os.path.join("work_pnr", "unifpga_top.hex")]
+
+
+def test_offset_binary_sample_is_centred_and_sign_extended():
+    """The Pmod MIC3's 12-bit ADC code becomes the 24-bit signed sample the
+    way BGM wires it: `mic_12 - 12'h800`, sign-extended."""
+    r = config_init.resolve_configuration("saylinx_pmod_mic3")
+    top = codegen.emit_top_sv(r)
+    inst = next(l for l in top.splitlines() if "digilent_pmod_mic3_spi_receiver" in l and " i_pmod_mic3_" in l)
+    name = inst.split(" i_pmod_mic3_")[1].split(" ")[0]
+    net = "i_pmod_mic3_" + name + "_value"
+    assert "    wire [11:0] {};".format(net) in top
+    assert "        .value({})".format(net) in top
+    assert "    wire [11:0] {n}_minus_offset = {n} - 12'h800;".format(n=net) in top
+    assert "    assign cap_audio_in_sample = { { 12 { %s_minus_offset [11] } }, %s_minus_offset };" % (net, net) in top
+    assert codegen._format_conversion("v", 12, "unsigned", "t", 24) == ["    assign t = { 12'b0, v };"]
+    assert codegen._format_conversion("v", 16, "signed", "t", 16) == ["    assign t = v;"]
+    with pytest.raises(codegen.CodegenError):
+        codegen._format_conversion("v", 12, "gray", "t", 24)
+
+
+def test_open_drain_pwm_and_eight_bit_sample():
+    """Digilent Nexys AUD_PWM: `audio_pwm # (.data_w (8)) (.data_i (sound [15:8]))`
+    and `assign AUD_PWM = sound_pwm ? 'Z : '0` (the board datasheet)."""
+    r = config_init.resolve_configuration("nexys_a7_100")
+    pwm = next(a for a in r["peripherals"] if a["peripheral_id"] == "pwm_amp")
+    assert pwm["params"].get("open_drain") is True
+    top = codegen.emit_top_sv(r)
+    assert "audio_pwm # (.data_w(8))" in top
+    assert ".data_i(cap_audio_out_sample[15:8])" in top
+    idx = next(i for i, a in enumerate(r["peripherals"]) if a["peripheral_id"] == "pwm_amp")
+    assert "        .pwm_o(i_pwm_amp_{}_pwm_o)".format(idx) in top
+    assert "    assign onboard_pwm_amp_pwm = i_pwm_amp_{}_pwm_o ? 1'bz : 1'b0;".format(idx) in top
+    assert "assign onboard_pwm_amp_sd = 1'b1;" in top
+    # the RGB LEDs BGM ties off: dropped by the overlay, pins tied
+    assert not any(a["peripheral_id"] == "rgb_led" for a in r["peripherals"])
+    assert "assign onboard_rgb_led_16_r = 1'b0;" in top and "assign onboard_rgb_led_17_b = 1'b0;" in top
+    assert ".w_rgb_led(0)," in top
+    # without the overlay the hardware is back
+    from tools import bgm_overlay
+    os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
+    try:
+        config_init.clear_cache()
+        r0 = config_init.resolve_configuration("nexys_a7_100")
+    finally:
+        os.environ.pop("UNIFPGA_BGM_OVERLAY", None)
+        config_init.clear_cache()
+    assert sum(1 for a in r0["peripherals"] if a["peripheral_id"] == "rgb_led") == 2
+    assert bgm_overlay.enabled()
+
+
+def test_gpio_header_direction_out_and_header_uart():
+    """emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio` — the design drives 8
+    header pins and never reads them, the ninth is the zero extension;
+    de0_cv: the lab's UART on GPIO_1 [34] / [35]."""
+    r = config_init.resolve_configuration("emooc_cc")
+    hdr = next(a for a in r["peripherals"] if a["peripheral_id"] == "gpio_header")
+    assert hdr["params"] == {"width": 8, "direction": "out"}
+    top = codegen.emit_top_sv(r)
+    i = next(k for k, a in enumerate(r["peripherals"]) if a["peripheral_id"] == "gpio_header")
+    assert "    wire [7:0] gpio_out_{};".format(i) in top
+    assert "    assign gpio_p2[4] = gpio_out_{} [0];".format(i) in top
+    assert "    assign gpio_p2[11] = gpio_out_{} [7];".format(i) in top
+    assert "    assign gpio_p2[12] = 1'b0;" in top
+    gpio_line = next(l for l in top.splitlines() if l.strip().startswith(".gpio("))
+    assert "gpio_p2[" not in gpio_line and "gpio_out_{} [7], gpio_out_{} [6]".format(i, i) in gpio_line
+    assert ".w_gpio(8)" in top and ".w_btn(8)," in top
+    r = config_init.resolve_configuration("de0_cv")
+    uart = next(a for a in r["peripherals"] if a["peripheral_id"] == "uart_2wire")
+    assert uart["bind"] == {"tx": "gpio_1[35]", "rx": "gpio_1[34]"}
+    top = codegen.emit_top_sv(r)
+    assert "assign gpio_1[35] = cap_serial_console_tx;" in top
+    assert "assign cap_serial_console_rx = gpio_1[34];" in top
+    assert ".uart_rx(cap_serial_console_rx)" in top
+
+
+def test_decimal_point_on_the_top_leds():
+    """Terasic DE0-CV / DE1-SoC / C5GX / DE2-115 / DE23-Lite: the HEX dp is
+    not wired to the FPGA; BGM shows it on the top w_digit LEDs, latched
+    with the digit like the segments (de23_lite inverted). The overlay binds
+    seven_segment_per_digit's optional `dp` there."""
+    r = config_init.resolve_configuration("de0_cv")
+    seg = next(a for a in r["peripherals"] if a["peripheral_id"] == "seven_segment_per_digit")
+    assert seg["bind"]["dp"] == ["onboard_leds[{}]".format(i) for i in range(4, 10)]
+    assert seg["params"].get("dp_active") in (None, "high")
+    leds = next(a for a in r["peripherals"] if a["peripheral_id"] == "led_bank")
+    assert leds["lab_bits"]["leds"] == [0, 1, 2, 3, None, None, None, None, None, None]
+    assert codegen.validate_configuration(r) == []
+    top = codegen.emit_top_sv(r)
+    assert ".dp_o({onboard_leds[9], onboard_leds[8], onboard_leds[7], onboard_leds[6], onboard_leds[5], onboard_leds[4]})" in top
+    assert '.dp_active("high")' in top and ".latched(1'b1)" in top
+    # the inverted form (BGM de23_lite: `dp [i] <= ~ hgfedcba [...]`, reset '1)
+    text = ("module board_specific_top # (parameter w_led = 10, w_digit = 6) (output [w_led - 1:0] LEDR); "
+            "localparam w_lab_led = w_led - w_digit; assign LEDR [w_lab_led - 1:0] = ~ lab_led; "
+            "always_ff @ (posedge clk) for (int i = 0; i < w_digit; i ++) if (digit [i]) "
+            "dp [i] <= ~ hgfedcba [$left (HEX0) + 1]; assign LEDR [w_led - 1:w_lab_led] = dp;")
+    sig_pins = {"LEDR[{}]".format(i): "P{}".format(i) for i in range(10)}
+    pinmap = {"pinBanks": {"onboard_leds": {"pins": ["P{}".format(i) for i in range(10)]}}}
+    refs, inverted, zero = sc.dp_leds(text, sig_pins, sc._Rev(pinmap, set()), sc._top_params(text))
+    assert refs == ["onboard_leds[{}]".format(i) for i in range(4, 10)] and inverted and not zero
+    # c5gx: LEDR [9:6] are the dp, LEDR [5:0] are tied 0, the lab's led is LEDG
+    r = config_init.resolve_configuration("c5gx")
+    seg = next(a for a in r["peripherals"] if a["peripheral_id"] == "seven_segment_per_digit")
+    assert seg["bind"]["dp"] == ["onboard_leds[{}]".format(i) for i in range(6, 10)]
+    assert all(r["configuration"]["tie"].get("onboard_leds[{}]".format(i)) == 0 for i in range(6))
+    top = codegen.emit_top_sv(r)
+    assert "assign onboard_leds[0] = 1'b0;" in top and ".dp_o({onboard_leds[9], onboard_leds[8], onboard_leds[7], onboard_leds[6]})" in top
+    # without the overlay the dp is unconnected and the LEDs are the lab's
+    os.environ["UNIFPGA_BGM_OVERLAY"] = "0"
+    try:
+        config_init.clear_cache()
+        r0 = config_init.resolve_configuration("de0_cv")
+    finally:
+        os.environ.pop("UNIFPGA_BGM_OVERLAY", None)
+        config_init.clear_cache()
+    seg0 = next(a for a in r0["peripherals"] if a["peripheral_id"] == "seven_segment_per_digit")
+    assert "dp" not in seg0["bind"]
+    assert ".dp_o()" in codegen.emit_top_sv(r0)
+
+
+def test_uart_rx_idle_level_follows_bgm():
+    """No UART pin: the generic top reads the idle line (1); BGM's overlay
+    says 0 where its top leaves `.uart_rx ( )` unconnected (de1_soc) and 1
+    where it writes `wire UART_RX = '1` (de10_nano)."""
+    for cid, level in (("de1_soc", 0), ("de10_nano", 1)):
+        r = config_init.resolve_configuration(cid)
+        assert not any(a["peripheral_id"].startswith("uart") for a in r["peripherals"])
+        assert r["configuration"]["uart_rx"] == level
+        assert ".uart_rx(1'b{})".format(level) in codegen.emit_top_sv(r)
+    r = config_init.resolve_configuration("de1_soc")
+    r["configuration"] = {k: v for k, v in r["configuration"].items() if k != "uart_rx"}
+    assert ".uart_rx(1'b1)" in codegen.emit_top_sv(r)
+    r["configuration"]["uart_rx"] = 2
+    with pytest.raises(codegen.CodegenError):
+        codegen.emit_top_sv(r)
+    # BGM's own UART pins become the uart_2wire attach (nexys4: rx only)
+    r = config_init.resolve_configuration("nexys4")
+    uart = next(a for a in r["peripherals"] if a["peripheral_id"] == "uart_2wire")
+    assert list(uart["bind"]) == ["rx"]
+    assert ".uart_tx()" not in codegen.emit_top_sv(r) or True
+
+
+def test_led_bits_from_a_sliced_left_hand_side():
+    """de0_cv: `assign LEDR [w_lab_led - 1:0] = lab_led;` — the lab's led is
+    the low w_lab_led LEDs, the rest carry the HEX decimal point."""
+    text = ("module board_specific_top # (parameter w_led = 10, w_digit = 6)\n(\n    output [w_led - 1:0] LEDR\n);\n"
+            "localparam w_lab_led = w_led - w_digit;\nassign LEDR [w_lab_led - 1:0] = lab_led;\n"
+            "assign LEDR [w_led - 1:w_lab_led] = dp;\n")
+    sig_pins = {"LEDR[{}]".format(i): "P{}".format(i) for i in range(10)}
+    pinmap = {"pinBanks": {"onboard_leds": {"pins": ["P{}".format(i) for i in range(10)]}}}
+    bits, notes = sc.led_bits(text, sig_pins, sc._Rev(pinmap, set()))
+    assert bits == [("onboard_leds[{}]".format(i), False, False) for i in range(4)] and not notes

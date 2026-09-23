@@ -21,6 +21,10 @@ Peripheral:
       cs:     pin.cs
       sck:    pin.sclk     # the SV port is named `sck`; the bank pin is `sclk`
       sdo:    pin.miso
-      value:  capability.audio_in.sample   # 12-bit; codegen left-justifies into 24
+      value:  capability.audio_in.sample
+    port_format:
+      # the ADC's 12-bit offset-binary code (0x800 = silence) becomes the 24-bit signed
+      # sample: `value - 12'h800`, sign-extended (as BGM's boards wire it)
+      value: { width: 12, encoding: offset_binary }
   pin_assigns:
     capability.audio_in.valid: const.1

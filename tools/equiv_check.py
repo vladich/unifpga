@@ -102,20 +102,48 @@ def _split_top_level(body):
     return parts
 
 
+def _module_params(text, start, end):
+    """{name: int} for the parameters of a module's `# ( ... )` block that
+    evaluate to integers, in order (later ones may use earlier ones)."""
+    vals = {}
+    for pm in re.finditer(r"\b([A-Za-z_]\w*)\s*=\s*([^,]+)", text[start:end]):
+        v = _eval_int(pm.group(2).strip(), vals)
+        if v is not None:
+            vals[pm.group(1)] = v
+    return vals
+
+
+def _eval_int(expr, vals):
+    """Integer value of a parameter expression (`7 + 1 - w_red`, `w_key - 1`,
+    `16'd480`) over known values; None when it does not evaluate."""
+    e = re.sub(r"\b([A-Za-z_]\w*)\b", lambda m: str(vals[m.group(1)]) if m.group(1) in vals else m.group(1), expr)
+    e = re.sub(r"\d+'[dD]", "", e)
+    if not e.strip() or not re.match(r"^[\d\s+\-*/()]+$", e):
+        return None
+    try:
+        return int(eval(e, {"__builtins__": {}}, {}))       # digits and arithmetic only
+    except Exception:
+        return None
+
+
 def parse_ports(text, module):
-    """{port: {"dir": input|output|inout, "width": int or None}} from the
-    header of `module` in comment-free SystemVerilog text. Widths are known
-    only for numeric ranges (codegen's tops); BGM's tops use parameters and
-    get None (the pins decide, and the wrapper checks $bits at run time)."""
+    """{port: {"dir": input|output|inout, "width": int or None, "lsb": int}}
+    from the header of `module` in comment-free SystemVerilog text. A range
+    is evaluated with the module's own parameter defaults (BGM's `output
+    [7:7 + 1 - w_red] LARGE_LCD_R` is [7:3]); one that does not evaluate
+    gets width None (the pins decide, and the wrapper checks $bits at run
+    time)."""
     m = re.search(r"\bmodule\s+" + re.escape(module) + r"\b", text)
     if not m:
         return OrderedDict()
     i = m.end()
     while i < len(text) and text[i].isspace():
         i += 1
+    params = {}
     if text.startswith("#", i):
         j = text.index("(", i)
         i = _balanced(text, j)
+        params = _module_params(text, j + 1, i - 1)
         while i < len(text) and text[i].isspace():
             i += 1
     if not text.startswith("(", i):
@@ -131,10 +159,12 @@ def parse_ports(text, module):
         if dm:
             cur_dir = dm.group(1)
         width, lsb = None, 0
-        rm = re.search(r"\[\s*(\d+)\s*:\s*(\d+)\s*\]", chunk)
-        if rm:
-            width = abs(int(rm.group(1)) - int(rm.group(2))) + 1
-            lsb = min(int(rm.group(1)), int(rm.group(2)))       # `output [8:1] LED` (omdazz_epm570)
+        rm = re.search(r"\[\s*([^\]:]+?)\s*:\s*([^\]]+?)\s*\]", chunk)
+        hi = _eval_int(rm.group(1), params) if rm else None
+        lo = _eval_int(rm.group(2), params) if rm else None
+        if hi is not None and lo is not None:
+            width = abs(hi - lo) + 1
+            lsb = min(hi, lo)                                   # `output [8:1] LED` (omdazz_epm570)
         stripped = re.sub(r"\[[^\]]*\]", " ", chunk)
         idents = [w for w in re.findall(r"[A-Za-z_]\w*", stripped) if w not in _SV_NON_PORT_WORDS]
         if idents and cur_dir:

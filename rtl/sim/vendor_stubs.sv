@@ -51,6 +51,7 @@ module rPLL
         if (last != 0.0) t_in = $realtime - last;
         last = $realtime;
     end
+    initial #1 CLKOUT = 1'b1;              // first rising edge at 1 ns (see equiv_stubs.sv)
     always begin
         t_out = t_in * (IDIV_SEL + 1) / (FBDIV_SEL + 1);
         #(t_out / 2.0) CLKOUT = ~CLKOUT;
@@ -111,6 +112,7 @@ module SB_PLL40_CORE
         if (last != 0.0) t_in = $realtime - last;
         last = $realtime;
     end
+    initial #1 begin PLLOUTCORE = 1'b1; PLLOUTGLOBAL = 1'b1; end
     always begin
         t_out = t_in * (DIVR + 1) * (1 << DIVQ) / (DIVF + 1);
         #(t_out / 2.0) begin PLLOUTCORE = ~PLLOUTCORE; PLLOUTGLOBAL = PLLOUTCORE; end
@@ -206,6 +208,7 @@ module MMCME2_BASE
     // delays at time 0 (a #0 loop that never advances time).
     localparam real T_VCO = (CLKIN1_PERIOD > 0.0 ? CLKIN1_PERIOD : 20.0) * DIVCLK_DIVIDE / CLKFBOUT_MULT_F;
     initial begin CLKOUT0 = 0; CLKOUT1 = 0; CLKOUT2 = 0; LOCKED = 0; end
+    initial #1 begin CLKOUT0 = 1'b1; CLKOUT1 = 1'b1; CLKOUT2 = 1'b1; end
     always #(T_VCO * CLKOUT0_DIVIDE_F / 2.0) CLKOUT0 = ~CLKOUT0;
     always #(T_VCO * CLKOUT1_DIVIDE   / 2.0) CLKOUT1 = ~CLKOUT1;
     always #(T_VCO * CLKOUT2_DIVIDE   / 2.0) CLKOUT2 = ~CLKOUT2;
@@ -223,6 +226,7 @@ module gw5_pll_model
     real t_in = 20.0, t_vco;
     real last = 0.0;
     initial begin CLKOUT0 = 0; CLKOUT1 = 0; CLKOUT2 = 0; LOCK = 0; end
+    initial #1 begin CLKOUT0 = 1'b1; CLKOUT1 = 1'b1; CLKOUT2 = 1'b1; end
     always @(posedge CLKIN) begin
         if (last != 0.0) t_in = $realtime - last;
         last = $realtime;

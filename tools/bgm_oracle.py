@@ -842,7 +842,8 @@ def _pending_outputs(pending, skip):
                 yield expr
 
 
-_ASSIGN_ANY = re.compile(r"\bassign\s+(\{[^}]*\}|[A-Za-z_]\w*(?:\s*\[\s*\d+\s*\])?)\s*=\s*([^;]+);")
+# the LHS: a concatenation, a name, a bit or a slice (`LEDR [w_lab_led - 1:0]`)
+_ASSIGN_ANY = re.compile(r"\bassign\s+(\{[^}]*\}|[A-Za-z_]\w*(?:\s*\[[^\]]*\])?)\s*=\s*([^;]+);")
 _BUS_NAMES = {"abcdefgh": "seg", "digit": "dig", "lab_digit": "dig", "hgfedcba": "seg"}
 _REVERSED_BUSES = {"hgfedcba"}     # BGM: `SWAP_BITS (hgfedcba, abcdefgh)`: hgfedcba[i] = abcdefgh[7 - i]
 

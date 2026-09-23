@@ -14,6 +14,10 @@ Peripheral:
     width:
       type: int
       required: true
+    direction:
+      type: enum
+      values: [inout, out]
+      default: inout        # out: the design only drives the pins (BGM emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio`)
   signals:
     - { name: io, type: bus, width: $width, direction: inout }
   provides:

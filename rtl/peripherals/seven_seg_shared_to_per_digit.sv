@@ -31,15 +31,21 @@ module seven_seg_shared_to_per_digit
 # (
     parameter int    digits  = 6,
     parameter int    segs    = 8,
-    parameter        active  = "low",     // "low" / "high" (untyped: yosys 0.41 rejects `parameter string`)
-    parameter bit    latched = 1'b0
+    parameter        active    = "low",   // "low" / "high" (untyped: yosys 0.41 rejects `parameter string`)
+    parameter bit    latched   = 1'b0,
+    parameter        dp_active = "high"   // polarity of dp_o (the LEDs it lands on when the HEX has no dp pin)
 )
 (
     input                              clk,
     input                              rst,
     input        [7:0]                 abcdefgh,
     input        [digits - 1:0]        digit,
-    output logic [digits * segs - 1:0] hex_o
+    output logic [digits * segs - 1:0] hex_o,
+    // The decimal point per digit for a display whose dp segment is not
+    // wired to the FPGA (Terasic DE0-CV, DE1-SoC, DE2-115, C5GX, DE23-Lite):
+    // BGM shows it on the board's top w_digit LEDs. Latched / combinational
+    // like hex_o, with its own polarity.
+    output logic [digits - 1:0]        dp_o
 );
 
     // abcdefgh -> hgfedcba (bit reversal), then keep the low `segs` bits:
@@ -56,23 +62,36 @@ module seven_seg_shared_to_per_digit
     wire [segs - 1:0] lit     = active_low ? ~ pattern : pattern;
     wire [segs - 1:0] blank   = active_low ? '1 : '0;
 
+    localparam bit dp_low = (dp_active == "low");
+    wire dp_lit   = dp_low ? ~ hgfedcba [7] : hgfedcba [7];
+    wire dp_blank = dp_low;
+
     generate
         if (latched) begin : g_latched
 
             // BGM: `always_ff @ (posedge clk or posedge rst)`, all off on reset
             always_ff @ (posedge clk or posedge rst)
                 if (rst)
+                begin
                     hex_o <= {digits {blank}};
+                    dp_o  <= {digits {dp_blank}};
+                end
                 else
                     for (int d = 0; d < digits; d ++)
                         if (digit [d])
+                        begin
                             hex_o [d * segs +: segs] <= lit;
+                            dp_o  [d]                <= dp_lit;
+                        end
 
         end else begin : g_combinational
 
             always_comb
                 for (int d = 0; d < digits; d ++)
+                begin
                     hex_o [d * segs +: segs] = digit [d] ? lit : blank;
+                    dp_o  [d]                = digit [d] ? dp_lit : dp_blank;
+                end
 
         end
     endgenerate

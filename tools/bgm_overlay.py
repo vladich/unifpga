@@ -21,11 +21,18 @@ buses concatenated in attach order, power-up reset, is generated instead).
       variant: <boards/<variant> in BGM>
       reset:            { sources: [...] }           # codegen's reset vocabulary
       lab_clock:        pixel
-      tie:              { <ref>: rst | ~rst }        # pins BGM drives from its reset
+      uart_rx:          0 | 1                         # what the lab reads when no UART pin is wired
+      tie:              { <ref>: rst | ~rst | 0 | 1 } # pins BGM drives from its reset, or ties
+                                                      # off instead of using the component
+      lab_width:        { buttons: 8 }                # a lab bus wider than the bits wired to it
       attach:                                         # per attach, by peripheral and occurrence
         - { peripheral: tm1638_led_key, index: 0,
             lab_bits: {buttons: [0, 1, ...], ...},   # bits of the lab bus this attach carries
-            params: {as_switches: true, mirror: true} }
+            params: {as_switches: true, mirror: true, direction: out} }
+        - { peripheral: rgb_led, index: 0, drop: true }   # a component BGM ties off
+        - { peripheral: seven_segment_per_digit, index: 0,
+            bind: {dp: [onboard_leds[4], ...]},       # a signal BGM routes onto other pins
+            params: {dp_active: low} }
 
 tools/sync_from_bgm.py writes these files (--reset --clock-tree --polarity
 --components --lab-bits); tools/equiv_check.py proves the result against
@@ -45,7 +52,8 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OVERLAY_DIR = os.path.join(REPO, "config", "bgm")
 CONFIG_DIR = os.path.join(REPO, "config", "configurations")
 
-OVERLAY_PARAMS = ("as_switches", "mirror")          # attach params that are BGM conventions
+OVERLAY_PARAMS = ("as_switches", "mirror", "direction")   # attach params that are BGM conventions
+_TOP_KEYS = ("reset", "lab_clock", "uart_rx", "tie", "lab_width", "attach")
 _RST_TIE = re.compile(r"^\s*~?\s*rst\s*$")
 
 
@@ -75,7 +83,7 @@ def _header(configuration_id, variant):
 def _ordered(data):
     """Stable key order for a readable diff."""
     out = OrderedDict()
-    for key in ("configuration", "variant", "reset", "lab_clock", "tie", "attach"):
+    for key in ("configuration", "variant") + _TOP_KEYS:
         if key in data and data[key] not in (None, {}, []):
             out[key] = data[key]
     for key in data:
@@ -112,7 +120,7 @@ def save(configuration_id, data, variant=None):
     data.pop("configuration", None)
     var = data.pop("variant", None) or variant
     p = path_for(configuration_id)
-    if not any(k in data for k in ("reset", "lab_clock", "tie", "attach")):
+    if not any(k in data for k in _TOP_KEYS):
         if os.path.exists(p):
             os.remove(p)
             return True
@@ -131,7 +139,7 @@ def save(configuration_id, data, variant=None):
 
 
 def update(configuration_id, variant=None, **fields):
-    """Set top-level fields (reset=, lab_clock=, tie=); None removes one."""
+    """Set top-level fields (reset=, lab_clock=, tie=, lab_width=); None removes one."""
     data = load(configuration_id) or {}
     if variant:
         data["variant"] = variant
@@ -156,16 +164,33 @@ def attach_override(data, peripheral, index, create=True):
     return e
 
 
-def set_attach(configuration_id, peripheral, index, lab_bits=None, params=None, variant=None, clear_lab_bits=False):
-    """Set an attach's lab_bits and / or BGM params in the overlay. lab_bits
-    None leaves it, {} / clear_lab_bits removes it; params merge (a None
-    value removes a key)."""
+def set_attach(configuration_id, peripheral, index, lab_bits=None, params=None, variant=None, clear_lab_bits=False,
+               drop=None, bind=None):
+    """Set an attach's lab_bits, BGM params, bind additions and / or drop flag
+    in the overlay. lab_bits None leaves it, {} / clear_lab_bits removes it;
+    params and bind merge (a None value removes a key); drop True / False
+    sets / clears the flag."""
     data = load(configuration_id) or {}
     e = attach_override(data, peripheral, index)
+    if bind:
+        cur = OrderedDict(e.get("bind") or {})
+        for k, v in bind.items():
+            if v is None:
+                cur.pop(k, None)
+            else:
+                cur[k] = list(v) if isinstance(v, (list, tuple)) else v
+        if cur:
+            e["bind"] = cur
+        else:
+            e.pop("bind", None)
     if clear_lab_bits or lab_bits == {}:
         e.pop("lab_bits", None)
     elif lab_bits is not None:
         e["lab_bits"] = OrderedDict((k, list(v)) for k, v in lab_bits.items())
+    if drop is True:
+        e["drop"] = True
+    elif drop is False:
+        e.pop("drop", None)
     if params:
         cur = OrderedDict(e.get("params") or {})
         for k, v in params.items():
@@ -186,6 +211,12 @@ def enabled():
     return os.environ.get("UNIFPGA_BGM_OVERLAY", "1") not in ("0", "false", "no", "off")
 
 
+# tools/sync_from_bgm.py --lab-bits plans over the configuration's attach
+# list by position; while it resolves, dropped attaches stay in place (they
+# provide no lab bus) so its indices are the configuration's
+KEEP_DROPPED = False
+
+
 def apply(cfg, attached, overlay):
     """Merge an overlay into a configuration dict (copied) and the resolved
     attach list (in place). Returns the new configuration dict."""
@@ -196,21 +227,42 @@ def apply(cfg, attached, overlay):
         cfg["reset"] = overlay["reset"]
     if overlay.get("lab_clock") is not None:
         cfg["lab_clock"] = overlay["lab_clock"]
+    if overlay.get("uart_rx") is not None:
+        # BGM: `.uart_rx ( )` reads 0, `wire UART_RX = '1` reads 1; the generic
+        # composition gives an unconnected receiver the idle line (1)
+        cfg["uart_rx"] = int(overlay["uart_rx"])
     if overlay.get("tie"):
         tie = OrderedDict(cfg.get("tie") or {})
         tie.update(overlay["tie"])
         cfg["tie"] = tie
+    if overlay.get("lab_width"):
+        # the lab bus is wider than the bits wired to it (emooc_cc passes
+        # w_key = 8 but wires 7 keys; the top bit reads 0)
+        cfg["lab_width"] = {k: int(v) for k, v in overlay["lab_width"].items()}
     occ = {}
+    dropped = []
     for a in attached:
         pid = a["peripheral_id"]
         i = occ.get(pid, 0)
         occ[pid] = i + 1
         for e in overlay.get("attach") or []:
             if e.get("peripheral") == pid and int(e.get("index", 0)) == i:
+                if e.get("drop"):
+                    # a component BGM's top does not use (Digilent RGB LEDs:
+                    # every pin tied to a constant); its pins come from `tie`
+                    if not KEEP_DROPPED:
+                        dropped.append(a)
+                    continue
                 if e.get("lab_bits") is not None:
                     a["lab_bits"] = dict(e["lab_bits"])
                 if e.get("params"):
                     a["params"] = dict(a.get("params") or {}, **e["params"])
+                if e.get("bind"):
+                    # a signal BGM routes somewhere the hardware description
+                    # does not (the HEX decimal point onto the top LEDs)
+                    a["bind"] = dict(a.get("bind") or {}, **e["bind"])
+    for a in dropped:
+        attached.remove(a)
     return cfg
 
 

@@ -154,3 +154,40 @@ def test_keys_double_as_switches_like_bgm():
     btn["params"] = dict(btn["params"], as_switches=False)
     btn["lab_bits"] = {}
     assert not codegen.build_capability_plans(r)["switches"].providers
+
+
+def test_lab_width_widens_the_bus_and_grounds_the_top_bit():
+    """emooc_cc: `wire [w_key - 2:0] lab_key` but `.w_key (w_key)` — the lab
+    gets 8 keys, the top one wired to nothing (reads 0)."""
+    r = _resolved_with_lab_bits(button_array={"buttons": [0, None]}, led_bank={"leds": list(range(6))},
+                                tm1638_led_key={"leds": list(range(8)), "buttons": [1, 2, 3, 4, 5, 6, None, None],
+                                                "switches": list(range(8)), "seven_segment": list(range(8))})
+    r["configuration"] = dict(r["configuration"], lab_width={"buttons": 8, "leds": 8})
+    plans = codegen.build_capability_plans(r)
+    assert plans["buttons"].params["width"] == 8
+    text = codegen.emit_top_sv(r)
+    assert ".w_btn(8)," in text
+    assert "assign cap_buttons_btn[7] = 1'b0;" in text
+    # a plain concatenation (no lab_bits) widened by lab_width reads 0 on the extra bits
+    r = config_init.resolve_configuration("omdazz")
+    for a in r["peripherals"]:
+        a["lab_bits"] = {}
+    r["configuration"] = dict(r["configuration"], lab_width={"buttons": 6})
+    text = codegen.emit_top_sv(r)
+    assert ".w_btn(6)," in text and "assign cap_buttons_btn [5:4] = '0;   // lab_width: no provider on these bits" in text
+
+
+def test_declared_port_range_maps_the_whole_port():
+    """omdazz_epm570: `input [6:1] KEY` read whole by the lab is KEY [1..6],
+    not KEY [0..5] (which would drop KEY [6] and leave lab bit 0 empty)."""
+    from tools import sync_components as sc
+    text = ("module board_specific_top # (parameter w_key = 6, w_sw = 4)\n(\n    input [6:1] KEY,\n"
+            "    input [4:1] CKEY,\n    input [w_key - 1:0] BTN,\n    output [8:1] LED\n);")
+    ranges = sc._port_ranges(text, {"w_key": 6, "w_sw": 4})
+    assert ranges == {"KEY": (1, 6), "CKEY": (1, 4), "BTN": (0, 5), "LED": (1, 8)}
+    sig_pins = {"KEY[{}]".format(i): "P{}".format(i) for i in range(1, 7)}
+    sig_pins.update({"CKEY[{}]".format(i): "C{}".format(i) for i in range(1, 5)})
+    assert sc._source_bits("KEY", None, sig_pins, {"w_key": 6}, ranges) == ["KEY[{}]".format(i) for i in range(1, 7)]
+    assert sc._source_bits("CKEY", None, sig_pins, {"w_sw": 4}, ranges) == ["CKEY[{}]".format(i) for i in range(1, 5)]
+    assert sc._source_bits("KEY", (2, 3), sig_pins, {"w_key": 6}, ranges) == ["KEY[2]", "KEY[3]"]  # a slice wins
+    assert sc._source_bits("KEY", None, sig_pins, {"w_key": 6}) == ["KEY[{}]".format(i) for i in range(0, 6)]

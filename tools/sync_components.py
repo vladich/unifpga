@@ -36,6 +36,8 @@ _GPIO_PERIPHERALS = ("gpio_header", "pmod_12pin")
 _KEEP = {"clock_input", "reset_button", "i2s_audio_out", "led_bank", "pin_tie"} | set(_GPIO_PERIPHERALS)
 
 _REF = re.compile(r"^([A-Za-z_]\w*)(?:\.(\w+))?(?:\[(\d+)\])?$")
+# `assign AUD_PWM = (sound_pwm) ? 'Z : '0;` — an output that is 0 or floats
+_OPEN_DRAIN = re.compile(r"^\(?\s*[A-Za-z_]\w*\s*\)?\s*\?\s*(?:'[Zz]|1'b[zZ])\s*:\s*(?:'0|1'b0)\s*$")
 _CONST = {"1'b0": "0", "'0": "0", "0": "0", "1'd0": "0", "1'h0": "0",
           "1'b1": "1", "'1": "1", "1": "1", "1'd1": "1", "1'h1": "1",
           "~rst": "~rst", "!rst": "~rst", "rst": "rst"}
@@ -98,6 +100,7 @@ _KIND_PATTERNS = {
     "hdmi":  (re.compile(r"hdmi|tmds|dvi", re.I),),
     "vga":   (re.compile(r"vga", re.I),),
     "clock": (re.compile(r"clk|clock|osc", re.I),),
+    "uart":  (re.compile(r"uart|serial|rs232|rsrx|rstx|usb", re.I),),
 }
 
 
@@ -259,6 +262,39 @@ def gpio_elements(text, raw_text, defines=None):
     return [expr]
 
 
+_WIRE_TO_PORT = r"\bassign\s+([A-Za-z_]\w*)\s*(\[[^\]]*\])?\s*=\s*{}\s*;"
+
+
+def _wire_slice_keys(el, text, sig_pins):
+    """Constraint keys, MSB first, of the port slice the top assigns from the
+    wire `el` (`assign GPIO_P2 [14:6] = lab_gpio`), or None when `el` is a
+    port or no such assign exists."""
+    el = el.strip()
+    if not re.match(r"^[A-Za-z_]\w*$", el) or el.upper() in sig_pins or _bus_keys(el, sig_pins):
+        return None
+    m = re.search(_WIRE_TO_PORT.format(re.escape(el)), text)
+    return _element_keys(m.group(1) + (m.group(2) or ""), sig_pins, text) if m else None
+
+
+def gpio_assign_form(text, raw_text, sig_pins, rev, defines=None):
+    """(out_only, {ref: "0"}): out_only when lab_top's gpio is a wire the top
+    assigns to a header slice (emooc_cc) — the lab only drives those pins,
+    nothing on the pads reaches it; the slice bits above w_gpio are the
+    assignment's zero extension, ties."""
+    w_gpio = _top_params(text).get("w_gpio")
+    out_only, ties = False, OrderedDict()
+    for el in gpio_elements(text, raw_text, defines) or []:
+        wk = _wire_slice_keys(el, text, sig_pins)
+        if not wk:
+            continue
+        out_only = True
+        if w_gpio and len(wk) > w_gpio:
+            for ref, _k in _keys_to_refs(wk[:len(wk) - w_gpio], sig_pins, rev, "gpio"):
+                if ref is not None:
+                    ties[ref] = "0"
+    return out_only, ties
+
+
 def gpio_bits(text, raw_text, sig_pins, rev, defines=None):
     """LSB-first [(ref, key)] of BGM's gpio bus, plus notes. None when the
     variant has no lab_top."""
@@ -266,11 +302,15 @@ def gpio_bits(text, raw_text, sig_pins, rev, defines=None):
     if elements is None:
         return None, ["no lab_top instantiation"]
     keys, notes = [], []
+    w_gpio = _top_params(text).get("w_gpio")
     for el in elements:
         ek = _element_keys(el, sig_pins, text)
         if ek is None:
             notes.append("gpio element {!r} is not a port (dropped; numbering shifts)".format(el))
             continue
+        wk = _wire_slice_keys(el, text, sig_pins)
+        if wk and w_gpio and len(ek) > w_gpio:
+            ek = ek[len(ek) - w_gpio:]          # the slice above w_gpio is the zero extension
         keys.extend(ek)
     bits = _keys_to_refs(keys, sig_pins, rev, "gpio")
     for ref, k in bits:
@@ -295,6 +335,98 @@ def gpio_attaches(bits, pinmap):
                 params["mirror"] = True
             out.append(("gpio_header", params, {"io": ref}))
     return out
+
+
+_CONST_BIT = re.compile(r"^(?:1'[bdh]|')?([01])$")
+
+
+def uart_attach(text, sig_pins, rev, notes):
+    """(binds, rx_idle): the pins lab_top's uart_tx / uart_rx connect to —
+    UART ports (`.uart_rx (UART_RX)`, nexys4's rx-only `RsRx`) or header
+    bits (de0_cv: `.uart_rx (GPIO_1 [34])`) — as {tx: ref, rx: ref} / {rx:
+    ref}, or None when the lab's uart_rx comes from no pin. rx_idle is then
+    what the lab reads: 1 for `wire UART_RX = '1` (de10_nano), 0 for an
+    unconnected `.uart_rx ( )` or a port the constraint files do not place
+    (alinx's UART_RXD; noted)."""
+    insts = bgm_oracle.instantiations(text, "lab_top")
+    if not insts:
+        return None, None
+    conns = dict(insts[0]["ports"])
+    ports = bgm_oracle.top_ports(text)
+    binds, const = OrderedDict(), {}
+    for lab, sig in (("uart_tx", "tx"), ("uart_rx", "rx")):
+        expr = (conns.get(lab) or "").strip()
+        if not expr:
+            continue
+        src = _follow(text, expr).replace(" ", "")
+        cm = _CONST_BIT.match(src)
+        if cm:
+            const[sig] = int(cm.group(1))
+            continue
+        m = re.match(r"^([A-Za-z_]\w*)\s*(?:\[\s*(\d+)\s*\])?$", expr)
+        if not m:
+            notes.append("uart: lab {} = {!r} is not a port".format(lab, expr))
+            continue
+        key = m.group(1).upper() + ("[{}]".format(int(m.group(2))) if m.group(2) else "")
+        ref = rev.get(sig_pins.get(key), "gpio" if m.group(2) else "uart") if key in sig_pins else None
+        if ref is None:
+            if m.group(1) in ports:
+                notes.append("uart: lab {} = {} is a port the constraint files do not place".format(lab, key))
+            elif src != expr.replace(" ", ""):
+                notes.append("uart: lab {} = {} follows to {!r}, not a pin".format(lab, expr, src))
+            continue
+        binds[sig] = ref
+    if "rx" in binds:
+        return binds, None
+    if binds:
+        notes.append("uart: BGM connects only uart_tx; the uart_2wire contract needs rx")
+    return None, const.get("rx", 0)
+
+
+# `dp [i] <= hgfedcba [$left (HEX0) + 1]` / `LEDR [$bits (LEDR) - w_digit + i] <= ...`
+_DP_SOURCE = r"(~?)\s*hgfedcba\s*\[\s*\$left\s*\(\s*HEX0\s*\)\s*\+\s*1\s*\]"
+
+
+def dp_leds(text, sig_pins, rev, params):
+    """([ref per digit, LSB first], inverted, {ref: 0}) — BGM's Terasic tops
+    show the HEX decimal point, which the board does not wire to the FPGA,
+    on the top w_digit LEDs: `assign LEDR [w_led - 1:w_lab_led] = dp` with
+    `dp [i] <= hgfedcba [$left (HEX0) + 1]` (de0_cv, de1_soc; de23_lite
+    inverted), or directly `LEDR [$bits (LEDR) - w_digit + i] <= ...` with
+    `LEDR <= '0` for the rest (c5gx, de2_115: those LEDs are tied). None
+    when the top has no such logic."""
+    w_digit = params.get("w_digit")
+    zero = OrderedDict()
+    m = re.search(r"\bassign\s+([A-Za-z_]\w*)\s*\[\s*([^\]:]+?)\s*:\s*([^\]]+?)\s*\]\s*=\s*dp\s*;", text)
+    if m:
+        port = m.group(1).upper()
+        hi, lo = _eval_int(m.group(2), params), _eval_int(m.group(3), params)
+        dm = re.search(r"\bdp\s*\[\s*i\s*\]\s*<?=\s*(?:digit\s*\[\s*i\s*\]\s*\?\s*)?" + _DP_SOURCE, text)
+        if hi is None or lo is None or dm is None:
+            return None
+        inverted = dm.group(1) == "~"
+        keys = ["{}[{}]".format(port, k) for k in range(min(hi, lo), max(hi, lo) + 1)]
+    else:
+        m = re.search(r"\b([A-Za-z_]\w*)\s*\[\s*\$bits\s*\(\s*\1\s*\)\s*-\s*w_digit\s*\+\s*i\s*\]\s*<?=\s*"
+                      r"(?:digit\s*\[\s*i\s*\]\s*\?\s*)?" + _DP_SOURCE, text)
+        if m is None or not w_digit:
+            return None
+        port = m.group(1).upper()
+        inverted = m.group(2) == "~"
+        idxs = [int(k[k.index("[") + 1:-1]) for k in sig_pins if k.split("[", 1)[0] == port and "[" in k]
+        if not idxs:
+            return None
+        w = max(idxs) + 1
+        keys = ["{}[{}]".format(port, k) for k in range(w - w_digit, w)]
+        if re.search(r"\b" + re.escape(m.group(1)) + r"\s*<?=\s*'0\s*;", text):
+            for k in range(0, w - w_digit):
+                ref = rev.get(sig_pins.get("{}[{}]".format(port, k)), "led")
+                if ref is not None:
+                    zero[ref] = 0
+    refs = [rev.get(sig_pins.get(k), "led") if k in sig_pins else None for k in keys]
+    if any(r is None for r in refs):
+        return None
+    return refs, inverted, zero
 
 
 # ---------------------------------------------------------------- I2S
@@ -554,6 +686,18 @@ def led_bits(text, sig_pins, rev):
             base = int(lo) if lo is not None else 0
             for i, key in enumerate(reversed(keys)):
                 put(base + i, key, inv)
+            continue
+        # `assign LEDR [w_lab_led - 1:0] = lab_led;` (de0_cv, de1_soc: the top
+        # LEDs are the HEX decimal point, see dp_leds)
+        sm = re.match(r"^([A-Za-z_]\w*)\s*\[\s*([^\]:]+?)\s*:\s*([^\]]+?)\s*\]$", lhs)
+        if sm and sm.group(1) in ports:
+            shi, slo = _eval_int(sm.group(2), params), _eval_int(sm.group(3), params)
+            if shi is None or slo is None:
+                notes.append("led: {} = {}: the slice does not evaluate".format(lhs, rhs))
+                continue
+            base = int(lo) if lo is not None else 0
+            for i, k in enumerate(range(min(shi, slo), max(shi, slo) + 1)):
+                put(base + i, "{}[{}]".format(sm.group(1).upper(), k), inv)
             continue
         lm = re.match(r"^([A-Za-z_]\w*)\s*(?:\[\s*(\d+)\s*\])?$", lhs)
         if not lm or lm.group(1) not in ports:
@@ -1044,6 +1188,19 @@ def _overlay_mirrors(cid, vdir, want, mirrors, dry_run):
     return changes
 
 
+def _overlay_param(cid, vdir, pid, occ, key, value, dry_run):
+    """Set / clear one BGM-convention param of an attach in the overlay;
+    returns change notes."""
+    from tools import bgm_overlay
+    cur = bgm_overlay.attach_override(bgm_overlay.load(cid) or {}, pid, occ, create=False) or {}
+    have = (cur.get("params") or {}).get(key)
+    if have == value:
+        return []
+    if not dry_run:
+        bgm_overlay.set_attach(cid, pid, occ, params={key: value}, variant=os.path.basename(vdir) if vdir else None)
+    return ["{}#{} {} {} -> {} (overlay)".format(pid, occ, key, have, value)]
+
+
 def _bind_key(bind):
     return json.dumps({k: (v if isinstance(v, list) else str(v).strip('"')) for k, v in bind.items()}, sort_keys=True)
 
@@ -1192,6 +1349,44 @@ def apply_components(path, dry_run):
             changes.append("gpio {} -> {}".format([(p, b["io"]) for p, _pr, b in have],
                                                    [(p, b["io"]) for p, _pr, b in want] or "none"))
         changes.extend(_overlay_mirrors(cfg["id"], vdir, want, gpio_mirror, dry_run))
+        # emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio` — the lab drives the
+        # header and never reads it (overlay: direction out); the slice above
+        # w_gpio is the zero extension (overlay ties)
+        gpio_out_only, gpio_zero_ties = gpio_assign_form(text, raw, sig_pins, rev, pp.defines)
+        occ = {}
+        for pid, _params, _b in want:
+            i = occ.get(pid, 0)
+            occ[pid] = i + 1
+            changes.extend(_overlay_param(cfg["id"], vdir, pid, i, "direction", "out" if gpio_out_only else None, dry_run))
+    else:
+        gpio_zero_ties = OrderedDict()
+
+    # ---- the lab's UART: the pins BGM connects, or what uart_rx reads ----------
+    uart_notes = []
+    uart, rx_idle = uart_attach(text, sig_pins, rev, uart_notes)
+    warnings.extend(uart_notes)
+    if uart is not None and any(a.get("peripheral") == "uart_4wire" for a in _yaml_attaches(lines)):
+        # the serial console is the uart_4wire attach (nexys4_ddr_default's
+        # UART_TXD_IN / UART_RXD_OUT with flow control); no second provider
+        if _have(cfg, "uart_2wire"):
+            _sync_blocks(lines, "uart_2wire", [], _have(cfg, "uart_2wire"), comment, indent, changes,
+                         label="uart_2wire (the uart_4wire attach is the serial console)")
+    elif uart is not None:
+        _sync_blocks(lines, "uart_2wire", [({}, uart)], _have(cfg, "uart_2wire"),
+                     comment + (" (UART on header pins)" if "[" in "".join(uart.values()) else " .uart_rx / .uart_tx"),
+                     indent, changes)
+    elif not uart_notes and _have(cfg, "uart_2wire"):
+        _sync_blocks(lines, "uart_2wire", [], _have(cfg, "uart_2wire"), comment, indent, changes,
+                     label="uart_2wire (BGM connects the lab's UART to no pin)")
+    # no UART pin: the lab's uart_rx is a BGM convention (overlay) — 1 where
+    # BGM writes `wire UART_RX = '1`, 0 where the port is left unconnected
+    from tools import bgm_overlay
+    cur_idle = (bgm_overlay.load(cfg["id"]) or {}).get("uart_rx")
+    if cur_idle != rx_idle:
+        if not dry_run:
+            bgm_overlay.update(cfg["id"], os.path.basename(vdir), uart_rx=rx_idle)
+        changes.append("overlay uart_rx {} -> {}".format(cur_idle if cur_idle is not None else "none",
+                                                          rx_idle if rx_idle is not None else "none"))
 
     # ---- LEDs ----------------------------------------------------------------
     lbits, notes = led_bits(text, sig_pins, rev)
@@ -1251,6 +1446,29 @@ def apply_components(path, dry_run):
                             pid, sorted((a.get("bind") or {}).values(), key=str)))
                         break
 
+    # ---- the HEX decimal point on the top LEDs (Terasic) ---------------------
+    # BGM's convention: overlay — the seven_segment_per_digit attach gets a
+    # `dp` bind onto those LEDs (their lab bit is none, --lab-bits), c5gx /
+    # de2_115's remaining LEDR bits a tie
+    from tools import bgm_overlay
+    dp = dp_leds(text, sig_pins, rev, _top_params(text))
+    has_seg = any(a.get("peripheral") == "seven_segment_per_digit" for a in _yaml_attaches(lines))
+    dp_ties = OrderedDict()
+    want_dp, want_act = [], None
+    if dp is not None and has_seg:
+        want_dp, want_act, dp_ties = list(dp[0]), ("low" if dp[1] else None), dp[2]
+    elif dp is not None:
+        warnings.append("dp: BGM shows the HEX decimal point on LEDs but no seven_segment_per_digit attach")
+    cur_seg = bgm_overlay.attach_override(bgm_overlay.load(cfg["id"]) or {}, "seven_segment_per_digit", 0, create=False) or {}
+    cur_dp = list((cur_seg.get("bind") or {}).get("dp") or [])
+    cur_act = (cur_seg.get("params") or {}).get("dp_active")
+    if cur_dp != want_dp or cur_act != want_act:
+        if not dry_run:
+            bgm_overlay.set_attach(cfg["id"], "seven_segment_per_digit", 0, bind={"dp": want_dp or None},
+                                   params={"dp_active": want_act}, variant=os.path.basename(vdir))
+        changes.append("seven_segment_per_digit#0 dp {} -> {}{} (overlay)".format(
+            cur_dp or "none", want_dp or "none", " active " + want_act if want_act else ""))
+
     # ---- invented components -------------------------------------------------
     for a in _yaml_attaches(lines):
         pid = a.get("peripheral")
@@ -1271,6 +1489,56 @@ def apply_components(path, dry_run):
                 break
 
     _prune_optional_binds(lines, cfg, pinmap, declared_pins, changes)
+
+    # ---- open-drain outputs: `assign AUD_PWM = sound_pwm ? 'Z : '0` ---------
+    # (Digilent Nexys: the board datasheet asks for 0 / high-Z) — a wiring
+    # fact of the board, the attach's open_drain parameter
+    od_pins = set()
+    for port, expr in bgm_oracle.port_assigns(text).items():
+        if _OPEN_DRAIN.match(" ".join(expr.split())) and port.upper() in sig_pins:
+            od_pins.add(sy._norm_pin(str(sig_pins[port.upper()]).split(",")[0]))
+    if od_pins:
+        perifs = config_init.read_peripherals()
+        attaches = _yaml_attaches(lines)
+        od_changes = {}
+        for i, a in enumerate(attaches):
+            pdef = perifs.get(a.get("peripheral")) or {}
+            if "open_drain" not in (pdef.get("parameters") or {}) or (a.get("params") or {}).get("open_drain"):
+                continue
+            outs = {sg["name"] for sg in pdef.get("signals", []) if sg.get("direction") == "output"}
+            pins = set()
+            for sig, ref in (a.get("bind") or {}).items():
+                if sig in outs:
+                    for one in (ref if isinstance(ref, list) else [ref]):
+                        pins |= sy._pins_of_ref(pinmap, one)
+            if pins & od_pins:
+                od_changes[i] = {"open_drain": True}
+        changes.extend(_set_attach_params(lines, attaches, od_changes))
+
+    # ---- components BGM ties off --------------------------------------------
+    # every pin of the attach gets a constant (`assign LED16_R = 1'b0`, the
+    # Digilent RGB LEDs): the hardware stays in the configuration, the
+    # overlay drops the attach and ties its pins
+    const_pins = {}
+    for k, v in list(bgm_oracle.port_bit_assigns(text).items()) + list(_concat_const_bits(text, sig_pins).items()):
+        c = _CONST.get(str(v).replace(" ", ""))
+        if c in ("0", "1") and k.upper() in sig_pins:
+            for half in str(sig_pins[k.upper()]).split(","):
+                const_pins[sy._norm_pin(half)] = c
+    drop, drop_pins, occ = [], set(), {}
+    for a in _yaml_attaches(lines):
+        pid = a.get("peripheral")
+        k = occ.get(pid, 0)
+        occ[pid] = k + 1
+        if pid in _KEEP:
+            continue
+        pins = set()
+        for ref in (a.get("bind") or {}).values():
+            for one in (ref if isinstance(ref, list) else [ref]):
+                pins |= sy._pins_of_ref(pinmap, one)
+        if pins and pins <= set(const_pins):
+            drop.append((pid, k))
+            drop_pins |= pins
 
     # ---- ties ----------------------------------------------------------------
     # pins another attach drives or reads; a bare header (gpio_header,
@@ -1303,21 +1571,34 @@ def apply_components(path, dry_run):
     for src in ((cfg.get("reset") or {}).get("sources") or []):
         if isinstance(src, dict) and src.get("pin"):
             bound |= sy._pins_of_ref(pinmap, src["pin"])
+    bound -= drop_pins
     ties = tie_entries(text, sig_pins, rev, bound)
     for ref, v in extra_ties.items():
         if not (sy._pins_of_ref(pinmap, ref) & bound):
             ties.setdefault(ref, v)
-    # a pin that follows the reset is a BGM convention (overlay); a constant
-    # is a wiring fact of the attached module (configuration)
-    from tools import bgm_overlay
-    rst_ties = OrderedDict((k, v) for k, v in ties.items() if str(v).replace(" ", "") in ("rst", "~rst"))
-    ties = OrderedDict((k, v) for k, v in ties.items() if k not in rst_ties)
+    # a pin that follows the reset, a component tied off, the zero extension
+    # of the lab's gpio are BGM conventions (overlay); a constant an attached
+    # module needs is a wiring fact (configuration)
+    overlay_ties = OrderedDict((k, v) for k, v in ties.items()
+                               if str(v).replace(" ", "") in ("rst", "~rst") or (sy._pins_of_ref(pinmap, k) & drop_pins))
+    ties = OrderedDict((k, v) for k, v in ties.items() if k not in overlay_ties)
+    for k, v in list(gpio_zero_ties.items()) + list(dp_ties.items()):
+        overlay_ties.setdefault(k, v)
     overlay = bgm_overlay.load(cfg["id"]) or {}
-    cur_rst = OrderedDict((k, str(v)) for k, v in (overlay.get("tie") or {}).items())
-    if OrderedDict((k, str(v)) for k, v in rst_ties.items()) != cur_rst:
+    overlay_ties = OrderedDict((k, int(v) if str(v) in ("0", "1") else v) for k, v in overlay_ties.items())
+    cur_overlay_ties = OrderedDict((overlay.get("tie") or {}).items())
+    if list(overlay_ties.items()) != list(cur_overlay_ties.items()):
         if not dry_run:
-            bgm_overlay.update(cfg["id"], os.path.basename(vdir), tie=(rst_ties or None))
-        changes.append("overlay tie {} -> {}".format(dict(cur_rst) or "none", dict(rst_ties) or "none"))
+            bgm_overlay.update(cfg["id"], os.path.basename(vdir), tie=(overlay_ties or None))
+        changes.append("overlay tie {} -> {}".format(dict(cur_overlay_ties) or "none", dict(overlay_ties) or "none"))
+    cur_drop = [(e.get("peripheral"), int(e.get("index", 0))) for e in (overlay.get("attach") or []) if e.get("drop")]
+    for pid, k in sorted(set(cur_drop) | set(drop)):
+        want_drop = (pid, k) in drop
+        if ((pid, k) in cur_drop) == want_drop:
+            continue
+        if not dry_run:
+            bgm_overlay.set_attach(cfg["id"], pid, k, drop=want_drop, variant=os.path.basename(vdir))
+        changes.append("{}#{} {} (overlay: BGM ties every pin of it)".format(pid, k, "dropped" if want_drop else "kept again"))
     cur_ties = OrderedDict((k, str(v)) for k, v in (cfg.get("tie") or {}).items())
     if OrderedDict((k, str(v)) for k, v in ties.items()) != cur_ties:
         lines = _strip_tie_block(lines)
@@ -1338,9 +1619,9 @@ def apply_components(path, dry_run):
         text_out += "\n"
     if warnings:
         changes.append("WARNINGS: " + "; ".join(warnings))
-    if text_out == original:
+    if text_out == original and (not changes or changes == ["WARNINGS: " + "; ".join(warnings)]):
         return "unchanged" if not warnings else "unchanged; " + "; ".join(warnings)
-    if not dry_run:
+    if not dry_run and text_out != original:
         open(path, "w", encoding="utf-8").write(text_out)
     return "; ".join(changes)
 
@@ -1502,11 +1783,30 @@ def _attach_for_port(cfg, pinmap, sig_pins, port):
     return None
 
 
-def _source_bits(port, rng, sig_pins, params):
+_PORT_RANGE_DECL = re.compile(
+    r"^\s*(?:input|output|inout)\s+(?:logic\s+|wire\s+|reg\s+)?(?:signed\s+)?"
+    r"\[\s*([^\]:]+?)\s*:\s*([^\]]+?)\s*\]\s*([A-Za-z_]\w*(?:[ \t]*,[ \t]*[A-Za-z_]\w*)*)",
+    re.MULTILINE)
+
+
+def _port_ranges(text, params):
+    """{PORT: (lo, hi)} declared ranges of the top's vector ports: omdazz_epm570
+    declares `input [6:1] KEY`, so the whole port the lab reads is KEY [1..6]."""
+    out = {}
+    for m in _PORT_RANGE_DECL.finditer(text.split(");", 1)[0]):
+        hi, lo = _eval_int(m.group(1), params), _eval_int(m.group(2), params)
+        if hi is None or lo is None:
+            continue
+        for name in re.split(r"[ \t]*,[ \t]*", m.group(3)):
+            out[name.upper()] = (min(lo, hi), max(lo, hi))
+    return out
+
+
+def _source_bits(port, rng, sig_pins, params, ranges=None):
     """LSB-first BGM port bits `PORT[i]` (upper-case keys of sig_pins) of a
-    lab source: a whole port (width from the top's parameters when the
-    constraint file names more bits than the port has), a slice, or a
-    concatenation (last element = LSB)."""
+    lab source: a whole port (its declared range; the top's parameters when
+    the range is unknown and the constraint file names more bits than the
+    port has), a slice, or a concatenation (last element = LSB)."""
     ports = port if isinstance(port, list) else [port]
     out = []
     for name in reversed(ports):
@@ -1520,7 +1820,12 @@ def _source_bits(port, rng, sig_pins, params):
         if not idxs:
             continue
         w = params.get("w_" + name.lower()) if isinstance(port, str) else None
-        lo, hi = rng if (rng and isinstance(port, str)) else (0, (w - 1) if w else max(idxs))
+        if rng and isinstance(port, str):
+            lo, hi = rng
+        elif ranges and up in ranges:
+            lo, hi = ranges[up]
+        else:
+            lo, hi = 0, (w - 1) if w else max(idxs)
         for i in range(lo, hi + 1):
             out.append("{}[{}]".format(up, i))
     return out
@@ -1572,16 +1877,19 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
     inst = bgm_oracle.instantiations(text, "lab_top")
     if not inst:
         notes.append("no lab_top instantiation in the active top")
-        return {}, {}
+        return {}, {}, {}
     conns = dict(inst[0]["ports"])
+    lab_params = dict(inst[0]["params"])          # `.w_key ( w_key )`: the lab's own bus widths
     ports = bgm_oracle.top_ports(text)
     params = _top_params(text)
+    ranges = _port_ranges(text, params)
     tm_names = _tm_signal_names(text)
     attaches = cfg.get("attach") or []
     tm_idx = next((i for i, a in enumerate(attaches) if a.get("peripheral") == _TM_PID), None)
     has_tm = tm_idx is not None and bool(re.search(r"\btm1638_board_controller\b", text))
     wanted = {i: {} for i in range(len(attaches))}
     param_changes = {}          # attach index -> {param: value} (button_array as_switches)
+    lab_width = {}              # cap -> lab bus width when BGM passes the lab more bits than it wires
     pinmap = resolved["board_pinmap"]
 
     def keys_as_switches(port, rng, target_lo=0):
@@ -1595,7 +1903,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
         param_changes.setdefault(idx, {})["as_switches"] = True
         by_pin = _provider_pin_bits(resolved, pinmap, plans, "buttons")
         bits = [None] * w
-        for lab, key in enumerate(_source_bits(port, rng, sig_pins, params)):
+        for lab, key in enumerate(_source_bits(port, rng, sig_pins, params, ranges)):
             pin = sy._norm_pin(str(sig_pins.get(key, "")).split(",")[0]) if key in sig_pins else None
             hit = by_pin.get(pin) if pin else None
             if hit and hit[0] == idx and hit[1] < w:
@@ -1690,7 +1998,12 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
             # pin: a whole port, a slice (`SW [w_lab_sw - 1:0]`), a subset or a
             # concatenation (`{ KEY2, KEY3, KEY4 }`, icebreaker's three of four
             # buttons); bits BGM does not read get no lab bit
-            src_bits = _source_bits(port, rng, sig_pins, params)
+            src_bits = _source_bits(port, rng, sig_pins, params, ranges)
+            # emooc_cc: `lab_key` is w_key - 1 wide but lab_top gets w_key —
+            # the lab's top bit is wired to nothing; the lab bus keeps BGM's width
+            w_lab = _eval_int(lab_params.get("w_" + lab_port, ""), params) if lab_params.get("w_" + lab_port) else None
+            if w_lab and w_lab > len(src_bits):
+                lab_width[cap] = w_lab
             by_pin = _provider_pin_bits(resolved, pinmap, plans, cap)
             mapping = {pidx: [None] * w for pidx, w in board}
             unmatched = []
@@ -1792,7 +2105,7 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
         else:
             for pidx, w in board_providers(cap):
                 wanted[pidx][cap] = list(range(w))
-    return wanted, param_changes
+    return wanted, param_changes, lab_width
 
 
 def _current_lab_bits(attaches):
@@ -1901,9 +2214,14 @@ def apply_lab_bits(path, dry_run):
     vdir = bgm_oracle.variant_dir_for(cfg["id"], cfg["board"])
     if vdir is None:
         return "skip (no BGM variant)"
-    from tools import codegen
+    from tools import codegen, bgm_overlay
     config_init.clear_cache()
-    resolved = config_init.resolve_configuration(cfg["id"])
+    bgm_overlay.KEEP_DROPPED = True         # resolved index == attach index (see bgm_overlay)
+    try:
+        resolved = config_init.resolve_configuration(cfg["id"])
+    finally:
+        bgm_overlay.KEEP_DROPPED = False
+        config_init.clear_cache()
     try:
         plans = codegen.build_capability_plans(resolved)
     except codegen.CodegenError:
@@ -1925,9 +2243,15 @@ def apply_lab_bits(path, dry_run):
                     bound_banks.add(parts[0])
     rev = _Rev(pinmap, bound_banks)
     notes = []
-    wanted, param_changes = _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes)
+    wanted, param_changes, lab_width = _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes)
     # the lab bus composition and keys-as-switches are BGM conventions: overlay
-    from tools import bgm_overlay
+    cur_width = dict((bgm_overlay.load(cfg["id"]) or {}).get("lab_width") or {})
+    if {k: int(v) for k, v in cur_width.items()} != lab_width:
+        if not dry_run:
+            bgm_overlay.update(cfg["id"], os.path.basename(vdir), lab_width=(OrderedDict(sorted(lab_width.items())) or None))
+        changes_width = ["overlay lab_width {} -> {}".format(cur_width or "none", lab_width or "none")]
+    else:
+        changes_width = []
     attaches = cfg.get("attach") or []
     overlay = bgm_overlay.load(cfg["id"]) or {}
     occ_of, occ = {}, {}
@@ -1935,7 +2259,7 @@ def apply_lab_bits(path, dry_run):
         pid = a.get("peripheral")
         occ_of[i] = occ.get(pid, 0)
         occ[pid] = occ_of[i] + 1
-    changes = []
+    changes = list(changes_width)
     for i, a in enumerate(attaches):
         pid = a.get("peripheral")
         cur = bgm_overlay.attach_override(overlay, pid, occ_of[i], create=False) or {}

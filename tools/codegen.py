@@ -196,11 +196,22 @@ def build_capability_plans(resolved):
                 plan.offsets[pidx] = offset
                 plan.widths[pidx] = w
                 offset += w
-            plan.params = {primary: offset}
+            plan.params = {primary: max(offset, _lab_width(resolved, plan))}
         else:
             plan.params = {}
 
     return plans
+
+
+def _lab_width(resolved, plan):
+    """`lab_width: {<cap>: n}` (BGM overlay): the design's bus is n wide even
+    when fewer bits are wired to it — emooc_cc passes w_key = 8 to lab_top
+    and wires 7 keys; the top bit reads 0."""
+    try:
+        return int((resolved["configuration"].get("lab_width") or {}).get(plan.id) or 0)
+    except (TypeError, ValueError):
+        raise CodegenError("Configuration {}: lab_width.{} is not an integer"
+                           .format(resolved["configuration"]["id"], plan.id))
 
 
 def _active_provides(perif, params):
@@ -270,7 +281,7 @@ def _plan_lab_bits(resolved, plan, primary, explicit):
         live = [b for b in norm if b is not None]
         if live and len(live) == w and live == list(range(live[0], live[0] + w)):
             plan.offsets[pidx] = live[0]
-    plan.params = {primary: top}
+    plan.params = {primary: max(top, _lab_width(resolved, plan))}
     # a bus the design reads is merged bit by bit from per-provider wires
     # (`cap_<cap>_<sig>__p<idx>`): two providers on one bit OR, as BGM's
     # `lab_key [w_key - 1:0] |= KEY; lab_key [w_tm_key - 1:0] |= tm_key`
@@ -1077,17 +1088,28 @@ def validate_configuration(resolved, plans=None):
         label = "{}#{}".format(perif["id"], idx)
         sig_defs = {s["name"]: s for s in perif.get("signals", [])}
         bind = attach.get("bind") or {}
+        # a provider bit no lab bit reaches (`lab_bits: {leds: [0, .., 3, ~, ..]}`)
+        # is neither driven nor read by this attach: BGM puts the HEX decimal
+        # point (seven_segment_per_digit's dp) on those LEDs
+        lab_lists = [list(b or []) for b in (attach.get("lab_bits") or {}).values()]
+
+        def unmapped(k):
+            # explicit null, or past the end of a short list (_plan_lab_bits pads with None)
+            return any(k >= len(bl) or bl[k] is None for bl in lab_lists)
+
         for sig, ref in bind.items():
             if _is_virtual(ref):
                 continue
             entries = _bind_pins(pinmap, ref)
             sig_dir = (sig_defs.get(sig) or {}).get("direction")
-            for port_bit, pin in entries:
+            for k, (port_bit, pin) in enumerate(entries):
                 if pin is None:
                     problems.append("{}: bind {} -> {}".format(
                         label, sig, _describe_missing(pinmap, ref, port_bit)))
                     continue
                 pin_to_bits[str(pin)].add(port_bit)
+                if perif.get("driver") is None and unmapped(k):
+                    continue
                 bit_to_attaches[port_bit].append((idx, _is_gpio_passthrough(perif)))
                 if sig_dir in ("input", "output") and not _is_gpio_passthrough(perif):
                     bit_dirs[port_bit].add(sig_dir)
@@ -1200,7 +1222,7 @@ def emit_top_sv(resolved, strict=True):
         out.append("")
 
     # ---- design_top instantiation ----
-    merge = _emit_lab_bits_merge(plans)
+    merge = _emit_lab_bits_merge(plans, resolved)
     if merge:
         out.extend(merge)
         out.append("")
@@ -1499,24 +1521,37 @@ def _emit_capability_busses(plans):
     return lines
 
 
-def _emit_lab_bits_merge(plans):
+def _emit_lab_bits_merge(plans, resolved=None):
     """For every merged bus (lab_bits on a bus the design reads): each design
-    bit is the OR of the provider bits mapped onto it, 0 when none."""
+    bit is the OR of the provider bits mapped onto it, 0 when none. A bus
+    widened by `lab_width` beyond its providers (no lab_bits) reads 0 on the
+    extra bits."""
     lines = []
     for plan in plans.values():
-        if not plan.merged:
+        if plan.merged:
+            for sig in plan.cap.get("signals", []):
+                if sig.get("direction") != "hw_to_user" or not _mapped_signal(plan, sig["name"]):
+                    continue
+                cap = "cap_{}_{}".format(plan.id, sig["name"])
+                width = _signal_width(plan, sig)
+                if not lines:
+                    lines.append("    // ---- lab_bits: design bits merged from the providers (OR where shared) ----")
+                for b in range(width):
+                    srcs = ["{}[{}]".format(_provider_wire(plan, sig["name"], pidx), i)
+                            for pidx, bits in plan.bits.items() for i, bb in enumerate(bits) if bb == b]
+                    lines.append("    assign {}[{}] = {};".format(cap, b, " | ".join(srcs) if srcs else "1'b0"))
+            continue
+        if plan.aggregation != "concat" or not plan.providers or plan.bits or resolved is None:
+            continue
+        wired = sum(plan.widths.values())
+        top = _lab_width(resolved, plan)
+        if top <= wired:
             continue
         for sig in plan.cap.get("signals", []):
             if sig.get("direction") != "hw_to_user" or not _mapped_signal(plan, sig["name"]):
                 continue
-            cap = "cap_{}_{}".format(plan.id, sig["name"])
-            width = _signal_width(plan, sig)
-            if not lines:
-                lines.append("    // ---- lab_bits: design bits merged from the providers (OR where shared) ----")
-            for b in range(width):
-                srcs = ["{}[{}]".format(_provider_wire(plan, sig["name"], pidx), i)
-                        for pidx, bits in plan.bits.items() for i, bb in enumerate(bits) if bb == b]
-                lines.append("    assign {}[{}] = {};".format(cap, b, " | ".join(srcs) if srcs else "1'b0"))
+            lines.append("    assign cap_{}_{} [{}:{}] = '0;   // lab_width: no provider on these bits"
+                         .format(plan.id, sig["name"], top - 1, wired))
     return lines
 
 
@@ -1804,6 +1839,10 @@ def _emit_driver_instance(resolved, idx, attach, plans):
     drv = perif["driver"]
     bind = attach.get("bind") or {}
     inst_name = "i_{}_{}".format(perif["id"], idx)
+    pre, post = [], []                       # nets declared before the instance, assigns after it
+    formats = drv.get("port_format") or {}
+    open_drain = bool((attach.get("params") or {}).get("open_drain"))
+    out_sigs = {s["name"] for s in perif.get("signals", []) if s.get("direction") == "output"}
 
     # Driver parameters
     param_decls = []
@@ -1825,6 +1864,27 @@ def _emit_driver_instance(resolved, idx, attach, plans):
     for port, ref in (drv.get("port_map") or {}).items():
         if ref is None or ref == "" or _pin_of(ref) in optional_unbound:
             port_lines.append("        .{}()".format(port))
+        elif port in formats:
+            # the driver's port is narrower than the capability signal and
+            # encoded differently (the Pmod MIC3's 12-bit offset-binary ADC
+            # code into the 24-bit signed sample): convert outside the module
+            net = "{}_{}".format(inst_name, port)
+            fmt = formats[port]
+            w = int(fmt["width"])
+            pre.append("    wire [{}:0] {};".format(w - 1, net))
+            port_lines.append("        .{}({})".format(port, net))
+            post.extend(_format_conversion(net, w, fmt.get("encoding", "signed"),
+                                           _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx),
+                                           _capability_ref_width(ref, plans, attach)))
+        elif open_drain and _pin_of(ref) in out_sigs:
+            # Digilent AUD_PWM (board datasheet: 0 V is 1'b0, 3.3 V is high-Z):
+            # the driver's output is 0 or floats, never driven high
+            net = "{}_{}".format(inst_name, port)
+            pre.append("    wire {};".format(net))
+            port_lines.append("        .{}({})".format(port, net))
+            post.append("    // {}: open drain, floats when high".format(_pin_of(ref)))
+            post.append("    assign {} = {} ? 1'bz : 1'b0;".format(
+                _resolve_ref(ref, attach, plans, bind, lhs_context=True, slice_for_idx=idx), net))
         else:
             port_lines.append("        .{}({})".format(
                 port, _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx)))
@@ -1839,6 +1899,40 @@ def _emit_driver_instance(resolved, idx, attach, plans):
         lhs_resolved = _resolve_ref(lhs, attach, plans, bind, lhs_context=True, slice_for_idx=idx)
         rhs_resolved = _resolve_ref(rhs, attach, plans, bind, slice_for_idx=idx)
         lines.append("    assign {} = {};".format(lhs_resolved, rhs_resolved))
+    return pre + lines + post
+
+
+def _capability_ref_width(ref, plans, attach):
+    """Bit width of the capability signal a `capability.<cap>.<sig>` reference names."""
+    m = re.match(r"^\s*~?\s*capability\.(\w+)\.(\w+)\s*$", str(ref))
+    plan = plans.get(m.group(1)) if m else None
+    sig = next((x for x in (plan.cap.get("signals", []) if plan else []) if x["name"] == m.group(2)), None)
+    if sig is None:
+        raise CodegenError("{}: port_format needs a capability signal target, not {!r}"
+                           .format(attach.get("peripheral_id", "?"), ref))
+    return _signal_width(plan, sig)
+
+
+def _format_conversion(net, w, encoding, target, target_w):
+    """Assigns converting a driver's `w`-bit `net` into the `target_w`-bit
+    signed capability signal. offset_binary: an ADC code whose mid-scale is
+    silence (BGM: `mic_12 - 12'h800`, sign-extended); signed / unsigned:
+    extension only."""
+    if encoding == "offset_binary":
+        mid = "{}_minus_offset".format(net)
+        lines = ["    wire [{}:0] {} = {} - {}'h{:x};".format(w - 1, mid, net, w, 1 << (w - 1))]
+        src, signed = mid, True
+    elif encoding in ("signed", "unsigned"):
+        lines, src, signed = [], net, encoding == "signed"
+    else:
+        raise CodegenError("port_format encoding {!r} is not offset_binary / signed / unsigned".format(encoding))
+    if target_w > w:
+        ext = "{{ {} {{ {} [{}] }} }}".format(target_w - w, src, w - 1) if signed else "{}'b0".format(target_w - w)
+        lines.append("    assign {} = {{ {}, {} }};".format(target, ext, src))
+    elif target_w == w:
+        lines.append("    assign {} = {};".format(target, src))
+    else:
+        lines.append("    assign {} = {} [{}:0];".format(target, src, target_w - 1))
     return lines
 
 
@@ -2035,6 +2129,17 @@ def _claimed_port_bits(resolved, plans, gpio_indices):
     return claimed
 
 
+def _uart_rx_idle(resolved):
+    """What design_top's uart_rx reads with no serial console attached: the
+    idle line (1) unless the configuration says otherwise (the BGM overlay's
+    `uart_rx: 0` for a top that leaves `.uart_rx ( )` unconnected)."""
+    v = resolved["configuration"].get("uart_rx", 1)
+    if v not in (0, 1, "0", "1"):
+        raise CodegenError("Configuration {}: uart_rx must be 0 or 1, not {!r}"
+                           .format(resolved["configuration"]["id"], v))
+    return int(v)
+
+
 def _gpio_connection(resolved, plans):
     """Return (expression, declaration_lines) for design_top's `gpio` port, or
     (None, []) when no provider exists."""
@@ -2062,6 +2167,13 @@ def _gpio_connection(resolved, plans):
         if len(ports) != width:
             log.warning("Configuration %s: %s provides %d gpio bits but its bind %r covers %d pins",
                         resolved["configuration"]["id"], perif["id"], width, ref, len(ports))
+        out_only = str((attach.get("params") or {}).get("direction") or "inout") == "out"
+        out_net = "gpio_out_{}".format(pidx)
+        if out_only:
+            # BGM emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio` — the design's
+            # gpio drives the header, what is on the pads never reaches it
+            decls.append("    wire [{}:0] {};   // {}: direction out, the design drives these pins"
+                         .format(width - 1, out_net, _attach_label(attach)))
         for i in range(width):
             n = offset + i
             if n >= len(bits):
@@ -2070,6 +2182,9 @@ def _gpio_connection(resolved, plans):
             if port is None:
                 decls.append("    wire gpio_nc_{};   // no pin on this header position".format(n))
                 bits[n] = "gpio_nc_{}".format(n)
+            elif out_only:
+                decls.append("    assign {} = {} [{}];".format(port, out_net, i))
+                bits[n] = "{} [{}]".format(out_net, i)
             else:
                 # BGM hands the lab the whole header (`.gpio ({ ARDUINO_IO, GPIO })`),
                 # including the bits a microphone or a TM1638 drives: the lab
@@ -2158,7 +2273,8 @@ def _emit_lab_top(resolved, plans):
         "        .sound(cap_audio_out_sample)"     if plans["audio_out"].providers else "        .sound()",
         # no UART: BGM leaves lab_top's uart_rx unconnected, which the vendor
         # tools synthesise as ground, so 0 is the exact value
-        "        .uart_rx(cap_serial_console_rx)"  if plans["serial_console"].providers else "        .uart_rx(1'b0)",
+        "        .uart_rx(cap_serial_console_rx)"  if plans["serial_console"].providers
+        else "        .uart_rx(1'b{})".format(_uart_rx_idle(resolved)),
         "        .uart_tx(cap_serial_console_tx)"  if plans["serial_console"].providers else "        .uart_tx()",
         "        .gpio({})".format(gpio_expr)      if gpio_expr                   else "        .gpio()",
     ]

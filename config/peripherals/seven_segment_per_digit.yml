@@ -20,6 +20,10 @@ Peripheral:
       default: true       # BGM's default: sticky flops — each digit keeps the last pattern written while
                           # it was selected (`if (digit [i]) HEXi <= ~ hgfedcba`, reset to all off);
                           # false = combinational fan-out (BGM's EMULATE_DYNAMIC_7SEG_ON_STATIC_WITHOUT_STICKY_FLOPS)
+    dp_active:
+      type: enum
+      values: [high, low]
+      default: high       # polarity of the `dp` signal (the LEDs it lands on)
   signals:
     # Bound to a list of per-digit banks, LSB first:
     #   hex: [onboard_7seg.hex0, onboard_7seg.hex1, ...]
@@ -27,6 +31,11 @@ Peripheral:
     # order); the driver port is the flat concatenation.
     - { name: hex, type: bus, width: $digits, direction: output,
         comment: "one entry per digit; each entry is a segs-wide bank (a..g[,dp])" }
+    # The decimal point per digit when the HEX's dp segment is not wired to
+    # the FPGA: BGM's Terasic tops show it on the board's top w_digit LEDs
+    # (config/bgm/<id>.yml binds it there; the generic composition leaves it off).
+    - { name: dp,  type: bus, width: $digits, direction: output, optional: true,
+        comment: "one LED-like pin per digit" }
   provides:
     - capability: seven_segment
       params:
@@ -43,9 +52,11 @@ Peripheral:
       segs:    $segs
       active:  $active
       latched: $latched
+      dp_active: $dp_active
     port_map:
       clk:      context.clk
       rst:      context.rst
       abcdefgh: capability.seven_segment.abcdefgh
       digit:    capability.seven_segment.digit
       hex_o:    pin.hex
+      dp_o:     pin.dp
