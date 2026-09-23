@@ -4,14 +4,13 @@
 // board's device family (`context.diff_buf`):
 //
 //   "gowin_tlvds"  TLVDS_OBUF  — true LVDS on Gowin Arora (GW2A/GW2AR/GW5),
-//                                BGM tang_primer_20k_dock_hdmi_tm1638_yosys
+//                                e.g. the Tang Primer 20K Dock
 //   "gowin_elvds"  ELVDS_OBUF  — emulated LVDS on Gowin LittleBee (GW1N*),
 //                                what Gowin's DVI_TX IP uses on the Tang Nano 9K
 //   "xilinx"       OBUFDS      — 7-series, IOSTANDARD from the XDC (TMDS_33),
-//                                BGM a7_lite_35t
+//                                e.g. the a7_lite_35t
 //   "generic"      o = i, ob = ~i — pseudo-differential on two single-ended
-//                                pins (BGM tang_nano_9k_hdmi_no_ip_tm1638's
-//                                OBUFDS.v does exactly this)
+//                                pins
 // =============================================================================
 
 module diff_obuf

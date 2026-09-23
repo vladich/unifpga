@@ -33,7 +33,7 @@ def test_gowin_hdmi_serial_pll_and_clkdiv_pixel_clock():
     assert [(n, v, round(s.f_out, 4)) for n, _r, v, s in tree] == \
         [("serial", "gowin_rpll", 252.0), ("pixel", "derived", 25.2), ("timing", "rpll_clkoutd", 126.0)]
     top = codegen.emit_top_sv(r, strict=True)
-    # BGM runs `vga` on its 5x DDR serial clock: serial / 2 from the rPLL's
+    # `vga` runs on the 5x DDR serial clock: serial / 2 from the rPLL's
     # CLKOUTD (aligned with CLKOUT), the pixel clock still through CLKDIV
     assert ".DYN_SDIV_SEL(2)" in top and ".clkout(clk_serial), .clkoutd(clk_timing)" in top
     assert "i_div_timing" not in top and "clkdiv_gowin # (.DIV(10)) i_div_pixel" in top
@@ -42,7 +42,7 @@ def test_gowin_hdmi_serial_pll_and_clkdiv_pixel_clock():
     r4 = _resolve("tang_nano_4k_hdmi_tm1638")
     assert "timing" not in [n for n, _r, _v, _s in codegen.plan_clock_tree(r4)]
     assert ".timing_clk_i(1'b0)" in codegen.emit_top_sv(r4, strict=True)
-    # BGM tang_primer_20k_dock_hdmi_tm1638_yosys: rPLL IDIV 2 / FBDIV 27 -> 252 MHz (ODIV is the solver's choice)
+    # tang_primer_20k_dock_hdmi_tm1638_yosys: rPLL IDIV 2 / FBDIV 27 -> 252 MHz (ODIV is the solver's choice)
     assert ".IDIV_SEL(2), .FBDIV_SEL(27), .ODIV_SEL(4)" in top
     sol = tree[0][3]
     assert 400.0 <= sol.f_vco <= 1200.0
@@ -62,7 +62,7 @@ def test_gowin_hdmi_serial_pll_and_clkdiv_pixel_clock():
 def test_gowin_eda_cst_locates_pairs_through_the_p_port():
     r = _resolve("tang_nano_9k_hdmi_tm1638")
     cst = codegen.emit_cst(r)
-    assert 'IO_LOC  "onboard_hdmi_clk_p" 69,68;' in cst          # BGM: IO_LOC "TMDS_CLK_P" 69,68;
+    assert 'IO_LOC  "onboard_hdmi_clk_p" 69,68;' in cst
     assert 'IO_LOC  "onboard_hdmi_d_p[2]" 75,74;' in cst
     assert 'IO_LOC  "onboard_hdmi_clk_n"' not in cst              # the N half is implied by the pair
     assert 'IO_PORT "onboard_hdmi_clk_p"' not in cst              # buffer type comes from the design
@@ -71,7 +71,6 @@ def test_gowin_eda_cst_locates_pairs_through_the_p_port():
 def test_apicula_cst_lists_both_halves():
     r = _resolve("tang_primer_20k_dock_hdmi_tm1638_yosys")
     cst = codegen.emit_cst(r)
-    # BGM tang_primer_20k_dock_hdmi_tm1638_yosys/board_specific.cst
     assert 'IO_LOC  "onboard_hdmi_clk_p" G16;' in cst
     assert 'IO_LOC  "onboard_hdmi_clk_n" H15;' in cst
     assert 'IO_LOC  "onboard_hdmi_d_p[0]" H14;' in cst
@@ -81,7 +80,7 @@ def test_apicula_cst_lists_both_halves():
 
 
 def test_pixel_clock_equal_to_board_clock_is_an_alias():
-    """BGM tang_nano_4k: I_rgb_clk = clk (27 MHz). With serial = 270 MHz the
+    """tang_nano_4k: I_rgb_clk = clk (27 MHz). With serial = 270 MHz the
     derived pixel clock is the oscillator itself, so no divider is built."""
     r = _resolve("tang_nano_4k_hdmi_tm1638")
     _attach(r, "hdmi_tmds").setdefault("params", {})["clock_serial_mhz"] = 270
@@ -95,7 +94,7 @@ def test_pixel_clock_equal_to_board_clock_is_an_alias():
 
 def test_serial_override_moves_the_derived_pixel_clock():
     r = _resolve("tang_nano_20k_hdmi_tm1638")
-    _attach(r, "hdmi_tmds").setdefault("params", {})["clock_serial_mhz"] = 249.75   # BGM 124.875 MHz x 2
+    _attach(r, "hdmi_tmds").setdefault("params", {})["clock_serial_mhz"] = 249.75   # 124.875 MHz x 2
     tree = codegen.plan_clock_tree(r)
     by = {n: s.f_out for n, _r, _v, s in tree}
     assert abs(by["serial"] - 249.75) < 1e-6 and abs(by["pixel"] - 24.975) < 1e-6
@@ -103,7 +102,7 @@ def test_serial_override_moves_the_derived_pixel_clock():
 
 def test_xilinx_mmcm_shared_outputs():
     sol = pll_solver.xilinx_mmcm(50, [250, 25])
-    assert (sol.divclk, sol.mult, sol.odivs) == (1, 20, (4, 40))      # BGM a7_lite_35t clk_wiz: VCO 1000 MHz
+    assert (sol.divclk, sol.mult, sol.odivs) == (1, 20, (4, 40))      # a7_lite_35t clk_wiz: VCO 1000 MHz
     assert sol.f_outs == (250.0, 25.0)
     assert pll_solver.xilinx_mmcm(50, [250, 25, 50]).odivs == (4, 40, 20)
     assert pll_solver.xilinx_mmcm(12, [2000]) is None

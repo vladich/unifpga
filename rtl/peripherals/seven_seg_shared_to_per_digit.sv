@@ -7,11 +7,10 @@
 // the shared-segments + digit-select model to user code; this adapter fans the
 // currently selected digit's segment pattern out to that digit's own pins.
 //
-// Bit order (matches basics-graphics-music and config/capabilities/seven_segment.yml):
+// Bit order (matches config/capabilities/seven_segment.yml):
 //   abcdefgh[7] = a, [6] = b, ..., [1] = g, [0] = h (decimal point)
 // Board HEX buses are wired the other way round, `HEXn[0] = a ... HEXn[6] = g,
-// HEXn[7] = dp` (Terasic), so the pattern is bit-reversed here, exactly like
-// BGM's `hgfedcba` loop in de10_lite/board_specific_top.sv.
+// HEXn[7] = dp` (Terasic), so the pattern is bit-reversed here (`hgfedcba`).
 //
 // Parameters
 //   digits      number of digit positions (HEX0..HEX<digits-1>)
@@ -19,10 +18,9 @@
 //   active      "low" for common-anode displays (all the Terasic boards),
 //               "high" otherwise; same vocabulary as the peripheral YAML
 //   latched     0: combinational fan-out, only the selected digit is lit at any
-//                  instant (BGM default);
+//                  instant;
 //               1: each digit keeps the last pattern written while it was
-//                  selected (BGM's "EMULATE_DYNAMIC_7SEG_ON_STATIC_WITHOUT_STICKY
-//                  _FLOPS" variant), so all digits appear lit at once.
+//                  selected, so all digits appear lit at once.
 //
 // hex_o is flat: bits [d*segs +: segs] belong to digit d, LSB = segment a.
 // =============================================================================
@@ -43,7 +41,7 @@ module seven_seg_shared_to_per_digit
     output logic [digits * segs - 1:0] hex_o,
     // The decimal point per digit for a display whose dp segment is not
     // wired to the FPGA (Terasic DE0-CV, DE1-SoC, DE2-115, C5GX, DE23-Lite):
-    // BGM shows it on the board's top w_digit LEDs. Latched / combinational
+    // shown on the board's top w_digit LEDs. Latched / combinational
     // like hex_o, with its own polarity.
     output logic [digits - 1:0]        dp_o
 );
@@ -69,7 +67,7 @@ module seven_seg_shared_to_per_digit
     generate
         if (latched) begin : g_latched
 
-            // BGM: `always_ff @ (posedge clk or posedge rst)`, all off on reset
+            // Async reset, all off on reset
             always_ff @ (posedge clk or posedge rst)
                 if (rst)
                 begin

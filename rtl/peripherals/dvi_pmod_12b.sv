@@ -1,8 +1,6 @@
 // =============================================================================
 // dvi_pmod_12b — the 1BitSquared DVI Pmod in its 12-bit mode on an iCE40
-// board, exactly as BGM's icebreaker_dvi_12b_* board_specific_top.sv (the
-// DVI_12B branch of the 24b top) drives it: BGM's `vga` raster from the pixel
-// clock, the 4-4-4 colours, syncs and data enable through SB_IO
+// board: the `vga` raster from the pixel clock, the 4-4-4 colours, syncs and data enable through SB_IO
 // PIN_OUTPUT_REGISTERED cells clocked by the pixel clock, and the Pmod clock
 // pin as an SB_IO PIN_OUTPUT_DDR cell with D_OUT_0 = 0 / D_OUT_1 = 1 (the
 // pin is low after the rising edge and high after the falling edge, an
@@ -62,7 +60,7 @@ module dvi_pmod_12b
         .vga_b      (            )
     );
 
-    // BGM: dvi_data = { red [3], red [1], green [3], green [1], red [2], red [0],
+    // Packed: dvi_data = { red [3], red [1], green [3], green [1], red [2], red [0],
     //                   green [2], green [0], blue [3], blue [1], hsync, blue [2],
     //                   blue [0], display_on, vsync } on P1A1 .. P1B10 minus P1B2;
     // here each pin keeps its own name, the registered output stage is the same.

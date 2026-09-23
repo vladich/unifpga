@@ -55,7 +55,6 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
 
 
 # Map our boards.yml board id to nextpnr-ecp5 (DEVICE, PACKAGE, SPEED).
-# Mirrors the (DEVICE, PACKAGE) tuples from each board's BGM Makefile.
 _BOARD_TO_TRELLIS = {
     "karnix_ecp5":     ("25k", "CABGA256", 6),
     "orangecrab_ecp5": ("25k", "CSFBGA285", 6),
@@ -101,7 +100,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
     device, package, speed = info
     yo = codegen.yosys_loader_settings(board_pinmap)
-    speed = yo.get("speed") or speed                 # BGM board_info SPEED (nextpnr-ecp5 --speed)
+    speed = yo.get("speed") or speed                 # the board's speed grade (nextpnr-ecp5 --speed)
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
     lpf_path = os.path.join(output, PROJECT_NAME + ".lpf")
@@ -129,7 +128,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
 
     # ---- yosys synth ----
-    # `-D __ICARUS__`: BGM labs use `\`ifdef __ICARUS__` to gate older Verilog
+    # `-D __ICARUS__`: the labs use `\`ifdef __ICARUS__` to gate older Verilog
     # syntax against SV-2009 `'{ … }` array-init that yosys still rejects.
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
     yosys_script = "; ".join(
@@ -194,8 +193,8 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if pgm is None:
         log.error("Could not find openFPGALoader or ecpdap on $PATH.")
         return 1
-    # BGM configure_fpga_yosys: `--cable $CABLE` (colorlight, set by the user
-    # in board_info), `--ftdi-channel $FTDI_CHANNEL` (karnix 0, orangecrab 1)
+    # openFPGALoader takes `--cable` (colorlight, set per board) and
+    # `--ftdi-channel` (karnix 0, orangecrab 1)
     args = codegen.openfpgaloader_args(board_pinmap, board.get("Id")) if os.path.basename(pgm).startswith("openFPGALoader") else []
     cmd = [pgm] + args + [bit]
     log.info("Programming via: %s", " ".join(cmd))

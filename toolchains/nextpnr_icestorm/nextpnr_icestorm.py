@@ -150,7 +150,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
 
     # ---- yosys synth ----
-    # `-D __ICARUS__`: BGM labs use `\`ifdef __ICARUS__` to gate older Verilog
+    # `-D __ICARUS__`: the labs use `\`ifdef __ICARUS__` to gate older Verilog
     # syntax against SV-2009 `'{ … }` array-init that yosys still rejects.
     # Telling yosys it's "Icarus" picks the older-syntax branch.
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
@@ -213,7 +213,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if os.environ.get("UNIFPGA_DRY_RUN"):
         log.info("[dry run] Would program %s", bit)
         return 0
-    # BGM configure_fpga_yosys: openFPGALoader -b <BOARD from board_info>;
+    # openFPGALoader -b <the board's loader name>;
     # iceprog stays the fallback for a machine without openFPGALoader
     loader = _resolve_bin("openFPGALoader")
     args = codegen.openfpgaloader_args(board_pinmap, board.get("Id"))

@@ -1,7 +1,7 @@
 // =============================================================================
 // wm8731_i2s_out — the on-board Wolfson WM8731 audio codec of the Terasic
-// DE1 / DE2 / DE2-115 / DE1-SoC used as an I2S DAC, exactly as BGM's
-// board_specific_top.sv does: BGM's i2s_audio_out feeds the DAC lines and
+// DE1 / DE2 / DE2-115 / DE1-SoC used as an I2S DAC: i2s_audio_out feeds the
+// DAC lines and
 // Terasic's I2C_AUDIO_Config programs the codec registers once after reset.
 //
 //     i2s_audio_out # (.clk_mhz (clk_mhz)) i_audio_out (

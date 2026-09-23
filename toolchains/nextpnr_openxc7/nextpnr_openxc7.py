@@ -217,7 +217,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
 
     # ---- yosys synth_xilinx ----
-    # `-D __ICARUS__`: BGM labs use `\`ifdef __ICARUS__` to gate older Verilog
+    # `-D __ICARUS__`: the labs use `\`ifdef __ICARUS__` to gate older Verilog
     # syntax against SV-2009 `'{ … }` array-init that yosys still rejects.
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
     # synth_xilinx in yosys 0.36 doesn't take -json; emit via write_json.

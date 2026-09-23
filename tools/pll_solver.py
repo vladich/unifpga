@@ -23,7 +23,7 @@ Supported primitives:
       f_out = f_vco / 2^DIVQ                      DIVQ 1 .. 6
       FILTER_RANGE from f_pfd
 
-BGM's per-board gowin_rpll.v files are the regression vectors (tests/test_pll_solver.py).
+Known-good per-board rPLL settings are the regression vectors (tests/test_pll_solver.py).
 """
 
 from collections import namedtuple
@@ -109,7 +109,7 @@ def ecp5_pll(f_in, f_out, tolerance_pct=0.5):
     """Best EHXPLLL setting for f_out from f_in, or None. Feedback path CLKOP:
     f_vco = f_in / CLKI_DIV * CLKFB_DIV * CLKOP_DIV (400..800 MHz), the output
     is CLKOS = f_vco / CLKOS_DIV. Ties: smallest CLKI_DIV, then the CLKOP
-    (feedback) clock closest to half the output — BGM colorlight clock.v:
+    (feedback) clock closest to half the output — the colorlight clock:
     25 -> 250 MHz with CLKI 1, CLKFB 5, CLKOP 4 (125 MHz), CLKOS 2."""
     best = None
     for clki in range(1, 129):
@@ -152,7 +152,7 @@ def ice40_filter_range(f_pfd):
 
 def gowin_rpll_frequency(f_in, idiv, fbdiv, odiv=None, sdiv=None, use_clkoutd=False):
     """CLKOUT (or CLKOUTD) frequency produced by explicit rPLL settings; used
-    to read BGM's gowin_rpll.v files back into frequencies."""
+    to read existing gowin_rpll.v settings back into frequencies."""
     f = f_in / (idiv + 1) * (fbdiv + 1)
     return f / sdiv if use_clkoutd and sdiv else f
 
@@ -223,7 +223,7 @@ def xilinx_mmcm(f_in, f_outs, tolerance_pct=0.5):
 # ---------------------------------------------------------------------------
 # Gowin Arora V (GW5A / GW5AST) PLL / PLLA, several outputs from one VCO
 #   f_pfd = f_in / IDIV_SEL; f_vco = f_pfd * FBDIV_SEL * MDIV_SEL; out_i = f_vco / ODIVi_SEL
-#   (checked against BGM's gowin_pll.ipc: 50 MHz, IDIV 1, FBDIV 1, MDIV 16, ODIV0 100 -> 8 MHz)
+#   (checked against a Gowin IP-generated gowin_pll.ipc: 50 MHz, IDIV 1, FBDIV 1, MDIV 16, ODIV0 100 -> 8 MHz)
 # ---------------------------------------------------------------------------
 
 GW5_PFD_MIN, GW5_PFD_MAX = 19.0, 400.0     # Gowin EDA (PA2078): PFD 19 .. 400 MHz on the GW5A PLLA
@@ -235,7 +235,7 @@ GowinGW5PLL = namedtuple("GowinGW5PLL", "idiv fbdiv mdiv odivs f_pfd f_vco f_out
 
 def gowin_gw5_pll(f_in, f_outs, tolerance_pct=0.5):
     """Integer IDIV / FBDIV / MDIV and one ODIV per requested output (up to
-    3). Prefers exact outputs, then the highest PFD (BGM's IP keeps IDIV 1),
+    3). Prefers exact outputs, then the highest PFD (Gowin's IP keeps IDIV 1),
     then the smallest divider set. Returns GowinGW5PLL or None."""
     if not f_outs or len(f_outs) > 3:
         return None

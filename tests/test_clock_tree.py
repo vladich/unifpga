@@ -28,7 +28,7 @@ def _attach(resolved, pid):
 
 
 # ---------------------------------------------------------------------------
-# Gowin rPLL: Tang Nano 9K 480x272 (BGM: Gowin_rPLL 27 -> 9 MHz on LARGE_LCD_CK)
+# Gowin rPLL: Tang Nano 9K 480x272 (Gowin_rPLL 27 -> 9 MHz on the LCD clock)
 # ---------------------------------------------------------------------------
 
 def test_gowin_rpll_clock_tree_for_lcd():
@@ -51,7 +51,6 @@ def test_gowin_rpll_clock_tree_for_lcd():
 
     sdc = codegen.emit_sdc(r)
     assert "create_clock -name sys_clk_27mhz -period 37.037 [get_ports {clk}]" in sdc
-    # BGM: create_clock -name LARGE_LCD_CK -period 111.11 [get_ports {LARGE_LCD_CK}]
     assert "create_clock -name onboard_lcd_ck -period 111.111 [get_ports {onboard_lcd_ck}]" in sdc
 
     assert codegen.pll_source_files(top) == [os.path.join("rtl", "pll", "pll_gowin_rpll.sv")]
@@ -60,16 +59,16 @@ def test_gowin_rpll_clock_tree_for_lcd():
 def test_gowin_rpll_device_from_set_device_args():
     r = _resolve("tang_nano_20k_lcd_800_480_no_tm1638")
     top = codegen.emit_top_sv(r, strict=True)
-    assert '.DEVICE("GW2AR-18C")' in top          # BGM gowin_rpll.v: defparam rpll_inst.DEVICE = "GW2AR-18C"
+    assert '.DEVICE("GW2AR-18C")' in top          # the Gowin IP's defparam rpll_inst.DEVICE = "GW2AR-18C"
 
 
 def test_clock_frequency_override_per_configuration():
-    """`params.clock_pixel_mhz` (written by sync --clock-tree from BGM's
-    gowin_rpll.v) overrides the peripheral default."""
+    """`params.clock_pixel_mhz` in the configuration overrides the peripheral
+    default."""
     r = _resolve("tang_nano_9k_lcd_480_272_no_tm1638")
     a = _attach(r, "lcd_480_272")
     a.setdefault("params", {})["clock_pixel_mhz"] = 32.4
-    a["params"].pop("clock_pixel_pll", None)      # BGM's exact dividers belong to BGM's frequency
+    a["params"].pop("clock_pixel_pll", None)      # the pinned dividers belong to the default frequency
     tree = codegen.plan_clock_tree(r)
     assert abs(tree[0][3].f_out - 32.4) < 1e-9
     a["params"]["clock_pixel_pll"] = {"idiv": 2, "fbdiv": 0, "odiv": 48}   # 9 MHz, not 32.4
@@ -88,7 +87,7 @@ def test_conflicting_clock_requests_are_an_error():
 
 
 # ---------------------------------------------------------------------------
-# iCE40 SB_PLL40 + lab_clock (BGM iCEBreaker DVI: lab runs on the 25.125 MHz PLL)
+# iCE40 SB_PLL40 + lab_clock (iCEBreaker DVI: the lab runs on the 25.125 MHz PLL)
 # ---------------------------------------------------------------------------
 
 def test_ice40_pll_and_lab_clock():
@@ -101,9 +100,9 @@ def test_ice40_pll_and_lab_clock():
 
     r["configuration"]["lab_clock"] = "pixel"
     top = codegen.emit_top_sv(r, strict=True)
-    # SB_PLL40_PAD (BGM's choice) once nothing else needs the clock pad
+    # SB_PLL40_PAD once nothing else needs the clock pad
     assert ".USE_PAD(1'b1)" in top
-    assert "localparam int clk_mhz = 25;" in top          # BGM: lab_mhz = pixel_mhz = 25
+    assert "localparam int clk_mhz = 25;" in top          # lab_mhz = pixel_mhz = 25
     assert "        .clk(clk_pixel)," in top               # design_top
     assert "(.clk (clk), .rst (rst_on_power_up))" not in top    # nothing left on the board clock
     lab = codegen.lab_clock(r)
@@ -112,7 +111,7 @@ def test_ice40_pll_and_lab_clock():
 
 
 def test_power_up_reset_follows_the_lab_clock():
-    r = _resolve("icebreaker_dvi_12b_tm1638_yosys")     # BGM: imitate_reset_on_power_up on clk = pixel_clk
+    r = _resolve("icebreaker_dvi_12b_tm1638_yosys")     # imitate_reset_on_power_up on clk = pixel_clk
     r["configuration"]["lab_clock"] = "pixel"
     top = codegen.emit_top_sv(r, strict=True)
     assert "imitate_reset_on_power_up" in top
@@ -163,15 +162,15 @@ def test_gw5_pll_wrapper_for_arora_v():
     assert '.CLKOUT1_EN("TRUE")' in top and '.CLKOUT2_EN("TRUE")' in top
 
 
-def test_gw5_solver_matches_bgm_ipc():
+def test_gw5_solver_matches_gowin_ipc():
     from tools import pll_solver
-    sol = pll_solver.gowin_gw5_pll(50, [8])        # BGM gowin_pll.ipc: Clkout0ExpectedFrequency=8
+    sol = pll_solver.gowin_gw5_pll(50, [8])        # Gowin IP gowin_pll.ipc: Clkout0ExpectedFrequency=8
     assert sol is not None and sol.f_outs == (8.0,) and 800.0 <= sol.f_vco <= 1600.0
     assert pll_solver.gowin_gw5_pll(50, [250, 25]).odivs == (4, 40)
 
 
 def test_ecp5_hdmi_serial_pll_and_pixel_alias():
-    """BGM colorlight75b_tm1638_ecp5_yosys: clock.v EHXPLLL 25 -> 250 MHz for
+    """colorlight75b_tm1638_ecp5_yosys: EHXPLLL 25 -> 250 MHz for
     the TMDS serializer, the 25 MHz pixel clock is the board clock itself."""
     r = _resolve("colorlight75b_tm1638_ecp5_yosys")
     tree = codegen.plan_clock_tree(r)
@@ -179,7 +178,7 @@ def test_ecp5_hdmi_serial_pll_and_pixel_alias():
     top = codegen.emit_top_sv(r, strict=True)
     assert "pll_ecp5 # (.CLKI_DIV(1), .CLKFB_DIV(5), .CLKOP_DIV(4), .CLKOS_DIV(2)) i_pll_serial" in top
     assert "wire clk_pixel = clk;" in top
-    assert 'hdmi_tmds_out # (.DIFF_BUF("generic")' in top          # pseudo-differential pairs, as BGM's hdmi.v
+    assert 'hdmi_tmds_out # (.DIFF_BUF("generic")' in top          # pseudo-differential pairs
     assert codegen.pll_source_files(top) == [os.path.join("rtl", "pll", "pll_ecp5.sv")]
 
 

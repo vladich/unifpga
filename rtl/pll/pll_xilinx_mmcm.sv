@@ -1,6 +1,6 @@
 // =============================================================================
 // pll_xilinx_mmcm — one MMCME2_BASE with up to three output clocks, the
-// structural equivalent of the `clk_wiz` core BGM generates per board
+// structural equivalent of the `clk_wiz` core generated per board
 // (a7_lite_35t: 50 MHz in -> 250 MHz serial, 50 MHz lab, 25 MHz pixel).
 // Codegen computes the dividers with tools/pll_solver.py `xilinx_mmcm`:
 //

@@ -2,7 +2,7 @@
 // clkdiv_gowin — divide a PLL clock with the Gowin CLKDIV / CLKDIV2 clock
 // dividers (no fabric logic on the clock path). Codegen instantiates it for a
 // peripheral clock declared as `{name: pixel, from: serial, divide: N}` on a
-// Gowin board, exactly as BGM's tang_primer_20k_dock_hdmi_tm1638_yosys does:
+// Gowin board:
 //
 //     CLKDIV2 div_2 (.HCLKIN(serial_clk), .CLKOUT(pixel_clk_div2), .RESETN(pll_lock));
 //     CLKDIV #(.DIV_MODE("5")) div_5 (.HCLKIN(pixel_clk_div2), .CLKOUT(pixel_clk), .RESETN(pll_lock));

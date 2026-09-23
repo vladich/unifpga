@@ -1,7 +1,6 @@
 // =============================================================================
 // adc_parallel_sampler — an 8-bit parallel ADC (marsohod3gw2's on-board
-// ADC_D [7:0] / ADC_CLK) read as the microphone, exactly as BGM's
-// boards/marsohod3gw2/board_specific_top.sv does it inline:
+// ADC_D [7:0] / ADC_CLK) read as the microphone; the equivalent inline logic:
 //
 //   reg [9:0] adc_cnt_ = 0;  reg [7:0] adc_ = 0;
 //   assign ADC_CLK = adc_cnt_ [1];
@@ -11,7 +10,7 @@
 //
 // The ADC is clocked at clk / 4 and sampled once every 1024 clocks; its
 // offset-binary code becomes a signed sample in the top bits. No reset: the
-// flops start from their initial values, as in BGM.
+// flops start from their initial values.
 // =============================================================================
 
 module adc_parallel_sampler

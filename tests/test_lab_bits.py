@@ -1,5 +1,5 @@
 """
-lab_bits — bit-mapped capability aggregation (BGM's TM1638 shares the lab's
+lab_bits — bit-mapped capability aggregation (a TM1638 can share the lab's
 led / key buses with the board's own LEDs and keys instead of extending
 them) and the reset that reads the board's own keys.
 """
@@ -38,8 +38,8 @@ def _lines(text, pattern):
     return [l.strip() for l in text.splitlines() if re.search(pattern, l.strip())]
 
 
-def test_tm1638_duplicate_mode_like_bgm():
-    """BGM (INSTANTIATE_TM1638, DUPLICATE_TM1638_SIGNALS_WITH_REGULAR):
+def test_tm1638_duplicate_mode():
+    """TM1638 duplicating the board's own LEDs and keys:
     lab_key = tm_key, tm_led = lab_led, LED = w_led'(~ lab_led) — the board
     LEDs show the low bits of the same bus, the board keys are reset only."""
     r = _resolved_with_lab_bits(
@@ -83,7 +83,7 @@ def test_non_contiguous_bits_are_wired_one_by_one():
     assert ".keys(cap_switches_sw__p{})".format(tm) in text                # a driver writes its own wire
 
 
-def test_shared_input_bits_are_ored_like_bgm():
+def test_shared_input_bits_are_ored():
     """arty: `lab_key [w_key - 1:0] |= KEY; lab_key [w_tm_key - 1:0] |= tm_key`."""
     r = _resolved_with_lab_bits(button_array={"buttons": [0, 1]}, tm1638_led_key={"buttons": list(range(8))})
     text = codegen.emit_top_sv(r)
@@ -94,7 +94,7 @@ def test_shared_input_bits_are_ored_like_bgm():
 
 
 def test_partial_mapping_leaves_provider_bits_unused():
-    """de10_lite: BGM's lab gets SW [8:0]; SW [9] is the reset only."""
+    """de10_lite: the lab gets SW [8:0]; SW [9] is the reset only."""
     r = config_init.resolve_configuration("de10_lite")
     for a in r["peripherals"]:
         if a["peripheral_id"] == "sw_bank":
@@ -117,7 +117,7 @@ def test_lab_bits_errors():
 
 
 def test_reset_from_keys_reads_the_board_buttons():
-    """`any_key` is BGM's `| (~ KEY)`: the board's keys, whatever the TM1638 adds."""
+    """`any_key` is `| (~ KEY)`: the board's keys, whatever the TM1638 adds."""
     r = config_init.resolve_configuration(CFG)
     text = codegen.emit_top_sv(r)
     assert _lines(text, r"assign rst = ") == ["assign rst = rst_on_power_up | ((~ onboard_buttons[0]) | (~ onboard_buttons[1]));"]
@@ -126,17 +126,17 @@ def test_reset_from_keys_reads_the_board_buttons():
 
 
 def test_header_bits_reach_the_design_even_when_a_peripheral_drives_them():
-    """BGM: `.gpio ({ ARDUINO_IO, GPIO })` whole, microphone clocks included."""
+    """`.gpio ({ ARDUINO_IO, GPIO })` whole, microphone clocks included."""
     r = config_init.resolve_configuration("de10_lite")
     text = codegen.emit_top_sv(r)
     gpio_line = next(l for l in text.splitlines() if l.strip().startswith(".gpio("))
     assert "gpio_nc_" not in gpio_line
     assert "gpio[0]" in gpio_line and "gpio[4]" in gpio_line
     assert "also driven by another peripheral" in text
-    assert ".uart_rx(1'b0)" in text                                          # BGM leaves it unconnected = ground
+    assert ".uart_rx(1'b0)" in text                                          # unconnected = ground
 
 
-def test_keys_double_as_switches_like_bgm():
+def test_keys_double_as_switches():
     """omdazz: `.key ( ~ KEY_SW )`, `.sw ( ~ KEY_SW )` — the button array also
     provides the lab's sw (as_switches), a gated provides entry reading the
     same pins."""

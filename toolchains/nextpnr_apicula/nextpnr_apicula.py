@@ -127,7 +127,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
 
     # ---- yosys synth_gowin ----
-    # `-D __ICARUS__`: BGM labs use `\`ifdef __ICARUS__` to gate older Verilog
+    # `-D __ICARUS__`: the labs use `\`ifdef __ICARUS__` to gate older Verilog
     # syntax against SV-2009 `'{ … }` array-init that yosys still rejects.
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
     yosys_script = "; ".join(
@@ -149,7 +149,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         log.info("[elaborate] yosys synth complete; skipping nextpnr/gowin_pack.")
         return 0
 
-    # ---- place-and-route: BGM's canonical command is nextpnr-himbaechel with
+    # ---- place-and-route: the canonical command is nextpnr-himbaechel with
     # the gowin uarch (`--device $DEVICE_PART --vopt family=$DEVICE_FAMILY
     # --vopt cst=...`); a build without that uarch (mercury's oss-cad-suite)
     # keeps the legacy nextpnr-gowin ----

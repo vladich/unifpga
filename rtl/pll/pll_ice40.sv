@@ -1,6 +1,6 @@
 // =============================================================================
 // pll_ice40 — generic wrapper around the Lattice iCE40 SB_PLL40 primitive
-// (SIMPLE feedback), the way BGM instantiates it on the iCEBreaker for the
+// (SIMPLE feedback), as instantiated on the iCEBreaker for the
 // 25.125 MHz DVI pixel clock. Codegen computes DIVR / DIVF / DIVQ /
 // FILTER_RANGE with tools/pll_solver.py:
 //
@@ -8,7 +8,7 @@
 //   f_vco = f_pfd * (DIVF + 1)       533 .. 1066 MHz
 //   f_out = f_vco / 2^DIVQ
 //
-// USE_PAD = 1 (default, BGM's choice): SB_PLL40_PAD, `clkin` is the clock
+// USE_PAD = 1 (default): SB_PLL40_PAD, `clkin` is the clock
 // pad itself. USE_PAD = 0: SB_PLL40_CORE fed from fabric.
 // =============================================================================
 

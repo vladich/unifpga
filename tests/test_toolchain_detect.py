@@ -1,5 +1,5 @@
 """
-tools/toolchain_detect.py against fake directory trees: one case per BGM
+tools/toolchain_detect.py against fake directory trees: one case per
 search rule (pin, vendor variable, PATH, default parents, newest version,
 edition selection, open-flow binary sets).
 """
@@ -154,7 +154,7 @@ def test_gowin_standard_refuses_educational_only():
     assert not d.found and "Standard" in d.notes[-1]
 
 
-def test_gowin_env_and_bgm_version_dirs():
+def test_gowin_env_and_versioned_install_dirs():
     fs = FakeFS(exes=["/opt/gowin/Gowin_V1.9.9Beta/IDE/bin/gw_sh", "/opt/gowin/Gowin_V1.9.10/IDE/bin/gw_sh"])
     d = _detect("gowin_eda", fs)
     assert d.install_dir == "/opt/gowin/Gowin_V1.9.10"

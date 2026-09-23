@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Toolchain auto-detection, the same search BGM's
-scripts/steps/00_setup_*.source_bash perform, in one place:
+Toolchain auto-detection, the vendors' install locations searched in one
+place:
 
     1. the `InstallDir` pin from config/toolchains.yml when it exists
        (`~` and `$VAR` expanded);
     2. the vendor's environment variable (XILINX_VIVADO, QUARTUS_ROOTDIR,
        GOWIN_VERSION_DIR, EFINITY_HOME, OSS_CAD_SUITE, ...);
     3. the tool already on PATH;
-    4. the BGM search: home-style parents (XILINX_HOME / INTEL_FPGA_HOME /
+    4. the default install search: home-style parents (XILINX_HOME / INTEL_FPGA_HOME /
        ALTERA_HOME / QUARTUS_HOME / GOWIN_HOME, then $HOME, /opt, /tools on
        Linux; /Applications and ~/Applications too on macOS; /c, /d, /e on
        Windows) + the vendor's directory layout, newest version wins, a note
@@ -306,10 +306,10 @@ def _detect_gowin(tid, pin, env, home, system, fs, edition):
         if ok(d):
             return result(d, "path")
 
-    # BGM search: <parent>/{Gowin,gowin[,GowinIDE.app]}/<version>/IDE/bin/gw_sh,
-    # or the Gowin dir itself; every version dir that has gw_sh counts (BGM
-    # only takes `Gowin_*` names; mercury's `~/Gowin/1.9.11.03.Educational`
-    # would be missed).
+    # Default search: <parent>/{Gowin,gowin[,GowinIDE.app]}/<version>/IDE/bin/gw_sh,
+    # or the Gowin dir itself; every version dir that has gw_sh counts (a
+    # `Gowin_*` name filter would miss mercury's
+    # `~/Gowin/1.9.11.03.Educational`).
     subs = ["Gowin"] if system == "windows" else (["GowinIDE.app", "Gowin", "gowin"] if system == "darwin"
                                                  else ["Gowin", "gowin"])
     cands = []

@@ -318,23 +318,23 @@ def test_launcher_help_and_no_args_from_a_subprocess(tmp_path):
     assert not (tmp_path / "settings.yml").exists()
 
 
-# ---------------------------------------------------------------- BGM script parity
+# ---------------------------------------------------------------- sim / gui / prepare
 
-def test_sim_command_mirrors_bgm_run_icarus_verilog(tmp_path):
+def test_sim_command_compiles_the_design_with_icarus(tmp_path):
     d = tmp_path / "designs" / "x"
     d.mkdir(parents=True)
     (d / "design_top.sv").write_text("module design_top; endmodule\n")
     (d / "tb.sv").write_text("module tb; endmodule\n")
     cmd = cli.sim_command(str(d), str(tmp_path / "out"), "-g2012")
-    assert cmd[:7] == ["iverilog", "-g2012", "-D", "SIMULATION", "-s", "tb", "-o"]     # BGM config.svh: SIMULATION under __ICARUS__
-    ts = [p for p in cmd if p.endswith(os.path.join("rtl", "sim", "bgm_timescale.sv"))]
-    assert ts and cmd.index(ts[0]) < cmd.index(str(d / "tb.sv"))                     # `timescale first, as config.svh
+    assert cmd[:7] == ["iverilog", "-g2012", "-D", "SIMULATION", "-s", "tb", "-o"]
+    ts = [p for p in cmd if p.endswith(os.path.join("rtl", "sim", "timescale.sv"))]
+    assert ts and cmd.index(ts[0]) < cmd.index(str(d / "tb.sv"))                     # `timescale first
     assert "-I" in cmd and str(d) in cmd
     assert str(d / "tb.sv") in cmd and str(d / "design_top.sv") in cmd
     assert any(p.endswith(os.path.join("designs_common", "seven_segment_display.sv")) for p in cmd)
 
 
-def test_iverilog_language_option_like_bgm():
+def test_iverilog_language_option_follows_the_icarus_version():
     assert cli._iverilog_language_option("Icarus Verilog version 12.0 (stable)") == "-g2012"
     assert cli._iverilog_language_option("Icarus Verilog version 14.0 (devel)") == "-g2023"
     assert cli._iverilog_language_option("") == "-g2012"
@@ -358,8 +358,8 @@ def test_gui_command_table(tmp_path):
 
 
 def test_gui_for_a_nextpnr_flow_reruns_place_and_route_with_gui(captured, monkeypatch, capsys):
-    """BGM run_fpga_synthesis_gui_yosys: the synthesis step again with
-    GUI_OPT="--gui"; here synthesize -s pnr under UNIFPGA_NEXTPNR_GUI=1."""
+    """The synthesis step again with nextpnr --gui: synthesize -s pnr under
+    UNIFPGA_NEXTPNR_GUI=1."""
     calls, _ = captured
     seen = []
     monkeypatch.setattr(synthesize, "main",
@@ -373,8 +373,7 @@ def test_gui_for_a_nextpnr_flow_reruns_place_and_route_with_gui(captured, monkey
 
 
 def test_prepare_is_the_dry_run_of_synthesize(design, captured, monkeypatch, capsys):
-    """BGM check_setup: "create the run directories of all labs" = the dry
-    run (top, constraints, project files; no tools)."""
+    """prepare = the dry run (top, constraints, project files; no tools)."""
     calls, _ = captured
     seen = []
     monkeypatch.setattr(synthesize, "main",

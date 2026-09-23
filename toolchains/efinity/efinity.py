@@ -161,11 +161,11 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
     install_dir = _resolve_install_dir(toolchain)
 
-    # BGM synthesize_for_fpga_efinity: project mode — efx_run.py takes the
-    # project XML (the peri.xml next to it feeds the Interface Designer, which
-    # writes the constraint file efx_pgm needs); `--flow compile` is synthesis
-    # + place + route + bitstream (`full` would also run the RTL simulation,
-    # which fails without a simulator).
+    # Project mode: efx_run.py takes the project XML (the peri.xml next to it
+    # feeds the Interface Designer, which writes the constraint file efx_pgm
+    # needs); `--flow compile` is synthesis + place + route + bitstream
+    # (`full` would also run the RTL simulation, which fails without a
+    # simulator).
     flow = "map" if step == "elaborate" else "compile"
     cmd = _efx_command(efx_run, flow, project_path)
     env = _efinity_env(install_dir)
@@ -197,7 +197,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
 
 def _efx_command(efx_run, flow, project_path):
-    """BGM's efx_run.py call shape: --pgm_opts source=<lbf> --pgm_opts
+    """The efx_run.py call shape: --pgm_opts source=<lbf> --pgm_opts
     dest=<hex> --flow <flow> <project.xml> (`program`: source=<hex>)."""
     lbf = os.path.join("work_pnr", PROJECT_NAME + ".lbf")
     hexfile = os.path.join("work_pnr", PROJECT_NAME + ".hex")
@@ -216,9 +216,9 @@ def _find_bitstream(output):
 
 
 def program(*, board, board_pinmap=None, toolchain, output, **_):
-    """Download the bitstream the way BGM's configure_fpga_efinity does:
-    efx_run.py --flow program on the project (the programmer settings live
-    in the project XML); openFPGALoader is the fallback without Efinity."""
+    """Download the bitstream with efx_run.py --flow program on the project
+    (the programmer settings live in the project XML); openFPGALoader is the
+    fallback without Efinity."""
     bit = _find_bitstream(output)
     if bit is None and not os.environ.get("UNIFPGA_DRY_RUN"):
         log.error("Bitstream not found: work_pnr/%s.hex in %s — run synthesis first", PROJECT_NAME, output)

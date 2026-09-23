@@ -53,7 +53,7 @@ module rPLL
         if (last != 0.0) t_in = $realtime - last;
         last = $realtime;
     end
-    initial #1 CLKOUT = 1'b1;              // first rising edge at 1 ns (see equiv_stubs.sv)
+    initial #1 CLKOUT = 1'b1;              // first rising edge at 1 ns
     always begin
         t_out = t_in * (IDIV_SEL + 1) / (FBDIV_SEL + 1);
         #(t_out / 2.0) CLKOUT = ~CLKOUT;
@@ -289,7 +289,7 @@ module PLLA
    MDIV_SEL = 20, MDIV_FRAC_SEL = 0,
    parameter CLKOUT0_EN = "TRUE", CLKOUT1_EN = "FALSE", CLKOUT2_EN = "FALSE", CLKOUT3_EN = "FALSE",
    CLKOUT4_EN = "FALSE", CLKOUT5_EN = "FALSE", CLKOUT6_EN = "FALSE",
-   // accepted for BGM's generated wrappers' defparams, not modelled
+   // accepted for the generated IP wrappers' defparams, not modelled
    parameter CLK0_IN_SEL = 0, CLK0_OUT_SEL = 0, CLK1_IN_SEL = 0, CLK1_OUT_SEL = 0, CLK2_IN_SEL = 0, CLK2_OUT_SEL = 0, CLK3_IN_SEL = 0, CLK3_OUT_SEL = 0, CLK4_IN_SEL = 0, CLK4_OUT_SEL = 0, CLK5_IN_SEL = 0, CLK5_OUT_SEL = 0, CLK6_IN_SEL = 0, CLK6_OUT_SEL = 0, CLKOUT0_DT_DIR = 0, CLKOUT0_DT_STEP = 0, CLKOUT0_PE_COARSE = 0, CLKOUT0_PE_FINE = 0, CLKOUT1_DT_DIR = 0, CLKOUT1_DT_STEP = 0, CLKOUT1_PE_COARSE = 0, CLKOUT1_PE_FINE = 0, CLKOUT2_DT_DIR = 0, CLKOUT2_DT_STEP = 0, CLKOUT2_PE_COARSE = 0, CLKOUT2_PE_FINE = 0, CLKOUT3_DT_DIR = 0, CLKOUT3_DT_STEP = 0, CLKOUT3_PE_COARSE = 0, CLKOUT3_PE_FINE = 0, CLKOUT4_PE_COARSE = 0, CLKOUT4_PE_FINE = 0, CLKOUT5_PE_COARSE = 0, CLKOUT5_PE_FINE = 0, CLKOUT6_PE_COARSE = 0, CLKOUT6_PE_FINE = 0, DE0_EN = 0, DE1_EN = 0, DE2_EN = 0, DE3_EN = 0, DE4_EN = 0, DE5_EN = 0, DE6_EN = 0, DYN_DPA_EN = 0, DYN_PE0_SEL = 0, DYN_PE1_SEL = 0, DYN_PE2_SEL = 0, DYN_PE3_SEL = 0, DYN_PE4_SEL = 0, DYN_PE5_SEL = 0, DYN_PE6_SEL = 0, ICP_SEL = 0, LPF_CAP = 0, LPF_RES = 0, ODIV3_SEL = 0, ODIV4_SEL = 0, ODIV5_SEL = 0, ODIV6_SEL = 0, RESET_I_EN = 0, RESET_O_EN = 0, SSC_EN = 0)
 (output LOCK, output CLKOUT0, output CLKOUT1, output CLKOUT2, output CLKOUT3, output CLKOUT4, output CLKOUT5,
  output CLKOUT6, output CLKFBOUT, output [7:0] MDRDO, input CLKIN, input CLKFB, input RESET, input PLLPWD,
@@ -339,7 +339,7 @@ module SB_GB (input USER_SIGNAL_TO_GLOBAL_BUFFER, output GLOBAL_BUFFER_OUTPUT);
     assign GLOBAL_BUFFER_OUTPUT = USER_SIGNAL_TO_GLOBAL_BUFFER;
 endmodule
 
-// PIN_TYPE[5:2] output modes used by BGM: 0110 simple, 0101 registered,
+// PIN_TYPE[5:2] output modes used: 0110 simple, 0101 registered,
 // 0100 DDR (D_OUT_0 while OUTPUT_CLK is high, D_OUT_1 while low).
 module SB_IO
 # (

@@ -240,8 +240,7 @@ def _find_bitstream(output):
 
 
 def _cables(quartus_pgm, env, cwd):
-    """Cable names from `quartus_pgm -l` ("1) USB-Blaster [1-2]"), BGM's
-    configure_fpga_quartus."""
+    """Cable names from `quartus_pgm -l` ("1) USB-Blaster [1-2]")."""
     try:
         out = subprocess.run([quartus_pgm, "-l"], cwd=cwd, env=env, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, universal_newlines=True).stdout
@@ -252,9 +251,9 @@ def _cables(quartus_pgm, env, cwd):
 
 
 def program(*, board, board_pinmap=None, toolchain, output, **_):
-    """Download the bitstream over JTAG the way BGM's configure_fpga_quartus
-    does: the first cable `quartus_pgm -l` lists (warn on more), `.sof` else
-    `.pof` (MAX II), the FPGA's index in the JTAG chain from the pinmap
+    """Download the bitstream over JTAG with quartus_pgm: the first cable
+    `quartus_pgm -l` lists (warn on more), `.sof` else `.pof` (MAX II), the
+    FPGA's index in the JTAG chain from the pinmap
     (`toolchain_options.quartus.jtag_device_index`: 2 behind the HPS on the
     DE1-SoC / DE10-Nano)."""
     bitstream = _find_bitstream(output)
@@ -279,7 +278,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     cables = _cables(quartus_pgm, env, output)
     if not cables:
         log.error("quartus_pgm lists no cable. Is the USB-Blaster connected? On Linux the udev rules for it "
-                  "(BGM: scripts/fpga/90-intel-fpga.rules -> /etc/udev/rules.d) must be installed; "
+                  "(an Intel FPGA .rules file in /etc/udev/rules.d) must be installed; "
                   "a stale jtagd can be stopped with `killall jtagd`.")
         return 1
     if len(cables) > 1:

@@ -1,6 +1,6 @@
 // =============================================================================
 // pll_gowin_gw5 — one Gowin Arora V PLL with up to three outputs, the
-// structural equivalent of the `Gowin_PLL` IP wrapper BGM generates per board
+// structural equivalent of the `Gowin_PLL` IP wrapper generated per board
 // (tang_mega_138k*: primitive PLL on GW5AST, tang_primer_25k: primitive PLLA
 // on GW5A). Codegen computes the dividers with tools/pll_solver.py
 // `gowin_gw5_pll`:
@@ -9,12 +9,12 @@
 //     f_vco = f_pfd * FBDIV_SEL * MDIV_SEL      (FBDIV 1..64, MDIV 2..128, 800..1600 MHz)
 //     clkout<i> = f_vco / ODIV<i>_SEL           (ODIV 1..128)
 //
-// checked against BGM's gowin_pll.ipc (138K Pro: 50 MHz, IDIV 1, FBDIV 1,
+// checked against a Gowin gowin_pll.ipc (138K Pro: 50 MHz, IDIV 1, FBDIV 1,
 // MDIV 16, ODIV0 100 -> Clkout0ExpectedFrequency=8).
 //
 // Only the parameters that differ per instance are exposed; everything else
-// keeps the primitive's defaults (BGM's generated file spells all of them
-// out with those same defaults).
+// keeps the primitive's defaults (the generated IP wrapper spells all of
+// them out with those same defaults).
 // =============================================================================
 
 module pll_gowin_gw5

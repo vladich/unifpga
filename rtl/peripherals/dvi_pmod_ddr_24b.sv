@@ -1,7 +1,6 @@
 // =============================================================================
 // dvi_pmod_ddr_24b — the 1BitSquared DVI Pmod in its 24-bit mode on an iCE40
-// board, exactly as BGM's icebreaker_dvi_24b_* board_specific_top.sv drives
-// it: BGM's `vga` raster from the pixel clock, the 8-8-8 colours and syncs
+// board: the `vga` raster from the pixel clock, the 8-8-8 colours and syncs
 // packed into a rising-edge and a falling-edge half, and sixteen SB_IO
 // PIN_OUTPUT_DDR cells clocked by the pixel clock. The Pmod pins are the
 // SB_IO pads, so this module is iCE40-only (SB_IO is a Lattice primitive;

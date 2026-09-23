@@ -76,13 +76,13 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
 
 def _gowin_options(board_pinmap):
     """`toolchain_options.gowin` from the pinmap: {set_device: str, options: [..]}
-    written from BGM's board_specific.tcl by tools/sync_from_bgm.py --gowin-options."""
+    (the device string and the board's configuration-pin options)."""
     return ((board_pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}
 
 
 def _select_set_device_args(board, configuration, board_pinmap=None):
     """Pick the args for `set_device`. Precedence: the pinmap's
-    `toolchain_options.gowin.set_device` (BGM's exact `<part> -name <name>
+    `toolchain_options.gowin.set_device` (the exact `<part> -name <name>
     -device_version <ver>`), the board's `GowinDeviceArgs`, then the bare Part."""
     args = _gowin_options(board_pinmap).get("set_device")
     if args:
@@ -107,7 +107,7 @@ def _select_set_device_args(board, configuration, board_pinmap=None):
 def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step, options=()):
     """Generate the gw_sh batch script. The Gowin TCL flow is:
         set_device <part> [-name <name>] [-device_version <ver>]
-        set_option -use_<pin-group>_as_gpio 1   (per board, from BGM's .tcl)
+        set_option -use_<pin-group>_as_gpio 1   (per board, from the pinmap)
         add_file <each .sv .v>
         add_file -type cst <cst>
         add_file -type sdc <sdc>
@@ -124,8 +124,8 @@ def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step, optio
     lines.append("set_option -top_module top")
     lines.append("set_option -output_base_name {}".format(PROJECT_NAME))
     # Configuration pins reused as user I/O (MSPI/SSPI flash lines, DONE,
-    # READY, CPU, I2C): without these the LCD/HDMI/TM1638 pins BGM uses on
-    # the Tang boards are illegal for the placer.
+    # READY, CPU, I2C): without these the LCD/HDMI/TM1638 pins on the Tang
+    # boards are illegal for the placer.
     for opt in options:
         lines.append("set_option -{} 1".format(str(opt).lstrip("-")))
     for sv in sv_files:
@@ -184,7 +184,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     with open(tcl_path, "w") as f:
         f.write(_emit_tcl(device_args, sv_files, cst_path, sdc_path, output, step, gowin_opts))
     log.info("Wrote %s", tcl_path)
-    # BGM also writes fpga_project.gprj for the IDE (05_run_gui_for_fpga_synthesis)
+    # A .gprj project file lets the Gowin IDE open the same build
     gprj = codegen.emit_gowin_gprj(board_pinmap, sv_files, cst_path, sdc_path)
     if gprj:
         gprj_path = os.path.join(output, PROJECT_NAME + ".gprj")
@@ -253,8 +253,8 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         log.info("[dry run] Would program %s", bit)
         return 0
 
-    # BGM configure_fpga_gowin: openFPGALoader when it is installed (Linux),
-    # the proprietary programmer_cli otherwise (macOS / Windows, or no loader)
+    # openFPGALoader when it is installed (Linux), the proprietary
+    # programmer_cli otherwise (macOS / Windows, or no loader)
     loader = shutil.which("openFPGALoader") if sys.platform.startswith("linux") else None
     if loader is not None:
         cmd = [loader] + (codegen.openfpgaloader_args(board_pinmap, board.get("Id")) or ["-b", "tangnano9k"]) + [bit]
@@ -270,7 +270,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
 
     install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
     env = _gowin_env(install_dir)
-    # programmer_cli wants the family name BGM's tcl gives with `-name`
+    # programmer_cli wants the family name `set_device` gives with `-name`
     # (GW1NR-9C, GW2AR-18C, GW5AST-138B); the LittleBee 9K default is what the
     # old hard-coded value was.
     cmd = [pgm, "--device", _programmer_device(board, board_pinmap), "--operation_index", "2", "--fsFile", bit]

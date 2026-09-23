@@ -8,14 +8,9 @@ yosys+nextpnr flows (openxc7 for Xilinx 7-series, icestorm for iCE40, trellis
 for ECP5, apicula for Gowin, mistral for Cyclone V, himbaechel-gatemate for
 Cologne Chip GateMate) — without changing the design.
 
-> **Status (2026-09):** an audit against upstream BGM found the generated
-> hardware wrong on most configurations (7-segment wiring, clock frequency,
-> reset, GPIO direction, PLLs, TM1638 on `_no_tm1638` variants, ...).
-> The per-configuration state is enforced as a ratchet by
-> `tests/test_issue_gate.py` (baseline `tests/known_issues.yml`); the bugs
-> found in BGM itself are in [`BGM_BUGS.md`](BGM_BUGS.md). Until a
-> configuration's row reads `clean` and it has passed the BGM parity check,
-> treat its output as unverified.
+> **Status:** configurations are checked by building them with their
+> toolchains and by simulating the generated tops; few have been run on a
+> physical board. Treat a board's first run as a bring-up.
 
 ## Quick start
 
@@ -23,17 +18,13 @@ Cologne Chip GateMate) — without changing the design.
 ./unifpga board          # pick your board once (remembered in settings.yml)
 cd designs/1_06_binary_counter
 ../../unifpga build      # or: ./unifpga build 1_06_binary_counter from the repo root
-../../unifpga program
-
-BGM lab script | `unifpga` command
---- | ---
-`01_clean.bash` | `unifpga clean` (`--all`: every design)
-`02_simulate_rtl.bash` | `unifpga sim` (Icarus Verilog on the design's `tb.sv`, imported from BGM for 88 designs, then gtkwave / surfer)
-`03_synthesize_for_fpga.bash` + `04_configure_fpga.bash` | `unifpga program` (`unifpga build` stops after the bitstream)
-`05_run_gui_for_fpga_synthesis.bash` | `unifpga gui`
-`06_choose_another_fpga_board.bash` | `unifpga board`
-`check_setup_and_choose_fpga_board.bash` | `unifpga board`, then `unifpga prepare --all` (the run directories of every design, no tools run; `board` offers it after an interactive choice)
+../../unifpga program    # build and load the bitstream onto the board
 ```
+
+Other commands: `unifpga sim` (Icarus Verilog on the design's `tb.sv`, then
+gtkwave / surfer; 88 designs ship a testbench), `unifpga gui` (the last build
+in the vendor GUI), `unifpga prepare --all` (the run directories of every
+design, no tools run), `unifpga clean` (`--all`: every design).
 
 `build` writes everything (generated `top.sv`, constraints, the toolchain
 project and bitstream) to `run/<configuration>/` inside the design directory;
@@ -71,41 +62,12 @@ checks against the resolved configuration before invoking any tool. Boards
 that don't meet the requirements **skip** instead of failing — surfacing the
 real reason cleanly.
 
-## Relationship to basics-graphics-music
+## Examples
 
-This project is a re-architecture of, and tightly coupled to, the
+The example designs in `designs/` and most board pin maps started from
 [basics-graphics-music](https://github.com/yuri-panchul/basics-graphics-music)
-(BGM) repo. uni-fpga consumes BGM as a source of truth for example designs:
-
-- **Designs** in `designs/<name>/` are mechanically adapted from
-  `basics-graphics-music/labs/.../<name>/lab_top.sv` by `tools/adapt_designs.py`.
-  The adapter retargets each design to uni-fpga's canonical port list (e.g.
-  `key` → `btn`, `mic` → `mic_sample`/`mic_valid`), strips per-board includes
-  that codegen replaces, infers `// requires:` blocks from access patterns,
-  and applies a small per-toolchain compatibility pass (move package imports
-  out of ANSI port lists, strip `<param>'(expr)` size casts, etc.).
-- **Board pinmaps** in `config/boards/<id>.yml` are auto-curated from BGM's
-  `boards/<id>/board_specific.{xdc,qsf,cst,pcf,lpf,peri.xml}` files by
-  `tools/curate_board.py`. Each pin bank we name (`onboard_leds`,
-  `onboard_7seg.anodes`, `pmod_jc`, `gpio_0`, …) maps directly to the rows
-  of those BGM constraint files.
-- **Configurations** (the per-board peripheral attachment plans) in
-  `config/configurations/<id>.yml` are bootstrapped by
-  `tools/generate_variants.py` from BGM directory naming conventions
-  (`tang_nano_9k_lcd_480_272_no_tm1638_yosys`, `nexys4_ddr_default`, etc.).
-
-The two repos are expected to live as **siblings** in a parent directory:
-
-```
-some-parent/
-├── basics-graphics-music/   # upstream (read-only here)
-└── uni-fpga/                # this repo
-```
-
-`tools/adapt_designs.py`, `tools/curate_board.py`, and
-`tools/generate_variants.py` walk into `../basics-graphics-music/` directly.
-You don't need to modify BGM — uni-fpga consumes it and writes adapted
-artifacts into `designs/`, `config/boards/`, and `config/configurations/`.
+by Yuri Panchul and contributors; see
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for their licences.
 
 ## What's in the box
 
@@ -121,18 +83,16 @@ artifacts into `designs/`, `config/boards/`, and `config/configurations/`.
 | `config/board_producers.yml` | Registry of board makers (75 entries: Digilent, Terasic, Sipeed, Trenz, BittWare, …) with URL, country, founding year, categories, description. Each board's `BoardProducer:` references one of these by Id. |
 | `config/board_features.yml` | Vocabulary of board-feature tokens (91 entries across `memory`, `connectivity`, `display`, etc.). Boards may list `Features: [ethernet_1gbe, hdmi_out, pmod_x4, …]` for filtering / display. |
 | `config/configurations/<id>.yml` | Board × toolchain × peripheral attachments (134 configurations): the hardware, what sits on which pins, polarity, widths, clocks, I/O standards. |
-| `config/bgm/<id>.yml` | BGM parity overlay: how basics-graphics-music's board top uses that hardware for its labs (which key resets, the TM1638 as the lab's key/led/digit bus, keys as switches, mirrored bits, the lab clock, pins that follow the reset, what `uart_rx` reads with no UART pin, a lab bus wider than the bits wired to it (`lab_width`), components BGM ties off (`drop`), the HEX decimal point routed onto LEDs (`bind`), a header the lab only drives (`direction: out`)). Applied on top of the configuration by default; `synthesize.py --no-bgm-overlay` generates the generic composition. Written by `tools/sync_from_bgm.py`, proved by `tools/equiv_check.py`. |
+| `config/profiles/<id>.yml` | Design-wiring profile: how a configuration's hardware is presented to `design_top` (which key resets, a TM1638 as the key/led/digit bus, keys as switches, mirrored bits, the lab clock, pins that follow the reset, what `uart_rx` reads with no UART pin, a bus wider than the bits wired to it (`lab_width`), components tied off (`drop`), the HEX decimal point routed onto LEDs (`bind`), a header the design only drives (`direction: out`)). Applied on top of the configuration by default; `synthesize.py --no-profile` (or `UNIFPGA_PROFILE=0`) generates the generic composition. |
 | `config/peripherals/*.yml` | 37 peripheral definitions (`led_bank`, `vga_4bit`, `pmod_12pin`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
 | `config/capabilities/*.yml` | 12 abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules. |
 | `rtl/peripherals/*.sv` | Driver SV modules for hardware peripherals (TM1638 controller, VGA, I²S mic, etc.). |
 | `rtl/peripherals/designs_common/*.sv` | Reusable helpers (`seven_segment_display`, `shift_reg`, `strobe_gen`, …). |
 | `rtl/peripherals/design_top_interface.sv` | Canonical `design_top` port list — copy and add your logic. |
-| `designs/<name>/design_top.sv` | 92 designs adapted from BGM. |
+| `designs/<name>/design_top.sv` | 97 example designs. |
 | `tools/codegen.py` | Generates `top.sv` and per-toolchain constraint files from a resolved configuration. |
-| `tools/adapt_designs.py` | Mechanically rewrites BGM designs into uni-fpga form. |
-| `tools/curate_board.py` | Builds `config/boards/<id>.yml` from BGM constraint files. |
-| `tools/generate_variants.py` | Bootstraps `config/configurations/<id>.yml` from BGM directory naming. |
-| `tools/equiv_check.py` | Proves a configuration's generated top is the same circuit as BGM's board top: both sides co-simulated with Icarus on the physical pins under identical stimulus, every differing pin named with its port on each side (`remote --host <box>`, `summary`). `tools/equiv_lab` is the lab on both sides, `rtl/sim/equiv_stubs.sv` the extra vendor stand-ins. |
+| `tools/lint_generated.py` | Lints every generated top with Verilator (locally or `remote --host <box>`). |
+| `tools/verify_pinmap_against_vendor.py` | Checks board pinmaps against the vendor constraint files (Digilent XDC so far). |
 | `toolchains/<id>/<id>.py` | Per-toolchain driver. Each defines `synthesize(...)` and `program(...)`. |
 
 ## Toolchain coverage
@@ -212,10 +172,12 @@ intended SKIP, not a failure.
 - **A new design**: copy `rtl/peripherals/design_top_interface.sv` to
   `designs/<your_design>/design_top.sv`, add your logic in the body, optionally
   add a `// requires:` block.
-- **A new board**: drop the BGM-style constraint file under
-  `basics-graphics-music/boards/<id>/` and run
-  `python3 tools/curate_board.py` then `python3 tools/generate_variants.py`.
-  Hand-edit the configuration's peripheral `attach:` list as needed.
+- **A new board**: write its pinmap under
+  `config/boards/<producer>/<family>/<id>.yml` (copy a board on a similar
+  chip), list it in the family catalog `config/boards/<producer>/<family>.yml`,
+  and add a configuration `config/configurations/<id>.yml` that attaches
+  peripherals to its pin banks. For Digilent boards,
+  `tools/verify_pinmap_against_vendor.py` checks the pins against the vendor XDC.
 - **A new toolchain**: add `toolchains/<id>/<id>.py` exposing `synthesize`
   and `program`, plus a `config/toolchains.yml` entry. The twelve existing
   drivers are good templates — `vivado.py` for vendor TCL flows,
@@ -241,9 +203,10 @@ intended SKIP, not a failure.
 │   │   │   └── artix_7/<id>.yml  # per-board pinmaps
 │   │   └── ...                # 76 family catalogs, 65 pinmaps
 │   ├── configurations/<id>.yml # per-config peripheral attachments (134 configs)
+│   ├── profiles/<id>.yml      # design-wiring profiles
 │   ├── peripherals/*.yml      # 37 peripheral definitions
 │   └── capabilities/*.yml     # 12 abstract capabilities
-├── designs/<name>/design_top.sv  # 92 designs (BGM-derived)
+├── designs/<name>/design_top.sv  # 97 example designs
 ├── rtl/
 │   └── peripherals/              # SV peripheral drivers
 │       ├── designs_common/       # reusable helpers
@@ -263,9 +226,7 @@ intended SKIP, not a failure.
 │   └── nextpnr_gatemate/         #  Cologne Chip GateMate (himbaechel uarch)
 ├── tools/
 │   ├── codegen.py             # top.sv + constraint emitters
-│   ├── adapt_designs.py       # BGM → uni-fpga design adapter
-│   ├── curate_board.py        # BGM → board pinmap
-│   ├── generate_variants.py   # BGM → configuration bootstrap
+│   ├── cli.py                 # the ./unifpga command line
 │   ├── design_requirements.py # // requires: parser
 │   ├── sweep_boards.sh        # board × design grid run
 │   └── check_all_designs.sh   # smoke-check every design

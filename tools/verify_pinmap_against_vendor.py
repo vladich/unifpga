@@ -79,7 +79,7 @@ DIGILENT_PORT_MAP = {
     # Switches / LEDs / buttons / reset.
     "SW":         "onboard_switches",     # bus
     "LED":        "onboard_leds",
-    # Button order matches tools/curate_board.py:_named_button — C-U-L-R-D
+    # Button order matches the pinmaps' onboard_buttons — C-U-L-R-D
     # (center, up, left, right, down — clockwise from up). NOT alphabetical.
     "BTNC":       ("onboard_buttons", 0),
     "BTNU":       ("onboard_buttons", 1),
@@ -250,7 +250,7 @@ def map_digilent_port(port, idx, pmod_zero_based=False):
     (Arty: `led`, `sw`, `btn`) and uppercase (Nexys 4: `LED`, `SW`, `BTN`)
     in different XDCs.
 
-    Pmod numbering: tools/curate_board.py normalises both 0-based-contiguous
+    Pmod numbering: the pinmaps normalise both 0-based-contiguous
     (Arty/Zybo: ja[0..7]) and 1-based-with-gaps (Nexys/Basys: JA[1..4,7..10])
     onto a single 0-based-contiguous form. To match, we re-apply that
     normalisation here when comparing — the caller passes `pmod_zero_based`

@@ -1,8 +1,7 @@
 """
 Lost / invented components: the i2s_audio_out, gpio_header, pin_tie, wm8731
 and ADV7513 contracts through codegen, the `tie:` expansion, the broadcast
-audio_out capability, BGM-faithful QSF settings and yosys synth options, and
-the pure helpers of tools/sync_components.py.
+audio_out capability, and the QSF project settings and yosys synth options.
 """
 
 import logging
@@ -56,7 +55,7 @@ def test_pin_tie_drives_and_constrains_the_pin():
 
 
 def test_i2s_audio_out_broadcasts_the_sound_bus():
-    """BGM nexys_a7_100: PWM amplifier plus I2S DACs on JB and JC hear `sound`."""
+    """nexys_a7_100: PWM amplifier plus I2S DACs on JB and JC hear `sound`."""
     r = config_init.resolve_configuration("nexys_a7_100")
     r["peripherals"] = [a for a in r["peripherals"] if a["peripheral_id"] != "i2s_audio_out"]
     r["peripherals"].append(_attach("i2s_audio_out", {"mclk": "pmod_jb[0]", "bclk": "pmod_jb[1]",
@@ -78,13 +77,13 @@ def test_i2s_optional_pins_and_pa_enable():
     r["peripherals"].append(_attach("i2s_audio_out", {"bclk": "onboard_headphone.bck", "lrclk": "onboard_headphone.ws",
                                                       "sdata": "onboard_headphone.din", "pa_en": "onboard_pa_enable"}))
     top = codegen.emit_top_sv(r, strict=True)
-    assert ".mclk()," in top                                    # BGM leaves MCLK unconnected
-    assert "assign onboard_pa_enable = 1'b1;" in top           # BGM: assign PA_EN = 1'b1
+    assert ".mclk()," in top                                    # MCLK left unconnected
+    assert "assign onboard_pa_enable = 1'b1;" in top           # assign PA_EN = 1'b1
     assert "output onboard_pa_enable" in top
 
 
 def test_gpio_header_concatenation_order():
-    """BGM de0_cv `.gpio ( { GPIO_0, GPIO_1 } )`: the first attach is the LSB half."""
+    """de0_cv `.gpio ( { GPIO_0, GPIO_1 } )`: the first attach is the LSB half."""
     r = config_init.resolve_configuration("de0_cv")
     r["peripherals"] = [a for a in r["peripherals"] if a["peripheral_id"] not in ("gpio_header", "pmod_12pin")]
     r["peripherals"].append(_attach("gpio_header", {"io": "gpio_1"}, {"width": 36}))
@@ -159,7 +158,7 @@ _SIG.update({"LED_R_N": "R0", "M_CLK": "M0", "M_LRSEL": "M1", "M_DATA": "M2", "P
 
 
 def _hdr(*ports):
-    """BGM-style port list, one declaration per line (bgm_oracle.top_ports)."""
+    """A Verilog-2001 port list, one declaration per line."""
     return "module board_specific_top\n(\n" + ",\n".join("    " + p for p in ports) + "\n);\n"
 
 
@@ -170,8 +169,8 @@ _HDR_LED = _hdr("input CLK", "output [2:0] LED")
 _HDR_LED2 = _hdr("input CLK", "output [2:0] LED", "output LED_R_N")
 
 
-def test_openfpgaloader_args_follow_bgm_board_info():
-    """BGM configure_fpga_yosys: --cable (colorlight), --ftdi-channel (karnix 0,
+def test_openfpgaloader_args_follow_the_board():
+    """openFPGALoader: --cable (colorlight), --ftdi-channel (karnix 0,
     orangecrab 1), -b BOARD; the Gowin table when the pinmap says nothing."""
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_ftdi_channel": "1"}}}) == ["--ftdi-channel", "1"]
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_cable": "ft2232"}}}) == ["--cable", "ft2232"]
@@ -182,7 +181,7 @@ def test_openfpgaloader_args_follow_bgm_board_info():
     assert codegen.openfpgaloader_args(r["board_pinmap"], "orangecrab_ecp5") == ["--ftdi-channel", "1"]
 
 
-def test_qsf_has_bgm_project_template_lines():
+def test_qsf_has_project_template_lines():
     r = config_init.resolve_configuration("de10_nano")
     qsf = codegen.emit_qsf(r, "5CSEBA6U23I7")
     assert "set_global_assignment -name NUM_PARALLEL_PROCESSORS 4" in qsf
@@ -201,8 +200,8 @@ def test_quartus_cable_list_parsing(monkeypatch):
 
 
 def test_gowin_ide_project_file_from_the_pinmap_device():
-    """BGM writes fpga_project.gprj for the IDE (05_run_gui): the <Device>
-    line is board data synced from BGM's template; without it no project."""
+    """A .gprj project file for the Gowin IDE: the <Device> line is board
+    data from the pinmap; without it no project."""
     assert codegen.emit_gowin_gprj({}, ["a.sv"], "x.cst", "x.sdc") is None
     pm = {"toolchain_options": {"gowin": {
         "gprj_device": '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>'}}}
@@ -214,7 +213,7 @@ def test_gowin_ide_project_file_from_the_pinmap_device():
     r = config_init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
     assert "gw1nr9c-004" in codegen.emit_gowin_gprj(r["board_pinmap"], [], None, None)
     r = config_init.resolve_configuration("tang_nano_20k_hdmi_tm1638")
-    assert "gw2ar18c-000" in codegen.emit_gowin_gprj(r["board_pinmap"], [], None, None)   # majority of BGM's 7 variants
+    assert "gw2ar18c-000" in codegen.emit_gowin_gprj(r["board_pinmap"], [], None, None)   # the majority of the 7 variants
 
 
 def test_nextpnr_gui_args_follow_the_environment(monkeypatch):
@@ -224,8 +223,8 @@ def test_nextpnr_gui_args_follow_the_environment(monkeypatch):
     assert codegen.nextpnr_gui_args() == ["--gui"]
 
 
-def test_efinity_command_is_bgm_project_mode():
-    """BGM synthesize_for_fpga_efinity / configure_fpga_efinity: efx_run.py
+def test_efinity_command_is_project_mode():
+    """Efinity project mode: efx_run.py
     --pgm_opts source=work_pnr/<p>.lbf --pgm_opts dest=work_pnr/<p>.hex
     --flow compile <project.xml>; programming is --flow program."""
     from toolchains.efinity import efinity as ef
@@ -241,8 +240,8 @@ def test_efinity_command_is_bgm_project_mode():
 
 
 def test_offset_binary_sample_is_centred_and_sign_extended():
-    """The Pmod MIC3's 12-bit ADC code becomes the 24-bit signed sample the
-    way BGM wires it: `mic_12 - 12'h800`, sign-extended."""
+    """The Pmod MIC3's 12-bit ADC code becomes the 24-bit signed sample:
+    `mic_12 - 12'h800`, sign-extended."""
     r = config_init.resolve_configuration("saylinx_pmod_mic3")
     top = codegen.emit_top_sv(r)
     inst = next(l for l in top.splitlines() if "digilent_pmod_mic3_spi_receiver" in l and " i_pmod_mic3_" in l)
@@ -271,7 +270,7 @@ def test_open_drain_pwm_and_eight_bit_sample():
     assert "        .pwm_o(i_pwm_amp_{}_pwm_o)".format(idx) in top
     assert "    assign onboard_pwm_amp_pwm = i_pwm_amp_{}_pwm_o ? 1'bz : 1'b0;".format(idx) in top
     assert "assign onboard_pwm_amp_sd = 1'b1;" in top
-    # the RGB LEDs BGM ties off: dropped by the overlay, pins tied
+    # the RGB LEDs the design ties off: dropped by the profile, pins tied
     assert not any(a["peripheral_id"] == "rgb_led" for a in r["peripherals"])
     assert "assign onboard_rgb_led_16_r = 1'b0;" in top and "assign onboard_rgb_led_17_b = 1'b0;" in top
     assert ".w_rgb_led(0)," in top
@@ -313,10 +312,10 @@ def test_gpio_header_direction_out_and_header_uart():
     assert ".uart_rx(cap_serial_console_rx)" in top
 
 
-def test_uart_rx_idle_level_follows_bgm():
-    """No UART pin: the generic top reads the idle line (1); BGM's overlay
-    says 0 where its top leaves `.uart_rx ( )` unconnected (de1_soc) and 1
-    where it writes `wire UART_RX = '1` (de10_nano)."""
+def test_uart_rx_idle_level_follows_the_profile():
+    """No UART pin: the generic top reads the idle line (1); the profile
+    says 0 where the design leaves `.uart_rx ( )` unconnected (de1_soc) and
+    1 where it writes `wire UART_RX = '1` (de10_nano)."""
     for cid, level in (("de1_soc", 0), ("de10_nano", 1)):
         r = config_init.resolve_configuration(cid)
         assert not any(a["peripheral_id"].startswith("uart") for a in r["peripherals"])
@@ -328,7 +327,7 @@ def test_uart_rx_idle_level_follows_bgm():
     r["configuration"]["uart_rx"] = 2
     with pytest.raises(codegen.CodegenError):
         codegen.emit_top_sv(r)
-    # BGM's own UART pins become the uart_2wire attach (nexys4: rx only)
+    # the board's own UART pins become the uart_2wire attach (nexys4: rx only)
     r = config_init.resolve_configuration("nexys4")
     uart = next(a for a in r["peripherals"] if a["peripheral_id"] == "uart_2wire")
     assert list(uart["bind"]) == ["rx"]
@@ -336,9 +335,9 @@ def test_uart_rx_idle_level_follows_bgm():
 
 
 def test_partially_used_led_bank_stays_whole():
-    """de0_cv: BGM's lab drives LEDR [3:0]; the bank keeps its ten LEDs in
-    the configuration (hardware), the overlay marks the six the lab does
-    not reach (--lab-bits) and puts the HEX decimal point on them."""
+    """de0_cv: the lab drives LEDR [3:0]; the bank keeps its ten LEDs in
+    the configuration (hardware), the profile marks the six the lab does
+    not reach and puts the HEX decimal point on them."""
     r = config_init.resolve_configuration("de0_cv")
     leds = next(a for a in r["peripherals"] if a["peripheral_id"] == "led_bank")
     assert leds["params"]["width"] == 10 and leds["bind"] == {"led": "onboard_leds"}
@@ -346,7 +345,7 @@ def test_partially_used_led_bank_stays_whole():
     assert ".w_led(4)," in codegen.emit_top_sv(r)
 
 
-def test_i2s_dac_format_and_hdmi_widths_follow_bgm():
+def test_i2s_dac_format_and_hdmi_widths():
     """tang_primer_20k_dock: `i2s_audio_out # (.align_right (1'b1), .offset_by_one_cycle (1'b0))`
     (PT8211); de10_nano / c5gx: HDMI_TX_D carries 8-bit colours."""
     r = config_init.resolve_configuration("tang_primer_20k_dock_hdmi_tm1638")
@@ -360,11 +359,11 @@ def test_i2s_dac_format_and_hdmi_widths_follow_bgm():
         assert ".W_RED(8), .W_GREEN(8), .W_BLUE(8)" in codegen.emit_top_sv(r)
 
 
-def test_optional_signal_bgm_ties_off_is_unbound():
+def test_optional_signal_tied_off_is_unbound():
     """tang_nano_20k LCD: `.LCD_HSYNC ( )` with `assign LCD_HS = 1'b0` — the
-    overlay unbinds hs / vs (the driver's own outputs) and ties the pins; the
+    profile unbinds hs / vs (the driver's own outputs) and ties the pins; the
     backlight, a pin the peripheral drives from its `bl` parameter, stays
-    bound and follows that parameter (--clock-tree)."""
+    bound and follows that parameter."""
     r = config_init.resolve_configuration("tang_nano_20k_lcd_480_272_no_tm1638")
     lcd = next(a for a in r["peripherals"] if a["peripheral_id"] == "lcd_480_272")
     assert "hs" not in lcd["bind"] and "vs" not in lcd["bind"] and lcd["bind"]["bl"] == "onboard_lcd.bl"
@@ -383,10 +382,10 @@ def test_optional_signal_bgm_ties_off_is_unbound():
     assert lcd0["bind"]["hs"] == "onboard_lcd.hs"
 
 
-def test_exact_rpll_dividers_from_bgm():
-    """tang_nano_9k_lcd_800_480: BGM's gowin_rpll.v takes the 32.4 MHz LCD
+def test_exact_rpll_dividers_are_pinned():
+    """tang_nano_9k_lcd_800_480: the reference rPLL takes the 32.4 MHz LCD
     clock from CLKOUTD (64.8 MHz / 2); our solver reached 32.4 MHz on CLKOUT
-    with other dividers and the LCD counters drifted against BGM's."""
+    with other dividers and the LCD counters drifted against the reference."""
     from tools import pll_solver
     r = {"mhz": 32.4, "tolerance_pct": 0.5, "pll": {"idiv": 4, "fbdiv": 23, "odiv": 4, "sdiv": 4, "clkoutd": True}}
     sol = codegen._pinned_rpll("cfg", "pixel", 27.0, r)
@@ -401,9 +400,9 @@ def test_exact_rpll_dividers_from_bgm():
     assert ".IDIV_SEL(4), .FBDIV_SEL(23), .ODIV_SEL(4), .DYN_SDIV_SEL(4), .USE_CLKOUTD(1'b1)" in top
 
 
-def test_tmds_timing_follows_bgm_vga_clock():
-    """The TMDS driver's x / y come from BGM's `vga` on the clock BGM runs it
-    on: the serial clock (Gowin DVI_TX boards), the lab clock (Tang Nano 4K,
+def test_tmds_timing_follows_the_vga_clock():
+    """The TMDS driver's x / y come from `vga` on the clock the design runs
+    it on: the serial clock (Gowin DVI_TX boards), the lab clock (Tang Nano 4K,
     colorlight), with that clock's MHz for the pixel enable."""
     for cid, timing, mhz in (("tang_nano_9k_hdmi_tm1638", "serial", 252), ("tang_nano_4k_hdmi_no_tm1638", "lab", "clk_mhz"),
                              ("colorlight75b_tm1638_ecp5_yosys", "lab", "clk_mhz")):
@@ -426,7 +425,7 @@ def test_tmds_timing_follows_bgm_vga_clock():
         cg._resolve_ref("clock.other.mhz", {"peripheral_id": "x"}, {}, {})
 
 
-def test_dvi_timing_where_bgm_instantiates_dvi_top():
+def test_dvi_timing_where_the_design_instantiates_dvi_top():
     for cid in ("a7_lite_35t", "tang_primer_20k_dock_hdmi_tm1638_yosys"):
         r = config_init.resolve_configuration(cid)
         hdmi = next(a for a in r["peripherals"] if a["peripheral_id"] == "hdmi_tmds")

@@ -129,7 +129,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
 
     # ---- yosys synth_nexus ----
-    # `-D __ICARUS__`: BGM designs use `\`ifdef __ICARUS__` to gate older
+    # `-D __ICARUS__`: the designs use `\`ifdef __ICARUS__` to gate older
     # Verilog syntax against SV-2009 `'{ … }` array-init that yosys still
     # rejects.
     # `setundef -undriven -zero`: same fix as nextpnr-mistral / gatemate —

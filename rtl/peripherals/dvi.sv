@@ -2,18 +2,18 @@
 
 module dvi_top
 # (
-    // The timing generator is BGM's `vga` (hpos / vpos count through the
-    // blanking, as every BGM board hands them to the lab), clocked by the
-    // serial clock (Gowin DVI_TX boards: `vga # (.CLK_MHZ (serial_clk_mhz))`
-    // on serial_clk), the board / lab clock (Tang Nano 4K, marsohod3gw2,
+    // The timing generator is `vga` (rtl/peripherals/vga.sv; hpos / vpos
+    // count through the blanking, as every board hands them to the lab),
+    // clocked by the serial clock (Gowin DVI_TX boards:
+    // `vga # (.CLK_MHZ (serial_clk_mhz))` on serial_clk), the board / lab clock (Tang Nano 4K, marsohod3gw2,
     // colorlight) or the pixel clock itself (Tang Primer 25K): TIMING_MHZ is
     // that clock's frequency, the pixel enable is TIMING_MHZ / PIXEL_MHZ.
     parameter int TIMING_MHZ = 252,
     parameter int PIXEL_MHZ  = 25,
     // "vga": the generator above; "dvi": this module's own dvi_sync on the
     // pixel clock (x / y zero outside the visible area, hsync / vsync
-    // registered) — what BGM's boards that instantiate dvi_top get (a7_lite,
-    // tang_primer_20k_dock_hdmi_*_yosys)
+    // registered) — what boards that instantiate dvi_top directly get
+    // (a7_lite, Tang Primer 20K Dock)
     parameter     GENERATOR  = "vga"
 )
 (
@@ -49,7 +49,7 @@ module dvi_top
     // Sync
     // ------------------------------------------------------------------------
 
-    // BGM's vga timing generator (rtl/peripherals/vga.sv): hpos / vpos count
+    // The vga timing generator (rtl/peripherals/vga.sv): hpos / vpos count
     // through the blanking, hsync / vsync active low, display_on = DE.
     generate
         if (GENERATOR == "dvi") begin : g_dvi_sync

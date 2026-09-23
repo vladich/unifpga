@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """
-`./unifpga` -- the short command line, modelled on BGM's lab scripts.
+`./unifpga` -- the short command line.
 
-BGM's flow: choose a board once (scripts/06_choose_another_fpga_board), then
-run 03_synthesize_for_fpga / 04_configure_fpga / 01_clean inside a lab
-directory with no parameters; the output lands in the lab's run/ directory.
-The equivalent here:
+Choose a board once, then build / program / clean inside a design directory
+with no parameters; the output lands in the design's run/ directory:
 
     ./unifpga board                # numbered menu; remembered in settings.yml
     cd designs/1_06_binary_counter
@@ -64,15 +62,11 @@ Quick start:
   ../../unifpga build             # synthesize into run/<configuration>/
   ../../unifpga program           # synthesize and load the bitstream onto the board
 
-BGM's lab scripts and their equivalents here:
-  01_clean.bash                    unifpga clean [--all]
-  02_simulate_rtl.bash             unifpga sim        (tb.sv, Icarus Verilog, waveform viewer)
-  03_synthesize_for_fpga.bash      unifpga program    (BGM synthesizes and configures in one go;
-                                   unifpga build stops after the bitstream)
-  04_configure_fpga.bash           unifpga program
-  05_run_gui_for_fpga_synthesis    unifpga gui
-  06_choose_another_fpga_board     unifpga board
-  check_setup_and_choose_fpga_board  unifpga board, then unifpga prepare --all
+Other commands:
+  unifpga clean [--all]            remove run/ (of every design with --all)
+  unifpga sim                      simulate tb.sv with Icarus Verilog, open a waveform viewer
+  unifpga gui                      open the last build in the vendor GUI
+  unifpga prepare [--all]          write the run directories without running the tools
 """
 
 
@@ -354,7 +348,7 @@ def cmd_board(args):
     if rc == 0 and sys.stdin.isatty():
         try:
             reply = input("Write the run directories of every design for this board now "
-                          "(BGM's check_setup offer; no tools are run)? [y/N] ").strip().lower()
+                          "(no tools are run)? [y/N] ").strip().lower()
         except EOFError:
             reply = ""
         if reply in ("y", "yes"):
@@ -376,9 +370,8 @@ LOG_FORMAT = "%(levelname)s %(name)s: %(message)s"
 
 
 def _run_synthesize(argv, out_dir):
-    """synthesize.main() with its log also written to <out_dir>/log.txt
-    (BGM tees every step into the lab's log.txt); on failure the error lines
-    of that log are repeated, as BGM's `grep -i -A 5 error "$log"` does."""
+    """synthesize.main() with its log also written to <out_dir>/log.txt; on
+    failure the error lines of that log are repeated (`grep -i -A 5 error`)."""
     os.makedirs(out_dir, exist_ok=True)
     log_path = os.path.join(out_dir, LOG_NAME)
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)      # synthesize's own call is then a no-op
@@ -422,7 +415,7 @@ def cmd_program(args):
 
 
 def cmd_clean(args):
-    if getattr(args, "all", False):                  # BGM clean_all.bash: every lab's run/
+    if getattr(args, "all", False):                  # every design's run/
         removed = 0
         for name in list_designs():
             if remove_run_dir(os.path.join(DESIGNS_DIR, name)):
@@ -439,7 +432,7 @@ def cmd_clean(args):
 
 
 # ---------------------------------------------------------------------------
-# sim (BGM 02_simulate_rtl: Icarus Verilog + gtkwave / surfer) and gui (05)
+# sim (Icarus Verilog + gtkwave / surfer) and gui
 # ---------------------------------------------------------------------------
 
 TB_NAME = "tb.sv"
@@ -447,7 +440,7 @@ SIM_DIR_NAME = "sim"
 
 
 def _iverilog_language_option(version_text):
-    """-g2012, or -g2023 for Icarus 14+ (BGM icarus_verilog_choose_language_option)."""
+    """-g2012, or -g2023 for Icarus 14+."""
     import re
     m = re.search(r"Icarus Verilog version (\d+)\.", version_text or "")
     if m and int(m.group(1)) >= 14:
@@ -456,15 +449,15 @@ def _iverilog_language_option(version_text):
 
 
 def sim_sources(design_dir):
-    """The files BGM's run_icarus_verilog compiles, transposed: the design
+    """The files a simulation compiles: the design
     directory's *.sv / *.v (tb.sv included), the design-common helpers, and
     the peripheral models the design directory does not shadow."""
     rtl = os.path.join(REPO, "rtl")
-    files = [os.path.join(rtl, "sim", "bgm_timescale.sv")]          # `timescale 1 ns / 1 ps first, as config.svh did
+    files = [os.path.join(rtl, "sim", "timescale.sv")]          # `timescale 1 ns / 1 ps first
     files += sorted(glob.glob(os.path.join(design_dir, "*.sv")) + glob.glob(os.path.join(design_dir, "*.v")))
     files += sorted(glob.glob(os.path.join(design_dir, "cpu", "*.sv")) + glob.glob(os.path.join(design_dir, "cpu", "*.v")))
-    # BGM compiles peripherals/*.sv too (its LCD testbenches instantiate the
-    # panel timing modules); only tb's hierarchy is elaborated (-s tb), so
+    # peripherals/*.sv too (LCD testbenches instantiate the panel timing
+    # modules); only tb's hierarchy is elaborated (-s tb), so
     # unreferenced models cost nothing
     local = {os.path.basename(f) for f in files}
     for sub, pattern in (("peripherals/designs_common", "*.sv"), ("peripherals", "*.sv"), ("peripherals", "*.v"),
@@ -475,9 +468,8 @@ def sim_sources(design_dir):
 
 
 def sim_command(design_dir, out_dir, lang="-g2012"):
-    # BGM's labs/common/config.svh defines SIMULATION under `ifdef __ICARUS__
-    # (fifo_monitor and other simulation-only modules sit behind it); the
-    # include itself is stripped from the adapted sources
+    # SIMULATION enables the simulation-only modules (fifo_monitor and
+    # others sit behind `ifdef SIMULATION)
     return (["iverilog", lang, "-D", "SIMULATION", "-s", "tb", "-o", os.path.join(out_dir, "a.out"),
              "-I", design_dir, "-I", os.path.join(design_dir, "cpu"),
              "-I", os.path.join(REPO, "rtl", "peripherals"),
@@ -486,7 +478,7 @@ def sim_command(design_dir, out_dir, lang="-g2012"):
 
 
 def _waveform_viewer():
-    """gtkwave, or surfer on Apple silicon (BGM's choice); None when neither exists."""
+    """gtkwave, or surfer on Apple silicon; None when neither exists."""
     if platform.system() == "Darwin" and platform.machine() == "arm64" and shutil.which("surfer"):
         return ["surfer"]
     for name in ("gtkwave", "surfer"):
@@ -499,7 +491,7 @@ def cmd_sim(args):
     design_dir = resolve_design(args.design)
     tb = os.path.join(design_dir, TB_NAME)
     if not os.path.isfile(tb):
-        raise CliError("{d} has no {tb}. BGM's labs keep the testbench next to the top; add one "
+        raise CliError("{d} has no {tb}. The testbench sits next to design_top.sv; add one "
                        "(module tb, instantiating design_top) and run again.".format(d=_shown(design_dir), tb=TB_NAME))
     if not shutil.which("iverilog"):
         raise CliError("iverilog is not on PATH. Install Icarus Verilog (apt/yum/brew install iverilog).")
@@ -542,7 +534,7 @@ def cmd_sim(args):
 
 def gui_command(toolchain_id, out_dir, bins=None):
     """Vendor GUI command for the last build in <out_dir>, or None with a
-    reason. BGM run_fpga_synthesis_gui_*: Quartus opens the .qpf, Vivado the
+    reason. Quartus opens the .qpf, Vivado the
     latest checkpoint, Gowin the .gprj, Efinity the project XML."""
     def find(*patterns):
         for pat in patterns:
@@ -579,8 +571,7 @@ def cmd_gui(args):
     if cmd is None:
         raise CliError(why)
     if cmd == ["nextpnr", "--gui"]:
-        # BGM run_fpga_synthesis_gui_yosys: the synthesis script runs again
-        # with GUI_OPT="--gui"; nextpnr opens its window in place-and-route
+        # the synthesis script runs again with nextpnr --gui; nextpnr opens its window in place-and-route
         print("Rerunning synthesis for {} with nextpnr --gui (the window opens at place-and-route) ...".format(cfg_id))
         sys.stdout.flush()
         os.environ["UNIFPGA_NEXTPNR_GUI"] = "1"
@@ -601,8 +592,7 @@ def cmd_gui(args):
 def prepare_design(design_dir, cfg_id):
     """Write <design>/run/<configuration>/ without running the tools: the
     generated top, constraints and the vendor project files (synthesize's
-    dry run). BGM's check_setup_and_choose_fpga_board offers the same for
-    every lab after a board choice."""
+    dry run)."""
     out = run_dir(design_dir, cfg_id)
     os.environ["UNIFPGA_DRY_RUN"] = "1"
     try:
@@ -699,7 +689,7 @@ def build_parser():
     pp = sub.add_parser("prepare", help="write run/<configuration>/ (top, constraints, project) without running the tools")
     design_arg(pp)
     board_arg(pp)
-    pp.add_argument("--all", action="store_true", help="every design under designs/ (BGM check_setup's offer)")
+    pp.add_argument("--all", action="store_true", help="every design under designs/")
 
     cl = sub.add_parser("clean", help="remove <design>/run/ (--all: every design)")
     design_arg(cl)

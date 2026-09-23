@@ -554,7 +554,7 @@ def test_design_requirements_check_fails_when_under_provisioned():
 
 def test_design_requirements_check_fails_when_capability_missing():
     from tools import design_requirements
-    # icebreaker_bare has no audio_out (BGM drives no DAC or amplifier there).
+    # icebreaker_bare has no audio_out (no DAC or amplifier there).
     resolved = config_init.resolve_configuration("icebreaker_bare")
     reqs = {"audio_out": {}}
     errs = design_requirements.check(resolved, reqs)

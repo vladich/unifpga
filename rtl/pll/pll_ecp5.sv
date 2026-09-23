@@ -1,13 +1,12 @@
 // =============================================================================
-// pll_ecp5 — one Lattice ECP5 EHXPLLL making one clock, the structural
-// equivalent of BGM's boards/colorlight75b_tm1638_ecp5_yosys/clock.v (25 MHz
-// -> 250 MHz TMDS clock). Feedback from CLKOP, the requested clock on CLKOS.
+// pll_ecp5 — one Lattice ECP5 EHXPLLL making one clock (e.g. 25 MHz ->
+// 250 MHz TMDS clock on the colorlight75b). Feedback from CLKOP, the requested clock on CLKOS.
 // Codegen computes the dividers with tools/pll_solver.py `ecp5_pll`:
 //
 //     f_vco  = FCLKIN / CLKI_DIV * CLKFB_DIV * CLKOP_DIV      (400..800 MHz)
 //     clkout = f_vco / CLKOS_DIV
 //
-// CPHASE = DIV - 1 on each output, as ecppll and BGM's clock.v set them.
+// CPHASE = DIV - 1 on each output, as ecppll sets them.
 // =============================================================================
 
 module pll_ecp5

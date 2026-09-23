@@ -675,12 +675,12 @@ def is_compatible(boards, chips, board_id, toolchain_id):
 
 
 def resolve_toolchain_install(toolchain):
-    """Copy of a toolchains.yml entry with the install resolved the way BGM's
-    setup scripts do it (tools/toolchain_detect.py): the `InstallDir` pin
-    when it exists, else the vendor environment variable, PATH, then the
-    default install parents. Adds `BinDirs` (for PATH), `Bins`,
-    `DetectSource` and `DetectNotes`; leaves `InstallDir` as written when
-    nothing is found so the driver's own error message still names it."""
+    """Copy of a toolchains.yml entry with the install resolved by
+    tools/toolchain_detect.py: the `InstallDir` pin when it exists, else the
+    vendor environment variable, PATH, then the default install parents.
+    Adds `BinDirs` (for PATH), `Bins`, `DetectSource` and `DetectNotes`;
+    leaves `InstallDir` as written when nothing is found so the driver's own
+    error message still names it."""
     tc = dict(toolchain)
     try:
         from tools import toolchain_detect
@@ -796,7 +796,7 @@ def resolve_configuration(configuration_id):
     board_pinmap = read_board_pinmap(board_id)
     if board_pinmap is None:
         raise ConfigError("Board '{b}' has no pinmap under config/boards/<producer>/<family>/ — "
-                          "re-run tools/curate_board.py".format(b=board_id))
+                          "add its pinmap".format(b=board_id))
     _apply_pin_overrides(configuration_id, cfg, board_pinmap)
     _apply_io_overrides(configuration_id, cfg, board_pinmap)
     if board_resolved.get("Part"):
@@ -820,7 +820,7 @@ def resolve_configuration(configuration_id):
             "params":        entry.get("params", {}) or {},
             "bind":          entry.get("bind", {}) or {},
             # `lab_bits: {leds: [0, 1, ...]}` — which bits of the design's bus
-            # this provider occupies (BGM's TM1638 shares the lab's led/key
+            # this provider occupies (a TM1638 can share the lab's led/key
             # buses with the board's own LEDs and keys instead of extending
             # them); absent = the next free bits, in attach order
             "lab_bits":      entry.get("lab_bits", {}) or {},
@@ -838,7 +838,7 @@ def resolve_configuration(configuration_id):
     if profile.enabled():
         cfg = profile.apply(cfg, attached, profile.load(configuration_id))
 
-    # `tie:` — pins the top drives with a constant or the reset (BGM's
+    # `tie:` — pins the top drives with a constant or the reset (e.g.
     # `assign M_CLK = 1'b0`, `assign ARDUINO_RESET_N = ~ rst`), one pin_tie
     # attach each so they are declared, driven and constrained.
     for ref, value in (cfg.get("tie") or {}).items():
@@ -879,7 +879,7 @@ def _tie_value(configuration_id, ref, value):
 def _apply_pin_overrides(configuration_id, cfg, pinmap):
     """Apply the configuration's `pin_overrides:` to its (private copy of the)
     board pinmap. A variant that wires a header differently from the board's
-    default (BGM's `tang_nano_20k_lcd_800_480_tm1638_alt` uses another LCD
+    default (`tang_nano_20k_lcd_800_480_tm1638_alt` uses another LCD
     adapter) says so here instead of getting a second board:
 
         pin_overrides:
@@ -936,7 +936,7 @@ def _tool_part(part, toolchain_id):
 
 def _apply_io_overrides(configuration_id, cfg, pinmap):
     """Apply the configuration's `io_overrides:` (IO standard per bank, sub-key
-    or pin) to its private pinmap copy. BGM's Gowin variants type pins per
+    or pin) to its private pinmap copy. The Gowin variants type pins per
     variant (the Tang Nano 9K HDMI variants put LVCMOS33 on CLK, the LCD
     variants type nothing), so the pinmap keeps what every variant agrees on
     and each configuration carries its own additions:

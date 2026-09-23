@@ -187,8 +187,8 @@ def build_capability_plans(resolved):
             _, _, params = plan.providers[0]
             plan.params = dict(params)
         elif plan.aggregation == "broadcast":
-            # every provider consumes the same user-driven bus (BGM feeds
-            # `sound` to the PWM amplifier and to two I2S DACs at once)
+            # every provider consumes the same user-driven bus (`sound` to a PWM
+            # amplifier and to two I2S DACs at once)
             _, _, params = plan.providers[0]
             plan.params = dict(params)
         elif plan.aggregation == "concat":
@@ -214,7 +214,7 @@ def build_capability_plans(resolved):
 
 
 def _lab_width(resolved, plan):
-    """`lab_width: {<cap>: n}` (BGM overlay): the design's bus is n wide even
+    """`lab_width: {<cap>: n}` (design-wiring profile): the design's bus is n wide even
     when fewer bits are wired to it — emooc_cc passes w_key = 8 to lab_top
     and wires 7 keys; the top bit reads 0."""
     try:
@@ -256,7 +256,7 @@ def _plan_lab_bits(resolved, plan, primary, explicit):
     """Bit-mapped aggregation: every provider of the capability names the
     design bits its own bits occupy (`lab_bits: {<cap>: [b0, b1, ...]}`,
     null = this provider bit reaches no design bit). Bits may be shared
-    between providers of a user-driven bus (BGM's TM1638 LEDs and the board
+    between providers of a user-driven bus (TM1638 LEDs and the board
     LEDs both show the lab's `led`), never between providers of a bus the
     design reads. A provider whose bits form one ascending run keeps the
     slice form (`offsets`), the others are wired bit by bit."""
@@ -293,7 +293,7 @@ def _plan_lab_bits(resolved, plan, primary, explicit):
             plan.offsets[pidx] = live[0]
     plan.params = {primary: max(top, _lab_width(resolved, plan))}
     # a bus the design reads is merged bit by bit from per-provider wires
-    # (`cap_<cap>_<sig>__p<idx>`): two providers on one bit OR, as BGM's
+    # (`cap_<cap>_<sig>__p<idx>`): two providers on one bit OR, as in
     # `lab_key [w_key - 1:0] |= KEY; lab_key [w_tm_key - 1:0] |= tm_key`
     plan.merged = reads
 
@@ -401,7 +401,7 @@ def collect_clock_requirements(resolved):
                     mhz = float(override)
                 entry = {"mhz": mhz, "from": None, "divide": None}
                 # `clock_<name>_pll: {idiv, fbdiv, odiv, sdiv, clkoutd}`: the exact
-                # Gowin rPLL dividers (BGM's gowin_rpll.v) instead of the solver's
+                # Gowin rPLL dividers (a vendor-generated rPLL) instead of the solver's
                 pll = (attach.get("params") or {}).get("clock_{}_pll".format(name))
                 if pll is not None:
                     if not isinstance(pll, dict) or not {"idiv", "fbdiv", "odiv"} <= set(pll):
@@ -423,7 +423,7 @@ def collect_clock_requirements(resolved):
             entry["users"] = [idx]
             reqs[name] = entry
     # `lab_clock: {name: lab, mhz: 50}`: the lab on a PLL output of its own
-    # (BGM a7_lite: clk_wiz's 50 MHz clk_out2 from the 50 MHz oscillator)
+    # (a7_lite: clk_wiz's 50 MHz clk_out2 from the 50 MHz oscillator)
     lc = resolved["configuration"].get("lab_clock")
     if isinstance(lc, dict):
         if not {"name", "mhz"} <= set(lc) or lc["name"] in reqs:
@@ -494,8 +494,8 @@ def diff_buf_kind(resolved):
 
 def _pinned_rpll(cfg_id, name, f_in, r):
     """A GowinRPLL solution from the configuration's exact dividers
-    (`clock_<name>_pll`, BGM's gowin_rpll.v): the same frequency the solver
-    would reach, and the same edges as BGM's PLL — CLKOUT versus CLKOUTD
+    (`clock_<name>_pll`, a vendor-generated rPLL): the same frequency the
+    solver would reach, and the same edges as that PLL — CLKOUT versus CLKOUTD
     (CLKOUT / sdiv) start and toggle differently in simulation."""
     p = r["pll"]
     try:
@@ -522,14 +522,14 @@ def _gowin_rpll_primitive(board):
 
 
 def _gw5_primitive(board):
-    """BGM's Gowin_PLL wrappers: primitive PLL on GW5AST / GW5AT (Tang Mega
+    """Gowin_PLL wrappers: primitive PLL on GW5AST / GW5AT (Tang Mega
     138K), PLLA on GW5A (Tang Primer 25K)."""
     part = (board.get("Part") or "").upper()
     return "PLLA" if part.startswith("GW5A-") else "PLL"
 
 
 # openFPGALoader board names (`openFPGALoader --list-boards`) for the Gowin
-# boards, BGM scripts/steps/00_setup_gowin.source_bash configure_fpga_gowin_openfpga.
+# boards.
 OPENFPGALOADER_BOARDS = {
     "runber": "runber", "tang_nano_1k": "tangnano1k", "tang_nano_4k": "tangnano4k", "tang_nano_9k": "tangnano9k",
     "tang_nano_20k": "tangnano20k", "tang_primer_20k_dock": "tangprimer20k", "tang_primer_20k_lite": "tangprimer20k",
@@ -538,10 +538,10 @@ OPENFPGALOADER_BOARDS = {
 
 
 def openfpgaloader_args(pinmap, board_id=None):
-    """openFPGALoader options for this board, BGM's configure_fpga_yosys
+    """openFPGALoader options for this board, in this
     order: `--cable` (colorlight), `--ftdi-channel` (ECP5 boards), `-b
-    <board>` from the pinmap's `toolchain_options.yosys.loader_*` (synced
-    from BGM's board_info.source_bash) or the Gowin board table. [] when
+    <board>` from the pinmap's `toolchain_options.yosys.loader_*` or the
+    Gowin board table. [] when
     nothing is known (openFPGALoader then autodetects)."""
     opts = ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
     if opts.get("loader_cable"):
@@ -554,21 +554,19 @@ def openfpgaloader_args(pinmap, board_id=None):
 
 def nextpnr_gui_args():
     """`--gui` for the nextpnr run when the runner asks for it
-    (`unifpga gui`, BGM run_fpga_synthesis_gui_yosys: GUI_OPT="--gui")."""
+    (`unifpga gui`)."""
     return ["--gui"] if os.environ.get("UNIFPGA_NEXTPNR_GUI") else []
 
 
 def yosys_loader_settings(pinmap):
-    """`toolchain_options.yosys` of the pinmap (synced from BGM's
-    board_info.source_bash): synth_options, loader_*, device_part,
+    """`toolchain_options.yosys` of the pinmap: synth_options, loader_*, device_part,
     device_family, device_pack, speed."""
     return ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
 
 
 def emit_gowin_gprj(pinmap, sv_files, cst_path, sdc_path):
-    """Gowin IDE project file (BGM's fpga_project_01.gprj + file list +
-    fpga_project_02.gprj): the `<Device>` element is board data synced from
-    BGM's template (`toolchain_options.gowin.gprj_device`). None without it —
+    """Gowin IDE project file (project header + file list + options): the
+    `<Device>` element is board data (`toolchain_options.gowin.gprj_device`). None without it —
     the IDE needs the internal device id (gw1nr9c-004) the template carries."""
     device = (((pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}).get("gprj_device")
     if not device:
@@ -592,15 +590,14 @@ def emit_gowin_gprj(pinmap, sv_files, cst_path, sdc_path):
 
 def yosys_synth_options(pinmap):
     """Extra `synth_*` flags for a yosys flow from the pinmap's
-    `toolchain_options.yosys.synth_options` (BGM board_info.source_bash
-    `SYNTH_CMD="synth_ice40 -dsp -noabc9"`; tools/sync_from_bgm.py
-    --yosys-options). Returned with their leading dash."""
+    `toolchain_options.yosys.synth_options` (e.g. `synth_ice40 -dsp
+    -noabc9`). Returned with their leading dash."""
     opts = ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
     return ["-" + str(o).lstrip("-") for o in (opts.get("synth_options") or [])]
 
 
 def _gowin_rpll_device(resolved):
-    """The rPLL `DEVICE` parameter BGM uses (`GW1NR-9C`, `GW2AR-18C`): the
+    """The rPLL `DEVICE` parameter (`GW1NR-9C`, `GW2AR-18C`): the
     `-name` plus `-device_version` from the board's Gowin set_device args.
     Under the open flow nextpnr-gowin compares the parameter with its own
     family name (`GW2A-18` for the Primer 20K, "wrong PLL device" otherwise),
@@ -617,7 +614,7 @@ def _gowin_rpll_device(resolved):
     if m_name:
         name = m_name.group(1)
         ver = (m_ver.group(1).strip('"') if m_ver else "")
-        # BGM: `-name GW2A-18C -device_version C` -> DEVICE "GW2A-18C" (the
+        # `-name GW2A-18C -device_version C` -> DEVICE "GW2A-18C" (the
         # name already carries the revision); `-name GW1NR-9 -device_version C`
         # -> "GW1NR-9C".
         return name if not ver or name.endswith(ver) else name + ver
@@ -634,7 +631,7 @@ def plan_clock_tree(resolved, plans=None):
     """Resolve every requested clock. Returns [(name, req, kind, solution)]
     where kind is the PLL wrapper ("gowin_rpll", "ice40", "xilinx_mmcm"),
     "derived" (vendor clock divider on another clock), or "alias" (the clock
-    equals the board clock, so it is the board clock: BGM's Tang Nano 4K
+    equals the board clock, so it is the board clock: the Tang Nano 4K
     feeds the DVI pixel clock straight from the 27 MHz oscillator). Every
     solution has `f_out`. Raises CodegenError for an unknown board clock, an
     unsupported family or divider, or an unreachable frequency."""
@@ -654,7 +651,7 @@ def plan_clock_tree(resolved, plans=None):
         return abs(a - b) < 1e-6
 
     # a clock at the board's own frequency is the board clock, unless it must
-    # come out of the PLL (the lab clock BGM takes from clk_wiz: phase-aligned
+    # come out of the PLL (a lab clock taken from clk_wiz: phase-aligned
     # with the PLL's other outputs, not with the pin)
     aliased = lambda r: same(r["mhz"], f_in) and not r.get("pll_output")
     sources = [(n, r) for n, r in reqs.items() if r["from"] is None and not aliased(r)]
@@ -690,7 +687,7 @@ def plan_clock_tree(resolved, plans=None):
                 sol = _pinned_rpll(cfg_id, name, f_in, r)
             elif vendor == "gowin_rpll":
                 # Gowin EDA: "suitable VCO range 500 MHz to 1250 MHz" on GW2AR-18C;
-                # BGM's GW1NR-9C settings sit as low as 432 MHz.
+                # working GW1NR-9C settings sit as low as 432 MHz.
                 vco = (400.0, 1200.0) if _is_gowin_littlebee(board) else (500.0, 1250.0)
                 sol = pll_solver.gowin_rpll(f_in, r["mhz"], r["tolerance_pct"], vco_max=vco[1], vco_min=vco[0])
             elif vendor == "ecp5":
@@ -721,7 +718,7 @@ def plan_clock_tree(resolved, plans=None):
                 and not any(v[2] == "rpll_clkoutd" and v[3].source == r["from"] for v in out.values()):
             # the rPLL's own divided output (CLKOUTD, SDIV): phase-aligned with
             # CLKOUT like every PLL output, unlike a CLKDIV started by the lock
-            # (hdmi_tmds's timing clock: BGM's 125 MHz DVI_TX serial clock)
+            # (hdmi_tmds's timing clock: the 125 MHz DVI_TX serial clock)
             out[r["from"]] = out[r["from"]][:3] + (src_sol._replace(sdiv=r["divide"]),)
             out[name] = (name, r, "rpll_clkoutd", ClockDerived(r["mhz"], r["from"], r["divide"]))
         elif vendor == "gowin_rpll":
@@ -737,7 +734,7 @@ def plan_clock_tree(resolved, plans=None):
 
 def lab_clock(resolved, plans=None):
     """The clock the lab (design_top, resets, tm1638, ...) runs on. Default:
-    the board oscillator (`clk`). A configuration whose BGM twin runs the lab
+    the board oscillator (`clk`). A configuration that runs the lab
     on a PLL clock (`localparam lab_mhz = pixel_mhz; assign clk = pixel_clk`
     on the iCEBreaker DVI and Tang Primer 20K Dock LCD/HDMI variants) says
     `lab_clock: pixel` and the whole lab moves to `clk_pixel`; `lab_clock:
@@ -864,7 +861,7 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
         elif vendor == "ice40":
             lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz)".format(
                 net, sol.f_out, fin_str, sol.f_pfd, sol.f_vco))
-            # SB_PLL40_PAD (BGM's choice) takes the clock pad itself, which then
+            # SB_PLL40_PAD (the default) takes the clock pad itself, which then
             # cannot feed the fabric: only when the lab moved onto this PLL.
             use_pad = 1 if lab["name"] == name else 0
             lines.append("    pll_ice40 # (.DIVR(4'd{r}), .DIVF(7'd{f}), .DIVQ(3'd{q}), .FILTER_RANGE(3'd{fr}), "
@@ -917,7 +914,7 @@ def pll_source_paths(repo, generated_top, peripherals=None):
 def clock_driven_pins(resolved):
     """[(port_name, clock_name, mhz)] for pins a peripheral drives straight
     from a PLL clock (`pin.ck: clock.pixel`), so the constraint emitters can
-    put BGM's `create_clock` on the output pad."""
+    put a `create_clock` on the output pad."""
     reqs = collect_clock_requirements(resolved)
     out = []
     for attach in resolved["peripherals"]:
@@ -1170,7 +1167,7 @@ def validate_configuration(resolved, plans=None):
         sig_defs = {s["name"]: s for s in perif.get("signals", [])}
         bind = attach.get("bind") or {}
         # a provider bit no lab bit reaches (`lab_bits: {leds: [0, .., 3, ~, ..]}`)
-        # is neither driven nor read by this attach: BGM puts the HEX decimal
+        # is neither driven nor read by this attach: e.g. the HEX decimal
         # point (seven_segment_per_digit's dp) on those LEDs
         lab_lists = [list(b or []) for b in (attach.get("lab_bits") or {}).values()]
         if lab_lists and (attach.get("params") or {}).get("mirror"):
@@ -1363,7 +1360,7 @@ def _emit_context(resolved, plans):
 
     # Advertise clk_mhz to the peripheral drivers (context.clk_mhz). Same
     # value design_top receives (see _emit_lab_top); 50 only as a last resort.
-    # With `lab_clock:` this is the PLL clock's frequency (BGM's lab_mhz).
+    # With `lab_clock:` this is the PLL clock's frequency (lab_mhz).
     lab = lab_clock(resolved, plans)
     if lab["name"]:
         lines.append("    // Lab clock: context.clk is {} ({:g} MHz), see the clock tree below."
@@ -1380,7 +1377,7 @@ def _lab_mhz_int(lab, clock):
 
 def _clk_mhz_int(clock):
     """Integer MHz for parameters; fractional board clocks are rare and the
-    interface parameter is an int (matches BGM's `parameter clk_mhz = 27`)."""
+    interface parameter is an int (`parameter clk_mhz = 27`)."""
     if clock is None or clock["mhz"] is None:
         return 50
     return int(round(clock["mhz"]))
@@ -1388,7 +1385,7 @@ def _clk_mhz_int(clock):
 
 # ---- Reset policy ----------------------------------------------------------
 #
-# BGM derives `rst` per board in board_specific_top.sv: from a dedicated pin
+# Boards derive `rst` differently: from a dedicated pin
 # (`~RESET_N`), from the top switch (`sw[w_sw-1]`), from any key
 # (`| (~KEY)`), from a power-up imitation, or an OR of those. The
 # configuration expresses the same policy declaratively:
@@ -1444,7 +1441,7 @@ def reset_sources(resolved, plans=None):
         if "key" in src and src["key"] is not None and src["key"] is not False:
             sources.append(("key", {"index": src["key"], "bank": src.get("bank")}))
         if src.get("pll_lock"):
-            # BGM marsohod3gw2: `rst = ~ (key_rst_n & pll_lock)` — held until the PLL locks
+            # marsohod3gw2: `rst = ~ (key_rst_n & pll_lock)` — held until the PLL locks
             sources.append(("pll_lock", {"clock": src["pll_lock"]}))
         if "tm_key" in src and src["tm_key"] is not None and src["tm_key"] is not False:
             sources.append(("tm_key", {"index": src["tm_key"]}))
@@ -1557,7 +1554,7 @@ def _emit_reset(resolved, plans):
         if kind == "pin":
             ref = _bank_ref_to_port(d["ref"]) if isinstance(d["ref"], str) else d["ref"]
             if d.get("sync"):
-                # BGM (c5gx: `rstn_ff`, a7_lite: xpm_cdc_async_rst): the reset
+                # (c5gx: `rstn_ff`, a7_lite: xpm_cdc_async_rst): the reset
                 # asserts with the pin and deasserts n clocks after it releases
                 k, low = int(d["sync"]), d["active"] == "low"
                 net = "rst_sync_{}".format(len(terms))
@@ -1570,7 +1567,7 @@ def _emit_reset(resolved, plans):
                 continue
             terms.append("(~ {})".format(ref) if d["active"] == "low" else "({})".format(ref))
         elif kind == "switch":
-            # BGM's `rst = SW [w_sw - 1]` is the physical switch, whether or
+            # `rst = SW [w_sw - 1]` is the physical switch, whether or
             # not that switch also reaches the lab's sw bus
             sws = _board_provider_terms(resolved, plans, "switches", "sw")
             if sws:
@@ -1584,7 +1581,7 @@ def _emit_reset(resolved, plans):
             terms.append(_index_expr("cap_switches_sw", w, d["index"], "switch",
                                      resolved["configuration"]["id"]))
         elif kind == "key":
-            # BGM's `rst = | (~ KEY)` / `~ KEY [0]` reads the board's own keys,
+            # `rst = | (~ KEY)` / `~ KEY [0]` reads the board's own keys,
             # never a TM1638's, so the key sources are the pins of the
             # driver-less button providers (button_array), active-high here
             keys = _board_key_terms(resolved, plans, d.get("bank"))
@@ -1602,7 +1599,7 @@ def _emit_reset(resolved, plans):
             terms.append(_index_expr("cap_buttons_btn", w, d["index"], "key",
                                      resolved["configuration"]["id"]))
         elif kind == "tm_key":
-            # BGM's `rst = rst_on_power_up | tm_key [w_tm_key - 1]`: the TM1638's own key
+            # `rst = rst_on_power_up | tm_key [w_tm_key - 1]`: the TM1638's own key
             keys = _tm_key_terms(resolved, plans)
             if not keys:
                 raise CodegenError("Configuration {}: reset from a TM1638 key but no tm1638_led_key provides buttons"
@@ -1710,7 +1707,7 @@ def _signal_width(plan, sig):
 
 def _screen_channel_width(params, channel):
     """User-visible bits for one colour channel: an explicit `bits_r/g/b`
-    capability param (BGM's w_red/w_green/w_blue) wins over `color_depth`."""
+    capability param (design_top's w_red/w_green/w_blue) wins over `color_depth`."""
     explicit = (params or {}).get("bits_" + channel[0])
     if explicit:
         return int(explicit)
@@ -1755,8 +1752,8 @@ def _bank_attr(pinmap, ref, name):
 
 def _peripheral_active_polarity(perif, attach, pinmap=None):
     """Returns 'high' or 'low'. Precedence: configuration `params.active`,
-    the bound bank's `active:` attribute in the pinmap (the board fact, written
-    from BGM by tools/sync_from_bgm.py --polarity), the peripheral YAML's
+    the bound bank's `active:` attribute in the pinmap (the board fact), the
+    peripheral YAML's
     `parameters.active.default`, then 'high'."""
     cfg_params = attach.get("params") or {}
     if "active" in cfg_params:
@@ -1787,7 +1784,7 @@ def _signal_active_polarity(perif, attach, sig, default):
 
 def _peripheral_mirror(attach, pinmap):
     """True when the bank's bit order is reversed relative to the user's bus
-    (BGM `SWAP_BITS (LED, ...)` on the Tang Nano 9K). Configuration
+    (`SWAP_BITS (LED, ...)` on the Tang Nano 9K). Configuration
     `params.mirror` overrides the bank attribute."""
     cfg_params = attach.get("params") or {}
     if "mirror" in cfg_params:
@@ -1830,7 +1827,7 @@ def _emit_passthrough(resolved, idx, attach, plans):
         plan = plans[cap_id]
         sig_map = entry.get("signal_map") or {}
         if open_drain and plan.aggregation == "concat":
-            # BGM colorlight: `LED [0] = lab_led [0] ? 1'b0 : 1'bz` — an LED
+            # colorlight: `LED [0] = lab_led [0] ? 1'b0 : 1'bz` — an LED
             # that is on drives its active level, an LED that is off floats
             drive = "1'b0" if active == "low" else "1'b1"
             for cap_sig in plan.cap.get("signals", []):
@@ -1911,7 +1908,7 @@ def _emit_passthrough(resolved, idx, attach, plans):
                 else:
                     slice_expr = "{}[{}:{}]".format(cap_base, offset + width - 1, offset)
                 if mirror and width > 1:
-                    # Board bit order is the reverse of the user's (BGM SWAP_BITS):
+                    # Board bit order is the reverse of the user's (SWAP_BITS):
                     # pin[i] <-> user bit (w-1-i). Emitted per bit on the side
                     # that is a plain bus so the other side stays a slice.
                     lines.append("    // mirrored: bank bit i <-> capability bit {}-i".format(width - 1))
@@ -1971,7 +1968,7 @@ def _emit_driver_instance(resolved, idx, attach, plans):
     formats = drv.get("port_format") or {}
     open_drain = bool((attach.get("params") or {}).get("open_drain"))
     out_sigs = {s["name"] for s in perif.get("signals", []) if s.get("direction") == "output"}
-    # BGM's Tang Mega 138K / orangepi tops hand the lab `screen_width - 1 - x`
+    # The Tang Mega 138K / orangepi boards hand the lab `screen_width - 1 - x`
     # and `screen_height - 1 - y` (`mirrored_x`): the panel is mounted rotated
     mirror_screen = bool((attach.get("params") or {}).get("mirror_screen"))
 
@@ -2056,7 +2053,7 @@ def _capability_ref_width(ref, plans, attach):
 def _format_conversion(net, w, encoding, target, target_w):
     """Assigns converting a driver's `w`-bit `net` into the `target_w`-bit
     signed capability signal. offset_binary: an ADC code whose mid-scale is
-    silence (BGM: `mic_12 - 12'h800`, sign-extended); signed / unsigned:
+    silence (`mic_12 - 12'h800`, sign-extended); signed / unsigned:
     extension only."""
     if encoding == "offset_binary":
         mid = "{}_minus_offset".format(net)
@@ -2216,7 +2213,7 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
                 attach.get("peripheral_id", "?"), s))
         if isinstance(v, str) and _looks_like_ref(v):
             # `params: {bl: const.0}` / `{bl: context.rst_n}`: a wiring choice
-            # the configuration makes (BGM: `assign LCD_BL = ~ rst` on one
+            # the configuration makes (`assign LCD_BL = ~ rst` on one
             # board, `1'b0` on another).
             return invert + _resolve_ref(v, attach, plans, bind, lhs_context, slice_for_idx) + idx_suffix
         return invert + _sv_literal(v) + idx_suffix
@@ -2281,8 +2278,8 @@ def _claimed_port_bits(resolved, plans, gpio_indices):
 
 def _uart_rx_idle(resolved):
     """What design_top's uart_rx reads with no serial console attached: the
-    idle line (1) unless the configuration says otherwise (the BGM overlay's
-    `uart_rx: 0` for a top that leaves `.uart_rx ( )` unconnected)."""
+    idle line (1) unless the configuration says otherwise (a profile's `uart_rx: 0`
+    for a design whose uart_rx input is left unconnected)."""
     v = resolved["configuration"].get("uart_rx", 1)
     if v not in (0, 1, "0", "1"):
         raise CodegenError("Configuration {}: uart_rx must be 0 or 1, not {!r}"
@@ -2298,7 +2295,7 @@ def _gpio_connection(resolved, plans):
     if sig is None:
         return None, []
     if not plan.providers:
-        # BGM zybo / ax7035b: the lab gets a w_gpio-wide bus wired to nothing
+        # zybo / ax7035b: the lab gets a w_gpio-wide bus wired to nothing
         w = _lab_width(resolved, plan)
         if not w:
             return None, []
@@ -2319,7 +2316,7 @@ def _gpio_connection(resolved, plans):
             offset, width = plan.offsets[pidx], plan.widths[pidx]
             places = list(range(offset, offset + width))
         elif pidx in plan.bits:
-            # lab_bits: BGM's numbering when pinless elements sit between the
+            # lab_bits: the numbering when pinless elements sit between the
             # pins (arty's dummy_ck_io25_14); an unmapped pin reaches no bit
             width = plan.widths[pidx]
             places = list(plan.bits[pidx])
@@ -2332,7 +2329,7 @@ def _gpio_connection(resolved, plans):
         out_only = str((attach.get("params") or {}).get("direction") or "inout") == "out"
         out_net = "gpio_out_{}".format(pidx)
         if out_only:
-            # BGM emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio` — the design's
+            # emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio` — the design's
             # gpio drives the header, what is on the pads never reaches it
             decls.append("    wire [{}:0] {};   // {}: direction out, the design drives these pins"
                          .format(width - 1, out_net, _attach_label(attach)))
@@ -2348,12 +2345,12 @@ def _gpio_connection(resolved, plans):
                 decls.append("    assign {} = {} [{}];".format(port, out_net, i))
                 bits[n] = "{} [{}]".format(out_net, i)
             else:
-                # BGM hands the lab the whole header (`.gpio ({ ARDUINO_IO, GPIO })`),
+                # The lab gets the whole header (`.gpio ({ ARDUINO_IO, GPIO })`),
                 # including the bits a microphone or a TM1638 drives: the lab
                 # reads what is on the pad. Same here; a lab that drives such
-                # a bit collides with the peripheral exactly as it does in BGM.
+                # a bit collides with the peripheral.
                 if port in claimed:
-                    decls.append("    // gpio[{}] = {}: also driven by another peripheral (as in BGM)".format(n, port))
+                    decls.append("    // gpio[{}] = {}: also driven by another peripheral".format(n, port))
                 bits[n] = port
     for n, b in enumerate(bits):
         if b is None:
@@ -2391,9 +2388,9 @@ def _emit_lab_top(resolved, plans):
         wg = _screen_channel_width(sp, "green")
         wb = _screen_channel_width(sp, "blue")
     else:
-        # no display: BGM's lab_top defaults (screen_width 640, screen_height
-        # 480, 4-bit colours) — the lab's x / y stay 10 / 9 bits wide, as
-        # every BGM board top passes them (ax7035b: `w_x = $clog2 (screen_width)`)
+        # no display: the lab_top defaults (screen_width 640, screen_height
+        # 480, 4-bit colours) — the lab's x / y stay 10 / 9 bits wide
+        # (`w_x = $clog2 (screen_width)`)
         sw, sh, wr, wg, wb = 640, 480, 4, 4, 4
 
     lab = lab_clock(resolved, plans)
@@ -2437,7 +2434,7 @@ def _emit_lab_top(resolved, plans):
         "        .mic_sample(cap_audio_in_sample)" if plans["audio_in"].providers else "        .mic_sample('0)",
         "        .mic_valid(cap_audio_in_valid)"   if plans["audio_in"].providers else "        .mic_valid(1'b0)",
         "        .sound(cap_audio_out_sample)"     if plans["audio_out"].providers else "        .sound()",
-        # no UART: BGM leaves lab_top's uart_rx unconnected, which the vendor
+        # no UART: an unconnected uart_rx input, which the vendor
         # tools synthesise as ground, so 0 is the exact value
         "        .uart_rx(cap_serial_console_rx)"  if plans["serial_console"].providers
         else "        .uart_rx(1'b{})".format(_uart_rx_idle(resolved)),
@@ -2763,14 +2760,14 @@ def emit_qsf(resolved, part):
     cfg = resolved["configuration"]
     board = resolved["board"]
     pinmap = resolved["board_pinmap"]
-    # No invented default: a pin whose standard neither the pinmap nor BGM
-    # states gets the device default, exactly as in BGM's project (Cyclone IV
+    # No invented default: a pin whose standard the pinmap does not state
+    # gets the device default (Cyclone IV
     # E: 2.5 V — an invented 3.3-V LVTTL on the DE2-115 puts HEX3 into a
     # VCCIO conflict, Quartus 169026).
     default_iostd = (pinmap.get("defaults") or {}).get("iostandard")
     family = _quartus_family(board, part)
     quartus_opts = (pinmap.get("toolchain_options") or {}).get("quartus") or {}
-    # BGM dk_dev_3c120n: the project default comes from STRATIX_DEVICE_IO_STANDARD
+    # dk_dev_3c120n: the project default comes from STRATIX_DEVICE_IO_STANDARD
     # and the pins at that standard carry no assignment of their own; an
     # explicit 2.5 V on them is refused where the bank runs at 1.8 V (169026)
     project_default = None
@@ -2793,13 +2790,12 @@ def emit_qsf(resolved, part):
     # parses `.v` files (and `\\`include`d `.svh`/`.vh` headers) as Verilog 2001,
     # rejecting `'0`, `always_ff`, `logic`, etc.
     out.append("set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2005")
-    # BGM's fpga_project.qsf template (scripts/steps/00_setup_intel_fpga.source_bash):
-    # four fitter threads and the INTEL_VERSION macro the labs test with `ifdef
+    # Project template: four fitter threads and the INTEL_VERSION macro the labs test with `ifdef
     out.append("set_global_assignment -name NUM_PARALLEL_PROCESSORS 4")
     out.append('set_global_assignment -name VERILOG_MACRO "INTEL_VERSION"')
-    # Board-level project settings BGM's board_specific.qsf carries (dual-
+    # Board-level project settings from the pinmap (dual-
     # purpose pin reservation such as nCEO used as regular I/O, unused-pin
-    # state, device I/O default); tools/sync_from_bgm.py --quartus-options.
+    # state, device I/O default).
     for ga in quartus_opts.get("global_assignments") or []:
         out.append("set_global_assignment -name {}".format(ga))
     out.append("")
@@ -2881,7 +2877,7 @@ def emit_sdc(resolved):
     else:
         out.append("# WARNING: no clock frequency known for this configuration (CLK-FREQ)")
     # PLL clocks forwarded to output pads (LCD pixel clock): constrain the pad
-    # the way BGM's board_specific.sdc does (`create_clock -name LARGE_LCD_CK ...`).
+    # (`create_clock -name LARGE_LCD_CK ...`).
     for port, name, mhz in clock_driven_pins(resolved):
         out.append("create_clock -name {name} -period {p:.3f} [get_ports {{{port}}}]".format(
             name=re.sub(r"\W+", "_", port).strip("_"), port=port, p=1000.0 / mhz))
@@ -2917,7 +2913,7 @@ def emit_cst(resolved):
     IO_PORT for IO_TYPE / drive strength."""
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
-    # No IO_TYPE unless the pinmap states one (BGM's Gowin CSTs constrain
+    # No IO_TYPE unless the pinmap states one (Gowin CSTs constrain
     # only IO_LOC on most boards; the tool then keeps its defaults and the
     # bank voltages the embedded functions dictate. An invented LVCMOS33 on
     # the Tang Nano 9K's 1.8 V bank 3 is refused with CT1136.)
@@ -2933,9 +2929,9 @@ def emit_cst(resolved):
 
     referenced = collect_referenced_banks(resolved)
     # Differential pairs: Gowin EDA locates a true/emulated LVDS pair through
-    # the P port alone (`IO_LOC "TMDS_CLK_P" 69,68;`, BGM) and infers the N
+    # the P port alone (`IO_LOC "TMDS_CLK_P" 69,68;`) and infers the N
     # port from the buffer; the open flow (apicula) wants both halves as
-    # plain IO_LOCs (BGM's _yosys variants); pseudo-differential outputs are
+    # plain IO_LOCs; pseudo-differential outputs are
     # two ordinary LVCMOS pins.
     pair_style = "pair"
     kind = diff_buf_kind(resolved)
@@ -3153,7 +3149,7 @@ def emit_peri_xml(resolved, device_def):
     # ---- iobank info (collected across all referenced banks) ----
     out.append("    <efxpt:device_info>")
     out.append("        <efxpt:iobank_info>")
-    # T8F81 standard banks. Should match what BGM uses; if a board needs
+    # T8F81 standard banks; if a board needs
     # something else, override via board_pinmap.iobanks.
     iobanks = (pinmap.get("iobanks") or {
         "1A": "3.3 V LVTTL / LVCMOS",
@@ -3218,7 +3214,7 @@ def emit_peri_xml(resolved, device_def):
                 elif isinstance(val, str):
                     out.extend(_efxpt_gpio(pname, val, m, "", bank_iostd))
 
-    # Default unused-pin policy (same as BGM)
+    # Default unused-pin policy
     out.append('        <efxpt:global_unused_config state="input with weak pullup"/>')
 
     for name, mode, msb, lsb in buses:

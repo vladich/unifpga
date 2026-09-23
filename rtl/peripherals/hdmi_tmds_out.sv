@@ -1,28 +1,27 @@
 // =============================================================================
 // hdmi_tmds_out — DVI/HDMI output over three TMDS data pairs plus the clock
-// pair: BGM's `dvi_top` (sync + TMDS encoders + 10:1 SDR serializers on a
-// 10x pixel clock, rtl/peripherals/dvi.sv) followed by one vendor differential
-// buffer per pair (rtl/io/diff_obuf.sv). This is the open implementation BGM
-// itself ships for the boards where it does not use Gowin's encrypted
-// DVI_TX IP (a7_lite_35t, tang_primer_20k_dock_hdmi_tm1638_yosys), with the
-// buffers moved out of board_specific_top.sv so the top stays generated.
+// pair: `dvi_top` (sync + TMDS encoders + 10:1 SDR serializers on a 10x pixel
+// clock, rtl/peripherals/dvi.sv) followed by one vendor differential buffer
+// per pair (rtl/io/diff_obuf.sv). An open implementation in place of Gowin's
+// encrypted DVI_TX IP, with the buffers kept out of the top so the top stays
+// generated.
 //
 // Clocks (declared by config/peripherals/hdmi_tmds.yml, built by codegen):
 //   serial_clk_i  10 x pixel (252 MHz for 640x480 at 25.2 MHz)
 //   pixel_clk_i   serial / 10 (Gowin CLKDIV, Xilinx MMCM output, or the board
 //                 clock itself when the frequencies coincide — Tang Nano 4K)
-//   timing_clk_i  serial / 2 when TIMING = "serial": BGM's Gowin DVI_TX
-//                 boards run `vga` on their 5x DDR serial clock (125 MHz),
+//   timing_clk_i  serial / 2 when TIMING = "serial": Gowin DVI_TX designs
+//                 run `vga` on their 5x DDR serial clock (125 MHz),
 //                 ours is 10x SDR (250 MHz); tied off otherwise
-//   lab_clk_i     the lab clock; TIMING picks which clock BGM's `vga` timing
+//   lab_clk_i     the lab clock; TIMING picks which clock the `vga` timing
 //                 generator (x / y / syncs) runs on: "serial" (Gowin DVI_TX
 //                 boards, on timing_clk_i), "lab" (Tang Nano 4K, colorlight, marsohod3gw2) or
 //                 "pixel" (Tang Primer 25K), with that clock's MHz for its
-//                 pixel enable — so x / y advance exactly when BGM's do; "dvi"
-//                 is dvi_top's own dvi_sync on the pixel clock, as on the
-//                 boards where BGM instantiates dvi_top itself (a7_lite).
+//                 pixel enable; "dvi" is dvi_top's own dvi_sync on the pixel
+//                 clock, as on boards that instantiate dvi_top directly
+//                 (a7_lite).
 //
-// Channel order follows the DVI spec and BGM: d[0] = blue, d[1] = green,
+// Channel order follows the DVI spec: d[0] = blue, d[1] = green,
 // d[2] = red.
 // =============================================================================
 

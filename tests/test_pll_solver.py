@@ -1,10 +1,9 @@
 """
-tools/pll_solver.py against the settings BGM ships in its per-board
-gowin_rpll.v files and the iCEBreaker SB_PLL40 constants. The solver does not
-have to reproduce BGM's exact divider choice (several settings give the same
-frequency), but it must (a) land on the same output frequency BGM lands on,
-(b) respect the PFD/VCO limits, and (c) read BGM's own settings back into the
-frequency BGM annotates.
+tools/pll_solver.py against known-good per-board Gowin rPLL settings and the
+iCEBreaker SB_PLL40 constants. The solver does not have to reproduce the exact
+divider choice (several settings give the same frequency), but it must (a)
+land on the same output frequency, (b) respect the PFD/VCO limits, and (c) read
+the known settings back into their annotated frequency.
 """
 
 import pytest
@@ -13,7 +12,7 @@ from tools import pll_solver as ps
 
 
 # (variant, f_in, IDIV_SEL, FBDIV_SEL, ODIV_SEL, DYN_SDIV_SEL, uses_clkoutd, annotated MHz)
-BGM_RPLL = [
+RPLL_VECTORS = [
     ("tang_nano_9k_lcd_480_272_no_tm1638",        27, 2, 0,  48, 2, False, 9.0),
     ("tang_nano_20k_lcd_480_272_no_tm1638",       27, 2, 0,  64, 2, False, 9.0),
     ("tang_nano_20k_lcd_800_480_no_tm1638",       27, 8, 10, 16, 2, False, 33.0),
@@ -26,19 +25,19 @@ BGM_RPLL = [
 ]
 
 
-@pytest.mark.parametrize("variant,f_in,idiv,fbdiv,odiv,sdiv,use_d,mhz", BGM_RPLL)
-def test_bgm_rpll_settings_read_back(variant, f_in, idiv, fbdiv, odiv, sdiv, use_d, mhz):
+@pytest.mark.parametrize("variant,f_in,idiv,fbdiv,odiv,sdiv,use_d,mhz", RPLL_VECTORS)
+def test_rpll_settings_read_back(variant, f_in, idiv, fbdiv, odiv, sdiv, use_d, mhz):
     f = ps.gowin_rpll_frequency(f_in, idiv, fbdiv, odiv, sdiv, use_d)
     assert abs(f - mhz) < 1e-6, variant
-    # and BGM's settings are inside the limits the solver enforces
+    # and the settings are inside the limits the solver enforces
     f_pfd = f_in / (idiv + 1)
     f_vco = f_in / (idiv + 1) * (fbdiv + 1) * odiv
     assert 3.0 <= f_pfd <= 400.0, variant
     assert 400.0 <= f_vco <= 1200.0, variant
 
 
-@pytest.mark.parametrize("variant,f_in,idiv,fbdiv,odiv,sdiv,use_d,mhz", BGM_RPLL)
-def test_solver_reaches_bgm_frequencies(variant, f_in, idiv, fbdiv, odiv, sdiv, use_d, mhz):
+@pytest.mark.parametrize("variant,f_in,idiv,fbdiv,odiv,sdiv,use_d,mhz", RPLL_VECTORS)
+def test_solver_reaches_rpll_frequencies(variant, f_in, idiv, fbdiv, odiv, sdiv, use_d, mhz):
     sol = ps.gowin_rpll(f_in, mhz)
     assert sol is not None, variant
     assert sol.error < 1e-6, (variant, sol)
@@ -61,15 +60,15 @@ def test_solver_rejects_impossible():
 
 
 def test_ice40_matches_icebreaker_dvi():
-    # BGM icebreaker: SB_PLL40_PAD DIVR 0, DIVF 66, DIVQ 5, FILTER_RANGE 1: 12 MHz -> 25.125 MHz
+    # icebreaker: SB_PLL40_PAD DIVR 0, DIVF 66, DIVQ 5, FILTER_RANGE 1: 12 MHz -> 25.125 MHz
     sol = ps.ice40_pll(12, 25.125)
     assert sol is not None
     assert (sol.divr, sol.divf, sol.divq, sol.filter_range) == (0, 66, 5, 1)
     assert abs(sol.f_out - 25.125) < 1e-9
 
 
-def test_ecp5_pll_matches_bgm_colorlight_clock():
-    """BGM boards/colorlight75b_tm1638_ecp5_yosys/clock.v: EHXPLLL CLKI_DIV 1,
+def test_ecp5_pll_matches_colorlight_clock():
+    """colorlight75b_tm1638_ecp5_yosys: EHXPLLL CLKI_DIV 1,
     CLKFB_DIV 5, CLKOP_DIV 4 (125 MHz feedback), CLKOS_DIV 2 -> 250 MHz."""
     from tools import pll_solver
     sol = pll_solver.ecp5_pll(25, 250)

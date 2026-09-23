@@ -54,7 +54,7 @@ def _build_parser():
     p.add_argument("--list-toolchains", action="store_true",
                    help="Report where every toolchain in config/toolchains.yml was found "
                         "(InstallDir pin, vendor environment variable, PATH, or the default "
-                        "install directories, as BGM's setup scripts search them) and exit.")
+                        "install directories the vendors use) and exit.")
     return p
 
 
@@ -91,8 +91,8 @@ def main(argv=None):
     else:
         for note in toolchain.get("DetectNotes") or []:
             log.warning("Toolchain %s: %s", toolchain["Id"], note)
-    # BGM exports the tool directories into PATH; the drivers resolve their
-    # binaries with shutil.which(), so the found directories go first.
+    # The drivers resolve their binaries with shutil.which(), so the found
+    # tool directories go first in PATH.
     for d in reversed(toolchain.get("BinDirs") or []):
         os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
 

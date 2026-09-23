@@ -2,8 +2,8 @@
 // pll_gowin_rpll — generic wrapper around the Gowin rPLL primitive
 // (GW1N / GW1NR / GW2A / GW2AR families; PLLVR on GW1NS / GW1NSR).
 //
-// Same instantiation as the Gowin_rPLL modules BGM ships per board
-// (boards/<variant>/gowin_rpll.v), with the divider settings passed as
+// Same instantiation as the Gowin_rPLL IP modules generated per board
+// (gowin_rpll.v), with the divider settings passed as
 // parameters. Codegen computes them with tools/pll_solver.py from the
 // board clock and the frequency a peripheral asks for:
 //

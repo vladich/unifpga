@@ -6,15 +6,15 @@ Imported constraint files number buses the way the vendor did (`LED[8:1]`,
 `LCD_R[7:3]`, `ck_io0..13, 26..41`), and the curator kept the gaps as `null`
 entries. Codegen sizes the top-level port by the list length, so every null
 became an unconstrained port bit and shifted the capability's bits away from
-their pins (omdazz_epm570 LEDs, Tang Nano 9K LCD colours). BGM's numbering is
-cosmetic (1-based names) or a sub-range (the 5 MSBs of an 8-bit colour), so
+their pins (omdazz_epm570 LEDs, Tang Nano 9K LCD colours). The vendors'
+numbering is cosmetic (1-based names) or a sub-range (the 5 MSBs of an 8-bit colour), so
 the gaps carry no information a design can use.
 
 This tool:
   1. rewrites every inline list containing null in config/boards/**/*.yml
      (except _raw/) without the nulls and records the original index of the
      first kept entry as `index_origin` (bank-level; a mapping for sub-keyed
-     banks) so the parity tool can still translate BGM's indices;
+     banks) so the original indices can still be translated;
   2. remaps `bank[idx]` / `bank.sub[idx]` binds in every configuration to the
      new indices, and refuses (exit 1) if a bind pointed at a removed null;
   3. is idempotent.

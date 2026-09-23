@@ -26,8 +26,7 @@ module vga
               PIXEL_MHZ           =  25,  // Pixel clock frequency of VGA in MHz
 
               // Colour path: the user's channel widths (what design_top sees)
-              // and the board's pin widths. Mirrors what BGM's
-              // board_specific_top.sv does inline:
+              // and the board's pin widths:
               //   same width      -> vga_r = display_on ? red : '0
               //   one pin         -> vga_r = display_on & (| red)   (omdazz, zeowaa, piswords6)
               //   fewer pins      -> the MSBs, gated by display_on
@@ -39,7 +38,7 @@ module vga
               W_GREEN_O           =   4,
               W_BLUE_O            =   4,
 
-              // How the colours reach the pins (BGM's boards differ):
+              // How the colours reach the pins (boards differ):
               //   GATE = 1          vga_r = display_on ? red : '0  (basys3, nexys4, omdazz)
               //   GATE = 0          vga_r = red — a DAC with BLANK_N (de1_soc,
               //                     sockit, de2_115) or an ungated header (emooc)
