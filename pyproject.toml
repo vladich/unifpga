@@ -7,6 +7,7 @@ name = "uni-fpga"
 version = "0.1.0"
 description = "Multi-vendor FPGA build orchestrator"
 requires-python = ">=3.8"
+license = { text = "MIT" }
 dependencies = [
     "PyYAML>=6.0",
 ]
