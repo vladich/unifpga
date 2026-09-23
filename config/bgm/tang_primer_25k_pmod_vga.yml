@@ -8,6 +8,7 @@ BGM:
   variant: tang_primer_25k_pmod_vga
   reset:
     sources:
+    - power_up: true
     - tm_key: msb
   attach:
   - peripheral: button_array
@@ -24,3 +25,5 @@ BGM:
       switches: [0, 1, 2, 3, 4, 5, 6, 7]
       leds: [0, 1, 2, 3, 4, 5, 6, 7]
       seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
+    params:
+      rst: context.rst_on_power_up
