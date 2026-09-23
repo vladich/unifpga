@@ -517,6 +517,15 @@ def port_polarity(text):
     for m in re.finditer(r"~\s*\{([^}]*)\}", text):
         for name in re.findall(r"[A-Za-z_]\w*", m.group(1)):
             mark(name, inverted=True)
+    # under a negated group, directly or through a one-level alias
+    # (marsohod3gw2: `key_rst_n = KEY0 & KEY1; rst = ~ ( key_rst_n & pll_lock )`)
+    for m in re.finditer(r"~\s*\(([^()]*)\)", text):
+        for name in re.findall(r"[A-Za-z_]\w*", m.group(1)):
+            mark(name, inverted=True)
+            am = re.search(r"\b(?:assign\s+|(?:wire|logic)\s+)" + re.escape(name) + r"\s*=\s*([^;~!]+);", text)
+            if am and name not in ports:
+                for inner in re.findall(r"[A-Za-z_]\w*", am.group(1)):
+                    mark(inner, inverted=True)
     return out
 
 

@@ -456,6 +456,16 @@ def uart_attach(text, sig_pins, rev, notes):
         if not m:
             notes.append("uart: lab {} = {!r} is not a port".format(lab, expr))
             continue
+        if m.group(1) not in ports and m.group(2) is None:
+            # a wire between the lab and the port (marsohod3gw2: `assign
+            # UART_RX = FTB0; assign FTB1 = UART_TX;`)
+            if sig == "rx":
+                alias = re.match(r"^([A-Za-z_]\w*)(?:\[(\d+)\])?$", src)
+            else:
+                fm = re.search(r"\bassign\s+([A-Za-z_]\w*)\s*(\[\s*\d+\s*\])?\s*=\s*" + re.escape(m.group(1)) + r"\s*;", text)
+                alias = re.match(r"^([A-Za-z_]\w*)(?:\[(\d+)\])?$", fm.group(1) + (fm.group(2) or "").replace(" ", "")) if fm else None
+            if alias and alias.group(1) in ports:
+                m = alias
         key = m.group(1).upper() + ("[{}]".format(int(m.group(2))) if m.group(2) else "")
         ref = rev.get(sig_pins.get(key), "gpio" if m.group(2) else "uart") if key in sig_pins else None
         if ref is None:
@@ -692,12 +702,38 @@ def _concat_const_bits(text, sig_pins):
     return out
 
 
+def _slice_const_bits(text):
+    """{"PORT[i]": "1'b0" | "1'b1"} for a constant assigned to a port slice:
+    `assign IO [19:16] = 4'b0000;` (marsohod3gw2), `= '0;`, `= '1;`."""
+    ports = bgm_oracle.top_ports(text)
+    out = {}
+    for m in re.finditer(r"\bassign\s+([A-Za-z_]\w*)\s*\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*=\s*([^;]+);", text):
+        port, hi, lo, rhs = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4).replace(" ", "")
+        if port not in ports:
+            continue
+        lo, hi = min(lo, hi), max(lo, hi)
+        n = hi - lo + 1
+        if rhs in ("'0", "'1"):
+            bits = rhs[-1] * n
+        else:
+            bm = re.match(r"^(\d+)'([bh])([0-9a-fA-F_]+)$", rhs)
+            if not bm:
+                continue
+            v = int(bm.group(3).replace("_", ""), 2 if bm.group(2) == "b" else 16)
+            bits = format(v, "0{}b".format(n))[-n:]
+        for i in range(n):
+            out["{}[{}]".format(port, lo + i)] = "1'b" + bits[n - 1 - i]
+    return out
+
+
 def tie_entries(text, sig_pins, rev, exclude_pins):
     """{ref: value} for scalar ports BGM assigns a constant or the reset,
     skipping pins another attach owns."""
     out = OrderedDict()
     assigns = dict(bgm_oracle.port_bit_assigns(text))
     for k, v in _concat_const_bits(text, sig_pins).items():
+        assigns.setdefault(k, v)
+    for k, v in _slice_const_bits(text).items():
         assigns.setdefault(k, v)
     for port, expr in assigns.items():
         v = _CONST.get(expr.replace(" ", ""))
@@ -1940,9 +1976,17 @@ def _source_kind(src, ports, params, tm_names=None):
     connection: tm_key / tm_key [7:0] -> tm; ~ KEY, SW [8:0] -> board."""
     cm = re.match(r"^~?\s*\{([^{}]*)\}$", src)
     if cm:
-        names = [t.strip().lstrip("~ ").strip() for t in cm.group(1).split(",")]
-        if names and all(re.match(r"^[A-Za-z_]\w*$", n) and n in ports for n in names):
-            return "board", names, None            # MSB first, every element a port
+        names = [" ".join(t.split()).lstrip("~ ").strip() for t in cm.group(1).split(",")]
+        # MSB first, every element a port or one bit of a port (marsohod3gw2:
+        # `top_key = ~ { IO [8], IO [9], IO [10], IO [11] }`)
+        bits = []
+        for n in names:
+            bm = re.match(r"^([A-Za-z_]\w*)\s*(?:\[\s*(\d+)\s*\])?$", n)
+            if not bm or bm.group(1) not in ports:
+                return "other", None, None
+            bits.append(bm.group(1) if bm.group(2) is None else "{}[{}]".format(bm.group(1), bm.group(2)))
+        if bits:
+            return "board", bits, None
         return "other", None, None
     m = re.match(r"^~?\s*([A-Za-z_]\w*)\s*(?:\[\s*([^\]:]+?)\s*(?::\s*([^\]]+?))?\s*\])?$", src)
     if not m:
@@ -1966,7 +2010,7 @@ def _attach_for_port(cfg, pinmap, sig_pins, port):
     """Index of the attach whose binds cover the pins of BGM port `port`
     (all of the port's constrained bits), or None."""
     names = {n.upper() for n in (port if isinstance(port, list) else [port])}
-    port_pins = {sy._norm_pin(h) for k, p in sig_pins.items() if k.split("[", 1)[0] in names
+    port_pins = {sy._norm_pin(h) for k, p in sig_pins.items() if k.split("[", 1)[0] in names or k in names
                  for h in str(p).split(",")}
     if not port_pins:
         return None
@@ -2008,6 +2052,9 @@ def _source_bits(port, rng, sig_pins, params, ranges=None):
     out = []
     for name in reversed(ports):
         up = name.upper()
+        if "[" in up:
+            out.append(up)                          # one bit of a port: `IO[8]`
+            continue
         keys = sorted((k for k in sig_pins if k.split("[", 1)[0] == up),
                       key=lambda k: int(k[k.index("[") + 1:-1]) if "[" in k else -1)
         if keys == [up]:

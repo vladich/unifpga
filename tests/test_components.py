@@ -821,3 +821,36 @@ def test_tm1638_on_the_power_up_reset():
     inst = top[top.index("i_tm1638_led_key_{} (".format(i)):]
     assert inst[:inst.index(");")].count(".rst(rst_on_power_up)") == 1
     assert "assign rst = rst_on_power_up |" in top
+
+
+def test_marsohod3gw2_forms():
+    """BGM marsohod3gw2: the shield's keys `top_key = ~ { IO [8], IO [9],
+    IO [10], IO [11] }`, `assign IO [19:16] = 4'b0000`, the UART through
+    `UART_RX = FTB0` / `FTB1 = UART_TX`, `rst = ~ (key_rst_n & pll_lock)`
+    with key_rst_n = KEY0 & KEY1, and the 8-bit ADC as the microphone."""
+    from tools import bgm_oracle
+    assert sc._source_kind("~ { IO [8], IO [9], IO [10], IO [11] }", {"IO"}, {}) == \
+        ("board", ["IO[8]", "IO[9]", "IO[10]", "IO[11]"], None)
+    assert sc._source_bits(["IO[8]", "IO[9]"], None, {"IO[8]": "29", "IO[9]": "30"}, {}) == ["IO[9]", "IO[8]"]
+    text = ("module board_specific_top (input KEY0, input KEY1, inout [19:0] IO, input FTB0, output FTB1);\n"
+            "wire UART_RX; wire UART_TX;\nassign FTB1 = UART_TX;\nassign UART_RX = FTB0;\n"
+            "assign IO[19:16]= 4'b0000;\nwire key_rst_n; assign key_rst_n = KEY0 & KEY1;\n"
+            "wire rst; assign rst = ~( key_rst_n & pll_lock );\n"
+            "lab_top i_top (.uart_rx ( UART_RX ), .uart_tx ( UART_TX ));\nendmodule\n")
+    assert sc._slice_const_bits(text) == {"IO[16]": "1'b0", "IO[17]": "1'b0", "IO[18]": "1'b0", "IO[19]": "1'b0"}
+    sig_pins = {"FTB0": "60", "FTB1": "59"}
+    rev = sc._Rev({"pinBanks": {"onboard_ft_bridge": {"pins": {"b0": "60", "b1": "59"}}}}, set())
+    notes = []
+    binds, idle = sc.uart_attach(text, sig_pins, rev, notes)
+    assert binds == {"tx": "onboard_ft_bridge.b1", "rx": "onboard_ft_bridge.b0"} and idle is None, notes
+    pol = bgm_oracle.port_polarity(text)
+    assert pol["KEY0"]["inverted"] and pol["KEY1"]["inverted"]
+    r = config_init.resolve_configuration("marsohod3gw2")
+    top = codegen.emit_top_sv(r, strict=True)
+    assert "assign rst = ((~ onboard_buttons[0]) | (~ onboard_buttons[1])) | (~ clk_serial_locked);" in top
+    assert "assign cap_buttons_btn__p" in top and "= ~ gpio[11];" in top
+    assert "adc_parallel_sampler i_adc_8bit_mic_" in top and ".clk(clk_pixel)" in top
+    assert "assign gpio[19] = 1'b0;" in top
+    r["configuration"]["reset"]["sources"][0]["bank"] = "no_such_bank"
+    with pytest.raises(codegen.CodegenError):
+        codegen.emit_top_sv(r, strict=True)

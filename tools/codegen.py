@@ -1406,7 +1406,7 @@ def _clk_mhz_int(clock):
 # `reset_button` attachments count as `pin` sources too. With nothing declared
 # the policy is `power_up`, never a constant 0.
 
-_RESET_KINDS = ("pin", "switch_msb", "switch", "any_key", "key", "tm_key", "power_up")
+_RESET_KINDS = ("pin", "switch_msb", "switch", "any_key", "key", "tm_key", "power_up", "pll_lock", "bank")
 
 
 def reset_sources(resolved, plans=None):
@@ -1437,10 +1437,15 @@ def reset_sources(resolved, plans=None):
             sources.append(("switch", {"index": "msb"}))
         if "switch" in src and src["switch"] is not None and src["switch"] is not False:
             sources.append(("switch", {"index": src["switch"]}))
+        # `bank: onboard_buttons` narrows a key source to that bank's buttons
+        # (marsohod3gw2: KEY0 / KEY1 reset, the shield's keys are the lab's)
         if src.get("any_key"):
-            sources.append(("key", {"index": "any"}))
+            sources.append(("key", {"index": "any", "bank": src.get("bank")}))
         if "key" in src and src["key"] is not None and src["key"] is not False:
-            sources.append(("key", {"index": src["key"]}))
+            sources.append(("key", {"index": src["key"], "bank": src.get("bank")}))
+        if src.get("pll_lock"):
+            # BGM marsohod3gw2: `rst = ~ (key_rst_n & pll_lock)` — held until the PLL locks
+            sources.append(("pll_lock", {"clock": src["pll_lock"]}))
         if "tm_key" in src and src["tm_key"] is not None and src["tm_key"] is not False:
             sources.append(("tm_key", {"index": src["tm_key"]}))
         if src.get("power_up"):
@@ -1477,10 +1482,11 @@ def _index_expr(bus, width, index, what, cfg_id):
     return "{}[{}]".format(bus, i)
 
 
-def _board_key_terms(resolved, plans):
+def _board_key_terms(resolved, plans, bank=None):
     """Active-high expressions of the board's own push-buttons, LSB first:
-    the pins of every buttons provider without a driver, in attach order."""
-    return _board_provider_terms(resolved, plans, "buttons", "btn")
+    the pins of every buttons provider without a driver, in attach order
+    (only those bound to `bank` when given)."""
+    return _board_provider_terms(resolved, plans, "buttons", "btn", bank)
 
 
 def _tm_key_terms(resolved, plans):
@@ -1499,7 +1505,7 @@ def _tm_key_terms(resolved, plans):
     return []
 
 
-def _board_provider_terms(resolved, plans, cap_id, sig):
+def _board_provider_terms(resolved, plans, cap_id, sig, bank=None):
     terms = []
     for pidx, perif, _params in plans[cap_id].providers:
         if perif.get("driver") is not None:
@@ -1507,6 +1513,9 @@ def _board_provider_terms(resolved, plans, cap_id, sig):
         attach = resolved["peripherals"][pidx]
         ref = (attach.get("bind") or {}).get(sig)
         if ref is None:
+            continue
+        if bank is not None and {re.split(r"[.\[]", str(one).strip('"'), 1)[0]
+                                 for one in (ref if isinstance(ref, list) else [ref])} != {bank}:
             continue
         inv = _peripheral_active_polarity(perif, attach, resolved["board_pinmap"]) == "low"
         ports = _bind_bit_ports(resolved, ref)
@@ -1592,7 +1601,10 @@ def _emit_reset(resolved, plans):
             # BGM's `rst = | (~ KEY)` / `~ KEY [0]` reads the board's own keys,
             # never a TM1638's, so the key sources are the pins of the
             # driver-less button providers (button_array), active-high here
-            keys = _board_key_terms(resolved, plans)
+            keys = _board_key_terms(resolved, plans, d.get("bank"))
+            if d.get("bank") and not keys:
+                raise CodegenError("Configuration {}: reset key bank {!r} has no button_array"
+                                   .format(resolved["configuration"]["id"], d["bank"]))
             if keys:
                 terms.append(_index_expr_list(keys, d["index"], "key", resolved["configuration"]["id"]))
                 continue
@@ -1610,6 +1622,11 @@ def _emit_reset(resolved, plans):
                 raise CodegenError("Configuration {}: reset from a TM1638 key but no tm1638_led_key provides buttons"
                                    .format(resolved["configuration"]["id"]))
             terms.append(_index_expr_list(keys, d["index"], "tm_key", resolved["configuration"]["id"]))
+        elif kind == "pll_lock":
+            if d["clock"] not in collect_clock_requirements(resolved):
+                raise CodegenError("Configuration {}: reset.pll_lock names clock {!r}, which no peripheral declares"
+                                   .format(resolved["configuration"]["id"], d["clock"]))
+            terms.append("(~ clk_{}_locked)".format(d["clock"]))
         elif kind == "power_up":
             lines.append("    wire rst_on_power_up;")
             lines.append("    imitate_reset_on_power_up i_imitate_reset_on_power_up "

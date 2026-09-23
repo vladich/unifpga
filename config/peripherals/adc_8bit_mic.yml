@@ -1,0 +1,27 @@
+# An 8-bit parallel ADC (marsohod3gw2's on-board ADC: ADC_D [7:0] + ADC_CLK)
+# read as the microphone: sampled every 1024 clocks, offset binary to a signed
+# sample in the top 8 bits (rtl/peripherals/adc_parallel_sampler.sv, BGM's
+# inline logic).
+
+Peripheral:
+  id: adc_8bit_mic
+  description: 8-bit parallel ADC read as the microphone (sampled every 1024 clocks)
+  parameters:
+    # The clock the sampler runs on (the ADC runs at a quarter of it): the lab
+    # clock, or another (BGM marsohod3gw2: the HDMI pixel clock, overlay)
+    clock: { type: string, default: context.clk }
+  signals:
+    - { name: d,   type: bus, width: 8, direction: input,  comment: "ADC data" }
+    - { name: clk, type: scalar,        direction: output, comment: "ADC conversion clock" }
+  provides:
+    - capability: audio_in
+  driver:
+    module: adc_parallel_sampler
+    file: rtl/peripherals/adc_parallel_sampler.sv
+    port_map:
+      clk:     $clock
+      adc_d:   pin.d
+      adc_clk: pin.clk
+      value:   capability.audio_in.sample
+  pin_assigns:
+    capability.audio_in.valid: const.1
