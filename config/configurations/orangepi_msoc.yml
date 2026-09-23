@@ -49,6 +49,9 @@ Configuration:
         sck: "gpio[11]"
         sd: "gpio[9]"
     - peripheral: i2s_audio_out   # from BGM orangepi_msoc/board_specific_top.sv
+      params:
+        align_right: 0
+        offset_by_one_cycle: 1
       bind:
         mclk: "gpio[8]"
         bclk: "gpio[10]"

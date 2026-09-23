@@ -53,14 +53,15 @@ Configuration:
         pin_bits_g: 10
         pin_bits_b: 10
         color_depth: 444
+        gate: false        # BGM drives the colours ungated (a DAC blanked through BLANK_N)
       bind:
-        clk: onboard_vga.clk
-        blank_n: onboard_vga.blank
         r: onboard_vga.r
         g: onboard_vga.g
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
+        clk: onboard_vga.clk
+        blank_n: onboard_vga.blank
 
   # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic   # binds from BGM de2/board_specific_top.sv

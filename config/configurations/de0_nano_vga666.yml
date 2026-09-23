@@ -31,7 +31,15 @@ Configuration:
         led: onboard_leds
 
   # External peripherals inferred from the variant directory name.
-    - peripheral: vga_4bit
+    - peripheral: vga_4bit   # from BGM de0_nano_vga666/board_specific_top.sv (VGA on header pins)
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        registered: true
       bind:
         r: ["gpio_1[11]", "gpio_1[17]", "gpio_1[3]", "gpio_1[1]"]
         g: ["gpio_1[5]", "gpio_1[19]", "gpio_1[15]", "gpio_1[13]"]

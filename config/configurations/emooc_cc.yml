@@ -62,6 +62,7 @@ Configuration:
         pin_bits_r: 4
         pin_bits_g: 4
         pin_bits_b: 4
+        gate: False
       bind:
         r: ["gpio_p1[2]", "gpio_p1[3]", "gpio_p1[4]", "gpio_p1[5]"]
         g: ["gpio_p1[6]", "gpio_p1[7]", "gpio_p1[8]", "gpio_p1[9]"]

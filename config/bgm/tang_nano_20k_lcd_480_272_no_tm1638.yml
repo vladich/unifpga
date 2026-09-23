@@ -9,6 +9,9 @@ BGM:
   reset:
     sources:
     - power_up: true
+  tie:
+    onboard_lcd.hs: 0
+    onboard_lcd.vs: 0
   attach:
   - peripheral: button_array
     index: 0
@@ -16,3 +19,8 @@ BGM:
       switches: [0, 1]
     params:
       as_switches: true
+  - peripheral: lcd_480_272
+    index: 0
+    bind:
+      hs: null
+      vs: null

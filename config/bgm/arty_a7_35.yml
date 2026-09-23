@@ -31,10 +31,6 @@ BGM:
       switches: []
       leds: [0, 1, 2, 3, 4, 5, 6, 7]
       seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
-  - peripheral: gpio_header
-    index: 0
-    params:
-      mirror: true
   - peripheral: rgb_led
     index: 0
     drop: true
@@ -55,3 +51,8 @@ BGM:
     index: 0
     lab_bits:
       buttons: [0, 1, 2, 3]
+  - peripheral: gpio_header
+    index: 0
+    lab_bits:
+      gpio: [41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 15, 14, 13, 12, 11, 10, 9, 8, 7,
+        6, 5, 4, 3, 2, 1, 0]

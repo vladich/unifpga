@@ -46,6 +46,7 @@ Configuration:
       pin_bits_r: 4
       pin_bits_g: 4
       pin_bits_b: 4
+      gate: False
     bind:
       r: ["pmod_jc[0]", "pmod_jc[1]", "pmod_jc[2]", "pmod_jc[3]"]
       g: ["pmod_jc[4]", "pmod_jc[5]", "pmod_jc[6]", "pmod_jc[7]"]

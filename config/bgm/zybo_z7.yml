@@ -10,6 +10,8 @@ BGM:
     sources:
     - switch_msb: true
   uart_rx: 1
+  lab_width:
+    gpio: 8
   attach:
   - peripheral: sw_bank
     index: 0

@@ -6,6 +6,8 @@
 BGM:
   configuration: c5gx
   variant: c5gx
+  reset:
+    sync: 2
   tie:
     onboard_leds[0]: 0
     onboard_leds[1]: 0

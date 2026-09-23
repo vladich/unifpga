@@ -47,6 +47,10 @@ Configuration:
         lrclk: "gpio_0[11]"
         sdata: "gpio_0[13]"
     - peripheral: hdmi_adv7513   # from BGM de10_nano/board_specific_top.sv
+      params:
+        bits_r: 8
+        bits_g: 8
+        bits_b: 8
       bind:
         clk: onboard_hdmi_tx.clk
         de: onboard_hdmi_tx.de

@@ -10,6 +10,9 @@ BGM:
     sources:
     - power_up: true
     - any_key: true
+  tie:
+    onboard_lcd.hs: 0
+    onboard_lcd.vs: 0
   attach:
   - peripheral: button_array
     index: 0
@@ -26,3 +29,8 @@ BGM:
       switches: [0, 1, 2, 3, 4, 5, 6, 7]
       leds: [0, 1, 2, 3, 4, 5, 6, 7]
       seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
+  - peripheral: lcd_480_272
+    index: 0
+    bind:
+      hs: null
+      vs: null

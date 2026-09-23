@@ -6,6 +6,8 @@
 BGM:
   configuration: alinx_ax7035b_openxc7
   variant: alinx_ax7035b
+  lab_width:
+    gpio: 68
   attach:
   - peripheral: button_array
     index: 0

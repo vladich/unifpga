@@ -31,6 +31,7 @@ Configuration:
         pin_bits_g: 4
         pin_bits_b: 4
         color_depth: 444
+        gate: false        # BGM drives the colours ungated (a DAC blanked through BLANK_N)
       bind:
         r: onboard_vga.r
         g: onboard_vga.g

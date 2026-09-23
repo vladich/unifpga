@@ -6,6 +6,8 @@
 BGM:
   configuration: a7_lite_35t_openxc7
   variant: a7_lite_35t
+  reset:
+    sync: 4
   attach:
   - peripheral: button_array
     index: 0
