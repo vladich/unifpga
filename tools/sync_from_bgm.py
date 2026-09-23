@@ -77,6 +77,8 @@ def reset_policy_for(cfg, pinmap, facts):
         sources.append({"key": 0})
     if "tm_key_msb" in kinds:
         sources.append({"tm_key": "msb"})
+    if "pll_lock" in kinds:
+        sources.append({"pll_lock": True})         # the clock is resolved by apply_reset
     need_pin = "pin" in kinds
     return {"sources": sources, "_need_pin": need_pin, "sync": facts.get("reset_sync"),
             "sync_assert": bool(facts.get("reset_sync_asserts"))}, " | ".join(facts["reset_exprs"])
@@ -117,6 +119,32 @@ def apply_reset(path, dry_run):
         return "skip ({})".format(note)
     pinmap = config_init.read_board_pinmap(cfg["board"]) or {}
     changes = []
+    for src in policy["sources"]:
+        if src.get("pll_lock") is True:
+            # the configuration's one PLL-made source clock (marsohod3gw2:
+            # BGM's rPLL lock -> our serial PLL's)
+            from tools import codegen
+            reqs = codegen.collect_clock_requirements(config_init.resolve_configuration(cid))
+            srcs = [n for n, r in reqs.items() if r.get("from") is None]
+            if len(srcs) != 1:
+                return "WARNING: BGM's reset waits for a PLL lock; clocks {} leave it ambiguous".format(srcs)
+            src["pll_lock"] = srcs[0]
+        if src.get("any_key") and sum(1 for a in cfg.get("attach") or []
+                                      if (a or {}).get("peripheral") == "button_array") > 1:
+            # several button banks: the one BGM's reset keys sit on
+            sig_pins = _bgm_signal_pins(vdir)
+            key_pins = {_norm_pin(str(sig_pins[k]).split(",")[0]) for k in sig_pins
+                        if re.sub(r"\[.*", "", k) in {n.upper() for n in re.findall(r"\b(KEY\w*|BTN\w*)", note)}}
+            for a in cfg.get("attach") or []:
+                if (a or {}).get("peripheral") != "button_array":
+                    continue
+                ref = (a.get("bind") or {}).get("btn")
+                pins = set()
+                for one in (ref if isinstance(ref, list) else [ref]):
+                    pins |= _pins_of_ref(pinmap, str(one))
+                if key_pins and key_pins <= pins:
+                    src["bank"] = re.split(r"[.\[]", str(ref if not isinstance(ref, list) else ref[0]), 1)[0]
+                    break
 
     # 1. dedicated pin -> reset_button attach
     if policy.pop("_need_pin") and not _has_reset_button(cfg):
@@ -1325,6 +1353,42 @@ def _aux_expr_to_ref(expr):
             "rst_n": "context.rst_n"}.get(e)
 
 
+def _sync_adc_clock(cfg, vdir, text, resolved, dry_run):
+    """adc_8bit_mic's `clock` from the clock of BGM's always block that reads
+    the ADC's data port: the lab clock (default) or one of ours by name."""
+    from tools import bgm_overlay, codegen
+    occ = [i for i, a in enumerate(resolved["peripherals"]) if a["peripheral_id"] == "adc_8bit_mic"]
+    if not occ:
+        return []
+    a = resolved["peripherals"][occ[0]]
+    ref = (a.get("bind") or {}).get("d")
+    pins = _pins_of_ref(resolved["board_pinmap"], str(ref))
+    sig_pins = _bgm_signal_pins(vdir)
+    ports = {re.sub(r"\[.*", "", k) for k, pin in sig_pins.items() if _norm_pin(str(pin).split(",")[0]) in pins}
+    net = None
+    for m in re.finditer(r"always\s*@\s*\(\s*posedge\s+([A-Za-z_]\w*)\s*\)(.*?)\bend\b", text, re.S):
+        if any(re.search(r"<=\s*" + re.escape(p) + r"\b", m.group(2), re.I) for p in ports):
+            net = m.group(1)
+            break
+    if net is None:
+        return ["WARNING: adc_8bit_mic: no BGM always block reads {}".format(sorted(ports))]
+    clocks = codegen.collect_clock_requirements(resolved)
+    lab_nets = {"clk", "CLK", bgm_oracle.lab_clock_pll(text) and "clk"}
+    if net in lab_nets:
+        want = None
+    else:
+        name = next((n for n in clocks if re.search(r"\b{}_?clk\b|\bclk_?{}\b".format(n, n), net)), None)
+        if name is None:
+            return ["WARNING: adc_8bit_mic: BGM samples it on {!r}, none of our clocks {}".format(net, list(clocks))]
+        want = "clock." + name
+    cur = bgm_overlay.attach_override(bgm_overlay.load(cfg["id"]) or {}, "adc_8bit_mic", 0, create=False) or {}
+    if (cur.get("params") or {}).get("clock") == want:
+        return []
+    if not dry_run:
+        bgm_overlay.set_attach(cfg["id"], "adc_8bit_mic", 0, params={"clock": want}, variant=os.path.basename(vdir))
+    return ["adc_8bit_mic clock -> {} (BGM: posedge {}) (overlay)".format(want or "the lab clock", net)]
+
+
 def apply_clock_tree(path, dry_run):
     """Per configuration, from the BGM variant's preprocessed top and PLL
     wrapper: (1) `lab_clock: pixel` when BGM runs the lab on the PLL clock;
@@ -1568,6 +1632,10 @@ def apply_clock_tree(path, dry_run):
                         changes.append("{}: drop {} (default {})".format(pid, sig, default))
                 elif _set_attach_param(lines, pid, None, sig, want_ref):
                     changes.append("{}: {} = {} (BGM: assign {} = {})".format(pid, sig, want_ref, bgm_sig, expr))
+
+    # 4. the clock BGM samples a parallel ADC on (marsohod3gw2: `always @
+    #    (posedge pixel_clk) ... adc_ <= ADC_D`): a BGM choice, overlay
+    changes.extend(_sync_adc_clock(cfg, vdir, t, resolved, dry_run))
 
     text = "\n".join(lines)
     if not text.endswith("\n"):

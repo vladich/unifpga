@@ -882,3 +882,14 @@ def test_gold_repairs_are_narrow():
     assert decl[2] == "    wire hsync, vsync, pixel_clk;"
     wide = ["    wire [7:0] lab_led;", "    wire [5:0] lab_led;"]
     assert ec._repair_one(wide, 2, "'lab_led' has already been declared in this scope.") is None
+
+
+def test_reset_waits_for_the_pll_lock():
+    """BGM colorlight: `rst = ~locked | tm_key [..]`; marsohod3gw2: `rst = ~ (
+    key_rst_n & pll_lock )`, key_rst_n = KEY0 & KEY1 — any key and the lock."""
+    from tools import bgm_oracle
+    assert bgm_oracle.classify_reset(["~locked | tm_key [w_tm_key - 1]"]) == {"pll_lock", "tm_key_msb"}
+    text = "wire key_rst_n; assign key_rst_n = KEY0 & KEY1;\nwire rst; assign rst = ~( key_rst_n & pll_lock );\n"
+    assert bgm_oracle.classify_reset(bgm_oracle.reset_exprs(text)) == {"any_key", "pll_lock"}
+    r = config_init.resolve_configuration("colorlight75b_tm1638_ecp5_yosys")
+    assert "(~ clk_serial_locked)" in [l for l in codegen.emit_top_sv(r).splitlines() if "assign rst =" in l][0]

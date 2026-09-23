@@ -233,7 +233,7 @@ def _expand_aliases(expr, text):
         name = m.group(0)
         d = re.search(r"\b(?:wire|assign)\s+(?:\[[^\]]*\]\s*)?" + re.escape(name) + r"\s*=\s*([^;]+);", text)
         return "( {} )".format(" ".join(d.group(1).split())) if d and name != "rst" else name
-    return re.sub(r"\b(?!rst_on_power_up\b)[a-z]\w*_rst\b", sub, expr)
+    return re.sub(r"\b(?!rst_on_power_up\b)[a-z]\w*_rst(?:_n)?\b", sub, expr)
 
 
 def reset_exprs(text):
@@ -315,6 +315,12 @@ def classify_reset(exprs):
             kinds.add("key_0")
         elif re.search(r"\bBTN_N\b", e):
             kinds.add("key_0")
+        # marsohod3gw2: `~ ( ( KEY0 & KEY1 ) & pll_lock )` — any key (active
+        # low, ANDed under the negation) and the PLL's lock
+        if re.search(r"~\s*\(.*\b(KEY\w*|BTN\w*)\s*&\s*(KEY\w*|BTN\w*)\b", e):
+            kinds.add("any_key")
+        if re.search(r"\b\w*_lock\b|\bpll_lock\w*\b|\blocked\b", e):
+            kinds.add("pll_lock")
         stripped = re.sub(r"rst_on_power_up|tm_key\s*\[[^\]]*\]", "", e)
         if re.search(r"(?i)\b(reset\w*|rst\w*|resetn|cpu_resetn|ck_rst|rstn_ff\s*\[\s*1\s*\])\b", stripped):
             kinds.add("pin")
