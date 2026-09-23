@@ -20,5 +20,3 @@ BGM:
     index: 0
     lab_bits:
       leds: [3, 2, 1, 0]
-    params:
-      mirror: true
