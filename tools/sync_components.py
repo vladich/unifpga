@@ -1153,6 +1153,23 @@ def apply_components(path, dry_run):
     if lbits is not None:
         want = led_attaches(lbits, pinmap)
         cur = [a for a in cfg.get("attach") or [] if a.get("peripheral") == "led_bank"]
+        # an LED bank BGM's top drives with its own logic rather than the lab's
+        # led bus (de2_115: LEDR is a 7-seg dp emulation, the lab gets LEDG [7:0])
+        # stays declared; --lab-bits gives it no lab bit
+        want_pins = set()
+        for _p, b in want:
+            for one in (b["led"] if isinstance(b["led"], list) else [b["led"]]):
+                want_pins |= sy._pins_of_ref(pinmap, one)
+        for a in cur:
+            b = a.get("bind") or {}
+            refs = b.get("led")
+            refs = refs if isinstance(refs, list) else [refs]
+            pins = set()
+            for one in refs:
+                pins |= sy._pins_of_ref(pinmap, str(one).strip('"'))
+            if pins and not (pins & want_pins) and pins <= declared_pins:
+                want.append((OrderedDict((k, v) for k, v in (a.get("params") or {}).items()),
+                             {"led": (b["led"] if isinstance(b["led"], list) else str(b["led"]).strip('"'))}))
         want_dicts = [{"params": dict(p), "bind": b} for p, b in want]
         if _led_signature(cur, pinmap) != _led_signature(want_dicts, pinmap):
             _sync_blocks(lines, "led_bank", want, [(a.get("params") or {}, a.get("bind") or {}) for a in cur],
@@ -1824,8 +1841,12 @@ def apply_lab_bits(path, dry_run):
     resolved = config_init.resolve_configuration(cfg["id"])
     try:
         plans = codegen.build_capability_plans(resolved)
-    except codegen.CodegenError as exc:
-        return "ERROR: {} (run --lab-bits after any slice that rewrites attaches)".format(exc)
+    except codegen.CodegenError:
+        # a re-rendered attach lost its lab_bits (a new bind): derive from a
+        # clean slate, the writer replaces every entry anyway
+        for a in resolved["peripherals"]:
+            a["lab_bits"] = {}
+        plans = codegen.build_capability_plans(resolved)
     pinmap = resolved["board_pinmap"]
     pp = bgm_oracle.preprocess_variant(vdir)
     text = bgm_oracle.strip_comments(pp.text)
