@@ -46,8 +46,9 @@ Peripheral:
     - { name: serial, mhz: 252 }
     - { name: pixel, from: serial, divide: 10 }
     # BGM's Gowin DVI_TX boards run `vga` on their 5x DDR serial clock (125
-    # MHz); ours is 10x SDR, so the timing generator gets serial / 2
-    - { name: timing, from: serial, divide: 2, when: { timing: serial } }
+    # MHz); ours is 10x SDR, so the timing generator gets serial / 2, phase-
+    # aligned with it (aligned: the rPLL's CLKOUTD, not a CLKDIV the lock starts)
+    - { name: timing, from: serial, divide: 2, aligned: true, when: { timing: serial } }
   driver:
     module: hdmi_tmds_out
     file: rtl/peripherals/hdmi_tmds_out.sv

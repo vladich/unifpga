@@ -28,6 +28,7 @@ module pll_gowin_rpll
 (
     input  clkin,
     output clkout,
+    output clkoutd,      // CLKOUT / DYN_SDIV_SEL (when USE_CLKOUTD = 0, a second clock)
     output lock
 );
 
@@ -139,5 +140,6 @@ module pll_gowin_rpll
     endgenerate
 
     assign clkout = USE_CLKOUTD ? clkoutd_o : clkout_o;
+    assign clkoutd = clkoutd_o;
 
 endmodule

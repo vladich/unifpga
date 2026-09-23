@@ -43,7 +43,9 @@ module rPLL
     // Period model: CLKOUT = CLKIN * (FBDIV+1) / (IDIV+1); CLKOUTD = CLKOUT / SDIV.
     real t_in = 37.037, t_out;
     real last = 0.0;
-    integer sdiv_cnt = 0;
+    // CLKOUTD rises with CLKOUT's first edge: a PLL's divided output is
+    // phase-aligned with its other outputs (the count starts one short)
+    integer sdiv_cnt = DYN_SDIV_SEL - 1;
     initial begin
         CLKOUT = 0; CLKOUTP = 0; CLKOUTD = 0; CLKOUTD3 = 0; LOCK = 0;
     end

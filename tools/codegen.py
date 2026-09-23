@@ -392,6 +392,8 @@ def collect_clock_requirements(resolved):
             tol = float(c.get("tolerance_pct", 0.5))
             if "from" in c:
                 entry = {"mhz": None, "from": c["from"], "divide": int(c["divide"])}
+                if c.get("aligned"):
+                    entry["aligned"] = True     # phase-aligned with its source: a PLL output, not a CLKDIV
             else:
                 mhz = float(c["mhz"])
                 override = (attach.get("params") or {}).get("clock_{}_mhz".format(name))
@@ -615,6 +617,7 @@ def _gowin_rpll_device(resolved):
     return "{}-{}C".format(m.group(1), m.group(2)) if m else "GW1NR-9C"
 
 
+_RPLL_SDIV = set(range(2, 130, 2))         # rPLL DYN_SDIV_SEL: even, 2..128
 _GOWIN_CLKDIV = {2, 4, 5, 8, 10}          # rtl/pll/clkdiv_gowin.sv; 8 needs Arora
 
 
@@ -700,7 +703,15 @@ def plan_clock_tree(resolved, plans=None):
                                .format(cfg_id, name, r["divide"]))
         if src_kind in ("xilinx_mmcm", "gowin_gw5"):
             continue                        # already an output of the shared PLL
-        if vendor == "gowin_rpll":
+        src_sol = out[r["from"]][3]
+        if r.get("aligned") and src_kind == "gowin_rpll" and not src_sol.use_clkoutd and r["divide"] in _RPLL_SDIV \
+                and not any(v[2] == "rpll_clkoutd" and v[3].source == r["from"] for v in out.values()):
+            # the rPLL's own divided output (CLKOUTD, SDIV): phase-aligned with
+            # CLKOUT like every PLL output, unlike a CLKDIV started by the lock
+            # (hdmi_tmds's timing clock: BGM's 125 MHz DVI_TX serial clock)
+            out[r["from"]] = out[r["from"]][:3] + (src_sol._replace(sdiv=r["divide"]),)
+            out[name] = (name, r, "rpll_clkoutd", ClockDerived(r["mhz"], r["from"], r["divide"]))
+        elif vendor == "gowin_rpll":
             if r["divide"] not in _GOWIN_CLKDIV or (r["divide"] == 8 and _is_gowin_littlebee(board)):
                 raise CodegenError("Configuration {}: clock '{}' = {} / {} has no CLKDIV/CLKDIV2 combination "
                                    "on this Gowin family".format(cfg_id, name, r["from"], r["divide"]))
@@ -763,6 +774,10 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
             lines.append("    wire {n} = clk;               // {f:g} MHz: the board clock itself".format(n=net, f=sol.f_out))
             lines.append("    wire {n}_locked = 1'b1;".format(n=net))
             continue
+        if vendor == "rpll_clkoutd":
+            lines.append("    wire {n}_locked = clk_{s}_locked;   // {f:.4f} MHz: clk_{s}'s CLKOUTD (SDIV {d})".format(
+                n=net, s=sol.source, f=sol.f_out, d=sol.divide))
+            continue
         if vendor == "derived":
             src = "clk_" + sol.source
             lines.append("    wire {n};".format(n=net))
@@ -816,12 +831,16 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
                 mmcm_done = True
             continue
         lines.append("    wire {n}, {n}_locked;".format(n=net))
+        clkoutd = next(("clk_" + n2 for n2, _r2, v2, s2 in tree if v2 == "rpll_clkoutd" and s2.source == name), None)
+        if clkoutd:
+            lines.append("    wire {};".format(clkoutd))
         if vendor == "gowin_rpll":
             lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz{})".format(
                 net, sol.f_out, fin_str, sol.f_pfd, sol.f_vco, ", via CLKOUTD" if sol.use_clkoutd else ""))
             lines.append('    pll_gowin_rpll # (.PRIMITIVE("{prim}"), .FCLKIN("{fin}"), .IDIV_SEL({i}), .FBDIV_SEL({f}), '
                          '.ODIV_SEL({o}), .DYN_SDIV_SEL({s}), .USE_CLKOUTD(1\'b{d}), .DEVICE("{dev}")) i_pll_{name} '
-                         '(.clkin(clk), .clkout({net}), .lock({net}_locked));'.format(
+                         '(.clkin(clk), .clkout({net}){cd}, .lock({net}_locked));'.format(
+                             cd=", .clkoutd({})".format(clkoutd) if clkoutd else "",
                              prim=_gowin_rpll_primitive(resolved["board"]),
                              fin=fin_str, i=sol.idiv, f=sol.fbdiv, o=sol.odiv, s=sol.sdiv,
                              d=1 if sol.use_clkoutd else 0, dev=_gowin_rpll_device(resolved),
