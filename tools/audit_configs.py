@@ -197,6 +197,8 @@ def classify_bgm_reset(exprs):
     for k in bgm_oracle.classify_reset(exprs):
         if k in ("key_0", "key_msb", "any_key"):
             kinds.add("key")
+        elif k == "tm_key_msb":
+            kinds.add("tm_key")
         elif k == "switch_msb":
             kinds.add("switch")
         else:

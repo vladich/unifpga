@@ -59,7 +59,8 @@ module seven_seg_shared_to_per_digit
     generate
         if (latched) begin : g_latched
 
-            always_ff @ (posedge clk)
+            // BGM: `always_ff @ (posedge clk or posedge rst)`, all off on reset
+            always_ff @ (posedge clk or posedge rst)
                 if (rst)
                     hex_o <= {digits {blank}};
                 else

@@ -130,14 +130,15 @@ def parse_ports(text, module):
         dm = re.match(r"(input|output|inout)\b", chunk)
         if dm:
             cur_dir = dm.group(1)
-        width = None
+        width, lsb = None, 0
         rm = re.search(r"\[\s*(\d+)\s*:\s*(\d+)\s*\]", chunk)
         if rm:
             width = abs(int(rm.group(1)) - int(rm.group(2))) + 1
+            lsb = min(int(rm.group(1)), int(rm.group(2)))       # `output [8:1] LED` (omdazz_epm570)
         stripped = re.sub(r"\[[^\]]*\]", " ", chunk)
         idents = [w for w in re.findall(r"[A-Za-z_]\w*", stripped) if w not in _SV_NON_PORT_WORDS]
         if idents and cur_dir:
-            ports[idents[-1]] = {"dir": cur_dir, "width": width}
+            ports[idents[-1]] = {"dir": cur_dir, "width": width, "lsb": lsb}
     return ports
 
 
@@ -225,9 +226,10 @@ def wrapper_text(wrap_name, inner, ports, bits, pins, klass):
             expect = 1
         else:
             idxs = [i for i in pb if i is not None]
-            width = info.get("width") or (max(idxs) + 1)
+            lsb = info.get("lsb") or 0
+            width = info.get("width") or (max(idxs) + 1 - lsb)
             parts = []
-            for i in range(width - 1, -1, -1):
+            for i in range(lsb + width - 1, lsb - 1, -1):
                 if i in pb:
                     parts.append(_pname(pb[i]))
                 else:

@@ -17,7 +17,9 @@ Peripheral:
       default: low
     latched:
       type: bool
-      default: false      # true = digits keep their last pattern (all lit at once)
+      default: true       # BGM's default: sticky flops — each digit keeps the last pattern written while
+                          # it was selected (`if (digit [i]) HEXi <= ~ hgfedcba`, reset to all off);
+                          # false = combinational fan-out (BGM's EMULATE_DYNAMIC_7SEG_ON_STATIC_WITHOUT_STICKY_FLOPS)
   signals:
     # Bound to a list of per-digit banks, LSB first:
     #   hex: [onboard_7seg.hex0, onboard_7seg.hex1, ...]

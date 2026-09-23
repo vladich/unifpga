@@ -25,20 +25,17 @@
                W_X    = w_x      > 0 ? w_x      : 1,
                W_Y    = w_y      > 0 ? w_y      : 1;
 
-    function automatic logic z0 (input logic v);
-        return (v === 1'bz) ? 1'b0 : v;
-    endfunction
-
-    function automatic logic mix (input int i, input int a, input int b, input int c);
-        // one bit of every input bus, distinct strides per output bus
-        return z0 (eq_key  [(i * a + 0) % W_KEY ])
-             ^ z0 (sw      [(i * b + 1) % W_SW  ])
-             ^ z0 (gpio    [(i * c + 2) % W_GPIO])
-             ^ z0 (x       [(i * a + 1) % W_X   ])
-             ^ z0 (y       [(i * b + 2) % W_Y   ])
-             ^ z0 (eq_mic  [(i * c + 3) % 24    ])
-             ^ z0 (uart_rx);
-    endfunction
+    // Text macros, not functions: Icarus re-evaluates a continuous assign
+    // that calls a function only when the function's *arguments* change, so
+    // a function reading the buses directly evaluates once, at time 0, to x.
+    `define EQ_Z0(v) ((((v)) === 1'bz) ? 1'b0 : ((v)))
+    `define EQ_MIX(i, a, b, c) ( `EQ_Z0(eq_key [(((i) * (a)) + 0) % W_KEY ]) \
+                               ^ `EQ_Z0(sw     [(((i) * (b)) + 1) % W_SW  ]) \
+                               ^ `EQ_Z0(gpio   [(((i) * (c)) + 2) % W_GPIO]) \
+                               ^ `EQ_Z0(x      [(((i) * (a)) + 1) % W_X   ]) \
+                               ^ `EQ_Z0(y      [(((i) * (b)) + 2) % W_Y   ]) \
+                               ^ `EQ_Z0(eq_mic [(((i) * (c)) + 3) % 24    ]) \
+                               ^ `EQ_Z0(uart_rx) )
 
     logic [31:0] cnt;
     logic [ 5:0] tick;
@@ -65,25 +62,25 @@
 
     generate
         for (i = 0; i < w_led; i++) begin : g_led
-            assign led_w [i] = mix (i, 3, 7, 11) ^ cnt [i % 32];
+            assign led_w [i] = `EQ_MIX(i, 3, 7, 11) ^ cnt [i % 32];
         end
         for (i = 0; i < 8; i++) begin : g_seg
-            assign abcdefgh_w [i] = mix (i, 5, 13, 17) ^ cnt [(i + 8) % 32];
+            assign abcdefgh_w [i] = `EQ_MIX(i, 5, 13, 17) ^ cnt [(i + 8) % 32];
         end
         for (i = 0; i < w_digit; i++) begin : g_digit
-            assign digit_w [i] = mix (i, 7, 19, 23) ^ cnt [(i + 16) % 32];
+            assign digit_w [i] = `EQ_MIX(i, 7, 19, 23) ^ cnt [(i + 16) % 32];
         end
         for (i = 0; i < w_red; i++) begin : g_red
-            assign red_w [i] = mix (i, 11, 29, 31) ^ cnt [(i + 20) % 32];
+            assign red_w [i] = `EQ_MIX(i, 11, 29, 31) ^ cnt [(i + 20) % 32];
         end
         for (i = 0; i < w_green; i++) begin : g_green
-            assign green_w [i] = mix (i, 13, 37, 41) ^ cnt [(i + 24) % 32];
+            assign green_w [i] = `EQ_MIX(i, 13, 37, 41) ^ cnt [(i + 24) % 32];
         end
         for (i = 0; i < w_blue; i++) begin : g_blue
-            assign blue_w [i] = mix (i, 17, 43, 47) ^ cnt [(i + 28) % 32];
+            assign blue_w [i] = `EQ_MIX(i, 17, 43, 47) ^ cnt [(i + 28) % 32];
         end
         for (i = 0; i < 16; i++) begin : g_sound
-            assign sound_w [i] = mix (i, 19, 53, 59) ^ z0 (eq_mic [(i + 8) % 24]) ^ cnt [(i + 4) % 32];
+            assign sound_w [i] = `EQ_MIX(i, 19, 53, 59) ^ `EQ_Z0(eq_mic [(i + 8) % 24]) ^ cnt [(i + 4) % 32];
         end
     endgenerate
 
@@ -94,7 +91,7 @@
     assign green    = green_w;
     assign blue     = blue_w;
     assign sound    = sound_w;
-    assign uart_tx  = z0 (uart_rx) ^ z0 (eq_key [0]) ^ cnt [20];
+    assign uart_tx  = `EQ_Z0(uart_rx) ^ `EQ_Z0(eq_key [0]) ^ cnt [20];
 
     // Symmetric probe for tools/equiv_check.py: what the lab sees at a few
     // fixed cycles (the runner keeps EQUIV-* lines from both sides).

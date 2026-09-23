@@ -15,7 +15,8 @@ The reset mapping (see codegen.reset_sources for the policy vocabulary):
     rst_on_power_up                      ->  power_up: true
     sw [w_sw - 1] / SW [w_lab_sw]        ->  switch_msb: true
     | (~ KEY)                            ->  any_key: true
-    ~ KEY [w_key - 1] / tm_key [msb]     ->  key: msb
+    ~ KEY [w_key - 1]                    ->  key: msb
+    tm_key [w_tm_key - 1]                ->  tm_key: msb  (the TM1638's own key)
     ~ KEY [0] / btn [0] / ~ BTN_N        ->  key: 0
     ~ RESET / ~ RST_N / ~ CPU_RESETN ... ->  pin (kept as the existing
                                               reset_button attach when present;
@@ -74,6 +75,8 @@ def reset_policy_for(cfg, pinmap, facts):
         sources.append({"key": "msb"})
     elif "key_0" in kinds:
         sources.append({"key": 0})
+    if "tm_key_msb" in kinds:
+        sources.append({"tm_key": "msb"})
     need_pin = "pin" in kinds
     return {"sources": sources, "_need_pin": need_pin}, " | ".join(facts["reset_exprs"])
 

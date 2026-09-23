@@ -391,11 +391,82 @@ def adv7513_attach(text, sig_pins, rev):
 
 # ---------------------------------------------------------------- ties
 
+def _concat_const_bits(text, sig_pins):
+    """{PORT[i]: "1'b0"|"1'b1"} for the constant elements of a whole-port
+    concatenation assign: de2_115 `LEDG = { { $bits (LEDG) - w_lab_led { 1'b0 } },
+    lab_led }` (LEDG [8] = 0), zeowaa_wo_dig_0 `DIGIT_N = ~ { lab_digit, 1'b0 }`
+    (DIGIT_N [0] = 1). Element widths come from the top's parameters; one
+    unknown identifier takes the rest of the port."""
+    ports = bgm_oracle.top_ports(text)
+    params = _top_params(text)
+    out = {}
+    for m in re.finditer(r"\bassign\s+([A-Za-z_]\w*)\s*=\s*(~?)\s*\{(.*?)\}\s*;", text, re.S):
+        port, inv, body = m.group(1), m.group(2), m.group(3)
+        if port not in ports:
+            continue
+        keys = [k for k in sig_pins if k.split("[", 1)[0] == port.upper() and "[" in k]
+        if not keys:
+            continue
+        pw = max(int(k[k.index("[") + 1:-1]) for k in keys) + 1
+        elems = _split_top_level(body)
+        widths, consts = [], []
+        for el in elems:
+            el = " ".join(el.split())
+            cm = re.match(r"^(\d+)'[bBdDhH]([0-9a-fA-F_xXzZ]+)$", el)
+            rm = re.match(r"^\{\s*(.+?)\s*\{\s*(\d+)'[bB]([01])\s*\}\s*\}$", el)
+            if cm:
+                w = int(cm.group(1))
+                v = int(cm.group(2).replace("_", ""), 2 if "b" in el.lower() else (16 if "h" in el.lower() else 10))
+                widths.append(w)
+                consts.append((w, v))
+            elif rm:
+                cnt_expr = re.sub(r"\$bits\s*\(\s*" + re.escape(port) + r"\s*\)", str(pw), rm.group(1))
+                k = _eval_int(cnt_expr, params)
+                if k is None:
+                    widths.append(None)
+                    consts.append(None)
+                    continue
+                widths.append(k * int(rm.group(2)))
+                consts.append((k * int(rm.group(2)), (int(rm.group(3)) * ((1 << (k * int(rm.group(2)))) - 1))))
+            else:
+                name = re.match(r"^~?\s*([A-Za-z_]\w*)", el)
+                w = None
+                if name:
+                    n = name.group(1)
+                    w = params.get("w_" + n) or params.get("w_" + n.replace("lab_", "lab_")) or params.get(n)
+                    if w is None and n.startswith("lab_"):
+                        w = params.get("w_lab_" + n[4:])
+                widths.append(w)
+                consts.append(None)
+        if widths.count(None) > 1:
+            continue
+        known = sum(w for w in widths if w is not None)
+        if None in widths:
+            widths[widths.index(None)] = pw - known
+        if sum(widths) != pw:
+            continue
+        bit = pw
+        for w, c in zip(widths, consts):
+            bit -= w
+            if c is None:
+                continue
+            cw, cv = c
+            for i in range(cw):
+                v = (cv >> i) & 1
+                if inv:
+                    v ^= 1
+                out["{}[{}]".format(port, bit + i)] = "1'b{}".format(v)
+    return out
+
+
 def tie_entries(text, sig_pins, rev, exclude_pins):
     """{ref: value} for scalar ports BGM assigns a constant or the reset,
     skipping pins another attach owns."""
     out = OrderedDict()
-    for port, expr in bgm_oracle.port_bit_assigns(text).items():
+    assigns = dict(bgm_oracle.port_bit_assigns(text))
+    for k, v in _concat_const_bits(text, sig_pins).items():
+        assigns.setdefault(k, v)
+    for port, expr in assigns.items():
         v = _CONST.get(expr.replace(" ", ""))
         if v is None:
             continue
@@ -426,8 +497,44 @@ def led_bits(text, sig_pins, rev):
         else:
             notes.append("led[{}] -> {}: no pin in the constraint files".format(bit, key))
 
+    params = _top_params(text)
     for m in bgm_oracle._ASSIGN_ANY.finditer(text):
         lhs, rhs = m.group(1).strip(), " ".join(m.group(2).split())
+        cm = re.match(r"^(~?)\s*\{(.*)\}$", rhs)
+        if cm and lhs in ports and re.search(r"\b(led|lab_led)\b", cm.group(2)):
+            # de2_115: LEDG = { { $bits (LEDG) - w_lab_led { 1'b0 } }, lab_led }; the
+            # lab bus sits above the elements after it
+            keys_all = _bus_keys(lhs, sig_pins)
+            pw = len(keys_all)
+            elems = [" ".join(e.split()) for e in _split_top_level(cm.group(2))]
+            pos = None
+            below = 0
+            for el in reversed(elems):
+                em = re.match(r"^(~?)\s*(led|lab_led)$", el)
+                if em:
+                    pos = below
+                    inv_el = bool(em.group(1)) != bool(cm.group(1))
+                    break
+                w = None
+                c1 = re.match(r"^(\d+)'[bBdDhH]", el)
+                r1 = re.match(r"^\{\s*(.+?)\s*\{\s*(\d+)'[bB][01]\s*\}\s*\}$", el)
+                if c1:
+                    w = int(c1.group(1))
+                elif r1:
+                    k = _eval_int(re.sub(r"\$bits\s*\(\s*" + re.escape(lhs) + r"\s*\)", str(pw), r1.group(1)), params)
+                    w = k * int(r1.group(2)) if k is not None else None
+                else:
+                    nm = re.match(r"^~?\s*([A-Za-z_]\w*)$", el)
+                    w = params.get("w_" + nm.group(1)) if nm else None
+                if w is None:
+                    pos = None
+                    break
+                below += w
+            if pos is not None:
+                w_lab = params.get("w_lab_led") or params.get("w_led") or (pw - below)
+                for i in range(min(w_lab, pw - pos)):
+                    put(i, "{}[{}]".format(lhs.upper(), pos + i), inv_el)
+                continue
         od = _LED_OD.match(rhs)
         if od:
             lm = re.match(r"^([A-Za-z_]\w*)\s*(?:\[\s*(\d+)\s*\])?$", lhs)
@@ -1103,9 +1210,25 @@ def apply_components(path, dry_run):
     for a in _yaml_attaches(lines):
         if a.get("peripheral") in _GPIO_PERIPHERALS:
             continue
+        # a provider bit no lab bit reaches (lab_bits: [0..7, ~]) is not driven
+        # by the attach: BGM's `LEDG = { 1'b0, lab_led }` ties LEDG [8] (de2_115)
+        unmapped = set()
+        for cap_bits in (a.get("lab_bits") or {}).values():
+            unmapped |= {k for k, b in enumerate(cap_bits or []) if b is None}
         for ref in (a.get("bind") or {}).values():
-            for one in (ref if isinstance(ref, list) else [ref]):
-                bound |= sy._pins_of_ref(pinmap, one)
+            refs = ref if isinstance(ref, list) else [ref]
+            pins_in_order = []
+            for one in refs:
+                pins_in_order.extend(_ref_pins_in_order(pinmap, one))
+            for k, pin in enumerate(pins_in_order):
+                if k in unmapped and len(refs) == 1 or (k in unmapped and isinstance(ref, list)):
+                    continue
+                bound.add(pin)
+            for one in refs:
+                # the P/N halves and anything _ref_pins_in_order simplified away
+                for pn in sy._pins_of_ref(pinmap, one):
+                    if pn not in pins_in_order or pins_in_order.index(pn) not in unmapped:
+                        bound.add(pn)
     for src in ((cfg.get("reset") or {}).get("sources") or []):
         if isinstance(src, dict) and src.get("pin"):
             bound |= sy._pins_of_ref(pinmap, src["pin"])
@@ -1536,6 +1659,25 @@ def _lab_bits_wanted(text, cfg, resolved, plans, sig_pins, rev, notes):
         if not shares:
             if tm_idx is not None and any(p == tm_idx for p, _perif, _pp in plans[cap].providers) and has_tm:
                 notes.append("{}: TM1638 present but BGM does not connect {} to lab_{}".format(lab_port, tm_sig, lab_port))
+            if cap == "leds":
+                # BGM may hand the lab only part of the LEDs (de2_115: LEDG [7:0];
+                # LEDR is its own 7-seg dp emulation): map by BGM's led bits
+                lbits, _n = led_bits(text, sig_pins, rev)
+                if lbits:
+                    by_ref = {}
+                    for bit, (ref, _inv, _od) in enumerate(lbits):
+                        by_ref.setdefault(str(ref), bit)
+                    mapping, default, off = {}, {}, 0
+                    for pidx, w in board_providers(cap):
+                        bind = (resolved["peripherals"][pidx].get("bind") or {}).get("led")
+                        refs = bind if isinstance(bind, list) else ([str(bind)] if w == 1 else ["{}[{}]".format(bind, i) for i in range(w)])
+                        mapping[pidx] = [by_ref.get(str(r).strip('"')) for r in refs]
+                        default[pidx] = list(range(off, off + w))
+                        off += w
+                    if mapping != default and any(b is not None for bits in mapping.values() for b in bits):
+                        for pidx, bits in mapping.items():
+                            wanted[pidx][cap] = bits
+                        continue
             set_default(cap)
             continue
         wanted[tm_idx][cap] = list(range(_TM_WIDTH))

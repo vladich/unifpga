@@ -1292,7 +1292,7 @@ def _clk_mhz_int(clock):
 # `reset_button` attachments count as `pin` sources too. With nothing declared
 # the policy is `power_up`, never a constant 0.
 
-_RESET_KINDS = ("pin", "switch_msb", "switch", "any_key", "key", "power_up")
+_RESET_KINDS = ("pin", "switch_msb", "switch", "any_key", "key", "tm_key", "power_up")
 
 
 def reset_sources(resolved, plans=None):
@@ -1327,6 +1327,8 @@ def reset_sources(resolved, plans=None):
             sources.append(("key", {"index": "any"}))
         if "key" in src and src["key"] is not None and src["key"] is not False:
             sources.append(("key", {"index": src["key"]}))
+        if "tm_key" in src and src["tm_key"] is not None and src["tm_key"] is not False:
+            sources.append(("tm_key", {"index": src["tm_key"]}))
         if src.get("power_up"):
             sources.append(("power_up", {}))
     if not sources:
@@ -1355,6 +1357,22 @@ def _board_key_terms(resolved, plans):
     """Active-high expressions of the board's own push-buttons, LSB first:
     the pins of every buttons provider without a driver, in attach order."""
     return _board_provider_terms(resolved, plans, "buttons", "btn")
+
+
+def _tm_key_terms(resolved, plans):
+    """The TM1638's key bits (active-high), LSB first, from its own wire when
+    the buttons bus is merged, else from its slice of the bus."""
+    plan = plans["buttons"]
+    for pidx, perif, _params in plan.providers:
+        if perif.get("id") != "tm1638_led_key":
+            continue
+        w = plan.widths.get(pidx, 8)
+        if plan.merged and pidx in plan.bits:
+            wire = _provider_wire(plan, "btn", pidx)
+            return ["{}[{}]".format(wire, i) for i in range(w)]
+        off = plan.offsets.get(pidx, 0)
+        return ["cap_buttons_btn[{}]".format(off + i) for i in range(w)]
+    return []
 
 
 def _board_provider_terms(resolved, plans, cap_id, sig):
@@ -1438,6 +1456,13 @@ def _emit_reset(resolved, plans):
                 continue
             terms.append(_index_expr("cap_buttons_btn", w, d["index"], "key",
                                      resolved["configuration"]["id"]))
+        elif kind == "tm_key":
+            # BGM's `rst = rst_on_power_up | tm_key [w_tm_key - 1]`: the TM1638's own key
+            keys = _tm_key_terms(resolved, plans)
+            if not keys:
+                raise CodegenError("Configuration {}: reset from a TM1638 key but no tm1638_led_key provides buttons"
+                                   .format(resolved["configuration"]["id"]))
+            terms.append(_index_expr_list(keys, d["index"], "tm_key", resolved["configuration"]["id"]))
         elif kind == "power_up":
             lines.append("    wire rst_on_power_up;")
             lines.append("    imitate_reset_on_power_up i_imitate_reset_on_power_up "

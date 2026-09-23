@@ -235,7 +235,7 @@ def classify_reset(exprs):
     """Map BGM reset expressions to the unifpga reset-policy source kinds.
 
     Returns a set drawn from {"pin", "switch_msb", "any_key", "key_msb",
-    "key_0", "power_up"}. `any_key` covers `| (~KEY)`; a single indexed key
+    "key_0", "tm_key_msb", "power_up"}. `any_key` covers `| (~KEY)`; a single indexed key
     is reported as key_0 / key_msb so the policy can be exact."""
     kinds = set()
     for e in exprs:
@@ -245,9 +245,11 @@ def classify_reset(exprs):
             kinds.add("switch_msb")
         if re.search(r"\(\s*\|\s*\(?\s*~?\s*(KEY|key|BTN|btn)\b", e):
             kinds.add("any_key")
-        elif re.search(r"\b(KEY\w*|key|BTN\w*|btn|tm_key)\s*\[\s*w_\w*key\w*\s*-\s*1\s*\]", e):
+        elif re.search(r"\btm_key\s*\[\s*w_\w*key\w*\s*-\s*1\s*\]", e):
+            kinds.add("tm_key_msb")        # the TM1638's own last key (icebreaker, tang_primer_20k)
+        elif re.search(r"\b(KEY\w*|key|BTN\w*|btn)\s*\[\s*w_\w*key\w*\s*-\s*1\s*\]", e):
             kinds.add("key_msb")
-        elif re.search(r"\b(KEY\w*|key|BTN\w*|btn|tm_key)\s*\[\s*w_\w*key\w*\s*\]", e):
+        elif re.search(r"\b(KEY\w*|key|BTN\w*|btn)\s*\[\s*w_\w*key\w*\s*\]", e):
             kinds.add("key_msb")           # BGM's `KEY [w_lab_key]`: first key above the lab's range
         elif re.search(r"\b(KEY\w*|key|BTN\w*|btn)\s*\[\s*0\s*\]", e):
             kinds.add("key_0")

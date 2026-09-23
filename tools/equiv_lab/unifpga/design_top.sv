@@ -53,9 +53,9 @@ module design_top
     wire [w_rgb_led - 1:0] rgb_r_w, rgb_g_w, rgb_b_w;
     generate
         for (i = 0; i < w_rgb_led; i++) begin : g_rgb
-            assign rgb_r_w [i] = mix (i, 23, 61, 67) ^ z0 (mic_valid) ^ cnt [(i + 1) % 32];
-            assign rgb_g_w [i] = mix (i, 29, 71, 73) ^ cnt [(i + 2) % 32];
-            assign rgb_b_w [i] = mix (i, 31, 79, 83) ^ cnt [(i + 3) % 32];
+            assign rgb_r_w [i] = `EQ_MIX(i, 23, 61, 67) ^ `EQ_Z0(mic_valid) ^ cnt [(i + 1) % 32];
+            assign rgb_g_w [i] = `EQ_MIX(i, 29, 71, 73) ^ cnt [(i + 2) % 32];
+            assign rgb_b_w [i] = `EQ_MIX(i, 31, 79, 83) ^ cnt [(i + 3) % 32];
         end
     endgenerate
     assign rgb_r = rgb_r_w;
