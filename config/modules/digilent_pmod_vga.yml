@@ -1,0 +1,25 @@
+# Digilent PmodVGA: resistor-ladder VGA output on two Pmod ports, 4 bits per colour.
+Module:
+  id: digilent_pmod_vga
+  name: Digilent PmodVGA
+  peripheral: vga_4bit
+  voltage: 3.3
+  pins:
+    R0: r[0]
+    R1: r[1]
+    R2: r[2]
+    R3: r[3]
+    G0: g[0]
+    G1: g[1]
+    G2: g[2]
+    G3: g[3]
+    B0: b[0]
+    B1: b[1]
+    B2: b[2]
+    B3: b[3]
+    HS: hs
+    VS: vs
+  source: >-
+    Digilent PmodVGA reference manual, not fetched (digilent.com refuses automated
+    access); the pin-to-port placement is not recorded, setups wire it signal by signal
+  verified: false

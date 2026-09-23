@@ -1,0 +1,15 @@
+# I2S stereo DAC breakout with a master-clock input (PCM5102A-class).
+Module:
+  id: i2s_dac_breakout
+  name: I2S DAC breakout
+  peripheral: i2s_audio_out
+  voltage: 3.3
+  pins:
+    VIN: power
+    GND: ground
+    SCK: mclk
+    BCK: bclk
+    DIN: sdata
+    LCK: lrclk
+  source: common PCM5102A breakout silkscreen (SCK BCK DIN LCK); the exact board used is not recorded
+  verified: false

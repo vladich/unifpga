@@ -1,0 +1,35 @@
+# Setup tang_primer_20k_dock_hdmi_no_tm1638_yosys: the rig config/configurations/tang_primer_20k_dock_hdmi_no_tm1638_yosys.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_primer_20k_dock_hdmi_no_tm1638_yosys
+  board: tang_primer_20k_dock
+  toolchain: nextpnr_apicula
+  use:
+    - onboard: clock
+    - onboard: leds
+    - onboard: uart
+    - onboard: switches
+    - onboard: buttons
+    - onboard: hdmi
+      params: {timing: dvi}
+    - module: inmp441_breakout
+      wires: {L/R: j14.8, WS: j14.6, SCK: j14.10, SD: j14.12}
+    - onboard: headphone
+    - module: i2s_dac_breakout
+      wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
+      params: {align_right: 0, offset_by_one_cycle: 1}
+  extra:
+    io_overrides:
+      gpio_1[2]: LVCMOS33
+      gpio_1[3]: LVCMOS33
+      gpio_1[6]: LVCMOS33
+      gpio_1[7]: LVCMOS33
+      gpio_2[0]: LVCMOS33
+      gpio_2[4]: LVCMOS33
+      onboard_headphone: LVCMOS33
+      onboard_leds[2]: LVCMOS33
+      onboard_leds[3]: LVCMOS33
+      onboard_leds[4]: LVCMOS33
+      onboard_leds[5]: LVCMOS33
+      onboard_pa_enable: LVCMOS33

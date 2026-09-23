@@ -1,0 +1,28 @@
+# Setup arty_a7_100_pmod_mic3_openxc7: the rig config/configurations/arty_a7_100_pmod_mic3_openxc7.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: arty_a7_100_pmod_mic3_openxc7
+  board: arty_a7
+  toolchain: nextpnr_openxc7
+  part: 100t
+  use:
+    - onboard: clock
+    - onboard: switches
+    - onboard: rgb_led_0
+    - onboard: rgb_led_1
+    - onboard: rgb_led_2
+    - onboard: rgb_led_3
+    - onboard: leds
+    - onboard: buttons
+    - onboard: uart
+    - onboard: reset
+    - module: digilent_pmod_mic3
+      plug: {connector: jd, row: 2}
+    - module: tm1638_led_key
+      wires: {CLK: ck.IO40, STB: ck.IO41, DIO: ck.IO39}
+    - gpio: ck
+      params: {width: 30}
+    - module: digilent_pmod_vga
+      wires: {R0: jb.7, R1: jb.8, R2: jb.9, R3: jb.10, G0: jc.7, G1: jc.8, G2: jc.9, G3: jc.10, B0: jb.1, B1: jb.2, B2: jb.3, B3: jb.4, HS: jc.1, VS: jc.2}
+      params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}

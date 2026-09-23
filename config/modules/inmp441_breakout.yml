@@ -1,0 +1,15 @@
+# INMP441 I2S MEMS microphone breakout.
+Module:
+  id: inmp441_breakout
+  name: INMP441 microphone breakout
+  peripheral: inmp441_i2s_mic
+  voltage: 3.3
+  pins:
+    VDD: power
+    GND: ground
+    SD: sd
+    WS: ws
+    SCK: sck
+    L/R: lr
+  source: breakout silkscreen (SCK WS L/R SD VDD GND)
+  verified: false

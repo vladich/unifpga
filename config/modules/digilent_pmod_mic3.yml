@@ -1,0 +1,17 @@
+# Digilent PmodMIC3: MEMS microphone with a 12-bit ADC on SPI (1x6 Pmod).
+Module:
+  id: digilent_pmod_mic3
+  name: Digilent PmodMIC3
+  peripheral: pmod_mic3
+  form: pmod_1x6
+  voltage: 3.3
+  pins:
+    "1": cs
+    "3": miso
+    "4": sclk
+    "5": ground
+    "6": power
+  source: >-
+    Digilent PmodMIC3 reference manual, not fetched (digilent.com refuses automated
+    access); pin 1 CS, 3 MISO, 4 SCLK is what the equivalence-proven Arty wiring uses
+  verified: false

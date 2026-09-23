@@ -1,0 +1,14 @@
+# "LED&KEY" board: TM1638 driving 8 seven-segment digits, 8 LEDs and 8 keys.
+Module:
+  id: tm1638_led_key
+  name: TM1638 LED&KEY board
+  peripheral: tm1638_led_key
+  voltage: [3.3, 5.0]     # supply range the board runs from
+  pins:
+    VCC: power
+    GND: ground
+    STB: stb
+    CLK: clk
+    DIO: dio
+  source: board silkscreen (VCC GND STB CLK DIO)
+  verified: false

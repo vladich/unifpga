@@ -1,0 +1,70 @@
+# Physical layout of the Tang Primer 20K Dock (with the 20K SOM).
+# Header pins: Sipeed's Dock schematic 3713 (J5, J6, J12, J14 are Conn_02x06
+# with pins 1 / 2 = 3V3, 3 / 4 = GND, 5-12 signals; nets traced to FPGA balls
+# through the SO-DIMM page). Our pinmap's gpio_0 / gpio_1 list the even row
+# first, gpio_2 / gpio_3 the odd row first: the pins below are by schematic
+# number, so both read correctly. Which row faces the board edge (the Pmod
+# pin 1-6 row) is not visible in the schematic and is not assumed here.
+
+Layout:
+  board: tang_primer_20k_dock
+  verified: true
+
+  connectors:
+    - id: j14
+      type: sipeed_2x6
+      label: J14 (mic array)
+      bank: gpio_0
+      pins: {12: "gpio_0[0]", 10: "gpio_0[1]", 8: "gpio_0[2]", 6: "gpio_0[3]",
+             11: "gpio_0[4]", 9: "gpio_0[5]", 7: "gpio_0[6]", 5: "gpio_0[7]"}
+    - id: j12
+      type: sipeed_2x6
+      label: J12 (camera)
+      bank: gpio_1
+      pins: {12: "gpio_1[0]", 10: "gpio_1[1]", 8: "gpio_1[2]", 6: "gpio_1[3]",
+             11: "gpio_1[4]", 9: "gpio_1[5]", 7: "gpio_1[6]", 5: "gpio_1[7]"}
+    - id: j6
+      type: sipeed_2x6
+      label: J6 (LCD B / sync)
+      bank: gpio_2
+      pins: {11: "gpio_2[0]", 9: "gpio_2[1]", 7: "gpio_2[2]", 5: "gpio_2[3]",
+             12: "gpio_2[4]", 10: "gpio_2[5]", 8: "gpio_2[6]", 6: "gpio_2[7]"}
+    - id: j5
+      type: sipeed_2x6
+      label: J5 (LCD R / G)
+      bank: gpio_3
+      pins: {11: "gpio_3[0]", 9: "gpio_3[1]", 7: "gpio_3[2]", 5: "gpio_3[3]",
+             12: "gpio_3[4]", 10: "gpio_3[5]", 8: "gpio_3[6]", 6: "gpio_3[7]"}
+
+  onboard:
+    - id: clock
+      label: 27 MHz oscillator
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: leds
+      label: LED0-LED5
+      attach: {peripheral: led_bank, params: {active: low, width: 6}, bind: {led: onboard_leds}}
+    - id: uart
+      label: USB-UART (BL702)
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: switches
+      label: SW1-SW4
+      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+    - id: buttons
+      label: KEY1-KEY5
+      attach: {peripheral: button_array, params: {width: 5}, bind: {btn: onboard_buttons}}
+    - id: hdmi
+      label: HDMI out
+      attach: {peripheral: hdmi_tmds, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p,
+                                             clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: headphone
+      label: Headphone DAC + speaker amplifier
+      attach: {peripheral: i2s_audio_out, params: {align_right: 1, offset_by_one_cycle: 0},
+               bind: {bclk: onboard_headphone.bck, lrclk: onboard_headphone.ws,
+                      sdata: onboard_headphone.din, pa_en: onboard_pa_enable}}
+    - id: lcd
+      label: 40-pin RGB LCD connector (5" 800x480 panel)
+      shares: [j5, j6]
+      attach: {peripheral: lcd_800_480,
+               params: {clock_pixel_pll: {idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false}, bl: context.rst_n},
+               bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs,
+                      vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl}}
