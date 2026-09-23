@@ -8,6 +8,10 @@ BGM:
   variant: a7_lite_35t
   reset:
     sync: 4
+    sync_assert: true
+  lab_clock:
+    name: lab
+    mhz: 50
   attach:
   - peripheral: button_array
     index: 0
