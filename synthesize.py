@@ -27,6 +27,23 @@ log = logging.getLogger(__name__)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
+def prepare_toolchain(toolchain):
+    """Report where the toolchain was found and put its tool directories first
+    in PATH (the drivers resolve their binaries with shutil.which())."""
+    if toolchain.get("DetectSource"):
+        log.info("Toolchain %s: %s (%s)", toolchain["Id"], toolchain.get("InstallDir") or
+                 ", ".join(toolchain.get("BinDirs") or []), toolchain["DetectSource"])
+    else:
+        for note in toolchain.get("DetectNotes") or []:
+            log.warning("Toolchain %s: %s", toolchain["Id"], note)
+    for d in reversed(toolchain.get("BinDirs") or []):
+        os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+
+
+def toolchain_module(toolchain):
+    return importlib.import_module("toolchains.{id}.{id}".format(id=toolchain["Id"]))
+
+
 def _build_parser():
     p = argparse.ArgumentParser(description="UniFPGA Compile")
     p.add_argument("-c", "--configuration",
@@ -85,16 +102,7 @@ def main(argv=None):
 
     log.info("Configuration: %s  (board: %s, toolchain: %s, %d peripherals)",
              cfg["id"], board["Id"], toolchain["Id"], len(peripherals))
-    if toolchain.get("DetectSource"):
-        log.info("Toolchain %s: %s (%s)", toolchain["Id"], toolchain.get("InstallDir") or
-                 ", ".join(toolchain.get("BinDirs") or []), toolchain["DetectSource"])
-    else:
-        for note in toolchain.get("DetectNotes") or []:
-            log.warning("Toolchain %s: %s", toolchain["Id"], note)
-    # The drivers resolve their binaries with shutil.which(), so the found
-    # tool directories go first in PATH.
-    for d in reversed(toolchain.get("BinDirs") or []):
-        os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+    prepare_toolchain(toolchain)
 
     if args.output is None:
         output_folder = tempfile.mkdtemp(prefix="unifpga_{}_".format(cfg["id"]))
@@ -135,9 +143,8 @@ def main(argv=None):
             f.write(top_text)
         log.info("Wrote generated top to %s", top_path)
 
-        module_name = "toolchains.{id}.{id}".format(id=toolchain["Id"])
-        toolchain_module = importlib.import_module(module_name)
-        rc = toolchain_module.synthesize(
+        driver = toolchain_module(toolchain)
+        rc = driver.synthesize(
             dir=dir_path,
             configuration=cfg,
             board=board,
@@ -155,7 +162,7 @@ def main(argv=None):
 
         if args.program:
             log.info("Synthesis succeeded; programming the board.")
-            rc = toolchain_module.program(
+            rc = driver.program(
                 board=board,
                 board_pinmap=pinmap,
                 toolchain=toolchain,

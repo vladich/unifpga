@@ -9,6 +9,7 @@ with no parameters; the output lands in the design's run/ directory:
     cd designs/1_06_binary_counter
     ../../unifpga build            # -> run/<configuration id>/
     ../../unifpga program          # synthesize (full) and load the bitstream
+    ../../unifpga program --no-build  # load the last build's bitstream again
     ../../unifpga clean            # remove run/
 
 Every subcommand only assembles synthesize.py's argument list and calls
@@ -44,6 +45,7 @@ if REPO not in sys.path:                    # `python3 tools/cli.py` without the
     sys.path.insert(0, REPO)
 
 import config.init                          # noqa: E402
+import program                              # noqa: E402  (called, never shelled out)
 import synthesize                           # noqa: E402  (called, never shelled out)
 from tools import toolchain_detect          # noqa: E402
 
@@ -61,6 +63,7 @@ Quick start:
   cd designs/1_06_binary_counter
   ../../unifpga build             # synthesize into run/<configuration>/
   ../../unifpga program           # synthesize and load the bitstream onto the board
+  ../../unifpga program --no-build   # load the last build's bitstream again
 
 Other commands:
   unifpga clean [--all]            remove run/ (of every design with --all)
@@ -411,7 +414,16 @@ def cmd_build(args, program=False):
 
 
 def cmd_program(args):
-    return cmd_build(args, program=True)
+    if not getattr(args, "no_build", False):
+        return cmd_build(args, program=True)
+    design_dir = resolve_design(args.design)
+    cfg_id = chosen_configuration(args.board)
+    out = run_dir(design_dir, cfg_id)
+    if not os.path.isdir(out):
+        raise CliError("{o} does not exist: run `unifpga build` first.".format(o=_shown(out)))
+    print("Programming {c} from {o} ...".format(c=cfg_id, o=_shown(out)))
+    sys.stdout.flush()
+    return program.main(["-c", cfg_id, "-o", out])
 
 
 def cmd_clean(args):
@@ -677,6 +689,8 @@ def build_parser():
     pr = sub.add_parser("program", help="synthesize (full) and program the connected board")
     design_arg(pr)
     board_arg(pr)
+    pr.add_argument("--no-build", action="store_true",
+                    help="load the bitstream of the last build in run/<configuration>/ without rebuilding")
 
     sm = sub.add_parser("sim", help="simulate <design>/tb.sv with Icarus Verilog, open the waveform")
     design_arg(sm)

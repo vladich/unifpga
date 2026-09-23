@@ -247,6 +247,36 @@ def test_program_adds_program_flag(captured, monkeypatch, capsys):
     assert "programming" in capsys.readouterr().out
 
 
+def test_program_no_build_loads_the_last_build(design, captured, monkeypatch, capsys):
+    calls, _ = captured
+    seen = []
+    monkeypatch.setattr(cli.program, "main", lambda argv=None: seen.append(list(argv)) or 0)
+    monkeypatch.setenv(cli.ENV_BOARD, CFG)
+    with pytest.raises(cli.CliError, match="unifpga build"):
+        cli.cmd_program(cli.build_parser().parse_args(["program", str(design), "--no-build"]))
+    out = design / "run" / CFG
+    out.mkdir(parents=True)
+    assert cli.main(["program", str(design), "--no-build"]) == 0
+    assert seen == [["-c", CFG, "-o", str(out)]] and calls == []          # nothing rebuilt
+    assert "Programming" in capsys.readouterr().out
+
+
+def test_program_py_calls_the_toolchain_driver(tmp_path, monkeypatch):
+    import program
+    got = {}
+
+    class Driver:
+        @staticmethod
+        def program(**kw):
+            got.update(kw)
+            return 0
+    monkeypatch.setattr(synthesize, "toolchain_module", lambda tc: Driver)
+    assert program.main(["-c", CFG, "-o", str(tmp_path)]) == 0
+    assert got["output"] == str(tmp_path) and got["board"]["Id"] and got["toolchain"]["Id"] == "gowin_eda"
+    assert program.main(["-c", CFG, "-o", str(tmp_path / "missing")]) == 1
+    assert program.main(["-c", "no_such_configuration", "-o", str(tmp_path)]) == 1
+
+
 def test_build_rejects_unknown_step(captured):
     with pytest.raises(SystemExit):
         cli.main(["build", DESIGN, "-b", CFG, "-s", "route"])

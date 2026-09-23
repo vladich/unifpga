@@ -24,13 +24,15 @@ cd designs/1_06_binary_counter
 Other commands: `unifpga sim` (Icarus Verilog on the design's `tb.sv`, then
 gtkwave / surfer; 88 designs ship a testbench), `unifpga gui` (the last build
 in the vendor GUI), `unifpga prepare --all` (the run directories of every
-design, no tools run), `unifpga clean` (`--all`: every design).
+design, no tools run), `unifpga program --no-build` (load the last build's
+bitstream again), `unifpga clean` (`--all`: every design).
 
 `build` writes everything (generated `top.sv`, constraints, the toolchain
 project and bitstream) to `run/<configuration>/` inside the design directory;
 `../../unifpga clean` removes `run/`. `./unifpga -h` lists the other commands
 (`board -l`, `tools`, `designs`); `UNIFPGA_BOARD=<id>` overrides the remembered
-choice for one command. `synthesize.py` (below) remains the full-control form.
+choice for one command. `synthesize.py` (below) remains the full-control form;
+`program.py -c <id> -o <build dir>` loads an existing build.
 
 ## Why it exists
 
