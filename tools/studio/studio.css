@@ -40,6 +40,10 @@ main { display: flex; gap: 12px; align-items: flex-start; padding: 8px 12px; }
 #details button { margin: 2px 4px 2px 0; }
 #details table { border-collapse: collapse; }
 #details td { padding: 1px 6px 1px 0; vertical-align: top; }
+#details table.facts th { text-align: left; font-weight: 600; color: #495057; padding: 3px 8px 3px 0; vertical-align: top; white-space: nowrap; }
+#details table.facts td { padding: 3px 0; }
+#details table.facts tr { border-bottom: 1px solid #e9ecef; }
+#details .chain.clickable:hover { background: #e7f5ff; }
 #hint { color: var(--muted); margin-bottom: 6px; }
 #problems li.error { color: #c92a2a; } #problems li.warning { color: #e67700; }
 #tables { padding: 0 12px 24px; }

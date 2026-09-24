@@ -344,3 +344,16 @@ def test_design_ports_follow_the_design_top_interface():
     assert (ports["x"]["width"], ports["y"]["width"], ports["red"]["width"]) == (10, 9, 4)
     assert (ports["mic_sample"]["width"], ports["sound"]["width"], ports["sound"]["providers"]) == (24, 0, [])
     assert ports["gpio"]["width"] == 42 and ports["led"]["width"] == 8
+
+
+def test_edges_connect_design_bits_to_pins():
+    r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    edges = trace.trace(r)["edges"]
+    red = sorted((e["bit"], e["ref"], e["via"]) for e in edges if e["design_port"] == "red")
+    assert red == [(0, "pmod_jb[4]", "vga"), (1, "pmod_jb[5]", "vga"), (2, "pmod_jb[6]", "vga"), (3, "pmod_jb[7]", "vga")]
+    assert [(e["bit"], e["signal"]) for e in edges if e["design_port"] == "x"] == [(None, "hs")]
+    leds = sorted((e["bit"], e["ref"], e["via"]) for e in edges if e["design_port"] == "led" and e["via"] is None)
+    assert leds == [(0, "onboard_leds[0]", None), (1, "onboard_leds[1]", None), (2, "onboard_leds[2]", None),
+                    (3, "onboard_leds[3]", None)]
+    mic = {e["ref"] for e in edges if e["design_port"] == "mic_sample"}
+    assert mic == {"pmod_jd[4]", "pmod_jd[6]", "pmod_jd[7]"}

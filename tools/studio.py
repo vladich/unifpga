@@ -108,7 +108,8 @@ def board_data(board_id):
         "modules": sorted(modules.values(), key=lambda m: m["id"]),
         "peripherals": {pid: {"description": p.get("description"), "signals": p.get("signals") or [],
                               "parameters": p.get("parameters") or {}, "provides": p.get("provides") or [],
-                              "driver": (p.get("driver") or {}).get("module") if p.get("driver") else None}
+                              "driver": (p.get("driver") or {}).get("module") if p.get("driver") else None,
+                              "driver_file": (p.get("driver") or {}).get("file") if p.get("driver") else None}
                         for pid, p in peripherals.items() if pid in used},
         "setups": sorted(s for s, v in su.read_setups().items() if v["board"] == board_id),
         "capabilities": [{"id": cid, "signals": [{"name": s["name"], "direction": s.get("direction")}

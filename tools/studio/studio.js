@@ -107,6 +107,16 @@ function linksOfPin(i, signal) {
   return a ? ((a.links || {})[baseSignal(signal)] || []).filter((l) => portByKey(l.port)).map((l) => Object.assign({}, l, {p: portByKey(l.port)})) : [];
 }
 
+// one design bit <-> pin edge, spelled out
+function edgeText(ed) {
+  const ri = refIndex(), hp = ri[ed.ref], c = hp && conn(hp.split(".")[0]);
+  const where = hp ? c.label + " pin " + hp.split(".")[1] + " = " + ed.ref : ed.ref;
+  const use = S.setup.use[ed.use];
+  return "design " + ed.design_port + (ed.bit === null ? "" : "[" + ed.bit + "]") +
+         (ed.via ? "  →  " + ed.via + " (driver)" : "  →  directly") +
+         "  →  " + where + " = FPGA " + (ed.pin || "?") + (use ? "   [" + useLabel(use) + (ed.signal ? " " + ed.signal : "") + "]" : "");
+}
+
 // "design red ← vga red … vga_r" for one link
 function linkText(l) {
   return "design " + portName(l.p) + (l.via ? "  →  " + l.via + " (" + l.port_at + " … " + l.driver_port + ")" : "");
@@ -161,7 +171,7 @@ function connectionRows() {
 function draw() {
   const svg = $("svg");
   svg.replaceChildren();
-  S.pos = {pins: {}, uses: {}, ports: {}, mpins: {}};
+  S.pos = {pins: {}, uses: {}, ports: {}, mpins: {}, cells: {}, rows: {}, obpins: {}};
   const hi = highlight();
   const VX = 12, BX = 330, top = 16, OW = 290;
 
@@ -191,12 +201,14 @@ function draw() {
       const r = el("rect", {x: cx, y: cy, width: 11, height: 11, rx: 2, class: "clickable",
                            fill: on ? "var(--sel)" : none ? "#f8f9fa" : "#e7f5ff", stroke: none ? "#ced4da" : "#1c7ed6"});
       r.append(el("title", {}, portName(p) + (width > 1 ? "[" + b + "]" : "") + "  (" + p.capability + "." + p.signal + ")"));
+      S.pos.cells[portName(p) + "." + b] = {x: cx + 11, y: cy + 5.5};
       r.addEventListener("click", (e) => { e.stopPropagation();
         select(perBit ? {kind: "vbit", cap: p.capability, signal: p.signal, bit: b} : {kind: "vport", cap: p.capability, signal: p.signal}); });
       svg.append(r);
     }
     const rowsUsed = Math.max(Math.ceil(cells / per), 2) - 0.6;          // room for the capability name
     portRows.push({p, x: VX + 118 + Math.min(cells, per) * 13, y: y + 6});
+    S.pos.rows[portName(p)] = {x: VX + 118 + Math.min(cells, per) * 13, y: y + 6};
     y += 14 * rowsUsed + 8;
   }
   if (!ports().length) svg.append(el("text", {x: VX, y: y + 10, fill: "#868e96"}, "(nothing in the rig can be traced yet)"));
@@ -210,16 +222,28 @@ function draw() {
     const i = used.has(o.id) ? used.get(o.id) : null;
     const on = i !== null && hi.uses.has(i), selected = S.sel && S.sel.kind === "onboard" && S.sel.id === o.id;
     const g = el("g", {class: "clickable"});
-    g.append(el("rect", {x: BX + 12, y: oy, width: OW, height: 20, rx: 3,
+    const obpins = i === null ? [] : Object.entries(o.pins).flatMap(([s, ps]) => ps.map((pp) => Object.assign({s}, pp)));
+    const perRow = Math.floor((OW - 20) / 11), pinRows = Math.ceil(obpins.length / perRow);
+    const boxH = 20 + pinRows * 11;
+    g.append(el("rect", {x: BX + 12, y: oy, width: OW, height: boxH, rx: 3,
                         fill: i !== null ? "#d3f9d8" : "#ffffff", stroke: on || selected ? "var(--sel)" : "#868e96",
                         "stroke-width": on || selected ? 2.5 : 1}));
+    obpins.forEach((pp, k) => {
+      const px = BX + 22 + (k % perRow) * 11, py = oy + 24 + Math.floor(k / perRow) * 11;
+      S.pos.obpins[pp.ref] = {x: px, y: py};
+      const lit = hi.refs.has(pp.ref);
+      const dot = el("circle", {cx: px, cy: py, r: 4, fill: lit ? "var(--sel)" : "#ffffff", stroke: lit ? "var(--sel)" : "#2b8a3e"});
+      dot.append(el("title", {}, o.label + ": " + pp.s + " = " + pp.ref + " = FPGA " + (pp.pin || "?")));
+      dot.addEventListener("click", (e) => { e.stopPropagation(); select({kind: "ref", ref: pp.ref}); });
+      g.append(dot);
+    });
     const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null ? "#868e96" : "#212529"}, o.label);
     lt.append(el("title", {}, o.label + (i === null ? " — not used by this setup" : "")));
     g.append(lt);
     g.addEventListener("click", () => select({kind: "onboard", id: o.id}));
     boardItems.push(g);
     if (i !== null) S.pos.uses[i] = {x: BX + 12, y: oy + 10, xr: BX + 12 + OW};
-    oy += 26;
+    oy += boxH + 6;
   }
 
   // connectors
@@ -335,18 +359,39 @@ function draw() {
     svg.append(hit);
   }
 
-  // design port -> provider links
-  for (const pr of portRows) for (const prov of pr.p.providers) {
-    const u = S.pos.uses[prov.attach_index];
-    if (!u) continue;
-    const isSel = hi.links.has(pr.p.capability + "." + pr.p.signal + "#" + prov.attach_index);
-    const tx = u.x < BX + 20 ? u.x : u.x;       // left edge of the provider
-    const d = "M" + pr.x + "," + pr.y + " C" + (pr.x + 60) + "," + pr.y + " " + (tx - 60) + "," + u.y + " " + tx + "," + u.y;
-    svg.append(el("path", {d, fill: "none", stroke: isSel ? "var(--sel)" : "#adb5bd", "stroke-width": isSel ? 2.5 : 1,
-                           "stroke-dasharray": isSel ? "" : "4 3", opacity: S.sel && !isSel ? 0.25 : 0.8}));
-  }
+  // design bit -> pin edges (tools/trace.py edges): to an on-board device's pin
+  // dot or a header pin; faint, the selection's in red
+  const ri = refIndex();
+  ((S.ev && S.ev.trace && S.ev.trace.edges) || []).forEach((ed, n) => {
+    const from = ed.bit === null ? S.pos.rows[ed.design_port] : S.pos.cells[ed.design_port + "." + ed.bit];
+    const to = ri[ed.ref] ? S.pos.pins[ri[ed.ref]] : S.pos.obpins[ed.ref];
+    if (!from || !to) return;
+    const isSel = hi.edges.has(n);
+    const d = "M" + from.x + "," + from.y + " C" + (from.x + 90) + "," + from.y + " " + (to.x - 90) + "," + to.y + " " + (to.x - 6) + "," + to.y;
+    const path = el("path", {d, fill: "none", stroke: isSel ? "var(--sel)" : ed.via ? "#4c6ef5" : "#2f9e44",
+                             "stroke-width": isSel ? 2.4 : 1.2, opacity: isSel ? 1 : S.sel ? 0.18 : 0.55,
+                             "stroke-dasharray": ed.via ? "6 3" : ""});
+    const hit = el("path", {d, fill: "none", stroke: "transparent", "stroke-width": 9, class: "clickable"});
+    hit.append(el("title", {}, edgeText(ed)));
+    hit.addEventListener("click", (e) => { e.stopPropagation(); select({kind: "edge", n}); });
+    svg.append(path);
+    svg.append(hit);
+  });
 
-  const W = MX + 260, H = Math.max(top + boardH, my, y) + 30;
+  // legend
+  const LY = Math.max(top + boardH, my, y) + 14;
+  const legend = [["#2f9e44", "", "design bit wired straight to a pin"],
+                  ["#4c6ef5", "6 3", "design port reaching a pin through a driver in the FPGA (TM1638, VGA, SPI ...)"],
+                  ["#d9480f", "", "wire from a header pin to a module (one colour per module)"]];
+  legend.forEach(([col, dash, text], k) => {
+    const ly = LY + k * 16;
+    svg.append(el("path", {d: "M" + VX + "," + ly + " l40,0", stroke: col, "stroke-width": 2, "stroke-dasharray": dash}));
+    svg.append(el("text", {x: VX + 48, y: ly + 4, "font-size": 11, fill: "#495057"}, text));
+  });
+  svg.append(el("text", {x: VX, y: LY + 3 * 16 + 4, "font-size": 11, fill: "#868e96"},
+                "Click any line, pin, bit or part: the panel on the right says what the connection is."));
+
+  const W = MX + 260, H = LY + 4 * 16 + 14;
   S.content = {w: W, h: H};
   applyView();
 }
@@ -428,9 +473,22 @@ function wireZoomPan() {
 
 // what the current selection lights up
 function highlight() {
-  const hi = {pins: new Set(), wires: new Set(), mpins: new Set(), uses: new Set(), vbits: new Set(), links: new Set(), vports: new Set()};
+  const hi = {pins: new Set(), wires: new Set(), mpins: new Set(), uses: new Set(), vbits: new Set(), links: new Set(),
+              vports: new Set(), edges: new Set(), refs: new Set()};
   const sel = S.sel;
   if (!sel) return hi;
+  const allEdges = (S.ev && S.ev.trace && S.ev.trace.edges) || [];
+  const ri0 = refIndex();
+  // light an edge and both of its ends
+  const takeEdge = (ed, n) => {
+    hi.edges.add(n); hi.refs.add(ed.ref);
+    if (ri0[ed.ref]) hi.pins.add(ri0[ed.ref]);
+    const p = ports().find((q) => q.design_port === ed.design_port);
+    if (!p) return;
+    if (ed.bit === null) hi.vports.add(p.capability + "." + p.signal);
+    else hi.vbits.add(p.capability + "." + p.signal + "." + ed.bit);
+  };
+  const edgesWhere = (f) => allEdges.forEach((ed, n) => { if (f(ed)) takeEdge(ed, n); });
   const ri = refIndex();
   // the module pins of use i that serve design port p (through a driver)
   const addServingPins = (i, p) => {
@@ -459,11 +517,23 @@ function highlight() {
       if (!b.ref) addServingPins(pr.attach_index, p);      // through a driver: the pins serving this port
     }
   };
-  if (sel.kind === "vbit") {
+  if (sel.kind === "edge") {
+    const ed = allEdges[sel.n];
+    if (ed) {
+      takeEdge(ed, sel.n);
+      hi.uses.add(ed.use);
+      const hp = ri0[ed.ref], use = S.setup.use[ed.use];
+      if (hp && use && use.module) for (const [mp, w] of Object.entries(wiresOf(use))) if (w === hp) { hi.wires.add(ed.use + "." + mp); hi.mpins.add(ed.use + "." + mp); }
+    }
+  } else if (sel.kind === "ref") {
+    edgesWhere((ed) => ed.ref === sel.ref);
+    hi.refs.add(sel.ref);
+  } else if (sel.kind === "vbit") {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
-    if (p) addBit(p, sel.bit);
+    if (p) { addBit(p, sel.bit); edgesWhere((ed) => ed.design_port === p.design_port && (ed.bit === sel.bit || ed.bit === null)); }
   } else if (sel.kind === "vport") {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
+    if (p) edgesWhere((ed) => ed.design_port === p.design_port);
     if (p) for (const pr of p.providers) {
       hi.links.add(p.capability + "." + p.signal + "#" + pr.attach_index);
       addServingPins(pr.attach_index, p);
@@ -475,6 +545,7 @@ function highlight() {
     if (sel.kind === "conn") i = (S.setup.use || []).findIndex((u) => u.gpio === sel.id);
     if (i !== undefined && i >= 0) {
       addUse(i);
+      edgesWhere((ed) => ed.use === i);
       for (const x of portsOfUse(i)) {
         hi.links.add(x.port.capability + "." + x.port.signal + "#" + i);
         for (const b of x.bits) hi.vbits.add(x.port.capability + "." + x.port.signal + "." + b);
@@ -483,6 +554,8 @@ function highlight() {
   } else if (sel.kind === "pin" || sel.kind === "wire") {
     let key = sel.kind === "pin" ? sel.conn + "." + sel.key : wiresOf(S.setup.use[sel.use])[sel.pin];
     hi.pins.add(key);
+    const kc = conn(key.split(".")[0]), kp = kc && kc.pins[key.split(".")[1]];
+    if (kp) edgesWhere((ed) => ed.ref === kp.ref);
     (S.setup.use || []).forEach((u, i) => { if (u.module) for (const [p, w] of Object.entries(wiresOf(u))) if (w === key) {
       hi.wires.add(i + "." + p); hi.mpins.add(i + "." + p); hi.uses.add(i);
       for (const l of linksOfPin(i, moduleDef(u.module).pins[p])) { hi.vports.add(l.port); hi.links.add(l.port + "#" + i); }
@@ -567,6 +640,7 @@ function details() {
     const [cid, k] = key.split(".");
     const c = conn(cid), pin = c.pins[k];
     d.append(h("h4", {}, c.label + " pin " + k));
+    edgeList(d, pin.ref);
     d.append(h("table", {}, h("tr", {}, h("td", {}, "pinmap"), h("td", {}, pin.ref)),
                           h("tr", {}, h("td", {}, "FPGA pin"), h("td", {}, pin.pin)),
                           h("tr", {}, h("td", {}, "voltage"), h("td", {}, (c.voltage || "?") + " V"))));
@@ -583,6 +657,17 @@ function details() {
     const gi = uses.findIndex((u) => u.gpio === cid);
     if (gi >= 0) { any = true; d.append(chain(designBitsOfRef(pin.ref).map((b) => "design " + b.port.signal + "[" + b.bit + "]").concat(["gpio " + c.label])) ); }
     if (!any) d.append(h("p", {}, "Not connected."));
+  } else if (sel.kind === "edge") {
+    const ed = ((S.ev && S.ev.trace && S.ev.trace.edges) || [])[sel.n];
+    if (ed) connectionPanel(d, ed);
+  } else if (sel.kind === "ref") {
+    const o = S.board.onboard.find((x) => Object.values(x.pins).some((ps) => ps.some((pp) => pp.ref === sel.ref)));
+    const pp = o && Object.entries(o.pins).flatMap(([s, ps]) => ps.map((x) => Object.assign({s}, x))).find((x) => x.ref === sel.ref);
+    d.append(h("h4", {}, (o ? o.label + " " : "") + sel.ref));
+    if (pp) d.append(h("div", {}, "signal " + pp.s + ", FPGA pin " + (pp.pin || "?")));
+    const eds = ((S.ev && S.ev.trace && S.ev.trace.edges) || []).filter((ed) => ed.ref === sel.ref);
+    edgeList(d, sel.ref);
+    if (!eds.length) d.append(h("p", {}, "No design port reaches this pin."));
   } else if (sel.kind === "use") {
     useDetails(d, sel.use);
   } else if (sel.kind === "onboard") {
@@ -608,6 +693,58 @@ function details() {
       else d.append(h("button", {onclick: () => { S.setup.use.push({gpio: c.id, params: {width: Object.keys(c.pins).length}}); changed(c.label + " is design gpio"); }}, "Hand to the design as gpio"));
     }
   }
+}
+
+// everything about one design bit <-> pin connection, for the side panel
+function connectionPanel(d, ed) {
+  const p = ports().find((q) => q.design_port === ed.design_port) || {};
+  const use = S.setup.use[ed.use] || {};
+  const a = attachOf(ed.use) || {};
+  const per = S.board.peripherals[a.peripheral] || {};
+  const ri = refIndex(), hp = ri[ed.ref];
+  const c = hp && conn(hp.split(".")[0]);
+  const link = ed.signal ? linksOfPin(ed.use, ed.signal).find((l) => l.p === p) : null;
+  const mod = use.module ? moduleDef(use.module) : null;
+  const modPins = mod && hp ? Object.entries(wiresOf(use)).filter(([, w]) => w === hp).map(([mp]) => mp + " (" + mod.pins[mp] + ")") : [];
+  const dir = p.direction === "hw_to_user" ? "input of design_top (the hardware drives it)"
+            : p.direction === "user_to_hw" ? "output of design_top (the design drives the hardware)"
+            : p.direction === "inout" ? "bidirectional" : (p.direction || "");
+  const range = p.width > 1 ? "[" + (p.width - 1) + ":0]" : "";
+  const active = (a.params || {}).active;
+  const rows = [
+    ["Connection", ed.via ? "through the " + ed.via + " driver" : "direct (no logic between the design bit and the pin)"],
+    ["Design port", "design_top." + ed.design_port + (ed.bit === null ? range + " (the whole port)" : "[" + ed.bit + "] of " + ed.design_port + range)],
+    ["Capability", (p.capability || "?") + "." + (p.signal || "?")],
+    ["Direction", dir],
+    ["Provided by", useLabel(use) + (use.onboard ? " (on the board)" : use.module ? " (add-on module)" : "") +
+                    " — peripheral " + (a.peripheral || "?") + (per.description ? ": " + per.description : "")],
+  ];
+  if (ed.via) {
+    rows.push(["Driver", ed.via + (per.driver_file ? "  (" + per.driver_file + ")" : "")]);
+    if (link) rows.push(["Driver ports", "design side ." + link.port_at + ", pin side ." + link.driver_port]);
+    rows.push(["Bit relation", ed.bit === null ? "none: the pin serves the port as a whole (e.g. a sync or a serial line)"
+                                               : "bit for bit (pin " + ed.signal + "[" + ed.bit + "] ↔ " + ed.design_port + "[" + ed.bit + "])"]);
+  }
+  rows.push(["Peripheral signal", (ed.signal || (p.signal || "")) + (a.peripheral ? " of " + a.peripheral : "")]);
+  rows.push(["Pinmap entry", ed.ref]);
+  rows.push(["FPGA pin", ed.pin || "?"]);
+  if (c) rows.push(["Header pin", c.label + " pin " + hp.split(".")[1] + " (" + c.type + ", " + (c.voltage || "?") + " V)"]);
+  else rows.push(["On the board", useLabel(use) + " (no header: the pin goes to the on-board part)"]);
+  if (mod) rows.push(["Module pin", modPins.length ? modPins.join(", ") + " of " + mod.name : "not wired to this pin"]);
+  if (mod && mod.verified === false) rows.push(["Module pinout", "not verified against a vendor document: " + (mod.source || "")]);
+  if (active) rows.push(["Active level", active + (active === "low" ? " (the build inverts the bit)" : "")]);
+  d.append(h("h4", {}, "design " + ed.design_port + (ed.bit === null ? "" : "[" + ed.bit + "]") + "  ↔  " + (ed.pin || ed.ref)));
+  d.append(h("table", {class: "facts"}, ...rows.map(([k, v]) => h("tr", {}, h("th", {}, k), h("td", {}, v)))));
+}
+
+// the connections (design bit <-> pin edges) at one pinmap entry, clickable
+function edgeList(d, ref) {
+  const all = (S.ev && S.ev.trace && S.ev.trace.edges) || [];
+  const mine = all.map((ed, n) => [ed, n]).filter(([ed]) => ed.ref === ref);
+  if (!mine.length) return;
+  d.append(h("h4", {}, "Connections at this pin"));
+  for (const [ed, n] of mine)
+    d.append(h("div", {class: "chain clickable", onclick: () => select({kind: "edge", n})}, edgeText(ed)));
 }
 
 function useDetails(d, i) {
@@ -943,6 +1080,8 @@ function parseSel(text) {
   if (kind === "wire") return {kind, use: Number(a), pin: b};
   if (kind === "use") return {kind, use: Number(a)};
   if (kind === "onboard" || kind === "conn") return {kind, id: a};
+  if (kind === "ref") return {kind, ref: text.slice(4)};
+  if (kind === "edge") return {kind, n: Number(a)};
   return null;
 }
 
@@ -990,6 +1129,15 @@ async function selftest() {
       ok("the design's red lights exactly its four pins", ["R0", "R1", "R2", "R3"].every((p) => hiP.wires.has(vi + "." + p)) &&
          [...hiP.wires].filter((w) => w.startsWith(vi + ".")).length === 4);
       ok("the trace names the driver ports", $("details").textContent.includes("vga (red … vga_r)"));
+      const edgesNow = S.ev.trace.edges;
+      const n1 = edgesNow.findIndex((ed) => ed.design_port === "red" && ed.bit === 1);
+      select({kind: "edge", n: n1});
+      const txt = $("details").textContent;
+      ok("a connection's panel gives its driver, ports, pinmap, FPGA and header pin",
+         txt.includes("through the vga driver") && txt.includes("design side .red, pin side .vga_r") &&
+         txt.includes("pmod_jb[5]") && txt.includes("JB pin 8") && txt.includes("Module pinR1 (r[1])"));
+      const nl = edgesNow.findIndex((ed) => ed.design_port === "led" && ed.bit === 2 && !ed.via);
+      if (nl >= 0) { select({kind: "edge", n: nl}); ok("a direct connection says so", $("details").textContent.includes("direct (no logic")); }
     }
     S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
     S.setup.use.push({module: "tm1638_led_key", wires: {CLK: S.board.connectors[0].id + ".99"}});
