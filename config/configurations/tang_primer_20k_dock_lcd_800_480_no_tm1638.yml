@@ -45,10 +45,10 @@ Configuration:
         bl: onboard_lcd.bl
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio_0[2]"
-        ws: "gpio_0[3]"
         sck: "gpio_0[1]"
+        ws: "gpio_0[3]"
         sd: "gpio_0[0]"
+        lr: "gpio_0[2]"
     - peripheral: i2s_audio_out
       params:
         align_right: 1

@@ -13,7 +13,7 @@ Setup:
     - onboard: buttons
     - onboard: leds
     - module: tm1638_led_key
-      wires: {CLK: 'pmod_je.[1]', STB: 'pmod_je.[0]', DIO: 'pmod_je.[2]'}
+      wires: {STB: 'pmod_je.[0]', CLK: 'pmod_je.[1]', DIO: 'pmod_je.[2]'}
     - module: i2s_dac_breakout
       wires: {SCK: 'pmod_jb.[0]', BCK: 'pmod_jb.[2]', LCK: 'pmod_jb.[1]', DIN: 'pmod_jb.[3]'}
     - module: digilent_pmod_vga

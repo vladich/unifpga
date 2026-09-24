@@ -40,10 +40,10 @@ Configuration:
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]"]
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio_p1[14]"
-        ws: "gpio_p1[15]"
         sck: "gpio_p1[16]"
+        ws: "gpio_p1[15]"
         sd: "gpio_p1[17]"
+        lr: "gpio_p1[14]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "gpio_p2[0]"

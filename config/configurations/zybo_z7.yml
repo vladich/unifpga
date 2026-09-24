@@ -35,8 +35,8 @@ Configuration:
         led: onboard_leds
     - peripheral: tm1638_led_key
       bind:
-        clk: "pmod_je[1]"
         stb: "pmod_je[0]"
+        clk: "pmod_je[1]"
         dio: "pmod_je[2]"
     - peripheral: i2s_audio_out
       bind:

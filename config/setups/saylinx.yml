@@ -14,7 +14,7 @@ Setup:
     - onboard: vga
     - onboard: uart
     - module: inmp441_breakout
-      wires: {L/R: 'gpio_0.[0]', WS: 'gpio_0.[2]', SCK: 'gpio_0.[4]', SD: 'gpio_0.[5]'}
+      wires: {SCK: 'gpio_0.[4]', WS: 'gpio_0.[2]', SD: 'gpio_0.[5]', L/R: 'gpio_0.[0]'}
     - module: i2s_dac_breakout
       wires: {SCK: 'gpio_0.[12]', BCK: 'gpio_0.[10]', LCK: 'gpio_0.[6]', DIN: 'gpio_0.[8]'}
     - gpio: gpio_1

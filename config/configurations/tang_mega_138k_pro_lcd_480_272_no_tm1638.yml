@@ -53,16 +53,16 @@ Configuration:
         ck: onboard_lcd.ck
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "pmod_0[0]"
-        ws: "pmod_0[1]"
         sck: "pmod_0[2]"
+        ws: "pmod_0[1]"
         sd: "pmod_0[6]"
+        lr: "pmod_0[0]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "pmod_1[4]"
         bclk: "pmod_1[5]"
-        sdata: "pmod_1[6]"
         lrclk: "pmod_1[7]"
+        sdata: "pmod_1[6]"
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

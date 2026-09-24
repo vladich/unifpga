@@ -42,15 +42,15 @@ Configuration:
         vs: "gpio_1[35]"
     - peripheral: tm1638_led_key
       bind:
-        clk: "gpio_0[27]"
         stb: "gpio_0[29]"
+        clk: "gpio_0[27]"
         dio: "gpio_0[31]"
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio_0[0]"
-        ws: "gpio_0[2]"
         sck: "gpio_0[4]"
+        ws: "gpio_0[2]"
         sd: "gpio_0[5]"
+        lr: "gpio_0[0]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "gpio_1[32]"

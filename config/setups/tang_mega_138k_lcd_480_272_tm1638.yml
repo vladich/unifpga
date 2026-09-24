@@ -14,8 +14,8 @@ Setup:
       params: {width: 8}
     - onboard: lcd
     - module: tm1638_led_key
-      wires: {DIO: 'pmod_1.[6]', CLK: 'pmod_1.[4]', STB: 'pmod_1.[2]'}
+      wires: {STB: 'pmod_1.[2]', CLK: 'pmod_1.[4]', DIO: 'pmod_1.[6]'}
     - module: inmp441_breakout
-      wires: {L/R: 'pmod_0.[4]', WS: 'pmod_0.[2]', SCK: 'pmod_0.[0]', SD: 'pmod_1.[0]'}
+      wires: {SCK: 'pmod_0.[0]', WS: 'pmod_0.[2]', SD: 'pmod_1.[0]', L/R: 'pmod_0.[4]'}
     - module: i2s_dac_breakout
-      wires: {SCK: 'pmod_1.[1]', BCK: 'pmod_1.[3]', DIN: 'pmod_1.[5]', LCK: 'pmod_1.[7]'}
+      wires: {SCK: 'pmod_1.[1]', BCK: 'pmod_1.[3]', LCK: 'pmod_1.[7]', DIN: 'pmod_1.[5]'}

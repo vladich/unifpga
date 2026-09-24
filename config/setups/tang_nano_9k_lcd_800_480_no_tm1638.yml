@@ -16,5 +16,5 @@ Setup:
       variant: lcd_800_480
     - onboard: microsd
     - module: i2s_dac_breakout
-      wires: {BCK: 'gpio.[3]', DIN: 'gpio.[4]', LCK: 'gpio.[5]'}
+      wires: {BCK: 'gpio.[3]', LCK: 'gpio.[5]', DIN: 'gpio.[4]'}
     - onboard: small_lcd

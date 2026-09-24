@@ -51,8 +51,8 @@ Configuration:
     - peripheral: i2s_audio_out
       bind:
         bclk: "gpio[3]"
-        sdata: "gpio[4]"
         lrclk: "gpio[5]"
+        sdata: "gpio[4]"
     - peripheral: gpio_header
       params:
         width: 4

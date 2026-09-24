@@ -29,8 +29,8 @@ Configuration:
         pmod_b: pmod_p1b
     - peripheral: tm1638_led_key
       bind:
-        clk: "pmod_p2[6]"
         stb: "pmod_p2[7]"
+        clk: "pmod_p2[6]"
         dio: "pmod_p2[5]"
     - peripheral: gpio_header
       params:

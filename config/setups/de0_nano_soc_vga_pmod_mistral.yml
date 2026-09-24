@@ -17,9 +17,9 @@ Setup:
       wires: {R0: 'gpio_1.[35]', R1: 'gpio_1.[33]', R2: 'gpio_1.[31]', R3: 'gpio_1.[29]', G0: 'gpio_1.[25]', G1: 'gpio_1.[23]', G2: 'gpio_1.[21]', G3: 'gpio_1.[19]', B0: 'gpio_1.[17]', B1: 'gpio_1.[15]', B2: 'gpio_1.[13]', B3: 'gpio_1.[11]', HS: 'gpio_1.[5]', VS: 'gpio_1.[7]'}
       params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}
     - module: inmp441_breakout
-      wires: {L/R: 'gpio_0.[0]', WS: 'gpio_0.[2]', SCK: 'gpio_0.[4]', SD: 'gpio_0.[5]'}
+      wires: {SCK: 'gpio_0.[4]', WS: 'gpio_0.[2]', SD: 'gpio_0.[5]', L/R: 'gpio_0.[0]'}
     - module: tm1638_led_key
-      wires: {CLK: 'gpio_0.[27]', STB: 'gpio_0.[29]', DIO: 'gpio_0.[31]'}
+      wires: {STB: 'gpio_0.[29]', CLK: 'gpio_0.[27]', DIO: 'gpio_0.[31]'}
     - module: i2s_dac_breakout
       wires: {SCK: 'gpio_1.[32]', BCK: 'gpio_1.[30]', LCK: 'gpio_1.[26]', DIN: 'gpio_1.[28]'}
     - gpio: gpio_0

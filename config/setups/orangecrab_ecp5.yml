@@ -15,4 +15,4 @@ Setup:
     - onboard: switches
     - onboard: uart
     - module: inmp441_breakout
-      wires: {L/R: 'gpio.[3]', WS: 'gpio.[4]', SCK: 'gpio.[5]', SD: 'gpio.[6]'}
+      wires: {SCK: 'gpio.[5]', WS: 'gpio.[4]', SD: 'gpio.[6]', L/R: 'gpio.[3]'}

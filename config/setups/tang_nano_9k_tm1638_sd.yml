@@ -11,7 +11,7 @@ Setup:
     - onboard: leds
     - onboard: uart
     - module: tm1638_led_key
-      wires: {DIO: 'gpio.[0]', CLK: 'gpio.[1]', STB: 'gpio.[2]'}
+      wires: {STB: 'gpio.[2]', CLK: 'gpio.[1]', DIO: 'gpio.[0]'}
     - onboard: microsd
     - onboard: hdmi
       variant: hdmi_tmds_2

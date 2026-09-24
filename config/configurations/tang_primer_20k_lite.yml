@@ -22,21 +22,21 @@ Configuration:
         btn: onboard_buttons
     - peripheral: tm1638_led_key
       bind:
-        clk: "gpio_2[2]"
         stb: "gpio_2[3]"
+        clk: "gpio_2[2]"
         dio: "gpio_2[1]"
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio_3[1]"
-        ws: "gpio_3[2]"
         sck: "gpio_3[3]"
+        ws: "gpio_3[2]"
         sd: "gpio_3[0]"
+        lr: "gpio_3[1]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "gpio_3[4]"
         bclk: "gpio_3[5]"
-        sdata: "gpio_3[6]"
         lrclk: "gpio_3[7]"
+        sdata: "gpio_3[6]"
     - peripheral: vga_4bit
       params:
         bits_r: 4

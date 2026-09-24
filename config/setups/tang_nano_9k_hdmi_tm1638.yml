@@ -13,7 +13,7 @@ Setup:
     - onboard: hdmi
       variant: hdmi_tmds_2
     - module: tm1638_led_key
-      wires: {DIO: 'gpio.[0]', CLK: 'gpio.[1]', STB: 'gpio.[2]'}
+      wires: {STB: 'gpio.[2]', CLK: 'gpio.[1]', DIO: 'gpio.[0]'}
     - onboard: microsd
     - onboard: lcd
       variant: i2s_audio_out

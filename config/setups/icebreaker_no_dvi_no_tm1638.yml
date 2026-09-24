@@ -13,7 +13,7 @@ Setup:
     - onboard: leds
     - onboard: buttons
     - module: inmp441_breakout
-      wires: {L/R: pmod_p1a.1, WS: pmod_p1a.2, SCK: pmod_p1a.3, SD: pmod_p1a.4}
+      wires: {SCK: pmod_p1a.3, WS: pmod_p1a.2, SD: pmod_p1a.4, L/R: pmod_p1a.1}
     - module: i2s_dac_breakout
-      wires: {SCK: pmod_p1b.1, BCK: pmod_p1b.2, DIN: pmod_p1b.3, LCK: pmod_p1b.4}
+      wires: {SCK: pmod_p1b.1, BCK: pmod_p1b.2, LCK: pmod_p1b.4, DIN: pmod_p1b.3}
     - onboard: rgb_led_0

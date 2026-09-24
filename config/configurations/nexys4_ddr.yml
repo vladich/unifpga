@@ -88,22 +88,22 @@ Configuration:
         rx: onboard_uart.rx
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "pmod_jd[6]"
-        ws: "pmod_jd[5]"
         sck: "pmod_jd[4]"
+        ws: "pmod_jd[5]"
         sd: "pmod_jd[0]"
+        lr: "pmod_jd[6]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "pmod_jc[4]"
         bclk: "pmod_jc[5]"
-        sdata: "pmod_jc[6]"
         lrclk: "pmod_jc[7]"
+        sdata: "pmod_jc[6]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "pmod_jb[6]"
         bclk: "pmod_jb[3]"
-        sdata: "pmod_jb[1]"
         lrclk: "pmod_jb[0]"
+        sdata: "pmod_jb[1]"
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

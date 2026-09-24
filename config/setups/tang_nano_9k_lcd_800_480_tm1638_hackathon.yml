@@ -12,7 +12,7 @@ Setup:
     - onboard: lcd
       variant: lcd_800_480
     - module: tm1638_led_key
-      wires: {DIO: 'gpio.[0]', CLK: 'gpio.[1]', STB: 'gpio.[2]'}
+      wires: {STB: 'gpio.[2]', CLK: 'gpio.[1]', DIO: 'gpio.[0]'}
     - onboard: microsd
     - module: i2s_dac_breakout
-      wires: {BCK: 'gpio.[3]', DIN: 'gpio.[4]', LCK: 'gpio.[5]'}
+      wires: {BCK: 'gpio.[3]', LCK: 'gpio.[5]', DIN: 'gpio.[4]'}
