@@ -352,7 +352,13 @@ def _generate(setup):
             a = {"peripheral": pid}
             if use.get("params"):
                 a["params"] = copy.deepcopy(use["params"])
-            a["bind"] = {sig: c["bank"]}
+            if use.get("pins") is not None:          # some of its pins, in this order
+                missing = [k for k in use["pins"] if str(k) not in (c.get("pins") or {})]
+                if missing:
+                    raise SetupError("connector '{}' has no pin {}".format(c["id"], ", ".join(map(str, missing))))
+                a["bind"] = {sig: [c["pins"][str(k)] for k in use["pins"]]}
+            else:
+                a["bind"] = {sig: c["bank"]}
             attach.append(a)
         elif "raw" in use:
             attach.append(copy.deepcopy(use["raw"]))
@@ -466,6 +472,15 @@ def _derive(configuration):
             use = {"gpio": banks[io]}
             if _params(a):
                 use["params"] = copy.deepcopy(a["params"])
+        if use is None and a["peripheral"] == gpio_pid and isinstance(io, list) and io and set(a["bind"]) == {gpio_sig}:
+            # some pins of one connector: `gpio: <connector>, pins: [...]`
+            for c in layout.get("connectors") or []:
+                keys = {str(ref): k for k, ref in (c.get("pins") or {}).items()}
+                if c.get("bank") and all(str(r) in keys for r in io):
+                    use = {"gpio": c["id"], "pins": [keys[str(r)] for r in io]}
+                    if _params(a):
+                        use["params"] = copy.deepcopy(a["params"])
+                    break
         if use is None:
             use = _derive_module(a, layout, modules, connectors, refs)
         if use is None:
@@ -549,7 +564,7 @@ def use_label(use, attach):
     if "module" in use:
         return use["module"]
     if "gpio" in use:
-        return "gpio {}".format(use["gpio"])
+        return "gpio {}".format(use["gpio"]) + (" ({} pins)".format(len(use["pins"])) if use.get("pins") is not None else "")
     return "raw {}".format(attach.get("peripheral"))
 
 
@@ -706,7 +721,7 @@ def dump_setup(setup):
             L.append("    - raw: {}".format(_flow(use["raw"])))
         else:
             L.append("    - {}: {}".format(head, use[head]))
-        for k in ("variant", "plug", "wires", "params", "for_toolchain"):
+        for k in ("variant", "plug", "wires", "pins", "params", "for_toolchain"):
             if k in use and (head != "raw" or k == "for_toolchain"):
                 L.append("      {}: {}".format(k, _scalar(use[k]) if k == "variant" else _flow(use[k])))
     import yaml

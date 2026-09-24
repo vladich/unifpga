@@ -101,7 +101,9 @@ def draft(board_id):
         if cfg["board"] != board_id:
             continue
         for a in cfg.get("attach") or []:
-            if a["peripheral"] == su.gpio_passthrough()[0] or set(a) - {"peripheral", "params", "bind"}:
+            # (a gpio passthrough on an on-board device's pins is that device handed
+            # to the design's gpio: one of its variants, like any other attach)
+            if set(a) - {"peripheral", "params", "bind"}:
                 continue
             banks = _banks_of(list((a.get("bind") or {}).values()))
             if not banks or banks & set(headers):
@@ -129,9 +131,10 @@ def draft(board_id):
             continue
         variants, used = [], set()
         for x in attaches:
-            vid, k = x["peripheral"], 2
+            base = "gpio" if x["peripheral"] == su.gpio_passthrough()[0] else x["peripheral"]
+            vid, k = base, 2
             while vid in used:
-                vid, k = "{}_{}".format(x["peripheral"], k), k + 1
+                vid, k = "{}_{}".format(base, k), k + 1
             used.add(vid)
             variants.append({"id": vid, "label": _variant_label(x, [y for y in attaches if y is not x]), "attach": x})
         onboard.append({"id": oid, "label": label, "variants": variants})
@@ -190,6 +193,8 @@ def _variant_label(x, others):
     """A variant's name: its peripheral, and what sets it apart from another
     variant of the same peripheral (parameter values, pins, their order)."""
     same = [y for y in others if y["peripheral"] == x["peripheral"]]
+    if x["peripheral"] == su.gpio_passthrough()[0] and not same:
+        return "its pins as the design's gpio"
     if not same:
         return x["peripheral"]
     y = same[0]

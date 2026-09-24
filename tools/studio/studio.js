@@ -491,7 +491,8 @@ function draw() {
   let cy = top + 50, widest = 0;
   const connItems = [];
   const gpioConn = new Map();
-  (S.setup.use || []).forEach((u, i) => { if (u.gpio) gpioConn.set(u.gpio, i); });
+  const gpioPins = new Set();                 // `pins:` hands only these of a connector to the design
+  (S.setup.use || []).forEach((u, i) => { if (u.gpio) { gpioConn.set(u.gpio, i); for (const k of u.pins || []) gpioPins.add(u.gpio + "." + k); } });
   for (const c of S.board.connectors) {
     const cols = Math.max(...c.rows.map((r) => r.length));
     const long = c.rows.flat().some((k) => k.length > 2);
@@ -502,7 +503,7 @@ function draw() {
     const csel = (S.sel && S.sel.kind === "conn" && S.sel.id === c.id) || (gi !== null && hi.uses.has(gi));
     const g = el("g");
     const lbl = el("text", {x: GX - 6, y: cy - 8, "font-size": 12, class: "clickable", fill: csel ? "var(--sel)" : "#343a40"},
-                   c.label + (gi !== null ? "  — design gpio" : ""));
+                   c.label + (gi !== null ? "  — design gpio" + (S.setup.use[gi].pins ? " (" + S.setup.use[gi].pins.length + " pins)" : "") : ""));
     target(lbl, {kind: "conn", id: c.id});
     g.append(lbl);
     const boxY = cy + lab + 6;
@@ -514,8 +515,9 @@ function draw() {
       const pin = c.pins[key], pw = c.power[key];
       const isSel = hi.pins.has(c.id + "." + key);
       const fill = pin ? (isSel ? "var(--sel)" : "#ffffff") : pw === "VCC" ? "#ffc9c9" : pw === "GND" ? "#ced4da" : "#e9ecef";
-      const circ = el("circle", {cx: px, cy: py, r: 6, fill, stroke: isSel ? "var(--sel)" : "#495057",
-                                 "stroke-width": isSel ? 2 : 1, class: pin ? "clickable" : ""});
+      const toGpio = gpioPins.has(c.id + "." + key);
+      const circ = el("circle", {cx: px, cy: py, r: 6, fill, stroke: isSel ? "var(--sel)" : toGpio ? "#2b8a3e" : "#495057",
+                                 "stroke-width": isSel || toGpio ? 2 : 1, class: pin ? "clickable" : ""});
       circ.append(el("title", {}, c.label + " pin " + key + (pin ? ": " + pin.ref + " = " + pin.pin : pw ? ": " + pw : "")));
       if (pin) target(circ, {kind: "pin", conn: c.id, key});
       g.append(circ);

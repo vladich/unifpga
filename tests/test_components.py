@@ -85,7 +85,7 @@ def test_i2s_optional_pins_and_pa_enable():
 def test_gpio_header_concatenation_order():
     """de0_cv `.gpio ( { GPIO_0, GPIO_1 } )`: the first attach is the LSB half."""
     r = config_init.resolve_configuration("de0_cv")
-    r["peripherals"] = [a for a in r["peripherals"] if a["peripheral_id"] not in ("gpio_header", "pmod_12pin")]
+    r["peripherals"] = [a for a in r["peripherals"] if a["peripheral_id"] != "gpio_header"]
     r["peripherals"].append(_attach("gpio_header", {"io": "gpio_1"}, {"width": 36}))
     r["peripherals"].append(_attach("gpio_header", {"io": "gpio_0"}, {"width": 36}))
     top = codegen.emit_top_sv(r, strict=True)

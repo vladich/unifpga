@@ -87,7 +87,7 @@ by Yuri Panchul and contributors; see
 | `config/configurations/<id>.yml` | Board × toolchain × peripheral attachments (134 configurations): the hardware, what sits on which pins, polarity, widths, clocks, I/O standards. |
 | `config/layouts/<board>.yml`, `config/modules/<id>.yml`, `config/setups/<id>.yml`, `config/connectors.yml` | Boards as rigs (preview, two boards): connectors and on-board devices, add-on module pinouts, and setups that generate configurations; `tools/setup.py`, drawings by `tools/viewer.py`. |
 | `config/profiles/<id>.yml` | Design-wiring profile: how a configuration's hardware is presented to `design_top` (which key resets, a TM1638 as the key/led/digit bus, keys as switches, mirrored bits, the lab clock, pins that follow the reset, what `uart_rx` reads with no UART pin, a bus wider than the bits wired to it (`lab_width`), components tied off (`drop`), the HEX decimal point routed onto LEDs (`bind`), a header the design only drives (`direction: out`)). Applied on top of the configuration by default; `synthesize.py --no-profile` (or `UNIFPGA_PROFILE=0`) generates the generic composition. |
-| `config/peripherals/*.yml` | 37 peripheral definitions (`led_bank`, `vga_4bit`, `pmod_12pin`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
+| `config/peripherals/*.yml` | 41 peripheral definitions (`led_bank`, `vga_4bit`, `gpio_header`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
 | `config/capabilities/*.yml` | 12 abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules. |
 | `rtl/peripherals/*.sv` | Driver SV modules for hardware peripherals (TM1638 controller, VGA, I²S mic, etc.). |
 | `rtl/peripherals/designs_common/*.sv` | Reusable helpers (`seven_segment_display`, `shift_reg`, `strobe_gen`, …). |
@@ -273,7 +273,7 @@ intended SKIP, not a failure.
 │   │   └── ...                # 76 family catalogs, 65 pinmaps
 │   ├── configurations/<id>.yml # per-config peripheral attachments (134 configs)
 │   ├── profiles/<id>.yml      # design-wiring profiles
-│   ├── peripherals/*.yml      # 37 peripheral definitions
+│   ├── peripherals/*.yml      # 41 peripheral definitions
 │   └── capabilities/*.yml     # 12 abstract capabilities
 ├── designs/<name>/design_top.sv  # 97 example designs
 ├── rtl/

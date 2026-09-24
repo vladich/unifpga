@@ -141,3 +141,37 @@ def test_setup_and_configuration_carry_patches_both_ways():
         assert su.same_configuration(su.generate(setup), cfg)
         assert su.check_roundtrip(cfg) == []
         assert su.dump_setup(su.derive(cfg)).split("Setup:")[1] == su.dump_setup(setup).split("Setup:")[1]
+
+
+# ---------------------------------------------------------------- no raw uses (Phase 1c)
+
+# raw uses left, a ratchet down to none: every part of a rig is an on-board part,
+# a module or the design's gpio (lower it with each conversion, never raise it)
+RAW_USES_LEFT = 26
+
+
+def test_raw_uses_only_go_down():
+    uses = [u for s in su.read_setups().values() for u in s.get("use") or []]
+    raw = sum("raw" in u for u in uses) + \
+        sum("raw" in p for u in uses for p in (u.get("for_toolchain") or {}).values())
+    assert raw <= RAW_USES_LEFT, "{} raw uses (was {}): model the part instead".format(raw, RAW_USES_LEFT)
+
+
+def test_some_pins_of_a_connector_are_the_designs_gpio():
+    setup = su.read_setup("emooc_cc")
+    use = next(u for u in setup["use"] if u.get("gpio") == "gpio_p2")
+    assert use["pins"] == ["[{}]".format(k) for k in range(4, 12)]
+    attach = su.generate(dict(setup, use=[use]))["attach"][0]
+    assert attach["bind"] == {"io": ["gpio_p2[{}]".format(k) for k in range(4, 12)]}
+    assert su.derive(config_init.read_configurations()["emooc_cc"])["use"] == setup["use"]
+    with pytest.raises(su.SetupError, match="has no pin"):
+        su.generate(dict(setup, use=[dict(use, pins=["[99]"])]))
+
+
+def test_an_on_board_device_handed_to_the_designs_gpio_is_a_part():
+    """The Tang Nano 9K's small LCD pins go to the design's gpio (BGM's labs
+    drive the panel themselves): an on-board part, drawn and traced."""
+    setup = su.read_setup("tang_nano_9k_lcd_480_272_tm1638")
+    assert {"onboard": "small_lcd"} in setup["use"]
+    part = next(o for o in su.read_layout("tang_nano_9k")["onboard"] if o["id"] == "small_lcd")
+    assert part["attach"]["bind"]["io"] == ["onboard_small_lcd." + p for p in ("data", "clk", "cs", "rs")]
