@@ -1,4 +1,5 @@
 # Configuration 'tang_mega_138k_lcd_480_272_tm1638'.
+# Generated from config/setups/tang_mega_138k_lcd_480_272_tm1638.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_mega_138k_lcd_480_272_tm1638
@@ -20,10 +21,8 @@ Configuration:
     - peripheral: pmod_12pin
       bind:
         io: pmod_1
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: lcd_480_272
-      params:   # 6-6-6 bus
+      params:
         clock_pixel_mhz: 8
         bits_r: 6
         bits_g: 6

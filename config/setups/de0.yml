@@ -1,0 +1,27 @@
+# Setup de0: the rig config/configurations/de0.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: de0
+  board: de0
+  toolchain: quartus2
+  use:
+    - onboard: clk50mhz
+    - onboard: uart
+    - onboard: buttons
+    - onboard: leds_green
+    - onboard: switches
+    - onboard: 7seg
+    - onboard: vga
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio_0.[2]', WS: 'gpio_0.[4]', SCK: 'gpio_0.[6]', SD: 'gpio_0.[7]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio_0.[29]', BCK: 'gpio_0.[27]', LCK: 'gpio_0.[23]', DIN: 'gpio_0.[25]'}
+    - gpio: gpio_1
+      params: {width: 32}
+    - gpio: gpio_0
+      params: {width: 32}
+  extra:
+    tie:
+      gpio_0[3]: 0
+      gpio_0[5]: 1

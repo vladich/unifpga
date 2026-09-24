@@ -1,4 +1,5 @@
 # Configuration 'nexys4'.
+# Generated from config/setups/nexys4.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: nexys4
@@ -36,7 +37,7 @@ Configuration:
         digits_active: low
       bind:
         segments: ["onboard_7seg.segments[0]", "onboard_7seg.segments[1]", "onboard_7seg.segments[2]", "onboard_7seg.segments[3]", "onboard_7seg.segments[4]", "onboard_7seg.segments[5]", "onboard_7seg.segments[6]"]
-        dp: "onboard_7seg.dp"
+        dp: onboard_7seg.dp
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]", "onboard_7seg.anodes[6]", "onboard_7seg.anodes[7]"]
     - peripheral: reset_button
       bind:
@@ -46,7 +47,7 @@ Configuration:
         width: 5
       bind:
         btn: onboard_buttons
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4

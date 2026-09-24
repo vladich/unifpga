@@ -1,4 +1,5 @@
 # Configuration 'tang_nano_9k_lcd_480_272_tm1638_hackathon'.
+# Generated from config/setups/tang_nano_9k_lcd_480_272_tm1638_hackathon.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_nano_9k_lcd_480_272_tm1638_hackathon
@@ -19,8 +20,6 @@ Configuration:
         width: 6
       bind:
         led: onboard_leds
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: lcd_480_272
       params:
         clock_pixel_pll: {idiv: 2, fbdiv: 0, odiv: 48, sdiv: 2, clkoutd: false}

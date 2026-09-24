@@ -1,11 +1,14 @@
+# Configuration 'lattice_crosslink_nx_evn'.
 # lattice_crosslink_nx_evn — CrossLink-NX EVN (LIFCL-40-9BG400C)
 # via the open-source flow: yosys synth_nexus → nextpnr-nexus → prjoxide pack.
+# Generated from config/setups/lattice_crosslink_nx_evn.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: lattice_crosslink_nx_evn
   board: lattice_crosslink_nx_evn
   toolchain: nextpnr_nexus
-  manual: true   # pinout from the CrossLink-NX EVN user guide
+
+  manual: true
 
   attach:
     - peripheral: clock_input

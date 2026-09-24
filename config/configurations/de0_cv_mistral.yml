@@ -1,6 +1,7 @@
+# Configuration 'de0_cv_mistral'.
 # de0_cv_mistral retargeted to nextpnr_mistral (open-source Cyclone V flow).
 # Mirrors de0_cv — only the toolchain differs.
-
+# Generated from config/setups/de0_cv_mistral.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de0_cv_mistral
@@ -37,7 +38,7 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -52,8 +53,6 @@ Configuration:
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_0[0]"

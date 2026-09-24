@@ -1,0 +1,18 @@
+# Setup tang_nano_4k_hdmi_no_tm1638: the rig config/configurations/tang_nano_4k_hdmi_no_tm1638.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_nano_4k_hdmi_no_tm1638
+  board: tang_nano_4k
+  toolchain: gowin_eda
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: hdmi
+    - onboard: camera
+      variant: inmp441_i2s_mic
+    - onboard: camera
+      variant: i2s_audio_out
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_camera.scl}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_camera.sda}}
+    - onboard: led

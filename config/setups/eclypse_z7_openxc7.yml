@@ -1,0 +1,27 @@
+# Setup eclypse_z7_openxc7: the rig config/configurations/eclypse_z7_openxc7.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: eclypse_z7_openxc7
+  board: eclypse_z7
+  toolchain: nextpnr_openxc7
+  notes:
+    - "eclypse_z7_openxc7 retargeted to nextpnr_openxc7 (open-source flow)."
+    - "Mirrors eclypse_z7 — only the toolchain differs."
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - module: tm1638_led_key
+      wires: {DIO: 'pmod_jb.[5]', CLK: 'pmod_jb.[6]', STB: 'pmod_jb.[7]'}
+    - onboard: rgb_led_1
+      variant: led_bank
+    - onboard: rgb_led_1
+      variant: led_bank_2
+    - onboard: rgb_led_1
+      variant: led_bank_3
+    - onboard: rgb_led_0
+      variant: led_bank
+    - onboard: rgb_led_0
+      variant: led_bank_2
+    - onboard: rgb_led_0
+      variant: led_bank_3

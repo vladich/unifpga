@@ -1,4 +1,5 @@
 # Configuration 'emooc_cc'.
+# Generated from config/setups/emooc_cc.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: emooc_cc
@@ -37,8 +38,6 @@ Configuration:
         segments: ["onboard_7seg.segments[7]", "onboard_7seg.segments[6]", "onboard_7seg.segments[5]", "onboard_7seg.segments[4]", "onboard_7seg.segments[3]", "onboard_7seg.segments[2]", "onboard_7seg.segments[1]"]
         dp: "onboard_7seg.segments[0]"
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]"]
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_p1[14]"
@@ -59,7 +58,7 @@ Configuration:
         pin_bits_r: 4
         pin_bits_g: 4
         pin_bits_b: 4
-        gate: False
+        gate: false
       bind:
         r: ["gpio_p1[2]", "gpio_p1[3]", "gpio_p1[4]", "gpio_p1[5]"]
         g: ["gpio_p1[6]", "gpio_p1[7]", "gpio_p1[8]", "gpio_p1[9]"]

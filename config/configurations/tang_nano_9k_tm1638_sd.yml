@@ -1,4 +1,5 @@
 # Configuration 'tang_nano_9k_tm1638_sd'.
+# Generated from config/setups/tang_nano_9k_tm1638_sd.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_nano_9k_tm1638_sd
@@ -34,8 +35,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         dio: "gpio[0]"

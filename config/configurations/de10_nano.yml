@@ -1,4 +1,5 @@
 # Configuration 'de10_nano'.
+# Generated from config/setups/de10_nano.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de10_nano
@@ -26,8 +27,6 @@ Configuration:
         width: 8
       bind:
         led: onboard_leds
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         stb: "gpio_0[27]"

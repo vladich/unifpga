@@ -1,0 +1,25 @@
+# Setup piswords6: the rig config/configurations/piswords6.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: piswords6
+  board: piswords6
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: switches
+    - onboard: leds
+    - onboard: 7seg
+    - onboard: vga
+    - onboard: uart
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio.[0]', WS: 'gpio.[2]', SCK: 'gpio.[4]', SD: 'gpio.[5]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio.[12]', BCK: 'gpio.[10]', LCK: 'gpio.[6]', DIN: 'gpio.[8]'}
+    - gpio: gpio
+      params: {width: 16}
+  extra:
+    tie:
+      gpio[1]: 0
+      gpio[3]: 1

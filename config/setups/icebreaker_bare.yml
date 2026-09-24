@@ -1,0 +1,18 @@
+# Setup icebreaker_bare: the rig config/configurations/icebreaker_bare.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: icebreaker_bare
+  board: icebreaker
+  toolchain: nextpnr_icestorm
+  use:
+    - onboard: clk
+    - onboard: uart
+    - onboard: button
+    - onboard: rgb_led_0
+    - onboard: leds
+    - onboard: led_green
+    - onboard: led_red
+    - onboard: buttons
+    - raw: {peripheral: pmod_12pin, bind: {io: pmod_p1b}}
+    - raw: {peripheral: pmod_12pin, bind: {io: pmod_p1a}}

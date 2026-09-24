@@ -1,0 +1,26 @@
+# Setup tang_mega_138k_pro_lcd_480_272_tm1638: the rig config/configurations/tang_mega_138k_pro_lcd_480_272_tm1638.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_mega_138k_pro_lcd_480_272_tm1638
+  board: tang_mega_138k_pro
+  toolchain: gowin_standard
+  use:
+    - onboard: clk
+    - onboard: buttons
+      params: {active: high}
+    - onboard: leds
+    - raw: {peripheral: pmod_12pin, bind: {io: pmod_0}}
+    - raw: {peripheral: pmod_12pin, bind: {io: pmod_1}}
+    - raw: {peripheral: pmod_12pin, bind: {io: pmod_2}}
+    - onboard: lcd
+    - module: tm1638_led_key
+      wires: {DIO: 'pmod_2.[5]', CLK: 'pmod_2.[6]', STB: 'pmod_2.[7]'}
+    - module: inmp441_breakout
+      wires: {L/R: 'pmod_0.[0]', WS: 'pmod_0.[1]', SCK: 'pmod_0.[2]', SD: 'pmod_0.[6]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'pmod_1.[4]', BCK: 'pmod_1.[5]', DIN: 'pmod_1.[6]', LCK: 'pmod_1.[7]'}
+  extra:
+    tie:
+      pmod_0[4]: 0
+      pmod_0[5]: 1

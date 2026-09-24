@@ -1,0 +1,27 @@
+# Setup de0_nano_vga666: the rig config/configurations/de0_nano_vga666.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: de0_nano_vga666
+  board: de0_nano
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk50mhz
+    - onboard: buttons
+    - onboard: switches
+    - onboard: leds
+    - module: digilent_pmod_vga
+      wires: {R0: 'gpio_1.[11]', R1: 'gpio_1.[17]', R2: 'gpio_1.[3]', R3: 'gpio_1.[1]', G0: 'gpio_1.[5]', G1: 'gpio_1.[19]', G2: 'gpio_1.[15]', G3: 'gpio_1.[13]', B0: 'gpio_1.[21]', B1: 'gpio_1.[7]', B2: 'gpio_1.[9]', B3: 'gpio_1.[23]', HS: 'gpio_1.[31]', VS: 'gpio_1.[33]'}
+      params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, registered: true}
+    - module: tm1638_led_key
+      wires: {STB: 'gpio_0.[25]', CLK: 'gpio_0.[27]', DIO: 'gpio_0.[29]'}
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio_0.[2]', WS: 'gpio_0.[4]', SCK: 'gpio_0.[6]', SD: 'gpio_0.[7]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio_1.[30]', BCK: 'gpio_1.[28]', LCK: 'gpio_1.[24]', DIN: 'gpio_1.[26]'}
+    - gpio: gpio_0
+      params: {width: 34}
+  extra:
+    tie:
+      gpio_0[3]: 0
+      gpio_0[5]: 1

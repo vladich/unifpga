@@ -1,61 +1,64 @@
+# Configuration 'a7_lite_35t_openxc7'.
 # a7_lite_35t_openxc7 retargeted to nextpnr_openxc7 (open-source flow).
 # Mirrors a7_lite_35t — only the toolchain differs.
+# Generated from config/setups/a7_lite_35t_openxc7.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: a7_lite_35t_openxc7
   board: a7_lite_35t
   toolchain: nextpnr_openxc7
+
   attach:
-  - peripheral: clock_input
-    params:
-      frequency_mhz: 50
-    bind:
-      clk: clk50mhz
-  - peripheral: reset_button
-    bind:
-      rst: cpu_resetn
-  - peripheral: button_array
-    params:
-      width: 2
-    bind:
-      btn: onboard_buttons
-  - peripheral: led_bank
-    params:
-      width: 2
-    bind:
-      led: onboard_leds
-  - peripheral: uart_2wire
-    bind:
-      tx: onboard_uart.tx
-      rx: onboard_uart.rx
-  - peripheral: tm1638_led_key
-    bind:
-      dio: "gpio[0]"
-      clk: "gpio[1]"
-      stb: "gpio[2]"
-  - peripheral: inmp441_i2s_mic
-    bind:
-      lr: "gpio[4]"
-      ws: "gpio[5]"
-      sck: "gpio[6]"
-      sd: "gpio[7]"
-  - peripheral: hdmi_tmds
-    params:
-      timing: dvi
-      clock_serial_mhz: 250
-    bind:
-      clk_p: onboard_hdmi.clk_p
-      d_p: onboard_hdmi.d_p
-      clk_n: onboard_hdmi.clk_n
-      d_n: onboard_hdmi.d_n
-  - peripheral: i2s_audio_out
-    bind:
-      mclk: "gpio[9]"
-      bclk: "gpio[10]"
-      lrclk: "gpio[11]"
-      sdata: "gpio[12]"
-  - peripheral: gpio_header
-    params:
-      width: 13
-    bind:
-      io: gpio
+    - peripheral: clock_input
+      params:
+        frequency_mhz: 50
+      bind:
+        clk: clk50mhz
+    - peripheral: reset_button
+      bind:
+        rst: cpu_resetn
+    - peripheral: button_array
+      params:
+        width: 2
+      bind:
+        btn: onboard_buttons
+    - peripheral: led_bank
+      params:
+        width: 2
+      bind:
+        led: onboard_leds
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: tm1638_led_key
+      bind:
+        dio: "gpio[0]"
+        clk: "gpio[1]"
+        stb: "gpio[2]"
+    - peripheral: inmp441_i2s_mic
+      bind:
+        lr: "gpio[4]"
+        ws: "gpio[5]"
+        sck: "gpio[6]"
+        sd: "gpio[7]"
+    - peripheral: hdmi_tmds
+      params:
+        timing: dvi
+        clock_serial_mhz: 250
+      bind:
+        clk_p: onboard_hdmi.clk_p
+        d_p: onboard_hdmi.d_p
+        clk_n: onboard_hdmi.clk_n
+        d_n: onboard_hdmi.d_n
+    - peripheral: i2s_audio_out
+      bind:
+        mclk: "gpio[9]"
+        bclk: "gpio[10]"
+        lrclk: "gpio[11]"
+        sdata: "gpio[12]"
+    - peripheral: gpio_header
+      params:
+        width: 13
+      bind:
+        io: gpio

@@ -1,0 +1,35 @@
+# Setup nexys_a7_100_openxc7: the rig config/configurations/nexys_a7_100_openxc7.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: nexys_a7_100_openxc7
+  board: nexys_a7
+  toolchain: nextpnr_openxc7
+  part: "100t"
+  notes:
+    - "nexys_a7_100_openxc7 retargeted to nextpnr_openxc7 (open-source flow)."
+    - "Mirrors nexys_a7_100 — only the toolchain differs."
+  use:
+    - onboard: clk100mhz
+    - onboard: switches
+    - onboard: leds
+    - onboard: rgb_led_16
+    - onboard: rgb_led_17
+    - onboard: 7seg
+    - onboard: cpu_resetn
+    - onboard: buttons
+    - onboard: vga
+    - onboard: pwm_amp
+    - onboard: uart
+    - module: inmp441_breakout
+      wires: {L/R: 'pmod_jd.[6]', WS: 'pmod_jd.[5]', SCK: 'pmod_jd.[4]', SD: 'pmod_jd.[0]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'pmod_jc.[4]', BCK: 'pmod_jc.[5]', DIN: 'pmod_jc.[6]', LCK: 'pmod_jc.[7]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'pmod_jb.[6]', BCK: 'pmod_jb.[3]', DIN: 'pmod_jb.[1]', LCK: 'pmod_jb.[0]'}
+  extra:
+    tie:
+      onboard_mic.clk: 0
+      onboard_mic.lrsel: 0
+      pmod_jd[2]: 0
+      pmod_jd[1]: 1

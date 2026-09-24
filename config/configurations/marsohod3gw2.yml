@@ -1,4 +1,5 @@
 # Configuration 'marsohod3gw2'.
+# Generated from config/setups/marsohod3gw2.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: marsohod3gw2
@@ -19,17 +20,17 @@ Configuration:
     - peripheral: clock_input
       bind:
         clk: clk
-    - peripheral: uart_2wire   # the FT2232H bridge's second channel (UART_RX = FTB0, FTB1 = UART_TX)
+    - peripheral: uart_2wire
       bind:
         tx: onboard_ft_bridge.b1
         rx: onboard_ft_bridge.b0
-    - peripheral: button_array   # the 7-segment add-on shield's four keys on IO[8..11], active low
+    - peripheral: button_array
       params:
         width: 4
         active: low
       bind:
         btn: ["gpio[11]", "gpio[10]", "gpio[9]", "gpio[8]"]
-    - peripheral: adc_8bit_mic   # the on-board 8-bit parallel ADC (ADC_D / ADC_CLK)
+    - peripheral: adc_8bit_mic
       bind:
         d: onboard_adc.d
         clk: onboard_adc.clk

@@ -1,4 +1,5 @@
 # Configuration 'colorlight75b_tm1638_ecp5_yosys'.
+# Generated from config/setups/colorlight75b_tm1638_ecp5_yosys.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: colorlight75b_tm1638_ecp5_yosys
@@ -16,8 +17,6 @@ Configuration:
         open_drain: true
       bind:
         led: onboard_leds
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         clk: "gpio[0]"

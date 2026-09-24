@@ -1,0 +1,24 @@
+# Setup tang_nano_9k_hdmi_no_tm1638: the rig config/configurations/tang_nano_9k_hdmi_no_tm1638.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_nano_9k_hdmi_no_tm1638
+  board: tang_nano_9k
+  toolchain: gowin_eda
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: leds
+    - onboard: uart
+    - onboard: hdmi
+      variant: hdmi_tmds_2
+    - onboard: microsd
+    - onboard: lcd
+      variant: i2s_audio_out
+    - gpio: gpio
+      params: {width: 6}
+  extra:
+    io_overrides:
+      clk: LVCMOS33
+    tie:
+      onboard_lcd.de: 0

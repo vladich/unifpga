@@ -1,0 +1,27 @@
+# Setup de10_lite_tm1638_virtual_switches: the rig config/configurations/de10_lite_tm1638_virtual_switches.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: de10_lite_tm1638_virtual_switches
+  board: de10_lite
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk50mhz
+    - onboard: buttons
+    - onboard: switches
+    - onboard: leds
+    - onboard: 7seg
+    - onboard: vga
+      params: {gate: false}
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio.[0]', WS: 'gpio.[2]', SCK: 'gpio.[4]', SD: 'gpio.[5]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio.[32]', BCK: 'gpio.[30]', LCK: 'gpio.[26]', DIN: 'gpio.[28]'}
+    - gpio: gpio
+      params: {width: 36}
+    - gpio: arduino_io
+      params: {width: 16}
+  extra:
+    tie:
+      gpio[1]: 0
+      gpio[3]: 1

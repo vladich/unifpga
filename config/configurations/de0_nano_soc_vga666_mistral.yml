@@ -1,5 +1,7 @@
+# Configuration 'de0_nano_soc_vga666_mistral'.
 # de0_nano_soc_vga666_mistral retargeted to nextpnr_mistral (open-source Cyclone V flow).
 # Mirrors de0_nano_soc_vga666 — only the toolchain differs.
+# Generated from config/setups/de0_nano_soc_vga666_mistral.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de0_nano_soc_vga666_mistral
@@ -25,8 +27,6 @@ Configuration:
         width: 8
       bind:
         led: onboard_leds
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: vga_4bit
       params:
         bits_r: 4

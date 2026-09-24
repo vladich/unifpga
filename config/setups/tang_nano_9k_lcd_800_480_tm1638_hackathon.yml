@@ -1,0 +1,18 @@
+# Setup tang_nano_9k_lcd_800_480_tm1638_hackathon: the rig config/configurations/tang_nano_9k_lcd_800_480_tm1638_hackathon.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_nano_9k_lcd_800_480_tm1638_hackathon
+  board: tang_nano_9k
+  toolchain: gowin_eda
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: leds
+    - onboard: lcd
+      variant: lcd_800_480
+    - module: tm1638_led_key
+      wires: {DIO: 'gpio.[0]', CLK: 'gpio.[1]', STB: 'gpio.[2]'}
+    - onboard: microsd
+    - module: i2s_dac_breakout
+      wires: {BCK: 'gpio.[3]', DIN: 'gpio.[4]', LCK: 'gpio.[5]'}

@@ -1,0 +1,16 @@
+# Setup fireant: the rig config/configurations/fireant.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: fireant
+  board: fireant
+  toolchain: efinity
+  notes:
+    - "Hand-curated (Efinity XML constraints)."
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: leds
+    - onboard: uart
+  extra:
+    manual: true

@@ -1,4 +1,5 @@
 # Configuration 'tang_primer_25k_pmod_hub75e_led_matrix_bright'.
+# Generated from config/setups/tang_primer_25k_pmod_hub75e_led_matrix_bright.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_primer_25k_pmod_hub75e_led_matrix_bright
@@ -18,8 +19,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: hub75e_led_matrix
       params:
         rows: 64

@@ -1,4 +1,5 @@
 # Configuration 'de0_nano_soc_vga_pmod'.
+# Generated from config/setups/de0_nano_soc_vga_pmod.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de0_nano_soc_vga_pmod
@@ -24,8 +25,6 @@ Configuration:
         width: 8
       bind:
         led: onboard_leds
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: vga_4bit
       params:
         bits_r: 4

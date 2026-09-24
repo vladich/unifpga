@@ -1,0 +1,18 @@
+# Setup gatemate_evb_a1: the rig config/configurations/gatemate_evb_a1.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: gatemate_evb_a1
+  board: gatemate_evb_a1
+  toolchain: nextpnr_gatemate
+  notes:
+    - "gatemate_evb_a1 — Cologne Chip EVB-A1 (CCGM1A1) via the open-source flow."
+    - "yosys synth_gatemate → nextpnr-himbaechel (gatemate uarch) → gmpack."
+  use:
+    - onboard: clk
+    - onboard: reset
+    - onboard: buttons
+    - onboard: leds
+    - onboard: uart
+  extra:
+    manual: true

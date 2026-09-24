@@ -1,0 +1,24 @@
+# Setup tang_primer_20k_lite: the rig config/configurations/tang_primer_20k_lite.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_primer_20k_lite
+  board: tang_primer_20k_lite
+  toolchain: gowin_eda
+  use:
+    - onboard: clk
+    - onboard: switches
+    - onboard: buttons
+    - module: tm1638_led_key
+      wires: {CLK: 'gpio_2.[2]', STB: 'gpio_2.[3]', DIO: 'gpio_2.[1]'}
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio_3.[1]', WS: 'gpio_3.[2]', SCK: 'gpio_3.[3]', SD: 'gpio_3.[0]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio_3.[4]', BCK: 'gpio_3.[5]', DIN: 'gpio_3.[6]', LCK: 'gpio_3.[7]'}
+    - module: digilent_pmod_vga
+      wires: {R0: 'gpio_0.[4]', R1: 'gpio_0.[5]', R2: 'gpio_0.[6]', R3: 'gpio_0.[7]', G0: 'gpio_1.[4]', G1: 'gpio_1.[5]', G2: 'gpio_1.[6]', G3: 'gpio_1.[7]', B0: 'gpio_0.[0]', B1: 'gpio_0.[1]', B2: 'gpio_0.[2]', B3: 'gpio_0.[3]', HS: 'gpio_1.[0]', VS: 'gpio_1.[1]'}
+      params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4}
+  extra:
+    tie:
+      gpio_1[3]: 0
+      gpio_1[2]: 0

@@ -1,4 +1,5 @@
 # Configuration 'alinx_ax7035b'.
+# Generated from config/setups/alinx_ax7035b.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: alinx_ax7035b

@@ -1,4 +1,5 @@
 # Configuration 'eclypse_z7'.
+# Generated from config/setups/eclypse_z7.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: eclypse_z7
@@ -14,8 +15,6 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         dio: "pmod_jb[5]"

@@ -1,0 +1,29 @@
+# Setup de2: the rig config/configurations/de2.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: de2
+  board: de2
+  toolchain: quartus2
+  use:
+    - onboard: clk50mhz
+    - onboard: uart
+    - onboard: buttons
+    - onboard: leds_green
+    - onboard: leds
+    - onboard: switches
+    - onboard: 7seg
+    - onboard: vga
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio_1.[0]', WS: 'gpio_1.[2]', SCK: 'gpio_1.[4]', SD: 'gpio_1.[5]'}
+    - onboard: audio_codec
+    - gpio: gpio_1
+      params: {width: 36}
+    - gpio: gpio_0
+      params: {width: 36}
+  extra:
+    tie:
+      onboard_vga.sync: 0
+      gpio_1[1]: 0
+      gpio_1[3]: 1
+      onboard_leds_green[8]: 0

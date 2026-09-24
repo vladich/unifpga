@@ -1,4 +1,5 @@
 # Configuration 'tang_nano_20k_hdmi_tm1638'.
+# Generated from config/setups/tang_nano_20k_hdmi_tm1638.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_nano_20k_hdmi_tm1638
@@ -24,8 +25,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds
       params:
         clock_serial_mhz: 249.75

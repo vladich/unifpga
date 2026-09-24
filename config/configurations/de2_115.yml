@@ -1,4 +1,5 @@
 # Configuration 'de2_115'.
+# Generated from config/setups/de2_115.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de2_115
@@ -37,7 +38,7 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5, onboard_7seg.hex6, onboard_7seg.hex7]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 8
         bits_g: 8
@@ -46,7 +47,7 @@ Configuration:
         pin_bits_g: 8
         pin_bits_b: 8
         color_depth: 888
-        gate: false        # colours ungated (a DAC blanked through BLANK_N)
+        gate: false
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -59,8 +60,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio[0]"

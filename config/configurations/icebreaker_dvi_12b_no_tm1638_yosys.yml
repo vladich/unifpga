@@ -1,11 +1,11 @@
 # Configuration 'icebreaker_dvi_12b_no_tm1638_yosys'.
+# Generated from config/setups/icebreaker_dvi_12b_no_tm1638_yosys.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: icebreaker_dvi_12b_no_tm1638_yosys
   board: icebreaker
   toolchain: nextpnr_icestorm
 
-  # iCEBreaker P2 header: LED/BTN break-off Pmod, no user gpio (no-TM1638 wiring)
   attach:
     - peripheral: clock_input
       bind:
@@ -29,8 +29,6 @@ Configuration:
         width: 3
       bind:
         btn: onboard_buttons
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: dvi_12bit
       bind:
         r: ["pmod_p1a[5]", "pmod_p1a[1]", "pmod_p1a[4]", "pmod_p1a[0]"]

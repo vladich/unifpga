@@ -1,0 +1,19 @@
+# Setup orangepi_msoc: the rig config/configurations/orangepi_msoc.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: orangepi_msoc
+  board: orangepi_msoc
+  toolchain: gowin_standard
+  use:
+    - onboard: clk
+    - onboard: leds
+    - onboard: uart
+    - onboard: switches
+    - onboard: buttons
+    - onboard: 7seg
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio.[13]', WS: 'gpio.[15]', SCK: 'gpio.[11]', SD: 'gpio.[9]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio.[8]', BCK: 'gpio.[10]', LCK: 'gpio.[14]', DIN: 'gpio.[12]'}
+      params: {align_right: 0, offset_by_one_cycle: 1}

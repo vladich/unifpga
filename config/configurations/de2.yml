@@ -1,4 +1,5 @@
 # Configuration 'de2'.
+# Generated from config/setups/de2.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de2
@@ -41,7 +42,7 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5, onboard_7seg.hex6, onboard_7seg.hex7]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 10
         bits_g: 10
@@ -50,7 +51,7 @@ Configuration:
         pin_bits_g: 10
         pin_bits_b: 10
         color_depth: 444
-        gate: false        # colours ungated (a DAC blanked through BLANK_N)
+        gate: false
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -59,8 +60,6 @@ Configuration:
         vs: onboard_vga.vs
         clk: onboard_vga.clk
         blank_n: onboard_vga.blank
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_1[0]"

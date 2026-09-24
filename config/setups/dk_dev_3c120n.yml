@@ -1,0 +1,18 @@
+# Setup dk_dev_3c120n: the rig config/configurations/dk_dev_3c120n.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: dk_dev_3c120n
+  board: dk_dev_3c120n
+  toolchain: quartus2
+  use:
+    - onboard: clk50mhz
+    - onboard: leds
+    - onboard: cpu_resetn
+    - onboard: 7seg
+    - onboard: buttons
+    - onboard: switches
+  extra:
+    tie:
+      onboard_7seg.minus: 0
+      onboard_speaker: 0

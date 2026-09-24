@@ -1,4 +1,5 @@
 # Configuration 'terasic_sockit'.
+# Generated from config/setups/terasic_sockit.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: terasic_sockit
@@ -29,7 +30,7 @@ Configuration:
         width: 4
       bind:
         sw: onboard_switches
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 8
         bits_g: 8
@@ -38,7 +39,7 @@ Configuration:
         pin_bits_g: 8
         pin_bits_b: 8
         color_depth: 888
-        gate: false        # colours ungated (a DAC blanked through BLANK_N)
+        gate: false
       bind:
         r: onboard_vga.r
         g: onboard_vga.g

@@ -1,4 +1,5 @@
 # Configuration 'de10_lite_tm1638_virtual_switches'.
+# Generated from config/setups/de10_lite_tm1638_virtual_switches.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de10_lite_tm1638_virtual_switches
@@ -32,7 +33,7 @@ Configuration:
         segs: 8
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -41,15 +42,13 @@ Configuration:
         pin_bits_g: 4
         pin_bits_b: 4
         color_depth: 444
-        gate: false        # colours ungated (a DAC blanked through BLANK_N)
+        gate: false
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio[0]"

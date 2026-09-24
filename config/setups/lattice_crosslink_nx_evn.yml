@@ -1,0 +1,19 @@
+# Setup lattice_crosslink_nx_evn: the rig config/configurations/lattice_crosslink_nx_evn.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: lattice_crosslink_nx_evn
+  board: lattice_crosslink_nx_evn
+  toolchain: nextpnr_nexus
+  notes:
+    - "lattice_crosslink_nx_evn — CrossLink-NX EVN (LIFCL-40-9BG400C)"
+    - "via the open-source flow: yosys synth_nexus → nextpnr-nexus → prjoxide pack."
+  use:
+    - onboard: clk
+    - onboard: reset
+    - onboard: buttons
+    - onboard: switches
+    - onboard: leds
+    - onboard: uart
+  extra:
+    manual: true

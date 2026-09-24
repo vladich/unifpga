@@ -1,4 +1,5 @@
 # Configuration 'de1'.
+# Generated from config/setups/de1.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de1
@@ -36,7 +37,7 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -51,8 +52,6 @@ Configuration:
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_1[0]"

@@ -1,0 +1,27 @@
+# Setup tang_nano_20k_lcd_800_480_tm1638_alt: the rig config/configurations/tang_nano_20k_lcd_800_480_tm1638_alt.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_nano_20k_lcd_800_480_tm1638_alt
+  board: tang_nano_20k
+  toolchain: gowin_eda
+  use:
+    - onboard: clk
+    - onboard: buttons
+      params: {active: high}
+    - onboard: leds
+    - onboard: uart
+    - onboard: lcd
+      variant: lcd_800_480_2
+    - raw: {peripheral: tm1638_led_key, bind: {dio: 'gpio[0]', clk: onboard_joystick.cs, stb: onboard_joystick.miso}}
+    - raw: {peripheral: inmp441_i2s_mic, bind: {lr: 'gpio[1]', ws: 'gpio[2]', sck: 'gpio[3]', sd: 'onboard_microsd.dat[1]'}}
+    - onboard: headphone
+  extra:
+    pin_overrides:
+      onboard_lcd.r:
+      - '42'
+      - '41'
+      - '49'
+      - '39'
+      - '38'
+      onboard_lcd.bl: null

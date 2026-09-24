@@ -1,0 +1,18 @@
+# Setup m2s025_starter: the rig config/configurations/m2s025_starter.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: m2s025_starter
+  board: m2s025_starter
+  toolchain: libero_soc
+  notes:
+    - "m2s025_starter — SmartFusion2 Starter Kit (M2S025T)."
+    - "Drives Libero SoC's TCL batch flow."
+  use:
+    - onboard: clk
+    - onboard: reset
+    - onboard: buttons
+    - onboard: switches
+    - onboard: leds
+  extra:
+    manual: true

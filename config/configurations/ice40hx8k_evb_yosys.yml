@@ -1,4 +1,5 @@
 # Configuration 'ice40hx8k_evb_yosys'.
+# Generated from config/setups/ice40hx8k_evb_yosys.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: ice40hx8k_evb_yosys
@@ -28,7 +29,7 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -37,15 +38,13 @@ Configuration:
         pin_bits_g: 4
         pin_bits_b: 4
         color_depth: 444
-        gate: false        # colours ungated (a DAC blanked through BLANK_N)
+        gate: false
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         clk: "gpio[0]"

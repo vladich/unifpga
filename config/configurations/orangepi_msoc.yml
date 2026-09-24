@@ -1,4 +1,5 @@
 # Configuration 'orangepi_msoc'.
+# Generated from config/setups/orangepi_msoc.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: orangepi_msoc
@@ -34,11 +35,9 @@ Configuration:
         active: low
         digits_active: high
       bind:
-        segments: ["onboard_7seg.ca", "onboard_7seg.cb", "onboard_7seg.cc", "onboard_7seg.cd", "onboard_7seg.ce", "onboard_7seg.cf", "onboard_7seg.cg"]
-        dp: "onboard_7seg.dp"
+        segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
+        dp: onboard_7seg.dp
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]", "onboard_7seg.anodes[6]", "onboard_7seg.anodes[7]"]
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio[13]"

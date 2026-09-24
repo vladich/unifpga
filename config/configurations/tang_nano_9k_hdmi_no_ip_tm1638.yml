@@ -1,4 +1,5 @@
 # Configuration 'tang_nano_9k_hdmi_no_ip_tm1638'.
+# Generated from config/setups/tang_nano_9k_hdmi_no_ip_tm1638.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_nano_9k_hdmi_no_ip_tm1638
@@ -35,8 +36,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds
       bind:
         clk_p: onboard_hdmi.clk_p

@@ -1,4 +1,5 @@
 # Configuration 'tang_primer_20k_lite'.
+# Generated from config/setups/tang_primer_20k_lite.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_primer_20k_lite
@@ -19,8 +20,6 @@ Configuration:
         width: 2
       bind:
         btn: onboard_buttons
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         clk: "gpio_2[2]"

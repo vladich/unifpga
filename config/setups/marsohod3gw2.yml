@@ -1,0 +1,22 @@
+# Setup marsohod3gw2: the rig config/configurations/marsohod3gw2.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: marsohod3gw2
+  board: marsohod3gw2
+  toolchain: gowin_eda
+  use:
+    - onboard: leds
+    - onboard: buttons
+    - onboard: clk
+    - onboard: ft_bridge
+    - raw: {peripheral: button_array, params: {width: 4, active: low}, bind: {btn: ['gpio[11]', 'gpio[10]', 'gpio[9]', 'gpio[8]']}}
+    - onboard: adc
+    - onboard: hdmi
+    - raw: {peripheral: seven_segment_8digit_shared, params: {digits: 4, active: low, digits_active: high}, bind: {segments: ['gpio[6]', 'gpio[7]', 'gpio[4]', 'gpio[2]', 'gpio[0]', 'gpio[5]', 'gpio[3]'], dp: 'gpio[1]', digits: ['gpio[14]', 'gpio[12]', 'gpio[13]', 'gpio[15]']}}
+  extra:
+    tie:
+      gpio[16]: 0
+      gpio[17]: 0
+      gpio[18]: 0
+      gpio[19]: 0

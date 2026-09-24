@@ -1,0 +1,26 @@
+# Setup de1_soc: the rig config/configurations/de1_soc.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: de1_soc
+  board: de1_soc
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk50mhz
+    - onboard: buttons
+    - onboard: switches
+    - onboard: leds
+    - onboard: 7seg
+    - onboard: vga
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio_0.[0]', WS: 'gpio_0.[2]', SCK: 'gpio_0.[4]', SD: 'gpio_0.[5]'}
+    - onboard: audio_codec
+    - gpio: gpio_1
+      params: {width: 36}
+    - gpio: gpio_0
+      params: {width: 36}
+  extra:
+    tie:
+      onboard_vga.sync_n: 0
+      gpio_0[1]: 0
+      gpio_0[3]: 1

@@ -1,12 +1,11 @@
 # Configuration 'tang_mega_138k_pro_lcd_480_272_no_tm1638'.
+# Generated from config/setups/tang_mega_138k_pro_lcd_480_272_no_tm1638.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_mega_138k_pro_lcd_480_272_no_tm1638
   board: tang_mega_138k_pro
   toolchain: gowin_standard
 
-  # The two Tang Mega 138K Pro constraint sets disagree on PMOD_0[1]: the
-  # TM1638 one says N26 (used by the board pinmap), this one says L22.
   pin_overrides:
     pmod_0: [N18, L22, R16, R17, M26, N17, L24, T24]
 
@@ -34,10 +33,8 @@ Configuration:
     - peripheral: pmod_12pin
       bind:
         io: pmod_2
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: lcd_480_272
-      params:   # 6-6-6 bus
+      params:
         clock_pixel_mhz: 8
         bits_r: 6
         bits_g: 6

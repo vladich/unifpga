@@ -1,4 +1,5 @@
 # Configuration 'omdazz_pmod_mic3'.
+# Generated from config/setups/omdazz_pmod_mic3.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: omdazz_pmod_mic3
@@ -31,7 +32,7 @@ Configuration:
         segments: ["onboard_7seg.segments[7]", "onboard_7seg.segments[6]", "onboard_7seg.segments[5]", "onboard_7seg.segments[4]", "onboard_7seg.segments[3]", "onboard_7seg.segments[2]", "onboard_7seg.segments[1]"]
         dp: "onboard_7seg.segments[0]"
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]"]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -49,8 +50,6 @@ Configuration:
     - peripheral: uart_2wire
       bind:
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: pmod_mic3
       bind:
         cs: "gpio_pseudo_sdram[0]"

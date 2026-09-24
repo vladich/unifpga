@@ -1,0 +1,17 @@
+# Setup omdazz_epm570_quartus_13_1_or_older: the rig config/configurations/omdazz_epm570_quartus_13_1_or_older.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: omdazz_epm570_quartus_13_1_or_older
+  board: omdazz_epm570
+  toolchain: quartus2
+  use:
+    - onboard: clk
+    - onboard: cpu_resetn
+    - onboard: leds
+    - onboard: buttons
+    - onboard: switches
+    - onboard: 7seg
+    - onboard: uart
+    - onboard: vga
+    - raw: {peripheral: gpio_header, params: {width: 11}, bind: {io: onboard_char_lcd.d}}

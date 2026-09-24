@@ -1,4 +1,5 @@
 # Configuration 'a7_lite_35t'.
+# Generated from config/setups/a7_lite_35t.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: a7_lite_35t
@@ -28,8 +29,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: tm1638_led_key
       bind:
         dio: "gpio[0]"

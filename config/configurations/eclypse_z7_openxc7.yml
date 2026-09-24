@@ -1,5 +1,7 @@
+# Configuration 'eclypse_z7_openxc7'.
 # eclypse_z7_openxc7 retargeted to nextpnr_openxc7 (open-source flow).
 # Mirrors eclypse_z7 — only the toolchain differs.
+# Generated from config/setups/eclypse_z7_openxc7.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: eclypse_z7_openxc7
@@ -7,46 +9,46 @@ Configuration:
   toolchain: nextpnr_openxc7
 
   attach:
-  - peripheral: clock_input
-    bind:
-      clk: clk
-  - peripheral: button_array
-    params:
-      width: 2
-    bind:
-      btn: onboard_buttons
-  - peripheral: tm1638_led_key
-    bind:
-      dio: "pmod_jb[5]"
-      clk: "pmod_jb[6]"
-      stb: "pmod_jb[7]"
-  - peripheral: led_bank
-    params:
-      width: 1
-    bind:
-      led: onboard_rgb_led_1.r
-  - peripheral: led_bank
-    params:
-      width: 1
-    bind:
-      led: onboard_rgb_led_1.g
-  - peripheral: led_bank
-    params:
-      width: 1
-    bind:
-      led: onboard_rgb_led_1.b
-  - peripheral: led_bank
-    params:
-      width: 1
-    bind:
-      led: onboard_rgb_led_0.r
-  - peripheral: led_bank
-    params:
-      width: 1
-    bind:
-      led: onboard_rgb_led_0.g
-  - peripheral: led_bank
-    params:
-      width: 1
-    bind:
-      led: onboard_rgb_led_0.b
+    - peripheral: clock_input
+      bind:
+        clk: clk
+    - peripheral: button_array
+      params:
+        width: 2
+      bind:
+        btn: onboard_buttons
+    - peripheral: tm1638_led_key
+      bind:
+        dio: "pmod_jb[5]"
+        clk: "pmod_jb[6]"
+        stb: "pmod_jb[7]"
+    - peripheral: led_bank
+      params:
+        width: 1
+      bind:
+        led: onboard_rgb_led_1.r
+    - peripheral: led_bank
+      params:
+        width: 1
+      bind:
+        led: onboard_rgb_led_1.g
+    - peripheral: led_bank
+      params:
+        width: 1
+      bind:
+        led: onboard_rgb_led_1.b
+    - peripheral: led_bank
+      params:
+        width: 1
+      bind:
+        led: onboard_rgb_led_0.r
+    - peripheral: led_bank
+      params:
+        width: 1
+      bind:
+        led: onboard_rgb_led_0.g
+    - peripheral: led_bank
+      params:
+        width: 1
+      bind:
+        led: onboard_rgb_led_0.b

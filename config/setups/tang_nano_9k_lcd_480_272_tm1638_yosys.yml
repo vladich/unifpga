@@ -1,0 +1,22 @@
+# Setup tang_nano_9k_lcd_480_272_tm1638_yosys: the rig config/configurations/tang_nano_9k_lcd_480_272_tm1638_yosys.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_nano_9k_lcd_480_272_tm1638_yosys
+  board: tang_nano_9k
+  toolchain: nextpnr_apicula
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: leds
+    - onboard: uart
+    - raw: {peripheral: lcd_480_272, params: {bl: const.0}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+    - module: tm1638_led_key
+      wires: {DIO: 'gpio.[0]', CLK: 'gpio.[1]', STB: 'gpio.[2]'}
+    - onboard: microsd
+    - module: i2s_dac_breakout
+      wires: {BCK: 'gpio.[3]', DIN: 'gpio.[4]', LCK: 'gpio.[5]'}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.data}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.clk}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.cs}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.rs}}

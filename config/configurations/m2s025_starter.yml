@@ -1,11 +1,14 @@
+# Configuration 'm2s025_starter'.
 # m2s025_starter — SmartFusion2 Starter Kit (M2S025T).
 # Drives Libero SoC's TCL batch flow.
+# Generated from config/setups/m2s025_starter.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: m2s025_starter
   board: m2s025_starter
   toolchain: libero_soc
-  manual: true   # pinout from the SmartFusion2 Starter Kit schematic
+
+  manual: true
 
   attach:
     - peripheral: clock_input

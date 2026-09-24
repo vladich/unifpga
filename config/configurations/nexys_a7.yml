@@ -1,10 +1,11 @@
 # Configuration 'nexys_a7'.
+# Generated from config/setups/nexys_a7.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: nexys_a7
   board: nexys_a7
   toolchain: vivado
-  part: 100t   # which of the board's chips this configuration targets
+  part: "100t"   # which of the board's chips this configuration targets
 
   attach:
     - peripheral: clock_input
@@ -38,8 +39,8 @@ Configuration:
         active: low
         digits_active: low
       bind:
-        segments: ["onboard_7seg.ca", "onboard_7seg.cb", "onboard_7seg.cc", "onboard_7seg.cd", "onboard_7seg.ce", "onboard_7seg.cf", "onboard_7seg.cg"]
-        dp: "onboard_7seg.dp"
+        segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
+        dp: onboard_7seg.dp
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]", "onboard_7seg.anodes[6]", "onboard_7seg.anodes[7]"]
     - peripheral: reset_button
       bind:
@@ -49,7 +50,7 @@ Configuration:
         width: 5
       bind:
         btn: onboard_buttons
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4

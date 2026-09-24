@@ -1,0 +1,26 @@
+# Setup omdazz_pmod_mic3: the rig config/configurations/omdazz_pmod_mic3.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: omdazz_pmod_mic3
+  board: omdazz
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk
+    - onboard: cpu_reset
+    - onboard: buttons
+    - onboard: leds
+    - onboard: 7seg
+    - onboard: vga
+    - onboard: uart
+      variant: uart_2wire_2
+    - module: digilent_pmod_mic3
+      wires: {'1': 'gpio_pseudo_sdram.[0]', '4': 'gpio_pseudo_sdram.[6]', '3': 'gpio_pseudo_sdram.[4]'}
+    - onboard: char_lcd
+      variant: i2s_audio_out
+    - gpio: gpio_pseudo_sdram
+      params: {width: 14}
+  extra:
+    tie:
+      gpio_pseudo_sdram[8]: 0
+      gpio_pseudo_sdram[10]: 1

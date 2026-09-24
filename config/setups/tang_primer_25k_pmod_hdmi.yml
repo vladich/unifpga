@@ -1,0 +1,23 @@
+# Setup tang_primer_25k_pmod_hdmi: the rig config/configurations/tang_primer_25k_pmod_hdmi.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_primer_25k_pmod_hdmi
+  board: tang_primer_25k
+  toolchain: gowin_standard
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: uart
+    - onboard: hdmi_0
+    - module: tm1638_led_key
+      wires: {DIO: 'pmod_2.[1]', CLK: 'pmod_2.[2]', STB: 'pmod_2.[3]'}
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio.[0]', WS: 'gpio.[2]', SCK: 'gpio.[4]', SD: 'gpio.[5]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'pmod_2.[4]', BCK: 'pmod_2.[5]', DIN: 'pmod_2.[6]', LCK: 'pmod_2.[7]'}
+    - raw: {peripheral: gpio_header, params: {width: 32}, bind: {io: ['gpio[0]', 'gpio[1]', 'gpio[2]', 'gpio[3]', 'gpio[4]', 'gpio[5]', 'gpio[6]', 'gpio[7]', 'gpio[8]', 'gpio[9]', 'gpio[10]', 'gpio[11]', 'gpio[12]', 'gpio[13]', 'gpio[14]', 'gpio[15]', 'gpio[16]', 'gpio[17]', 'gpio[18]', 'gpio[19]', 'gpio[20]', 'gpio[21]', 'gpio[22]', 'gpio[23]', 'gpio[24]', 'gpio[25]', 'gpio[26]', 'gpio[27]', 'gpio[28]', 'gpio[29]', 'gpio[36]', 'gpio[37]']}}
+  extra:
+    tie:
+      gpio[1]: 0
+      gpio[3]: 1

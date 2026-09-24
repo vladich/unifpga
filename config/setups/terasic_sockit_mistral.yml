@@ -1,0 +1,20 @@
+# Setup terasic_sockit_mistral: the rig config/configurations/terasic_sockit_mistral.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: terasic_sockit_mistral
+  board: terasic_sockit
+  toolchain: nextpnr_mistral
+  notes:
+    - "terasic_sockit_mistral retargeted to nextpnr_mistral (open-source Cyclone V flow)."
+    - "Mirrors terasic_sockit — only the toolchain differs."
+  use:
+    - onboard: buttons
+    - onboard: leds
+    - onboard: osc_50_b3b
+    - onboard: cpu_resetn
+    - onboard: switches
+    - onboard: vga
+  extra:
+    tie:
+      onboard_vga.sync_n: 0

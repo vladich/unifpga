@@ -1,11 +1,13 @@
 # Configuration 'fireant'.
 # Hand-curated (Efinity XML constraints).
+# Generated from config/setups/fireant.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: fireant
   board: fireant
   toolchain: efinity
-  manual: true   # pinout from the Efinix Xyloni/Fireant schematic
+
+  manual: true
 
   attach:
     - peripheral: clock_input

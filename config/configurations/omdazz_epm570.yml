@@ -1,4 +1,5 @@
 # Configuration 'omdazz_epm570'.
+# Generated from config/setups/omdazz_epm570.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: omdazz_epm570
@@ -22,7 +23,7 @@ Configuration:
         width: 6
       bind:
         btn: onboard_buttons
-    - peripheral: sw_bank        # sw = ~ CKEY
+    - peripheral: sw_bank
       params:
         width: 4
       bind:
@@ -40,7 +41,7 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4

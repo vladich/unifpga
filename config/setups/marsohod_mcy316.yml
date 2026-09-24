@@ -1,0 +1,12 @@
+# Setup marsohod_mcy316: the rig config/configurations/marsohod_mcy316.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: marsohod_mcy316
+  board: marsohod_mcy316
+  toolchain: quartus2
+  use:
+    - onboard: buttons
+    - onboard: clk
+    - onboard: 7seg
+    - onboard: leds

@@ -1,4 +1,5 @@
 # Configuration 'zeowaa'.
+# Generated from config/setups/zeowaa.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: zeowaa
@@ -33,7 +34,7 @@ Configuration:
         segments: ["onboard_7seg.segments[7]", "onboard_7seg.segments[6]", "onboard_7seg.segments[5]", "onboard_7seg.segments[4]", "onboard_7seg.segments[3]", "onboard_7seg.segments[2]", "onboard_7seg.segments[1]"]
         dp: "onboard_7seg.segments[0]"
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]", "onboard_7seg.anodes[6]", "onboard_7seg.anodes[7]"]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -52,8 +53,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio[5]"

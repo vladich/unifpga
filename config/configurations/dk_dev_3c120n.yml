@@ -1,4 +1,5 @@
 # Configuration 'dk_dev_3c120n'.
+# Generated from config/setups/dk_dev_3c120n.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: dk_dev_3c120n
@@ -26,8 +27,8 @@ Configuration:
         active: low
         digits_active: high
       bind:
-        segments: ["onboard_7seg.ca", "onboard_7seg.cb", "onboard_7seg.cc", "onboard_7seg.cd", "onboard_7seg.ce", "onboard_7seg.cf", "onboard_7seg.cg"]
-        dp: "onboard_7seg.dp"
+        segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
+        dp: onboard_7seg.dp
         digits: ["onboard_7seg.anodes[3]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[0]"]
     - peripheral: button_array
       params:

@@ -1,0 +1,28 @@
+# Setup de0_cv: the rig config/configurations/de0_cv.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: de0_cv
+  board: de0_cv
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk50mhz
+    - onboard: buttons
+    - onboard: cpu_resetn
+    - onboard: switches
+    - onboard: leds
+    - onboard: 7seg
+    - onboard: vga
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio_0.[0]', WS: 'gpio_0.[2]', SCK: 'gpio_0.[4]', SD: 'gpio_0.[5]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio_0.[33]', BCK: 'gpio_0.[31]', LCK: 'gpio_0.[27]', DIN: 'gpio_0.[29]'}
+    - gpio: gpio_1
+      params: {width: 36}
+    - gpio: gpio_0
+      params: {width: 36}
+    - raw: {peripheral: uart_2wire, bind: {tx: 'gpio_1[35]', rx: 'gpio_1[34]'}}
+  extra:
+    tie:
+      gpio_0[1]: 0
+      gpio_0[3]: 1

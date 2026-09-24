@@ -1,4 +1,5 @@
 # Configuration 'tang_nano_9k_lcd_800_480_tm1638_yosys'.
+# Generated from config/setups/tang_nano_9k_lcd_800_480_tm1638_yosys.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_nano_9k_lcd_800_480_tm1638_yosys
@@ -23,8 +24,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: lcd_800_480
       params:
         clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}

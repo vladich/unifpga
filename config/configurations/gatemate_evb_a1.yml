@@ -1,11 +1,14 @@
+# Configuration 'gatemate_evb_a1'.
 # gatemate_evb_a1 — Cologne Chip EVB-A1 (CCGM1A1) via the open-source flow.
 # yosys synth_gatemate → nextpnr-himbaechel (gatemate uarch) → gmpack.
+# Generated from config/setups/gatemate_evb_a1.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: gatemate_evb_a1
   board: gatemate_evb_a1
   toolchain: nextpnr_gatemate
-  manual: true   # pinout from the Cologne Chip EVB-A1 manual
+
+  manual: true
 
   attach:
     - peripheral: clock_input

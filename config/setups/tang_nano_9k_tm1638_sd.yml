@@ -1,0 +1,29 @@
+# Setup tang_nano_9k_tm1638_sd: the rig config/configurations/tang_nano_9k_tm1638_sd.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_nano_9k_tm1638_sd
+  board: tang_nano_9k
+  toolchain: gowin_eda
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: leds
+    - onboard: uart
+    - module: tm1638_led_key
+      wires: {DIO: 'gpio.[0]', CLK: 'gpio.[1]', STB: 'gpio.[2]'}
+    - onboard: microsd
+    - onboard: hdmi
+      variant: hdmi_tmds_2
+    - gpio: gpio
+      params: {width: 6}
+  extra:
+    io_overrides:
+      clk: LVCMOS33
+      gpio: LVCMOS33
+      onboard_hdmi.clk_p: LVCMOS33
+      onboard_hdmi.d_p[0]: LVCMOS33
+      onboard_hdmi.d_p[1]: LVCMOS33
+      onboard_hdmi.d_p[2]: LVCMOS33
+      onboard_microsd: LVCMOS33
+      onboard_uart: LVCMOS33

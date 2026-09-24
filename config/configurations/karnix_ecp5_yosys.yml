@@ -1,4 +1,5 @@
 # Configuration 'karnix_ecp5_yosys'.
+# Generated from config/setups/karnix_ecp5_yosys.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: karnix_ecp5_yosys
@@ -19,7 +20,7 @@ Configuration:
         width: 4
       bind:
         btn: onboard_buttons
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -28,7 +29,7 @@ Configuration:
         pin_bits_g: 4
         pin_bits_b: 4
         color_depth: 444
-        gate: false        # colours ungated (a DAC blanked through BLANK_N)
+        gate: false
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -44,8 +45,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio[3]"

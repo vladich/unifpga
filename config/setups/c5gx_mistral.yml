@@ -1,0 +1,29 @@
+# Setup c5gx_mistral: the rig config/configurations/c5gx_mistral.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: c5gx_mistral
+  board: c5gx
+  toolchain: nextpnr_mistral
+  notes:
+    - "c5gx_mistral retargeted to nextpnr_mistral (open-source Cyclone V flow)."
+    - "Mirrors c5gx — only the toolchain differs."
+  use:
+    - onboard: clk50mhz
+    - onboard: uart
+    - onboard: buttons
+    - onboard: cpu_resetn
+    - onboard: switches
+    - onboard: leds_green
+    - onboard: leds
+    - onboard: 7seg
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio.[0]', WS: 'gpio.[2]', SCK: 'gpio.[4]', SD: 'gpio.[5]'}
+    - onboard: audio_codec
+    - onboard: hdmi_tx
+    - gpio: gpio
+      params: {width: 22}
+  extra:
+    tie:
+      gpio[1]: 0
+      gpio[3]: 1

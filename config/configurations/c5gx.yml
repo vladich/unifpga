@@ -1,4 +1,5 @@
 # Configuration 'c5gx'.
+# Generated from config/setups/c5gx.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: c5gx
@@ -43,8 +44,6 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3]
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio[0]"

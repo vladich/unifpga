@@ -1,0 +1,17 @@
+# Setup terasic_sockit: the rig config/configurations/terasic_sockit.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: terasic_sockit
+  board: terasic_sockit
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: buttons
+    - onboard: leds
+    - onboard: osc_50_b3b
+    - onboard: cpu_resetn
+    - onboard: switches
+    - onboard: vga
+  extra:
+    tie:
+      onboard_vga.sync_n: 0

@@ -1,39 +1,42 @@
+# Configuration 'qmtech_kintex_7_openxc7'.
 # qmtech_kintex_7_openxc7 retargeted to nextpnr_openxc7 (open-source flow).
 # Mirrors qmtech_kintex_7 — only the toolchain differs.
+# Generated from config/setups/qmtech_kintex_7_openxc7.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: qmtech_kintex_7_openxc7
   board: qmtech_kintex_7
   toolchain: nextpnr_openxc7
+
   attach:
-  - peripheral: clock_input
-    bind:
-      clk: clk
-  - peripheral: reset_button
-    bind:
-      rst: cpu_resetn
-  - peripheral: led_bank
-    params:
-      width: 6
-    bind:
-      led: onboard_leds
-  - peripheral: seven_segment_8digit_shared
-    params:
-      digits: 4
-      active: high
-      digits_active: low
-    bind:
-      segments: ["onboard_7seg.dp", "onboard_7seg.cg", "onboard_7seg.cf", "onboard_7seg.ce", "onboard_7seg.cd", "onboard_7seg.cc", "onboard_7seg.cb"]
-      dp: "onboard_7seg.ca"
-      digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]"]
-  - peripheral: button_array   # BTN_A..D on the base board, active high
-    params:
-      width: 4
-    bind:
-      btn: ["onboard_buttons[0]", "onboard_buttons[1]", "onboard_buttons[2]", "onboard_buttons[3]"]
-  - peripheral: button_array   # BTN_E on the core board (1.8 V bank), active low
-    params:
-      width: 1
-      active: low
-    bind:
-      btn: ["onboard_buttons[4]"]
+    - peripheral: clock_input
+      bind:
+        clk: clk
+    - peripheral: reset_button
+      bind:
+        rst: cpu_resetn
+    - peripheral: led_bank
+      params:
+        width: 6
+      bind:
+        led: onboard_leds
+    - peripheral: seven_segment_8digit_shared
+      params:
+        digits: 4
+        active: high
+        digits_active: low
+      bind:
+        segments: [onboard_7seg.dp, onboard_7seg.cg, onboard_7seg.cf, onboard_7seg.ce, onboard_7seg.cd, onboard_7seg.cc, onboard_7seg.cb]
+        dp: onboard_7seg.ca
+        digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]"]
+    - peripheral: button_array
+      params:
+        width: 4
+      bind:
+        btn: ["onboard_buttons[0]", "onboard_buttons[1]", "onboard_buttons[2]", "onboard_buttons[3]"]
+    - peripheral: button_array
+      params:
+        width: 1
+        active: low
+      bind:
+        btn: ["onboard_buttons[4]"]

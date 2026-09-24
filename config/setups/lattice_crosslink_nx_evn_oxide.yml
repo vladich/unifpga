@@ -1,0 +1,19 @@
+# Setup lattice_crosslink_nx_evn_oxide: the rig config/configurations/lattice_crosslink_nx_evn_oxide.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: lattice_crosslink_nx_evn_oxide
+  board: lattice_crosslink_nx_evn
+  toolchain: nextpnr_oxide
+  notes:
+    - "lattice_crosslink_nx_evn_oxide — CrossLink-NX EVN retargeted to the"
+    - historical nextpnr_oxide toolchain id. Same flow as nextpnr_nexus
+    - "(yosys synth_nexus → nextpnr-nexus → prjoxide pack); only the"
+    - toolchain id differs.
+  use:
+    - onboard: clk
+    - onboard: reset
+    - onboard: buttons
+    - onboard: switches
+    - onboard: leds
+    - onboard: uart

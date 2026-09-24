@@ -1,4 +1,5 @@
 # Configuration 'tang_primer_25k_pmod_hdmi'.
+# Generated from config/setups/tang_primer_25k_pmod_hdmi.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_primer_25k_pmod_hdmi
@@ -18,8 +19,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: hdmi_tmds
       params:
         clock_serial_mhz: 250

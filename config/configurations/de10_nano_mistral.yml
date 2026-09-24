@@ -1,5 +1,7 @@
+# Configuration 'de10_nano_mistral'.
 # de10_nano_mistral retargeted to nextpnr_mistral (open-source Cyclone V flow).
 # Mirrors de10_nano — only the toolchain differs.
+# Generated from config/setups/de10_nano_mistral.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de10_nano_mistral
@@ -27,8 +29,6 @@ Configuration:
         width: 8
       bind:
         led: onboard_leds
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_0[0]"

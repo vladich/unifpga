@@ -1,7 +1,9 @@
+# Configuration 'lattice_crosslink_nx_evn_oxide'.
 # lattice_crosslink_nx_evn_oxide — CrossLink-NX EVN retargeted to the
 # historical nextpnr_oxide toolchain id. Same flow as nextpnr_nexus
 # (yosys synth_nexus → nextpnr-nexus → prjoxide pack); only the
 # toolchain id differs.
+# Generated from config/setups/lattice_crosslink_nx_evn_oxide.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: lattice_crosslink_nx_evn_oxide

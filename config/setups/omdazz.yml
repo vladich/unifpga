@@ -1,0 +1,28 @@
+# Setup omdazz: the rig config/configurations/omdazz.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: omdazz
+  board: omdazz
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk
+    - onboard: cpu_reset
+    - onboard: buttons
+    - onboard: leds
+    - onboard: 7seg
+    - onboard: vga
+    - onboard: uart
+      variant: uart_2wire
+    - onboard: char_lcd
+      variant: inmp441_i2s_mic
+    - onboard: char_lcd
+      variant: i2s_audio_out
+    - raw: {peripheral: gpio_header, params: {width: 8}, bind: {io: onboard_char_lcd.d}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_char_lcd.e}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_char_lcd.rw}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_char_lcd.rs}}
+  extra:
+    tie:
+      onboard_char_lcd.d[6]: 0
+      onboard_char_lcd.d[4]: 1

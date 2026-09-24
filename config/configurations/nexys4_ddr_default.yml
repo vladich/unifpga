@@ -1,58 +1,59 @@
+# Configuration 'nexys4_ddr_default'.
 # Default Nexys 4 DDR configuration: every on-board peripheral attached, no
 # Pmod add-ons. Self-contained — every binding is listed explicitly.
+# Generated from config/setups/nexys4_ddr_default.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: nexys4_ddr_default
-  description: Nexys 4 DDR with all on-board peripherals (no Pmod add-ons)
   board: nexys4_ddr
   toolchain: vivado
 
+  description: "Nexys 4 DDR with all on-board peripherals (no Pmod add-ons)"
+
   attach:
-    # ---- Clock & reset ----
     - peripheral: clock_input
-      params: { frequency_mhz: 100 }
-      bind: { clk: clk100mhz }
-
+      params:
+        frequency_mhz: 100
+      bind:
+        clk: clk100mhz
     - peripheral: reset_button
-      bind: { rst: cpu_resetn }
-
-    # ---- User I/O ----
+      bind:
+        rst: cpu_resetn
     - peripheral: sw_bank
-      params: { width: 16 }
-      bind: { sw: onboard_switches }
-
+      params:
+        width: 16
+      bind:
+        sw: onboard_switches
     - peripheral: led_bank
-      params: { width: 16 }
-      bind: { led: onboard_leds }
-
+      params:
+        width: 16
+      bind:
+        led: onboard_leds
     - peripheral: button_array
-      params: { width: 5 }
-      bind: { btn: onboard_buttons }
-
+      params:
+        width: 5
+      bind:
+        btn: onboard_buttons
     - peripheral: rgb_led
       bind:
         r: onboard_rgb_led_16.r
         g: onboard_rgb_led_16.g
         b: onboard_rgb_led_16.b
-
     - peripheral: rgb_led
       bind:
         r: onboard_rgb_led_17.r
         g: onboard_rgb_led_17.g
         b: onboard_rgb_led_17.b
-
     - peripheral: seven_segment_8digit_shared
       params:
         digits: 8
         active: low
         digits_active: low
       bind:
-        segments: ["onboard_7seg.ca", "onboard_7seg.cb", "onboard_7seg.cc", "onboard_7seg.cd", "onboard_7seg.ce", "onboard_7seg.cf", "onboard_7seg.cg"]
-        dp: "onboard_7seg.dp"
+        segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
+        dp: onboard_7seg.dp
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]", "onboard_7seg.anodes[6]", "onboard_7seg.anodes[7]"]
-
-    # ---- Display ----
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 4
         bits_g: 4
@@ -67,28 +68,16 @@ Configuration:
         b: onboard_vga.b
         hs: onboard_vga.hs
         vs: onboard_vga.vs
-
-    # ---- Audio ----
-
     - peripheral: pwm_amp
       params:
         open_drain: true
       bind:
         pwm: onboard_pwm_amp.pwm
-        sd:  onboard_pwm_amp.sd
-
-    # ---- Communications ----
+        sd: onboard_pwm_amp.sd
     - peripheral: uart_4wire
       bind:
-        tx:  onboard_uart.tx
-        rx:  onboard_uart.rx
-
-    # ---- Storage ----
-
-    # ---- Sensors ----
-
-    # ---- Pluggable headers (exposed but unbound) ----
-
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "pmod_jd[6]"

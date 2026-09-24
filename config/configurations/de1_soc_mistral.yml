@@ -1,5 +1,7 @@
+# Configuration 'de1_soc_mistral'.
 # de1_soc_mistral retargeted to nextpnr_mistral (open-source Cyclone V flow).
 # Mirrors de1_soc — only the toolchain differs.
+# Generated from config/setups/de1_soc_mistral.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: de1_soc_mistral
@@ -33,7 +35,7 @@ Configuration:
         segs: 7
       bind:
         hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 8
         bits_g: 8
@@ -42,7 +44,7 @@ Configuration:
         pin_bits_g: 8
         pin_bits_b: 8
         color_depth: 888
-        gate: false        # colours ungated (a DAC blanked through BLANK_N)
+        gate: false
       bind:
         r: onboard_vga.r
         g: onboard_vga.g
@@ -51,8 +53,6 @@ Configuration:
         vs: onboard_vga.vs
         clk: onboard_vga.clk
         blank_n: onboard_vga.blank_n
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: inmp441_i2s_mic
       bind:
         lr: "gpio_0[0]"

@@ -1,0 +1,17 @@
+# Setup icebreaker_no_dvi_no_tm1638_yosys: the rig config/configurations/icebreaker_no_dvi_no_tm1638_yosys.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: icebreaker_no_dvi_no_tm1638_yosys
+  board: icebreaker
+  toolchain: nextpnr_icestorm
+  use:
+    - onboard: clk
+    - onboard: uart
+    - onboard: button
+    - onboard: leds
+    - onboard: buttons
+    - module: inmp441_breakout
+      wires: {L/R: 'pmod_p1a.[0]', WS: 'pmod_p1a.[1]', SCK: 'pmod_p1a.[2]', SD: 'pmod_p1a.[3]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'pmod_p1b.[0]', BCK: 'pmod_p1b.[1]', DIN: 'pmod_p1b.[2]', LCK: 'pmod_p1b.[3]'}

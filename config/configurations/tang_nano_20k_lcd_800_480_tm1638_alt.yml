@@ -1,13 +1,11 @@
 # Configuration 'tang_nano_20k_lcd_800_480_tm1638_alt'.
+# Generated from config/setups/tang_nano_20k_lcd_800_480_tm1638_alt.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: tang_nano_20k_lcd_800_480_tm1638_alt
   board: tang_nano_20k
   toolchain: gowin_eda
 
-  # This configuration uses a different LCD adapter wiring: LCD_R[2] sits on
-  # pin 49, which the board's default bank uses for the backlight, and there
-  # is no LCD_BL.
   pin_overrides:
     onboard_lcd.r: ["42", "41", "49", "39", "38"]
     onboard_lcd.bl: null
@@ -31,8 +29,6 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
-
-  # External peripherals inferred from the variant directory name.
     - peripheral: lcd_800_480
       params:
         clock_pixel_pll: {idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}

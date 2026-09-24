@@ -1,4 +1,5 @@
 # Configuration 'saylinx'.
+# Generated from config/setups/saylinx.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
   id: saylinx
@@ -31,7 +32,7 @@ Configuration:
         segments: ["onboard_7seg.segments[7]", "onboard_7seg.segments[6]", "onboard_7seg.segments[5]", "onboard_7seg.segments[4]", "onboard_7seg.segments[3]", "onboard_7seg.segments[2]", "onboard_7seg.segments[1]"]
         dp: "onboard_7seg.segments[0]"
         digits: ["onboard_7seg.anodes[0]", "onboard_7seg.anodes[1]", "onboard_7seg.anodes[2]", "onboard_7seg.anodes[3]", "onboard_7seg.anodes[4]", "onboard_7seg.anodes[5]", "onboard_7seg.anodes[6]", "onboard_7seg.anodes[7]"]
-    - peripheral: vga_4bit   # widths: pins from the pinmap, bits from bits_r/bits_g/bits_b
+    - peripheral: vga_4bit
       params:
         bits_r: 5
         bits_g: 6
@@ -72,8 +73,6 @@ Configuration:
         width: 34
       bind:
         io: gpio_0
-
-  # External peripherals inferred from the variant directory name.
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

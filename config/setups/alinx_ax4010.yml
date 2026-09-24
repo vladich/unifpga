@@ -1,0 +1,26 @@
+# Setup alinx_ax4010: the rig config/configurations/alinx_ax4010.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: alinx_ax4010
+  board: alinx_ax4010
+  toolchain: quartus_prime_lite
+  use:
+    - onboard: clk
+    - onboard: cpu_resetn
+    - onboard: buttons
+    - onboard: leds
+    - onboard: 7seg
+    - onboard: vga
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio_0.[0]', WS: 'gpio_0.[2]', SCK: 'gpio_0.[4]', SD: 'gpio_0.[5]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio_0.[12]', BCK: 'gpio_0.[10]', LCK: 'gpio_0.[6]', DIN: 'gpio_0.[8]'}
+    - gpio: gpio_1
+      params: {width: 34}
+    - gpio: gpio_0
+      params: {width: 34}
+  extra:
+    tie:
+      gpio_0[1]: 0
+      gpio_0[3]: 1
