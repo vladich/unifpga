@@ -184,7 +184,7 @@ def test_all_board_feature_tokens_are_registered():
 
 def test_mezzanines_registry_validates():
     """Every entry in config/mezzanines/* resolves cleanly: known producer,
-    valid Type (mezzanine | som | piggyback), registered Features/Devices,
+    valid Type (mezzanine | som | piggyback | carrier), registered Features/Devices,
     SoM Chip resolves against the chip registry, CompatibleBoards exist."""
     result = config_init.validate_mezzanines()
     failures = {k: v for k, v in result.items() if v}
@@ -627,3 +627,24 @@ def test_design_requirements_colour_depth_is_the_design_widths():
     assert design_requirements.check(resolved, {"screen": {"min_width": 640, "min_height": 480, "min_color_depth": 444}}) == []
     errs = design_requirements.check(resolved, {"screen": {"min_width": 640, "min_height": 480, "min_color_depth": 888}})
     assert len(errs) == 1 and "4/4/4 (rgb12)" in errs[0] and "8/8/8" in errs[0], errs
+
+
+def test_catalogue_aliases_name_no_real_entry_twice():
+    """`Aliases:` keep the ids of duplicates merged into an entry (catalogue
+    corrections): an alias is never also a board or mezzanine id, and no id is
+    the alias of two entries."""
+    import glob
+    ids, seen = set(), {}
+    entries = []
+    for f in glob.glob(os.path.join(REPO_ROOT, "config", "boards", "*", "*.yml")) + \
+            glob.glob(os.path.join(REPO_ROOT, "config", "mezzanines", "*", "*.yml")):
+        with open(f) as fh:
+            data = yaml.safe_load(fh) or {}
+        for e in (data.get("Boards") or []) + (data.get("Mezzanines") or []):
+            ids.add(e["Id"])
+            entries.append(e)
+    for e in entries:
+        for a in e.get("Aliases") or []:
+            assert a not in ids, "{} is an alias of {} and an entry of its own".format(a, e["Id"])
+            assert a not in seen, "{} is an alias of {} and of {}".format(a, e["Id"], seen[a])
+            seen[a] = e["Id"]

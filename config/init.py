@@ -290,7 +290,7 @@ def read_mezzanines_catalog():
     for mezzanine cards, SoMs, and piggyback boards. Returns {id: entry}.
 
     Each entry has at minimum: Id, Name, Producer, Type
-    (one of: mezzanine | som | piggyback), Connector (slug describing the
+    (one of: mezzanine | som | piggyback | carrier), Connector (slug describing the
     physical interface to a host board). SoMs additionally have a Chip
     (the FPGA part on the module). Mezzanines have no Chip but list
     Devices (the peripheral chips populating the card).
@@ -333,7 +333,8 @@ def validate_mezzanines(catalog=None, devices=None, features=None,
     if board_catalog  is None: board_catalog  = read_boards_catalog()
     if producers      is None: producers      = read_board_producers()
 
-    valid_types = {"mezzanine", "som", "piggyback"}
+    # carrier: a board a SoM plugs into (Tang Primer 20K Dock, Enclustra base boards)
+    valid_types = {"mezzanine", "som", "piggyback", "carrier"}
     out = {k: [] for k in ("unknown_devices", "unknown_features",
                             "unknown_chips", "unknown_producers",
                             "unknown_compatible", "missing_required",

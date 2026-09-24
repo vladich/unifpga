@@ -3,8 +3,8 @@ Renesas ForgeFPGA Workshop toolchain driver — STUB.
 
 ForgeFPGA Workshop is a plugin to Renesas' "Go Configure Software Hub"
 (originally Dialog Semiconductor's tool for the SLG / GreenPAK CPLD
-line). It targets the small-but-cheap ForgeFPGA family (SLG47004 /
-SLG47010, ~1k LUTs), which is positioned as a glue-logic alternative
+line). It targets the small-but-cheap ForgeFPGA family (SLG4791x /
+SLG4792x, ~1k LUTs), which is positioned as a glue-logic alternative
 to CPLDs. Renesas hints at a larger ForgeFPGA Evo coming.
 
 Stub module. Synthesis isn't wired up yet — this just logs what would

@@ -2,7 +2,8 @@
 Anlogic Tang Dynasty (TD) toolchain driver — STUB.
 
 TD is Anlogic Microelectronics' proprietary IDE for their FPGA families:
-Eagle EG4 (4S/4D/4M), Elf 2 (EF2), Phoenix EF3, Salt, Salomon. Despite
+Eagle EG4 (4S/4D/4M), Elf 2 (EF2), Phoenix EF3 (Anlogic's own names: SALEAGLE, SALELF,
+SALPHOENIX, SALDRAGON, SALSWIFT). Despite
 the name, it has no relation to Sipeed's "Tang" boards (those use Gowin
 parts). Anlogic publishes TD only in Chinese-localised builds; an
 English UI exists but documentation is sparse outside CN sources.
