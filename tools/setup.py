@@ -164,9 +164,10 @@ def pin_ref(layout, where):
 
 
 def ref_index(layout):
-    """{pinmap reference: `connector.pin`} over every connector of the layout."""
+    """{pinmap reference: `connector.pin`} over every connector of the layout; a
+    pin on a physical (verified) header wins over the same pin in a logical row."""
     out = {}
-    for c in layout.get("connectors") or []:
+    for c in sorted(layout.get("connectors") or [], key=lambda c: c.get("type") != "pin_row"):
         for key, ref in (c.get("pins") or {}).items():
             out[ref] = "{}.{}".format(c["id"], key)
     return out
