@@ -1,29 +1,33 @@
 # unifpga
 
-A multi-vendor FPGA build abstraction. One design, written against a fixed
-virtual-device interface, synthesizes against any of 130 board configurations
-across **twelve toolchains** — six vendor (Vivado, Quartus Prime, Quartus II
-13.x, Gowin EDA Educational, Gowin EDA Standard, Efinity) and six open-source
-yosys+nextpnr flows (openxc7 for Xilinx 7-series, icestorm for iCE40, trellis
-for ECP5, apicula for Gowin, mistral for Cyclone V, himbaechel-gatemate for
-Cologne Chip GateMate) — without changing the design.
+A multi-vendor FPGA build abstraction. Designs use a virtual-device interface;
+the catalog describes how board configurations and vendor or open-source
+toolchains can provide it. `SupportedOperations` and board evidence determine
+which catalog entries are currently eligible for a build or programming run.
 
-> **Status:** configurations are checked by building them with their
-> toolchains and by simulating the generated tops; few have been run on a
-> physical board. Treat a board's first run as a bring-up.
+> **Status:** configuration and generated-project checks exist, but full
+> toolchain, simulation, and physical-board coverage is incomplete. No board
+> pinmap is yet attested for hardware, so builds and programming stop at the
+> hardware-readiness gate. Treat any first physical run as a bring-up.
 
 ## Quick start
 
 ```bash
 ./unifpga board          # pick your board once (remembered in settings.yml)
 cd designs/1_06_binary_counter
+../../unifpga prepare    # inspect generated files without running tools
+# After board attestation and toolchain setup:
 ../../unifpga build      # or: ./unifpga build 1_06_binary_counter from the repo root
 ../../unifpga program    # build and load the bitstream onto the board
 ```
 
-Other commands: `unifpga sim` (Icarus Verilog on the design's `tb.sv`, then
-gtkwave / surfer; 88 designs ship a testbench), `unifpga gui` (the last build
-in the vendor GUI), `unifpga prepare --all` (the run directories of every
+Until a board has a reviewed pinmap attestation, use `../../unifpga prepare`
+to inspect generated project files; `build` and `program` require that
+attestation and an installed supported toolchain.
+
+Other commands: `unifpga sim` (Icarus Verilog on a design's `tb.sv`, then
+gtkwave / surfer, for designs that ship a testbench), `unifpga gui` (the last
+build in the vendor GUI), `unifpga prepare --all` (the run directories of every
 design, no tools run), `unifpga program --no-build` (load the last build's
 bitstream again), `unifpga clean` (`--all`: every design).
 
@@ -318,27 +322,27 @@ intended SKIP, not a failure.
 .
 ├── synthesize.py
 ├── config/
-│   ├── toolchains.yml         # registry of synthesis toolchains (33)
-│   ├── programmers.yml        # registry of bitstream loaders (27)
+│   ├── toolchains.yml         # registry of synthesis toolchains
+│   ├── programmers.yml        # registry of bitstream loaders
 │   ├── chips/                 # chip registry, per-family
 │   │   ├── xilinx_amd/<family>.yml   # chips + DefaultToolchains[version_constraint]
 │   │   ├── altera_intel/<family>.yml
-│   │   └── ...                # 76 family files, 274 chips referenced by boards
+│   │   └── ...                # other chip families
 │   ├── boards/                # board catalogs + pinmaps
 │   │   ├── xilinx_amd/        # producer dirs
 │   │   │   ├── artix_7.yml    # family catalog: boards reference chips by Id
 │   │   │   └── artix_7/<id>.yml  # per-board pinmaps
-│   │   └── ...                # 76 family catalogs, 65 pinmaps
-│   ├── configurations/<id>.yml # per-config peripheral attachments (134 configs)
+│   │   └── ...                # other family catalogs and pinmaps
+│   ├── configurations/<id>.yml # per-config peripheral attachments
 │   ├── profiles/<id>.yml      # design-wiring profiles
-│   ├── peripherals/*.yml      # 41 peripheral definitions
-│   └── capabilities/*.yml     # 12 abstract capabilities
-├── designs/<name>/design_top.sv  # 97 example designs
+│   ├── peripherals/*.yml      # peripheral definitions
+│   └── capabilities/*.yml     # abstract capabilities
+├── designs/<name>/design_top.sv  # example designs
 ├── rtl/
 │   └── peripherals/              # SV peripheral drivers
 │       ├── designs_common/       # reusable helpers
 │       └── design_top_interface.sv  # canonical user-design interface
-├── toolchains/                   # 12 driver modules
+├── toolchains/                   # driver modules
 │   ├── vivado/                   #  Xilinx 7-series / Ultrascale / Versal
 │   ├── quartus_prime/            #  Cyclone IV / V / 10, MAX 10, Arria, Stratix
 │   ├── quartus2/                 #  Cyclone II / III, MAX II / V (Q13.0sp1)
