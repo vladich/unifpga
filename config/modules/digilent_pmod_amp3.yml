@@ -15,9 +15,7 @@ Module:
     "11": ground
     "12": power
   source: >-
-    Digilent PmodAMP3 reference manual, not fetched (digilent.com refuses automated
-    access). Pins as BGM's nexys4 / nexys_a7_100 tops wire it (inst_pmod_amp3: LRCLK JB1,
-    SDATA JB2, BCLK JB4, MCLK JB9). A third-party Raspberry Pi guide
-    (centennialsoftwaresolutions.github.io, i2s-audio-output-with-...-pmod-amp3) wires
-    BCLK to pin 1 and LRCLK to pin 4 instead: check against Digilent's pin table
-  verified: false
+    Analog Devices' PmodAMP3 reference design for the ZedBoard (no-OS, legacy/Pmods/PmodAMP3,
+    system.ucf: LRCLK JD1, SDATA JD2, BCLK JD4, MCLK JD9, the pins' LOCs confirming the
+    numbering); BGM's nexys4 tops wire it the same way. Registry: modules/digilent_pmod_amp3.yml
+  verified: true
