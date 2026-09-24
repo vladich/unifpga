@@ -22,6 +22,7 @@ header and part in it is backed by verified facts. Hand-made layouts (without
 `generated: true`) are never overwritten.
 """
 
+import json
 import os
 import re
 
@@ -126,7 +127,9 @@ def draft(board_id):
         oid = re.sub(r"^onboard_", "", main)
         fact = facts_o.get(main)
         label = fact.get("label") if main in ok_onboard and fact and fact.get("label") else _title(main)
-        attaches = parts[main]
+        # variants in a canonical order, so their ids follow what they are and not
+        # which configuration happened to be read first
+        attaches = sorted(parts[main], key=lambda x: (x["peripheral"], json.dumps(x, sort_keys=True)))
         if len(attaches) == 1:
             onboard.append({"id": oid, "label": label, "attach": attaches[0]})
             continue
@@ -168,19 +171,36 @@ def draft(board_id):
 
 
 def _model(kind, bank, spec):
-    """The attach of the peripheral whose `models:` names this device kind
-    (led_bank for leds ...), for a bank that is one list of pins; else None."""
+    """The attach of the peripheral whose `models:` names this device kind: for
+    a bank that is one list of pins, its `signal:` (led_bank for leds ...); for a
+    bank of named pins, the peripheral's signals of the same names (rgb_led's
+    r / g / b); else None."""
     pins = spec.get("pins")
-    if not isinstance(pins, list):
-        return None
     for pid, p in sorted(config_init.read_peripherals().items()):
         m = p.get("models") or {}
         if m.get("kind") != kind:
             continue
+        if isinstance(pins, dict):
+            names = [s["name"] for s in p.get("signals") or []]
+            if set(pins) != set(names):
+                continue
+            params = {}
+            buses = [v for v in pins.values() if isinstance(v, list)]
+            if "width" in (p.get("parameters") or {}) and len(buses) == 1:
+                params["width"] = len(buses[0])
+            if str(spec.get("active") or "").split(" ")[0] == "low" and "active" in (p.get("parameters") or {}):
+                params["active"] = "low"
+            attach = {"peripheral": pid}
+            if params:
+                attach["params"] = params
+            attach["bind"] = {n: "{}.{}".format(bank, n) for n in names}
+            return attach
+        if not isinstance(pins, list) or not m.get("signal"):
+            continue
         params = {}
         if "width" in (p.get("parameters") or {}):
             params["width"] = len(pins)
-        if spec.get("active") == "low" and "active" in (p.get("parameters") or {}):
+        if str(spec.get("active") or "").split(" ")[0] == "low" and "active" in (p.get("parameters") or {}):
             params["active"] = "low"
         attach = {"peripheral": pid}
         if params:

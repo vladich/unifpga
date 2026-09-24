@@ -271,21 +271,9 @@ def test_open_drain_pwm_and_eight_bit_sample():
     assert "        .pwm_o(i_pwm_amp_{}_pwm_o)".format(idx) in top
     assert "    assign onboard_pwm_amp_pwm = i_pwm_amp_{}_pwm_o ? 1'bz : 1'b0;".format(idx) in top
     assert "assign onboard_pwm_amp_sd = 1'b1;" in top
-    # the RGB LEDs the design ties off: dropped by the profile, pins tied
-    assert not any(a["peripheral_id"] == "rgb_led" for a in r["peripherals"])
-    assert "assign onboard_rgb_led_16_r = 1'b0;" in top and "assign onboard_rgb_led_17_b = 1'b0;" in top
-    assert ".w_rgb_led(0)," in top
-    # without the profile the hardware is back
-    from config import profile
-    os.environ["UNIFPGA_PROFILE"] = "0"
-    try:
-        config_init.clear_cache()
-        r0 = config_init.resolve_configuration("nexys_a7_100")
-    finally:
-        os.environ.pop("UNIFPGA_PROFILE", None)
-        config_init.clear_cache()
-    assert sum(1 for a in r0["peripherals"] if a["peripheral_id"] == "rgb_led") == 2
-    assert profile.enabled()
+    # the RGB LEDs are the design's (rgb_r / rgb_g / rgb_b), not tied off at the board
+    assert sum(1 for a in r["peripherals"] if a["peripheral_id"] == "rgb_led") == 2
+    assert "assign onboard_rgb_led_16_r = cap_rgb_leds_r[0];" in top and ".w_rgb_led(2)," in top
 
 
 def test_gpio_header_direction_out_and_header_uart():
