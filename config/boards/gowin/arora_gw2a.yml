@@ -82,21 +82,6 @@ Boards:
       - user_leds
     BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/22/
     Status: active
-  - Id: sipeed_tang_console
-    BoardName: Tang Console
-    ProductName: "Tang Console"
-    Summary: "Gowin GW5AT-LV60PG484A (Tang Mega 60K SOM, ~60K LUT4) or GW5AST-LV138PG484A (Mega 138K SOM); SOM DDR3 (16-bit 60K / 32-bit 138K) + W25Q64 flash; baseboard: HDMI TX, PCIe x1 FPC (RPi5 HAT+), 2x USB3-A (SerDes device + FS host), USB2 soft-PHY USB-C, microSD, 24-bit RGB LCD FPC, 2x PMOD, 2x 2x20 SDRAM/GBA headers, I2S amp, fan, ADC, BL616 JTAG/UART, MS5351M clock gen"
-    Features:
-      - microsd_socket
-      - pcie_endpoint
-    Devices:
-      - microsd_socket_generic
-    BoardProducer: sipeed
-    Chip: GW2A-LV55PG484C8/I7
-    Bridges:
-      - jtag
-    Programmer: openFPGALoader
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-console/mega-console.html"
   - Id: sipeed_tang_primer_20k_module
     BoardName: Tang Primer 20K Module
     ProductName: "Tang Primer 20K (core board / SOM)"

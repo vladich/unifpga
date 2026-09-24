@@ -55,18 +55,12 @@ Layout:
     - id: clk
       label: clk
       attach: {peripheral: clock_input, params: {frequency_mhz: 10}, bind: {clk: clk}}
-    - id: reset
-      label: reset
-      attach: {peripheral: reset_button, bind: {rst: onboard_reset}}
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+      attach: {peripheral: button_array, params: {width: 1}, bind: {btn: onboard_buttons}}
     - id: leds
       label: leds
       attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
-    - id: uart
-      label: uart
-      attach: {peripheral: uart_2wire, bind: {rx: onboard_uart.rx, tx: onboard_uart.tx}}
     - id: clock
       label: Optional clock inputs CLOCK1..3 (X2 osc / SMA J8, and CLK2/CLK3 from the GPIO connectors via JP1/JP2) — not populated
       device: {kind: clock, bank: onboard_clock}   # no peripheral model yet

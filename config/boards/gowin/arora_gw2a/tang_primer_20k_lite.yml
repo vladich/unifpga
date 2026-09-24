@@ -25,13 +25,14 @@ Board:
       pins: [C7, D7]
     onboard_buttons:
       iostandard: LVCMOS33
+      active: low
       pins: [T10, T2]
     gpio_3:
       iostandard: LVCMOS33
       pins: [L8, P7, E10, D11, M6, R7, D10, F10]
     gpio_2:
       iostandard: LVCMOS33
-      pins: [F15, D16, C9, L12, E15, E14, A9, J11]
+      pins: [F15, D16, C9, L12, E16, E14, A9, J11]   # [4]: E16 (schematic 3711 J2 pin 12; BGM's cst had E15)
     gpio_1:
       iostandard: LVCMOS33
       pins: [R16, P16, N16, L16, P15, N15, N14, L14]

@@ -26,7 +26,3 @@ Configuration:
         active: low
       bind:
         led: onboard_leds
-    - peripheral: uart_2wire
-      bind:
-        rx: onboard_uart.rx
-        tx: onboard_uart.tx

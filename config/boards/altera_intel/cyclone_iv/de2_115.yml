@@ -124,8 +124,8 @@ Board:
     onboard_uart:
       iostandard: 3.3-V LVTTL
       pins:
-        rts: G14
-        cts: J13
+        cts: G14      # manual UART_CTS, an FPGA input (Terasic's golden top names it from the connector side)
+        rts: J13      # manual UART_RTS, an FPGA output
         rx: G12
         tx: G9
     gpio:

@@ -81,13 +81,16 @@ Mezzanines:
     Connector: tang_mega_b2b
     Features:
       - hdmi_output
+      - hdmi_input
       - ethernet_phy_gigabit
-      - usb_3_host
+      - usb_3_device
       - usb_2_host
       - pmod_connector
-      - sfp_cage
       - pcie_edge_connector
-      - audio_codec
+      - audio_dac
+      - audio_amp_class_d
+      - parallel_camera_input
+      - parallel_lcd
       - microsd_socket
     Devices:
       - microsd_socket_generic
@@ -95,8 +98,7 @@ Mezzanines:
     Status: active
     CompatibleBoards:
       - sipeed_tang_mega_60k
-      - tang_mega_138k
-      - tang_mega_138k_pro
+      - tang_mega_138k                  # (the 138K Pro is its own FPG676 board)
   - Id: sipeed_pmod_dvi
     Name: "Sipeed Tang PMOD_DVI (HDMI in/out via LVDS)"
     Producer: sipeed

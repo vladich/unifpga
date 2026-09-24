@@ -35,7 +35,7 @@ Board:
         tx: M11
         rx: T13
     onboard_switches:
-      active: low
+      active: high    # ON pulls the pin to +1V5 (schematic 3713); BGM's ~SW inverted them
       pins: [E9, E8, T4, T5]
     onboard_buttons:
       active: low

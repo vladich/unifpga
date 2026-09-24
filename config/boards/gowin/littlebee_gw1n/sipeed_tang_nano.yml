@@ -10,10 +10,13 @@ Board:
     sys_clk:
       pins: 35
     cpu_resetn:
+      active: low
       pins: 15
-    onboard_buttons:
-      pins: 15
-    onboard_leds:
+    onboard_buttons:    # A (S2), B (S1) (schematic 2704)
+      active: low
+      pins: ["15", "14"]
+    onboard_leds:       # G, B, R
+      active: low
       pins: [16, 17, 18]
     onboard_uart:   # CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)
       device: {"name": "CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)", "kind": "uart"}

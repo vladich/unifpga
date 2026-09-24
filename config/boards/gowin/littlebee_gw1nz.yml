@@ -25,8 +25,11 @@ Boards:
       - usb_powered
     BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/27/
     Status: active
-  - Id: sipeed_tang_nano_1k
+  - Id: tang_nano_1k
     BoardName: Tang Nano 1K
+    ProductName: "Tang Nano 1K"
+    Summary: "Gowin GW1NZ-LV1QN48C6/I5 (GW1NZ-1, 1152 LUT4, 72 kbit BSRAM, 64 kbit user flash, 1 PLL) on board 6100; 27 MHz oscillator, BL702 USB-JTAG, RGB LED, 2 buttons, 40-pin RGB LCD FPC, IPS6404L QSPI PSRAM footprint, two 20-pin headers"
+    Aliases: [sipeed_tang_nano_1k]
     BoardProducer: sipeed
     Chip: GW1NZ-LV1QN48C6/I5
     Bridges:

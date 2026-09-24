@@ -18,7 +18,7 @@ Configuration:
         led: onboard_leds
     - peripheral: button_array
       params:
-        width: 2
+        width: 1
       bind:
         btn: onboard_buttons
     - peripheral: vga_4bit

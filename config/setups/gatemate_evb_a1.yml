@@ -10,9 +10,7 @@ Setup:
     - "yosys synth_gatemate → nextpnr-himbaechel (gatemate uarch) → gmpack."
   use:
     - onboard: clk
-    - onboard: reset
     - onboard: buttons
     - onboard: leds
-    - onboard: uart
   extra:
     manual: true

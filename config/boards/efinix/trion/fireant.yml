@@ -20,15 +20,13 @@ Board:
     # so the rest of the codegen pipeline (clock_input peripheral, SDC
     # create_clock) keeps working.
     clk:        { virtual: true, source: "osc", frequency_mhz: 50 }
-    onboard_reset:    { pins: "GPIOR_34" }
-    onboard_buttons:  { pins: ["GPIOR_28", "GPIOR_30"] }    # keys[0..1]
+    # GPIOR_34 has only a pull-up (the one reset button drives CRESET_N) and
+    # GPIOR_00 / 01 are J1 header pins 18 / 19 (the FT232H reaches no user
+    # GPIO): no on-board reset or UART (FireAnt T8 schematic V1.3)
+    onboard_buttons:  { pins: ["GPIOR_28", "GPIOR_30"], active: low }    # keys[0..1], 10K pull-ups
     onboard_leds:                                          # led_n[0..3], active-low
       pins: ["GPIOR_02", "GPIOR_05", "GPIOR_07", "GPIOR_10"]
       active: low
-    onboard_uart:
-      pins:
-        rx: "GPIOR_00"
-        tx: "GPIOR_01"
     onboard_crst_button_configuration_reset:   # CRST button (configuration reset)
       device: {"name": "CRST button (configuration reset)", "kind": "reset"}
       pins: {"creset_n": "CRESET_N"}

@@ -32,7 +32,7 @@ Layout:
       attach: {peripheral: clock_input, bind: {clk: clk}}
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {active: low, width: 2}, bind: {btn: onboard_buttons}}
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
     - id: leds
       label: leds
       attach: {peripheral: led_bank, params: {width: 6}, bind: {led: onboard_leds}}

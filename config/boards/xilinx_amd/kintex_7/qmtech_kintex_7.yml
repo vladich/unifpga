@@ -56,7 +56,7 @@ Board:
     header_j3:   # Core-board 64-pin header U4 (LiteX/daughterboard name J3)
       device: {"name": "Core-board 64-pin header U4 (LiteX/daughterboard name J3)", "kind": "header"}
       shares: ["onboard_db_buttons", "onboard_db_ethernet", "onboard_db_ethernet_clocks", "onboard_db_sdcard", "onboard_db_vga"]   # the board multiplexes these pins
-      pins: ["AD21", "AE21", "AE22", "AF22", "AE23", "AF23", "W21", "Y22", "AA22", "AF24", "AF25", "AB21", "AC21", "AB22", "AC22", "AD23", "AD24", "AC23", "AC24", "AD25", "AE25", "AA23", "AB24", "AA25", "AB25", "Y23", "AA24", "AD26", "AE26", "AB26", "AC26", "W23", "W24", "Y25", "Y26", "W25", "W26", "U26", "U24", "U25", "T22", "T23", "R22", "R23", "R25", "P25", "P23", "N23", "N26", "M26"]
+      pins: ["AD21", "AE21", "AE22", "AF22", "AE23", "AF23", "V21", "W21", "Y22", "AA22", "AF24", "AF25", "AB21", "AC21", "AB22", "AC22", "AD23", "AD24", "AC23", "AC24", "AD25", "AE25", "AA23", "AB24", "AA25", "AB25", "Y23", "AA24", "AD26", "AE26", "AB26", "AC26", "W23", "W24", "Y25", "Y26", "W25", "W26", "U26", "V26", "V23", "V24", "U24", "U25", "T22", "T23", "R22", "R23", "R25", "P25", "P23", "N23", "N26", "M26"]
     onboard_db_uart:   # Daughterboard USB-UART (CP2102N, J4 mini-USB)
       device: {"name": "Daughterboard USB-UART (CP2102N, J4 mini-USB)", "kind": "uart"}
       iostandard: "LVCMOS33"

@@ -5,7 +5,7 @@ Board:
   fpga:
     producer: Lattice
     family: ECP5
-    part: LFE5U-25F-6BG381
+    part: LFE5U-25F-6BG256C   # 5A-75B V8.0 (BG256); V6.1 had the BG381
   defaults:
     iostandard: LVCMOS33
 

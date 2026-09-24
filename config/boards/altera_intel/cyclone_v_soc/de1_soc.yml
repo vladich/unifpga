@@ -97,13 +97,10 @@ Board:
       pins:
         rxd: AA30
         txd: AB30
-    onboard_usb_hid:
+    onboard_ps2:        # one PS/2 port (manual: PS2_CLK AD7, PS2_DAT AE7); the board has no USB HID host
       iostandard: 3.3-V LVTTL
       pins:
         clk: AD7
-    onboard_ps2:
-      iostandard: 3.3-V LVTTL
-      pins:
         data: AE7
     onboard_ps2_secondary:
       iostandard: 3.3-V LVTTL

@@ -153,13 +153,12 @@ Board:
         cs: M2
     onboard_adc_b:
       pins:
-        d: [U1, U2, V1, V2, W1, W2, U4, U3, Y3, Y4, AB1, AB2, AF5, AF2]
+        # d[12] is AC5 (HSMA_D3): AF5 is the DDR2 BA1 pin (Altera's DSP-card qsf, which BGM copied, had AF5)
+        d: [U1, U2, V1, V2, W1, W2, U4, U3, Y3, Y4, AB1, AB2, AC5, AF2]
         oe: U5
         dco: J1
         or: U6
         cs: R2
-      overrides:
-        "AF5": SSTL-18 CLASS I
     onboard_dac_a:
       pins:
         d: [F4, F5, G1, G2, K7, J7, J3, J4, K3, K4, L8, K8, L6, L7]

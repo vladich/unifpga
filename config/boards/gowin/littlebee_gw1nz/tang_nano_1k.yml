@@ -13,10 +13,13 @@ Board:
     sys_clk:
       pins: 47
     cpu_resetn:
+      active: low
       pins: 13
-    onboard_buttons:
-      pins: 13
+    onboard_buttons:    # A (S2), B (S1: ball 44 is also JTAGSEL_N)
+      active: low
+      pins: ["13", "44"]
     onboard_leds:
+      active: low
       pins: [9, 10, 11]
     onboard_psram:   # IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM U4 (on the board, not in package; population unconfirmed)
       device: {"name": "IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM U4 (on the board, not in package; population unconfirmed)", "kind": "psram"}

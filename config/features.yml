@@ -312,6 +312,11 @@ Features:
     Category: connectivity
     Description: "USB 3.0 / SuperSpeed host port via FPGA transceivers + ULPI/UTMI PHY."
     Capabilities: []
+  - Id: usb_3_device
+    Name: "USB 3.0 device"
+    Category: connectivity
+    Description: "USB 3.0 / SuperSpeed device port (through a bridge such as the CH569 or FPGA transceivers)."
+    Capabilities: []
   - Id: usb_uart_bridge
     Name: "USB-UART bridge"
     Category: connectivity

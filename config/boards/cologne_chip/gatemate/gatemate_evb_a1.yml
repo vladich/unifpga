@@ -25,17 +25,17 @@ Board:
     iostandard: "LVCMOS33"
 
   pinBanks:
-    clk:              { pins: "IO_SB_A8" }    # 10 MHz / 100 MHz onboard osc
-    onboard_reset:    { pins: "IO_NB_A0" }    # SW0 reset button
-    onboard_buttons:                          # 4 user push buttons
-      pins: ["IO_NB_A1", "IO_NB_A2", "IO_NB_A3", "IO_NB_A4"]
-    onboard_leds:                             # 8 user LEDs (active-high)
-      pins: ["IO_EB_B0", "IO_EB_B1", "IO_EB_B2", "IO_EB_B3",
-             "IO_EB_B4", "IO_EB_B5", "IO_EB_B6", "IO_EB_B7"]
-    onboard_uart:
-      pins:
-        rx: "IO_WB_A0"
-        tx: "IO_WB_A1"
+    # Cologne Chip DS1003 (GateMate A1 Evaluation Board), Table 3.3. The
+    # reset button SW2 drives RST_N, not a GPIO, and the FT2232HQ carries
+    # JTAG / SPI only: a UART needs a Pmod adapter.
+    clk:              { pins: "IO_SB_A8", frequency_mhz: 10 }   # X1 10.000 MHz
+    onboard_buttons:                          # user button SW3
+      active: low
+      pins: ["IO_EB_B0"]
+    onboard_leds:                             # D1..D8, enabled by JP4, lit when driven low
+      active: low
+      pins: ["IO_EB_B1", "IO_EB_B2", "IO_EB_B3", "IO_EB_B4",
+             "IO_EB_B5", "IO_EB_B6", "IO_EB_B7", "IO_EB_B8"]
     onboard_clock:   # Optional clock inputs CLOCK1..3 (X2 osc / SMA J8, and CLK2/CLK3 from the GPIO connectors via JP1/JP2) — not populated
       device: {"name": "Optional clock inputs CLOCK1..3 (X2 osc / SMA J8, and CLK2/CLK3 from the GPIO connectors via JP1/JP2) — not populated", "kind": "clock"}
       shares: ["io_sb"]   # the board multiplexes these pins

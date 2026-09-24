@@ -25,7 +25,7 @@ Layout:
       attach: {peripheral: led_bank, params: {width: 3}, bind: {led: onboard_leds}}
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach: {peripheral: button_array, params: {width: 1}, bind: {btn: onboard_buttons}}
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}

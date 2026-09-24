@@ -19,16 +19,19 @@ Board:
     iostandard: LVCMOS33
 
   pinBanks:
-    # 12 MHz oscillator on JP2 (default fitted). 125 MHz LVDS pair (C12/B12)
+    # 12 MHz oscillator on JP2 (default fitted). 125 MHz LVDS pair (C12/C11)
     # is also available but uses a different clk_input peripheral.
-    clk:              { pins: "L13" }
+    clk:              { pins: "L13", frequency_mhz: 12 }
     onboard_reset:    { pins: "G19" }                # SW4 (gsrn)
-    onboard_buttons:                                  # SW2, SW3 (active-low)
+    onboard_buttons:                                  # SW2, SW3 (FPGA-EB-02028 7.2)
+      active: low
       pins: ["G14", "G15"]
-    onboard_switches:                                 # 8-pin DIP (active-high per LiteX)
+    onboard_switches:                                 # 8-pin DIP SW1: pulled up, ON grounds the pin (FPGA-EB-02028 7.1)
+      active: low
       pins: ["N14", "M14", "M16", "M15",
              "N15", "N16", "M17", "M18"]
-    onboard_leds:                                     # 14 user LEDs (8 green B1, 4 green B2, 2 yellow)
+    onboard_leds:                                     # 14 user LEDs, lit when driven low (FPGA-EB-02028 7.3)
+      active: low
       pins: ["E17", "F13", "G13", "F14",
              "L16", "L15", "L20", "L19",
              "R17", "R18", "U20", "T20",

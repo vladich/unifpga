@@ -74,14 +74,14 @@ Board:
       pins: ["D5", "R15", "N4", "P1", "P3", "N1", "M1", "K1", "N3", "R1", "P4", "P2", "L2", "K2", "L3", "E5"]
     breadboard_p11:   # P11 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
       device: {"name": "P11 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      pins: ["W11", "W10", "T13", "Y10", "B3", "Y9", "D4", "W9", "A2", "B2"]
+      pins: ["V11", "W11", "W10", "T13", "Y10", "B3", "Y9", "D4", "W9", "A2", "B2"]
     breadboard_p12:   # P12 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
       device: {"name": "P12 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
       pins: ["L7", "AB15", "L8", "AA15", "K8", "W15", "M7", "Y15", "U15", "Y17", "W17", "AB17", "AA18", "AB18"]
     breadboard_p13:   # P13 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
       device: {"name": "P13 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
       shares: ["onboard_buttons", "onboard_reset"]   # the board multiplexes these pins
-      pins: ["K21", "K20", "E22", "F21", "E21", "F20", "B22", "H20", "Y18", "G19", "AA17", "L19", "AA16", "F19", "U19", "L18", "F18", "W16", "K17"]
+      pins: ["K21", "K20", "E22", "F21", "E21", "F20", "B22", "H20", "Y18", "G19", "AA17", "L19", "AA16", "F19", "U19", "L18", "V16", "F18", "W16", "K17"]
     breadboard_p14:   # P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
       device: {"name": "P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
       pins: ["H6", "J6", "K6", "H7", "K7", "G7", "K15", "F6", "L16", "G6", "P16", "F5", "R16", "E4", "N17", "C4", "N16", "C3", "P18", "B1"]

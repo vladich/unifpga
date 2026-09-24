@@ -11,6 +11,5 @@ Setup:
     - onboard: clk
     - onboard: buttons
     - onboard: leds
-    - onboard: uart
   extra:
     manual: true

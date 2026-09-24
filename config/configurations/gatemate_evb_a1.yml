@@ -16,12 +16,9 @@ Configuration:
         frequency_mhz: 10
       bind:
         clk: clk
-    - peripheral: reset_button
-      bind:
-        rst: onboard_reset
     - peripheral: button_array
       params:
-        width: 4
+        width: 1
       bind:
         btn: onboard_buttons
     - peripheral: led_bank
@@ -29,7 +26,3 @@ Configuration:
         width: 8
       bind:
         led: onboard_leds
-    - peripheral: uart_2wire
-      bind:
-        rx: onboard_uart.rx
-        tx: onboard_uart.tx

@@ -36,14 +36,11 @@ Board:
       pins:
         clk_p: "Y22,Y23"
         d_p: ["AB24,AC24", "V24,W24", "AA22,AA23"]
-    onboard_hdmi_1:
+    onboard_hdmi_rx:    # DVI/HDMI B, the receive connector J12 (dock schematics 4071d / 4071f3: DVI_RX)
+      device: {"name": "DVI/HDMI B (RX) connector J12", "kind": "hdmi_rx"}
       pins:
-        clk_p: "K20,J20"
-        d_p: ["D19,C19", "M15,L15", "J25,J26"]
-    onboard_uart2:
-      pins:
-        rx: V16
-        tx: U16
+        clk: "K20,J20"
+        d: ["D19,C19", "M15,L15", "J25,J26"]
     # pmod_0[1] = N26 per the TM1638 constraint set
     # (the harvest had merged another variant's L22)
     pmod_0:
@@ -148,5 +145,5 @@ Board:
       pins: {"pwm": "T17", "tach": "T18"}
     header_40p:   # 40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)
       device: {"name": "40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)", "kind": "header"}
-      shares: ["onboard_m2", "onboard_pcie", "onboard_uart2"]   # the board multiplexes these pins
-      pins: ["U16", "U15", "W21", "Y21", "P21", "U17", "P23", "P24", "T23", "R23", "R25", "T25", "W23", "P25", "U24", "AC26", "U25", "AB25", "AB26", "AA25", "AA24", "Y26", "Y25", "L22", "M24", "W26", "W25", "U26", "W20", "Y20", "W19", "U22"]
+      shares: ["onboard_m2", "onboard_pcie"]   # the board multiplexes these pins
+      pins: ["U16", "V16", "U15", "V17", "W21", "Y21", "P21", "U17", "P23", "P24", "T23", "R23", "R25", "T25", "W23", "P25", "U24", "V23", "AC26", "U25", "AB25", "AB26", "AA25", "AA24", "Y26", "Y25", "L22", "M24", "W26", "W25", "U26", "V26", "W20", "Y20", "V19", "W19", "U22", "V22"]

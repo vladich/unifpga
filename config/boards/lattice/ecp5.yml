@@ -10,7 +10,7 @@ Boards:
     ProductName: "Colorlight 5A-75B V8.0"
     Summary: "Lattice ECP5 LFE5U-25F-6BG256C (24k LUT), 8 MB SDR SDRAM (M12L64322A, 32-bit), 4 MB SPI flash, 2x RTL8211FD Gigabit RGMII PHY, 8 HUB75 output connectors via 74HC245 buffers, 1 LED, 1 button, 25 MHz"
     BoardProducer: colorlight
-    Chip: LFE5U-25F-6BG381
+    Chip: LFE5U-25F-6BG256C
     Bridges:
       - ft2232h-jtag
     Programmer: ecpprog
@@ -60,7 +60,7 @@ Boards:
     ProductName: "Karnix ASB-254 (Karnaugh Interactive Extendable ASIC Simulation Board; ПИР СЦХ-254 «Карно»)"
     Summary: "Lattice ECP5 LFE5U-25F-BG256C (24K LUT), 25 MHz osc, 512 KB async SRAM (K6R4016V1D), 128 Mbit W25Q128 config flash, 10/100 Ethernet (LAN8710 MII), RS-485, HDMI, SPI ADC (ADC128S052) + SPI DAC (AD5328) with audio jack, AT24C01 EEPROM, 4 keys, 4 LEDs, RPi-style 40-pin header (28 GPIO), FT2232D JTAG+UART"
     BoardProducer: fabmicro
-    Chip: LFE5UM-25F
+    Chip: LFE5U-25F-8BG256C
     Bridges:
       - ft2232h-jtag
     Programmer: ecpprog

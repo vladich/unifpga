@@ -703,6 +703,17 @@ Producers:
     DefunctSince: null
     Notes: null
 
+  - Id: microphase
+    Name: "MicroPhase"
+    AKA: ["MicroPhase Technology"]
+    URL: "https://github.com/MicroPhase"
+    Country: China
+    FoundedYear: null
+    Categories: [hobby]
+    Description: "Maker of low-cost Xilinx boards (A7-Lite, Zynq boards)."
+    DefunctSince: null
+    Notes: null
+
   - Id: sipeed
     Name: "Sipeed"
     AKA: ["Sipeed Technology"]

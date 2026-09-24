@@ -9,7 +9,7 @@ Boards:
     BoardName: A7-Lite 35T
     ProductName: "MicroPhase A7-Lite (A7-LITE 35T)"
     Summary: "AMD/Xilinx Artix-7 XC7A35T-2FGG484 (33,280 logic cells); 512 MB DDR3 (MT41K256M16), QSPI flash, Gigabit Ethernet (RTL8211, RGMII), HDMI out (direct TMDS), microSD, I2C EEPROM, CH340 USB-UART, 2 LEDs, 2 keys + reset, two 50-pin GPIO headers JP1/JP2 (22 pairs each)"
-    BoardProducer: sipeed
+    BoardProducer: microphase
     Chip: xc7a35tfgg484-1
     Bridges:
       - jtag

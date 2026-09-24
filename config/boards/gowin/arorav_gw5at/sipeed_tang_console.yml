@@ -100,7 +100,7 @@ Board:
     sdram1_header:   # 2x20 header J10 "SDRAM1 CONN." (SDRAM module or GBA cartridge-slot accessory)
       device: {"name": "2x20 header J10 \"SDRAM1 CONN.\" (SDRAM module or GBA cartridge-slot accessory)", "kind": "header"}
       shares: ["onboard_gba_slot", "onboard_sdram1"]   # the board multiplexes these pins
-      pins: ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "W17", "W22", "W21", "P17", "N17", "N14", "N13", "U20", "Y22", "Y21", "AB22", "AB21", "AA21", "AA20", "AB20", "AA19", "AA18", "AB18", "Y19", "Y18", "T20", "N15", "U18", "U17", "R16", "P15", "R14", "P14"]
+      pins: ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "W17", "V17", "W22", "W21", "P17", "N17", "N14", "N13", "V20", "U20", "Y22", "Y21", "AB22", "AB21", "AA21", "AA20", "AB20", "AA19", "AA18", "AB18", "Y19", "Y18", "T20", "N15", "U18", "U17", "R16", "P15", "R14", "P14"]
     onboard_sdram0:   # SDRAM module on J9 (accessory; signals as named by the console schematic)
       device: {"name": "SDRAM module on J9 (accessory; signals as named by the console schematic)", "kind": "sdram"}
       shares: ["sdram0_header"]   # the board multiplexes these pins

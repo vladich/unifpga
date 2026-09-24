@@ -5,7 +5,7 @@ Board:
   fpga:
     producer: "Altera (Intel)"
     family: "Cyclone IV"
-    part: EP4CE5E22C8N
+    part: EP4CE6E22C8   # there is no EP4CE5
   defaults:
     iostandard: 3.3-V LVTTL
 

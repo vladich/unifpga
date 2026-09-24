@@ -10,15 +10,12 @@ Board:
   pinBanks:
     sys_clk:
       pins: V22
-    cpu_resetn:
-      pins: Y12
-    onboard_buttons:
-      pins: [AA13, AB13]
+    onboard_buttons:    # S4, S2, S1 = EX_KEY.0/1/2 (Y12 is key S1, not the reset: the SOM's reset key is F4)
+      active: low
+      iostandard: LVCMOS15   # bank 9 is 1.5 V on the 60K SOM
+      pins: [AA13, AB13, Y12]
     onboard_leds:
       pins: [T18, R17, U21, R19]
-    hdmi_clk:
-      pins:
-        p: G15
     pcie_perst:
       pins: W11
     onboard_spi_flash:   # SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)
@@ -70,11 +67,11 @@ Board:
     onboard_hdmi_0:   # HDMI (DVI) connector J29, transmit
       device: {"name": "HDMI (DVI) connector J29, transmit", "kind": "hdmi_tx"}
       iostandard: "LVCMOS33D (TMDS emulated; vendor CST DRIVE=3.5)"
-      shares: ["hdmi_clk", "onboard_hdmi_rx"]   # the board multiplexes these pins
+      shares: ["onboard_hdmi_rx"]   # the board multiplexes these pins
       pins: {"clk": "G15,G16", "d0": "J14,H14", "d1": "J15,H15", "d2": "K17,J17", "hpd": "K13", "ddc_scl": "M13", "ddc_sda": "L13", "dir_sel": "K14"}
     onboard_hdmi_rx:   # HDMI (DVI) connector J29, receive (same connector, DVI_DIR_SEL=0)
       device: {"name": "HDMI (DVI) connector J29, receive (same connector, DVI_DIR_SEL=0)", "kind": "hdmi_rx"}
-      shares: ["hdmi_clk", "onboard_hdmi_0"]   # the board multiplexes these pins
+      shares: ["onboard_hdmi_0"]   # the board multiplexes these pins
       pins: {"clk": "G15,G16", "d0": "J14,H14", "d1": "J15,H15", "d2": "K17,J17", "hpd": "K13", "ddc_scl": "M13", "ddc_sda": "L13", "dir_sel": "K14"}
     onboard_ethernet:   # Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII
       device: {"name": "Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII", "kind": "ethernet_rgmii"}

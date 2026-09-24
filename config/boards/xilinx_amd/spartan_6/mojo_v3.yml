@@ -19,19 +19,17 @@ Board:
 
   pinBanks:
     clk50mhz: { pins: P56 }
-    # RST is wired to the AVR — active-low during AVR-driven config, released
-    # high once the FPGA is up. reset_button peripheral has active: low by
-    # default, so codegen will invert this for the rst port inside the design.
-    onboard_reset: { pins: P38 }
+    # The reset button S1 (10K pull-up), active low.
+    onboard_reset: { pins: P38, active: low }
     # Eight user LEDs (LED0 ... LED7). LED0 is closest to the AVR side.
     onboard_leds:
-      pins: [P134, P133, P132, P131, P127, P126, P125, P124]
-    # AVR ↔ FPGA UART (FPGA-side TX/RX naming — i.e. FPGA transmits on tx,
-    # AVR receives on AVR_RX which is wired to FPGA tx).
+      pins: [P134, P133, P132, P131, P127, P126, P124, P123]   # LED6 P124, LED7 P123 (P125 is VCCO_0; Mojo V3 ucf / schematic)
+    # AVR <-> FPGA UART, FPGA-side names (valid once cclk is high): the FPGA
+    # receives on P55 and transmits on P59 (Mojo V3 ucf, schematic)
     onboard_uart:
       pins:
-        rx: P59
-        tx: P55
+        rx: P55
+        tx: P59
     onboard_avr_spi:   # AVR SPI link (ADC samples) and cclk
       device: {"name": "AVR SPI link (ADC samples) and cclk", "kind": "other"}
       iostandard: "LVTTL"

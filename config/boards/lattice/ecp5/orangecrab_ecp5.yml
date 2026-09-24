@@ -21,9 +21,9 @@ Board:
     onboard_leds:
       active: low
       pins: [K4, M3, J3]
-    onboard_buttons:
+    onboard_buttons:  # the one user button SW0; V17 is FPGA_RESET (drives PROGRAMN), not a button (r0.2 schematic)
       active: low
-      pins: [J17, V17]
+      pins: [J17]
       overrides:
         J17: SSTL135_I
     onboard_vga:
