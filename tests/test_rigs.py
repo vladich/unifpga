@@ -1,0 +1,143 @@
+"""One rig per setup: toolchains, chips and aliases (config/init.py build
+targets) and the for_toolchain patches (config/overlay.py)."""
+import copy
+import json
+import os
+import sys
+
+import pytest
+
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO)
+
+from config import init as config_init, overlay, profile  # noqa: E402
+from tools import setup as su  # noqa: E402
+
+
+# ---------------------------------------------------------------- patches
+
+@pytest.mark.parametrize("a, b", [
+    ({"x": 1, "y": {"z": 2}}, {"x": 1, "y": {"z": 3, "w": 4}}),
+    ({"x": 1, "y": 2}, {"x": 1}),                                   # a key removed
+    ({"l": [1, {"a": 1}, 3]}, {"l": [1, {"a": 2}, 3]}),             # one element patched
+    ({"l": [1, 2]}, {"l": [1, 2, 3]}),                              # another length: replaced
+    ({"b": {"p": 1, "q": 2}}, {"b": {"q": 2, "p": 1}}),             # another key order
+    ({"b": {"p": 1}}, {"b": None}),                                 # a null value
+    ({"u": {"onboard": "hdmi"}}, {"u": {"raw": {"peripheral": "x"}}}),
+])
+def test_a_patch_turns_one_document_into_the_other(a, b):
+    patch = overlay.diff(a, b)
+    assert patch is not overlay.UNCHANGED
+    assert overlay.same(overlay.apply(a, patch), b)
+    assert overlay.diff(a, copy.deepcopy(a)) is overlay.UNCHANGED
+
+
+def test_a_list_patch_outside_the_list_is_an_error():
+    with pytest.raises(ValueError):
+        overlay.apply([1], {3: 2})
+
+
+def test_entries_carry_their_own_patch_through_edits():
+    base = {"k": 1, "attach": [{"p": "a"}, {"p": "b"}, {"p": "c"}]}
+    other = {"k": 2, "attach": [{"p": "a"}, {"p": "B"}, {"p": "c"}]}
+    doc = overlay.split(base, {"tc": other}, "attach")
+    assert doc["attach"][1]["for_toolchain"] == {"tc": {"p": "B"}} and doc["for_toolchain"] == {"tc": {"k": 2}}
+    assert overlay.same(overlay.select(doc, "tc", "attach"), other)
+    assert overlay.same(overlay.select(doc, "default", "attach"), base)
+    doc["attach"].pop(0)                                             # the patch moves with its entry
+    assert overlay.select(doc, "tc", "attach")["attach"] == [{"p": "B"}, {"p": "c"}]
+
+
+# ---------------------------------------------------------------- targets
+
+def test_every_target_and_alias_resolves_to_its_toolchain_and_part():
+    rigs = config_init.read_configurations()
+    targets = config_init.build_targets(rigs)
+    assert len({t["id"] for t in targets}) == len(targets)
+    for rig_id, cfg in rigs.items():
+        for alias, want in (cfg.get("aliases") or {}).items():
+            assert alias not in rigs, alias
+            rig, tc, part = config_init.target_of(alias)
+            assert rig == rig_id and tc == (want or {}).get("toolchain") and part == (want or {}).get("part")
+    for t in targets:
+        r = config_init.resolve_configuration(t["id"])
+        assert r["target"] == t, t
+        assert r["toolchain"]["Id"] == t["toolchain"] and r["configuration"]["toolchain"] == t["toolchain"]
+        assert "for_toolchain" not in r["configuration"]
+        assert all("for_toolchain" not in a for a in r["configuration"]["attach"])
+
+
+def test_a_target_id_names_another_build_of_a_rig():
+    r = config_init.resolve_configuration("arty_a7@nextpnr_openxc7@100t")
+    assert r["target"] == {"id": "arty_a7_100_openxc7", "rig": "arty_a7", "toolchain": "nextpnr_openxc7",
+                           "part": "100t"}
+    assert r["board"]["PartName"] == "100t"
+    same = config_init.resolve_configuration("arty_a7", toolchain="nextpnr_openxc7", part="100t")
+    assert same["target"] == r["target"]
+    assert config_init.target_of("no_such_rig@vivado") is None
+    assert config_init.target_of("no_such_rig") is None
+    for bad in ("arty_a7@../../x", "arty_a7@vivado@../x", "arty_a7@", "arty_a7@no_such_toolchain", "../arty_a7"):
+        assert config_init.target_of(bad) is None, bad          # target ids name run directories
+
+
+def test_a_toolchain_builds_the_rig_with_its_patches():
+    """The Primer 20K Dock rig: nextpnr_apicula drives the HDMI through the
+    generic TMDS encoder (DVI timing) and leaves clk's IO_TYPE to the board."""
+    gowin = config_init.resolve_configuration("tang_primer_20k_dock_hdmi_tm1638")
+    apicula = config_init.resolve_configuration("tang_primer_20k_dock_hdmi_tm1638", toolchain="nextpnr_apicula")
+    hdmi = [a for a in apicula["configuration"]["attach"] if a["peripheral"] == "hdmi_tmds"]
+    assert hdmi and hdmi[0]["params"] == {"timing": "dvi"}
+    assert "clk" in gowin["configuration"]["io_overrides"] and "clk" not in apicula["configuration"]["io_overrides"]
+    old = config_init.resolve_configuration("tang_primer_20k_dock_hdmi_no_tm1638_yosys")
+    assert old["configuration"]["lab_width"].get("switches") == 5          # its profile's patch
+    assert "switches" not in config_init.resolve_configuration(
+        "tang_primer_20k_dock_hdmi_no_tm1638")["configuration"]["lab_width"]
+
+
+def _body(cfg):
+    return json.dumps({k: v for k, v in cfg.items() if k not in ("id", "aliases", "toolchains", "parts")},
+                      sort_keys=True)
+
+
+def test_no_two_rigs_are_the_same_hardware():
+    """A rig exists once: not per toolchain, not per chip, not twice."""
+    seen = {}
+    rigs = config_init.read_configurations()
+    for t in config_init.build_targets(rigs):
+        key = (_body(config_init.for_target(rigs[t["rig"]], t["toolchain"], t["part"])),
+               json.dumps(profile.for_toolchain(profile.load(t["rig"]) or {}, t["toolchain"]), sort_keys=True))
+        assert key not in seen or seen[key] == t["rig"], "{} and {} are the same rig".format(seen.get(key), t["rig"])
+        seen[key] = t["rig"]
+
+
+def test_no_rig_is_named_after_a_toolchain():
+    for sid in su.read_setups():
+        assert not sid.endswith(("_yosys", "_openxc7", "_oxide")), sid
+
+
+# ---------------------------------------------------------------- setups
+
+def test_a_setup_checks_its_toolchains_chips_and_aliases():
+    rig = copy.deepcopy(su.read_setup("arty_a7"))
+    assert [m for lvl, m in su.validate(rig) if lvl == "error"] == []
+    bad = dict(rig, toolchains=["nextpnr_openxc7", "vivado"])
+    assert any("must start with the default" in m for lvl, m in su.validate(bad) if lvl == "error")
+    bad = dict(rig, parts=["35t", "200t"], aliases={"x": {"part": "999t"}})
+    assert any("part 999t is not one of its parts" in m for lvl, m in su.validate(bad) if lvl == "error")
+    copy_ = dict(rig, id="arty_copy")                        # a copy keeping the original's aliases
+    assert any("already another name of setup arty_a7" in m for lvl, m in su.validate(copy_) if lvl == "error")
+    named = dict(rig, id="arty_a7_35", aliases={})           # an id another setup answers to
+    assert any("another name of setup arty_a7" in m for lvl, m in su.validate(named) if lvl == "error")
+    patched = copy.deepcopy(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))
+    patched["toolchains"] = ["gowin_eda"]
+    assert any("for_toolchain: nextpnr_apicula is not one of its toolchains" in m
+               for lvl, m in su.validate(patched) if lvl == "error")
+
+
+def test_setup_and_configuration_carry_patches_both_ways():
+    for sid in ("tang_primer_20k_dock_hdmi_tm1638", "tang_nano_9k_lcd_480_272_tm1638", "arty_a7"):
+        setup = su.read_setup(sid)
+        cfg = config_init.read_configurations()[sid]
+        assert su.same_configuration(su.generate(setup), cfg)
+        assert su.check_roundtrip(cfg) == []
+        assert su.dump_setup(su.derive(cfg)).split("Setup:")[1] == su.dump_setup(setup).split("Setup:")[1]

@@ -80,7 +80,9 @@
       <label>Setup <select id="setup"></select></label>
       <button id="new-setup" class="edit">New setup…</button>
       <label class="edit">Toolchain <select id="toolchain"></select></label>
+      <label class="edit" id="part-label" hidden>Chip <select id="part"></select></label>
     </div>
+    <div class="row edit" id="targets" title="every toolchain and chip this rig is checked with; the selected ones above are the defaults"></div>
     <form id="new-setup-form" class="newform edit" hidden autocomplete="off">
       <div class="row">
         <label>Name <input id="ns-id" required pattern="[a-z0-9_]{1,80}" size="32"

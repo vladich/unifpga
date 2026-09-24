@@ -108,10 +108,12 @@ goes to which connector pin (`config/setups/<id>.yml`):
 
 ```yaml
 Setup:
-  id: arty_a7_35_pmod_mic3
+  id: arty_a7_pmod_mic3
   board: arty_a7
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
   part: 35t
+  parts: [35t, 100t]
   use:
     - onboard: clock
     - onboard: leds
@@ -122,6 +124,15 @@ Setup:
     - gpio: ck
       params: {width: 30}
 ```
+
+A rig exists once, whatever builds it: `toolchain:` and `part:` are its
+defaults, `toolchains:` and `parts:` every toolchain and chip it is checked
+with. Where a toolchain needs something else, `for_toolchain: {<toolchain>:
+<patch>}` says only what changes — on a use (it moves with the use) or on
+the setup for the rest (`config/overlay.py`). `aliases:` keeps the ids of the
+per-toolchain and per-chip copies a rig replaced (`arty_a7_35_pmod_mic3_openxc7`
+still builds `arty_a7_pmod_mic3` with nextpnr_openxc7 for the 35T); any other
+build is `<rig>@<toolchain>[@<part>]`, or `synthesize.py -t <toolchain> --part <part>`.
 
 ```bash
 ./unifpga serve                # the board editor: http://127.0.0.1:8765/
@@ -205,9 +216,10 @@ PYTHONPATH=. python3 synthesize.py \
     -o build/ \
     --step elaborate     # or --step full to produce a bitstream
 
-# Same design, different toolchain (open-flow alternative):
+# Same design, the configuration's other toolchain (open-flow alternative;
+# -c basys3@nextpnr_openxc7 says the same):
 PYTHONPATH=. python3 synthesize.py \
-    -c basys3_openxc7 \
+    -c basys3 -t nextpnr_openxc7 \
     --top designs/2_9_pong/design_top.sv \
     -o build/
 

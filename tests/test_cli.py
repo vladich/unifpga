@@ -66,7 +66,7 @@ def captured(monkeypatch):
 
 
 def _ids():
-    return sorted(config.init.read_configurations())
+    return sorted(cli.configurations())          # the build targets the menu lists
 
 
 # ---------------------------------------------------------------- designs
@@ -155,7 +155,7 @@ def test_board_list_does_not_prompt_and_marks_installed(isolated_settings, gowin
                 lines[cfg_id] = line
     assert set(lines) == set(ids)
     assert lines[CFG].startswith(">") and " * " in lines[CFG]              # current + gowin found
-    vivado = [i for i in ids if config.init.read_configurations()[i]["toolchain"] == "vivado"][0]
+    vivado = [i for i in ids if cli.configurations()[i]["toolchain"] == "vivado"][0]
     assert not lines[vivado].startswith(">") and " * " not in lines[vivado]
     assert "Current choice: " + CFG in out
 

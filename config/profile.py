@@ -107,7 +107,7 @@ def save(configuration_id, data):
     data = _ordered(dict(data or {}))
     data.pop("configuration", None)
     p = path_for(configuration_id)
-    if not any(k in data for k in TOP_KEYS):
+    if not any(k in data for k in TOP_KEYS + ("for_toolchain",)):
         if os.path.exists(p):
             os.remove(p)
             return True
@@ -192,6 +192,19 @@ def set_attach(configuration_id, peripheral, index, lab_bits=None, params=None, 
     if len(e) <= 2:                                   # nothing left but the key
         data["attach"] = [x for x in data["attach"] if x is not e]
     return save(configuration_id, data)
+
+
+def for_toolchain(profile, toolchain):
+    """The profile as `toolchain` builds with it: its `for_toolchain` patch
+    (config/overlay.py) applied."""
+    if not profile:
+        return profile
+    from config import overlay
+    profile = dict(profile)
+    patches = profile.pop("for_toolchain", None) or {}
+    if toolchain in patches:
+        profile = overlay.apply(profile, patches[toolchain])
+    return profile
 
 
 def enabled():

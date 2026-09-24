@@ -50,6 +50,11 @@ def _build_parser():
                    help="Configuration id (from config/configurations/<id>.yml). "
                         "If omitted, settings.yml is consulted; if that's also absent, "
                         "the user is prompted interactively.")
+    p.add_argument("-t", "--toolchain",
+                   help="build the configuration with this of its toolchains instead of its default "
+                        "(config/configurations/<id>.yml toolchains:)")
+    p.add_argument("--part",
+                   help="build for this of the board's chips instead of the configuration's default part:")
     p.add_argument("-s", "--step", choices=["elaborate", "pnr", "full"], default="full",
                    help="Compilation step (default: full)")
     p.add_argument("--top", required=True,
@@ -86,7 +91,7 @@ def main(argv=None):
         os.environ["UNIFPGA_PROFILE"] = "0"
 
     try:
-        resolved = config.init.read_or_init(args.configuration)
+        resolved = config.init.read_or_init(args.configuration, toolchain=args.toolchain, part=args.part)
     except config.init.ConfigError as exc:
         log.error("%s", exc)
         return 1
@@ -100,8 +105,10 @@ def main(argv=None):
     toolchain  = resolved["toolchain"]
     peripherals = resolved["peripherals"]
 
-    log.info("Configuration: %s  (board: %s, toolchain: %s, %d peripherals)",
-             cfg["id"], board["Id"], toolchain["Id"], len(peripherals))
+    target = resolved.get("target") or {"id": cfg["id"], "rig": cfg["id"]}
+    log.info("Configuration: %s  (%sboard: %s, toolchain: %s, %d peripherals)",
+             target["id"], "" if target["id"] == target["rig"] else "rig " + target["rig"] + ", ",
+             board["Id"], toolchain["Id"], len(peripherals))
     prepare_toolchain(toolchain)
 
     if args.output is None:

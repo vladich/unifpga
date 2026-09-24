@@ -81,5 +81,7 @@ def test_profiles_hold_only_profile_fields():
         assert list(data) == ["Profile"], name
         body = data["Profile"]
         assert body["configuration"] == name[:-4], name
-        assert set(body) - {"configuration"} <= set(profile.TOP_KEYS), name
+        assert set(body) - {"configuration"} <= set(profile.TOP_KEYS) | {"for_toolchain"}, name
+        for patch in (body.get("for_toolchain") or {}).values():
+            assert set(patch) <= set(profile.TOP_KEYS), name
         assert os.path.exists(os.path.join(REPO, "config", "configurations", name)), name

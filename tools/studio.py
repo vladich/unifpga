@@ -155,6 +155,10 @@ def board_data(board_id):
         # only the toolchains the board's chip(s) support (the chip registry's
         # Toolchains, inherited from the family's DefaultToolchains)
         "toolchains": board_toolchains(board_id),
+        # the board's chips when it has several (Arty A7 35T / 100T): a rig names its default
+        # `part:` and, in `parts:`, every chip it is checked with
+        "parts": [str(c.get("Name") or c.get("Id")) if isinstance(c, dict) else str(c)
+                  for c in config_init.read_board_entry(board_id).get("Chips") or []],
         "designs": list_designs(),
     }
 

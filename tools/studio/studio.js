@@ -1981,12 +1981,47 @@ function tables() {
   $("config-text").textContent = (S.ev && S.ev.configuration_text) || "";
 }
 
+// a rig's default toolchain / chip (`toolchain:` / `part:`) and every one it is
+// checked with (`toolchains:` / `parts:`, the default first; left out when it is the only one)
+function setDefault(key, listKey, value) {
+  S.setup[key] = value;
+  if (S.setup[listKey]) S.setup[listKey] = [value, ...S.setup[listKey].filter((v) => v !== value)];
+}
+function renderTargets() {
+  const box = $("targets");
+  if (!box || !S.setup || !S.board) return;
+  const parts = S.board.parts || [];
+  $("part-label").hidden = parts.length < 2;
+  if (parts.length > 1) fillSelect($("part"), [...new Set([S.setup.part, ...parts].filter(Boolean))], S.setup.part);
+  const row = (label, key, listKey, all) => {
+    if (all.length < 2) return null;
+    const have = S.setup[listKey] || [S.setup[key]];
+    return h("span", {class: "checked-with"}, label + " ", ...all.map((v) => {
+      const cb = h("input", {type: "checkbox", "data-target": listKey + ":" + v});
+      cb.checked = have.includes(v);
+      cb.disabled = v === S.setup[key];
+      cb.addEventListener("change", () => {
+        const next = (S.setup[listKey] || [S.setup[key]]).filter((x) => x !== v);
+        if (cb.checked) next.push(v);
+        if (next.length > 1) S.setup[listKey] = next; else delete S.setup[listKey];
+        changed((cb.checked ? "also checked with " : "no longer checked with ") + v);
+      });
+      return h("label", {class: "target"}, cb, v);
+    }));
+  };
+  const aliases = Object.keys(S.setup.aliases || {});
+  box.replaceChildren(...[row("checked with", "toolchain", "toolchains", S.board.toolchains),
+                          row("chips", "part", "parts", parts),
+                          aliases.length ? h("span", {class: "aliases", title: "ids of the per-toolchain / per-chip copies this rig replaced; they still build it"},
+                                             "also known as " + aliases.join(", ")) : null].filter(Boolean));
+}
+
 function render() {
   // a selection whose part has been removed or moved away is dropped
   const n = (S.setup && S.setup.use || []).length;
   if (S.sel && ["use", "wire", "dseg", "driver"].includes(S.sel.kind) && !(S.sel.use < n)) S.sel = null;
   if (S.pending && !(S.pending.use < n)) S.pending = null;
-  draw(); details(); tables(); designChoices(); renderTitle(); headerActions();
+  draw(); details(); tables(); designChoices(); renderTitle(); headerActions(); renderTargets();
 }
 
 // the use a Remove in the header would take out: a selected module (or one of
@@ -2086,8 +2121,10 @@ function createNewSetup() {
   const needed = (S.board.capabilities || []).filter((c) => c.required).map((c) => c.id);
   const starts = needed.map((cid) => S.board.onboard.find((o) => variantsOf(o).some((v) => v.attach && providedCaps(v.attach.peripheral).includes(cid)))).filter(Boolean);
   const base = copy ? clone(S.setup) : {board: S.board.board, use: [...new Set(starts)].map((o) => ({onboard: o.id}))};
-  base.id = id; base.toolchain = toolchain; delete base.notes;
+  base.id = id; delete base.notes;
+  delete base.aliases;                  // the ids the copied rig replaced stay its own
   S.setup = base; S.sel = null;
+  setDefault("toolchain", "toolchains", toolchain);
   $("setup").append(h("option", {value: id}, id)); $("setup").value = id;
   $("toolchain").value = toolchain;
   $("new-setup-form").hidden = true;
@@ -2192,7 +2229,8 @@ function fillSelect(sel, values, current, label) {
 function wire() {
   $("board").addEventListener("change", (e) => loadBoard(e.target.value).catch((x) => status(x.message, true)));
   $("setup").addEventListener("change", (e) => loadSetup(e.target.value).catch((x) => status(x.message, true)));
-  $("toolchain").addEventListener("change", (e) => { S.setup.toolchain = e.target.value; changed("toolchain " + e.target.value); });
+  $("toolchain").addEventListener("change", (e) => { setDefault("toolchain", "toolchains", e.target.value); changed("toolchain " + e.target.value); });
+  $("part").addEventListener("change", (e) => { setDefault("part", "parts", e.target.value); changed("chip " + e.target.value); });
   for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => showTab(b.dataset.tab));
   $("add-module").addEventListener("change", (e) => { const id = e.target.value; e.target.value = ""; if (id) addModule(id); });
   wireSide();
@@ -2475,6 +2513,25 @@ async function selftest() {
                    ok("its panel says it is shared", $("details").textContent.includes("This pin is shared")); }
       }
     }
+    // the toolchains / chips a rig is checked with: the default fixed, the others toggled
+    if (!STATIC && S.board.toolchains.length > 1) {
+      const saved = clone(S.setup);
+      showTab("config");
+      const boxes = [...document.querySelectorAll('#targets input[data-target^="toolchains:"]')];
+      ok("the rig lists every toolchain of its board to be checked with", boxes.length === S.board.toolchains.length);
+      const def = boxes.find((b) => b.dataset.target === "toolchains:" + S.setup.toolchain);
+      ok("its default toolchain is checked and fixed", def && def.checked && def.disabled);
+      const other = boxes.find((b) => b !== def);
+      const was = (S.setup.toolchains || [S.setup.toolchain]).includes(other.dataset.target.split(":")[1]);
+      other.click(); await changedDone();
+      const now = (S.setup.toolchains || [S.setup.toolchain]).includes(other.dataset.target.split(":")[1]);
+      ok("a toolchain checkbox adds or removes it", now === !was && (S.setup.toolchains || [S.setup.toolchain])[0] === S.setup.toolchain);
+      ok("the configuration text follows", (S.ev.configuration_text || "").includes("toolchains:") === (S.setup.toolchains || []).length > 1);
+      S.setup = saved; S.dirty = false; await changed("restored"); S.dirty = false;
+      if ((S.board.parts || []).length > 1)
+        ok("a board with several chips offers them", !$("part-label").hidden && [...$("part").options].length >= S.board.parts.length);
+      showTab("rig");
+    }
     // New setup: an inline form, checked as you type; Create makes an unsaved rig
     if (!STATIC) {
       const saved = clone(S.setup), options = [...$("setup").options].length;
@@ -2555,7 +2612,7 @@ async function selftest() {
       $("svg").dispatchEvent(new MouseEvent("click", Object.assign({[MODS.connsKey]: true}, pt)));
       ok(MODS.conns + "-click picks the connection", S.sel && CONNECTIONS.has(S.sel.kind));
     }
-    S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
+    S.setup.id = "selftest_rig"; delete S.setup.notes; delete S.setup.aliases;  // a fresh rig: no profile, no old ids
     await changed("fresh id"); await settle();
     // a module this rig can take: the first the server can wire, whose capabilities are not taken
     const taken = new Set();

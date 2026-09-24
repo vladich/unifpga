@@ -692,6 +692,109 @@ def read_configurations():
     return _load_yaml_dir("configurations", "Configuration", "id")
 
 
+# ---------------------------------------------------------------------------
+# rigs and build targets
+#
+# A configuration is one rig. It builds with every toolchain in `toolchains:`
+# (default `toolchain:`, first) and for every chip in `parts:` (default
+# `part:`); `for_toolchain: {<toolchain>: <patch>}` (config/overlay.py), on the
+# rig and on an attach, holds what a toolchain needs changed. `aliases: {<id>: {toolchain:, part:}}` keeps
+# the ids of the per-toolchain and per-chip copies this used to be. A build
+# target is (rig, toolchain, part); its id is the alias naming it, the rig id
+# for the defaults, else <rig>@<toolchain>[@<part>].
+# ---------------------------------------------------------------------------
+
+def rig_toolchains(cfg):
+    """The toolchains a rig is checked with, its default first."""
+    return list(cfg.get("toolchains") or [cfg.get("toolchain")])
+
+
+def rig_parts(cfg):
+    """The chips a rig is checked with, its default first ([None]: the board has one)."""
+    return list(cfg.get("parts") or [cfg.get("part")])
+
+
+_ALIAS_INDEX = {}
+
+
+def _alias_index():
+    """{alias id: (rig id, toolchain or None, part or None)}, rebuilt when a
+    configuration file changes (the files are parsed once, not copied)."""
+    base = os.path.join(dir_path, "configurations")
+    paths = [os.path.join(base, n) for n in sorted(os.listdir(base)) if n.endswith(".yml") and not n.startswith("_")]
+    key = tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p in paths)
+    if _ALIAS_INDEX.get("key") != key:
+        out = {}
+        for p in paths:
+            cfg = (_parsed(p) or {}).get("Configuration") or {}
+            for alias, target in (cfg.get("aliases") or {}).items():
+                target = target or {}
+                out[alias] = (cfg.get("id"), target.get("toolchain"), target.get("part"))
+        _ALIAS_INDEX.update(key=key, value=out)
+    return _ALIAS_INDEX["value"]
+
+
+_PLAIN_PART = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\-]*$")
+
+
+def target_of(ident):
+    """(rig id, toolchain, part) a build-target id names, None for the rig's
+    defaults; None when it names nothing."""
+    ident = str(ident)
+    if "@" in ident:
+        rig_id, _, rest = ident.partition("@")
+        toolchain, _, part = rest.partition("@")
+        # the id names a run directory: only a known toolchain and a plain chip name
+        if not toolchain or toolchain not in read_toolchains() or (part and not _PLAIN_PART.match(part)):
+            return None
+        if _read_configuration(rig_id) is None:
+            return None
+        return rig_id, toolchain, part or None
+    alias = _alias_index().get(ident)          # an alias is never a rig's id (tools/setup.py validate)
+    if alias is not None:
+        return alias
+    if _read_configuration(ident) is not None:
+        return ident, None, None
+    return None
+
+
+def target_id(rig_id, cfg, toolchain, part):
+    """The id of build target (rig, toolchain, part)."""
+    toolchain = toolchain or cfg.get("toolchain")
+    part = part if part is not None else cfg.get("part")
+    if toolchain == cfg.get("toolchain") and part == cfg.get("part"):
+        return rig_id
+    for alias, t in (cfg.get("aliases") or {}).items():
+        t = t or {}
+        if (t.get("toolchain") or cfg.get("toolchain")) == toolchain and \
+                (t.get("part") if t.get("part") is not None else cfg.get("part")) == part:
+            return alias
+    return "@".join([rig_id, toolchain] + ([str(part)] if part is not None and part != cfg.get("part") else []))
+
+
+def build_targets(configurations=None):
+    """[{id, rig, toolchain, part}] for every rig x checked toolchain x checked part."""
+    out = []
+    for rig_id, cfg in sorted((configurations or read_configurations()).items()):
+        for toolchain in rig_toolchains(cfg):
+            for part in rig_parts(cfg):
+                out.append({"id": target_id(rig_id, cfg, toolchain, part), "rig": rig_id,
+                            "toolchain": toolchain, "part": part})
+    return out
+
+
+def for_target(cfg, toolchain=None, part=None):
+    """The configuration as `toolchain` / `part` build it: its `for_toolchain`
+    patch applied, `toolchain:` and `part:` set."""
+    from config import overlay
+    toolchain = toolchain or cfg.get("toolchain")
+    cfg = overlay.select(cfg, toolchain, "attach")
+    cfg["toolchain"] = toolchain
+    if part is not None:
+        cfg["part"] = part
+    return cfg
+
+
 def is_compatible(boards, chips, board_id, toolchain_id):
     """
     Check if toolchain_id can synthesize for board_id.
@@ -755,7 +858,7 @@ def resolve_toolchain_install(toolchain):
     return tc
 
 
-def resolve_configuration(configuration_id, configuration=None):
+def resolve_configuration(configuration_id, configuration=None, toolchain=None, part=None):
     """
     Look up a configuration by id and return a fully-resolved bundle:
 
@@ -771,19 +874,30 @@ def resolve_configuration(configuration_id, configuration=None):
           ],
         }
 
+    `configuration_id` is a rig or a build-target id (an alias, or
+    <rig>@<toolchain>[@<part>]); `toolchain` / `part` choose another build of
+    the rig. The bundle's "target" is {id, rig, toolchain, part}.
+
     `configuration`: resolve this Configuration dict instead of the file of
     that id (an unsaved setup in the board editor); its profile, if any,
     still applies.
 
     Raises ConfigError on any inconsistency.
     """
+    rig_id = configuration_id
     if configuration is not None:
         cfg = copy.deepcopy(configuration)
     else:
-        cfg = _read_configuration(configuration_id)
-        if cfg is None:
+        target = target_of(configuration_id)
+        if target is None:
             raise ConfigError("Unknown configuration '{c}'. Run init_settings.py to pick one."
                               .format(c=configuration_id))
+        rig_id = target[0]
+        toolchain = toolchain or target[1]
+        part = part if part is not None else target[2]
+        cfg = _read_configuration(rig_id)
+    rig_cfg = cfg
+    cfg = for_target(cfg, toolchain, part)
 
     boards = _board_index()                 # read-only; the board is copied below
     toolchains = read_toolchains()
@@ -901,7 +1015,7 @@ def resolve_configuration(configuration_id, configuration=None):
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         from config import profile
     if profile.enabled():
-        cfg = profile.apply(cfg, attached, profile.load(configuration_id))
+        cfg = profile.apply(cfg, attached, profile.for_toolchain(profile.load(rig_id), toolchain_id))
 
     # `tie:` — pins the top drives with a constant or the reset (e.g.
     # `assign M_CLK = 1'b0`, `assign ARDUINO_RESET_N = ~ rst`), one pin_tie
@@ -923,6 +1037,9 @@ def resolve_configuration(configuration_id, configuration=None):
         "board_pinmap":  board_pinmap,
         "toolchain":     resolve_toolchain_install(toolchains[toolchain_id]),
         "peripherals":   attached,
+        "target":        {"id": target_id(rig_id, rig_cfg, toolchain_id, cfg.get("part")) if configuration is None
+                          else configuration_id,
+                          "rig": rig_id, "toolchain": toolchain_id, "part": cfg.get("part")},
     }
 
 
@@ -1066,7 +1183,7 @@ def _bank_has_pin(bank, pin):
     p = str(pin).split(",", 1)[0].strip()
     return any(v is not None and str(v).split(",", 1)[0].strip() == p for v in vals)
 
-def read_all(configuration_id=None):
+def read_all(configuration_id=None, toolchain=None, part=None):
     """
     Read settings.yml + every other config file. Returns the fully-resolved
     configuration bundle, or None if no default has been set yet.
@@ -1093,7 +1210,7 @@ def read_all(configuration_id=None):
     if configuration_id is None:
         return None
 
-    return resolve_configuration(configuration_id)
+    return resolve_configuration(configuration_id, toolchain=toolchain, part=part)
 
 
 def _prompt_choice(prompt, count):
@@ -1113,15 +1230,16 @@ def init():
     variant configuration on that board. Persist the choice to settings.yml
     and return the fully-resolved bundle.
     """
-    configurations = read_configurations()
-    if not configurations:
+    rigs = read_configurations()
+    if not rigs:
         raise ConfigError("No configurations found in config/configurations/")
     boards = read_boards_catalog()
 
-    # Group configurations by board.
+    # Group the build targets (every rig with each toolchain / chip it is checked with) by board.
     by_board = {}
-    for cfg_id, cfg in configurations.items():
-        by_board.setdefault(cfg.get("board"), []).append((cfg_id, cfg))
+    for t in build_targets(rigs):
+        cfg = for_target(rigs[t["rig"]], t["toolchain"], t["part"])
+        by_board.setdefault(cfg.get("board"), []).append((t["id"], cfg))
 
     # Stage 1: pick a board.
     board_ids_with_configs = sorted(b for b in by_board if b in boards)
@@ -1164,11 +1282,11 @@ def init():
     return resolved
 
 
-def read_or_init(configuration_id=None):
+def read_or_init(configuration_id=None, toolchain=None, part=None):
     """
     Resolve a configuration: from the argument, settings.yml, or interactive prompt.
     """
-    settings = read_all(configuration_id)
+    settings = read_all(configuration_id, toolchain=toolchain, part=part)
     if settings is not None:
         return settings
     return init()

@@ -72,7 +72,7 @@ def test_layout_pins_are_distinct_board_pins_on_signal_positions(board_id):
 
 
 def test_plugged_pmod_wires_its_row():
-    base = su.read_setup("arty_a7_35_pmod_mic3")
+    base = su.read_setup("arty_a7_pmod_mic3")
     plugged = copy.deepcopy(base)
     for u in plugged["use"]:
         if u.get("module") == "digilent_pmod_mic3":
@@ -154,7 +154,7 @@ def test_voltage_range_is_checked(monkeypatch):
 
 
 def test_trace_follows_the_generated_top():
-    r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    r = config_init.resolve_configuration("arty_a7_pmod_mic3")
     ports = {(p["capability"], p["signal"]): p for p in trace.trace(r)["ports"]}
     leds = ports[("leds", "led")]["providers"]
     board = [pr for pr in leds if pr["peripheral"] == "led_bank"][0]
@@ -173,11 +173,11 @@ def test_board_data_and_evaluation():
     jd = [c for c in data["connectors"] if c["id"] == "jd"][0]
     assert jd["rows"][1] == ["7", "8", "9", "10", "11", "12"] and jd["pins"]["7"] == {"ref": "pmod_jd[4]", "pin": "E2"}
     assert jd["power"]["12"] == "VCC"
-    assert "arty_a7_35_pmod_mic3" in data["setups"] and "1_06_binary_counter" in data["designs"]
-    ev = studio.evaluate(su.read_setup("arty_a7_35_pmod_mic3"))
+    assert "arty_a7_pmod_mic3" in data["setups"] and "1_06_binary_counter" in data["designs"]
+    ev = studio.evaluate(su.read_setup("arty_a7_pmod_mic3"))
     assert ev["trace"] and not [p for p in ev["problems"] if p["level"] == "error"]
-    assert ev["configuration_text"] == su.generated_text(su.read_setup("arty_a7_35_pmod_mic3"))
-    broken = copy.deepcopy(su.read_setup("arty_a7_35_pmod_mic3"))
+    assert ev["configuration_text"] == su.generated_text(su.read_setup("arty_a7_pmod_mic3"))
+    broken = copy.deepcopy(su.read_setup("arty_a7_pmod_mic3"))
     broken["use"].append({"module": "tm1638_led_key", "wires": {"CLK": "jd.99"}})
     ev = studio.evaluate(broken)
     assert "no signal pin '99'" in ev["problems"][0]["message"]
@@ -199,6 +199,7 @@ def scratch(tmp_path, monkeypatch):
 def test_save_writes_setup_and_configuration(scratch):
     rig = copy.deepcopy(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))
     rig["id"] = "dock_test_rig"
+    del rig["aliases"]                                  # the original keeps its old ids
     rig["use"] = [u for u in rig["use"] if u.get("module") != "inmp441_breakout"]
     paths = studio.save(rig)
     assert paths["setup"].endswith("dock_test_rig.yml")
@@ -221,18 +222,18 @@ def test_project_is_the_dry_run(tmp_path, monkeypatch):
     design = tmp_path / "designs" / "1_06_binary_counter"
     shutil.copytree(os.path.join(studio.DESIGNS_DIR, "1_06_binary_counter"), str(design))
     monkeypatch.setattr(studio, "DESIGNS_DIR", str(tmp_path / "designs"))
-    out = studio.project("arty_a7_35", "1_06_binary_counter")
+    out = studio.project("arty_a7", "1_06_binary_counter")
     assert out["ok"] and "top.sv" in out["files"] and any(f.endswith(".xdc") for f in out["files"])
-    data = studio.project_zip("arty_a7_35", "1_06_binary_counter")
+    data = studio.project_zip("arty_a7", "1_06_binary_counter")
     import zipfile, io
     names = zipfile.ZipFile(io.BytesIO(data)).namelist()
-    assert "design_top.sv" in names and "arty_a7_35/top.sv" in names
+    assert "design_top.sv" in names and "arty_a7/top.sv" in names
     with pytest.raises(studio.ApiError):
         studio.project("no_such_setup", "1_06_binary_counter")
 
 
 def test_standalone_page_is_self_contained():
-    page = studio.standalone_page(setup_id="arty_a7_35_pmod_mic3")
+    page = studio.standalone_page(setup_id="arty_a7_pmod_mic3")
     assert "window.STUDIO_STATIC" in page and 'src="studio.js"' not in page and "<style>" in page
     assert '"pmod_jd[4]"' in page
 
@@ -260,7 +261,7 @@ def test_editor_server_and_its_write_guard():
         assert js.headers["Cache-Control"] == "no-store"
         assert urllib.request.urlopen(base + "/").headers["Cache-Control"] == "no-store"
         assert "arty_a7" in urllib.request.urlopen(base + "/api/boards").read().decode()
-        setup = su.read_setup("arty_a7_35")
+        setup = su.read_setup("arty_a7")
         ok = _post(base + "/api/evaluate", {"setup": setup}, {"X-Unifpga-Studio": "1"})
         assert b'"trace"' in ok.read()
         for headers in ({}, {"X-Unifpga-Studio": "1", "Origin": "https://evil.example"},
@@ -276,13 +277,14 @@ def test_editor_server_and_its_write_guard():
 
 
 def test_designs_that_do_not_fit_the_rig_are_flagged_and_refused(scratch, tmp_path, monkeypatch):
-    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig = copy.deepcopy(su.read_setup("arty_a7"))
     rig["id"] = "arty_no_display"
+    del rig["aliases"]
     rig["use"] = [u for u in rig["use"] if u.get("module") != "digilent_pmod_vga"]
     fit = studio.evaluate(rig)["designs"]
     screen = [d for d, unmet in fit.items() if any("screen" in m for m in unmet)]
     assert screen and fit["1_06_binary_counter"] == []
-    with_vga = studio.evaluate(dict(su.read_setup("arty_a7_35"), id="arty_with_vga"))["designs"]
+    with_vga = studio.evaluate(dict(su.read_setup("arty_a7"), id="arty_with_vga", aliases={}))["designs"]
     assert all(not any("screen" in m for m in with_vga[d]) for d in screen)
     studio.save(rig)
     config_init.clear_cache()
@@ -341,8 +343,9 @@ def test_hdmi_channels_carry_their_colour():
 
 
 def test_autowire_plugs_or_wires_free_pins():
-    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig = copy.deepcopy(su.read_setup("arty_a7"))
     rig["id"] = "aw_rig"
+    rig.pop("aliases", None)
     rig["use"].append({"module": "digilent_pmod_mic3", "wires": {}})
     assert su.autowire(rig, len(rig["use"]) - 1) == {"plug": {"connector": "ja", "row": 1}}
     rig["use"][-1] = dict(module="digilent_pmod_mic3", plug={"connector": "ja", "row": 1})
@@ -359,6 +362,7 @@ def test_autowire_plugs_or_wires_free_pins():
 
     dock = copy.deepcopy(su.read_setup("tang_primer_20k_dock_hdmi_no_tm1638"))
     dock["id"] = "aw_dock"
+    dock.pop("aliases", None)
     dock["use"].append({"module": "digilent_pmod_vga", "wires": {}})
     dock["use"][-1]["wires"] = su.autowire(dock, len(dock["use"]) - 1)["wires"]      # spans J6 and J5
     assert len(dock["use"][-1]["wires"]) == 14 and [p for p in su.validate(dock) if p[0] == "error"] == []
@@ -370,13 +374,13 @@ def test_autowire_plugs_or_wires_free_pins():
 
 
 def test_evaluation_traces_around_a_broken_part():
-    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig = copy.deepcopy(su.read_setup("arty_a7"))
     rig["use"].append({"module": "tm1638_led_key", "wires": {"CLK": "ja.99"}})
     ev = studio.evaluate(rig)
     assert ev["trace"] and ev["excluded"] == [{"use": len(rig["use"]) - 1, "label": "tm1638_led_key",
                                                "reason": "connector 'ja' has no signal pin '99'"}]
     assert {a["attach_index"] for a in ev["trace"]["attaches"] if a["attach_index"] is not None} <= set(range(len(rig["use"]) - 1))
-    profiled = copy.deepcopy(su.read_setup("arty_a7_35"))       # its profile fixes the bit layout
+    profiled = copy.deepcopy(su.read_setup("arty_a7"))       # its profile fixes the bit layout
     profiled["use"].append({"module": "tm1638_led_key", "wires": {"STB": "ja.1", "CLK": "ja.2", "DIO": "ja.3"}})
     ev = studio.evaluate(profiled)
     assert ev["trace"] and ev["excluded"][0]["use"] == len(profiled["use"]) - 1 and "lab_bits" in ev["excluded"][0]["reason"]
@@ -389,7 +393,7 @@ def test_design_ports_follow_the_design_top_interface():
     body = text[text.index(")\n(") + 3:text.index(");")]
     declared = re.findall(r"^\s*(?:input|output|inout)\b[^\n]*?(\w+)\s*,?\s*(?://[^\n]*)?$", body, re.M)
     assert [p for p, *_ in codegen.design_ports()] == declared
-    r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    r = config_init.resolve_configuration("arty_a7_pmod_mic3")
     ports = {p["design_port"]: p for p in trace.trace(r)["ports"]}
     assert (ports["x"]["width"], ports["y"]["width"], ports["red"]["width"]) == (10, 9, 4)
     assert (ports["mic_sample"]["width"], ports["sound"]["width"], ports["sound"]["providers"]) == (24, 0, [])
@@ -397,7 +401,7 @@ def test_design_ports_follow_the_design_top_interface():
 
 
 def test_edges_connect_design_bits_to_pins():
-    r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    r = config_init.resolve_configuration("arty_a7_pmod_mic3")
     edges = trace.trace(r)["edges"]
     red = sorted((e["bit"], e["ref"], e["via"]) for e in edges if e["design_port"] == "red")
     assert red == [(0, "pmod_jb[4]", "vga"), (1, "pmod_jb[5]", "vga"), (2, "pmod_jb[6]", "vga"), (3, "pmod_jb[7]", "vga")]
@@ -429,7 +433,7 @@ def test_design_port_widths_are_the_interface_declarations():
             p = re.match(r"^(\w+)\s*-\s*1$", hi)
             declared[port] = p.group(1) if p else int(hi) + 1
     assert {p: w for p, _c, _s, w in codegen.design_ports()} == declared
-    r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    r = config_init.resolve_configuration("arty_a7_pmod_mic3")
     t = trace.trace(r)
     red = [p for p in t["ports"] if p["design_port"] == "red"][0]
     assert red["width_parameter"] == "w_red" and t["parameters"]["w_red"] == red["width"] == 4
@@ -448,7 +452,7 @@ def test_driver_bit_relations_follow_the_pin_fit():
     assert de2["parameters"]["w_red"] == 10
     assert sorted(e["bit"] for e in de2["edges"] if e["design_port"] == "red" and e["relation"] == "bit") == list(range(10))
     # 8 design bits onto a 4-pin PmodVGA: the top four reach the pins
-    rig = copy.deepcopy(su.read_setup("arty_a7_35_pmod_mic3"))
+    rig = copy.deepcopy(su.read_setup("arty_a7_pmod_mic3"))
     vga = [u for u in rig["use"] if u.get("module") == "digilent_pmod_vga"][0]
     vga["params"].update(bits_r=8)
     ev = studio.evaluate(rig)
@@ -458,7 +462,7 @@ def test_driver_bit_relations_follow_the_pin_fit():
 
 
 def test_verilog_view_marks_what_defines_the_target():
-    rig = su.read_setup("arty_a7_35_pmod_mic3")
+    rig = su.read_setup("arty_a7_pmod_mic3")
     tm = next(k for k, u in enumerate(rig["use"]) if u.get("module") == "tm1638_led_key")
     ev = studio.evaluate(rig)
     dio = next(e for e in ev["trace"]["edges"] if e["use"] == tm and e["signal"] == "dio")
@@ -496,7 +500,7 @@ def test_module_source_is_limited_to_module_names():
 def test_parts_that_do_not_reach_the_design_say_why():
     for sid in su.read_setups():
         assert studio.evaluate(su.read_setup(sid))["parts"] == [], sid
-    base = su.read_setup("arty_a7_35_pmod_mic3")
+    base = su.read_setup("arty_a7_pmod_mic3")
     # a second microphone: audio_in is exclusive, the first provider keeps it
     rig = copy.deepcopy(base)
     rig["use"].append({"module": "inmp441_breakout", "wires": {}})
@@ -521,7 +525,7 @@ def test_parts_that_do_not_reach_the_design_say_why():
 
 
 def test_pins_several_parts_reach_are_warned_about():
-    ev = studio.evaluate(su.read_setup("arty_a7_35_pmod_mic3"))
+    ev = studio.evaluate(su.read_setup("arty_a7_pmod_mic3"))
     shared = [p["message"] for p in ev["problems"] if p["level"] == "warning" and "shared by" in p["message"]]
     # the TM1638 sits on three ChipKit header pins the rig also hands to the design as gpio: one warning naming them
     (m,) = shared
@@ -544,7 +548,7 @@ def _apply(rig, fix):
 
 
 def test_conflicts_offer_buttons_that_resolve_them():
-    base = su.read_setup("arty_a7_35_pmod_mic3")
+    base = su.read_setup("arty_a7_pmod_mic3")
     mic3 = next(k for k, u in enumerate(base["use"]) if u.get("module") == "digilent_pmod_mic3")
     # two microphones: keep either
     rig = copy.deepcopy(base)
@@ -583,7 +587,7 @@ def test_design_table_covers_every_design_and_configuration():
     assert [c["id"] for c in t["configurations"]] == sorted(config_init.read_configurations())
     # every configuration now has a rig drawing (a generated layout where nobody drew one)
     assert all(c["layout"] and c["setup"] for c in t["configurations"])
-    k = [c["id"] for c in t["configurations"]].index("arty_a7_35_pmod_mic3")
+    k = [c["id"] for c in t["configurations"]].index("arty_a7_pmod_mic3")
     aps = next(d for d in t["designs"] if d["id"] == "5_5_aps")
     assert aps["requires"] == ["seven_segment >= 1", "screen >= 320x240"] and k in aps["fits"]
     fifo = next(d for d in t["designs"] if d["id"] == "4_2_12_multi_push_multi_pop_fifo")
@@ -614,7 +618,7 @@ def test_the_pinned_design_saves_only_over_what_the_page_loaded(tmp_path, monkey
 def test_a_board_offers_only_the_toolchains_its_chip_supports():
     assert studio.board_toolchains("de10_lite") == ["quartus_prime_lite"]
     assert set(studio.board_toolchains("arty_a7")) == {"vivado", "nextpnr_openxc7"}
-    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig = copy.deepcopy(su.read_setup("arty_a7"))
     rig["toolchain"] = "gowin_eda"
     assert any("does not build for arty_a7" in m for lvl, m in su.validate(rig) if lvl == "error")
     for s in su.read_setups().values():

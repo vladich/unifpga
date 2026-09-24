@@ -117,11 +117,23 @@ def write_settings(cfg_id, path=None):
 
 
 def configurations():
-    """{configuration id: Configuration dict} from config/configurations/."""
+    """{build-target id: Configuration dict as that target builds it}: every rig
+    in config/configurations/ with each toolchain and chip it is checked with
+    (config/init.py build_targets())."""
     try:
-        return config.init.read_configurations()
+        rigs = config.init.read_configurations()
+        return {t["id"]: config.init.for_target(rigs[t["rig"]], t["toolchain"], t["part"])
+                for t in config.init.build_targets(rigs)}
     except config.init.ConfigError as exc:
         raise CliError(str(exc))
+
+
+def target_configuration(cfg_id):
+    """The Configuration dict a build-target id (an alias too) builds, or None."""
+    t = config.init.target_of(cfg_id)
+    if t is None:
+        return None
+    return config.init.for_target(config.init.read_configurations()[t[0]], t[1], t[2])
 
 
 def _unknown_configuration(cfg_id, origin, ids):
@@ -143,9 +155,8 @@ def chosen_configuration(override=None):
     if not cfg_id:
         raise CliError("No board chosen yet. Run ./unifpga board "
                        "(./unifpga board -l lists the configurations).")
-    ids = sorted(configurations())
-    if cfg_id not in ids:
-        raise CliError(_unknown_configuration(cfg_id, origin, ids))
+    if config.init.target_of(cfg_id) is None:
+        raise CliError(_unknown_configuration(cfg_id, origin, sorted(configurations())))
     return cfg_id
 
 
@@ -297,7 +308,7 @@ def choose_interactively(ids, current=None):
             return None
         if not raw:
             return None
-        if raw in ids:
+        if raw in ids or config.init.target_of(raw) is not None:
             return raw
         if raw.isdigit() and 1 <= int(raw) <= len(ids):
             return ids[int(raw) - 1]
@@ -305,10 +316,10 @@ def choose_interactively(ids, current=None):
 
 
 def _select(cfgs, cfg_id, installed=None):
-    if cfg_id not in cfgs:
+    cfg = cfgs.get(cfg_id) or target_configuration(cfg_id)
+    if cfg is None:
         raise CliError(_unknown_configuration(cfg_id, "the command line", sorted(cfgs)))
     write_settings(cfg_id)
-    cfg = cfgs[cfg_id]
     tc = cfg.get("toolchain", "?")
     print("Board configuration: {id}  (board {b}, toolchain {tc}) -- saved to {p}".format(
         id=cfg_id, b=cfg.get("board", "?"), tc=tc, p=SETTINGS_PATH))
@@ -577,8 +588,7 @@ def gui_command(toolchain_id, out_dir, bins=None):
 def cmd_gui(args):
     design_dir = resolve_design(args.design)
     cfg_id = chosen_configuration(args.board)
-    cfgs = configurations()
-    tc_id = cfgs[cfg_id].get("toolchain", "")
+    tc_id = target_configuration(cfg_id).get("toolchain", "")
     out = run_dir(design_dir, cfg_id)
     cmd, why = gui_command(tc_id, out)
     if cmd is None:

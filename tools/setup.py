@@ -31,6 +31,7 @@ import os
 import re
 
 from config import init as config_init
+from config import overlay
 from tools import codegen
 
 CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
@@ -295,14 +296,42 @@ def _module_attach(connectors, layout, modules, use):
     return attach
 
 
+# a rig's build targets (config/init.py): copied as they are between setup and configuration
+TARGET_KEYS = ("toolchain", "toolchains", "part", "parts", "aliases")
+
+
 def generate(setup):
-    """The configuration dict (the `Configuration:` mapping) for a setup."""
+    """The configuration dict (the `Configuration:` mapping) for a setup. Its
+    `for_toolchain` patches (config/overlay.py; on the setup and on its uses)
+    are restated on the configuration and its attaches."""
+    tcs = _patched_toolchains(setup, "use")
+    cfg = _generate(overlay.select(setup, None, "use"))
+    if not tcs:
+        return cfg
+    try:
+        return overlay.split(cfg, {tc: _generate(overlay.select(setup, tc, "use")) for tc in tcs}, "attach")
+    except ValueError as exc:
+        raise SetupError("setup '{}': for_toolchain: {}".format(setup.get("id"), exc))
+
+
+def _patched_toolchains(doc, list_key):
+    """The toolchains a doc's `for_toolchain` patches name, in order."""
+    out = list(doc.get("for_toolchain") or {})
+    for item in doc.get(list_key) or []:
+        for tc in (item.get("for_toolchain") or {}) if isinstance(item, dict) else ():
+            if tc not in out:
+                out.append(tc)
+    return out
+
+
+def _generate(setup):
     layout = read_layout(setup["board"])
     modules = read_modules()
     connectors = read_connectors()
-    cfg = {"id": setup["id"], "board": setup["board"], "toolchain": setup["toolchain"]}
-    if setup.get("part") is not None:
-        cfg["part"] = setup["part"]
+    cfg = {"id": setup["id"], "board": setup["board"]}
+    for k in TARGET_KEYS:
+        if setup.get(k) is not None:
+            cfg[k] = copy.deepcopy(setup[k])
     attach = []
     for use in setup.get("use") or []:
         if "onboard" in use:
@@ -394,14 +423,23 @@ def _as_plug(connectors, layout, module, wires):
 def derive(configuration):
     """The setup that generates `configuration` (a `Configuration:` dict).
     Attaches the physical model does not cover are kept as `raw` uses."""
+    tcs = _patched_toolchains(configuration, "attach")
+    setup = _derive(overlay.select(configuration, None, "attach"))
+    if not tcs:
+        return setup
+    return overlay.split(setup, {tc: _derive(overlay.select(configuration, tc, "attach")) for tc in tcs}, "use")
+
+
+def _derive(configuration):
     layout = read_layout(configuration["board"])
     modules = read_modules()
     connectors = read_connectors()
     refs = ref_index(layout)
     banks = {c.get("bank"): c["id"] for c in layout.get("connectors") or [] if c.get("bank")}
-    setup = {"id": configuration["id"], "board": configuration["board"], "toolchain": configuration["toolchain"]}
-    if configuration.get("part") is not None:
-        setup["part"] = configuration["part"]
+    setup = {"id": configuration["id"], "board": configuration["board"]}
+    for k in TARGET_KEYS:
+        if configuration.get(k) is not None:
+            setup[k] = copy.deepcopy(configuration[k])
     uses = []
     for a in configuration.get("attach") or []:
         use = None
@@ -438,7 +476,7 @@ def derive(configuration):
         setup["notes"] = notes
     setup["use"] = uses
     extra = {k: copy.deepcopy(v) for k, v in configuration.items()
-             if k not in ("id", "board", "toolchain", "part", "attach")}
+             if k not in ("id", "board", "attach") + TARGET_KEYS}
     if extra:
         setup["extra"] = extra
     return setup
@@ -524,6 +562,49 @@ def _voltage_range(v):
     return v, v
 
 
+def _target_problems(setup):
+    """The rig's toolchains, chips, aliases and per-toolchain patches."""
+    problems = []
+    known = set(config_init.read_toolchains())
+    listed = config_init.rig_toolchains(setup)
+    if listed[0] != setup.get("toolchain"):
+        problems.append(("error", "toolchains: must start with the default toolchain '{}'".format(setup.get("toolchain"))))
+    if len(set(listed)) != len(listed):
+        problems.append(("error", "toolchains: names a toolchain twice"))
+    for toolchain in [setup.get("toolchain")] + [t for t in listed if t != setup.get("toolchain")]:
+        if toolchain not in known:
+            problems.append(("error", "unknown toolchain '{}'".format(toolchain)))
+            continue
+        try:
+            ok = config_init.is_compatible(config_init._board_index(), config_init.read_chips(),
+                                           setup["board"], toolchain)
+        except config_init.ConfigError:
+            ok = True                       # a board without a chip: reported where it matters
+        if not ok:
+            problems.append(("error", "toolchain '{}' does not build for {}'s chip".format(toolchain, setup["board"])))
+    for toolchain in _patched_toolchains(setup, "use"):
+        if toolchain not in listed:
+            problems.append(("error", "for_toolchain: {} is not one of its toolchains".format(toolchain)))
+    parts = config_init.rig_parts(setup)
+    if parts[0] != setup.get("part"):
+        problems.append(("error", "parts: must start with the default part '{}'".format(setup.get("part"))))
+    others = {sid: s for sid, s in read_setups().items() if sid != setup.get("id")}
+    taken = {a: sid for sid, s in others.items() for a in s.get("aliases") or {}}
+    if setup.get("id") in taken:
+        problems.append(("error", "'{}' is another name of setup {}".format(setup["id"], taken[setup["id"]])))
+    for alias, target in (setup.get("aliases") or {}).items():
+        target = target or {}
+        if alias in others or alias == setup.get("id"):
+            problems.append(("error", "alias '{}' is a setup's id".format(alias)))
+        elif alias in taken:
+            problems.append(("error", "alias '{}' is already another name of setup {}".format(alias, taken[alias])))
+        if target.get("toolchain") is not None and target["toolchain"] not in listed:
+            problems.append(("error", "alias '{}': toolchain {} is not one of its toolchains".format(alias, target["toolchain"])))
+        if target.get("part") is not None and target["part"] not in parts:
+            problems.append(("error", "alias '{}': part {} is not one of its parts".format(alias, target["part"])))
+    return problems
+
+
 def validate(setup, clashes=None):
     """[(level, message)]: level 'error' or 'warning'. `clashes`, a list,
     receives (use a, use b, [FPGA pins]) for every two uses wired to the same
@@ -539,18 +620,7 @@ def validate(setup, clashes=None):
     peripherals = config_init.read_peripherals()
     modules = read_modules()
     connectors = read_connectors()
-    toolchains = set(config_init.read_toolchains())
-    if setup["toolchain"] not in toolchains:
-        problems.append(("error", "unknown toolchain '{}'".format(setup["toolchain"])))
-    else:
-        try:
-            ok = config_init.is_compatible(config_init._board_index(), config_init.read_chips(),
-                                           setup["board"], setup["toolchain"])
-        except config_init.ConfigError:
-            ok = True                       # a board without a chip: reported where it matters
-        if not ok:
-            problems.append(("error", "toolchain '{}' does not build for {}'s chip".format(
-                setup["toolchain"], setup["board"])))
+    problems += _target_problems(setup)
 
     owner = {}
     covered = plugged_row_refs(setup, layout, connectors)
@@ -623,9 +693,9 @@ def dump_setup(setup):
     L = ["# Setup {}: the rig config/configurations/{}.yml describes.".format(setup["id"], setup["id"]),
          "# tools/setup.py generates that configuration from it (./unifpga setup check).",
          "", "Setup:"]
-    for k in ("id", "board", "toolchain", "part"):
+    for k in ("id", "board") + TARGET_KEYS:
         if setup.get(k) is not None:
-            L.append("  {}: {}".format(k, _scalar(setup[k])))
+            L.append("  {}: {}".format(k, _flow(setup[k]) if isinstance(setup[k], (list, dict)) else _scalar(setup[k])))
     if setup.get("notes"):
         L.append("  notes:")
         L.extend("    - {}".format(_scalar(n)) for n in setup["notes"])
@@ -634,16 +704,17 @@ def dump_setup(setup):
         head = next(k for k in ("onboard", "module", "gpio", "raw") if k in use)
         if head == "raw":
             L.append("    - raw: {}".format(_flow(use["raw"])))
-            continue
-        L.append("    - {}: {}".format(head, use[head]))
-        for k in ("variant", "plug", "wires", "params"):
-            if k in use:
+        else:
+            L.append("    - {}: {}".format(head, use[head]))
+        for k in ("variant", "plug", "wires", "params", "for_toolchain"):
+            if k in use and (head != "raw" or k == "for_toolchain"):
                 L.append("      {}: {}".format(k, _scalar(use[k]) if k == "variant" else _flow(use[k])))
-    if setup.get("extra"):
-        import yaml
-        L.append("  extra:")
-        text = yaml.safe_dump(setup["extra"], sort_keys=False, width=100)
-        L.extend("    " + line for line in text.rstrip("\n").split("\n"))
+    import yaml
+    for k in ("extra", "for_toolchain"):
+        if setup.get(k):
+            L.append("  {}:".format(k))
+            text = yaml.safe_dump(setup[k], sort_keys=False, width=100)
+            L.extend("    " + line for line in text.rstrip("\n").split("\n"))
     return "\n".join(L) + "\n"
 
 
@@ -663,6 +734,8 @@ _PLAIN = re.compile(r"^[A-Za-z_][\w.\-/ ]*$")
 _TOP_COMMENTS = {
     "io_overrides": "Gowin IO_TYPE this configuration states beyond the board-wide ones",
     "tie": "Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`",
+    "aliases": "The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)",
+    "for_toolchain": "What a toolchain builds differently (config/overlay.py patches, from the setup)",
 }
 
 
@@ -692,7 +765,7 @@ def _block(lines, indent, mapping):
     for k, v in mapping.items():
         if isinstance(v, dict) and v and not any(isinstance(x, (dict, list)) for x in v.values()) and indent >= 8:
             lines.append("{}{}: {}".format(" " * indent, _scalar(k), _inline(v)))
-        elif isinstance(v, dict):
+        elif isinstance(v, dict) and v:
             lines.append("{}{}:".format(" " * indent, _scalar(k)))
             _block(lines, indent + 2, v)
         else:
@@ -707,9 +780,14 @@ def emit_configuration(cfg, notes=None):
           "", "Configuration:"]
     for k in ("id", "board", "toolchain"):
         L.append("  {}: {}".format(k, _scalar(cfg[k])))
+    if cfg.get("toolchains") is not None:
+        L.append("  toolchains: {}   # every toolchain it is checked with, the default first".format(
+            _inline(cfg["toolchains"])))
     if cfg.get("part") is not None:
         L.append("  part: {}   # which of the board's chips this configuration targets".format(_scalar(cfg["part"])))
-    rest = [k for k in cfg if k not in ("id", "board", "toolchain", "part", "attach")]
+    if cfg.get("parts") is not None:
+        L.append("  parts: {}   # every chip it is checked with, the default first".format(_inline(cfg["parts"])))
+    rest = [k for k in cfg if k not in ("id", "board", "attach", "for_toolchain") + TARGET_KEYS[:-1]]
     for k in [k for k in rest if k != "tie"]:
         L.append("")
         if k in _TOP_COMMENTS:
@@ -726,9 +804,10 @@ def emit_configuration(cfg, notes=None):
                 _block(L, 8, v)
             else:
                 L.append("{}{}: {}".format(prefix, k, _inline(v)))
-    if "tie" in cfg:
-        L += ["", "  # " + _TOP_COMMENTS["tie"]]
-        _block(L, 2, {"tie": cfg["tie"]})
+    for k in ("tie", "for_toolchain"):
+        if k in cfg:
+            L += ["", "  # " + _TOP_COMMENTS[k]]
+            _block(L, 2, {k: cfg[k]})
     return "\n".join(L) + "\n"
 
 
