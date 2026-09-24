@@ -34,15 +34,15 @@ Configuration:
         d_n: onboard_hdmi.d_n
     - peripheral: tm1638_led_key
       bind:
-        dio: "gpio[0]"
-        clk: onboard_joystick.cs
         stb: onboard_joystick.miso
+        clk: onboard_joystick.cs
+        dio: "gpio[0]"
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio[1]"
-        ws: "gpio[2]"
         sck: "gpio[3]"
+        ws: "gpio[2]"
         sd: "onboard_microsd.dat[1]"
+        lr: "gpio[1]"
     - peripheral: i2s_audio_out
       bind:
         bclk: onboard_headphone.bck

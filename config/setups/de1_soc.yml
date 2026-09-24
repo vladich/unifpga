@@ -5,6 +5,8 @@ Setup:
   id: de1_soc
   board: de1_soc
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]
+  aliases: {de1_soc_mistral: {toolchain: nextpnr_mistral}}
   use:
     - onboard: clk50mhz
     - onboard: buttons

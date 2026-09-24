@@ -112,7 +112,7 @@ def test_no_two_rigs_are_the_same_hardware():
 
 def test_no_rig_is_named_after_a_toolchain():
     for sid in su.read_setups():
-        assert not sid.endswith(("_yosys", "_openxc7", "_oxide")), sid
+        assert not sid.endswith(("_yosys", "_openxc7", "_oxide", "_mistral", "_nextpnr")), sid
 
 
 # ---------------------------------------------------------------- setups
@@ -147,7 +147,7 @@ def test_setup_and_configuration_carry_patches_both_ways():
 
 # raw uses left, a ratchet down to none: every part of a rig is an on-board part,
 # a module or the design's gpio (lower it with each conversion, never raise it)
-RAW_USES_LEFT = 18
+RAW_USES_LEFT = 7
 
 
 def test_raw_uses_only_go_down():

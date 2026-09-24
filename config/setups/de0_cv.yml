@@ -5,6 +5,8 @@ Setup:
   id: de0_cv
   board: de0_cv
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]
+  aliases: {de0_cv_mistral: {toolchain: nextpnr_mistral}}
   use:
     - onboard: clk50mhz
     - onboard: buttons

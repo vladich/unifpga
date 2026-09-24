@@ -23,6 +23,7 @@ header and part in it is backed by verified facts. Hand-made layouts (without
 """
 
 import json
+from collections import Counter
 import os
 import re
 
@@ -30,6 +31,7 @@ import yaml
 
 from config import init as config_init
 from tools import board_sources
+from tools import codegen
 from tools import setup as su
 
 LAYOUT_DIR = os.path.join(su.CONFIG_DIR, "layouts")
@@ -76,6 +78,20 @@ def draft(board_id):
     facts_h = {h["bank"]: h for h in entry.get("headers") or []}
     facts_o = {o["bank"]: o for o in entry.get("onboard") or []}
 
+    builds = [config_init.for_target(cfg, toolchain)        # every toolchain's build of each rig
+              for _cid, cfg in sorted(config_init.read_configurations().items()) if cfg["board"] == board_id
+              for toolchain in config_init.rig_toolchains(cfg)]
+    # the name configurations give each single FPGA pin (a header pin the board also
+    # routes to the microSD slot is `onboard_microsd.dat[1]` where a rig uses it so)
+    named = {}
+    for cfg in builds:
+        for a in cfg.get("attach") or []:
+            for value in (a.get("bind") or {}).values():
+                for ref in (value if isinstance(value, list) else [value]):
+                    pins = [p for _bit, p in codegen._bind_pins(pinmap, ref)] if isinstance(ref, str) else []
+                    if len(pins) == 1 and pins[0]:
+                        named.setdefault(board_sources._norm_pin(str(pins[0]).split(",")[0]), Counter())[ref] += 1
+
     connectors = []
     headers = header_banks(pinmap)
     for bank in headers:
@@ -85,7 +101,10 @@ def draft(board_id):
             by_pin = {fpga: ref for ref, fpga in board_sources.bank_pins(pinmap, bank)}
             pins = {}
             for phys, pin in fact["pins"].items():
-                ref = by_pin.get(board_sources._norm_pin(pin))
+                fpga = board_sources._norm_pin(pin)
+                ref = by_pin.get(fpga)
+                if ref and named.get(fpga):
+                    ref = named[fpga].most_common(1)[0][0]
                 if ref:
                     pins[phys] = ref
             c = {"id": fact.get("id") or bank, "type": fact["type"], "label": fact.get("label") or bank.upper(),
@@ -99,9 +118,6 @@ def draft(board_id):
     # one part per physical pin group (its first bank), the ways configurations
     # attach it as its variants
     parts, order = {}, []
-    builds = [config_init.for_target(cfg, toolchain)        # every toolchain's build of each rig
-              for _cid, cfg in sorted(config_init.read_configurations().items()) if cfg["board"] == board_id
-              for toolchain in config_init.rig_toolchains(cfg)]
     for cfg in builds:
         for a in cfg.get("attach") or []:
             # (a gpio passthrough on an on-board device's pins is that device handed
