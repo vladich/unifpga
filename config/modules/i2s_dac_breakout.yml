@@ -11,5 +11,10 @@ Module:
     BCK: bclk
     DIN: sdata
     LCK: lrclk
+  # what a pin must be when the rig leaves it unwired (the editor says so on the pin)
+  unwired:
+    SCK:
+      tie: ground
+      why: "the PCM5102A runs from BCK when SCK stays low (TI SLAS859, p. 25: its PLL makes SCK from BCK)"
   source: common PCM5102A breakout silkscreen (SCK BCK DIN LCK); the exact board used is not recorded
   verified: false
