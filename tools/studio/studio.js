@@ -2051,6 +2051,49 @@ function designChoices() {
   pinDesign().catch((e) => status(e.message, true));
 }
 
+// ---- the New setup form
+function openNewSetupForm() {
+  const f = $("new-setup-form");
+  let n = 1, id = S.board.board + "_rig";
+  while (setupIdTaken(id)) id = S.board.board + "_rig_" + (++n);
+  $("ns-id").value = id;
+  fillSelect($("ns-toolchain"), S.board.toolchains);
+  $("ns-toolchain").value = (S.setup && S.setup.toolchain) || S.board.toolchains[0];
+  const cur = S.setup && S.setup.id;
+  $("ns-current").textContent = cur ? cur : "the rig on the page";
+  f.querySelector('input[value="copy"]').disabled = !S.setup;
+  f.querySelector('input[value="empty"]').checked = true;
+  newSetupProblem(false);
+  f.hidden = false;
+  $("ns-id").focus(); $("ns-id").select();
+}
+function setupIdTaken(id) { return (S.board.setups || []).includes(id) || [...$("setup").options].some((o) => o.value === id); }
+// what is wrong with the name typed (shown under the form), or ""
+function newSetupProblem(show) {
+  const id = $("ns-id").value.trim();
+  const why = !/^[a-z0-9_]{1,80}$/.test(id) ? "a name is 1-80 characters of a-z, 0-9 and _"
+            : setupIdTaken(id) ? "a setup called " + id + " exists already" : "";
+  $("ns-msg").textContent = why || "It is saved only when you press Save.";
+  $("ns-msg").className = why && show ? "err" : "muted";
+  $("ns-create").disabled = !!why;
+  return why;
+}
+function createNewSetup() {
+  if (newSetupProblem(true)) return;
+  const id = $("ns-id").value.trim(), toolchain = $("ns-toolchain").value;
+  const copy = $("new-setup-form").querySelector('input[name="ns-from"]:checked').value === "copy" && S.setup;
+  // an empty rig starts with an on-board part for every capability a rig needs (the clock)
+  const needed = (S.board.capabilities || []).filter((c) => c.required).map((c) => c.id);
+  const starts = needed.map((cid) => S.board.onboard.find((o) => variantsOf(o).some((v) => v.attach && providedCaps(v.attach.peripheral).includes(cid)))).filter(Boolean);
+  const base = copy ? clone(S.setup) : {board: S.board.board, use: [...new Set(starts)].map((o) => ({onboard: o.id}))};
+  base.id = id; base.toolchain = toolchain; delete base.notes;
+  S.setup = base; S.sel = null;
+  $("setup").append(h("option", {value: id}, id)); $("setup").value = id;
+  $("toolchain").value = toolchain;
+  $("new-setup-form").hidden = true;
+  changed("new setup " + id + (copy ? " (a copy)" : "") + " — press Save to keep it");
+}
+
 function staleWarning() {
   if (S.ev && S.ev.server_stale)
     status("unifpga's code changed since this server started: restart ./unifpga serve and reload the page", true);
@@ -2154,19 +2197,12 @@ function wire() {
   $("add-module").addEventListener("change", (e) => { const id = e.target.value; e.target.value = ""; if (id) addModule(id); });
   wireSide();
   $("remove-sel").addEventListener("click", removeSelected);
-  $("new-setup").addEventListener("click", () => {
-    const id = prompt("New setup id (a-z, 0-9, _):", S.board.board + "_my_rig");
-    if (!id) return;
-    const copy = confirm("Start from the current setup? (Cancel starts empty with the board's clock)");
-    // an empty rig starts with an on-board part for every capability a rig needs (the clock)
-    const needed = (S.board.capabilities || []).filter((c) => c.required).map((c) => c.id);
-    const starts = needed.map((cid) => S.board.onboard.find((o) => variantsOf(o).some((v) => providedCaps(v.attach.peripheral).includes(cid)))).filter(Boolean);
-    const base = copy ? clone(S.setup) : {board: S.board.board, toolchain: $("toolchain").value, use: [...new Set(starts)].map((o) => ({onboard: o.id}))};
-    base.id = id; delete base.notes;
-    S.setup = base; S.sel = null;
-    $("setup").append(h("option", {value: id}, id)); $("setup").value = id;
-    changed("new setup " + id);
-  });
+  // New setup: an inline form (name, toolchain, empty rig or a copy of this one)
+  $("new-setup").addEventListener("click", () => openNewSetupForm());
+  $("ns-cancel").addEventListener("click", () => { $("new-setup-form").hidden = true; });
+  $("new-setup-form").addEventListener("keydown", (e) => { if (e.key === "Escape") $("new-setup-form").hidden = true; });
+  $("ns-id").addEventListener("input", () => newSetupProblem(true));
+  $("new-setup-form").addEventListener("submit", (e) => { e.preventDefault(); createNewSetup(); });
   $("save").addEventListener("click", async () => {
     try { const r = await api("/api/save", {setup: S.setup}); S.dirty = false; renderTitle(); status("saved " + r.setup + " and " + r.configuration); }
     catch (e) { status(e.message, true); }
@@ -2438,6 +2474,27 @@ async function selftest() {
         if (key) { select({kind: "pin", conn: key.split(".")[0], key: key.split(".")[1]});
                    ok("its panel says it is shared", $("details").textContent.includes("This pin is shared")); }
       }
+    }
+    // New setup: an inline form, checked as you type; Create makes an unsaved rig
+    if (!STATIC) {
+      const saved = clone(S.setup), options = [...$("setup").options].length;
+      showTab("config");                       // where the button is
+      $("new-setup").click();
+      ok("New setup opens an inline form", !$("new-setup-form").hidden && document.activeElement === $("ns-id"));
+      ok("the form offers the board's toolchains only", [...$("ns-toolchain").options].map((o) => o.value).join() === S.board.toolchains.join());
+      $("ns-id").value = saved.id; $("ns-id").dispatchEvent(new Event("input"));
+      ok("an existing name is refused as you type", $("ns-create").disabled && $("ns-msg").textContent.includes("exists already"));
+      $("ns-id").value = "Bad Name"; $("ns-id").dispatchEvent(new Event("input"));
+      ok("a malformed name is refused", $("ns-create").disabled);
+      $("ns-id").value = "selftest_new_rig"; $("ns-id").dispatchEvent(new Event("input"));
+      $("new-setup-form").requestSubmit();
+      await settle();
+      ok("Create makes an empty rig with the board's clock, unsaved", S.setup.id === "selftest_new_rig" && $("new-setup-form").hidden &&
+         S.setup.use.length >= 1 && S.setup.use.every((u) => u.onboard));
+      [...$("setup").options].filter((o) => o.value === "selftest_new_rig").forEach((o) => o.remove());
+      S.setup = saved; $("setup").value = saved.id; S.sel = null; await changed("restored"); await settle();
+      ok("the setup list is as it was", [...$("setup").options].length === options);
+      showTab("rig");
     }
     // a conflict offers buttons that resolve it; pressing one re-evaluates without it
     {

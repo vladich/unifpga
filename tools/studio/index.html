@@ -81,6 +81,22 @@
       <button id="new-setup" class="edit">New setup…</button>
       <label class="edit">Toolchain <select id="toolchain"></select></label>
     </div>
+    <form id="new-setup-form" class="newform edit" hidden autocomplete="off">
+      <div class="row">
+        <label>Name <input id="ns-id" required pattern="[a-z0-9_]{1,80}" size="32"
+               title="1-80 characters: a-z, 0-9 and _"></label>
+        <label>Toolchain <select id="ns-toolchain"></select></label>
+      </div>
+      <div class="row">
+        <label><input type="radio" name="ns-from" value="empty" checked> an empty rig (the board's clock only)</label>
+        <label><input type="radio" name="ns-from" value="copy"> a copy of <span id="ns-current"></span></label>
+      </div>
+      <div class="row">
+        <button type="submit" id="ns-create">Create</button>
+        <button type="button" id="ns-cancel">Cancel</button>
+        <span id="ns-msg" class="muted">It is saved only when you press Save.</span>
+      </div>
+    </form>
   </section>
   <section class="card edit">
     <h3>Add a module</h3>
