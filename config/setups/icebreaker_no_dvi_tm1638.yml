@@ -16,4 +16,6 @@ Setup:
       wires: {L/R: 'pmod_p1a.[0]', WS: 'pmod_p1a.[1]', SCK: 'pmod_p1a.[2]', SD: 'pmod_p1a.[3]'}
     - module: i2s_dac_breakout
       wires: {SCK: 'pmod_p1b.[0]', BCK: 'pmod_p1b.[1]', DIN: 'pmod_p1b.[2]', LCK: 'pmod_p1b.[3]'}
-    - raw: {peripheral: gpio_header, params: {width: 5}, bind: {io: ['pmod_p2[0]', 'pmod_p2[1]', 'pmod_p2[2]', 'pmod_p2[3]', 'pmod_p2[4]']}}
+    - gpio: pmod_p2
+      pins: ['[0]', '[1]', '[2]', '[3]', '[4]']
+      params: {width: 5}

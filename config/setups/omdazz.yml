@@ -18,10 +18,8 @@ Setup:
       variant: inmp441_i2s_mic
     - onboard: char_lcd
       variant: i2s_audio_out
-    - raw: {peripheral: gpio_header, params: {width: 8}, bind: {io: onboard_char_lcd.d}}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_char_lcd.e}}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_char_lcd.rw}}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_char_lcd.rs}}
+    - onboard: char_lcd
+      variant: gpio
   extra:
     tie:
       onboard_char_lcd.d[6]: 0

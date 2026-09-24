@@ -8,8 +8,10 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_0}}
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_1}}
+    - gpio: pmod_0
+      params: {width: 8}
+    - gpio: pmod_1
+      params: {width: 8}
     - onboard: lcd
     - module: tm1638_led_key
       wires: {DIO: 'pmod_1.[6]', CLK: 'pmod_1.[4]', STB: 'pmod_1.[2]'}

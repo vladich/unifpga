@@ -53,6 +53,9 @@ Layout:
         - id: i2s_audio_out
           label: i2s_audio_out
           attach: {peripheral: i2s_audio_out, bind: {mclk: onboard_char_lcd.e, bclk: onboard_char_lcd.rs, lrclk: onboard_char_lcd.rw, sdata: 'onboard_char_lcd.d[0]'}}
+        - id: gpio
+          label: its pins as the design's gpio
+          attach: {peripheral: gpio_header, params: {width: 11}, bind: {io: [onboard_char_lcd.d, onboard_char_lcd.e, onboard_char_lcd.rw, onboard_char_lcd.rs]}}
     - id: buzzer
       label: Buzzer (BEEP, PNP driver)
       device: {kind: buzzer, bank: onboard_buzzer}   # no peripheral model yet

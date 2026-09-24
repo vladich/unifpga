@@ -15,4 +15,4 @@ Setup:
     - onboard: 7seg
     - onboard: uart
     - onboard: vga
-    - raw: {peripheral: gpio_header, params: {width: 11}, bind: {io: onboard_char_lcd.d}}
+    - onboard: char_lcd

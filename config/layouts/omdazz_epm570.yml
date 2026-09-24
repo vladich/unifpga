@@ -36,6 +36,9 @@ Layout:
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 1, pin_bits_g: 1, pin_bits_b: 1, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: char_lcd
+      label: char lcd
+      attach: {peripheral: gpio_header, params: {width: 11}, bind: {io: onboard_char_lcd.d}}
     - id: buzzer
       label: Buzzer
       device: {kind: buzzer, bank: onboard_buzzer}   # no peripheral model yet

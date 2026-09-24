@@ -14,5 +14,7 @@ Setup:
     - onboard: led_green
     - onboard: led_red
     - onboard: buttons
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_p1b}}
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_p1a}}
+    - gpio: pmod_p1b
+      params: {width: 8}
+    - gpio: pmod_p1a
+      params: {width: 8}

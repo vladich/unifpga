@@ -65,24 +65,9 @@ Configuration:
         sdata: "onboard_char_lcd.d[0]"
     - peripheral: gpio_header
       params:
-        width: 8
+        width: 11
       bind:
-        io: onboard_char_lcd.d
-    - peripheral: gpio_header
-      params:
-        width: 1
-      bind:
-        io: onboard_char_lcd.e
-    - peripheral: gpio_header
-      params:
-        width: 1
-      bind:
-        io: onboard_char_lcd.rw
-    - peripheral: gpio_header
-      params:
-        width: 1
-      bind:
-        io: onboard_char_lcd.rs
+        io: [onboard_char_lcd.d, onboard_char_lcd.e, onboard_char_lcd.rw, onboard_char_lcd.rs]
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

@@ -66,6 +66,9 @@ Layout:
         - id: lcd_ml6485
           label: lcd_ml6485
           attach: {peripheral: lcd_ml6485, params: {clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}, bl: const.0}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+    - id: small_lcd
+      label: small lcd
+      attach: {peripheral: gpio_header, params: {width: 4}, bind: {io: [onboard_small_lcd.data, onboard_small_lcd.clk, onboard_small_lcd.cs, onboard_small_lcd.rs]}}
     - id: fpga_jtag
       label: BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)
       device: {kind: other, bank: onboard_fpga_jtag}   # no peripheral model yet

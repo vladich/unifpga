@@ -55,21 +55,6 @@ Configuration:
         lrclk: "gpio[5]"
     - peripheral: gpio_header
       params:
-        width: 1
+        width: 4
       bind:
-        io: onboard_small_lcd.data
-    - peripheral: gpio_header
-      params:
-        width: 1
-      bind:
-        io: onboard_small_lcd.clk
-    - peripheral: gpio_header
-      params:
-        width: 1
-      bind:
-        io: onboard_small_lcd.cs
-    - peripheral: gpio_header
-      params:
-        width: 1
-      bind:
-        io: onboard_small_lcd.rs
+        io: [onboard_small_lcd.data, onboard_small_lcd.clk, onboard_small_lcd.cs, onboard_small_lcd.rs]

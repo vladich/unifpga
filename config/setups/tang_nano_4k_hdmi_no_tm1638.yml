@@ -13,6 +13,6 @@ Setup:
       variant: inmp441_i2s_mic
     - onboard: camera
       variant: i2s_audio_out
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_camera.scl}}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_camera.sda}}
+    - onboard: camera
+      variant: gpio
     - onboard: led

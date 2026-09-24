@@ -16,7 +16,9 @@ Setup:
       wires: {L/R: 'gpio.[0]', WS: 'gpio.[2]', SCK: 'gpio.[4]', SD: 'gpio.[5]'}
     - module: i2s_dac_breakout
       wires: {SCK: 'pmod_2.[4]', BCK: 'pmod_2.[5]', DIN: 'pmod_2.[6]', LCK: 'pmod_2.[7]'}
-    - raw: {peripheral: gpio_header, params: {width: 32}, bind: {io: ['gpio[0]', 'gpio[1]', 'gpio[2]', 'gpio[3]', 'gpio[4]', 'gpio[5]', 'gpio[6]', 'gpio[7]', 'gpio[8]', 'gpio[9]', 'gpio[10]', 'gpio[11]', 'gpio[12]', 'gpio[13]', 'gpio[14]', 'gpio[15]', 'gpio[16]', 'gpio[17]', 'gpio[18]', 'gpio[19]', 'gpio[20]', 'gpio[21]', 'gpio[22]', 'gpio[23]', 'gpio[24]', 'gpio[25]', 'gpio[26]', 'gpio[27]', 'gpio[28]', 'gpio[29]', 'gpio[36]', 'gpio[37]']}}
+    - gpio: gpio
+      pins: ['[0]', '[1]', '[2]', '[3]', '[4]', '[5]', '[6]', '[7]', '[8]', '[9]', '[10]', '[11]', '[12]', '[13]', '[14]', '[15]', '[16]', '[17]', '[18]', '[19]', '[20]', '[21]', '[22]', '[23]', '[24]', '[25]', '[26]', '[27]', '[28]', '[29]', '[36]', '[37]']
+      params: {width: 32}
   extra:
     tie:
       gpio[1]: 0

@@ -24,13 +24,19 @@ Configuration:
         width: 6
       bind:
         led: onboard_leds
-    - peripheral: pmod_12pin
+    - peripheral: gpio_header
+      params:
+        width: 8
       bind:
         io: pmod_0
-    - peripheral: pmod_12pin
+    - peripheral: gpio_header
+      params:
+        width: 8
       bind:
         io: pmod_1
-    - peripheral: pmod_12pin
+    - peripheral: gpio_header
+      params:
+        width: 8
       bind:
         io: pmod_2
     - peripheral: lcd_480_272

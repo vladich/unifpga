@@ -43,14 +43,9 @@ Configuration:
         lrclk: onboard_camera.vsync
     - peripheral: gpio_header
       params:
-        width: 1
+        width: 2
       bind:
-        io: onboard_camera.scl
-    - peripheral: gpio_header
-      params:
-        width: 1
-      bind:
-        io: onboard_camera.sda
+        io: [onboard_camera.scl, onboard_camera.sda]
     - peripheral: led_bank
       params:
         width: 1

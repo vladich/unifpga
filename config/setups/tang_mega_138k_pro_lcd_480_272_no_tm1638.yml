@@ -9,9 +9,12 @@ Setup:
     - onboard: clk
     - onboard: buttons
     - onboard: leds
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_0}}
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_1}}
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_2}}
+    - gpio: pmod_0
+      params: {width: 8}
+    - gpio: pmod_1
+      params: {width: 8}
+    - gpio: pmod_2
+      params: {width: 8}
     - onboard: lcd
     - module: inmp441_breakout
       wires: {L/R: 'pmod_0.[0]', WS: 'pmod_0.[1]', SCK: 'pmod_0.[2]', SD: 'pmod_0.[6]'}

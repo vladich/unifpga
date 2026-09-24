@@ -13,4 +13,6 @@ Setup:
     - raw: {peripheral: dvi_12bit, bind: {r: ['pmod_p1a[5]', 'pmod_p1a[1]', 'pmod_p1a[4]', 'pmod_p1a[0]'], g: ['pmod_p1a[7]', 'pmod_p1a[3]', 'pmod_p1a[6]', 'pmod_p1a[2]'], b: ['pmod_p1b[5]', 'pmod_p1b[2]', 'pmod_p1b[4]', 'pmod_p1b[0]'], hs: 'pmod_p1b[3]', vs: 'pmod_p1b[7]', de: 'pmod_p1b[6]', ck: 'pmod_p1b[1]'}}
     - module: tm1638_led_key
       wires: {CLK: 'pmod_p2.[6]', STB: 'pmod_p2.[7]', DIO: 'pmod_p2.[5]'}
-    - raw: {peripheral: gpio_header, params: {width: 5}, bind: {io: ['pmod_p2[0]', 'pmod_p2[1]', 'pmod_p2[2]', 'pmod_p2[3]', 'pmod_p2[4]']}}
+    - gpio: pmod_p2
+      pins: ['[0]', '[1]', '[2]', '[3]', '[4]']
+      params: {width: 5}

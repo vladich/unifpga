@@ -10,9 +10,12 @@ Setup:
     - onboard: buttons
       params: {active: high}
     - onboard: leds
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_0}}
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_1}}
-    - raw: {peripheral: pmod_12pin, bind: {io: pmod_2}}
+    - gpio: pmod_0
+      params: {width: 8}
+    - gpio: pmod_1
+      params: {width: 8}
+    - gpio: pmod_2
+      params: {width: 8}
     - onboard: lcd
     - module: tm1638_led_key
       wires: {DIO: 'pmod_2.[5]', CLK: 'pmod_2.[6]', STB: 'pmod_2.[7]'}

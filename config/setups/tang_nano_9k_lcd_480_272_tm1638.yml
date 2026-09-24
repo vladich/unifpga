@@ -20,7 +20,4 @@ Setup:
     - onboard: microsd
     - module: i2s_dac_breakout
       wires: {BCK: 'gpio.[3]', DIN: 'gpio.[4]', LCK: 'gpio.[5]'}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.data}}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.clk}}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.cs}}
-    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.rs}}
+    - onboard: small_lcd

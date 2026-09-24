@@ -15,10 +15,14 @@ Configuration:
         width: 3
       bind:
         btn: onboard_buttons
-    - peripheral: pmod_12pin
+    - peripheral: gpio_header
+      params:
+        width: 8
       bind:
         io: pmod_0
-    - peripheral: pmod_12pin
+    - peripheral: gpio_header
+      params:
+        width: 8
       bind:
         io: pmod_1
     - peripheral: lcd_480_272

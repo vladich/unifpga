@@ -4,8 +4,6 @@
 # connection: the width is the header's pin count, bits a driver peripheral
 # claims (TM1638, microphone, I2S DAC) are left dangling on the design side so
 # the numbering stays that of the board.
-#
-# pmod_12pin is the fixed-width (8) special case kept for the Digilent boards.
 
 Peripheral:
   id: gpio_header
