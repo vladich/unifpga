@@ -4,7 +4,6 @@
 //
 // requires:
 //   seven_segment >= 1
-//   seven_segment >= 1
 
 module design_top
 # (

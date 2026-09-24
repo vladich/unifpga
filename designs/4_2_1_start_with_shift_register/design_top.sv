@@ -4,7 +4,6 @@
 //
 // requires:
 //   seven_segment >= 1
-//   seven_segment >= 1
 
 `ifndef SIMULATION
 
