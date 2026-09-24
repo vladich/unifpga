@@ -577,3 +577,45 @@ if __name__ == "__main__":
             failures += 1
             print("FAIL  {}: {}".format(fn.__name__, exc))
     sys.exit(1 if failures else 0)
+
+
+def test_design_requirements_conditional(tmp_path):
+    """`<req> if <condition>`: enforced only when the condition holds for the
+    parameters the generated top passes (codegen.design_top_parameters)."""
+    from tools import design_requirements
+    p = tmp_path / "design_top.sv"
+    p.write_text("// requires:\n//   switches >= 3 if !(w_btn >= 3)\n//   leds >= 2\n\nmodule design_top;\nendmodule\n")
+    reqs = design_requirements.parse(str(p))
+    assert reqs["switches"] == {"when": [{"min_width": 3, "condition": "!(w_btn >= 3)"}]}, reqs
+    assert reqs["leds"] == {"min_width": 2}
+    resolved = config_init.resolve_configuration("nexys4_ddr_default")
+    params = design_requirements.design_parameters(resolved)
+    for w_btn, w_sw, unmet in ((5, 0, 0), (2, 3, 0), (2, 2, 1)):
+        errs = design_requirements.check(resolved, reqs, parameters=dict(params, w_btn=w_btn, w_sw=w_sw))
+        assert len(errs) == unmet, (w_btn, w_sw, errs)
+    assert "when !(w_btn >= 3)" in design_requirements.check(
+        resolved, reqs, parameters=dict(params, w_btn=0, w_sw=0))[0]
+    with pytest.raises(ValueError):
+        design_requirements.condition_holds("w_nonexistent > 1", params)
+
+
+def test_design_requirements_widths_are_design_top_parameters():
+    """A width requirement compares with the width design_top is given: on a rig
+    whose on-board LEDs and a TM1638's LEDs drive the same bus that is 8, not 12."""
+    from tools import codegen, design_requirements
+    resolved = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    params = design_requirements.design_parameters(resolved)
+    assert set(codegen.CAPABILITY_WIDTH_PARAMETER.values()) <= set(params)
+    assert design_requirements.check(resolved, {"leds": {"min_width": params["w_led"]}}) == []
+    errs = design_requirements.check(resolved, {"leds": {"min_width": params["w_led"] + 1}})
+    assert len(errs) == 1 and "w_led={}".format(params["w_led"]) in errs[0], errs
+
+
+def test_every_design_requirement_parses_and_names_design_parameters():
+    from tools import design_requirements
+    params = design_requirements.design_parameters(config_init.resolve_configuration("nexys4_ddr_default"))
+    import glob
+    for p in sorted(glob.glob(os.path.join(REPO_ROOT, "designs", "*", "design_top.sv"))):
+        for cap, req in design_requirements.parse(p).items():
+            for w in req.get("when") or []:
+                design_requirements.condition_holds(w["condition"], params)   # raises on a bad name

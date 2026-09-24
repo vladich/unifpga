@@ -139,7 +139,8 @@ def design_fit(resolved):
     """{design: [unmet requirement, ...]} for every design; [] = it fits."""
     from tools import design_requirements as dr
     capabilities = config_init.read_capabilities()
-    return {d: dr.check(resolved, design_requirements(d), capabilities) if design_requirements(d) else []
+    parameters = dr.design_parameters(resolved)
+    return {d: dr.check(resolved, design_requirements(d), capabilities, parameters) if design_requirements(d) else []
             for d in list_designs()}
 
 

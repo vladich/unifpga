@@ -2362,6 +2362,17 @@ def _gpio_connection(resolved, plans):
 
 # ---- design_top instantiation -----------------------------------------------
 
+# capability -> the design_top parameter giving its width
+CAPABILITY_WIDTH_PARAMETER = OrderedDict([
+    ("switches",      "w_sw"),
+    ("buttons",       "w_btn"),
+    ("leds",          "w_led"),
+    ("seven_segment", "w_digit"),
+    ("rgb_leds",      "w_rgb_led"),
+    ("gpio",          "w_gpio"),
+])
+
+
 def design_top_parameters(resolved, plans):
     """design_top's parameter values for a resolved configuration, in the
     order the instance lists them (clk_mhz, w_sw, ..., w_gpio)."""
@@ -2391,19 +2402,20 @@ def design_top_parameters(resolved, plans):
     lab = lab_clock(resolved, plans)
     clk_mhz = _lab_mhz_int(lab, resolve_clock(resolved, plans))
 
+    width = {p: cap_widths[c] for c, p in CAPABILITY_WIDTH_PARAMETER.items()}
     return OrderedDict([
         ("clk_mhz",       clk_mhz),
-        ("w_sw",          cap_widths["switches"]),
-        ("w_btn",         cap_widths["buttons"]),
-        ("w_led",         cap_widths["leds"]),
-        ("w_digit",       cap_widths["seven_segment"]),
-        ("w_rgb_led",     cap_widths["rgb_leds"]),
+        ("w_sw",          width["w_sw"]),
+        ("w_btn",         width["w_btn"]),
+        ("w_led",         width["w_led"]),
+        ("w_digit",       width["w_digit"]),
+        ("w_rgb_led",     width["w_rgb_led"]),
         ("screen_width",  sw),
         ("screen_height", sh),
         ("w_red",         wr),
         ("w_green",       wg),
         ("w_blue",        wb),
-        ("w_gpio",        cap_widths["gpio"]),
+        ("w_gpio",        width["w_gpio"]),
     ])
 
 
