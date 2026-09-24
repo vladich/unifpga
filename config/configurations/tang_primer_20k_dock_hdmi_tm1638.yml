@@ -63,7 +63,7 @@ Configuration:
           "(replace)":
             peripheral: hdmi_tmds
             params: {timing: dvi}
-            bind: {clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n, d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n}
+            bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}
     - peripheral: tm1638_led_key
       bind:
         clk: "gpio_1[2]"

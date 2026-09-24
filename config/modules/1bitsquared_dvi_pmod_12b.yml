@@ -1,0 +1,37 @@
+# 1BitSquared 12-bit DVI Pmod: a TFP410 DVI transmitter on a dual Pmod (A: red /
+# green, B: blue, sync, data enable, pixel clock), 4 bits per colour.
+Module:
+  id: 1bitsquared_dvi_pmod_12b
+  name: 1BitSquared DVI Pmod (12 bit)
+  peripheral: dvi_12bit
+  voltage: 3.3
+  pins:
+    A1: r[3]
+    A2: r[1]
+    A3: g[3]
+    A4: g[1]
+    A5: ground
+    A6: power
+    A7: r[2]
+    A8: r[0]
+    A9: g[2]
+    A10: g[0]
+    A11: ground
+    A12: power
+    B1: b[3]
+    B2: ck
+    B3: b[0]
+    B4: hs
+    B5: ground
+    B6: power
+    B7: b[2]
+    B8: b[1]
+    B9: de
+    B10: vs
+    B11: ground
+    B12: power
+  source: >-
+    icebreaker-pmod dvi-12bit, board files v1.0a-v1.1b (the PCB's J2 = Pmod A pads 1-10:
+    R3 R1 G3 G1 . . R2 R0 G2 G0, J1 = Pmod B: B3 CLK B0 HS . . B2 B1 DE VS) and its
+    icebreaker.pcf (https://github.com/icebreaker-fpga/icebreaker-pmod/tree/master/dvi-12bit)
+  verified: true
