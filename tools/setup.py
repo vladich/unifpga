@@ -128,6 +128,8 @@ def onboard_variants(item):
     connector takes, or two ways of driving an HDMI connector)."""
     if item.get("variants"):
         return [(v["id"], v.get("label") or v["id"], v["attach"]) for v in item["variants"]]
+    if "attach" not in item:
+        return []                      # a device without a peripheral model yet (`device:`)
     return [(None, item.get("label") or item["id"], item["attach"])]
 
 
@@ -135,6 +137,9 @@ def onboard_attach(layout, use):
     """The attach template of an `onboard:` use (its `variant:` when the part has several)."""
     item = onboard_item(layout, use["onboard"])
     variants = onboard_variants(item)
+    if not variants:
+        raise SetupError("on-board item '{}' ({}) has no peripheral model yet: a design cannot use it".format(
+            item["id"], (item.get("device") or {}).get("kind", "?")))
     if len(variants) == 1 and variants[0][0] is None:
         if use.get("variant") is not None:
             raise SetupError("on-board item '{}' has no variants".format(item["id"]))

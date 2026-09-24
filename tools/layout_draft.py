@@ -43,12 +43,18 @@ def _banks_of(value):
     return {m.group(1)} if m else set()
 
 
+HEADER_KINDS = ("pmod", "header")
+
+
 def header_banks(pinmap):
-    """The banks that are headers: not on-board, not a clock, a list of pins."""
+    """The banks that are headers: not on-board, not a clock, a list of pins
+    (a bank an inventory tags as some other device is an on-board part)."""
     out = []
     for name, bank in (pinmap.get("pinBanks") or {}).items():
         pins = bank.get("pins") if isinstance(bank, dict) else bank
         if name.startswith("onboard_") or (isinstance(bank, dict) and "frequency_mhz" in bank):
+            continue
+        if isinstance(bank, dict) and (bank.get("device") or {}).get("kind") not in (None,) + HEADER_KINDS:
             continue
         if isinstance(pins, list) and len(pins) >= 2 and all(isinstance(p, (str, int)) for p in pins):
             out.append(name)
@@ -130,7 +136,24 @@ def draft(board_id):
             variants.append({"id": vid, "label": _variant_label(x, [y for y in attaches if y is not x]), "attach": x})
         onboard.append({"id": oid, "label": label, "variants": variants})
 
-    everything = [c["bank"] for c in connectors] + [_main(o) for o in onboard]
+    # the board's other devices (a board inventory, tools/inventory.py, tags
+    # their banks `device:`): a part attaching the peripheral that models
+    # its kind, else a part drawn with its pins that designs cannot use yet
+    attached = {b for main in parts for a in parts[main] for b in _banks_of(list(a["bind"].values()))}
+    ids = {o["id"] for o in onboard}
+    for bank, spec in (pinmap.get("pinBanks") or {}).items():
+        dev = spec.get("device") if isinstance(spec, dict) else None
+        if not dev or bank in headers or bank in attached:
+            continue
+        oid = re.sub(r"^onboard_", "", bank)
+        while oid in ids:
+            oid += "_"
+        ids.add(oid)
+        attach = _model(dev.get("kind"), bank, spec)
+        part = {"id": oid, "label": dev.get("name") or _title(bank)}
+        onboard.append(dict(part, attach=attach) if attach else dict(part, device={"kind": dev.get("kind"), "bank": bank}))
+
+    everything = [c["bank"] for c in connectors] + [_main(o) for o in onboard if "device" not in o]
     verified = bool(everything) and all(b in ok_headers for b in [c["bank"] for c in connectors]) and \
         all(_main(o) in ok_onboard for o in onboard)
     # the types the registry defines travel with the layout: builds and the
@@ -138,6 +161,29 @@ def draft(board_id):
     own = {c["type"]: connectors_def[c["type"]] for c in connectors if c["type"] not in base_types}
     return {"board": board_id, "verified": verified, "generated": True, "connector_types": own,
             "connectors": connectors, "onboard": onboard}
+
+
+def _model(kind, bank, spec):
+    """The attach of the peripheral whose `models:` names this device kind
+    (led_bank for leds ...), for a bank that is one list of pins; else None."""
+    pins = spec.get("pins")
+    if not isinstance(pins, list):
+        return None
+    for pid, p in sorted(config_init.read_peripherals().items()):
+        m = p.get("models") or {}
+        if m.get("kind") != kind:
+            continue
+        params = {}
+        if "width" in (p.get("parameters") or {}):
+            params["width"] = len(pins)
+        if spec.get("active") == "low" and "active" in (p.get("parameters") or {}):
+            params["active"] = "low"
+        attach = {"peripheral": pid}
+        if params:
+            attach["params"] = params
+        attach["bind"] = {m["signal"]: bank}
+        return attach
+    return None
 
 
 def _variant_label(x, others):
@@ -196,6 +242,9 @@ def emit(layout):
     out += ["", "  onboard:" + ("" if layout["onboard"] else " []")]
     for o in layout["onboard"]:
         out += ["    - id: {}".format(o["id"]), "      label: {}".format(_flow(o["label"]))]
+        if "device" in o:
+            out.append("      device: {}   # no peripheral model yet".format(_flow(o["device"])))
+            continue
         if "attach" in o:
             out.append("      attach: {}".format(_flow(o["attach"])))
             continue

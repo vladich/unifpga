@@ -99,6 +99,17 @@ def board_data(board_id):
         variants = [{"id": vid, "label": label, "attach": attach,
                      "pins": {s: pins(ref) for s, ref in (attach.get("bind") or {}).items()}}
                     for vid, label, attach in su.onboard_variants(o)]
+        if not variants:
+            # a device with no peripheral model yet: drawn with its pins, not usable
+            dev = o.get("device") or {}
+            bank = ((pinmap.get("pinBanks") or {}).get(dev.get("bank")) or {})
+            bpins = bank.get("pins") if isinstance(bank, dict) else bank
+            refs = ({s: "{}.{}".format(dev["bank"], s) for s in bpins} if isinstance(bpins, dict)
+                    else {dev.get("kind", "pins"): dev.get("bank")})
+            onboard.append({"id": o["id"], "label": o.get("label") or o["id"], "variants": [], "attach": None,
+                            "device": {"kind": dev.get("kind"), "bank": dev.get("bank")},
+                            "pins": {s: pins(ref) for s, ref in refs.items()}})
+            continue
         # attach / pins: the first variant's, for an older page
         onboard.append({"id": o["id"], "label": o.get("label") or o["id"], "variants": variants,
                         "attach": variants[0]["attach"], "pins": variants[0]["pins"]})
@@ -739,6 +750,18 @@ _STATIC_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; c
                  ".css": "text/css; charset=utf-8"}
 
 
+def _internal_error(exc):
+    """The message for an unexpected failure (also printed with its traceback
+    on the server's console); when the code changed since the server
+    started, that is the likely cause."""
+    import traceback
+    traceback.print_exc()
+    msg = "internal error: {}: {}".format(type(exc).__name__, exc)
+    if _code_fingerprint() != _STARTED_WITH:
+        msg += " — unifpga's code changed since this server started: restart ./unifpga serve"
+    return msg
+
+
 def make_server(port=8765, host="127.0.0.1"):
     import http.server
 
@@ -782,6 +805,8 @@ def make_server(port=8765, host="127.0.0.1"):
                 return self._send(exc.status, {"error": str(exc)})
             except (su.SetupError, config_init.ConfigError, codegen.CodegenError) as exc:
                 return self._send(400, {"error": str(exc)})
+            except Exception as exc:                   # never drop the connection without an answer
+                return self._send(500, {"error": _internal_error(exc)})
 
         def do_POST(self):
             try:
@@ -812,6 +837,8 @@ def make_server(port=8765, host="127.0.0.1"):
                 return self._send(400, {"error": "bad request: {}".format(exc)})
             except (su.SetupError, config_init.ConfigError, codegen.CodegenError) as exc:
                 return self._send(400, {"error": str(exc)})
+            except Exception as exc:
+                return self._send(500, {"error": _internal_error(exc)})
 
         def _check_origin(self):
             # a cross-site page can POST to localhost, but not with a custom

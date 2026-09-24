@@ -24,7 +24,7 @@ const S = {
 const $ = (id) => document.getElementById(id);
 function el(tag, attrs, text) {
   const e = document.createElementNS(SVGNS, tag);
-  for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
+  for (const [k, v] of Object.entries(attrs || {})) if (v !== null && v !== undefined && v !== false) e.setAttribute(k, v);
   if (text !== undefined) e.textContent = text;
   return e;
 }
@@ -469,10 +469,15 @@ function draw() {
       g.append(dot);
       if (SHARED.has(pp.ref)) g.append(el("circle", {cx: px, cy: py, r: 6.5, fill: "none", stroke: "#f76707", "stroke-width": 2, "pointer-events": "none"}));
     });
-    const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null || dropped ? "#868e96" : "#212529"},
-                  o.label + (i !== null && variantsOf(o).length > 1 ? ": " + variantOf(o, S.setup.use[i]).label : variantsOf(o).length > 1 ? " (" + variantsOf(o).length + " ways)" : "") +
-                  (dropped ? "  — not in the design (profile)" : i !== null && partStatus(i) ? "  — " + partShort(i) : ""));
-    lt.append(el("title", {}, o.label + (i === null ? " — not used by this setup" : dropped ? " — " + dropText(i) : "")));
+    // the label cut to the box (about 6.3 px a character at 12 px), the whole of it on hover
+    const full = o.label + (o.device ? "  — no model yet" : "") + (i !== null && variantsOf(o).length > 1 ? ": " + variantOf(o, S.setup.use[i]).label : variantsOf(o).length > 1 ? " (" + variantsOf(o).length + " ways)" : "") +
+                 (dropped ? "  — not in the design (profile)" : i !== null && partStatus(i) ? "  — " + partShort(i) : "");
+    const room = Math.floor((OW - 14) / 6.3), tail = full.slice(o.label.length);
+    const name = o.label.length + tail.length > room ? o.label.slice(0, Math.max(8, room - tail.length - 1)) + "…" : o.label;
+    const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null || dropped ? "#868e96" : "#212529",
+                           "font-style": o.device ? "italic" : null},
+                  (name + tail).length > room ? (name + tail).slice(0, room - 1) + "…" : name + tail);
+    lt.append(el("title", {}, full + (i === null ? " — not used by this setup" : dropped ? " — " + dropText(i) : "")));
     g.append(lt);
     target(g.firstChild, {kind: "onboard", id: o.id});
     target(lt, {kind: "onboard", id: o.id});
@@ -1153,7 +1158,12 @@ function verilogTarget(sel) {
   if (sel.kind === "board") return {board: true};
   return null;
 }
-function usePinsOfOnboard(id) { const o = onboardDef(id); return o ? [...new Set(variantsOf(o).flatMap((v) => Object.values(v.pins).flatMap((ps) => ps.map((p) => p.ref))))] : []; }
+function usePinsOfOnboard(id) {
+  const o = onboardDef(id);
+  if (!o) return [];
+  const sets = o.device ? [o.pins || {}] : variantsOf(o).map((v) => v.pins);
+  return [...new Set(sets.flatMap((pins) => Object.values(pins).flatMap((ps) => ps.map((p) => p.ref))))];
+}
 
 async function openVerilog(sel) {
   if (!sel) return;
@@ -1344,7 +1354,8 @@ function renderEditBar(f) {
               : h("button", {onclick: () => { f.editing = true; renderSource(); }}, "Edit"),
     h("button", {onclick: () => saveDesign(f), disabled: !dirty(f)}, "Save"),
     h("button", {disabled: !dirty(f), onclick: () => { if (confirm("Drop the unsaved edits to " + f.path + "?")) { f.draft = undefined; leave(); } }}, "Revert"),
-    h("span", {class: "muted"}, dirty(f) ? " unsaved edits" : " saved"));
+    h("span", {class: "muted"}, (dirty(f) ? " unsaved edits" : " saved") +
+      (f.editing ? " · " + MODS.points + "-click or F12 on a name: its definition" : "")));
 }
 // an editor that stays coloured: the text is typed into a transparent
 // textarea over the same text coloured by highlightVerilog, with line
@@ -1376,7 +1387,10 @@ function codeEditor(f, line) {
     cancelAnimationFrame(pending); pending = requestAnimationFrame(paint);
   });
   ta.addEventListener("scroll", sync);
+  // ⌘-click (Ctrl-click) or F12 on a name: its definition, as a click does in the coloured view
+  ta.addEventListener("click", (e) => { if (e[MODS.pointsKey]) { e.preventDefault(); goToDefinition(f, ta); } });
   ta.addEventListener("keydown", (e) => {          // Tab indents instead of leaving the editor
+    if (e.key === "F12") { e.preventDefault(); goToDefinition(f, ta); return; }
     if (e.key !== "Tab" || e.metaKey || e.ctrlKey || e.altKey) return;
     e.preventDefault();
     const s = ta.selectionStart;
@@ -1393,6 +1407,35 @@ function codeEditor(f, line) {
     sync();
   });
   return wrap;
+}
+
+// the token under the editor's caret: {cls, text, line, before} (before: the text in front of it on its line)
+function tokenAtCaret(ta) {
+  const text = ta.value, at = ta.selectionStart;
+  const line = text.slice(0, at).split("\n").length, col = at - (text.lastIndexOf("\n", at - 1) + 1);
+  let x = 0;
+  for (const [cls, s] of highlightVerilog(text)[line - 1] || []) {
+    if (col >= x && col <= x + s.length && /^[A-Za-z_]/.test(s)) return {cls, text: s, line, before: text.split("\n")[line - 1].slice(0, x)};
+    x += s.length;
+  }
+  return null;
+}
+function goToDefinition(f, ta) {
+  const tok = tokenAtCaret(ta);
+  if (!tok) return;
+  const go = (p) => p.catch((x) => status(x.message, true));
+  if (tok.cls === "m") return go(openModule(tok.text, null, "module " + tok.text));
+  if (/\.\s*$/.test(tok.before)) {                          // .port(...) of an instance
+    const mod = instanceModuleAt(ta.value, tok.line);
+    if (mod) return go(openModule(mod, tok.text, mod + "." + tok.text));
+  }
+  const decl = declarations(ta.value).get(tok.text);
+  if (!decl) { status("no definition of " + tok.text + " in this file"); return; }
+  const lines = ta.value.split("\n");                        // in this file: the caret goes there
+  ta.selectionStart = ta.selectionEnd = lines.slice(0, decl - 1).join("\n").length + (decl > 1 ? 1 : 0);
+  ta.scrollTop = Math.max(0, (decl - 1) * parseFloat(getComputedStyle(ta).lineHeight) - ta.clientHeight / 2);
+  ta.focus();
+  status(tok.text + ": line " + decl);
 }
 
 // the tab strip and edit bar only (typing must not rebuild the editor)
@@ -1642,6 +1685,13 @@ function details() {
     if (!eds.length) d.append(h("p", {}, "No design port reaches this pin."));
   } else if (sel.kind === "use") {
     useDetails(d, sel.use);
+  } else if (sel.kind === "onboard" && onboardDef(sel.id) && onboardDef(sel.id).device) {
+    // a device the board has but no peripheral models yet: its pins, not usable
+    const o = onboardDef(sel.id);
+    d.append(h("h4", {}, o.label));
+    d.append(h("p", {class: "note"}, "No peripheral model yet for this " + (o.device.kind || "device") +
+      ": the rig shows it so the board is complete, but a design cannot use it until one exists. Its pins are in the pinmap bank " + o.device.bank + "."));
+    for (const [s, ps] of Object.entries(o.pins || {})) d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ")));
   } else if (sel.kind === "onboard") {
     const o = onboardDef(sel.id), i = uses.findIndex((u) => u.onboard === sel.id), vs = variantsOf(o);
     const cur = variantOf(o, uses[i]);
@@ -2039,7 +2089,9 @@ function addModule(id) {
 
 async function api(path, body) {
   const opt = body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json", "X-Unifpga-Studio": "1"}, body: JSON.stringify(body)};
-  const r = await fetch(path, opt);
+  let r;
+  try { r = await fetch(path, opt); }
+  catch (e) { throw new Error("the editor server does not answer (" + e.message + "): is ./unifpga serve running? Restart it and reload"); }
   const data = r.headers.get("Content-Type").startsWith("application/json") ? await r.json() : null;
   if (r.status === 404 && path.startsWith("/api/") && data && data.error === "not found")
     throw new Error("the editor server does not know " + path + ": it is older than this page — restart ./unifpga serve");
@@ -2540,6 +2592,16 @@ async function selftest() {
       const ta = $("src-code").querySelector("textarea");
       ok("Edit turns it into an editor", !!ta && ta.value === original);
       const layer = $("src-code").querySelector(".ed-layer");
+      {
+        // ⌘/Ctrl-click navigation inside the editor: a name declared in the file moves the caret to it
+        const decl = [...declarations(ta.value)].find(([, l]) => l > 20);
+        if (decl) {
+          const [name, dl] = decl, idx = ta.value.lastIndexOf(name);
+          ta.selectionStart = ta.selectionEnd = idx + 1; goToDefinition(pin, ta);
+          ok("F12 / " + MODS.points + "-click in the editor goes to a definition",
+             ta.value.slice(0, ta.selectionStart).split("\n").length === dl);
+        }
+      }
       ok("the editor stays coloured", !!layer && layer.querySelectorAll(".k").length > 0 && layer.textContent.startsWith(original) &&
          $("src-code").querySelector(".ed-gutter").textContent.split("\n").length >= original.split("\n").length);
       ta.value = original + "\n// edited by the self-test\n"; ta.dispatchEvent(new Event("input"));

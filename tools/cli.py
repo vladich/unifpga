@@ -754,6 +754,22 @@ def cmd_layout(args):
     return 0
 
 
+def cmd_inventory(args):
+    """inventory import <file.yml>... [--dry-run]: a board inventory's devices into
+    the board's pinmap (new banks only), its product name and summary into the
+    catalogue, its documents into the board-sources registry
+    (tools/inventory.py); then `./unifpga layout draft` draws them."""
+    from tools import inventory
+    rc = 0
+    for path in args.files:
+        try:
+            print(inventory.report_text(inventory.import_inventory(inventory.read(path), write=not args.dry_run)))
+        except inventory.InventoryError as exc:
+            print("{}: {}".format(path, exc))
+            rc = 1
+    return rc
+
+
 def cmd_sources(args):
     """sources fetch [board...]: download the registry's documents into the cache
     and record their SHA-256; sources text <board> <doc> [--pages a-b] [--grep re]:
@@ -820,6 +836,7 @@ COMMANDS = {
     "setup": cmd_setup,
     "layout": cmd_layout,
     "sources": cmd_sources,
+    "inventory": cmd_inventory,
     "view": cmd_view,
     "serve": cmd_serve,
 }
@@ -897,6 +914,12 @@ def build_parser():
     so.add_argument("ids", nargs="*", help="boards (text: <board> <document id>)")
     so.add_argument("--pages", help="text: a page or a range, e.g. 30-34")
     so.add_argument("--grep", help="text: only lines matching this regular expression")
+
+    iv = sub.add_parser("inventory", help="import board inventories (every on-board device with its pins and "
+                                           "sources) into the pinmaps, the catalogue and the registry")
+    iv.add_argument("action", choices=["import"])
+    iv.add_argument("files", nargs="+", help="inventory YAML files")
+    iv.add_argument("--dry-run", action="store_true", help="report what would change, write nothing")
 
     vw = sub.add_parser("view", help="write a read-only page drawing a setup (or a board with --board)")
     vw.add_argument("id", help="setup id, or board id with --board")

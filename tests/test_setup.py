@@ -57,9 +57,15 @@ def test_layout_pins_are_distinct_board_pins_on_signal_positions(board_id):
                 assert str(key) in numbered, (conn["id"], key)
             pins = [p for _b, p in codegen._bind_pins(pinmap, ref)]
             assert pins and None not in pins, (conn["id"], key, ref)
+            bank = (pinmap.get("pinBanks") or {}).get(conn.get("bank")) or {}
             for p in pins:
-                assert p not in seen, "{} is {} and {}".format(p, seen.get(p), (conn["id"], key))
-                seen[p] = (conn["id"], key)
+                if p in seen:
+                    # two connectors on the same FPGA pins only where the pinmap
+                    # says the board multiplexes them (`shares:`)
+                    other = (pinmap.get("pinBanks") or {}).get(seen[p][2]) or {}
+                    assert seen[p][2] in (bank.get("shares") or []) or conn.get("bank") in (other.get("shares") or []), \
+                        "{} is {} and {}".format(p, seen.get(p)[:2], (conn["id"], key))
+                seen.setdefault(p, (conn["id"], key, conn.get("bank")))
     for o in layout["onboard"]:
         for _vid, _label, attach in su.onboard_variants(o):
             assert attach["peripheral"] in config_init.read_peripherals()
