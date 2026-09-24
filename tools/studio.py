@@ -346,6 +346,13 @@ def evaluate(setup):
                                out["trace"], out["profile"], out["profile_drops"])
     fixes = _Fixes(setup)
     out["problems"].extend(shared_pin_warnings(setup, out["trace"], fixes))
+    # what the build itself refuses (a pin constrained for two top ports: the
+    # design's gpio and a part on the same pin): errors, as synthesize.py would stop
+    if out["trace"] is not None and not excluded:
+        known = {p["message"] for p in out["problems"]}
+        for msg in codegen.validate_configuration(resolved):
+            if msg not in known:
+                out["problems"].append({"level": "error", "message": "the build refuses it: " + msg})
     for x in out["parts"]:
         for reason in x["reasons"]:
             if reason[0] == "exclusive":

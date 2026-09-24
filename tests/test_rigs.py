@@ -242,3 +242,15 @@ def test_hard_processor_pins_are_never_modelled():
             bank = (o.get("device") or {}).get("bank")
             if bank in hard:
                 assert "attach" not in o and not o.get("variants"), (board, o["id"])
+
+
+def test_the_editor_refuses_what_the_build_refuses():
+    """A pin that is both the design's gpio and a part's (the Primer 20K Dock's
+    WS2812 on gpio_0[3]) passes the rig checks as a warning, but strict codegen
+    stops on it: the editor says so as an error."""
+    from tools import studio
+    setup = su.read_setup("tang_primer_20k_dock_hdmi_tm1638_gpio")
+    errors = [p["message"] for p in studio.evaluate(dict(setup, use=setup["use"] + [{"onboard": "ws2812"}]))["problems"]
+              if p["level"] == "error"]
+    assert any("the build refuses it" in m and "T9" in m for m in errors), errors
+    assert not [p for p in studio.evaluate(setup)["problems"] if p["level"] == "error"]
