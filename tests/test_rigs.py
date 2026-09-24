@@ -112,7 +112,7 @@ def test_no_two_rigs_are_the_same_hardware():
 
 def test_no_rig_is_named_after_a_toolchain():
     for sid in su.read_setups():
-        assert not sid.endswith(("_yosys", "_openxc7", "_oxide")), sid
+        assert not sid.endswith(("_yosys", "_openxc7", "_oxide", "_mistral", "_nextpnr")), sid
 
 
 # ---------------------------------------------------------------- setups
