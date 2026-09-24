@@ -418,6 +418,12 @@ def validate(setup):
         problems.append(("error", "unknown toolchain '{}'".format(setup["toolchain"])))
 
     owner = {}
+    covered = plugged_row_refs(setup, layout, connectors)
+    for ref, k in covered.items():
+        for _bit, pin in codegen._bind_pins(pinmap, ref):
+            for p in str(pin or "").split(","):
+                if p:
+                    owner.setdefault(p, (k, use_label(setup["use"][k], {}), False))
     for n, (use, a) in enumerate(zip(setup.get("use") or [], cfg["attach"])):
         label = use_label(use, a)
         contract = peripherals.get(a.get("peripheral"))
@@ -586,3 +592,95 @@ def configuration_path(config_id):
 
 def generated_text(setup):
     return emit_configuration(generate(setup), setup.get("notes"))
+
+
+# ---------------------------------------------------------------------------
+# auto-wiring
+# ---------------------------------------------------------------------------
+
+def plugged_row_refs(setup, layout, connectors, skip=None):
+    """{pinmap ref: use index} for every signal pin under a plugged module:
+    the module covers its whole row, the pins it leaves unconnected too."""
+    out = {}
+    for k, use in enumerate(setup.get("use") or []):
+        if k == skip or "plug" not in use:
+            continue
+        c = connector(layout, use["plug"]["connector"])
+        rows = (connectors.get(c["type"]) or {}).get("rows") or []
+        row = rows[int(use["plug"].get("row", 1)) - 1] if rows else []
+        pins = {str(k2): ref for k2, ref in (c.get("pins") or {}).items()}
+        for key in row:
+            if str(key) in pins:
+                out[pins[str(key)]] = k
+    return out
+
+
+def used_pins(setup, skip=None):
+    """FPGA pins the setup's uses occupy (all but use `skip`), the pins under
+    a plugged module included."""
+    pinmap = config_init.read_board_pinmap(setup["board"]) or {}
+    rest = dict(setup, use=[u for k, u in enumerate(setup.get("use") or []) if k != skip])
+    used = set()
+    refs = [ref for a in generate(rest)["attach"] for ref in (a.get("bind") or {}).values()]
+    refs += list(plugged_row_refs(setup, read_layout(setup["board"]), read_connectors(), skip=skip))
+    for ref in refs:
+        for _bit, pin in codegen._bind_pins(pinmap, ref):
+            if pin:
+                used.update(str(pin).split(","))
+    return used
+
+
+def autowire(setup, index):
+    """{"plug": ...} or {"wires": ...} for module use `index`: a Pmod module
+    plugged into the first free Pmod row, any other module wired in order to
+    the first connector with enough free pins at a voltage it runs at. Pins
+    other uses occupy (on-board devices, gpio headers, modules) are avoided."""
+    use = setup["use"][index]
+    modules, ctypes = read_modules(), read_connectors()
+    module = modules.get(use.get("module"))
+    if module is None:
+        raise SetupError("use {} is not a module".format(index))
+    layout = read_layout(setup["board"])
+    pinmap = config_init.read_board_pinmap(setup["board"]) or {}
+    used = used_pins(setup, skip=index)
+    lo, hi = _voltage_range(module.get("voltage"))
+    need = [p for p, sig in module["pins"].items() if sig not in _PASSIVE]
+
+    def free(conn, key):
+        ref = (conn.get("pins") or {}).get(key, (conn.get("pins") or {}).get(int(key) if str(key).isdigit() else key))
+        if ref is None:
+            return False
+        pins = [p for _b, p in codegen._bind_pins(pinmap, ref)]
+        return pins and all(p and not set(str(p).split(",")) & used for p in pins)
+
+    candidates = []
+    for c in layout.get("connectors") or []:
+        v = (ctypes.get(c["type"]) or {}).get("voltage")
+        if lo is None or v is None or lo <= v <= hi:
+            candidates.append(c)
+    if module.get("form") == "pmod_1x6":
+        for c in candidates:
+            rows = (ctypes.get(c["type"]) or {}).get("rows") or []
+            for r in range(len(rows)):
+                plug = {"connector": c["id"], "row": r + 1}
+                try:
+                    wires = plug_wires(ctypes, layout, module, plug)
+                except SetupError:
+                    continue
+                if all(free(c, w.partition(".")[2]) for w in wires.values()):
+                    return {"plug": plug}
+    spare = []                       # (connector, [free keys]) in layout order
+    for c in candidates:
+        rows = (ctypes.get(c["type"]) or {}).get("rows")
+        keys = [str(k) for row in rows for k in row] if rows else [str(k) for k in c.get("pins") or {}]
+        spare.append((c, [k for k in keys if free(c, k)]))
+    for c, keys in spare:            # one connector when one has room
+        if len(keys) >= len(need):
+            return {"wires": {p: "{}.{}".format(c["id"], k) for p, k in zip(need, keys)}}
+    # else across connectors, the roomiest first (a PmodVGA spans two Pmods)
+    pool = ["{}.{}".format(c["id"], k) for c, keys in sorted(spare, key=lambda x: -len(x[1])) for k in keys]
+    if len(pool) >= len(need):
+        return {"wires": dict(zip(need, pool))}
+    raise SetupError("{} needs {} free pins; the board has {} left at {} V".format(
+        module.get("name") or module["id"], len(need), len(pool),
+        lo if lo == hi else "{}-{}".format(lo, hi)))

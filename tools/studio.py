@@ -96,6 +96,9 @@ def board_data(board_id):
                               "driver": (p.get("driver") or {}).get("module") if p.get("driver") else None}
                         for pid, p in peripherals.items() if pid in used},
         "setups": sorted(s for s, v in su.read_setups().items() if v["board"] == board_id),
+        "capabilities": [{"id": cid, "signals": [{"name": s["name"], "direction": s.get("direction")}
+                                                 for s in c.get("signals") or []]}
+                         for cid, c in config_init.read_capabilities().items()],
         "toolchains": sorted(config_init.read_toolchains()),
         "designs": list_designs(),
     }
@@ -124,28 +127,75 @@ def design_fit(resolved):
             for d in list_designs()}
 
 
+def _traceable(setup):
+    """(setup, [original use index per kept use], [{use, label, reason}]):
+    the setup without the uses that cannot be generated or traced, so the
+    virtual device can be shown for the rest while problems are being fixed."""
+    uses = setup.get("use") or []
+    kept, excluded = [], []
+    for k, use in enumerate(uses):
+        try:
+            su.generate(dict(setup, use=[uses[j] for j in kept] + [use]))
+            kept.append(k)
+        except su.SetupError as exc:
+            excluded.append({"use": k, "label": su.use_label(use, use.get("raw") or {}), "reason": str(exc)})
+    return kept, excluded
+
+
+def _trace(setup, kept):
+    cfg = su.generate(dict(setup, use=[setup["use"][k] for k in kept]))
+    resolved = config_init.resolve_configuration(setup["id"], configuration=cfg)
+    result = tr.trace(resolved)
+    # attach indices of the reduced setup -> use indices of the whole one
+    for a in result["attaches"]:
+        if a["attach_index"] is not None:
+            a["attach_index"] = kept[a["attach_index"]]
+    for p in result["ports"]:
+        for pr in p["providers"]:
+            if pr["attach_index"] is not None:
+                pr["attach_index"] = kept[pr["attach_index"]]
+    return resolved, result
+
+
 def evaluate(setup):
     """What the build makes of a (possibly unsaved) setup: problems, the
-    configuration text, and the virtual device traced to pins."""
-    out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None}
+    configuration text, the virtual device traced to pins (for as much of the
+    setup as can be traced: uses that break it are listed in `excluded`), and
+    which designs fit."""
+    out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None,
+           "excluded": []}
     from config import profile
     if profile.enabled() and profile.load(setup.get("id")):
         out["profile"] = os.path.relpath(profile.path_for(setup["id"]), REPO)
     try:
         cfg = su.generate(setup)
+        out["configuration_text"] = su.emit_configuration(cfg, setup.get("notes"))
+        out["problems"] = [{"level": level, "message": msg} for level, msg in su.validate(setup)]
     except su.SetupError as exc:
         out["problems"] = [{"level": "error", "message": str(exc)}]
-        return out
-    out["problems"] = [{"level": level, "message": msg} for level, msg in su.validate(setup)]
-    out["configuration_text"] = su.emit_configuration(cfg, setup.get("notes"))
-    if any(p["level"] == "error" for p in out["problems"]):
-        return out
-    try:
-        resolved = config_init.resolve_configuration(setup["id"], configuration=cfg)
-        out["trace"] = tr.trace(resolved)
+    kept, excluded = _traceable(setup)
+    for _attempt in range(len(kept) + 1):
+        try:
+            resolved, out["trace"] = _trace(setup, kept)
+            break
+        except (config_init.ConfigError, codegen.CodegenError) as exc:
+            error = str(exc)
+            # set aside the latest use whose removal lets the rest trace
+            for k in reversed(kept):
+                try:
+                    _trace(setup, [j for j in kept if j != k])
+                except (config_init.ConfigError, codegen.CodegenError, su.SetupError):
+                    continue
+                use = setup["use"][k]
+                excluded.append({"use": k, "label": su.use_label(use, use.get("raw") or {}), "reason": error})
+                kept = [j for j in kept if j != k]
+                break
+            else:
+                out["problems"].append({"level": "error", "message": error})
+                break
+    out["excluded"] = sorted(excluded, key=lambda x: x["use"])
+    if out["trace"] is not None and not any(p["level"] == "error" for p in out["problems"]) and not excluded:
         out["designs"] = design_fit(resolved)
-    except (config_init.ConfigError, codegen.CodegenError) as exc:
-        out["problems"].append({"level": "error", "message": str(exc)})
     return out
 
 
@@ -268,6 +318,8 @@ def make_server(port=8765, host="127.0.0.1"):
                 path = self.path.split("?")[0]
                 if path == "/api/evaluate":
                     return self._send(200, evaluate(body["setup"]))
+                if path == "/api/autowire":
+                    return self._send(200, su.autowire(body["setup"], int(body["use"])))
                 if path == "/api/save":
                     return self._send(200, save(body["setup"]))
                 if path == "/api/project":

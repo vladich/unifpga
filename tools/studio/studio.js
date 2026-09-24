@@ -72,6 +72,19 @@ function useLabel(use) {
 // ---------------------------------------------------------------- trace queries
 
 function ports() { return (S.ev && S.ev.trace && S.ev.trace.ports) || []; }
+
+// every port of the virtual device: the traced ones, and the capability
+// catalogue's other signals with no provider (drawn greyed)
+function devicePorts() {
+  const traced = ports();
+  const out = [];
+  for (const c of (S.board && S.board.capabilities) || []) for (const s of c.signals) {
+    out.push(traced.find((p) => p.capability === c.id && p.signal === s.name) ||
+             {capability: c.id, signal: s.name, direction: s.direction, providers: [], none: true});
+  }
+  for (const p of traced) if (!out.includes(p)) out.push(p);
+  return out;
+}
 // a port's name in design_top; the capability is added where two share a name
 // (audio_in.sample, audio_out.sample)
 function portName(p) {
@@ -94,7 +107,7 @@ function baseSignal(sig) { return String(sig).replace(/\[\d+\]$/, ""); }
 // design ports one pin signal of a use serves: [{port, via, driver_port, port_at}]
 function linksOfPin(i, signal) {
   const a = attachOf(i);
-  return a ? (a.links[baseSignal(signal)] || []).filter((l) => portByKey(l.port)).map((l) => Object.assign({}, l, {p: portByKey(l.port)})) : [];
+  return a ? ((a.links || {})[baseSignal(signal)] || []).filter((l) => portByKey(l.port)).map((l) => Object.assign({}, l, {p: portByKey(l.port)})) : [];
 }
 
 // "design red ← vga red … vga_r" for one link
@@ -159,16 +172,16 @@ function draw() {
   let y = top + 24;
   svg.append(el("text", {x: VX, y: top + 8, "font-weight": "bold", "font-size": 14}, "Virtual device (design_top)"));
   const portRows = [];
-  for (const p of ports()) {
+  for (const p of devicePorts()) {
     let width = 1;
     for (const pr of p.providers) for (const b of pr.bits || []) if (b.design_bit !== null) width = Math.max(width, b.design_bit + 1);
     const perBit = p.providers.some((pr) => pr.bits);
     const g = el("g", {class: "clickable"});
     const selPort = (S.sel && S.sel.kind === "vport" && S.sel.signal === p.signal && S.sel.cap === p.capability) ||
                     hi.vports.has(p.capability + "." + p.signal);
-    g.append(el("text", {x: VX, y: y + 11, "font-size": 12, fill: selPort ? "var(--sel)" : "#212529"},
+    g.append(el("text", {x: VX, y: y + 11, "font-size": 12, fill: selPort ? "var(--sel)" : p.none ? "#adb5bd" : "#212529"},
                 portName(p) + (perBit ? "[" + (width - 1) + ":0]" : "")));
-    g.append(el("title", {}, p.capability + "." + p.signal + " (" + (p.direction || "") + ")"));
+    g.append(el("title", {}, p.capability + "." + p.signal + " (" + (p.direction || "") + ")" + (p.none ? " — nothing in the rig provides it" : "")));
     g.addEventListener("click", () => select({kind: "vport", cap: p.capability, signal: p.signal}));
     svg.append(g);
     const cells = perBit ? width : 1, per = 14;
@@ -176,7 +189,7 @@ function draw() {
       const cx = VX + 118 + (b % per) * 13, cy = y + Math.floor(b / per) * 14;
       const on = hi.vbits.has(p.capability + "." + p.signal + "." + b) || selPort;
       const r = el("rect", {x: cx, y: cy, width: 11, height: 11, rx: 2, class: "clickable",
-                           fill: on ? "var(--sel)" : "#e7f5ff", stroke: "#1c7ed6"});
+                           fill: on ? "var(--sel)" : p.none ? "#f8f9fa" : "#e7f5ff", stroke: p.none ? "#ced4da" : "#1c7ed6"});
       r.append(el("title", {}, perBit ? p.signal + "[" + b + "]" : p.signal));
       r.addEventListener("click", (e) => { e.stopPropagation();
         select(perBit ? {kind: "vbit", cap: p.capability, signal: p.signal, bit: b} : {kind: "vport", cap: p.capability, signal: p.signal}); });
@@ -186,7 +199,7 @@ function draw() {
     portRows.push({p, x: VX + 118 + Math.min(cells, per) * 13, y: y + 6});
     y += 14 * rowsUsed + 8;
   }
-  if (!ports().length) svg.append(el("text", {x: VX, y: y + 10, fill: "#868e96"}, S.ev && S.ev.trace === null && S.ev.problems.length ? "(fix the problems to trace)" : "(nothing yet)"));
+  if (!ports().length) svg.append(el("text", {x: VX, y: y + 10, fill: "#868e96"}, "(nothing in the rig can be traced yet)"));
 
   // board frame, on-board devices
   const used = new Map();
@@ -622,7 +635,11 @@ function useDetails(d, i) {
       t.append(h("tr", {}, h("td", {}, p), h("td", {}, sig), cell));
     }
     d.append(t);
-    if (!STATIC) d.append(h("div", {class: "chain"}, "Or click a module pin in the drawing, then a header pin."));
+    if (!STATIC) {
+      d.append(h("div", {}, h("button", {onclick: () => autoWire(i)}, "Auto-wire"),
+                 " picks free header pins (a Pmod module plugs into a free Pmod row)."));
+      d.append(h("div", {class: "chain"}, "Or click a module pin in the drawing, then a header pin."));
+    }
   } else if (use.raw) {
     d.append(h("pre", {}, JSON.stringify(use.raw, null, 1)));
   }
@@ -633,6 +650,18 @@ function useDetails(d, i) {
       h("button", {onclick: () => { S.setup.use.splice(i, 1); S.sel = null; changed("removed " + useLabel(use)); }}, "Remove")));
     d.append(h("div", {class: "chain"}, "Order decides which design bits a part gets when several provide the same port."));
   }
+}
+
+async function autoWire(i) {
+  try {
+    const got = await api("/api/autowire", {setup: S.setup, use: i});
+    const use = S.setup.use[i];
+    delete use.plug; delete use.wires;
+    Object.assign(use, got);
+    S.pending = null;
+    S.sel = {kind: "use", use: i};
+    await changed("auto-wired " + useLabel(use) + (got.plug ? " (plugged into " + got.plug.connector + " row " + got.plug.row + ")" : ""));
+  } catch (e) { status(e.message, true); }
 }
 
 function move(i, delta) {
@@ -683,12 +712,20 @@ function tables() {
   if (S.ev && S.ev.profile)
     pl.append(h("li", {}, "The design-wiring profile " + S.ev.profile + " applies to this id: it fixes which design bits " +
                           "each part takes for the example designs. A part added here needs an entry there, or save under a new id."));
+  for (const x of (S.ev && S.ev.excluded) || [])
+    pl.append(h("li", {class: "warning"}, "not traced (the drawing leaves it out): " + useLabel(S.setup.use[x.use] || {}) + " — " + x.reason));
   if (!probs.length) pl.append(h("li", {}, "no problems"));
   for (const p of probs) pl.append(h("li", {class: p.level}, p.level + ": " + p.message));
   $("config-text").textContent = (S.ev && S.ev.configuration_text) || "";
 }
 
-function render() { draw(); details(); tables(); designChoices(); renderTitle(); headerActions(); }
+function render() {
+  // a selection whose part has been removed or moved away is dropped
+  const n = (S.setup && S.setup.use || []).length;
+  if (S.sel && (S.sel.kind === "use" || S.sel.kind === "wire") && !(S.sel.use < n)) S.sel = null;
+  if (S.pending && !(S.pending.use < n)) S.pending = null;
+  draw(); details(); tables(); designChoices(); renderTitle(); headerActions();
+}
 
 // the use a Remove in the header would take out: a selected module (or one of
 // its wires) or a raw attach
@@ -771,7 +808,7 @@ function addModule(id) {
   S.sel = {kind: "use", use: i};
   showTab("rig");
   changed("added " + moduleDef(id).name).then(() => {
-    if (first) { S.pending = {use: i, pin: first[0]}; render(); status("now click the header pin for " + first[0] + " (Esc cancels)"); }
+    if (first) { S.pending = {use: i, pin: first[0]}; render(); status("click the header pin for " + first[0] + ", or Auto-wire in the side panel (Esc cancels)"); }
   });
 }
 
@@ -948,6 +985,14 @@ async function selftest() {
       ok("the trace names the driver ports", $("details").textContent.includes("vga (red … vga_r)"));
     }
     S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
+    S.setup.use.push({module: "tm1638_led_key", wires: {CLK: S.board.connectors[0].id + ".99"}});
+    await changed("broken"); await settle();
+    ok("a broken module leaves the rest traced", !!S.ev.trace && S.ev.excluded.length === 1 && ports().length > 0);
+    ok("the untraced module is named in Problems", $("problems").textContent.includes("not traced"));
+    await autoWire(S.setup.use.length - 1); await settle();
+    ok("auto-wire wires every signal pin", Object.keys(S.setup.use[S.setup.use.length - 1].wires || {}).length === 3 &&
+       !S.ev.excluded.length && !(S.ev.problems || []).some((p) => p.level === "error"));
+    S.setup.use.pop(); await changed("undo"); await settle();
     await changed("copy"); await settle();
     const n = S.setup.use.length;
     const addSel = $("add-module");

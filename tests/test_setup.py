@@ -154,7 +154,8 @@ def test_board_data_and_evaluation():
     broken = copy.deepcopy(su.read_setup("arty_a7_35_pmod_mic3"))
     broken["use"].append({"module": "tm1638_led_key", "wires": {"CLK": "jd.99"}})
     ev = studio.evaluate(broken)
-    assert ev["trace"] is None and "no signal pin '99'" in ev["problems"][0]["message"]
+    assert "no signal pin '99'" in ev["problems"][0]["message"]
+    assert ev["trace"] and ev["excluded"][0]["reason"] == ev["problems"][0]["message"]     # the rest still traces
 
 
 @pytest.fixture
@@ -287,3 +288,45 @@ def test_serves_names_real_pins_and_provided_ports():
             for port in ports:
                 cap, _, name = port.partition(".")
                 assert cap in provided and any(s["name"] == name for s in caps[cap]["signals"]), (pid, port)
+
+
+def test_autowire_plugs_or_wires_free_pins():
+    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig["id"] = "aw_rig"
+    rig["use"].append({"module": "digilent_pmod_mic3", "wires": {}})
+    assert su.autowire(rig, len(rig["use"]) - 1) == {"plug": {"connector": "ja", "row": 1}}
+    rig["use"][-1] = dict(module="digilent_pmod_mic3", plug={"connector": "ja", "row": 1})
+    rig["use"].append({"module": "tm1638_led_key", "wires": {}})
+    w = su.autowire(rig, len(rig["use"]) - 1)["wires"]
+    # JA's top row is under the plugged MIC3, its unconnected pin 2 too
+    assert set(w) == {"STB", "CLK", "DIO"} and all(x.split(".")[1] not in ("1", "2", "3", "4")
+                                                   for x in w.values() if x.startswith("ja."))
+    under = copy.deepcopy(rig)
+    under["use"][-1]["wires"] = {"STB": "ja.2", "CLK": "ja.7", "DIO": "ja.8"}
+    assert any("used by both digilent_pmod_mic3 and tm1638_led_key" in m for lvl, m in su.validate(under))
+    rig["use"][-1]["wires"] = w
+    assert [p for p in su.validate(rig) if p[0] == "error"] == []
+
+    dock = copy.deepcopy(su.read_setup("tang_primer_20k_dock_hdmi_no_tm1638"))
+    dock["id"] = "aw_dock"
+    dock["use"].append({"module": "digilent_pmod_vga", "wires": {}})
+    dock["use"][-1]["wires"] = su.autowire(dock, len(dock["use"]) - 1)["wires"]      # spans J6 and J5
+    assert len(dock["use"][-1]["wires"]) == 14 and [p for p in su.validate(dock) if p[0] == "error"] == []
+
+    lcd = copy.deepcopy(su.read_setup("tang_primer_20k_dock_lcd_800_480_tm1638"))
+    lcd["use"].append({"module": "digilent_pmod_vga", "wires": {}})
+    with pytest.raises(su.SetupError, match="needs 14 free pins; the board has 5 left"):
+        su.autowire(lcd, len(lcd["use"]) - 1)             # J5 / J6 are the LCD's
+
+
+def test_evaluation_traces_around_a_broken_part():
+    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig["use"].append({"module": "tm1638_led_key", "wires": {"CLK": "ja.99"}})
+    ev = studio.evaluate(rig)
+    assert ev["trace"] and ev["excluded"] == [{"use": len(rig["use"]) - 1, "label": "tm1638_led_key",
+                                               "reason": "connector 'ja' has no signal pin '99'"}]
+    assert {a["attach_index"] for a in ev["trace"]["attaches"] if a["attach_index"] is not None} <= set(range(len(rig["use"]) - 1))
+    profiled = copy.deepcopy(su.read_setup("arty_a7_35"))       # its profile fixes the bit layout
+    profiled["use"].append({"module": "tm1638_led_key", "wires": {"STB": "ja.1", "CLK": "ja.2", "DIO": "ja.3"}})
+    ev = studio.evaluate(profiled)
+    assert ev["trace"] and ev["excluded"][0]["use"] == len(profiled["use"]) - 1 and "lab_bits" in ev["excluded"][0]["reason"]
