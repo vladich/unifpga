@@ -3,8 +3,7 @@
 // =============================================================================
 //
 // requires:
-//   buttons >= 3
-//   switches >= 1
+//   buttons >= 1 if !(w_btn >= 3) && !(w_btn >= 2 && w_sw > 0)
 //   seven_segment >= 4
 
 module design_top

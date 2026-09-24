@@ -5,7 +5,6 @@
 // requires:
 //   leds >= 12
 //   buttons >= 3
-//   switches >= 8
 //   seven_segment >= 1
 
 localparam N_MAX_POP = 4;

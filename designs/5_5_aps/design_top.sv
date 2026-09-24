@@ -3,9 +3,7 @@
 // =============================================================================
 //
 // requires:
-//   leds >= 16
-//   switches >= 16
-//   seven_segment >= 8
+//   seven_segment >= 1
 //   screen >= 320x240
 
 module design_top
