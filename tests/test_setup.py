@@ -609,3 +609,13 @@ def test_the_pinned_design_saves_only_over_what_the_page_loaded(tmp_path, monkey
     with pytest.raises(studio.ApiError, match="unknown design"):
         studio.save_design("../../etc", "x", "x")
     assert not list(d.glob("*.saving"))
+
+
+def test_a_board_offers_only_the_toolchains_its_chip_supports():
+    assert studio.board_toolchains("de10_lite") == ["quartus_prime_lite"]
+    assert set(studio.board_toolchains("arty_a7")) == {"vivado", "nextpnr_openxc7"}
+    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig["toolchain"] = "gowin_eda"
+    assert any("does not build for arty_a7" in m for lvl, m in su.validate(rig) if lvl == "error")
+    for s in su.read_setups().values():
+        assert s["toolchain"] in studio.board_toolchains(s["board"]), s["id"]

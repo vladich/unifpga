@@ -542,6 +542,15 @@ def validate(setup, clashes=None):
     toolchains = set(config_init.read_toolchains())
     if setup["toolchain"] not in toolchains:
         problems.append(("error", "unknown toolchain '{}'".format(setup["toolchain"])))
+    else:
+        try:
+            ok = config_init.is_compatible(config_init._board_index(), config_init.read_chips(),
+                                           setup["board"], setup["toolchain"])
+        except config_init.ConfigError:
+            ok = True                       # a board without a chip: reported where it matters
+        if not ok:
+            problems.append(("error", "toolchain '{}' does not build for {}'s chip".format(
+                setup["toolchain"], setup["board"])))
 
     owner = {}
     covered = plugged_row_refs(setup, layout, connectors)

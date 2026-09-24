@@ -67,6 +67,19 @@ def list_designs():
                   if os.path.isfile(os.path.join(DESIGNS_DIR, d, "design_top.sv")))
 
 
+def board_toolchains(board_id):
+    """The toolchains that can build for the board, sorted."""
+    boards, chips = config_init._board_index(), config_init.read_chips()
+    out = []
+    for tc in sorted(config_init.read_toolchains()):
+        try:
+            if config_init.is_compatible(boards, chips, board_id, tc):
+                out.append(tc)
+        except config_init.ConfigError:
+            pass
+    return out
+
+
 def board_data(board_id):
     """Everything the page needs to draw and edit rigs on one board."""
     layouts = su.read_layouts()
@@ -139,7 +152,9 @@ def board_data(board_id):
                           "summary": c.get("summary"), "size": c.get("size"), "depth": c.get("depth"),
                           "design_parameters": list(((c.get("design") or {}).get("parameters") or {}))}
                          for cid, c in config_init.read_capabilities().items()],
-        "toolchains": sorted(config_init.read_toolchains()),
+        # only the toolchains the board's chip(s) support (the chip registry's
+        # Toolchains, inherited from the family's DefaultToolchains)
+        "toolchains": board_toolchains(board_id),
         "designs": list_designs(),
     }
 
