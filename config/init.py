@@ -44,6 +44,32 @@ _yaml_cache = {}
 _SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
+class _UniqueKeyLoader(_SAFE_LOADER):
+    """Reject duplicate authored mapping keys before PyYAML overwrites them."""
+
+    def construct_mapping(self, node, deep=False):
+        seen = set()
+        for key_node, _ in node.value:
+            # YAML merge keys are handled by the base loader. An explicit key
+            # may intentionally override a merged default, but two explicit
+            # spellings of the same key are never unambiguous source data.
+            if key_node.tag == "tag:yaml.org,2002:merge":
+                continue
+            key = self.construct_object(key_node, deep=deep)
+            try:
+                hash(key)
+            except TypeError as exc:
+                raise yaml.constructor.ConstructorError(
+                    "while reading a mapping", node.start_mark,
+                    "unhashable key", key_node.start_mark) from exc
+            if key in seen:
+                raise yaml.constructor.ConstructorError(
+                    "while reading a mapping", node.start_mark,
+                    "duplicate key {!r}".format(key), key_node.start_mark)
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
 def _parsed(path):
     """The cached parse of `path` itself, NOT a copy: for read-only indexes
     built here, never handed to callers."""
@@ -63,7 +89,7 @@ def _read_yaml_file(path):
     if cached is None or cached[0] != key:
         try:
             with open(path, encoding="utf-8") as f:
-                data = yaml.load(f, Loader=_SAFE_LOADER)
+                data = yaml.load(f, Loader=_UniqueKeyLoader)
         except yaml.YAMLError as exc:
             raise ConfigError("YAML parse error in {p}: {e}".format(p=path, e=exc))
         cached = (key, data)
@@ -85,34 +111,59 @@ def _load_yaml(path, root_key):
     return data[root_key]
 
 
-def _load_yaml_dir(subdir, root_key, id_key):
+def _load_yaml_dir(subdir, root_key, id_key, *, base=None, missing_ok=False):
     """Iterate config/<subdir>/*.yml and return {id: parsed_root}."""
-    base = os.path.join(dir_path, subdir)
+    base = base or os.path.join(dir_path, subdir)
     if not os.path.isdir(base):
+        if missing_ok:
+            return {}
         raise ConfigError("Directory not found: " + base)
     out = {}
+    origins = {}
     for fname in sorted(os.listdir(base)):
         if not fname.endswith(".yml") or fname.startswith("_"):
             continue
         path = os.path.join(base, fname)
         data = _read_yaml_file(path)
-        if not data or root_key not in data:
-            log.warning("Skipping %s — no '%s' root", path, root_key)
-            continue
+        if not isinstance(data, dict) or root_key not in data:
+            raise ConfigError("{}: missing '{}' mapping".format(path, root_key))
         item = data[root_key]
-        if id_key not in item:
-            log.warning("Skipping %s — no '%s' field", path, id_key)
-            continue
-        out[item[id_key]] = item
+        if (not isinstance(item, dict) or not isinstance(item.get(id_key), str) or
+                not item[id_key].strip()):
+            raise ConfigError("{}: '{}' must contain a nonempty string '{}'"
+                              .format(path, root_key, id_key))
+        identifier = item[id_key]
+        if identifier in out:
+            raise ConfigError("duplicate {} {!r}: {} and {}".format(
+                root_key, identifier, origins[identifier], path))
+        out[identifier] = item
+        origins[identifier] = path
+    return out
+
+
+def _unique_catalog(items, source, kind):
+    """Index a single-file registry without losing malformed or repeated IDs."""
+    if not isinstance(items, list):
+        raise ConfigError("{}: {} must be a list".format(source, kind))
+    out = {}
+    for ordinal, item in enumerate(items, 1):
+        if (not isinstance(item, dict) or not isinstance(item.get("Id"), str) or
+                not item["Id"].strip()):
+            raise ConfigError("{}: {} item {} needs a nonempty string Id".format(
+                source, kind, ordinal))
+        if item["Id"] in out:
+            raise ConfigError("{}: duplicate {} Id {!r}".format(source, kind, item["Id"]))
+        out[item["Id"]] = item
     return out
 
 
 def read_toolchains():
     """Read the list of toolchains from toolchains.yml."""
     items = _load_yaml(os.path.join(dir_path, "toolchains.yml"), "Toolchains")
-    for toolchain in items:
+    indexed = _unique_catalog(items, os.path.join(dir_path, "toolchains.yml"), "Toolchain")
+    for toolchain in indexed.values():
         supported_operations(toolchain)
-    return {t["Id"]: t for t in items}
+    return indexed
 
 
 def supported_operations(toolchain):
@@ -196,7 +247,7 @@ def read_programmers():
     by either a vendor-bundled programmer or a third-party tool like
     `openFPGALoader`. See programmers.yml for the full schema."""
     items = _load_yaml(os.path.join(dir_path, "programmers.yml"), "Programmers")
-    return {p["Id"]: p for p in items}
+    return _unique_catalog(items, os.path.join(dir_path, "programmers.yml"), "Programmer")
 
 
 def read_board_producers():
@@ -210,7 +261,7 @@ def read_board_producers():
     accepts the canonical Name plus any AKA aliases for migration / legacy
     references."""
     items = _load_yaml(os.path.join(dir_path, "board_producers.yml"), "Producers")
-    return {p["Id"]: p for p in items}
+    return _unique_catalog(items, os.path.join(dir_path, "board_producers.yml"), "Producer")
 
 
 def read_board_producers_name_index():
@@ -262,7 +313,7 @@ def read_features():
 
     Returns {feature_id: feature_info}."""
     items = _load_yaml(os.path.join(dir_path, "features.yml"), "Features")
-    return {f["Id"]: f for f in items}
+    return _unique_catalog(items, os.path.join(dir_path, "features.yml"), "Feature")
 
 
 # Back-compat alias for callers still using the old name.
@@ -280,7 +331,7 @@ def read_peripheral_devices():
 
     Returns {device_id: device_info}."""
     items = _load_yaml(os.path.join(dir_path, "peripheral_devices.yml"), "Devices")
-    return {d["Id"]: d for d in items}
+    return _unique_catalog(items, os.path.join(dir_path, "peripheral_devices.yml"), "Device")
 
 
 def validate_board_features(catalog=None, features=None):
@@ -489,26 +540,7 @@ def read_boards_catalog():
 
     Per-board pinmaps live alongside the catalog file at
     config/boards/<producer>/<family>/<board_id>.yml."""
-    out = {}
-    for fam_path, prod_name, fam_slug in _walk_board_catalog_files():
-        data = _read_yaml_file(fam_path)
-        if not data:
-            continue
-        producer = data.get("Producer")
-        family = data.get("Family")
-        boards = data.get("Boards") or []
-        for b in boards:
-            if "Id" not in b:
-                log.warning("Skipping board with no Id in %s", fam_path)
-                continue
-            entry = dict(b)
-            entry.setdefault("PartProducer", producer)
-            entry.setdefault("PartFamily", family)
-            entry["_catalog_path"] = fam_path  # for pinmap lookup
-            entry["_producer_dir"] = prod_name
-            entry["_family_dir"] = fam_slug
-            out[b["Id"]] = entry
-    return out
+    return copy.deepcopy(_board_index())
 
 
 # Back-compat alias.
@@ -518,21 +550,31 @@ _BOARD_INDEX = {}
 
 
 def _board_index():
-    """{board_id: catalog entry} like read_boards_catalog(), built once per
-    change of the catalog files and shared read-only: callers take copies
-    (read_board_entry) or only read it. read_boards_catalog() deep-copies
-    every family file, which made each resolve_configuration slow."""
+    """Validated, cached board registry; callers must not mutate its entries."""
     files = list(_walk_board_catalog_files())
     key = tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p, _pr, _f in files)
     if _BOARD_INDEX.get("key") != key:
         out = {}
+        origins = {}
         for fam_path, prod_name, fam_slug in files:
             data = _parsed(fam_path)
-            if not data:
-                continue
-            for b in data.get("Boards") or []:
-                if "Id" not in b:
-                    continue
+            if not isinstance(data, dict):
+                raise ConfigError("{}: board catalog must be a mapping".format(fam_path))
+            if any(not isinstance(data.get(field), str) or not data[field].strip()
+                   for field in ("Producer", "Family")):
+                raise ConfigError("{}: board catalog needs Producer and Family"
+                                  .format(fam_path))
+            boards = data.get("Boards")
+            if not isinstance(boards, list):
+                raise ConfigError("{}: Boards must be a list".format(fam_path))
+            for ordinal, b in enumerate(boards, 1):
+                if (not isinstance(b, dict) or not isinstance(b.get("Id"), str) or
+                        not b["Id"].strip()):
+                    raise ConfigError("{}: board item {} needs a nonempty string Id"
+                                      .format(fam_path, ordinal))
+                if b["Id"] in out:
+                    raise ConfigError("duplicate board Id {!r}: {} and {}".format(
+                        b["Id"], origins[b["Id"]], fam_path))
                 entry = dict(b)
                 entry.setdefault("PartProducer", data.get("Producer"))
                 entry.setdefault("PartFamily", data.get("Family"))
@@ -540,6 +582,7 @@ def _board_index():
                 entry["_producer_dir"] = prod_name
                 entry["_family_dir"] = fam_slug
                 out[b["Id"]] = entry
+                origins[b["Id"]] = fam_path
         _BOARD_INDEX.update(key=key, value=out)
     return _BOARD_INDEX["value"]
 
@@ -600,18 +643,30 @@ def read_chips():
     metadata from the chip entry. Chips inherit DefaultToolchains from
     their family file when they don't declare their own."""
     out = {}
+    origins = {}
     for fam_path, prod_dir, fam_slug in _walk_chip_registry_files():
         data = _read_yaml_file(fam_path)
-        if not data:
-            continue
+        if not isinstance(data, dict):
+            raise ConfigError("{}: chip registry must be a mapping".format(fam_path))
+        if any(not isinstance(data.get(field), str) or not data[field].strip()
+               for field in ("Producer", "Family")):
+            raise ConfigError("{}: chip registry needs Producer and Family"
+                              .format(fam_path))
         producer = data.get("Producer")
         family = data.get("Family")
         default_tcs = data.get("DefaultToolchains") or []
-        for chip in data.get("Chips") or []:
-            cid = chip.get("Id")
-            if cid is None:
-                log.warning("Skipping chip with no Id in %s", fam_path)
-                continue
+        chips = data.get("Chips")
+        if not isinstance(chips, list):
+            raise ConfigError("{}: Chips must be a list".format(fam_path))
+        for ordinal, chip in enumerate(chips, 1):
+            if (not isinstance(chip, dict) or not isinstance(chip.get("Id"), str) or
+                    not chip["Id"].strip()):
+                raise ConfigError("{}: chip item {} needs a nonempty string Id"
+                                  .format(fam_path, ordinal))
+            cid = chip["Id"]
+            if cid in out:
+                raise ConfigError("duplicate chip Id {!r}: {} and {}".format(
+                    cid, origins[cid], fam_path))
             entry = dict(chip)
             entry["PartProducer"] = producer
             entry["PartFamily"] = family
@@ -620,6 +675,7 @@ def read_chips():
                 entry["Toolchains"] = list(default_tcs)
             entry["_registry_path"] = fam_path
             out[cid] = entry
+            origins[cid] = fam_path
     return out
 
 

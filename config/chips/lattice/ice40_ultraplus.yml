@@ -9,8 +9,6 @@ DefaultToolchains:
   - icecube2[*]
   - lattice_radiant[*]
 Chips:
-  - Id: ICE40HX8K-BG121
-  - Id: iCE40LP8K-CM81
   - Id: iCE40UP5K-B-EVN
   - Id: iCE40UP5K-SG48
   - Id: iCE40UP5K-UWG30

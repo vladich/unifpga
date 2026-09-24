@@ -90,16 +90,8 @@ def read_modules():
 
 def read_setups():
     """{id: setup} from SETUP_DIR (the same directory write_setup() writes)."""
-    out = {}
-    if not os.path.isdir(SETUP_DIR):
-        return out
-    for name in sorted(os.listdir(SETUP_DIR)):
-        if name.endswith(".yml") and not name.startswith("_"):
-            data = config_init._read_yaml_file(os.path.join(SETUP_DIR, name)) or {}
-            setup = data.get("Setup")
-            if setup and setup.get("id"):
-                out[setup["id"]] = setup
-    return out
+    return config_init._load_yaml_dir("setups", "Setup", "id", base=SETUP_DIR,
+                                      missing_ok=True)
 
 
 def read_setup(setup_id):

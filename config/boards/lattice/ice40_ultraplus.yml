@@ -73,14 +73,6 @@ Boards:
       - jtag
     Programmer: dfu_util
     BoardURL: https://1bitsquared.com/products/icebreaker-bitsy
-  - Id: tinyfpga_bx
-    BoardName: TinyFPGA BX
-    BoardProducer: tinyfpga
-    Chip: iCE40LP8K-CM81
-    Bridges: []
-    Bootloader: usb-dfu
-    Programmer: dfu_util
-    BoardURL: https://tinyfpga.com/bx/guide.html
   - Id: upduino_v3
     BoardName: Upduino v3.0
     BoardProducer: tinyvision_ai

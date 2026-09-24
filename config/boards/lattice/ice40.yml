@@ -92,6 +92,14 @@ Boards:
       - jtag
     Programmer: iceprog
     BoardURL: https://tinyfpga.com/b-series-guide.html
+  - Id: tinyfpga_bx
+    BoardName: TinyFPGA BX
+    BoardProducer: tinyfpga
+    Chip: iCE40LP8K-CM81
+    Bridges: []
+    Bootloader: usb-dfu
+    Programmer: dfu_util
+    BoardURL: https://tinyfpga.com/bx/guide.html
   - Id: lattice_ice40lp1k_evalkit
     BoardName: "iCE40LP1K Evaluation Kit"
     BoardProducer: lattice

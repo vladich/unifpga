@@ -118,23 +118,30 @@ by Yuri Panchul and contributors; see
 | `config/boards/<producer>/<family>.yml` | Family-level board catalog: list of boards on that chip family + family description. |
 | `config/boards/<producer>/<family>/<id>.yml` | Per-board pinmap (when available). |
 | `config/chips/<producer>/<family>.yml` | Chip registry per family — each chip lists eligible toolchains (with optional `[version]` constraints). Boards reference these chips by Id. |
-| `config/toolchains.yml` | Registry of 33 toolchains, including the executable operations each driver supports. |
-| `config/programmers.yml` | Registry of bitstream loaders (27 entries: bundled vendor programmers + third-party + board-specific). |
-| `config/board_producers.yml` | Registry of board makers (75 entries: Digilent, Terasic, Sipeed, Trenz, BittWare, …) with URL, country, founding year, categories, description. Each board's `BoardProducer:` references one of these by Id. |
-| `config/board_features.yml` | Vocabulary of board-feature tokens (91 entries across `memory`, `connectivity`, `display`, etc.). Boards may list `Features: [ethernet_1gbe, hdmi_out, pmod_x4, …]` for filtering / display. |
-| `config/configurations/<id>.yml` | Board × toolchain × peripheral attachments (134 configurations): the hardware, what sits on which pins, polarity, widths, clocks, I/O standards. |
-| `config/layouts/<board>.yml`, `config/modules/<id>.yml`, `config/setups/<id>.yml`, `config/connectors.yml` | Boards as rigs (preview, two boards): connectors and on-board devices, add-on module pinouts, and setups that generate configurations; `tools/setup.py`, drawings by `tools/viewer.py`. |
+| `config/toolchains.yml` | Toolchain registry, including the executable operations each driver supports. |
+| `config/programmers.yml` | Registry of bundled vendor, third-party, and board-specific bitstream loaders. |
+| `config/board_producers.yml` | Registry of board makers with URL, country, founding year, categories, and description. Each board's `BoardProducer:` references one of these by Id. |
+| `config/features.yml` | Vocabulary of board-feature tokens across `memory`, `connectivity`, `display`, and other categories. Boards may list `Features: [ethernet_1gbe, hdmi_out, pmod_x4, …]` for filtering and display. |
+| `config/configurations/<id>.yml` | Board × toolchain × peripheral attachments: the hardware, what sits on which pins, polarity, widths, clocks, and I/O standards. |
+| `config/layouts/<board>.yml`, `config/modules/<id>.yml`, `config/setups/<id>.yml`, `config/connectors.yml` | Boards as rigs: connectors and on-board devices, add-on module pinouts, and setups that generate configurations; `tools/setup.py`, drawings by `tools/viewer.py`. |
 | `config/profiles/<id>.yml` | Design-wiring profile: how a configuration's hardware is presented to `design_top` (which key resets, a TM1638 as the key/led/digit bus, keys as switches, mirrored bits, the lab clock, pins that follow the reset, what `uart_rx` reads with no UART pin, a bus wider than the bits wired to it (`lab_width`), components tied off (`drop`), the HEX decimal point routed onto LEDs (`bind`), a header the design only drives (`direction: out`)). Applied on top of the configuration by default; `synthesize.py --no-profile` (or `UNIFPGA_PROFILE=0`) generates the generic composition. |
-| `config/peripherals/*.yml` | 41 peripheral definitions (`led_bank`, `vga_4bit`, `gpio_header`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
-| `config/capabilities/*.yml` | 12 abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules. |
+| `config/peripherals/*.yml` | Peripheral definitions (`led_bank`, `vga_4bit`, `gpio_header`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
+| `config/capabilities/*.yml` | Abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules. |
+
 | `rtl/peripherals/*.sv` | Driver SV modules for hardware peripherals (TM1638 controller, VGA, I²S mic, etc.). |
 | `rtl/peripherals/designs_common/*.sv` | Reusable helpers (`seven_segment_display`, `shift_reg`, `strobe_gen`, …). |
 | `rtl/peripherals/design_top_interface.sv` | Canonical `design_top` port list — copy and add your logic. |
-| `designs/<name>/design_top.sv` | 97 example designs. |
+| `designs/<name>/design_top.sv` | Example designs. |
 | `tools/codegen.py` | Generates `top.sv` and per-toolchain constraint files from a resolved configuration. |
 | `tools/lint_generated.py` | Lints every generated top with Verilator (locally or `remote --host <box>`). |
 | `tools/verify_pinmap_against_vendor.py` | Checks board pinmaps against the vendor constraint files (Digilent XDC so far). |
 | `toolchains/<id>/<id>.py` | Per-toolchain driver. Each defines `synthesize(...)` and `program(...)`. |
+
+The main configuration registries reject duplicate YAML mapping keys and IDs,
+and malformed entries. A contributor should correct the named source file rather
+than relying on load order to choose a record. Board and chip family registries
+also reject duplicate IDs across files; a board's pinmap stays under the same
+producer/family directory as its catalog entry.
 
 ## Boards as rigs (preview)
 
