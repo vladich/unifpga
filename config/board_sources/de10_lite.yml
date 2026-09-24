@@ -1,0 +1,56 @@
+# Board sources of the DE10-Lite: the documents its physical model is checked
+# against and the facts read from them (tools/board_sources.py).
+
+BoardSources:
+  board: de10_lite
+  documents:
+    - id: manual
+      title: DE10-Lite User Manual (Terasic)
+      kind: manual
+      url: https://www.terasic.com.tw/attachment/archive/1021/DE10-Lite_User_Manual.pdf
+      access: ok
+      sha256: ab2c47e5a7e4ac26874013bfe05df31e2d498bc9a7f9f6b33bd931c64db848ac
+      bytes: 6234852
+      retrieved: 2026-09-23
+
+  connector_types:
+    terasic_gpio_2x20:
+      name: Terasic 2x20 GPIO expansion header (36 I/O, 5 V and 3.3 V)
+      voltage: 3.3
+      rows: [[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39], [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]]
+      power: {11: VCC5, 12: GND, 29: VCC3P3, 30: GND}
+      source: DE10-Lite User Manual, Figure 3-18 (p. 31)
+    arduino_uno_r3:
+      name: Arduino Uno R3 shield header (digital)
+      voltage: 3.3
+      rows: [[IO15, IO14, AREF, GND, IO13, IO12, IO11, IO10, IO9, IO8], [IO7, IO6, IO5, IO4, IO3, IO2, IO1, IO0]]
+      power: {AREF: AREF, GND: GND}
+      source: Arduino Uno R3 header order (SCL, SDA, AREF, GND, D13 .. D8 | D7 .. D0); DE10-Lite User Manual, Figure 3-19, Table 3-8 (p. 33-34)
+
+  headers:
+    - bank: gpio
+      id: gpio
+      label: GPIO header (40-pin)
+      type: terasic_gpio_2x20
+      pins: {1: V10, 2: W10, 3: V9, 4: W9, 5: V8, 6: W8, 7: V7, 8: W7, 9: W6, 10: V5, 13: W5, 14: AA15, 15: AA14, 16: W13, 17: W12, 18: AB13, 19: AB12, 20: Y11, 21: AB11, 22: W11, 23: AB10, 24: AA10, 25: AA9, 26: Y8, 27: AA8, 28: Y7, 31: AA7, 32: Y6, 33: AA6, 34: Y5, 35: AA5, 36: Y4, 37: AB3, 38: Y3, 39: AB2, 40: AA2}
+      source: {doc: manual, where: "Figure 3-18, p. 31"}
+    - bank: arduino_io
+      id: arduino
+      label: Arduino Uno header
+      type: arduino_uno_r3
+      pins: {IO0: AB5, IO1: AB6, IO2: AB7, IO3: AB8, IO4: AB9, IO5: Y10, IO6: AA11, IO7: AA12, IO8: AB17, IO9: AA17, IO10: AB19, IO11: AA19, IO12: Y19, IO13: AB20, IO14: AB21, IO15: AA20}
+      source: {doc: manual, where: "Table 3-8, p. 34"}
+
+  onboard:
+    - bank: onboard_leds
+      label: LEDR0-LEDR9
+      pins: [A8, A9, A10, B10, D13, C13, E14, D14, A11, B11]
+      source: {doc: manual, where: "Table 3-5, p. 28"}
+    - bank: onboard_switches
+      label: SW0-SW9
+      pins: [C10, C11, D12, C12, A12, B12, A13, A14, B14, F15]
+      source: {doc: manual, where: "Table 3-4, p. 27"}
+    - bank: onboard_buttons
+      label: KEY0-KEY1
+      pins: [B8, A7]
+      source: {doc: manual, where: "Table 3-3, p. 26"}
