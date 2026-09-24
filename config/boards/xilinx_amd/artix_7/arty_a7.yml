@@ -52,3 +52,41 @@ Board:
       index_origin: 0
       pins: [V15, U16, P14, T11, R12, T14, T15, T16, N15, M16, V17, U18, R17, P17, U11, V16, M13, R10, R11, R13, R15, P15, R16, N16, N14, U17, T18, R18, P18, N17]
     cpu_resetn: { pins: C2, active: low }
+    arduino_analog:   # chipKIT shield analog header A0-A11 used as digital IO
+      device: {"name": "chipKIT shield analog header A0-A11 used as digital IO", "kind": "header"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_xadc_vaux"]   # the board multiplexes these pins
+      pins: {"a0": "F5", "a1": "D8", "a2": "C7", "a3": "E7", "a4": "D7", "a5": "D5", "a6": "B7", "a7": "B6", "a8": "E6", "a9": "E5", "a10": "A4", "a11": "A3"}
+    onboard_xadc_vaux:   # XADC auxiliary analog inputs on the shield analog header (A0-A5 single-ended, A6-A11 as 3 differential pairs)
+      device: {"name": "XADC auxiliary analog inputs on the shield analog header (A0-A5 single-ended, A6-A11 as 3 differential pairs)", "kind": "xadc"}
+      iostandard: "LVCMOS33"
+      shares: ["arduino_analog"]   # the board multiplexes these pins
+      pins: {"vaux4_n": "C5", "vaux4_p": "C6", "vaux5_n": "A5", "vaux5_p": "A6", "vaux6_n": "B4", "vaux6_p": "C4", "vaux7_n": "A1", "vaux7_p": "B1", "vaux15_n": "B2", "vaux15_p": "B3", "vaux0_n": "C14", "vaux0_p": "D14", "vaux12_p": "B7", "vaux12_n": "B6", "vaux13_p": "E6", "vaux13_n": "E5", "vaux14_p": "A4", "vaux14_n": "A3"}
+    arduino_spi:   # chipKIT shield SPI header (J6)
+      device: {"name": "chipKIT shield SPI header (J6)", "kind": "header"}
+      iostandard: "LVCMOS33"
+      pins: {"miso": "G1", "mosi": "H1", "sck": "F1", "ss": "C1"}
+    arduino_i2c:   # chipKIT shield I2C (SCL/SDA + pull-up enables)
+      device: {"name": "chipKIT shield I2C (SCL/SDA + pull-up enables)", "kind": "header"}
+      iostandard: "LVCMOS33"
+      pins: {"scl": "L18", "sda": "M18", "scl_pup": "A14", "sda_pup": "A13"}
+    arduino_ioa:   # chipKIT shield IOA pin
+      device: {"name": "chipKIT shield IOA pin", "kind": "header"}
+      iostandard: "LVCMOS33"
+      pins: {"ioa": "M17"}
+    onboard_ethernet:   # 10/100 Ethernet PHY (MII)
+      device: {"name": "10/100 Ethernet PHY (MII)", "kind": "ethernet"}
+      iostandard: "LVCMOS33"
+      pins: {"col": "D17", "crs": "G14", "mdc": "F16", "mdio": "K13", "ref_clk": "G18", "rstn": "C16", "rx_clk": "F15", "rx_dv": "G16", "rxd": ["D18", "E17", "E18", "G17"], "rxerr": "C17", "tx_clk": "H16", "tx_en": "H15", "txd": ["H14", "J14", "J13", "H17"]}
+    onboard_qspi_flash:   # Quad-SPI flash
+      device: {"name": "Quad-SPI flash", "kind": "flash"}
+      iostandard: "LVCMOS33"
+      pins: {"cs": "L13", "dq": ["K17", "K18", "L14", "M14"], "sck": "L16"}
+    onboard_power_sense:   # Power measurement (XADC channels: VU voltage, 5V0 voltage/current, 0V95 current)
+      device: {"name": "Power measurement (XADC channels: VU voltage, 5V0 voltage/current, 0V95 current)", "kind": "xadc"}
+      iostandard: "LVCMOS33"
+      pins: {"vsnsvu_n": "B17", "vsnsvu_p": "B16", "vsns5v0_n": "B12", "vsns5v0_p": "C12", "isns5v0_n": "F14", "isns5v0_p": "F13", "isns0v95_n": "A16", "isns0v95_p": "A15"}
+    onboard_ddr3:   # DDR3L SDRAM 256 MB (MT41K128M16XX-15E)
+      device: {"name": "DDR3L SDRAM 256 MB (MT41K128M16XX-15E)", "kind": "ddr"}
+      iostandard: ["DIFF_SSTL135", "SSTL135"]
+      pins: {"addr": ["R2", "M6", "N4", "T1", "N6", "R7", "V6", "U7", "R8", "V7", "R6", "U6", "T6", "T8"], "ba": ["R1", "P4", "P2"], "cas_n": "M4", "ck_n": "V9", "ck_p": "U9", "cke": "N5", "cs_n": "U8", "dm": ["L1", "U1"], "dq": ["K5", "L3", "K3", "L6", "M3", "M1", "L4", "M2", "V4", "T5", "U4", "V5", "V1", "T3", "U3", "R3"], "dqs_n": ["N1", "V2"], "dqs_p": ["N2", "U2"], "odt": "R5", "ras_n": "P3", "reset_n": "K6", "we_n": "P5"}

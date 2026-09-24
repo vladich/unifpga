@@ -82,3 +82,9 @@ Board:
       pins: ["71", "70", "82", "81", "80", "69", "68", "72", "73", "76", "78"]
     gpio_b_i:
       pins: ["89", "90", "91"]
+    onboard_u7_epcs4_configuration_flash:   # U7 EPCS4 configuration flash
+      device: {"name": "U7 EPCS4 configuration flash", "kind": "flash"}
+      pins: {"asdo": "12", "ncso": "14", "dclk": "23", "data0": "24"}
+    onboard_other:   # JTAG1 header (2x5, USB-Blaster pinout)
+      device: {"name": "JTAG1 header (2x5, USB-Blaster pinout)", "kind": "other"}
+      pins: {"tdi": "26", "tck": "27", "tms": "28", "tdo": "29"}

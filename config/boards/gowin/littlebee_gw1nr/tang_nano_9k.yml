@@ -74,3 +74,19 @@ Board:
         clk_n: "68"
         d_p: ["71,70", "73,72", "75,74"]
         d_n: ["70", "72", "74"]
+    onboard_fpga_jtag:   # BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)
+      device: {"name": "BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)", "kind": "other"}
+      shares: ["onboard_buttons"]   # the board multiplexes these pins
+      pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8", "reconfig_n": "9", "mode0": "88", "mode1": "87", "jtagsel_n": "4"}
+    header_j5:   # 2x24 pin header J5 (2.54 mm pads, one side of the board)
+      device: {"name": "2x24 pin header J5 (2.54 mm pads, one side of the board)", "kind": "header"}
+      iostandard: "LVCMOS33"
+      shares: ["gpio", "onboard_hdmi", "onboard_lcd", "onboard_microsd"]   # the board multiplexes these pins
+      pins: ["38", "37", "36", "39", "25", "26", "27", "28", "29", "30", "33", "34", "40", "35", "41", "42", "51", "53", "54", "55", "56", "57", "68", "69"]
+    header_j6:   # 2x24 pin header J6 (2.54 mm pads, other side of the board)
+      device: {"name": "2x24 pin header J6 (2.54 mm pads, other side of the board)", "kind": "header"}
+      shares: ["onboard_hdmi", "onboard_lcd", "onboard_small_lcd"]   # the board multiplexes these pins
+      pins: ["63", "86", "85", "84", "83", "82", "81", "80", "79", "77", "76", "75", "74", "73", "72", "71", "70", "48", "49", "31", "32"]
+    onboard_fpga_unrouted:   # Unconnected-by-name FPGA IO (balls 19, 20)
+      device: {"name": "Unconnected-by-name FPGA IO (balls 19, 20)", "kind": "other"}
+      pins: {"iob4a": "19", "iob4b": "20"}

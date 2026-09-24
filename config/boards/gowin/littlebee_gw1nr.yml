@@ -82,6 +82,8 @@ Boards:
     Status: active
   - Id: marsohod3gw2
     BoardName: Marsohod3 GW
+    ProductName: "Марсоход3GW2 (Marsohod3GW2)"
+    Summary: "Gowin GW1NR-LV9QN88PC6/I5 (8640 LUT4, 8 MB in-package PSRAM), 100 MHz osc, FT2232H (JTAG + sync FIFO / UART), ADC1175 8-bit ADC, HDMI out, 8 LEDs, 2 keys, 2x 2x7 expansion headers (20 IO)"
     BoardProducer: marsohod
     Chip: GW1NR-LV9QN88PC6/I5
     Bridges:
@@ -89,6 +91,8 @@ Boards:
     Programmer: openFPGALoader
   - Id: tang_nano_9k
     BoardName: Tang Nano 9k
+    ProductName: "Sipeed Tang Nano 9K"
+    Summary: "Gowin GW1NR-LV9QN88PC6/I5 (8640 LUT4, 64 Mbit PSRAM in package, 608 Kbit user flash), 32 Mbit P25Q32U SPI flash, BL702 USB-JTAG + UART, HDMI (TMDS from LVCMOS pins, shared with RGB LCD), 40-pin RGB LCD FPC, 8-pin 1.14\" SPI LCD FPC, microSD (SPI wiring), 6 LEDs, 2 buttons, 27 MHz, 2x24 2.54 mm pads"
     Features:
       - microsd_socket
     Devices:

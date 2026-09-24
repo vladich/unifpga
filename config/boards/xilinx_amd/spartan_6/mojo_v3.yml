@@ -32,3 +32,14 @@ Board:
       pins:
         rx: P59
         tx: P55
+    onboard_avr_spi:   # AVR SPI link (ADC samples) and cclk
+      device: {"name": "AVR SPI link (ADC samples) and cclk", "kind": "other"}
+      iostandard: "LVTTL"
+      pins: {"spi_sck": "P43", "spi_mosi": "P44", "spi_miso": "P45", "spi_ss": "P48", "spi_channel": ["P46", "P61", "P62", "P65"], "cclk": "P70"}
+    header_io:   # SV1 / SV2 2x25 I/O headers (76 FPGA I/O total)
+      device: {"name": "SV1 / SV2 2x25 I/O headers (76 FPGA I/O total)", "kind": "header"}
+      iostandard: "LVTTL / LVCMOS33 (bank VCCO 3.3 V)"
+      pins: {"L83N_3": "P1", "L83P_3": "P2", "L52N_3": "P5", "L52P_3": "P6", "L51N_3": "P7", "L51P_3": "P8", "L50N_3": "P9", "L50P_3": "P10", "L49N_3": "P11", "L49P_3": "P12", "L44N_3": "P14", "L44P_3": "P15", "L43N_3": "P16", "L43P_3": "P17", "L42N_3": "P21", "L42P_3": "P22", "L41N_3": "P23", "L41P_3": "P24", "L37N_3": "P26", "L37P_3": "P27", "L36N_3": "P29", "L36P_3": "P30", "L2N_3": "P32", "L2P_3": "P33", "L1N_3": "P34", "L1P_3": "P35", "L64N_2": "P40", "L64P_2": "P41", "L31N_2": "P50", "L31P_2": "P51", "L14N_2": "P57", "L14P_2": "P58", "L2N_2": "P66", "L2P_2": "P67", "L74N_1": "P74", "L74P_1": "P75", "L47N_1": "P78", "L47P_1": "P79", "L46N_1": "P80", "L46P_1": "P81", "L45N_1": "P82", "L45P_1": "P83", "L43N_1": "P84", "L43P_1": "P85", "L42N_1": "P87", "L42P_1": "P88", "L41N_1": "P92", "L41P_1": "P93", "L40N_1": "P94", "L40P_1": "P95", "L34N_1": "P97", "L34P_1": "P98", "L33N_1": "P99", "L33P_1": "P100", "L32N_1": "P101", "L32P_1": "P102", "L1N_1": "P104", "L1P_1": "P105", "L66N_0": "P111", "L66P_0": "P112", "L65N_0": "P114", "L65P_0": "P115", "L64N_0": "P116", "L64P_0": "P117", "L63N_0": "P118", "L63P_0": "P119", "L62N_0": "P120", "L62P_0": "P121", "L4N_0": "P137", "L4P_0": "P138", "L3N_0": "P139", "L3P_0": "P140", "L2N_0": "P141", "L2P_0": "P142", "L1N_0": "P143", "L1P_0": "P144"}
+    onboard_jtag_header_jp2_2x5:   # JTAG header JP2 (2x5)
+      device: {"name": "JTAG header JP2 (2x5)", "kind": "other"}
+      pins: {"tck": "P109", "tdi": "P110", "tdo": "P106", "tms": "P107"}

@@ -7,6 +7,8 @@ Description: 65 nm Cyclone (2007). Quartus II 13.x.
 Boards:
   - Id: de0
     BoardName: DE0
+    ProductName: "Altera DE0 Board"
+    Summary: "Cyclone III EP3C16F484C6N (15,408 LEs); 8 MB SDRAM + 4 MB flash; VGA (4-bit), RS-232, PS/2, SD, 16x2 LCD, 2x 2x20 GPIO, 4x 7-seg, 10 SW, 3 buttons, 10 LEDs"
     Features:
       - dip_switches
       - sdr_sdram
@@ -31,6 +33,8 @@ Boards:
     BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=56&No=364
   - Id: dk_dev_3c120n
     BoardName: Altera Cyclone III FPGA Development Kit
+    ProductName: "Cyclone III FPGA Development Kit (DK-DEV-3C120N)"
+    Summary: "Cyclone III EP3C120F780C6 (119,088 LEs); 256 MB dual-channel DDR2 (72-bit), 8 MB SRAM, 64 MB flash; Gigabit Ethernet (88E1111), FTDI FT245BL USB, graphics/character LCD, 2x HSMC, user 7-seg display, speaker header, 8 DIP SW, 4 PB, 8 LEDs"
     Features:
       - ddr2_memory
       - dip_switches
@@ -62,6 +66,8 @@ Boards:
     Status: eol
   - Id: marsohod_mcy316
     BoardName: Marsohod MCY316
+    ProductName: "MCY316 (Марсоход MCY316, Cyclone III)"
+    Summary: "Altera Cyclone III EP3C16Q240C8 (15408 LE, 516 kbit RAM), 100 MHz osc, 32-bit SDR SDRAM MT48LC4M32B2 (16 MB), PCM1801 stereo audio ADC, 2 delta-sigma audio outs, SPI flash W25Q32 (user) + EPCS4 (config), 8 LEDs, 4-digit 7-seg, 2 keys, 3x Raspberry-Pi-style 40-pin headers, serial header"
     BoardProducer: marsohod
     Chip: EP3C16Q240C8
     Bridges:

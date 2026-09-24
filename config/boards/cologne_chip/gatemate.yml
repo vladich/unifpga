@@ -7,6 +7,8 @@ Description: German open-flow-friendly 28 nm FPGA. yosys + p_r, nextpnr-himbaech
 Boards:
   - Id: gatemate_evb_a1
     BoardName: GateMate Evaluation Board A1
+    ProductName: "GateMate FPGA Evaluation Board (Version 3.1 / 3.2, CCGM1A1)"
+    Summary: "Cologne Chip GateMate CCGM1A1 (20,480 CPE) in FBGA324, 10 MHz osc, 64 Mbit HyperRAM S27KS0641 (bank WB), 64 Mbit SPI flash MX25R6435F, FT2232HQ USB (JTAG + SPI), 8 LEDs + 1 user button on bank EB, 2 Pmod (bank NB), 6 GPIO-bank connectors (2x23, 1.27 mm), optional SerDes SMA"
     BoardProducer: cologne_chip
     Chip: CCGM1A1
     Bridges:

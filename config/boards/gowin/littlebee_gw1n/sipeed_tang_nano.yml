@@ -15,3 +15,38 @@ Board:
       pins: 15
     onboard_leds:
       pins: [16, 17, 18]
+    onboard_uart:   # CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)
+      device: {"name": "CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)", "kind": "uart"}
+      iostandard: "LVCMOS33"
+      shares: ["header_p5"]   # the board multiplexes these pins
+      pins: {"tx": "8", "rx": "9"}
+    onboard_psram:   # IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM (U4, on the board, not in package)
+      device: {"name": "IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM (U4, on the board, not in package)", "kind": "psram"}
+      iostandard: "LVCMOS33"
+      shares: ["header_p4"]   # the board multiplexes these pins
+      pins: {"ce_n": "19", "sclk": "20", "sio": ["22", "23", "24", "21"]}
+    onboard_lcd:   # 40-pin RGB LCD FPC J1 (RGB565 out; LCD R/G/B low bits tied to the lowest FPGA bit)
+      device: {"name": "40-pin RGB LCD FPC J1 (RGB565 out; LCD R/G/B low bits tied to the lowest FPGA bit)", "kind": "lcd_rgb"}
+      iostandard: "LVCMOS33"
+      shares: ["header_p4", "header_p5"]   # the board multiplexes these pins
+      pins: {"clk": "11", "hs": "10", "vs": "46", "de": "5", "r": ["27", "28", "29", "30", "31"], "g": ["32", "33", "34", "38", "39", "40"], "b": ["41", "42", "43", "44", "45"]}
+    onboard_lcd_backlight:   # LCD backlight enable (net LCD_BL to PT4103 EN through R2, fitted NC)
+      device: {"name": "LCD backlight enable (net LCD_BL to PT4103 EN through R2, fitted NC)", "kind": "lcd_rgb"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_config_mode"]   # the board multiplexes these pins
+      pins: {"bl": "47"}
+    onboard_jtag:   # JTAG (CH552T USB-JTAG through 22R array YR1)
+      device: {"name": "JTAG (CH552T USB-JTAG through 22R array YR1)", "kind": "other"}
+      pins: {"tms": "3", "tck": "4", "tdi": "6", "tdo": "7"}
+    onboard_config_mode:   # Mode pins MODE0/MODE1
+      device: {"name": "Mode pins MODE0/MODE1", "kind": "other"}
+      shares: ["onboard_lcd_backlight"]   # the board multiplexes these pins
+      pins: {"mode0": "48", "mode1": "47"}
+    header_p4:   # Header P4 (1x20, left)
+      device: {"name": "Header P4 (1x20, left)", "kind": "header"}
+      shares: ["cpu_resetn", "onboard_buttons", "onboard_lcd", "onboard_leds", "onboard_psram"]   # the board multiplexes these pins
+      pins: ["27", "28", "29", "30", "31", "32", "33", "34", "16", "17", "18", "20", "21", "22", "24", "19", "23", "15"]
+    header_p5:   # Header P5 (1x20, right)
+      device: {"name": "Header P5 (1x20, right)", "kind": "header"}
+      shares: ["onboard_lcd", "onboard_uart"]   # the board multiplexes these pins
+      pins: ["38", "39", "40", "41", "42", "43", "44", "45", "11", "10", "46", "5", "8", "9", "13", "14"]

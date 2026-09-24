@@ -7,6 +7,8 @@ Description: Single-chip non-volatile FPGA (sold as CPLD replacement). Quartus P
 Boards:
   - Id: de10_lite
     BoardName: DE10-Lite
+    ProductName: "DE10-Lite Board"
+    Summary: "MAX 10 10M50DAF484C7G (50K LEs, on-chip ADC); 64 MB SDRAM; VGA (4-bit), ADXL345 accelerometer, 2x20 GPIO, Arduino header, 6x 7-seg, 10 SW, 2 KEY, 10 LEDs"
     Features:
       - accelerometer
       - dip_switches

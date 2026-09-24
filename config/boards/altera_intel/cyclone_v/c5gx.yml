@@ -123,3 +123,43 @@ Board:
         dac_dat: H10
         dac_lrck: G10
         xck: D6
+    onboard_clk125mhz:   # CLOCK_125 (125 MHz, Si5338, LVDS)
+      device: {"name": "CLOCK_125 (125 MHz, Si5338, LVDS)", "kind": "clock"}
+      iostandard: "LVDS"
+      pins: {"CLOCK_125_p": "U12", "CLOCK_125_n": "V12"}
+    onboard_clk50mhz_b5b:   # CLOCK_50_B5B (50 MHz)
+      device: {"name": "CLOCK_50_B5B (50 MHz)", "kind": "clock"}
+      iostandard: "3.3-V"
+      pins: {"CLOCK_50_B5B": "R20"}
+    onboard_clk50mhz_b6a:   # CLOCK_50_B6A (50 MHz)
+      device: {"name": "CLOCK_50_B6A (50 MHz)", "kind": "clock"}
+      iostandard: "3.3-V"
+      pins: {"CLOCK_50_B6A": "N20"}
+    onboard_clk50mhz_b7a:   # CLOCK_50_B7A (50 MHz, Si5338)
+      device: {"name": "CLOCK_50_B7A (50 MHz, Si5338)", "kind": "clock"}
+      iostandard: "2.5-V"
+      pins: {"CLOCK_50_B7A": "H12"}
+    onboard_gxb_refclk:   # Transceiver reference clocks (Si5338, REFCLK0 125 MHz, REFCLK1 156.25 MHz)
+      device: {"name": "Transceiver reference clocks (Si5338, REFCLK0 125 MHz, REFCLK1 156.25 MHz)", "kind": "clock"}
+      iostandard: "1.5-V PCML"
+      pins: {"REFCLK_p": ["V6", "N7"], "REFCLK_n": ["W6", "P6"]}
+    onboard_sram:   # SRAM (512 KB, 16-bit)
+      device: {"name": "SRAM (512 KB, 16-bit)", "kind": "other"}
+      iostandard: "3.3-V"
+      pins: {"SRAM_A": ["B25", "B26", "H19", "H20", "D25", "C25", "J20", "J21", "D22", "E23", "G20", "F21", "E21", "F22", "J25", "J26", "N24", "M24"], "SRAM_D": ["E24", "E25", "K24", "K23", "F24", "G24", "L23", "L24", "H23", "H24", "H22", "J23", "F23", "G22", "L22", "K21"], "SRAM_CE_n": "N23", "SRAM_OE_n": "M22", "SRAM_WE_n": "G25", "SRAM_LB_n": "H25", "SRAM_UB_n": "M25"}
+    onboard_lpddr2:   # LPDDR2 SDRAM (512 MB, 32-bit)
+      device: {"name": "LPDDR2 SDRAM (512 MB, 32-bit)", "kind": "other"}
+      iostandard: "1.2-V HSUL"
+      pins: {"DDR2LP_CA": ["AE6", "AF6", "AF7", "AF8", "U10", "U11", "AE9", "AF9", "AB12", "AB11"], "DDR2LP_DQ": ["AA14", "Y14", "AD11", "AD12", "Y13", "W12", "AD10", "AF12", "AC15", "AB15", "AC14", "AF13", "AB16", "AA16", "AE14", "AF18", "AD16", "AD17", "AC18", "AF19", "AC17", "AB17", "AF21", "AE21", "AE15", "AE16", "AC20", "AD21", "AF16", "AF17", "AD23", "AF23"], "DDR2LP_DQS_p": ["V13", "U14", "V15", "W16"], "DDR2LP_DQS_n": ["W13", "V14", "W15", "W17"], "DDR2LP_DM": ["AF11", "AE18", "AE20", "AE24"], "DDR2LP_CK_p": "N10", "DDR2LP_CK_n": "P10", "DDR2LP_CKE": ["AF14", "AE13"], "DDR2LP_CS_n": ["R11", "T11"], "DDR2LP_OCT_RZQ": "AE11"}
+    onboard_sdcard:   # SD card socket
+      device: {"name": "SD card socket", "kind": "sdcard"}
+      iostandard: "3.3-V"
+      pins: {"SD_CLK": "AB6", "SD_CMD": "W8", "SD_DAT": ["U7", "T7", "V8", "T8"]}
+    hsmc:   # HSMC connector
+      device: {"name": "HSMC connector", "kind": "header"}
+      iostandard: "LVDS or 2.5-V"
+      pins: {"HSMC_CLKIN0": "N9", "HSMC_CLKIN_n1": "G14", "HSMC_CLKIN_n2": "K9", "HSMC_CLKIN_p1": "G15", "HSMC_CLKIN_p2": "L8", "HSMC_CLKOUT0": "A7", "HSMC_CLKOUT_n1": "A18", "HSMC_CLKOUT_n2": "A16", "HSMC_CLKOUT_p1": "A19", "HSMC_CLKOUT_p2": "A17", "HSMC_D": ["D11", "H14", "D12", "H13"], "HSMC_GXB_RX_p": ["AD2", "AB2", "Y2", "V2"], "HSMC_GXB_TX_p": ["AE4", "AC4", "AA4", "W4"], "HSMC_GXB_RX_n": ["AD1", "AB1", "Y1", "V1"], "HSMC_GXB_TX_n": ["AE3", "AC3", "AA3", "W3"], "HSMC_RX_n": ["M12", "L11", "H17", "K11", "J16", "J11", "G17", "F12", "F18", "E15", "D13", "D15", "D16", "D17", "E19", "D20", "A24"], "HSMC_RX_p": ["N12", "M11", "H18", "L12", "H15", "J12", "G16", "G12", "E18", "F16", "E13", "C14", "E16", "D18", "E20", "D21", "B24"], "HSMC_TX_n": ["E11", "B9", "C10", "B11", "A11", "B19", "C15", "A21", "C12", "A9", "A13", "C22", "B14", "A22", "B17", "C18", "B20"], "HSMC_TX_p": ["E10", "C9", "D10", "A12", "B10", "C20", "B15", "B22", "C13", "A8", "B12", "C23", "A14", "A23", "C17", "C19", "B21"]}
+    onboard_adc:   # A/D converter (LTC2308, SPI)
+      device: {"name": "A/D converter (LTC2308, SPI)", "kind": "adc"}
+      iostandard: "1.2-V"
+      pins: {"ADC_CONVST": "AB22", "ADC_SCK": "AA21", "ADC_SDI": "Y10", "ADC_SDO": "W10"}

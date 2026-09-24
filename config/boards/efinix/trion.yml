@@ -139,6 +139,8 @@ Boards:
     BoardURL: https://www.efinixinc.com/products-devkits-xyloni.html
   - Id: fireant
     BoardName: FireAnt
+    ProductName: "FireAnt (with Efinix Trion T8 FPGA)"
+    Summary: "Efinix Trion T8F81 (T8, ~7.4k LEs, 81-ball FBGA); 33.333 MHz oscillator into the PLL input; W25Q80DV 8 Mbit SPI config flash; FT232H USB (flash programming / CRESET / CDONE only, no user UART); 4 yellow LEDs, 2 buttons, CRESET button; two 20-pin headers J1/J2 (34 user I/O)."
     Features:
       - usb_jtag_bridge
       - user_buttons

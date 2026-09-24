@@ -10,6 +10,9 @@ Peripheral:
       required: true
   signals:
     - { name: sw, type: bus, width: $width, direction: input }
+  # the on-board devices it models: a board inventory's `switches` device (a bank
+  # of pins) becomes an on-board part attaching this peripheral
+  models: {kind: switches, signal: sw}
   provides:
     - capability: switches
       params:

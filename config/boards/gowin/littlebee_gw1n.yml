@@ -68,6 +68,8 @@ Boards:
     BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/53/
   - Id: sipeed_tang_nano
     BoardName: Sipeed Tang Nano
+    ProductName: "Tang Nano"
+    Summary: "Gowin GW1N-LV1QN48C6/I5 (GW1N-1, 1152 LUT4, 72 kbit BSRAM, 96 kbit user flash, 1 PLL) on board 2704; external 64 Mbit QSPI PSRAM (IPS6404L-SQ), 24 MHz clock from the CH552T USB-JTAG/UART bridge, RGB LED, 2 buttons, 40-pin RGB LCD FPC, two 20-pin headers"
     BoardProducer: sipeed
     Chip: GW1N-LV1QN48C6/I5
     Bridges:
@@ -86,6 +88,8 @@ Boards:
     Status: active
   - Id: tang_nano_1k
     BoardName: Tang Nano
+    ProductName: "Tang Nano 1K"
+    Summary: "Gowin GW1NZ-LV1QN48C6/I5 (GW1NZ-1, 1152 LUT4, 72 kbit BSRAM, 64 kbit user flash, 1 PLL) on board 6100; 27 MHz oscillator, BL702 USB-JTAG, RGB LED, 2 buttons, 40-pin RGB LCD FPC, IPS6404L QSPI PSRAM footprint, two 20-pin headers"
     BoardProducer: sipeed
     Chip: GW1N-1-LV
     Bridges:

@@ -47,3 +47,6 @@ Board:
         b: "15"
         r: "17"
         g: "16"
+    onboard_buzzer:   # Buzzer
+      device: {"name": "Buzzer", "kind": "buzzer"}
+      pins: {"beep": "73"}

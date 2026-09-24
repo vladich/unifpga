@@ -1,43 +1,18 @@
-# tang_primer_20k_lite pin map.
+# sipeed_tang_primer_20k_module pin map, from its board inventory (tools/inventory.py; the sources are in
+# the board-sources registry entry).
 
 Board:
-  id: tang_primer_20k_lite
+  id: sipeed_tang_primer_20k_module
   fpga:
-    producer: Gowin
-    family: Arora/GW2A
-    part: GW2A-LV18PG256C8/I7
-
-  # Gowin tool settings:
-  # set_device args verbatim (part, -name, -device_version) and the
-  # set_option -use_*_as_gpio flags that free configuration pins for I/O.
-  toolchain_options:
-    yosys:
-      loader_board: "tangprimer20k"          # openFPGALoader -b
-    gowin:
-      set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18 -device_version C"
-      options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
-      gprj_device: '<Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>'
+    producer: "Gowin"
+    family: "Arora/GW2A"
+    part: "GW2A-LV18PG256C8/I7"
   pinBanks:
-    clk: { pins: H11, frequency_mhz: 27, iostandard: LVCMOS33 }
-    onboard_switches:
-      iostandard: LVCMOS33
-      active: low
-      pins: [C7, D7]
-    onboard_buttons:
-      iostandard: LVCMOS33
-      pins: [T10, T2]
-    gpio_3:
-      iostandard: LVCMOS33
-      pins: [L8, P7, E10, D11, M6, R7, D10, F10]
-    gpio_2:
-      iostandard: LVCMOS33
-      pins: [F15, D16, C9, L12, E15, E14, A9, J11]
-    gpio_1:
-      iostandard: LVCMOS33
-      pins: [R16, P16, N16, L16, P15, N15, N14, L14]
-    gpio_0:
-      iostandard: LVCMOS33
-      pins: [T6, T7, T8, T9, P6, R8, P8, P9]
+    onboard_clk:   # 27 MHz oscillator U10
+      device: {"name": "27 MHz oscillator U10", "kind": "clock"}
+      iostandard: "LVCMOS33"
+      frequency_mhz: 27
+      pins: {"clk": "H11"}
     onboard_ddr3:   # DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)
       device: {"name": "DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)", "kind": "ddr3"}
       iostandard: "SSTL15 (SSTL15D for dqs/ck; LiteX)"
@@ -58,24 +33,20 @@ Board:
       device: {"name": "Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST", "kind": "reset"}
       active: "low"
       iostandard: "LVCMOS33"
-      shares: ["onboard_buttons"]   # the board multiplexes these pins
+      shares: ["header"]   # the board multiplexes these pins
       pins: {"rst_n": "T10"}
     onboard_jtag:   # JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)
       device: {"name": "JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)", "kind": "header"}
-      shares: ["gpio_j1", "gpio_j3"]   # the board multiplexes these pins
+      shares: ["header"]   # the board multiplexes these pins
       pins: ["B8", "C6", "A7", "A6", "T13", "M11"]
     onboard_configuration_mode_pins_mode0_2:   # Configuration mode pins MODE0..2
       device: {"name": "Configuration mode pins MODE0..2", "kind": "other"}
       pins: {"mode0": "M16", "mode1": "B16", "mode2": "C15"}
     onboard_other:   # Configuration status/control pins RECONFIG_N, READY, DONE
       device: {"name": "Configuration status/control pins RECONFIG_N, READY, DONE", "kind": "other"}
-      shares: ["gpio_j1"]   # the board multiplexes these pins
+      shares: ["header"]   # the board multiplexes these pins
       pins: {"reconfig_n": "B10", "ready": "A13", "done": "C13"}
-    gpio_j1:   # 40-pin header J1 (2x20)
-      device: {"name": "40-pin header J1 (2x20)", "kind": "header"}
-      shares: ["onboard_jtag", "onboard_other"]   # the board multiplexes these pins
-      pins: ["T5", "T3", "T4", "E9", "E8", "T15", "C13", "T13", "M11", "B10", "A13", "H12", "G11", "H13", "J12", "K12", "K13", "L13", "K11", "R11", "T12", "P11", "T11", "G16", "H15", "H16", "H14", "K16", "J15", "K15", "K14"]
-    gpio_j3:   # 40-pin header J3 (2x20)
-      device: {"name": "40-pin header J3 (2x20)", "kind": "header"}
-      shares: ["gpio_2", "onboard_jtag"]   # the board multiplexes these pins
-      pins: ["N6", "N7", "B11", "A12", "L9", "N8", "R9", "N9", "A6", "A7", "C6", "B8", "C10", "A11", "C11", "B12", "C12", "B13", "A14", "B14", "A15", "D14", "E15", "F16", "F14", "G15", "G14", "J14", "J16", "G12", "F13", "M14", "M15", "T14", "R13", "P13", "R12"]
+    header:   # 204-pin DDR3 SO-DIMM edge connector CARD1 (to the carrier board)
+      device: {"name": "204-pin DDR3 SO-DIMM edge connector CARD1 (to the carrier board)", "kind": "header"}
+      shares: ["onboard_jtag", "onboard_other", "onboard_reset"]   # the board multiplexes these pins
+      pins: ["T13", "M11", "T10", "T6", "R16", "P6", "P15", "T7", "P16", "R8", "N15", "T8", "N16", "P8", "N14", "L16", "T9", "L14", "P9", "K15", "P11", "K14", "T11", "K16", "R11", "J15", "T12", "H16", "R12", "H14", "P13", "R13", "G16", "T14", "H15", "M15", "L13", "M14", "K11", "F13", "K12", "G12", "K13", "T15", "J16", "H13", "J14", "J12", "G14", "H12", "G15", "G11", "F14", "B10", "F16", "A13", "E15", "D14", "A15", "B14", "A14", "B13", "C12", "B12", "A12", "C11", "B11", "E16", "A11", "F15", "C10", "C13", "D16", "E14", "B8", "C9", "C6", "A9", "A7", "L12", "A6", "J11", "C7", "E9", "D7", "E8", "T2", "T3", "T4", "T5", "N6", "F10", "N7", "D11", "N9", "D10", "R9", "E10", "N8", "R7", "L9", "P7", "M6", "L8"]

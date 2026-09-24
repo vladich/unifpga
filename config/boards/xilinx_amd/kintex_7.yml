@@ -201,6 +201,8 @@ Boards:
     BoardURL: https://qmtech.aliexpress.com/store/1199788
   - Id: qmtech_kintex_7
     BoardName: QMtech Kintex 7
+    ProductName: "QMTECH XC7K325T Core Board (Kintex-7), optionally with the QMTECH DB_FPGA daughterboard"
+    Summary: "AMD/Xilinx Kintex-7 XC7K325T-1FFG676C (326,080 logic cells, core board); 256 MB DDR3 (MT41K128M16JT-125:K), 32 MB SPI flash (S25FL256L), 50 MHz clock, 2 user LEDs, 2 user keys, two 64-pin headers U4/U5; daughterboard: 7-segment, LEDs, keys, VGA, CP2102N USB-UART, RTL8211EG Gigabit Ethernet (GMII), microSD, 2 Pmods"
     Features:
       - ddr3_memory
       - dip_switches

@@ -27,6 +27,8 @@ Boards:
     BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/81/
   - Id: tang_mega_138k
     BoardName: Tang Mega 138k
+    ProductName: "Tang Mega 138K Dock (Tang Mega 138K SOM on the Tang Mega NEO Dock)"
+    Summary: "Gowin GW5AST-LV138PG484A (138,240 LUT4, 4x SerDes, PCIe hard core, AE350 RISC-V) SOM with 1 GB DDR3 (512 MB on SOM 30353), 64/128 Mbit flash; NEO dock: PCIe x4 edge, CH569 USB3, RGMII GbE, HDMI TX/RX, RGB LCD FPC, OV5640 DVP FPC, 2 PMOD, 2x20 SDRAM headers, microSD, I2S DAC, WS2812, BL616 USB-JTAG/UART"
     Aliases: [sipeed_tang_mega_138k_dock]
     Features:
       - microsd_socket
@@ -40,6 +42,8 @@ Boards:
     BoardURL: https://wiki.sipeed.com/hardware/en/tang/tang-mega-138k/mega-138k.html
   - Id: tang_mega_138k_pro
     BoardName: Tang Mega 138k Pro
+    ProductName: "Tang Mega 138K Pro Dock (Tang MEGA 138K Pro SOM on TANG MEGA-138K Pro Dock)"
+    Summary: "Gowin GW5AST-LV138FPG676A (138,240 LUT4, 8 SerDes to 12.5 Gb/s, hard PCIe, 2x MIPI D-PHY RX) SOM with 2x 4 Gbit DDR3 (32-bit), 2x 128 Mbit SPI NOR; dock with PCIe x4 edge, 2x SFP+, M.2 B-key, RTL8211F RGMII, 2x HDMI/DVI (TX + RX), RGB LCD, DVP + 2x MIPI CSI, microSD, PT8211 audio, soft USB 2.0, BL616 USB-JTAG/UART, 3 Pmods, 40-pin SDRAM header, WS2812, 6 LEDs, 4 keys."
     Aliases: [tang_mega_138k_pro_dock]
     Features:
       - microsd_socket

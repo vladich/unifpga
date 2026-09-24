@@ -565,6 +565,8 @@ Boards:
     BoardURL: https://digilent.com/reference/programmable-logic/zybo/start
   - Id: eclypse_z7
     BoardName: Eclypse Z7
+    ProductName: "Eclypse Z7"
+    Summary: "Xilinx Zynq-7000 XC7Z020-1CLG484C (85K logic cells); DDR3L (MT41K256M16) on the PS, PS Gigabit Ethernet, USB OTG, microSD, QSPI flash, UART; PL: two SYZYGY (Zmod) ports, 2 Pmods, 2 buttons, 2 RGB LEDs"
     Features:
       - ddr3_memory
       - ethernet_phy_gigabit
@@ -1526,6 +1528,8 @@ Boards:
     BoardURL: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/zedboard/
   - Id: zybo_z7
     BoardName: Zybo Z7
+    ProductName: "Zybo Z7 (Zybo Z7-10 / Zybo Z7-20)"
+    Summary: "Xilinx Zynq-7000 XC7Z010-1CLG400C (Z7-10, 28K logic cells) or XC7Z020-1CLG400C (Z7-20, 85K); 1 GB DDR3L on the PS (2 x MT41K256M16, 32-bit), PS Gigabit Ethernet, USB OTG, microSD, QSPI flash, UART; PL: HDMI in + HDMI out, audio codec, Pcam MIPI CSI-2 camera connector, 4 switches, 4 buttons, 4 LEDs, RGB LEDs, 5-6 Pmods"
     Features:
       - audio_codec
       - ddr3_memory

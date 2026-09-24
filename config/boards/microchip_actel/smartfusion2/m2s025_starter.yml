@@ -41,3 +41,47 @@ Board:
       pins: ["B5", "B6", "C5", "C6",
              "D5", "D6", "E5", "E6"]
       active: low
+    onboard_ds1_reset_out_led_nreset_out:   # DS1 reset-out LED (nRESET_OUT)
+      device: {"name": "DS1 reset-out LED (nRESET_OUT)", "kind": "other"}
+      shares: ["breadboard_p10", "onboard_leds"]   # the board multiplexes these pins
+      pins: {"nreset_out": "D5"}
+    onboard_uart:   # FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)
+      device: {"name": "FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)", "kind": "uart"}
+      pins: {"tx": "D21", "rx": "C22"}
+    onboard_usb_ulpi:   # USB3300 ULPI USB OTG PHY on P19 mini-USB
+      device: {"name": "USB3300 ULPI USB OTG PHY on P19 mini-USB", "kind": "usb"}
+      pins: {"clk": "R17", "dir": "R18", "nxt": "T19", "stp": "T18", "data": ["V22", "V21", "U22", "U21", "T20", "T21", "P17", "V19"]}
+    onboard_flash:   # S25FL128S 16 MB SPI flash (SOM, SPI0)
+      device: {"name": "S25FL128S 16 MB SPI flash (SOM, SPI0)", "kind": "flash"}
+      shares: ["breadboard_p9"]   # the board multiplexes these pins
+      pins: {"sdo": "P19", "sdi": "R21", "ss": "P20", "clk": "R20"}
+    onboard_other:   # P5 FlashPro JTAG (10-pin) and P3 ARM JTAG (20-pin)
+      device: {"name": "P5 FlashPro JTAG (10-pin) and P3 ARM JTAG (20-pin)", "kind": "other"}
+      pins: {"tck": "W20", "tms": "V20", "tdo": "Y21"}
+    breadboard_p7:   # P7 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P7 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      pins: ["J18", "K18", "K16", "M2", "M5", "N5", "P7", "M8", "P6", "N6", "M3"]
+    breadboard_p8:   # P8 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P8 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      pins: ["D22", "R2", "N8", "M6", "L5", "L4", "K5", "K4"]
+    breadboard_p9:   # P9 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P9 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      shares: ["onboard_flash"]   # the board multiplexes these pins
+      pins: ["H19", "G18", "G16", "G17", "P22", "R22", "P19", "R21", "P20", "R20", "L20", "M21", "M22", "L21"]
+    breadboard_p10:   # P10 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P10 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      shares: ["onboard_ds1_reset_out_led_nreset_out", "onboard_leds"]   # the board multiplexes these pins
+      pins: ["D5", "R15", "N4", "P1", "P3", "N1", "M1", "K1", "N3", "R1", "P4", "P2", "L2", "K2", "L3", "E5"]
+    breadboard_p11:   # P11 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P11 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      pins: ["W11", "W10", "T13", "Y10", "B3", "Y9", "D4", "W9", "A2", "B2"]
+    breadboard_p12:   # P12 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P12 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      pins: ["L7", "AB15", "L8", "AA15", "K8", "W15", "M7", "Y15", "U15", "Y17", "W17", "AB17", "AA18", "AB18"]
+    breadboard_p13:   # P13 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P13 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      shares: ["onboard_buttons", "onboard_reset"]   # the board multiplexes these pins
+      pins: ["K21", "K20", "E22", "F21", "E21", "F20", "B22", "H20", "Y18", "G19", "AA17", "L19", "AA16", "F19", "U19", "L18", "F18", "W16", "K17"]
+    breadboard_p14:   # P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+      device: {"name": "P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
+      pins: ["H6", "J6", "K6", "H7", "K7", "G7", "K15", "F6", "L16", "G6", "P16", "F5", "R16", "E4", "N17", "C4", "N16", "C3", "P18", "B1"]

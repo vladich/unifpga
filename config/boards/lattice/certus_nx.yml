@@ -22,6 +22,8 @@ Boards:
     BoardURL: "https://www.latticesemi.com/products/developmentboardsandkits/certus_nx_versa_eval"
   - Id: lattice_crosslink_nx_evn
     BoardName: CrossLink-NX Evaluation Board
+    ProductName: "CrossLink-NX Evaluation Board (LIFCL-40-EVN)"
+    Summary: "Lattice CrossLink-NX LIFCL-40-9BG400C (39k LC, 2 hard MIPI D-PHY, 1 Mbit+ LRAM), 128 Mbit SPI flash, FT2232H JTAG/UART, 12 MHz + 125 MHz LVDS clocks, 14 LEDs, 8 DIP switches, 4 buttons, FMC LPC, Raspberry Pi header, MIPI camera connector, D-PHY header, 3 PMODs, ADC header"
     Features:
       - microsd_socket
       - usb_jtag_bridge

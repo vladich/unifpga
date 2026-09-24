@@ -39,3 +39,15 @@ Board:
       pins:
         rx: B18
         tx: A18
+    onboard_pmod_jxadc:   # Pmod header JXADC (XADC analog pairs XA1-XA4; usable as digital IO)
+      device: {"name": "Pmod header JXADC (XADC analog pairs XA1-XA4; usable as digital IO)", "kind": "xadc"}
+      iostandard: "LVCMOS33"
+      pins: {"xa1_p": "J3", "xa2_p": "L3", "xa3_p": "M2", "xa4_p": "N2", "xa1_n": "K3", "xa2_n": "M3", "xa3_n": "M1", "xa4_n": "N1"}
+    onboard_usb_hid:   # USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
+      device: {"name": "USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)", "kind": "usb_hid"}
+      iostandard: "LVCMOS33"
+      pins: {"clk": "C17", "data": "B17"}
+    onboard_qspi_flash:   # Quad-SPI flash (configuration + user)
+      device: {"name": "Quad-SPI flash (configuration + user)", "kind": "flash"}
+      iostandard: "LVCMOS33"
+      pins: {"dq": ["D18", "D19", "G18", "F18"], "cs_n": "K19"}

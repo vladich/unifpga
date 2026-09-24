@@ -44,3 +44,31 @@ Board:
       pins: [N2, P1, P2, R1, P8, K9, L9, L10, M9, T2, P3, T3, R3, T4, R4, T5, R5, T6, R6, T7, R7, T8, R8, T9, R9, T10, R10, T11, R11, T12, R12, T13, R13, T14]
     gpio_1:
       pins: [B1, C2, B3, A2, B4, A3, B5, A4, B6, A5, B7, A6, B8, A7, B9, A8, B10, A9, B11, A10, B12, A11, B13, A12, D5, A13, C6, D6, F8, E7, D8, C8, E9, E8]
+    onboard_buzzer:   # 蜂鸣器 LS1 (S8550 Q7)
+      device: {"name": "蜂鸣器 LS1 (S8550 Q7)", "kind": "buzzer"}
+      pins: {"buzzer": "C11"}
+    onboard_sdcard:   # SD卡座 U14 (SPI mode)
+      device: {"name": "SD卡座 U14 (SPI mode)", "kind": "sdcard"}
+      pins: {"cs_n": "D11", "clk": "D12", "mosi": "F10", "miso": "E15"}
+    onboard_eeprom:   # EEPROM 24LC04 U12
+      device: {"name": "EEPROM 24LC04 U12", "kind": "eeprom"}
+      shares: ["onboard_7seg"]   # the board multiplexes these pins
+      pins: {"scl": "D1", "sda": "E6"}
+    onboard_rtc:   # 实时时钟 DS1302 U11 (32.768 kHz, battery)
+      device: {"name": "实时时钟 DS1302 U11 (32.768 kHz, battery)", "kind": "other"}
+      pins: {"sclk": "P6", "rst_n": "N8", "io": "M8"}
+    onboard_sdram:   # SDRAM HY57V2562GTR U9 (256 Mbit, 16M x16)
+      device: {"name": "SDRAM HY57V2562GTR U9 (256 Mbit, 16M x16)", "kind": "sdram"}
+      pins: {"a": ["F11", "E11", "D14", "C14", "A14", "A15", "B16", "C15", "C16", "D15", "F14", "D16", "F15"], "ba": ["G11", "F13"], "dq": ["P14", "M12", "N14", "L12", "L13", "L14", "L11", "K12", "G16", "J11", "J16", "J15", "K16", "K15", "L16", "L15"], "clk": "B14", "cke": "F16", "cs_n": "K10", "ras_n": "K11", "cas_n": "J12", "we_n": "J13", "dqm": ["J14", "G15"]}
+    camera:   # 摄像头接口 J5 (Header 9X2)
+      device: {"name": "摄像头接口 J5 (Header 9X2)", "kind": "header"}
+      pins: ["D3V3", "F1", "F3", "G1", "F2", "M1", "G2", "J2", "J1", "K2", "K1", "L2", "L1", "N5", "M6", "N6", "M7"]
+    onboard_flash:   # M25P16 (EPCS16) serial configuration flash U8
+      device: {"name": "M25P16 (EPCS16) serial configuration flash U8", "kind": "flash"}
+      pins: {"dclk": "H1", "data0": "H2", "asdo": "C1", "ncso": "D2"}
+    onboard_jtag_j3_10_pin:   # JTAG J3 (10-pin)
+      device: {"name": "JTAG J3 (10-pin)", "kind": "other"}
+      pins: {"tck": "H3", "tdo": "J4", "tms": "J5", "tdi": "H4"}
+    onboard_led5_config_conf_done_led6_power:   # LED5 CONFIG (CONF_DONE) / LED6 power
+      device: {"name": "LED5 CONFIG (CONF_DONE) / LED6 power", "kind": "other"}
+      pins: {"conf_done": "H14"}

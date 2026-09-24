@@ -48,3 +48,21 @@ Board:
       pins: [AB16, AA16, AA15, AB15, AA14, AB14, AB13, AA13, AB10, AA10, AB8, AA8, AB5, AA5, AB4, AA4, V14, U14, Y13, W13, U13, V12, R10, V11, Y10, W10, T8, V8, W7, W6, V5, U7]
     gpio_1:
       pins: [AA20, AB20, AA19, AB19, AB18, AA18, AA17, AB17, Y17, W17, U15, T15, W15, V15, AB9, AA9, AA7, AB7, T14, R14, U12, T12, R11, R12, U10, T10, U9, T9, Y7, U8, V6, V7]
+    onboard_clk2_50mhz:   # CLOCK_50_2 (50 MHz)
+      device: {"name": "CLOCK_50_2 (50 MHz)", "kind": "clock"}
+      pins: {"CLOCK_50_2": "B12"}
+    onboard_lcd:   # Character LCD module (16x2, HD44780 compatible)
+      device: {"name": "Character LCD module (16x2, HD44780 compatible)", "kind": "lcd_char"}
+      pins: {"LCD_DATA": ["D22", "D21", "C22", "C21", "B22", "B21", "D20", "C20"], "LCD_RW": "E22", "LCD_EN": "E21", "LCD_RS": "F22", "LCD_BLON": "F21"}
+    onboard_ps2:   # PS/2 port (keyboard + mouse via Y-cable)
+      device: {"name": "PS/2 port (keyboard + mouse via Y-cable)", "kind": "ps2"}
+      pins: {"PS2_KBCLK": "P22", "PS2_KBDAT": "P21", "PS2_MSCLK": "R21", "PS2_MSDAT": "R22"}
+    onboard_sdcard:   # SD card socket
+      device: {"name": "SD card socket", "kind": "sdcard"}
+      pins: {"SD_CLK": "Y21", "SD_CMD": "Y22", "SD_DAT0": "AA22", "SD_DAT3": "W21", "SD_WP_N": "W20"}
+    onboard_sdram:   # SDRAM (8 MB, 16-bit)
+      device: {"name": "SDRAM (8 MB, 16-bit)", "kind": "sdram"}
+      pins: {"DRAM_ADDR": ["C4", "A3", "B3", "C3", "A5", "C6", "B6", "A6", "C7", "B7", "B4", "A7", "C8"], "DRAM_DQ": ["D10", "G10", "H10", "E9", "F9", "G9", "H9", "F8", "A8", "B9", "A9", "C10", "B10", "A10", "E10", "F10"], "DRAM_BA_": ["B5", "A4"], "DRAM_LDQM": "E7", "DRAM_UDQM": "B8", "DRAM_RAS_N": "F7", "DRAM_CAS_N": "G8", "DRAM_CKE": "E6", "DRAM_CLK": "E5", "DRAM_WE_N": "D6", "DRAM_CS_N": "G7"}
+    onboard_flash:   # Flash memory (4 MB)
+      device: {"name": "Flash memory (4 MB)", "kind": "flash"}
+      pins: {"FL_ADDR": ["P7", "P5", "P6", "N7", "N5", "N6", "M8", "M4", "P2", "N2", "N1", "M3", "M2", "M1", "L7", "L6", "AA2", "M5", "M6", "P1", "P3", "R2"], "FL_DQ": ["R7", "P8", "R8", "U1", "V2", "V3", "W1", "Y1", "T5", "T7", "T4", "U2", "V1", "V4", "W2"], "FL_DQ15_AM1": "Y2", "FL_BYTE_N": "AA1", "FL_CE_N": "N8", "FL_OE_N": "R6", "FL_RST_N": "R1", "FL_RY": "M7", "FL_WE_N": "P4", "FL_WP_N": "T3"}

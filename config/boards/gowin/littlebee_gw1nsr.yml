@@ -45,6 +45,8 @@ Boards:
     Status: active
   - Id: tang_nano_4k
     BoardName: Tang Nano 4k
+    ProductName: "Tang Nano 4K"
+    Summary: "Gowin GW1NSR-LV4CQN48PC6/I5 SiP (GW1NS-4C, 4608 LUT4, 180 kbit BSRAM, Cortex-M3 hard core, 64 Mbit x8 HyperRAM in package) on board 3603; 27 MHz oscillator, 32 Mbit P25Q32 SPI flash, HDMI TX, 24-pin DVP camera FPC, 1 LED, 2 buttons, BL702 USB-JTAG, two 22-pin headers"
     BoardProducer: sipeed
     Chip: GW1NSR-LV4CQN48PC6/I5
     Bridges:

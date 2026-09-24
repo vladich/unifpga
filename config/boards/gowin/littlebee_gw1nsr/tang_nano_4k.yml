@@ -46,3 +46,15 @@ Board:
         hsync: "42"
         pclk: "41"
         data: ["39", "40"]
+    onboard_jtag:   # JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)
+      device: {"name": "JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)", "kind": "other"}
+      shares: ["header_p7"]   # the board multiplexes these pins
+      pins: {"tdi": "3", "tdo": "4", "tms": "6", "tck": "7"}
+    header_p6:   # Header P6 (1x22)
+      device: {"name": "Header P6 (1x22)", "kind": "header"}
+      shares: ["onboard_buttons", "onboard_hdmi", "onboard_serial_flash"]   # the board multiplexes these pins
+      pins: ["30", "29", "28", "27", "23", "22", "21", "20", "19", "18", "17", "13", "16", "9", "8", "33", "2", "15"]
+    header_p7:   # Header P7 (1x22)
+      device: {"name": "Header P7 (1x22)", "kind": "header"}
+      shares: ["onboard_buttons", "onboard_camera", "onboard_hdmi", "onboard_jtag", "onboard_led", "onboard_serial_flash"]   # the board multiplexes these pins
+      pins: ["31", "32", "34", "35", "10", "39", "40", "41", "42", "43", "47", "48", "1", "46", "44", "6", "3", "4", "7", "14"]

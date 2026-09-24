@@ -45,3 +45,24 @@ Board:
       pins: [N16, B16, M16, C16, D17, K20, K21, K22, M20, M21, N21, R22, R21, T22, N20, N19, M22, P19, L22, P17, P16, M18, L18, L17, L19, K17, K19, P18, R15, R17, R16, T20, T19, T18, T17, T15]
     gpio_1:
       pins: [H16, A12, H15, B12, A13, B13, C13, D13, G18, G17, H18, J18, J19, G11, H10, J11, H14, A15, J13, L8, A14, B15, C15, E14, E15, E16, F14, F15, F13, F12, G16, G15, G13, G12, J17, K16]
+    onboard_clk2_50mhz:   # CLOCK2_50 (50 MHz)
+      device: {"name": "CLOCK2_50 (50 MHz)", "kind": "clock"}
+      pins: {"CLOCK2_50": "H13"}
+    onboard_clk3_50mhz:   # CLOCK3_50 (50 MHz)
+      device: {"name": "CLOCK3_50 (50 MHz)", "kind": "clock"}
+      pins: {"CLOCK3_50": "E10"}
+    onboard_clk4_50mhz:   # CLOCK4_50 (50 MHz)
+      device: {"name": "CLOCK4_50 (50 MHz)", "kind": "clock"}
+      pins: {"CLOCK4_50": "V15"}
+    onboard_ps2:   # PS/2 port (primary)
+      device: {"name": "PS/2 port (primary)", "kind": "ps2"}
+      pins: {"PS2_CLK": "D3", "PS2_DAT": "G2"}
+    onboard_ps2_secondary:   # PS/2 port (secondary, via Y-cable)
+      device: {"name": "PS/2 port (secondary, via Y-cable)", "kind": "ps2"}
+      pins: {"PS2_CLK2": "E2", "PS2_DAT2": "G1"}
+    onboard_sdcard:   # Micro SD card socket
+      device: {"name": "Micro SD card socket", "kind": "sdcard"}
+      pins: {"SD_CLK": "H11", "SD_CMD": "B11", "SD_DATA": ["K9", "D12", "E12", "C11"]}
+    onboard_sdram:   # SDRAM (64 MB, 16-bit)
+      device: {"name": "SDRAM (64 MB, 16-bit)", "kind": "sdram"}
+      pins: {"DRAM_ADDR": ["W8", "T8", "U11", "Y10", "N6", "AB10", "P12", "P7", "P8", "R5", "U8", "P6", "R7"], "DRAM_DQ": ["Y9", "T10", "R9", "Y11", "R10", "R11", "R12", "AA12", "AA9", "AB8", "AA8", "AA7", "V10", "V9", "U10", "T9"], "DRAM_BA": ["T7", "AB7"], "DRAM_LDQM": "U12", "DRAM_UDQM": "N8", "DRAM_RAS_N": "AB6", "DRAM_CAS_N": "V6", "DRAM_CKE": "R6", "DRAM_CLK": "AB11", "DRAM_WE_N": "AB5", "DRAM_CS_N": "U6"}

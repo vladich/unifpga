@@ -7,6 +7,8 @@ Description: Cortex-M3 + IGLOO2 fabric. Libero SoC.
 Boards:
   - Id: m2s025_starter
     BoardName: SmartFusion2 Starter Kit (M2S025T)
+    ProductName: "M2S-FG484 SOM Starter Kit (KIT-M2S025-FG484-EXT)"
+    Summary: "Microsemi SmartFusion2 M2S025 (27,696 LEs, 256 KB eNVM, Cortex-M3 MSS) in FG484 on the Emcraft SOM; 64 MB LPDDR (MT46H32M16), 16 MB SPI flash (S25FL128S) on SPI0, KSZ8081 10/100 Ethernet PHY, 12 MHz + 32.768 kHz crystals; baseboard: FT232RL USB-UART on MMUART_0, USB3300 ULPI OTG, 2 user LEDs, user + reset buttons, FlashPro and ARM JTAG, 8 breadboard pad areas (P7..P14) with ~100 FPGA I/O."
     Features:
       - dip_switches
       - usb_jtag_bridge

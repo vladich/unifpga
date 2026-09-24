@@ -58,3 +58,30 @@ Board:
       pins: [A13, B13, A14, B14, A15, B15, A16, B16, A17, B17, A18, B18, A19, B19, A20, B20, C21, C22, D21, D22, E21, E22, F21, F22, G21, G22, J21, J22, K21, K22, J19, J20, J18, K20, L19, L18]
     gpio_1:
       pins: [H12, H13, H14, G15, E14, E15, F15, G16, F12, F13, C14, D14, D15, D16, C17, C18, C19, C20, D19, D20, E20, F20, E19, E18, G20, G18, G17, H17, J15, H18, N22, N21, P15, N15, P17, P18]
+    onboard_clk27mhz:   # CLOCK_27 (27 MHz)
+      device: {"name": "CLOCK_27 (27 MHz)", "kind": "clock"}
+      pins: {"CLOCK_27": "D12"}
+    onboard_clk24mhz:   # CLOCK_24 (24 MHz, from USB-Blaster)
+      device: {"name": "CLOCK_24 (24 MHz, from USB-Blaster)", "kind": "clock"}
+      pins: {"CLOCK_24": "A12"}
+    onboard_ext_clock:   # External clock input (SMA)
+      device: {"name": "External clock input (SMA)", "kind": "clock"}
+      pins: {"EXT_CLOCK": "M21"}
+    onboard_ps2:   # PS/2 port
+      device: {"name": "PS/2 port", "kind": "ps2"}
+      pins: {"PS2_CLK": "H15", "PS2_DAT": "J14"}
+    onboard_sdram:   # SDRAM (8 MB, 16-bit)
+      device: {"name": "SDRAM (8 MB, 16-bit)", "kind": "sdram"}
+      pins: {"DRAM_ADDR": ["W4", "W5", "Y3", "Y4", "R6", "R5", "P6", "P5", "P3", "N4", "W3", "N6"], "DRAM_DQ": ["U1", "U2", "V1", "V2", "W1", "W2", "Y1", "Y2", "N1", "N2", "P1", "P2", "R1", "R2", "T1", "T2"], "DRAM_BA_": ["U3", "V4"], "DRAM_LDQM": "R7", "DRAM_UDQM": "M5", "DRAM_RAS_N": "T5", "DRAM_CAS_N": "T3", "DRAM_CKE": "N3", "DRAM_CLK": "U4", "DRAM_WE_N": "R8", "DRAM_CS_N": "T6"}
+    onboard_sram:   # SRAM (512 KB, 16-bit)
+      device: {"name": "SRAM (512 KB, 16-bit)", "kind": "other"}
+      pins: {"SRAM_ADDR": ["AA3", "AB3", "AA4", "AB4", "AA5", "AB10", "AA11", "AB11", "V11", "W11", "R11", "T11", "Y10", "U10", "R10", "T7", "Y6", "Y5"], "SRAM_DQ": ["AA6", "AB6", "AA7", "AB7", "AA8", "AB8", "AA9", "AB9", "Y9", "W9", "V9", "U9", "R9", "W8", "V8", "U8"], "SRAM_WE_N": "AA10", "SRAM_OE_N": "T8", "SRAM_UB_N": "W7", "SRAM_LB_N": "Y7", "SRAM_CE_N": "AB5"}
+    onboard_flash:   # Flash memory (4 MB, 8-bit)
+      device: {"name": "Flash memory (4 MB, 8-bit)", "kind": "flash"}
+      pins: {"FL_ADDR": ["AB20", "AA14", "Y16", "R15", "T15", "U15", "V15", "W15", "R14", "Y13", "R12", "T12", "AB14", "AA13", "AB13", "AA12", "AB12", "AA20", "U14", "V14", "U13", "R13"], "FL_DQ": ["AB16", "AA16", "AB17", "AA17", "AB18", "AA18", "AB19", "AA19"], "FL_OE_N": "AA15", "FL_RST_N": "W14", "FL_WE_N": "Y14"}
+    onboard_usb_blaster_jtag:   # USB-Blaster JTAG link to FPGA (Control Panel)
+      device: {"name": "USB-Blaster JTAG link to FPGA (Control Panel)", "kind": "other"}
+      pins: {"TDI": "E8", "TCS": "D8", "TCK": "C7", "TDO": "D7"}
+    onboard_sdcard:   # SD card socket
+      device: {"name": "SD card socket", "kind": "sdcard"}
+      pins: {"SD_CLK": "V20", "SD_CMD": "Y20", "SD_DAT": "W20", "SD_DAT3": "U20"}

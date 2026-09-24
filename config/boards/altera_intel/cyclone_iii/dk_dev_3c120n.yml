@@ -304,3 +304,7 @@ Board:
         fd: [L21, K22, L22, K21, J24, G26, J23, D26]
       overrides:
         "B15": 1.8 V
+    onboard_fpga_jtag:   # FPGA JTAG (routed to HSMC ports)
+      device: {"name": "FPGA JTAG (routed to HSMC ports)", "kind": "other"}
+      iostandard: "2.5 V"
+      pins: {"FPGA_JTAG_TCK": "P5", "FPGA_JTAG_TMS": "P8"}

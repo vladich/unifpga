@@ -45,3 +45,19 @@ Board:
       pins: [AB5, AB6, AB7, AB8, AB9, Y10, AA11, AA12, AB17, AA17, AB19, AA19, Y19, AB20, AB21, AA20]
     gpio:
       pins: [V10, W10, V9, W9, V8, W8, V7, W7, W6, V5, W5, AA15, AA14, W13, W12, AB13, AB12, Y11, AB11, W11, AB10, AA10, AA9, Y8, AA8, Y7, AA7, Y6, AA6, Y5, AA5, Y4, AB3, Y3, AB2, AA2]
+    onboard_adc_clk_10mhz:   # ADC_CLK_10 (10 MHz, MAX 10 ADC PLL)
+      device: {"name": "ADC_CLK_10 (10 MHz, MAX 10 ADC PLL)", "kind": "clock"}
+      iostandard: "3.3-V LVTTL"
+      pins: {"ADC_CLK_10": "N5"}
+    onboard_clk2_50mhz:   # MAX10_CLK2_50 (50 MHz)
+      device: {"name": "MAX10_CLK2_50 (50 MHz)", "kind": "clock"}
+      iostandard: "3.3-V LVTTL"
+      pins: {"MAX10_CLK2_50": "N14"}
+    onboard_sdram:   # SDRAM (64 MB, 16-bit)
+      device: {"name": "SDRAM (64 MB, 16-bit)", "kind": "sdram"}
+      iostandard: "3.3-V LVTTL"
+      pins: {"DRAM_ADDR": ["U17", "W19", "V18", "U18", "U19", "T18", "T19", "R18", "P18", "P19", "T20", "P20", "R20"], "DRAM_DQ": ["Y21", "Y20", "AA22", "AA21", "Y22", "W22", "W20", "V21", "P21", "J22", "H21", "H22", "G22", "G20", "G19", "F22"], "DRAM_BA": ["T21", "T22"], "DRAM_LDQM": "V22", "DRAM_UDQM": "J21", "DRAM_RAS_N": "U22", "DRAM_CAS_N": "U21", "DRAM_CKE": "N22", "DRAM_CLK": "L14", "DRAM_WE_N": "V20", "DRAM_CS_N": "U20"}
+    onboard_accelerometer:   # Accelerometer (ADXL345, SPI/I2C)
+      device: {"name": "Accelerometer (ADXL345, SPI/I2C)", "kind": "other"}
+      iostandard: "3.3-V LVTTL"
+      pins: {"GSENSOR_SDI": "V11", "GSENSOR_SDO": "V12", "GSENSOR_CS_n": "AB16", "GSENSOR_SCLK": "AB15", "GSENSOR_INT1": "Y14", "GSENSOR_INT2": "Y13"}

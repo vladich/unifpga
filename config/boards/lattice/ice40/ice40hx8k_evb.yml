@@ -35,3 +35,30 @@ Board:
         r: [H2, J4, G2, H4]
         g: [F1, H6, F2, H3]
         b: [F3, G3, E2, H5]
+    onboard_sram:   # SRAM U5 K6R4016V1D (256K x 16, 10 ns)
+      device: {"name": "SRAM U5 K6R4016V1D (256K x 16, 10 ns)", "kind": "sdram"}
+      pins: {"a": ["N6", "T1", "P4", "R2", "N5", "T2", "P5", "R3", "R5", "T3", "R4", "M7", "N7", "P6", "M8", "T5", "R6", "P8"], "d": ["T8", "P7", "N9", "T9", "M9", "R9", "K9", "P9", "R10", "L10", "P10", "N10", "T10", "T11", "T15", "T14"], "cs_n": "T6", "oe_n": "L9", "we_n": "T7"}
+    onboard_serial_flash:   # SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)
+      device: {"name": "SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)", "kind": "flash"}
+      pins: {"sck": "R11", "cs_n": "R12", "sdo_to_flash_di": "P12", "sdi_from_flash_do": "P11"}
+    onboard_pgm_uart:   # PGM1 10-pin programming connector UART (RxD/TxD, for Olimex programmer)
+      device: {"name": "PGM1 10-pin programming connector UART (RxD/TxD, for Olimex programmer)", "kind": "uart"}
+      pins: {"rx": "L11", "tx": "T16"}
+    gpio1:   # GPIO1 34-pin header (BH34R, iCE40-IO/UEXT-style add-ons)
+      device: {"name": "GPIO1 34-pin header (BH34R, iCE40-IO/UEXT-style add-ons)", "kind": "header"}
+      shares: ["gpio", "onboard_uart", "onboard_vga"]   # the board multiplexes these pins
+      pins: ["E4", "B2", "F5", "J2", "B1", "H1", "C1", "G1", "C2", "J5", "F4", "H2", "D2", "J4", "G5", "G2", "D1", "H4", "G4", "F1", "E3", "H6", "H5", "F2", "E2", "H3", "G3", "F3"]
+    ext1:   # EXT1 40-pin header (bank 0 PIO0_00..PIO0_32)
+      device: {"name": "EXT1 40-pin header (bank 0 PIO0_00..PIO0_32)", "kind": "header"}
+      pins: ["C14", "B15", "B7", "D13", "C7", "B14", "A7", "C12", "B8", "E11", "D8", "C13", "B9", "A16", "F7", "A15", "C8", "B13", "F9", "E10", "A9", "C11", "D9", "D11", "E9", "B12", "C9", "B10", "D10", "B11", "A11", "C10", "A10"]
+    ext2:   # EXT2 40-pin header (bank 0 PIO0_33..51 + bank 1 PIO1_00..13)
+      device: {"name": "EXT2 40-pin header (bank 0 PIO0_33..51 + bank 1 PIO1_00..13)", "kind": "header"}
+      shares: ["onboard_buttons"]   # the board multiplexes these pins
+      pins: ["B6", "C6", "J10", "D7", "M16", "A6", "K12", "D6", "L14", "A5", "L13", "B5", "N16", "E6", "L12", "B4", "M14", "A2", "M13", "D5", "P16", "A1", "P15", "C5", "P14", "C4", "R15", "B3", "R14", "D4", "C3", "E5", "D3"]
+    ext3:   # EXT3 40-pin header (bank 1 PIO1_14..46)
+      device: {"name": "EXT3 40-pin header (bank 1 PIO1_14..46)", "kind": "header"}
+      pins: ["M15", "J11", "E14", "L16", "F11", "K13", "D15", "K14", "F12", "J15", "F14", "K15", "G12", "K16", "D16", "J14", "G13", "J12", "E16", "J13", "G14", "J16", "F15", "H13", "G11", "H11", "F16", "H16", "G10", "H14", "G15", "G16", "H12"]
+    ext4:   # EXT4 40-pin header (bank 1/2/3 incl. LED1/LED2)
+      device: {"name": "EXT4 40-pin header (bank 1/2/3 incl. LED1/LED2)", "kind": "header"}
+      shares: ["onboard_leds", "onboard_switches"]   # the board multiplexes these pins
+      pins: ["C16", "F13", "N4", "B16", "R1", "E13", "M5", "D14", "P2", "M11", "M4", "T13", "P1", "N12", "N3", "M12", "L5", "R16", "M3", "J1", "M6", "K1", "N2", "K3", "L7", "L4", "M2", "L1", "K5", "K4", "L3", "M1", "L6"]

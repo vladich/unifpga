@@ -70,3 +70,65 @@ Board:
         r: [L9, N8, N9, N7, N6]
         g: [D11, A11, B11, P7, R7, D10]
         b: [B12, C12, B13, A14, B14]
+    onboard_ddr3:   # DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)
+      device: {"name": "DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)", "kind": "ddr3"}
+      iostandard: "SSTL15 (SSTL15D for dqs/ck; LiteX)"
+      pins: {"a": ["F7", "A4", "D6", "F8", "C4", "E6", "B1", "D8", "A5", "F9", "K3", "B7", "A3", "C8"], "ba": ["H4", "D3", "H5"], "ras_n": "R4", "cas_n": "R6", "we_n": "L2", "cs_n": "P5", "dm": ["G1", "K5"], "dq": ["G5", "F5", "F4", "F3", "E2", "C1", "E1", "B3", "M3", "K4", "N2", "L1", "P4", "H3", "R1", "M2"], "dqs": ["G2,G3", "J5,K6"], "ck": "J1,J3", "cke": "J2", "odt": "R3", "reset_n": "B9"}
+    onboard_flash:   # SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)
+      device: {"name": "SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)", "kind": "flash"}
+      iostandard: "LVCMOS33"
+      pins: {"cs_n": "M9", "clk": "L10", "miso": "P10", "mosi": "R10"}
+    onboard_sdcard:   # microSD card slot J2 (SDIO, push-pull)
+      device: {"name": "microSD card slot J2 (SDIO, push-pull)", "kind": "sdcard"}
+      iostandard: "LVCMOS33"
+      pins: {"clk": "N10", "cmd": "R14", "d": ["M8", "M7", "M10", "N11"], "cd": "D15"}
+    onboard_spi_lcd:   # SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14" ST7789)
+      device: {"name": "SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14\" ST7789)", "kind": "lcd_spi"}
+      iostandard: "LVCMOS33"
+      pins: {"bl_n": "P12", "rst_n": "G13", "rs": "J13", "sda": "L15", "scl": "F12", "cs_n": "C16"}
+    onboard_reset:   # Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST
+      device: {"name": "Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST", "kind": "reset"}
+      active: "low"
+      iostandard: "LVCMOS33"
+      shares: ["onboard_buttons"]   # the board multiplexes these pins
+      pins: {"rst_n": "T10"}
+    onboard_jtag:   # JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)
+      device: {"name": "JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)", "kind": "header"}
+      shares: ["onboard_other_2", "onboard_uart"]   # the board multiplexes these pins
+      pins: ["B8", "C6", "A7", "A6", "T13", "M11"]
+    onboard_configuration_mode_pins_mode0_2:   # Configuration mode pins MODE0..2
+      device: {"name": "Configuration mode pins MODE0..2", "kind": "other"}
+      pins: {"mode0": "M16", "mode1": "B16", "mode2": "C15"}
+    onboard_other:   # Configuration status/control pins RECONFIG_N, READY, DONE
+      device: {"name": "Configuration status/control pins RECONFIG_N, READY, DONE", "kind": "other"}
+      shares: ["onboard_leds"]   # the board multiplexes these pins
+      pins: {"reconfig_n": "B10", "ready": "A13", "done": "C13"}
+    onboard_other_2:   # BL702 USB-JTAG (FPGA configuration JTAG)
+      device: {"name": "BL702 USB-JTAG (FPGA configuration JTAG)", "kind": "other"}
+      shares: ["onboard_jtag"]   # the board multiplexes these pins
+      pins: {"tck": "A7", "tms": "B8", "tdi": "A6", "tdo": "C6"}
+    onboard_ws2812:   # WS2812B RGB LED U17
+      device: {"name": "WS2812B RGB LED U17", "kind": "ws2812"}
+      iostandard: "LVCMOS33"
+      shares: ["gpio_0"]   # the board multiplexes these pins
+      pins: {"din": "T9"}
+    onboard_touch:   # Capacitive touch panel FPC J4 (6P)
+      device: {"name": "Capacitive touch panel FPC J4 (6P)", "kind": "other"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_camera", "onboard_ethernet"]   # the board multiplexes these pins
+      pins: {"sda": "F14", "scl": "F16", "int": "C11", "rst": "A12"}
+    onboard_camera:   # DVP camera FPC J11 (24P, e.g. OV5640/OV2640)
+      device: {"name": "DVP camera FPC J11 (24P, e.g. OV5640/OV2640)", "kind": "camera_dvp"}
+      iostandard: "LVCMOS33"
+      shares: ["gpio_1", "onboard_ethernet", "onboard_touch"]   # the board multiplexes these pins
+      pins: {"d": ["T12", "T11", "P11", "R11", "M15", "M14", "J16", "J14"], "pclk": "F13", "xclk": "G12", "vsync": "G15", "hsync": "G14", "rst_n": "L13", "pwdn": "C10", "scl": "F14", "sda": "F16"}
+    onboard_ethernet:   # Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)
+      device: {"name": "Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)", "kind": "other"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_camera", "onboard_touch", "onboard_usb_ulpi"]   # the board multiplexes these pins
+      pins: {"ref_clk": "A9", "tx_en": "E16", "txd": ["D16", "E14"], "rxd": ["F15", "C9"], "crs_dv": "M6", "rx_er": "L8", "mdc": "F14", "mdio": "F16", "rst_n": "F10"}
+    onboard_usb_ulpi:   # USB 2.0 ULPI PHY U6 USB3317 (USB-C "OTG" J8, SW2 selects device/host)
+      device: {"name": "USB 2.0 ULPI PHY U6 USB3317 (USB-C \"OTG\" J8, SW2 selects device/host)", "kind": "usb"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_ethernet"]   # the board multiplexes these pins
+      pins: {"data": ["G11", "H12", "J12", "H13", "T14", "R13", "P13", "R12"], "clk": "T15", "dir": "K12", "nxt": "K13", "stp": "K11", "rst": "F10"}

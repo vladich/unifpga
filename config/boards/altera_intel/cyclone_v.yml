@@ -7,6 +7,8 @@ Description: 28 nm Cyclone (2011). Quartus Prime + nextpnr-mistral (open).
 Boards:
   - Id: c5gx
     BoardName: Cyclone V GX Starter Kit
+    ProductName: "Cyclone V GX Starter Kit (C5G)"
+    Summary: "Cyclone V GX 5CGXFC5C6F27C7N (77K LEs, transceivers on HSMC); 512 MB LPDDR2 + 4 Mb (512 KB) SRAM; HDMI TX, audio CODEC, SD, UART-USB, HSMC, 2x20 GPIO, Arduino header, LTC2308 ADC, 4x 7-seg, 10 SW, 4 KEY, 18 LEDs"
     Aliases: [intel_cyclonev_gx_starter]
     Features:
       - audio_codec
@@ -39,6 +41,8 @@ Boards:
     Programmer: quartus_pgm
   - Id: de0_cv
     BoardName: DE0-CV
+    ProductName: "DE0-CV Development Kit"
+    Summary: "Cyclone V E 5CEBA4F23C7N (49K LEs); 64 MB SDRAM; VGA (4-bit), PS/2, micro SD, 2x 2x20 GPIO, 6x 7-seg, 10 SW, 4 KEY + reset, 10 LEDs"
     Features:
       - dip_switches
       - microsd_socket

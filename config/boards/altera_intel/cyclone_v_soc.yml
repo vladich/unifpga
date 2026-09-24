@@ -7,6 +7,8 @@ Description: Cyclone V with hard ARM A9 dual-core (HPS). Quartus Prime.
 Boards:
   - Id: de0_nano_soc
     BoardName: DE0-Nano-SoC
+    ProductName: "DE0-Nano-SoC Kit (Atlas-SoC Kit)"
+    Summary: "Cyclone V SE SoC 5CSEMA4U23C6N (40K LEs, dual Cortex-A9 HPS); 1 GB HPS DDR3; HPS Gigabit Ethernet, USB OTG, micro SD, UART-USB, G-sensor, LTC header; FPGA: LTC2308 ADC, 2x 2x20 GPIO, Arduino header, 4 SW, 2 KEY, 8 LEDs"
     Aliases: [terasic_atlas_soc]
     Features:
       - accelerometer
@@ -36,6 +38,8 @@ Boards:
     BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=165&No=941
   - Id: de10_nano
     BoardName: DE10-Nano
+    ProductName: "DE10-Nano Kit"
+    Summary: "Cyclone V SE SoC 5CSEBA6U23I7 (110K LEs, dual Cortex-A9 HPS); 1 GB HPS DDR3; ADV7513 HDMI TX, LTC2308 ADC, 2x 2x20 GPIO, Arduino header; HPS Gigabit Ethernet, USB OTG, micro SD, UART-USB, G-sensor; 4 SW, 2 KEY, 8 LEDs"
     Features:
       - adc_chip
       - ddr3_memory
@@ -64,6 +68,8 @@ Boards:
     BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=167&No=1046
   - Id: de1_soc
     BoardName: DE1-SoC
+    ProductName: "DE1-SoC Board"
+    Summary: "Cyclone V SE SoC 5CSEMA5F31C6N (85K LEs, dual Cortex-A9 HPS); 64 MB SDRAM (FPGA) + 1 GB DDR3 (HPS); VGA (ADV7123), WM8731 audio, ADV7180 TV decoder, PS/2, IR, LTC2308 ADC (AD7928 before rev. F), 2x 2x20 GPIO, 6x 7-seg, 10 SW, 4 KEY, 10 LEDs; HPS Ethernet, USB OTG, micro SD"
     Features:
       - accelerometer
       - adc_chip
@@ -203,6 +209,8 @@ Boards:
     BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1081
   - Id: terasic_sockit
     BoardName: Terasic SoCKit
+    ProductName: "SoCKit (Cyclone V SoC Development Kit)"
+    Summary: "Cyclone V SX SoC 5CSXFC6D6F31C6 (110K LEs, dual Cortex-A9 HPS, transceivers); 1 GB DDR3 FPGA + 1 GB DDR3 HPS; VGA (ADV7123), SSM2603 audio, HSMC, IR, temperature sensor; HPS Ethernet, USB OTG, micro SD, QSPI flash, 128x64 LCD, G-sensor; 4 SW, 4 KEY, 4 LEDs"
     Features:
       - accelerometer
       - adc_chip

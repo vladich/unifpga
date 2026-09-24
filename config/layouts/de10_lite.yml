@@ -54,3 +54,15 @@ Layout:
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: adc_clk_10mhz
+      label: ADC_CLK_10 (10 MHz, MAX 10 ADC PLL)
+      device: {kind: clock, bank: onboard_adc_clk_10mhz}   # no peripheral model yet
+    - id: clk2_50mhz
+      label: MAX10_CLK2_50 (50 MHz)
+      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
+    - id: sdram
+      label: SDRAM (64 MB, 16-bit)
+      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+    - id: accelerometer
+      label: Accelerometer (ADXL345, SPI/I2C)
+      device: {kind: other, bank: onboard_accelerometer}   # no peripheral model yet

@@ -29,3 +29,15 @@ Board:
       pins:
         rx: "GPIOR_00"
         tx: "GPIOR_01"
+    onboard_crst_button_configuration_reset:   # CRST button (configuration reset)
+      device: {"name": "CRST button (configuration reset)", "kind": "reset"}
+      pins: {"creset_n": "CRESET_N"}
+    onboard_other:   # LED_CDN (green, CDONE) and LED_PWR (red)
+      device: {"name": "LED_CDN (green, CDONE) and LED_PWR (red)", "kind": "other"}
+      pins: {"cdone": "CONDONE"}
+    onboard_spi_flash:   # U4 W25Q80DV SPI flash (configuration)
+      device: {"name": "U4 W25Q80DV SPI flash (configuration)", "kind": "flash"}
+      pins: {"cs_n": "GPIOL_01_SS_N", "clk": "GPIOL_02_CCK", "mosi": "GPIOL_04_CDI0", "miso": "GPIOL_06_CDI1"}
+    onboard_jtag_test_points_tp8_tp11:   # JTAG test points TP8..TP11
+      device: {"name": "JTAG test points TP8..TP11", "kind": "other"}
+      pins: {"tck": "TCK", "tdi": "TDI", "tdo": "TDO", "tms": "TMS"}

@@ -41,3 +41,38 @@ Board:
       pins:
         rx: J1
         tx: K3
+    onboard_program:   # FPGA_RESET (drives PROGRAMN to reboot into the DFU bootloader)
+      device: {"name": "FPGA_RESET (drives PROGRAMN to reboot into the DFU bootloader)", "kind": "reset"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_buttons"]   # the board multiplexes these pins
+      pins: {"rst_n": "V17"}
+    onboard_ddr3:   # DDR3L SDRAM (MT41K64M16TW 128 MiB on -25F / MT41K256M16TW 512 MiB on -85F)
+      device: {"name": "DDR3L SDRAM (MT41K64M16TW 128 MiB on -25F / MT41K256M16TW 512 MiB on -85F)", "kind": "ddr"}
+      iostandard: "SSTL135_I"
+      pins: {"a": ["C4", "D2", "D3", "A3", "A4", "D4", "C3", "B2", "B1", "D1", "A7", "C2", "B6", "C1", "A2", "C7"], "ba": ["D6", "B7", "A6"], "ras_n": "C12", "cas_n": "D13", "we_n": "B12", "cs_n": "A12", "dm": ["D16", "G16"], "dq": ["C17", "D15", "B17", "C16", "A15", "B13", "A17", "A13", "F17", "F16", "G15", "F15", "J16", "C18", "H16", "F18"], "dqs_p": ["B15", "G18"], "clk_p": "J18", "cke": "D18", "odt": "C13", "reset_n": "L18", "vccio_virtual": ["K16", "D17", "K15", "K17", "B18", "C6"], "gnd_virtual": ["L15", "L16"]}
+    onboard_sdcard:   # MicroSD socket
+      device: {"name": "MicroSD socket", "kind": "sdcard"}
+      iostandard: "LVCMOS33"
+      shares: ["gpio", "onboard_switches", "onboard_uart"]   # the board multiplexes these pins
+      pins: {"clk": "K1", "cmd": "K2", "dat": ["J1", "K3", "L3", "M1"], "cd": "L1"}
+    onboard_usb:   # USB-C full-speed device (direct FPGA USB)
+      device: {"name": "USB-C full-speed device (direct FPGA USB)", "kind": "usb"}
+      iostandard: "LVCMOS33"
+      pins: {"d_p": "N1", "d_n": "M2", "pullup": "N2"}
+    onboard_adc:   # Analog front-end (ADC_CTRL, analog mux, sense comparator)
+      device: {"name": "Analog front-end (ADC_CTRL, analog mux, sense comparator)", "kind": "other"}
+      iostandard: "LVCMOS33"
+      pins: {"ctrl": ["G1", "F1"], "mux": ["F4", "F3", "F2", "H1"], "sense_p": "H3", "sense_n": "G3"}
+    feather:   # Feather header I/O (20 user pins incl. 6 analog-capable A0..A5)
+      device: {"name": "Feather header I/O (20 user pins incl. 6 analog-capable A0..A5)", "kind": "header"}
+      iostandard: "LVCMOS33"
+      shares: ["gpio", "onboard_feather_i2c", "onboard_feather_serial", "onboard_vga"]   # the board multiplexes these pins
+      pins: {"0": "N17", "1": "M18", "sda": "C10", "scl": "C9", "5": "B10", "6": "B9", "9": "C8", "10": "B8", "11": "A8", "12": "H2", "13": "J2", "miso": "N15", "sck": "R17", "mosi": "N16", "a0": "L4", "a1": "N3", "a2": "N4", "a3": "H4", "a4": "G4", "a5": "T17"}
+    onboard_feather_i2c:   # Feather I2C (SDA/SCL on the header)
+      device: {"name": "Feather I2C (SDA/SCL on the header)", "kind": "other"}
+      shares: ["feather", "onboard_vga"]   # the board multiplexes these pins
+      pins: {"sda": "C10", "scl": "C9"}
+    onboard_feather_serial:   # Feather UART pins 0/1 (RX/TX)
+      device: {"name": "Feather UART pins 0/1 (RX/TX)", "kind": "uart"}
+      shares: ["feather", "onboard_vga"]   # the board multiplexes these pins
+      pins: {"rx": "N17", "tx": "M18"}

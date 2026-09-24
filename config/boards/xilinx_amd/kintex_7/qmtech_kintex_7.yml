@@ -29,3 +29,83 @@ Board:
       pins: [D14, A13, C12, B12, AF10]
       overrides:
         AF10: LVCMOS18
+    onboard_core_keys:   # Core-board user keys SW2, SW3
+      device: {"name": "Core-board user keys SW2, SW3", "kind": "buttons"}
+      active: "low (inference: core manual section 2.2.7 figure shows pull-up resistors R16/R17 on the key nets; LiteX names them user_btn_n)"
+      iostandard: "LVCMOS18"
+      shares: ["cpu_resetn", "onboard_buttons"]   # the board multiplexes these pins
+      pins: {"sw2": "AF9", "sw3": "AF10"}
+    onboard_core_leds:   # Core-board user LEDs D2 (LED2), D3 (LED3)
+      device: {"name": "Core-board user LEDs D2 (LED2), D3 (LED3)", "kind": "leds"}
+      active: "low (core manual Figure 2-11: LED anode to 3V3, cathode on the FPGA net; inference from the figure)"
+      iostandard: "LVCMOS33"
+      shares: ["onboard_leds"]   # the board multiplexes these pins
+      pins: {"led": ["J26", "H26"]}
+    onboard_spi_flash:   # SPI flash S25FL256L (32 MB, quad)
+      device: {"name": "SPI flash S25FL256L (32 MB, quad)", "kind": "flash"}
+      iostandard: "LVCMOS33"
+      pins: {"cs_n": "C23", "dq": ["B24", "A25", "B22", "A22"]}
+    onboard_ddr3:   # DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)
+      device: {"name": "DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)", "kind": "ddr"}
+      iostandard: ["DIFF_SSTL15", "LVCMOS15", "SSTL15"]
+      pins: {"a": ["AF5", "AF2", "AD6", "AC6", "AD4", "AB6", "AE2", "Y5", "AA4", "AE6", "AE3", "AD5", "AB4", "Y6"], "ba": ["AD3", "AE1", "AE5"], "ras_n": "AC3", "cas_n": "AC4", "we_n": "AF4", "dm": ["V1", "V3"], "dq": ["W1", "V2", "Y1", "Y3", "AC2", "Y2", "AB2", "AA3", "U1", "V4", "U6", "W3", "V6", "U2", "U7", "U5"], "dqs_p": ["AB1", "W6"], "dqs_n": ["AC1", "W5"], "clk_p": "AA5", "clk_n": "AB5", "cke": "AD1", "odt": "AF3", "reset_n": "W4"}
+    header_j2:   # Core-board 64-pin header U5 (LiteX/daughterboard name J2)
+      device: {"name": "Core-board 64-pin header U5 (LiteX/daughterboard name J2)", "kind": "header"}
+      shares: ["db_header_j1", "db_pmod_j10", "db_pmod_j11", "onboard_7seg", "onboard_buttons", "onboard_db_7seg", "onboard_db_buttons", "onboard_db_leds", "onboard_db_uart", "onboard_leds"]   # the board multiplexes these pins
+      pins: ["A8", "A9", "B9", "C9", "A10", "B10", "D10", "E10", "B11", "B12", "C11", "C12", "A12", "A13", "D13", "D14", "A14", "B14", "C13", "C14", "A15", "B15", "D16", "D15", "B16", "C16", "A17", "B17", "D18", "E18", "C18", "C17", "A19", "A18", "B19", "C19", "A20", "B20", "D20", "D19", "A24", "A23", "E22", "E21", "D24", "D23", "D25", "E25", "E26", "F25", "B26", "B25", "C26", "D26"]
+    header_j3:   # Core-board 64-pin header U4 (LiteX/daughterboard name J3)
+      device: {"name": "Core-board 64-pin header U4 (LiteX/daughterboard name J3)", "kind": "header"}
+      shares: ["onboard_db_buttons", "onboard_db_ethernet", "onboard_db_ethernet_clocks", "onboard_db_sdcard", "onboard_db_vga"]   # the board multiplexes these pins
+      pins: ["AD21", "AE21", "AE22", "AF22", "AE23", "AF23", "W21", "Y22", "AA22", "AF24", "AF25", "AB21", "AC21", "AB22", "AC22", "AD23", "AD24", "AC23", "AC24", "AD25", "AE25", "AA23", "AB24", "AA25", "AB25", "Y23", "AA24", "AD26", "AE26", "AB26", "AC26", "W23", "W24", "Y25", "Y26", "W25", "W26", "U26", "U24", "U25", "T22", "T23", "R22", "R23", "R25", "P25", "P23", "N23", "N26", "M26"]
+    onboard_db_uart:   # Daughterboard USB-UART (CP2102N, J4 mini-USB)
+      device: {"name": "Daughterboard USB-UART (CP2102N, J4 mini-USB)", "kind": "uart"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j2", "onboard_7seg", "onboard_buttons"]   # the board multiplexes these pins
+      pins: {"rx": "B12", "tx": "B11"}
+    onboard_db_leds:   # Daughterboard LEDs (5)
+      device: {"name": "Daughterboard LEDs (5)", "kind": "leds"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j2"]   # the board multiplexes these pins
+      pins: {"user_led": ["A18", "A19", "C17", "C18", "E18"]}
+    onboard_db_buttons:   # Daughterboard keys (5)
+      device: {"name": "Daughterboard keys (5)", "kind": "buttons"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j2", "header_j3"]   # the board multiplexes these pins
+      pins: {"user_btn": ["AD21", "B20", "A20", "C19", "B19"]}
+    onboard_db_ethernet_clocks:   # Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)
+      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)", "kind": "ethernet"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j3"]   # the board multiplexes these pins
+      pins: {"tx": "AC22", "gtx": "AA23", "rx": "AB26"}
+    onboard_db_ethernet:   # Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)
+      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)", "kind": "ethernet"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j3"]   # the board multiplexes these pins
+      pins: {"int_n": "AC24", "mdio": "Y22", "mdc": "AA22", "rx_dv": "Y26", "rx_er": "AB25", "rx_data": ["Y25", "W24", "W23", "AC26", "AE26", "AD26", "AA24", "Y23"], "tx_en": "AE25", "tx_er": "AF24", "tx_data": ["AD25", "AC23", "AD24", "AD23", "AB22", "AC21", "AB21", "AF25"], "col": "AA25", "crs": "AB24"}
+    onboard_db_7seg:   # Daughterboard 3-digit 7-segment display (U3, 2352B-type)
+      device: {"name": "Daughterboard 3-digit 7-segment display (U3, 2352B-type)", "kind": "seven_segment"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j2", "onboard_7seg"]   # the board multiplexes these pins
+      pins: {"sel": ["A17", "A15", "D18"], "seg": ["B16", "C14", "B15", "C16", "B17", "D16", "C13", "D15"]}
+    onboard_db_vga:   # Daughterboard VGA (RGB 5-6-5)
+      device: {"name": "Daughterboard VGA (RGB 5-6-5)", "kind": "vga"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j3"]   # the board multiplexes these pins
+      pins: {"hsync_n": "W26", "vsync_n": "W25", "r": ["P23", "P25", "N26", "N23", "M26"], "g": ["T22", "U25", "R22", "T23", "R23", "R25"], "b": ["V26", "U26", "V24", "V23", "U24"]}
+    onboard_db_sdcard:   # Daughterboard microSD slot
+      device: {"name": "Daughterboard microSD slot", "kind": "sdcard"}
+      iostandard: "LVCMOS33"
+      shares: ["header_j3"]   # the board multiplexes these pins
+      pins: {"data": ["AF22", "AE22", "W21", "V21"], "cmd": "AF23", "clk": "AE23", "cd": "AE21"}
+    db_pmod_j10:   # Daughterboard Pmod J10 (pmoda)
+      device: {"name": "Daughterboard Pmod J10 (pmoda)", "kind": "pmod"}
+      shares: ["header_j2", "onboard_7seg", "onboard_buttons"]   # the board multiplexes these pins
+      pins: ["C11", "A12", "D13", "A14", "C12", "A13", "D14", "B14"]
+    db_pmod_j11:   # Daughterboard Pmod J11 (pmodb)
+      device: {"name": "Daughterboard Pmod J11 (pmodb)", "kind": "pmod"}
+      shares: ["header_j2", "onboard_7seg", "onboard_leds"]   # the board multiplexes these pins
+      pins: ["A8", "B9", "A10", "D10", "A9", "C9", "B10", "E10"]
+    db_header_j1:   # Daughterboard header J1 (16 IO, JP1 HDR_9X2 on the schematic?)
+      device: {"name": "Daughterboard header J1 (16 IO, JP1 HDR_9X2 on the schematic?)", "kind": "header"}
+      shares: ["header_j2"]   # the board multiplexes these pins
+      pins: ["D26", "C26", "B25", "B26", "F25", "E26", "E25", "D25", "D23", "D24", "E21", "E22", "A23", "A24", "D19", "D20"]

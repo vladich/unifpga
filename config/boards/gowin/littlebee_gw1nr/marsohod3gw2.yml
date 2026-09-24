@@ -46,3 +46,6 @@ Board:
       pins: ["80", "79"]
       active: low            # KEY0 / KEY1 pull up (key_rst_n = KEY0 & KEY1)
     clk: { pins: "47", frequency_mhz: 100 }
+    onboard_other:   # JTAG (FPGA dedicated) + JTAG2 external header
+      device: {"name": "JTAG (FPGA dedicated) + JTAG2 external header", "kind": "other"}
+      pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8", "reconfig_n": "9"}

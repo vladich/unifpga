@@ -23,6 +23,8 @@ Boards:
     BoardURL: https://github.com/mystorm-org/BlackIce-II
   - Id: ice40hx8k_evb
     BoardName: iCE40HX8K-EVB
+    ProductName: "iCE40HX8K-EVB (Rev B1)"
+    Summary: "Lattice iCE40HX8K-CT256 (7680 LCs, 128 kbit EBR), 512 KB SRAM (256Kx16), 2 MB SPI flash, 100 MHz oscillator, 2 LEDs, 2 buttons, 34-pin GPIO1 + four 40-pin EXT headers, PGM connector with UART"
     BoardProducer: olimex
     Chip: iCE40HX8K-CT256
     Bridges:

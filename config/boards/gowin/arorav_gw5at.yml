@@ -35,6 +35,8 @@ Boards:
     Status: active
   - Id: orangepi_msoc
     BoardName: Orange Pi MSOC
+    ProductName: "OrangePi MSOC"
+    Summary: "Gowin Arora V GW5AT-138PG484A (138K LUT), LPDDR3 2 Gbit, SPI flash 128 Mbit, micro-USB programming, 16 LEDs, 2x 4-digit 7-seg, 4 keys + recovery key, 2x 8-way DIP switches, 30-pin GPIO FPC connector, 3.3 V/3 A supply from an M.2 socket; 43 x 84.5 mm"
     BoardProducer: orange_pi
     Chip: GW5AT-LV138PG484AC1/I0
     Bridges:
@@ -42,6 +44,8 @@ Boards:
     Programmer: openFPGALoader
   - Id: sipeed_tang_mega_60k
     BoardName: Sipeed Tang Mega 60K Dock
+    ProductName: "Tang Mega 60K Dock (Tang Mega 60K SOM on the Tang Mega NEO Dock)"
+    Summary: "Gowin GW5AT-LV60PG484A (59,904 LUT4, 4x SerDes, PCIe hard core, MIPI D-PHY capable IO) SOM with 512 MB DDR3 (x16; a second x16 chip is drawn on the schematic), 64 Mbit flash; same NEO dock as the 138K: PCIe edge (x1 usable), CH569 USB3, RGMII GbE, HDMI TX/RX, RGB LCD FPC, OV5640 DVP FPC, 2 PMOD, 2x20 SDRAM headers, microSD, I2S DAC, WS2812, BL616 USB-JTAG/UART"
     Devices:
       - microsd_socket_generic
     BoardProducer: sipeed

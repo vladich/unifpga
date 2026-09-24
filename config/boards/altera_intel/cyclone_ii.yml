@@ -7,6 +7,8 @@ Description: 90 nm low-cost FPGA (2004). Quartus II 13.0sp1 last.
 Boards:
   - Id: de1
     BoardName: DE1
+    ProductName: "Altera DE1 Board"
+    Summary: "Cyclone II EP2C20F484C7 (18,752 LEs); 8 MB SDRAM, 512 KB SRAM, 4 MB flash; VGA (4-bit), WM8731 audio, RS-232, PS/2, SD, 2x 2x20 GPIO, 4x 7-seg, 10 SW, 4 KEY, 18 LEDs"
     Features:
       - audio_codec
       - dip_switches
@@ -33,6 +35,8 @@ Boards:
     BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=53&No=83
   - Id: de2
     BoardName: DE2
+    ProductName: "Altera DE2 Board"
+    Summary: "Cyclone II EP2C35F672C6 (33,216 LEs); 8 MB SDRAM, 512 KB SRAM, 4 MB flash; VGA (ADV7123 10-bit), WM8731 audio, ADV7180 TV decoder (as the manual names it), DM9000A Ethernet, ISP1362 USB, IrDA, RS-232, PS/2, SD, 16x2 LCD, 2x 2x20 GPIO, 8x 7-seg, 18 SW, 4 KEY, 27 LEDs"
     Features:
       - audio_codec
       - dip_switches

@@ -18,3 +18,30 @@ Board:
       pins: 13
     onboard_leds:
       pins: [9, 10, 11]
+    onboard_psram:   # IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM U4 (on the board, not in package; population unconfirmed)
+      device: {"name": "IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM U4 (on the board, not in package; population unconfirmed)", "kind": "psram"}
+      shares: ["header_p5", "onboard_config"]   # the board multiplexes these pins
+      pins: {"ce_n": "42", "sclk": "6", "sio": ["40", "39", "38", "41"]}
+    onboard_lcd:   # 40-pin RGB LCD FPC J1 (RGB565 out)
+      device: {"name": "40-pin RGB LCD FPC J1 (RGB565 out)", "kind": "lcd_rgb"}
+      iostandard: "LVCMOS33"
+      shares: ["header_p4", "header_p5"]   # the board multiplexes these pins
+      pins: {"clk": "8", "hs": "33", "vs": "32", "de": "21", "r": ["35", "34", "31", "30", "29"], "g": ["28", "27", "15", "16", "17", "18"], "b": ["19", "20", "22", "23", "24"]}
+    onboard_lcd_backlight:   # LCD backlight enable (LCD_BL to LP3320 EN through R2, fitted NC)
+      device: {"name": "LCD backlight enable (LCD_BL to LP3320 EN through R2, fitted NC)", "kind": "lcd_rgb"}
+      pins: {"bl": "14"}
+    onboard_jtag:   # JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)
+      device: {"name": "JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)", "kind": "other"}
+      pins: {"tck": "3", "tms": "4", "tdi": "5", "tdo": "7"}
+    onboard_config:   # Configuration pins (RECONFIG_N, DONE, READY, MODE0, MODE1)
+      device: {"name": "Configuration pins (RECONFIG_N, DONE, READY, MODE0, MODE1)", "kind": "other"}
+      shares: ["header_p4", "header_p5", "onboard_psram"]   # the board multiplexes these pins
+      pins: {"reconfig_n": "48", "done": "46", "ready": "45", "mode0": "43", "mode1": "42"}
+    header_p4:   # Header P4 (1x20)
+      device: {"name": "Header P4 (1x20)", "kind": "header"}
+      shares: ["cpu_resetn", "onboard_buttons", "onboard_config", "onboard_lcd", "onboard_leds", "sys_clk"]   # the board multiplexes these pins
+      pins: ["28", "27", "15", "16", "17", "18", "22", "23", "24", "10", "9", "11", "46", "45", "47", "13"]
+    header_p5:   # Header P5 (1x20)
+      device: {"name": "Header P5 (1x20)", "kind": "header"}
+      shares: ["onboard_config", "onboard_lcd", "onboard_psram"]   # the board multiplexes these pins
+      pins: ["31", "30", "29", "19", "20", "34", "35", "42", "39", "38", "41", "40", "44"]

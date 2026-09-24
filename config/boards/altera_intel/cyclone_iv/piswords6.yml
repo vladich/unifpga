@@ -42,3 +42,26 @@ Board:
         rx: "69"
     gpio:
       pins: ["144", "143", "142", "141", "138", "137", "136", "135", "133", "132", "129", "128", "127", "126", "125", "124"]
+    onboard_buzzer:   # BUZZER SP1 (S8550 Q1)
+      device: {"name": "BUZZER SP1 (S8550 Q1)", "kind": "buzzer"}
+      shares: ["onboard_eeprom"]   # the board multiplexes these pins
+      pins: {"beep": "2"}
+    onboard_eeprom:   # EEPROM AT24C08 U3
+      device: {"name": "EEPROM AT24C08 U3", "kind": "eeprom"}
+      shares: ["onboard_buzzer", "onboard_vga"]   # the board multiplexes these pins
+      pins: {"scl": "1", "sda": "2"}
+    onboard_temperature:   # DS18B20 temperature sensor U5
+      device: {"name": "DS18B20 temperature sensor U5", "kind": "temperature"}
+      shares: ["onboard_leds"]   # the board multiplexes these pins
+      pins: {"dq": "44"}
+    onboard_sdram:   # SDRAM HY57V641620 U2 (4M x16)
+      device: {"name": "SDRAM HY57V641620 U2 (4M x16)", "kind": "sdram"}
+      shares: ["onboard_7seg", "onboard_lcd", "onboard_switches", "onboard_uart"]   # the board multiplexes these pins
+      pins: {"a": ["76", "75", "74", "73", "34", "33", "32", "31", "30", "28", "77", "58"], "ba": ["83", "80"], "dq": ["110", "106", "105", "104", "103", "101", "100", "99", "65", "66", "67", "68", "69", "70", "71", "72"], "clk": "60", "cke": "59", "cs_n": "84", "ras_n": "85", "cas_n": "86", "we_n": "87", "dqm": ["98", "64"]}
+    onboard_lcd:   # LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets
+      device: {"name": "LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets", "kind": "lcd"}
+      shares: ["onboard_sdram", "onboard_switches"]   # the board multiplexes these pins
+      pins: {"rs": "34", "rw": "33", "en": "32", "d": ["31", "30", "28", "58", "59", "60", "64", "65"], "psb_12864": "66", "rst_12864": "67"}
+    onboard_epcs4si8n_config_flash_u4:   # EPCS4SI8N config flash U4
+      device: {"name": "EPCS4SI8N config flash U4", "kind": "flash"}
+      pins: {"dclk": "12", "data0": "13", "asdo": "6", "ncso": "8"}

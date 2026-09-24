@@ -153,6 +153,8 @@ Boards:
     Status: active
   - Id: mojo_v3
     BoardName: Mojo v3
+    ProductName: "Mojo V3"
+    Summary: "Xilinx Spartan-6 XC6SLX9-2TQG144C (9,152 logic cells); 50 MHz oscillator; ATmega32U4 USB microcontroller that configures the FPGA from an SST25VF040B flash and bridges USB serial + 8 ADC channels to the FPGA over SPI/UART; 8 LEDs, reset button; 76 FPGA I/O on two 2x25 headers."
     BoardProducer: embedded_micro
     Chip: XC6SLX9-2TQG144C
     Bridges:

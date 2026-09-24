@@ -44,3 +44,22 @@ Board:
       pins:
         scl: D1
         sda: E6
+    onboard_sdcard:   # Micro SD card slot (SPI mode)
+      device: {"name": "Micro SD card slot (SPI mode)", "kind": "sdcard"}
+      pins: {"cs_n": "D11", "mosi": "F10", "sclk": "D12", "miso": "E15"}
+    onboard_sdram:   # SDRAM HY57V2562GTR (256 Mbit, 16M x 16)
+      device: {"name": "SDRAM HY57V2562GTR (256 Mbit, 16M x 16)", "kind": "sdram"}
+      pins: {"clk": "B14", "cke": "F16", "cs_n": "K10", "we_n": "J13", "cas_n": "J12", "ras_n": "K11", "dqm": ["J14", "G15"], "ba": ["G11", "F13"], "a": ["F11", "E11", "D14", "C14", "A14", "A15", "B16", "C15", "C16", "D15", "F14", "D16", "F15"], "dq": ["P14", "M12", "N14", "L12", "L13", "L14", "L11", "K12", "G16", "J11", "J16", "J15", "K16", "K15", "L16", "L15"]}
+    onboard_spi_flash:   # SPI configuration flash M25P16 (16 Mbit, EPCS16-compatible)
+      device: {"name": "SPI configuration flash M25P16 (16 Mbit, EPCS16-compatible)", "kind": "flash"}
+      pins: {"dclk": "H1", "ncso": "D2", "data0": "H2", "asdo": "C1"}
+    onboard_rtc:   # Real-time clock DS1302 (CR1220 backup battery)
+      device: {"name": "Real-time clock DS1302 (CR1220 backup battery)", "kind": "other"}
+      pins: {"sclk": "P6", "ce": "N8", "data": "M8"}
+    onboard_buzzer:   # Buzzer (transistor-driven, jumper CB1)
+      device: {"name": "Buzzer (transistor-driven, jumper CB1)", "kind": "audio"}
+      active: "low (UG section 16)"
+      pins: {"buzzer": "C11"}
+    camera_port:   # Camera port (18-pin CMOS camera interface; UG: for an OV5640 module)
+      device: {"name": "Camera port (18-pin CMOS camera interface; UG: for an OV5640 module)", "kind": "header"}
+      pins: ["F1", "F3", "G1", "F2", "M1", "G2", "J2", "J1", "K2", "K1", "L2", "L1", "N5", "M6", "N6", "M7"]

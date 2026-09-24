@@ -39,3 +39,90 @@ Board:
     qspi_flash_wp:
       pins:
         pin: P21
+    onboard_clk_gen:   # MS5351M programmable clock generator (25 MHz crystal)
+      device: {"name": "MS5351M programmable clock generator (25 MHz crystal)", "kind": "clock"}
+      shares: ["onboard_hdmi", "onboard_serdes_q0"]   # the board multiplexes these pins
+      pins: {"usr_clk_in": "V10", "q0_refclk1": "F10,E10", "i2c_scl": "M13", "i2c_sda": "L13"}
+    onboard_serdes_q0:   # SerDes quad Q0 (GW5AT transceiver lanes on BTB J1)
+      device: {"name": "SerDes quad Q0 (GW5AT transceiver lanes on BTB J1)", "kind": "serdes"}
+      shares: ["onboard_clk_gen", "onboard_pcie", "onboard_usb_a1", "onboard_usb_a2"]   # the board multiplexes these pins
+      pins: {"refclk0": "F6,E6", "refclk1": "F10,E10", "l0_tx": "A4,B4", "l0_rx": "B8,A8", "l1_tx": "D5,C5", "l1_rx": "D11,C11", "l2_tx": "B6,A6", "l2_rx": "B10,A10", "l3_tx": "D7,C7", "l3_rx": "D9,C9"}
+    onboard_pcie:   # PCIe x1 FPC connector J4 (Raspberry Pi 5 PCIe HAT+ pinout, 16-pin)
+      device: {"name": "PCIe x1 FPC connector J4 (Raspberry Pi 5 PCIe HAT+ pinout, 16-pin)", "kind": "pcie"}
+      shares: ["onboard_serdes_q0", "pcie_rst_n", "pcie_wake_n"]   # the board multiplexes these pins
+      pins: {"refclk": "F6,E6", "tx0": "A4,B4", "rx0": "B8,A8", "clkreq_n": "AA14", "wake_n": "T14", "perst_n": "W11"}
+    onboard_ddr3:   # DDR3 SDRAM on the SOM (60K: one MT41J256M16 16-bit; 138K: two chips, 32-bit)
+      device: {"name": "DDR3 SDRAM on the SOM (60K: one MT41J256M16 16-bit; 138K: two chips, 32-bit)", "kind": "ddr3"}
+      iostandard: "SSTL15 (cst60: SSTL15_I, BANK_VCCIO=1.5)"
+      pins: {"a": ["M1", "K2", "G2", "J4", "J2", "H2", "G3", "J1", "J5", "H5", "L1", "H3", "K4", "K1", "D1", "R1"], "ba": ["P5", "P2", "M6"], "cs_n": "P4", "ras_n": "L5", "cas_n": "L4", "we_n": "M5", "cke": "K6", "odt": "M2", "reset_n": "L6", "ck": "L3,K3", "dq": ["Y4", "AB3", "AA5", "V4", "AA1", "AB2", "AB5", "AB1", "AA8", "Y8", "AB7", "Y7", "AB8", "W9", "AB6", "Y9"], "dm": ["AA4", "V7"], "dqs": ["Y3,AA3", "V9,V8"]}
+    onboard_buttons:   # User buttons S1, S2 (EX_KEY)
+      device: {"name": "User buttons S1, S2 (EX_KEY)", "kind": "buttons"}
+      active: "low"
+      pins: {"s1_user_button0": "AA13", "s2_user_button1": "AB13"}
+    onboard_reconfig_n:   # Reconfiguration key SW2 (RECONFIG_N)
+      device: {"name": "Reconfiguration key SW2 (RECONFIG_N)", "kind": "reset"}
+      active: "low"
+      pins: {"reconfig_n": "N12"}
+    onboard_hdmi:   # HDMI (DVI TX) connector J13
+      device: {"name": "HDMI (DVI TX) connector J13", "kind": "hdmi_tx"}
+      shares: ["onboard_clk_gen"]   # the board multiplexes these pins
+      pins: {"clk": "G15,G16", "d0": "J14,H14", "d1": "J15,H15", "d2": "K17,J17", "hpd": "K13", "pwr_sav": "K14", "ddc_scl": "M13", "ddc_sda": "L13"}
+    onboard_usb_soft_phy:   # USB 2.0 soft-PHY device port, USB-C J17
+      device: {"name": "USB 2.0 soft-PHY device port, USB-C J17", "kind": "usb"}
+      pins: {"dp": "J19", "dn": "H19", "rx_dp": "H17,H18", "rx_dn": "H20,G20", "term_dp": "J16", "term_dn": "AB16", "dp_pull": "M17"}
+    onboard_usb_a1:   # USB-A port 1 J15 (full-speed host D+/D- + SuperSpeed device on SerDes lane 2)
+      device: {"name": "USB-A port 1 J15 (full-speed host D+/D- + SuperSpeed device on SerDes lane 2)", "kind": "usb"}
+      shares: ["onboard_serdes_q0"]   # the board multiplexes these pins
+      pins: {"dp": "M15", "dn": "M16", "ss_tx": "B6,A6", "ss_rx": "B10,A10"}
+    onboard_usb_a2:   # USB-A port 2 J16 (full-speed host D+/D- + SuperSpeed device on SerDes lane 3)
+      device: {"name": "USB-A port 2 J16 (full-speed host D+/D- + SuperSpeed device on SerDes lane 3)", "kind": "usb"}
+      shares: ["onboard_serdes_q0"]   # the board multiplexes these pins
+      pins: {"dp": "H13", "dn": "G13", "ss_tx": "D7,C7", "ss_rx": "D9,C9"}
+    onboard_sdcard:   # microSD slot J22 (TF-101A)
+      device: {"name": "microSD slot J22 (TF-101A)", "kind": "sdcard"}
+      pins: {"clk": "V15", "cmd": "Y16", "d0": "AA15", "d1": "AB15", "d2": "W14", "d3": "W15", "det": "Y13"}
+    onboard_audio:   # Audio: MAX98357A I2S class-D amplifier, speaker connector J5 (mono, 1x 2 W)
+      device: {"name": "Audio: MAX98357A I2S class-D amplifier, speaker connector J5 (mono, 1x 2 W)", "kind": "audio_i2s"}
+      pins: {"bclk": "Y17", "lrck": "AB17", "dout": "AA16", "pa_en": "Y14"}
+    onboard_lcd:   # RGB LCD FPC-40P connector J3 (24-bit DPI, resistive touch, backlight driver)
+      device: {"name": "RGB LCD FPC-40P connector J3 (24-bit DPI, resistive touch, backlight driver)", "kind": "lcd_rgb"}
+      pins: {"r": ["J21", "J20", "G18", "G17", "H22", "J22", "K22", "K21"], "g": ["L20", "L14", "K18", "L21", "M21", "M22", "N22", "K19"], "b": ["U8", "L18", "M18", "N19", "N18", "K16", "L16", "M20"], "clk": "L19", "hsync": "N20", "vsync": "L15", "de": "U22", "bl_en": "P20", "touch_xr": "W16", "touch_yd": "U16", "touch_xl": "T16", "touch_yu": "T15"}
+    pmod0:   # PMOD0 connector J6 (2x6 horizontal socket)
+      device: {"name": "PMOD0 connector J6 (2x6 horizontal socket)", "kind": "pmod"}
+      pins: {"io0": "V18", "io1": "V19", "io2": "G21", "io3": "G22", "io4": "F18", "io5": "E18", "io6": "C22", "io7": "B22"}
+    pmod1:   # PMOD1 connector J7 (2x6 horizontal socket)
+      device: {"name": "PMOD1 connector J7 (2x6 horizontal socket)", "kind": "pmod"}
+      pins: {"io0": "W19", "io1": "W20", "io2": "F19", "io3": "F20", "io4": "E22", "io5": "D22", "io6": "E21", "io7": "D21"}
+    sdram0_header:   # 2x20 header J9 "SDRAM0 CONN." (MiSTer-style SDRAM module connector)
+      device: {"name": "2x20 header J9 \"SDRAM0 CONN.\" (MiSTer-style SDRAM module connector)", "kind": "header"}
+      shares: ["onboard_sdram0"]   # the board multiplexes these pins
+      pins: ["E14", "E13", "C15", "C14", "B13", "C13", "A14", "A13", "B16", "B15", "A16", "A15", "A20", "B20", "A21", "B21", "B18", "B17", "C17", "D17", "A19", "A18", "D15", "D14", "D16", "E16", "F14", "F13", "E17", "F16", "F21", "F15", "C20", "D20", "D19", "E19", "C19", "C18"]
+    sdram1_header:   # 2x20 header J10 "SDRAM1 CONN." (SDRAM module or GBA cartridge-slot accessory)
+      device: {"name": "2x20 header J10 \"SDRAM1 CONN.\" (SDRAM module or GBA cartridge-slot accessory)", "kind": "header"}
+      shares: ["onboard_gba_slot", "onboard_sdram1"]   # the board multiplexes these pins
+      pins: ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "W17", "W22", "W21", "P17", "N17", "N14", "N13", "U20", "Y22", "Y21", "AB22", "AB21", "AA21", "AA20", "AB20", "AA19", "AA18", "AB18", "Y19", "Y18", "T20", "N15", "U18", "U17", "R16", "P15", "R14", "P14"]
+    onboard_sdram0:   # SDRAM module on J9 (accessory; signals as named by the console schematic)
+      device: {"name": "SDRAM module on J9 (accessory; signals as named by the console schematic)", "kind": "sdram"}
+      shares: ["sdram0_header"]   # the board multiplexes these pins
+      pins: {"clk": "B17", "cs_n": "F21", "ras_n": "F16", "cas_n": "E17", "we_n": "D16", "ba0": "F15", "ba1": "C20", "a": ["D19", "E19", "C19", "C18", "E16", "D15", "D14", "A19", "A18", "C17", "D20", "D17", "B18"], "dq": ["E14", "E13", "C15", "C14", "B13", "C13", "A14", "A13", "B21", "A21", "B20", "A20", "A15", "A16", "B15", "B16"], "dm": ["F14", "F13"]}
+    onboard_sdram1:   # SDRAM module on J10 (accessory; signals as named by the console schematic)
+      device: {"name": "SDRAM module on J10 (accessory; signals as named by the console schematic)", "kind": "sdram"}
+      shares: ["onboard_gba_slot", "sdram1_header"]   # the board multiplexes these pins
+      pins: {"clk": "U20", "cs_n": "T20", "ras_n": "Y18", "cas_n": "Y19", "we_n": "AB20", "ba0": "N15", "ba1": "U18", "a": ["R16", "P15", "R14", "P14", "AA19", "AA21", "AA20", "AB22", "AB21", "Y22", "U17", "Y21", "V20"], "dq": ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "N13", "N14", "N17", "P17", "W21", "W22", "V17", "W17"], "dm": ["AA18", "AB18"]}
+    onboard_gba_slot:   # GBA cartridge slot accessory on J10
+      device: {"name": "GBA cartridge slot accessory on J10", "kind": "other"}
+      shares: ["onboard_sdram1", "sdram1_header"]   # the board multiplexes these pins
+      pins: {"a16": "AA20", "a17": "AA19", "a18": "AB20", "a19": "Y18", "a20": "Y19", "a21": "N15", "a22": "T20", "a23": "U17", "ad0": "R18", "ad1": "T18", "ad2": "V17", "ad3": "W17", "ad4": "W22", "ad5": "W21", "ad6": "P17", "ad7": "N17", "ad8": "N14", "ad9": "N13", "ad10": "U20", "ad11": "V20", "ad12": "Y21", "ad13": "Y22", "ad14": "AB21", "ad15": "AB22", "clk": "T21", "cs1_n": "R17", "cs2_n": "U18", "irq": "P15", "rd_n": "P16", "wr_n": "U21"}
+    onboard_fan:   # Fan connector J24 (5 V, 1 W)
+      device: {"name": "Fan connector J24 (5 V, 1 W)", "kind": "other"}
+      active: "high"
+      pins: {"fan_en": "AB12"}
+    onboard_adc:   # ADC inputs (GW5AT ADC): VBUS and battery voltage
+      device: {"name": "ADC inputs (GW5AT ADC): VBUS and battery voltage", "kind": "adc"}
+      pins: {"vbus": "N10,N9", "vbat": "L10,M9"}
+    onboard_config_mode:   # Configuration mode jumpers JP4-JP6 (MODE0..2)
+      device: {"name": "Configuration mode jumpers JP4-JP6 (MODE0..2)", "kind": "other"}
+      pins: {"mode0": "U11", "mode1": "U10", "mode2": "U9"}
+    onboard_bank9_nc:   # Unconnected bank-9 SOM pins FPC10P_IO0..7 (no connector)
+      device: {"name": "Unconnected bank-9 SOM pins FPC10P_IO0..7 (no connector)", "kind": "other"}
+      pins: {"io0": "W12", "io1": "AA9", "io2": "AA10", "io3": "AB10", "io4": "AA11", "io5": "AB11", "io6": "W10", "io7": "Y11"}

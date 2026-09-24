@@ -44,3 +44,61 @@ Board:
       pins: [V12, E8, W12, D11, D8, AH13, AF7, AH14, AF4, AH3, AD5, AG14, AE23, AE6, AD23, AE24, D12, AD20, C12, AD17, AC23, AC22, Y19, AB23, AA19, W11, AA18, W14, Y18, Y17, AB25, AB26, Y11, AA26, AA13, AA11]
     gpio_1:
       pins: [Y15, AC24, AA15, AD26, AG28, AF28, AE25, AF27, AG26, AH27, AG25, AH26, AH24, AF25, AG23, AF23, AG24, AH22, AH21, AG21, AH23, AA20, AF22, AE22, AG20, AF21, AG19, AH19, AG18, AH18, AF18, AF20, AG15, AE20, AE19, AE17]
+    onboard_fpga_clk2_50mhz:   # FPGA_CLK2_50 (50 MHz)
+      device: {"name": "FPGA_CLK2_50 (50 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"FPGA_CLK2_50": "Y13"}
+    onboard_fpga_clk3_50mhz:   # FPGA_CLK3_50 (50 MHz)
+      device: {"name": "FPGA_CLK3_50 (50 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"FPGA_CLK3_50": "E11"}
+    onboard_hps_clk1_25mhz:   # HPS_CLK1_25 (25 MHz)
+      device: {"name": "HPS_CLK1_25 (25 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"HPS_CLK1_25": "E20"}
+    onboard_hps_clk2_25mhz:   # HPS_CLK2_25 (25 MHz)
+      device: {"name": "HPS_CLK2_25 (25 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"HPS_CLK2_25": "D20"}
+    arduino_io:   # Arduino Uno R3 expansion header
+      device: {"name": "Arduino Uno R3 expansion header", "kind": "header"}
+      iostandard: "3.3-V"
+      pins: {"Arduino_IO": ["AG13", "AF13", "AG10", "AG9", "U14", "U13", "AG8", "AH8", "AF17", "AE15", "AF15", "AG16", "AH11", "AH12", "AH9", "AG11"], "Arduino_Reset_n": "AH7"}
+    onboard_adc:   # A/D converter (LTC2308, SPI, 2x5 analog header)
+      device: {"name": "A/D converter (LTC2308, SPI, 2x5 analog header)", "kind": "adc"}
+      iostandard: "3.3V"
+      pins: {"ADC_CONVST": "U9", "ADC_SCK": "V10", "ADC_SDI": "AC4", "ADC_SDO": "AD4"}
+    onboard_hps_key:   # HPS user push-button (HPS_KEY)
+      device: {"name": "HPS user push-button (HPS_KEY)", "kind": "buttons"}
+      pins: {"HPS_KEY": "J18"}
+    onboard_hps_led:   # HPS user LED (HPS_LED)
+      device: {"name": "HPS user LED (HPS_LED)", "kind": "leds"}
+      pins: {"HPS_LED": "A20"}
+    onboard_hps_ethernet:   # HPS Gigabit Ethernet PHY (KSZ9031RN)
+      device: {"name": "HPS Gigabit Ethernet PHY (KSZ9031RN)", "kind": "ethernet"}
+      iostandard: "3.3V"
+      pins: {"HPS_ENET_TX_EN": "A12", "HPS_ENET_TX_DATA": ["A16", "J14", "A15", "D17"], "HPS_ENET_RX_DV": "J13", "HPS_ENET_RX_DATA": ["A14", "A11", "C15", "A9"], "HPS_ENET_RX_CLK": "J12", "HPS_ENET_RESET_N": "B4", "HPS_ENET_MDIO": "E16", "HPS_ENET_MDC": "A13", "HPS_ENET_INT_N": "B14", "HPS_ENET_GTX_CLK": "J15"}
+    onboard_hps_uart:   # HPS UART to USB (FT232R)
+      device: {"name": "HPS UART to USB (FT232R)", "kind": "uart"}
+      iostandard: "3.3V"
+      pins: {"HPS_UART_RX": "A22", "HPS_UART_TX": "B21", "HPS_CONV_USB_N": "C6"}
+    onboard_hps_ddr3:   # HPS DDR3 SDRAM (1 GB, 32-bit)
+      device: {"name": "HPS DDR3 SDRAM (1 GB, 32-bit)", "kind": "ddr3"}
+      iostandard: "SSTL-15 Class I"
+      pins: {"HPS_DDR3_A": ["C28", "B28", "E26", "D26", "J21", "J20", "C26", "B26", "F26", "F25", "A24", "B24", "D24", "C24", "G23"], "HPS_DDR3_BA": ["A27", "H25", "G25"], "HPS_DDR3_CAS_n": "A26", "HPS_DDR3_CKE": "L28", "HPS_DDR3_CK_n": "N20", "HPS_DDR3_CK_p": "N21", "HPS_DDR3_CS_n": "L21", "HPS_DDR3_DM": ["G28", "P28", "W28", "AB28"], "HPS_DDR3_DQ": ["J25", "J24", "E28", "D27", "J26", "K26", "G27", "F28", "K25", "L25", "J27", "J28", "M27", "M26", "M28", "N28", "N24", "N25", "T28", "U28", "N26", "N27", "R27", "V27", "R26", "R25", "AA28", "W26", "R24", "T24", "Y27", "AA27"], "HPS_DDR3_DQS_n": ["R16", "R18", "T18", "T20"], "HPS_DDR3_DQS_p": ["R17", "R19", "T19", "U19"], "HPS_DDR3_ODT": "D28", "HPS_DDR3_RAS_n": "A25", "HPS_DDR3_RESET_n": "V28", "HPS_DDR3_WE_n": "E25", "HPS_DDR3_RZQ": "D25"}
+    onboard_hps_sdcard:   # HPS micro SD card socket
+      device: {"name": "HPS micro SD card socket", "kind": "sdcard"}
+      iostandard: "3.3V"
+      pins: {"HPS_SD_CLK": "B8", "HPS_SD_CMD": "D14", "HPS_SD_DATA": ["C13", "B6", "B11", "B9"]}
+    onboard_hps_usb_otg:   # HPS USB 2.0 OTG PHY (USB3300)
+      device: {"name": "HPS USB 2.0 OTG PHY (USB3300)", "kind": "usb"}
+      iostandard: "3.3V"
+      pins: {"HPS_USB_CLKOUT": "G4", "HPS_USB_DATA": ["C10", "F5", "C9", "C4", "C8", "D4", "C7", "F4"], "HPS_USB_DIR": "E5", "HPS_USB_NXT": "D5", "HPS_USB_RESET": "H12", "HPS_USB_STP": "C5"}
+    onboard_hps_gsensor:   # HPS accelerometer (ADXL345 G-sensor)
+      device: {"name": "HPS accelerometer (ADXL345 G-sensor)", "kind": "other"}
+      iostandard: "3.3V"
+      pins: {"HPS_GSENSOR_INT": "A17", "HPS_I2C0_SCLK": "C18", "HPS_I2C0_SDAT": "A19"}
+    hps_ltc_header:   # HPS LTC connector (2x7, SPI/I2C/GPIO)
+      device: {"name": "HPS LTC connector (2x7, SPI/I2C/GPIO)", "kind": "header"}
+      iostandard: "3.3V"
+      pins: {"HPS_LTC_GPIO": "H13", "HPS_I2C1_SCLK": "K18", "HPS_I2C1_SDAT": "A21", "HPS_SPIM_CLK": "C19", "HPS_SPIM_MISO": "B19", "HPS_SPIM_MOSI": "B16", "HPS_SPIM_SS": "C16"}

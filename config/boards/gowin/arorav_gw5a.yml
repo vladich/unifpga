@@ -65,6 +65,8 @@ Boards:
     Status: active
   - Id: tang_primer_25k
     BoardName: Tang Primer 25k
+    ProductName: "Tang Primer 25K"
+    Summary: "Gowin GW5A-LV25MG121 (23040 LUT4, 1008 Kbit BSRAM) on a 23x18 mm 2x60P BTB core board (50 MHz osc, 64 Mbit NOR flash) + 25K Dock (BL616 USB-JTAG/UART, USB-A 1.1 host, 2 buttons, READY/DONE LEDs, 3 Pmods, 2x20 2.54 mm header for the SDRAM module)"
     Aliases: [sipeed_tang_primer_25k_dock]
     BoardProducer: sipeed
     Chip: GW5A-LV25MG121NC1/I0

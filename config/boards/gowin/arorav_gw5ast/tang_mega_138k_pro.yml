@@ -52,3 +52,101 @@ Board:
       pins: [C24, E25, L17, H14, B24, D25, L18, H15]
     pmod_2:
       pins: [C21, B20, B19, A17, B21, A20, A19, A18]
+    onboard_ddr3:   # DDR3 SDRAM 2x H5TQ4G63EFR-RDC (512Mx16 each, 32-bit bus, 1 GB)
+      device: {"name": "DDR3 SDRAM 2x H5TQ4G63EFR-RDC (512Mx16 each, 32-bit bus, 1 GB)", "kind": "ddr3"}
+      iostandard: "SSTL15 / SSTL15D (bank 6/7 VCCIO 1.5 V)"
+      pins: {"a": ["N1", "R1", "R2", "N2", "P1", "T2", "N4", "U1", "T4", "T3", "M1", "P4", "N3", "U2", "U5", "M6"], "ba": ["M4", "L5", "K3"], "ras_n": "H2", "cas_n": "H1", "we_n": "J3", "cs_n": "L4", "cke": "L3", "odt": "J1", "reset_n": "N8", "ck": "M2,L2", "dm": ["F4", "H9", "E3", "A3"], "dqs": ["J4,H4", "H7,G7", "B5,A5", "C1,B1"], "dq": ["G4", "J6", "L8", "G5", "K7", "J5", "K8", "K6", "E6", "H8", "H6", "G8", "D6", "F8", "G6", "F7", "C4", "F3", "B4", "E5", "D3", "D5", "A4", "D4", "E1", "A2", "G2", "C2", "F2", "E2", "G1", "D1"]}
+    onboard_flash:   # SPI NOR flash 128 Mbit (configuration, MSPI)
+      device: {"name": "SPI NOR flash 128 Mbit (configuration, MSPI)", "kind": "flash"}
+      shares: ["onboard_sfp_0"]   # the board multiplexes these pins
+      pins: {"cs_n": "P18", "clk": "H13", "dq0_mosi": "R14", "dq1_miso": "R15", "dq2_wp_n": "P14", "dq3_hold_n": "N14"}
+    onboard_flash_user:   # SPI NOR flash 128 Mbit (second, user QSPI; sheet label QSPI_NAND)
+      device: {"name": "SPI NOR flash 128 Mbit (second, user QSPI; sheet label QSPI_NAND)", "kind": "flash"}
+      pins: {"cs_n": "L25", "clk": "P20", "io0": "R21", "io1": "T22", "io2": "R22", "io3": "R20"}
+    onboard_som_leds:   # SOM configuration LEDs (DONE, READY)
+      device: {"name": "SOM configuration LEDs (DONE, READY)", "kind": "leds"}
+      pins: {"done": "W10", "ready": "V11"}
+    onboard_som_buttons:   # SOM push buttons (RECONFIG, USR_KEY)
+      device: {"name": "SOM push buttons (RECONFIG, USR_KEY)", "kind": "buttons"}
+      iostandard: "U4 is bank 7 (1.5 V) - cst rst LVCMOS15"
+      pins: {"reconfig_n": "AE16", "usr_key": "U4"}
+    onboard_som_buttons_2:   # SOM test-point keys USR_KEY1 / USR_KEY2 (bank 7 pads)
+      device: {"name": "SOM test-point keys USR_KEY1 / USR_KEY2 (bank 7 pads)", "kind": "buttons"}
+      iostandard: "bank 7, 1.5 V (4.7K pull-ups R33/R36 to +1V5)"
+      pins: {"usr_key1": "T8", "usr_key2": "T7"}
+    jtag:   # SOM debug connector J5 (JST SH 1.0 8P, JTAG + UART)
+      device: {"name": "SOM debug connector J5 (JST SH 1.0 8P, JTAG + UART)", "kind": "header"}
+      shares: ["onboard_uart"]   # the board multiplexes these pins
+      pins: ["H11", "J10", "H12", "H10", "N16", "P15"]
+    onboard_adc:   # FPGA ADC inputs (ADCT, ADCV; bank 10) to dock ADC connectors J3/J4
+      device: {"name": "FPGA ADC inputs (ADCT, ADCV; bank 10) to dock ADC connectors J3/J4", "kind": "adc"}
+      pins: {"adct": "R12,R11", "adcv": "N12,P11"}
+    onboard_config:   # Configuration mode / CFGBVS pins (dock mode resistors)
+      device: {"name": "Configuration mode / CFGBVS pins (dock mode resistors)", "kind": "other"}
+      pins: {"mode0": "AB7", "mode1": "Y9", "mode2": "W9", "cfgbvs": "AB15"}
+    onboard_ws2812:   # WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
+      device: {"name": "WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)", "kind": "ws2812"}
+      pins: {"din": "H16"}
+    onboard_uart:   # BL616 USB-JTAG & UART (USB-C), debug UART
+      device: {"name": "BL616 USB-JTAG & UART (USB-C), debug UART", "kind": "uart"}
+      shares: ["jtag"]   # the board multiplexes these pins
+      pins: {"rx": "N16", "tx": "P15", "jtag_tck": "H12", "jtag_tms": "H11", "jtag_tdi": "H10", "jtag_tdo": "J10"}
+    onboard_sfp_0:   # SFP+ cage 0 (SerDes Q1 lane 0)
+      device: {"name": "SFP+ cage 0 (SerDes Q1 lane 0)", "kind": "serdes"}
+      shares: ["onboard_clocks_2", "onboard_flash", "onboard_sfp_1"]   # the board multiplexes these pins
+      pins: {"tx": "AC8,AD8", "rx": "AC14,AD14", "refclk": "AA13,AB13", "tx_disable": "R18", "rx_los": "V18", "mod_det": "R15"}
+    onboard_sfp_1:   # SFP+ cage 1 (SerDes Q1 lane 1)
+      device: {"name": "SFP+ cage 1 (SerDes Q1 lane 1)", "kind": "serdes"}
+      shares: ["onboard_clocks_2", "onboard_sfp_0"]   # the board multiplexes these pins
+      pins: {"tx": "AC10,AD10", "rx": "AC12,AD12", "refclk": "AA13,AB13", "tx_disable": "M20", "rx_los": "W18", "mod_det": "N24"}
+    onboard_pcie:   # PCIe x4 edge connector (golden finger, SerDes Q0 lanes 0-3)
+      device: {"name": "PCIe x4 edge connector (golden finger, SerDes Q0 lanes 0-3)", "kind": "pcie"}
+      shares: ["header_40p", "onboard_m2"]   # the board multiplexes these pins
+      pins: {"tx": ["D10,C10", "D8,C8", "B9,A9", "B7,A7"], "rx": ["D12,C12", "D14,C14", "B13,A13", "B11,A11"], "refclk": "F11,E11", "perst_n": "L23", "wake_n": "L22"}
+    onboard_clocks:   # Q0 REFCLK1 external clock input (IPEX J1/J2)
+      device: {"name": "Q0 REFCLK1 external clock input (IPEX J1/J2)", "kind": "clock"}
+      pins: {"q0_refclk1": "E13,F13"}
+    onboard_clocks_2:   # MS5351M clock synthesizers PLL0/PLL1 (25 MHz crystals; SerDes refclks, user clock)
+      device: {"name": "MS5351M clock synthesizers PLL0/PLL1 (25 MHz crystals; SerDes refclks, user clock)", "kind": "clock"}
+      shares: ["onboard_m2", "onboard_sfp_0", "onboard_sfp_1"]   # the board multiplexes these pins
+      pins: {"q1_refclk1_pll0": "AA13,AB13", "q1_refclk0_pll1": "AA11,AB11", "usr_clk_in_pll1_clk2": "N22"}
+    onboard_ethernet:   # RTL8211FI-CG Gigabit Ethernet PHY (RGMII) + RJ45
+      device: {"name": "RTL8211FI-CG Gigabit Ethernet PHY (RGMII) + RJ45", "kind": "ethernet_rgmii"}
+      pins: {"txd": ["K21", "J21", "L19", "K18"], "tx_ctl": "J24", "tx_clk": "H24", "rxd": ["B26", "C26", "D26", "E26"], "rx_ctl": "C22", "rx_clk": "C23", "mdc": "K23", "mdio": "K22", "rst_n": "E17", "phy_clk": "E18"}
+    onboard_m2:   # M.2 B-key socket J18 (2230/2242, SerDes Q1 lanes 2-3)
+      device: {"name": "M.2 B-key socket J18 (2230/2242, SerDes Q1 lanes 2-3)", "kind": "serdes"}
+      shares: ["header_40p", "onboard_clocks_2", "onboard_pcie"]   # the board multiplexes these pins
+      pins: {"lane2_tx": "AE9,AF9", "lane2_rx": "AE13,AF13", "lane3_tx": "AE7,AF7", "lane3_rx": "AE11,AF11", "refclk": "AA11,AB11", "perst_n": "L23", "wake_n": "L22", "gpio0": "M24", "gpio1": "U14"}
+    onboard_sdcard:   # microSD card slot J19 (SDIO)
+      device: {"name": "microSD card slot J19 (SDIO)", "kind": "sdcard"}
+      pins: {"clk": "D23", "cmd": "D24", "d0": "H23", "d1": "J23", "d2": "A25", "d3": "B25", "det": "J15"}
+    onboard_audio_dac:   # PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30
+      device: {"name": "PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30", "kind": "audio_dac"}
+      pins: {"bck": "E22", "ws": "F24", "din": "G24", "pa_en": "H17"}
+    onboard_camera_dvp:   # DVP camera connector (FPC 24P, OV5640-style)
+      device: {"name": "DVP camera connector (FPC 24P, OV5640-style)", "kind": "camera_dvp"}
+      shares: ["onboard_twi"]   # the board multiplexes these pins
+      pins: {"d": ["D21", "A22", "B22", "E21", "E20", "D18", "C18", "B17"], "pclk": "D20", "vsync": "G17", "href": "E16", "xclk": "C17", "rst_n": "F17", "pwdn": "D16", "scl": "K25", "sda": "K26"}
+    onboard_mipi_csi_0:   # MIPI CSI camera 0 (FPC 24P, MIPI0 D-PHY RX, 4 lanes)
+      device: {"name": "MIPI CSI camera 0 (FPC 24P, MIPI0 D-PHY RX, 4 lanes)", "kind": "other"}
+      pins: {"clk": "Y3,AA3", "d0": "V1,W1", "d1": "Y2,AA2", "d2": "V3,W3", "d3": "V4,W4", "mclk": "M14", "rst_n": "L14"}
+    onboard_mipi_csi_1:   # MIPI CSI camera 1 (FPC 24P, MIPI1 D-PHY RX, 4 lanes)
+      device: {"name": "MIPI CSI camera 1 (FPC 24P, MIPI1 D-PHY RX, 4 lanes)", "kind": "other"}
+      pins: {"clk": "AE2,AF2", "d0": "AB1,AC1", "d1": "AD1,AE1", "d2": "AE3,AF3", "d3": "AE5,AF5", "mclk": "E23", "rst_n": "F23"}
+    onboard_usb_soft:   # Soft USB 2.0 device port (USB-C J5, resistor PHY)
+      device: {"name": "Soft USB 2.0 device port (USB-C J5, resistor PHY)", "kind": "usb"}
+      pins: {"txd": "M21,M22", "rxd_cp": "U21,T20", "rxd_cn": "V21,U20", "term_dp": "T19", "term_dn": "U19", "pullup": "M19"}
+    onboard_twi:   # 8-way TWI multiplexer (2x 74HC4051) on SYS_TWI
+      device: {"name": "8-way TWI multiplexer (2x 74HC4051) on SYS_TWI", "kind": "other"}
+      shares: ["onboard_camera_dvp"]   # the board multiplexes these pins
+      pins: {"scl": "K25", "sda": "K26", "sel0": "N19", "sel1": "P19", "sel2": "P26"}
+    onboard_twi_2:   # EEPROM ZD24C08A (on TWI mux ch.2)
+      device: {"name": "EEPROM ZD24C08A (on TWI mux ch.2)", "kind": "other"}
+      pins: {"wp": "V14"}
+    onboard_fan:   # 4-pin PWM fan connector
+      device: {"name": "4-pin PWM fan connector", "kind": "other"}
+      pins: {"pwm": "T17", "tach": "T18"}
+    header_40p:   # 40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)
+      device: {"name": "40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)", "kind": "header"}
+      shares: ["onboard_m2", "onboard_pcie", "onboard_uart2"]   # the board multiplexes these pins
+      pins: ["U16", "U15", "W21", "Y21", "P21", "U17", "P23", "P24", "T23", "R23", "R25", "T25", "W23", "P25", "U24", "AC26", "U25", "AB25", "AB26", "AA25", "AA24", "Y26", "Y25", "L22", "M24", "W26", "W25", "U26", "W20", "Y20", "W19", "U22"]

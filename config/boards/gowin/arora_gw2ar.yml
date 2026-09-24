@@ -23,6 +23,8 @@ Boards:
     BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/33/
   - Id: tang_nano_20k
     BoardName: Tang Nano 20k
+    ProductName: "Tang Nano 20K"
+    Summary: "Gowin GW2AR-LV18QN88C8/I7 (20736 LUT4, 15552 FF, 828 Kbit BSRAM, 64 Mbit 32-bit SDR SDRAM in package), 64 Mbit SPI flash, BL616 USB-JTAG/UART/SPI bridge, MS5351 3-output clock generator, 27 MHz oscillator, HDMI (DVI TX), 40-pin RGB LCD FPC, microSD, MAX98357A I2S amp, WS2812, 6 LEDs, 2 buttons, two 20-pin headers"
     Features:
       - addressable_leds
       - audio_amp_class_d

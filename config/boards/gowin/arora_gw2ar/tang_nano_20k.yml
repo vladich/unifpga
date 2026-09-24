@@ -78,3 +78,42 @@ Board:
         clk_n: "34"
         d_p: ["35,36", "37,38", "39,40"]
         d_n: ["36", "38", "40"]
+    onboard_ms5351_clk:   # MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)
+      device: {"name": "MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)", "kind": "clock"}
+      shares: ["onboard_bl616_spi"]   # the board multiplexes these pins
+      pins: {"clk0": "10", "clk1": "11", "clk2": "13"}
+    onboard_hdmi_ctrl:   # HDMI HPD and CEC
+      device: {"name": "HDMI HPD and CEC", "kind": "hdmi_tx"}
+      shares: ["header_j6", "onboard_lcd"]   # the board multiplexes these pins
+      pins: {"hpd": "26", "cec": "25"}
+    onboard_lcd_touch:   # RGB LCD resistive-touch lines XR/YD/XL/YU (J2 pins 37-40, LCD_INIT0..3)
+      device: {"name": "RGB LCD resistive-touch lines XR/YD/XL/YU (J2 pins 37-40, LCD_INIT0..3)", "kind": "lcd_rgb"}
+      shares: ["header_j6", "onboard_joystick1", "onboard_leds"]   # the board multiplexes these pins
+      pins: {"xr": "18", "yd": "19", "xl": "20", "yu": "17"}
+    onboard_serial_flash:   # XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)
+      device: {"name": "XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)", "kind": "flash"}
+      iostandard: "LVCMOS33"
+      pins: {"clk": "59", "cs": "60", "mosi": "61", "miso": "62", "wp": "57", "hold": "63"}
+    onboard_bl616_spi:   # BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 "choose spi" command)
+      device: {"name": "BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 \"choose spi\" command)", "kind": "usb"}
+      shares: ["gpio", "header_j5", "header_j6", "onboard_ms5351_clk"]   # the board multiplexes these pins
+      pins: {"sclk": "13", "dir": "86", "mosi": "76", "miso": "75"}
+    onboard_jtag:   # FPGA JTAG (driven by BL616; test points TP3-TP6)
+      device: {"name": "FPGA JTAG (driven by BL616; test points TP3-TP6)", "kind": "other"}
+      pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8"}
+    onboard_reconfig:   # RECONFIG_N test point TP1
+      device: {"name": "RECONFIG_N test point TP1", "kind": "reset"}
+      active: "low"
+      pins: {"reconfig_n": "9"}
+    header_j5:   # 20-pin header J5 (Conn_01x20)
+      device: {"name": "20-pin header J5 (Conn_01x20)", "kind": "header"}
+      shares: ["gpio", "onboard_bl616_spi", "onboard_hdmi_edid", "onboard_headphone", "onboard_joystick", "onboard_lcd", "onboard_microsd", "onboard_pa_enable", "onboard_ws2812"]   # the board multiplexes these pins
+      pins: ["76", "80", "42", "41", "56", "54", "51", "48", "55", "49", "86", "79", "72", "71", "53", "52"]
+    header_j6:   # 20-pin header J6 (Conn_01x20)
+      device: {"name": "20-pin header J6 (Conn_01x20)", "kind": "header"}
+      shares: ["gpio", "onboard_bl616_spi", "onboard_hdmi_ctrl", "onboard_joystick1", "onboard_lcd", "onboard_lcd_touch", "onboard_leds", "onboard_microsd"]   # the board multiplexes these pins
+      pins: ["73", "74", "75", "85", "77", "15", "16", "27", "28", "25", "26", "29", "30", "31", "17", "20", "19", "18"]
+    onboard_joystick1:   # Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)
+      device: {"name": "Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)", "kind": "joystick"}
+      shares: ["header_j6", "onboard_lcd_touch", "onboard_leds"]   # the board multiplexes these pins
+      pins: {"mclk": "17", "mosi": "20", "miso": "19", "cs": "18"}

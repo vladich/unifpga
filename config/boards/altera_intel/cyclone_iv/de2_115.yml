@@ -131,3 +131,82 @@ Board:
     gpio:
       iostandard: 3.3-V LVTTL
       pins: [AB22, AC15, AB21, Y17, AC21, Y16, AD21, AE16, AD15, AE15, AC19, AF16, AD19, AF15, AF24, AE21, AF25, AC22, AE22, AF21, AF22, AD22, AG25, AD25, AH25, AE25, AG22, AE24, AH22, AF26, AE20, AG23, AF20, AH26, AH23, AG26]
+    onboard_clk2_50mhz:   # CLOCK2_50 (50 MHz)
+      device: {"name": "CLOCK2_50 (50 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"CLOCK2_50": "AG14"}
+    onboard_clk3_50mhz:   # CLOCK3_50 (50 MHz)
+      device: {"name": "CLOCK3_50 (50 MHz)", "kind": "clock"}
+      iostandard: "Depending on JP6"
+      pins: {"CLOCK3_50": "AG15"}
+    onboard_sma_clkout:   # SMA clock output
+      device: {"name": "SMA clock output", "kind": "clock"}
+      iostandard: "Depending on JP6"
+      pins: {"SMA_CLKOUT": "AE23"}
+    onboard_sma_clkin:   # SMA clock input
+      device: {"name": "SMA clock input", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"SMA_CLKIN": "AH14"}
+    onboard_lcd:   # Character LCD module (16x2)
+      device: {"name": "Character LCD module (16x2)", "kind": "lcd_char"}
+      iostandard: "3.3V"
+      pins: {"LCD_DATA": ["L3", "L1", "L2", "K7", "K1", "K2", "M3", "M5"], "LCD_EN": "L4", "LCD_RW": "M1", "LCD_RS": "M2", "LCD_ON": "L5", "LCD_BLON": "L6"}
+    hsmc:   # HSMC connector
+      device: {"name": "HSMC connector", "kind": "header"}
+      pins: {"HSMC_CLKIN0": "AH15", "HSMC_CLKIN_N1": "J28", "HSMC_CLKIN_N2": "Y28", "HSMC_CLKIN_P1": "J27", "HSMC_CLKIN_P2": "Y27", "HSMC_CLKOUT0": "AD28", "HSMC_CLKOUT_N1": "G24", "HSMC_CLKOUT_N2": "V24", "HSMC_CLKOUT_P1": "G23", "HSMC_CLKOUT_P2": "V23", "HSMC_D": ["AE26", "AE28", "AE27", "AF27"], "HSMC_RX_D_N": ["F25", "C27", "E26", "G26", "H26", "K26", "L24", "M26", "R26", "T26", "U26", "L22", "N26", "P26", "R21", "R23", "T22"], "HSMC_RX_D_P": ["F24", "D26", "F26", "G25", "H25", "K25", "L23", "M25", "R25", "T25", "U25", "L21", "N25", "P25", "P21", "R22", "T21"], "HSMC_TX_D_N": ["D28", "E28", "F28", "G28", "K28", "M28", "K22", "H24", "J24", "P28", "J26", "L28", "V26", "R28", "U28", "V28", "V22"], "HSMC_TX_D_P": ["D27", "E27", "F27", "G27", "K27", "M27", "K21", "H23", "J23", "P27", "J25", "L27", "V25", "R27", "U27", "V27", "U22"]}
+    ex_io:   # Extended I/O header (EX_IO, JP4 2x7)
+      device: {"name": "Extended I/O header (EX_IO, JP4 2x7)", "kind": "header"}
+      iostandard: "3.3V"
+      pins: {"EX_IO": ["J10", "J14", "H13", "H14", "F14", "E10", "D9"]}
+    onboard_ps2:   # PS/2 port (primary)
+      device: {"name": "PS/2 port (primary)", "kind": "ps2"}
+      iostandard: "3.3V"
+      pins: {"PS2_CLK": "G6", "PS2_DAT": "H5"}
+    onboard_ps2_secondary:   # PS/2 port (secondary, via Y-cable)
+      device: {"name": "PS/2 port (secondary, via Y-cable)", "kind": "ps2"}
+      iostandard: "3.3V"
+      pins: {"PS2_CLK2": "G5", "PS2_DAT2": "F5"}
+    onboard_ethernet0:   # Gigabit Ethernet PHY 0 (88E1111)
+      device: {"name": "Gigabit Ethernet PHY 0 (88E1111)", "kind": "ethernet"}
+      iostandard: "2.5V"
+      pins: {"ENET0_GTX_CLK": "A17", "ENET0_INT_N": "A21", "ENET0_LINK100": "C14", "ENET0_MDC": "C20", "ENET0_MDIO": "B21", "ENET0_RST_N": "C19", "ENET0_RX_CLK": "A15", "ENET0_RX_COL": "E15", "ENET0_RX_CRS": "D15", "ENET0_RX_DATA": ["C16", "D16", "D17", "C15"], "ENET0_RX_DV": "C17", "ENET0_RX_ER": "D18", "ENET0_TX_CLK": "B17", "ENET0_TX_DATA": ["C18", "D19", "A19", "B19"], "ENET0_TX_EN": "A18", "ENET0_TX_ER": "B18"}
+    onboard_ethernet1:   # Gigabit Ethernet PHY 1 (88E1111)
+      device: {"name": "Gigabit Ethernet PHY 1 (88E1111)", "kind": "ethernet"}
+      iostandard: "2.5V"
+      pins: {"ENET1_GTX_CLK": "C23", "ENET1_INT_N": "D24", "ENET1_LINK100": "D13", "ENET1_MDC": "D23", "ENET1_MDIO": "D25", "ENET1_RST_N": "D22", "ENET1_RX_CLK": "B15", "ENET1_RX_COL": "B22", "ENET1_RX_CRS": "D20", "ENET1_RX_DATA": ["B23", "C21", "A23", "D21"], "ENET1_RX_DV": "A22", "ENET1_RX_ER": "C24", "ENET1_TX_CLK": "C22", "ENET1_TX_DATA": ["C25", "A26", "B26", "C26"], "ENET1_TX_EN": "B25", "ENET1_TX_ER": "A25"}
+    onboard_enetclk_25mhz:   # Ethernet 25 MHz clock (ENETCLK_25)
+      device: {"name": "Ethernet 25 MHz clock (ENETCLK_25)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"ENETCLK_25": "A14"}
+    onboard_tv_decoder:   # TV decoder (ADV7180)
+      device: {"name": "TV decoder (ADV7180)", "kind": "video_decoder"}
+      iostandard: "3.3V"
+      pins: {"TD_DATA": ["E8", "A7", "D8", "C7", "D7", "D6", "E7", "F7"], "TD_HS": "E5", "TD_VS": "E4", "TD_CLK27": "B14", "TD_RESET_N": "G7"}
+    onboard_usb:   # USB host/device (CY7C67200)
+      device: {"name": "USB host/device (CY7C67200)", "kind": "usb"}
+      iostandard: "3.3V"
+      pins: {"OTG_ADDR": ["H7", "C3"], "OTG_DATA": ["J6", "K4", "J5", "K3", "J4", "J3", "J7", "H6", "H3", "H4", "G1", "G2", "G3", "F1", "F3", "G4"], "OTG_CS_N": "A3", "OTG_RD_N": "B3", "OTG_WR_N": "A4", "OTG_RST_N": "C5", "OTG_INT": "D5"}
+    onboard_irda:   # IR receiver
+      device: {"name": "IR receiver", "kind": "ir"}
+      iostandard: "3.3V"
+      pins: {"IRDA_RXD": "Y15"}
+    onboard_sram:   # SRAM (2 MB, 16-bit)
+      device: {"name": "SRAM (2 MB, 16-bit)", "kind": "other"}
+      iostandard: "3.3V"
+      pins: {"SRAM_ADDR": ["AB7", "AD7", "AE7", "AC7", "AB6", "AE6", "AB5", "AC5", "AF5", "T7", "AF2", "AD3", "AB4", "AC3", "AA4", "AB11", "AC11", "AB9", "AB8", "T8"], "SRAM_DQ": ["AH3", "AF4", "AG4", "AH4", "AF6", "AG6", "AH6", "AF7", "AD1", "AD2", "AE2", "AE1", "AE3", "AE4", "AF3", "AG3"], "SRAM_OE_N": "AD5", "SRAM_WE_N": "AE8", "SRAM_CE_N": "AF8", "SRAM_LB_N": "AD4", "SRAM_UB_N": "AC4"}
+    onboard_sdram:   # SDRAM (128 MB, 32-bit)
+      device: {"name": "SDRAM (128 MB, 32-bit)", "kind": "sdram"}
+      iostandard: "3.3V"
+      pins: {"DRAM_ADDR": ["R6", "V8", "U8", "P1", "V5", "W8", "W7", "AA7", "Y5", "Y6", "R5", "AA5", "Y7"], "DRAM_DQ": ["W3", "W2", "V4", "W1", "V3", "V2", "V1", "U3", "Y3", "Y4", "AB1", "AA3", "AB2", "AC1", "AB3", "AC2", "M8", "L8", "P2", "N3", "N4", "M4", "M7", "L7", "U5", "R7", "R1", "R2", "R3", "T3", "U4", "U1"], "DRAM_BA": ["U7", "R4"], "DRAM_DQM": ["U2", "W4", "K8", "N8"], "DRAM_RAS_N": "U6", "DRAM_CAS_N": "V7", "DRAM_CKE": "AA6", "DRAM_CLK": "AE5", "DRAM_WE_N": "V6", "DRAM_CS_N": "T4"}
+    onboard_flash:   # Flash memory (8 MB, 8-bit)
+      device: {"name": "Flash memory (8 MB, 8-bit)", "kind": "flash"}
+      iostandard: "3.3V"
+      pins: {"FL_ADDR": ["AG12", "AH7", "Y13", "Y14", "Y12", "AA13", "AA12", "AB13", "AB12", "AB10", "AE9", "AF9", "AA10", "AD8", "AC8", "Y10", "AA8", "AH12", "AC12", "AD12", "AE10", "AD10", "AD11"], "FL_DQ": ["AH8", "AF10", "AG10", "AH10", "AF11", "AG11", "AH11", "AF12"], "FL_CE_N": "AG7", "FL_OE_N": "AG8", "FL_RST_N": "AE11", "FL_RY": "Y1", "FL_WE_N": "AC10", "FL_WP_N": "AE12"}
+    onboard_eeprom:   # EEPROM (I2C)
+      device: {"name": "EEPROM (I2C)", "kind": "other"}
+      iostandard: "3.3V"
+      pins: {"EEP_I2C_SCLK": "D14", "EEP_I2C_SDAT": "E14"}
+    onboard_sdcard:   # SD card socket
+      device: {"name": "SD card socket", "kind": "sdcard"}
+      iostandard: "3.3V"
+      pins: {"SD_CLK": "AE13", "SD_CMD": "AD14", "SD_DAT": ["AE14", "AF13", "AB14", "AC14"], "SD_WP_N": "AF14"}

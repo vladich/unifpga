@@ -25,3 +25,62 @@ Board:
       pins: [T14, T15, P14, R14, U14, U15, V17, V18]
     pmod_je:
       pins: [V12, W16, J15, H15, V13, U17, T17, Y17]
+    onboard_rgb_led_5:   # RGB LED LD5 (Zybo Z7-20 only)
+      device: {"name": "RGB LED LD5 (Zybo Z7-20 only)", "kind": "rgb_leds"}
+      iostandard: "LVCMOS33"
+      pins: {"r": "Y11", "g": "T5", "b": "Y12"}
+    onboard_rgb_led_6:   # RGB LED LD6
+      device: {"name": "RGB LED LD6", "kind": "rgb_leds"}
+      iostandard: "LVCMOS33"
+      pins: {"r": "V16", "g": "F17", "b": "M17"}
+    onboard_audio_codec:   # Audio codec (I2S-style playback/record data + I2C control)
+      device: {"name": "Audio codec (I2S-style playback/record data + I2C control)", "kind": "audio"}
+      iostandard: "LVCMOS33"
+      pins: {"bclk": "R19", "mclk": "R17", "muten": "P18", "pbdat": "R18", "pblrc": "T19", "recdat": "R16", "reclrc": "Y18", "scl": "N18", "sda": "N17"}
+    onboard_eth_phy_ctrl:   # Ethernet PHY sideband (interrupt, reset); data path is on PS MIO
+      device: {"name": "Ethernet PHY sideband (interrupt, reset); data path is on PS MIO", "kind": "ethernet"}
+      iostandard: "LVCMOS33"
+      pins: {"int_pu_b": "F16", "rst_b": "E17"}
+    onboard_usb_otg_oc:   # USB OTG over-current detect
+      device: {"name": "USB OTG over-current detect", "kind": "other"}
+      iostandard: "LVCMOS33"
+      pins: {"oc": "U13"}
+    onboard_fan:   # Fan tachometer (Zybo Z7-20 only)
+      device: {"name": "Fan tachometer (Zybo Z7-20 only)", "kind": "other"}
+      iostandard: "LVCMOS33"
+      pins: {"fb": "Y13"}
+    onboard_hdmi_rx:   # HDMI input (sink; J10, direct TMDS to FPGA)
+      device: {"name": "HDMI input (sink; J10, direct TMDS to FPGA)", "kind": "hdmi_rx"}
+      iostandard: {"default": "TMDS_33", "W19": "LVCMOS33", "W18": "LVCMOS33", "Y19": "LVCMOS33", "Y8": "LVCMOS33"}
+      pins: {"hpd": "W19", "scl": "W18", "sda": "Y19", "clk_n": "U19", "clk_p": "U18", "n": ["W20", "U20", "P20"], "p": ["V20", "T20", "N20"], "cec": "Y8"}
+    onboard_hdmi_tx:   # HDMI output (source; direct TMDS from FPGA)
+      device: {"name": "HDMI output (source; direct TMDS from FPGA)", "kind": "hdmi_tx"}
+      iostandard: {"default": "TMDS_33", "E18": "LVCMOS33", "G17": "LVCMOS33", "G18": "LVCMOS33", "E19": "LVCMOS33"}
+      pins: {"hpd": "E18", "scl": "G17", "sda": "G18", "clk_n": "H17", "clk_p": "H16", "n": ["D20", "B20", "A20"], "p": ["D19", "C20", "B19"], "cec": "E19"}
+    pmod_ja:   # Pmod header JA (XADC; pairs JA1/JA7, JA2/JA8, JA3/JA9, JA4/JA10)
+      device: {"name": "Pmod header JA (XADC; pairs JA1/JA7, JA2/JA8, JA3/JA9, JA4/JA10)", "kind": "pmod"}
+      iostandard: "LVCMOS33"
+      pins: ["N15", "L14", "K16", "K14", "N16", "L15", "J16", "J14"]
+    onboard_pcam_csi2:   # Pcam MIPI CSI-2 camera connector (2 data lanes)
+      device: {"name": "Pcam MIPI CSI-2 camera connector (2 data lanes)", "kind": "other"}
+      iostandard: {"default": "HSUL_12", "H18": "LVDS_25", "J18": "LVDS_25", "M20": "LVDS_25", "M19": "LVDS_25", "L17": "LVDS_25", "L16": "LVDS_25", "G19": "LVCMOS33", "G20": "LVCMOS33", "F20": "LVCMOS33", "F19": "LVCMOS33"}
+      pins: {"dphy_clk_lp_n": "J19", "dphy_clk_lp_p": "H20", "dphy_data_lp_n": ["M18", "L20"], "dphy_data_lp_p": ["L19", "J20"], "dphy_hs_clock_clk_n": "H18", "dphy_hs_clock_clk_p": "J18", "dphy_data_hs_n": ["M20", "L17"], "dphy_data_hs_p": ["M19", "L16"], "cam_clk": "G19", "cam_gpio": "G20", "cam_scl": "F20", "cam_sda": "F19"}
+    onboard_crypto:   # Crypto chip single-wire interface (chip unloaded, for future use)
+      device: {"name": "Crypto chip single-wire interface (chip unloaded, for future use)", "kind": "other"}
+      iostandard: "LVCMOS33"
+      pins: {"sda": "P19"}
+    onboard_ps_ethernet:   # PS Gigabit Ethernet (GEM0, RGMII PHY)
+      device: {"name": "PS Gigabit Ethernet (GEM0, RGMII PHY)", "kind": "ethernet"}
+      pins: {"rgmii": ["MIO16", "MIO17", "MIO18", "MIO19", "MIO20", "MIO21", "MIO22", "MIO23", "MIO24", "MIO25", "MIO26", "MIO27"], "mdio": ["MIO52", "MIO53"]}
+    onboard_ps_usb:   # PS USB 2.0 OTG (USB0, ULPI PHY)
+      device: {"name": "PS USB 2.0 OTG (USB0, ULPI PHY)", "kind": "other"}
+      pins: {"ulpi": ["MIO28", "MIO29", "MIO30", "MIO31", "MIO32", "MIO33", "MIO34", "MIO35", "MIO36", "MIO37", "MIO38", "MIO39"], "reset": "MIO46"}
+    onboard_ps_sdcard:   # PS microSD slot (SD0)
+      device: {"name": "PS microSD slot (SD0)", "kind": "sdcard"}
+      pins: {"sd": ["MIO40", "MIO41", "MIO42", "MIO43", "MIO44", "MIO45"], "cd": "MIO47"}
+    onboard_ps_qspi_flash:   # PS Quad-SPI flash (boot)
+      device: {"name": "PS Quad-SPI flash (boot)", "kind": "flash"}
+      pins: {"qspi": ["MIO1", "MIO2", "MIO3", "MIO4", "MIO5", "MIO6"], "fbclk": "MIO8"}
+    onboard_ps_uart:   # PS UART1 (the board USB-UART; the bridge is not named in the preset)
+      device: {"name": "PS UART1 (the board USB-UART; the bridge is not named in the preset)", "kind": "uart"}
+      pins: {"rxtx": ["MIO48", "MIO49"]}
