@@ -1,0 +1,12 @@
+CAPI=2:
+name: unifpga:probe:pulse:1.0.0
+description: Local independent reusable pulse core
+filesets:
+  rtl:
+    files:
+      - rtl/pulse.sv
+    file_type: systemVerilogSource
+targets:
+  default:
+    filesets:
+      - rtl

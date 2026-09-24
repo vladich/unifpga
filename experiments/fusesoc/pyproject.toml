@@ -1,0 +1,8 @@
+[project]
+name = "unifpga-fusesoc-probe"
+version = "0.0.0"
+requires-python = ">=3.10"
+dependencies = ["fusesoc==2.4.6", "edalize==0.6.7"]
+
+[tool.uv]
+package = false

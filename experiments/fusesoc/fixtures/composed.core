@@ -1,0 +1,30 @@
+CAPI=2:
+name: unifpga:probe:composed:1.0.0
+description: Local composition with a parameter and data asset
+filesets:
+  rtl:
+    files:
+      - rtl/top.sv
+    file_type: systemVerilogSource
+    depend:
+      - unifpga:probe:pulse:1.0.0
+  data:
+    files:
+      - data/table.hex:
+          file_type: user
+targets:
+  default:
+    filesets:
+      - rtl
+      - data
+    toplevel: top
+    flow: generic
+    flow_options:
+      tool: icarus
+    parameters:
+      - WIDTH=4
+parameters:
+  WIDTH:
+    datatype: int
+    paramtype: vlogparam
+    default: 4
