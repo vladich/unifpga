@@ -491,3 +491,11 @@ def test_parts_that_do_not_reach_the_design_say_why():
     rig["use"].append({"module": "i2s_dac_breakout", "wires": {}})
     kinds = [r[0] for p in studio.evaluate(rig)["parts"] for r in p["reasons"]]
     assert kinds and set(kinds) <= {"unwired", "untraced"}, kinds
+
+
+def test_pins_several_parts_reach_are_warned_about():
+    ev = studio.evaluate(su.read_setup("arty_a7_35_pmod_mic3"))
+    shared = [p["message"] for p in ev["problems"] if p["level"] == "warning" and "is shared by" in p["message"]]
+    # the TM1638 sits on three ChipKit header pins the rig also hands to the design as gpio
+    assert len(shared) == 3 and all("gpio ck" in m and "through the tm1638_board_controller driver" in m for m in shared), shared
+    assert not [p for p in studio.evaluate(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))["problems"] if "is shared by" in p["message"]]

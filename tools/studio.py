@@ -217,12 +217,40 @@ def evaluate(setup):
     out["excluded"] = sorted(excluded, key=lambda x: x["use"])
     out["parts"] = part_status(setup, kept, out["excluded"], resolved if out["trace"] is not None else None,
                                out["trace"], out["profile"], out["profile_drops"])
+    out["problems"].extend(shared_pin_warnings(setup, out["trace"]))
     for x in out["parts"]:
         for kind, reason in x["reasons"]:
             if kind == "exclusive":
                 out["problems"].append({"level": "warning", "message": x["label"] + ": " + reason})
     if out["trace"] is not None and not any(p["level"] == "error" for p in out["problems"]) and not excluded:
         out["designs"] = design_fit(resolved)
+    return out
+
+
+def shared_pin_warnings(setup, trace):
+    """A warning for every FPGA pin that more than one part reaches (the design's
+    gpio on a header that also carries a driver's pins, say): the generated top
+    connects both, and whichever drives it while the other does fights it."""
+    uses = setup.get("use") or []
+    by_ref = {}
+    for e in (trace or {}).get("edges") or []:
+        by_ref.setdefault(e["ref"], {}).setdefault(e["use"], e)
+    out = []
+    for ref, users in by_ref.items():
+        if len(users) < 2:
+            continue
+        parts = []
+        for k, e in users.items():
+            name = su.use_label(uses[k], uses[k].get("raw") or {}) if k is not None and k < len(uses) else "?"
+            if e["via"]:
+                parts.append("{} (its {}, through the {} driver)".format(name, e["signal"], e["via"]))
+            else:
+                bits = e["design_port"] + ("[{}]".format(e["bit"]) if e["bit"] is not None else "")
+                parts.append("{} (the design's {}, direct)".format(name, bits))
+        pin = next(iter(users.values()))["pin"]
+        out.append({"level": "warning", "message": (
+            "pin {} (FPGA {}) is shared by {}: the generated top connects all of them, so only one may drive it "
+            "at a time").format(ref, pin or "?", " and ".join(parts))})
     return out
 
 

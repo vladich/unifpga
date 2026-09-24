@@ -210,6 +210,34 @@ function usePeripheral(u) {
 function providedCaps(pid) { return ((S.board.peripherals[pid] || {}).provides || []).map((p) => p.capability); }
 function capAggregation(cid) { return ((S.board.capabilities || []).find((c) => c.id === cid) || {}).aggregation; }
 
+// FPGA pins more than one part reaches: ref -> [edge per part]
+function sharedRefs() {
+  const m = new Map();
+  for (const e of traceEdges()) { if (!m.has(e.ref)) m.set(e.ref, new Map()); if (!m.get(e.ref).has(e.use)) m.get(e.ref).set(e.use, e); }
+  return new Map([...m].filter(([, u]) => u.size > 1).map(([r, u]) => [r, [...u.values()]]));
+}
+function sharedRefText(ref) {
+  const es = sharedRefs().get(ref);
+  return es ? "shared: " + es.map((e) => useLabel(S.setup.use[e.use] || {}) +
+                                  (e.via ? " (its " + pinLabel(e) + ", through the " + e.via + " driver)" : " (the design's " + designLabel(e) + ", direct)")).join(" and ") +
+              " — the generated top connects all of them, so only one may drive this pin at a time" : "";
+}
+// design bits more than one part provides: bit -> [provider labels]; inputs are ORed, outputs drive every part
+function sharedBits(p) {
+  const m = new Map();
+  for (const pr of p.providers) for (const b of pr.bits || []) if (b.design_bit !== null) {
+    if (!m.has(b.design_bit)) m.set(b.design_bit, []);
+    m.get(b.design_bit).push(useLabel(S.setup.use[pr.attach_index] || {}) + " bit " + b.provider_bit);
+  }
+  return new Map([...m].filter(([, l]) => l.length > 1));
+}
+function sharedBitText(p, bit) {
+  const l = sharedBits(p).get(bit);
+  if (!l) return "";
+  return p.direction === "hw_to_user" ? portName(p) + "[" + bit + "] = " + l.join(" OR ")
+                                      : portName(p) + "[" + bit + "] drives all of: " + l.join(", ");
+}
+
 // a use the rig's design-wiring profile leaves out of the design: {peripheral, ties}
 function profileDrop(i) { return ((S.ev && S.ev.profile_drops) || []).find((x) => x.use === i); }
 function dropText(i) {
@@ -271,6 +299,7 @@ function draw() {
   svg.replaceChildren();
   S.pos = {pins: {}, uses: {}, ports: {}, mpins: {}, cells: {}, rows: {}, obpins: {}};
   const hi = highlight();
+  const SHARED = sharedRefs();
   const VX = 12, top = 16, OW = 290;
   let BX = 330;
 
@@ -321,10 +350,13 @@ function draw() {
       const on = hi.vbits.has(p.capability + "." + p.signal + "." + b) || selPort;
       const r = el("rect", {x: cx, y: cy, width: 11, height: 11, rx: 2, class: "clickable",
                            fill: on ? "var(--sel)" : none ? "#f8f9fa" : "#e7f5ff", stroke: none ? "#ced4da" : "#1c7ed6"});
-      r.append(el("title", {}, portName(p) + (width > 1 ? "[" + b + "]" : "") + "  (" + p.capability + "." + p.signal + ")"));
+      r.append(el("title", {}, portName(p) + (width > 1 ? "[" + b + "]" : "") + "  (" + p.capability + "." + p.signal + ")" +
+                               (sharedBitText(p, b) ? " — " + sharedBitText(p, b) : "")));
       S.pos.cells[portName(p) + "." + b] = {x: cx + 11, y: cy + 5.5};
       target(r, width > 1 || perBit ? {kind: "vbit", cap: p.capability, signal: p.signal, bit: b} : {kind: "vport", cap: p.capability, signal: p.signal});
       svg.append(r);
+      if (sharedBitText(p, b))
+        svg.append(el("path", {d: "M" + (cx + 5) + "," + cy + " h6 v6 z", fill: "#f76707", "pointer-events": "none"}));
     }
     const rowsUsed = Math.max(Math.ceil(cells / per), 2) - 0.6;          // room for the capability name
     portRows.push({p, x: VX + 118 + Math.min(cells, per) * 13, y: y + 6});
@@ -404,6 +436,7 @@ function draw() {
       dot.append(el("title", {}, o.label + ": " + pp.s + " = " + pp.ref + " = FPGA " + (pp.pin || "?") + (dropped ? " — not connected to the design (profile tie)" : "")));
       target(dot, {kind: "ref", ref: pp.ref});
       g.append(dot);
+      if (SHARED.has(pp.ref)) g.append(el("circle", {cx: px, cy: py, r: 6.5, fill: "none", stroke: "#f76707", "stroke-width": 2, "pointer-events": "none"}));
     });
     const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null || dropped ? "#868e96" : "#212529"},
                   o.label + (dropped ? "  — not in the design (profile)" : i !== null && partStatus(i) ? "  — " + partShort(i) : ""));
@@ -449,6 +482,11 @@ function draw() {
       circ.append(el("title", {}, c.label + " pin " + key + (pin ? ": " + pin.ref + " = " + pin.pin : pw ? ": " + pw : "")));
       if (pin) target(circ, {kind: "pin", conn: c.id, key});
       g.append(circ);
+      if (pin && SHARED.has(pin.ref)) {
+        const ring = el("circle", {cx: px, cy: py, r: 8.5, fill: "none", stroke: "#f76707", "stroke-width": 2, "pointer-events": "none"});
+        circ.querySelector("title").textContent += " — " + sharedRefText(pin.ref);
+        g.append(ring);
+      }
       // the pin's number / name outside its row
       const above = r === 0;
       if (long) {
@@ -601,6 +639,8 @@ function draw() {
                                 "): design bits → driver → pins; the lines inside show which pin serves which bits"]);
   if (Object.keys(S.pos.groups).length) legend.push(["#4c6ef5", "3 2", "dotted outline: design bits a driver carries together over one pin"]);
   if (wires.length) legend.push(["#d9480f", "", "wire from a header pin to a module (one colour per module)"]);
+  if (SHARED.size) legend.push(["#f76707", "", "orange ring: an FPGA pin several parts reach (only one may drive it)"]);
+  if (ports().some((p) => sharedBits(p).size)) legend.push(["#f76707", "", "orange corner: a design bit several parts feed (inputs ORed, outputs drive all)"]);
   if (((S.ev && S.ev.profile_drops) || []).length) legend.push(["#adb5bd", "4 2", "part in the rig the design-wiring profile leaves out of the design (pins tied to constants)"]);
   legend.push(["var(--sel)", "", "the selection and everything it connects to (dashed when through a driver)"]);
   legend.forEach(([col, dash, text], k) => {
@@ -1266,6 +1306,9 @@ function details() {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
     if (!p) return;
     d.append(h("h4", {}, "design " + p.signal + (sel.kind === "vbit" ? "[" + sel.bit + "]" : "") + "  (" + p.capability + ", " + p.direction + ")"));
+    const sharedHere = sel.kind === "vbit" ? [sel.bit] : [...sharedBits(p).keys()];
+    for (const b of sharedHere) if (sharedBitText(p, b)) d.append(h("p", {class: "note"}, sharedBitText(p, b) +
+      (p.direction === "hw_to_user" ? " — the build ORs the parts' bits (the rig's design-wiring profile or lab_bits give them the same design bit)" : "")));
     const facts = [["Width", p.width_parameter
       ? widthText(p) + " — a design_top parameter (" + portName(p) + "[" + p.width_parameter + " - 1 : 0]): this rig sets it, other rigs give other widths, and a design reads " + p.width_parameter
       : (p.width || 0) + " bit" + (p.width === 1 ? "" : "s") + ", fixed by the design_top interface"]];
@@ -1305,6 +1348,7 @@ function details() {
     const [cid, k] = key.split(".");
     const c = conn(cid), pin = c.pins[k];
     d.append(h("h4", {}, c.label + " pin " + k));
+    if (sharedRefText(pin.ref)) d.append(h("p", {class: "note"}, "This pin is " + sharedRefText(pin.ref) + "."));
     edgeList(d, pin.ref);
     d.append(h("table", {}, h("tr", {}, h("td", {}, "pinmap"), h("td", {}, pin.ref)),
                           h("tr", {}, h("td", {}, "FPGA pin"), h("td", {}, pin.pin)),
@@ -2007,6 +2051,22 @@ async function selftest() {
       }
       ok("double-clicking any kind of thing (" + [...seen.keys()].join(", ") + ") opens marked Verilog" + (bad.length ? " [" + bad.join("; ") + "]" : ""), !bad.length);
       showSide("props");
+    }
+    // shared pins and bits are marked and explained
+    {
+      const sr = sharedRefs();
+      if (sr.size) {
+        const ref = [...sr.keys()][0], key = refIndex()[ref];
+        ok("a pin several parts reach is warned about", (S.ev.problems || []).some((q) => q.level === "warning" && q.message.includes(ref)));
+        if (key) { select({kind: "pin", conn: key.split(".")[0], key: key.split(".")[1]});
+                   ok("its panel says it is shared", $("details").textContent.includes("This pin is shared")); }
+      }
+      const sp = ports().find((q) => sharedBits(q).size);
+      if (sp) {
+        const b = [...sharedBits(sp).keys()][0];
+        select({kind: "vbit", cap: sp.capability, signal: sp.signal, bit: b});
+        ok("a bit several parts feed says how they combine", $("details").textContent.includes(sp.direction === "hw_to_user" ? " OR " : "drives all of"));
+      }
     }
     // widths the rig sets are shown as design_top parameters
     const pp = ports().find((q) => q.width_parameter && q.providers.length);
