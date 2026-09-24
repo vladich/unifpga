@@ -9,19 +9,46 @@ Layout:
   verified: false
   generated: true
 
+  connector_types:
+    sipeed_2x4_sdio:
+      name: Sipeed 2x4 SDIO header
+      voltage: 3.3
+      rows: [[1, 3, 5, 7], [2, 4, 6, 8]]
+      power: {7: GND, 8: VCC5}
+      source: 'dock schematic 31005, p16: J10 PinHeader_2x04, 7 GND, 8 5V'
+    sipeed_2x20_sdram:
+      name: Sipeed 2x20 SDRAM connector (MiSTer SDRAM module pinout)
+      voltage: 3.3
+      rows: [[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39], [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]]
+      power: {11: VCC5, 12: GND}
+      source: 'dock schematic 31005, p19: J13 / J14 TH_PIN_2x20_2.54mm, pin 11 5V_Peripheral, 12 GND'
+
   connectors:
     - id: pmod_0
-      type: pin_row
-      label: PMOD_0
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      type: sipeed_2x6
+      label: PMOD0 (J9)
       bank: pmod_0
-      pins: {'[0]': 'pmod_0[0]', '[1]': 'pmod_0[1]', '[2]': 'pmod_0[2]', '[3]': 'pmod_0[3]', '[4]': 'pmod_0[4]', '[5]': 'pmod_0[5]', '[6]': 'pmod_0[6]', '[7]': 'pmod_0[7]'}
+      pins: {'5': 'pmod_0[6]', '6': 'pmod_0[7]', '7': 'pmod_0[4]', '8': 'pmod_0[5]', '9': 'pmod_0[2]', '10': 'pmod_0[3]', '11': 'pmod_0[0]', '12': 'pmod_0[1]'}
     - id: pmod_1
-      type: pin_row
-      label: PMOD_1
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      type: sipeed_2x6
+      label: PMOD1 (J8)
       bank: pmod_1
-      pins: {'[0]': 'pmod_1[0]', '[1]': 'pmod_1[1]', '[2]': 'pmod_1[2]', '[3]': 'pmod_1[3]', '[4]': 'pmod_1[4]', '[5]': 'pmod_1[5]', '[6]': 'pmod_1[6]', '[7]': 'pmod_1[7]'}
+      pins: {'5': 'pmod_1[6]', '6': 'pmod_1[7]', '7': 'pmod_1[4]', '8': 'pmod_1[5]', '9': 'pmod_1[2]', '10': 'pmod_1[3]', '11': 'pmod_1[0]', '12': 'pmod_1[1]'}
+    - id: j10
+      type: sipeed_2x4_sdio
+      label: J10 (SDIO)
+      bank: sdio_header
+      pins: {'1': 'sdio_header[0]', '2': 'sdio_header[1]', '3': 'sdio_header[2]', '4': 'sdio_header[3]', '5': 'sdio_header[4]', '6': 'sdio_header[5]'}
+    - id: j13
+      type: sipeed_2x20_sdram
+      label: J13 (SDRAM0)
+      bank: header_j13
+      pins: {'1': 'header_j13[0]', '2': 'header_j13[1]', '3': 'header_j13[2]', '4': 'header_j13[3]', '5': 'header_j13[4]', '6': 'header_j13[5]', '7': 'header_j13[6]', '8': 'header_j13[7]', '9': 'header_j13[8]', '10': 'header_j13[9]', '13': 'header_j13[10]', '14': 'header_j13[11]', '15': 'header_j13[12]', '16': 'header_j13[13]', '17': 'header_j13[14]', '18': 'header_j13[15]', '19': 'header_j13[16]', '20': 'header_j13[17]', '21': 'header_j13[18]', '22': 'header_j13[19]', '23': 'header_j13[20]', '24': 'header_j13[21]', '25': 'header_j13[22]', '26': 'header_j13[23]', '27': 'header_j13[24]', '28': 'header_j13[25]', '29': 'header_j13[26]', '30': 'header_j13[27]', '31': 'header_j13[28]', '32': 'header_j13[29]', '33': 'header_j13[30]', '34': 'header_j13[31]', '35': 'header_j13[32]', '36': 'header_j13[33]', '37': 'header_j13[34]', '38': 'header_j13[35]', '39': 'header_j13[36]', '40': 'header_j13[37]'}
+    - id: j14
+      type: sipeed_2x20_sdram
+      label: J14 (SDRAM1)
+      bank: header_j14
+      pins: {'1': 'header_j14[0]', '2': 'pmod_0[0]', '3': 'header_j14[2]', '4': 'pmod_0[2]', '5': 'header_j14[4]', '6': 'pmod_0[4]', '7': 'header_j14[6]', '8': 'header_j14[7]', '9': 'header_j14[8]', '10': 'header_j14[9]', '13': 'header_j14[10]', '14': 'header_j14[11]', '15': 'header_j14[12]', '16': 'header_j14[13]', '17': 'header_j14[14]', '18': 'header_j14[15]', '19': 'header_j14[16]', '20': 'header_j14[17]', '21': 'pmod_1[1]', '22': 'pmod_1[0]', '23': 'pmod_1[3]', '24': 'pmod_1[2]', '25': 'pmod_1[5]', '26': 'pmod_1[4]', '27': 'pmod_1[7]', '28': 'pmod_1[6]', '29': 'header_j14[26]', '30': 'header_j14[27]', '31': 'header_j14[28]', '32': 'header_j14[29]', '33': 'header_j14[30]', '34': 'header_j14[31]', '35': 'header_j14[32]', '36': 'header_j14[33]', '37': 'header_j14[34]', '38': 'header_j14[35]', '39': 'header_j14[36]', '40': 'header_j14[37]'}
 
   onboard:
     - id: clk
@@ -39,6 +66,9 @@ Layout:
     - id: audio
       label: Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
       attach: {peripheral: i2s_audio_out, params: {align_right: 1, offset_by_one_cycle: 0}, bind: {bclk: onboard_audio.bck, lrclk: onboard_audio.ws, sdata: onboard_audio.din, pa_en_n: onboard_audio.pa_en_n}}
+    - id: ws2812
+      label: WS2812B-2020 RGB LED (U15) + aRGB strip connector J24
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: spi_flash
       label: SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)
       device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet
@@ -81,12 +111,6 @@ Layout:
     - id: sdcard
       label: microSD slot J31 (TF-101A)
       device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
-    - id: sdio_header
-      label: SDIO header J10 (2x4 2.54 mm)
-      device: {kind: header, bank: sdio_header}   # no peripheral model yet
-    - id: ws2812
-      label: WS2812B-2020 RGB LED (U15) + aRGB strip connector J24
-      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: camera
       label: OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)
       device: {kind: camera_dvp, bank: onboard_camera}   # no peripheral model yet

@@ -107,7 +107,7 @@ Board:
     sdio_header:   # SDIO header J10 (2x4 2.54 mm)
       device: {"name": "SDIO header J10 (2x4 2.54 mm)", "kind": "header"}
       shares: ["onboard_sdcard"]   # the board multiplexes these pins
-      pins: {"1_d0_miso": "AA15", "2_cmd_mosi": "Y16", "3_d1": "AB15", "4_clk": "V15", "5_d3_cs": "W15", "6_d2": "W14"}
+      pins: ["AA15", "Y16", "AB15", "V15", "W15", "W14"]   # header pins 1-6: D0/MISO, CMD/MOSI, D1, CLK, D3/CS, D2
     onboard_audio:   # Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
       device: {"name": "Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)", "kind": "audio_i2s"}
       model_params: {"align_right": 1, "offset_by_one_cycle": 0}   # PT8211: LSB-justified input
@@ -122,6 +122,16 @@ Board:
       iostandard: "LVCMOS33"
       shares: ["onboard_sdram_1", "pmod_1"]   # the board multiplexes these pins
       pins: {"xclk": "AA21", "pclk": "AB20", "vsync": "Y21", "href": "AB21", "rst_n": "Y22", "pwdn": "AB22", "d": ["P14", "P15", "R16", "R14", "N15", "T20", "AA19", "AA20"], "sda": "Y13", "scl": "AA14"}
+    header_j13:   # 2x20 header J13 (SDRAM0 connector: a MiSTer-style SDRAM module, or anything else)
+      device: {"name": "2x20 header J13 (SDRAM0 connector: a MiSTer-style SDRAM module, or anything else)", "kind": "header"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_sdram_0"]   # the board multiplexes these pins
+      pins: ["E14", "E13", "C15", "C14", "B13", "C13", "A14", "A13", "B16", "B15", "A16", "A15", "A20", "B20", "A21", "B21", "B18", "B17", "C17", "D17", "A19", "A18", "D15", "D14", "D16", "E16", "F14", "F13", "E17", "F16", "F19", "F15", "C20", "D20", "D19", "E19", "C19", "C18"]   # header pins 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
+    header_j14:   # 2x20 header J14 (SDRAM1 connector)
+      device: {"name": "2x20 header J14 (SDRAM1 connector)", "kind": "header"}
+      iostandard: "LVCMOS33"
+      shares: ["onboard_sdram_1", "onboard_camera", "pmod_0", "pmod_1"]   # the board multiplexes these pins
+      pins: ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "W17", "V17", "W22", "W21", "P17", "N17", "N14", "N13", "V20", "U20", "Y22", "Y21", "AB22", "AB21", "AA21", "AA20", "AB20", "AA19", "AA18", "AB18", "Y19", "Y18", "T20", "N15", "U18", "U17", "R16", "P15", "R14", "P14"]   # header pins 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
     onboard_sdram_0:   # 2x20 header J13 (SDRAM0 connector, MiSTer-style SDRAM module)
       device: {"name": "2x20 header J13 (SDRAM0 connector, MiSTer-style SDRAM module)", "kind": "sdram"}
       iostandard: "LVCMOS33"
