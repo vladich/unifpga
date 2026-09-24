@@ -20,7 +20,7 @@ Setup:
     - module: digilent_pmod_od1
       plug: {connector: jb, row: 2}
     - module: lcd1602_hd44780
-      wires: {RS: ck.IO2, RW: ck.IO3, E: ck.IO4, D4: ck.IO5, D5: ck.IO6, D6: ck.IO7, D7: ck.IO8}
+      wires: {RS: ck.IO2, E: ck.IO4, D4: ck.IO5, D5: ck.IO6, D6: ck.IO7, D7: ck.IO8, RW: ck.IO3}
     - onboard: rgb_led_0
     - onboard: rgb_led_1
     - onboard: rgb_led_2

@@ -54,10 +54,10 @@ Configuration:
         vs: onboard_vga.vs
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio_0[2]"
-        ws: "gpio_0[4]"
         sck: "gpio_0[6]"
+        ws: "gpio_0[4]"
         sd: "gpio_0[7]"
+        lr: "gpio_0[2]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "gpio_0[29]"

@@ -52,7 +52,7 @@ Configuration:
         rx: onboard_uart.rx
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio[3]"
-        ws: "gpio[4]"
         sck: "gpio[5]"
+        ws: "gpio[4]"
         sd: "gpio[6]"
+        lr: "gpio[3]"

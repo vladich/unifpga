@@ -11,11 +11,11 @@ Setup:
     - onboard: uart
     - onboard: hdmi_0
     - module: tm1638_led_key
-      wires: {DIO: 'pmod_2.[1]', CLK: 'pmod_2.[2]', STB: 'pmod_2.[3]'}
+      wires: {STB: 'pmod_2.[3]', CLK: 'pmod_2.[2]', DIO: 'pmod_2.[1]'}
     - module: inmp441_breakout
-      wires: {L/R: 'gpio.[0]', WS: 'gpio.[2]', SCK: 'gpio.[4]', SD: 'gpio.[5]'}
+      wires: {SCK: 'gpio.[4]', WS: 'gpio.[2]', SD: 'gpio.[5]', L/R: 'gpio.[0]'}
     - module: i2s_dac_breakout
-      wires: {SCK: 'pmod_2.[4]', BCK: 'pmod_2.[5]', DIN: 'pmod_2.[6]', LCK: 'pmod_2.[7]'}
+      wires: {SCK: 'pmod_2.[4]', BCK: 'pmod_2.[5]', LCK: 'pmod_2.[7]', DIN: 'pmod_2.[6]'}
     - gpio: gpio
       pins: ['[0]', '[1]', '[2]', '[3]', '[4]', '[5]', '[6]', '[7]', '[8]', '[9]', '[10]', '[11]', '[12]', '[13]', '[14]', '[15]', '[16]', '[17]', '[18]', '[19]', '[20]', '[21]', '[22]', '[23]', '[24]', '[25]', '[26]', '[27]', '[28]', '[29]', '[36]', '[37]']
       params: {width: 32}

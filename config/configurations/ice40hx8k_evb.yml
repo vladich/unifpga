@@ -51,18 +51,18 @@ Configuration:
         vs: onboard_vga.vs
     - peripheral: tm1638_led_key
       bind:
-        clk: "gpio[0]"
         stb: "gpio[1]"
+        clk: "gpio[0]"
         dio: "gpio[2]"
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "gpio[3]"
-        ws: "gpio[4]"
         sck: "gpio[5]"
+        ws: "gpio[4]"
         sd: "gpio[6]"
+        lr: "gpio[3]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "gpio[7]"
         bclk: "gpio[8]"
-        sdata: "gpio[9]"
         lrclk: "gpio[10]"
+        sdata: "gpio[9]"

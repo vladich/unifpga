@@ -14,7 +14,7 @@ Setup:
     - onboard: switches
     - onboard: leds
     - module: inmp441_breakout
-      wires: {L/R: 'gpio_0.[0]', WS: 'gpio_0.[2]', SCK: 'gpio_0.[4]', SD: 'gpio_0.[5]'}
+      wires: {SCK: 'gpio_0.[4]', WS: 'gpio_0.[2]', SD: 'gpio_0.[5]', L/R: 'gpio_0.[0]'}
     - module: tm1638_led_key
       wires: {STB: 'gpio_0.[27]', CLK: 'gpio_0.[29]', DIO: 'gpio_0.[31]'}
     - module: i2s_dac_breakout

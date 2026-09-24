@@ -662,7 +662,9 @@ function draw() {
     g.append(el("rect", {x: DX, y: d.y, width: DW, height: d.h, rx: 5, fill: "#f3f0ff",
                          stroke: boxSel || lit(d.edges) ? "var(--sel)" : "#7048e8", "stroke-width": boxSel ? 2.5 : 1.2}));
     g.append(el("text", {x: DX + 8, y: d.y + 14, "font-size": 11, "font-weight": "bold", fill: "#5f3dc4"}, d.via));
-    const sub = "driver in the FPGA for " + useLabel(use);
+    // the box says which names it shows: a driver whose pin ports are named like the
+    // part's pins (i2s_audio_out's mclk / bclk ...) looks the same on that side either way
+    const sub = (driverNaming(d) === "own" ? "own port names · " : "") + "driver in the FPGA for " + useLabel(use);
     g.append(el("text", {x: DX + 8, y: d.y + 26, "font-size": 9, fill: "#868e96"}, sub.length > 40 ? sub.slice(0, 39) + "…" : sub));
     g.append(el("title", {}, d.via + ": logic inside the FPGA between design_top and " + useLabel(use) + "'s pins"));
     for (const c of g.children) if (c.tagName !== "title") target(c, {kind: "driver", use: d.use, via: d.via});
@@ -2482,6 +2484,12 @@ async function selftest() {
       [...document.querySelectorAll("#picker.menu .picker-item")].find((b) => b.textContent.includes("its own port names")).click();
       const own = drivers().find((x) => x.via === bd.via);
       ok("…and switching shows the driver's own port names", !$("picker") && texts().includes([...own.design.values()][0].own));
+      // on both sides: a driver whose pin-side ports are named otherwise than the part's pins
+      const other = drivers().flatMap((x) => [...x.pin.values()].map((an) => [x, an])).find(([, an]) => an.own !== an.label);
+      if (other) {
+        setDriverNaming(other[0].via, "own");
+        ok("the pin side shows the driver's own names too (" + other[1].label + " → " + other[1].own + ")", texts().includes(other[1].own));
+      }
       S.driverNames = JSON.parse(saved);
       try { localStorage.setItem("unifpga.driverNames", saved); } catch (e) { /* private window */ }
       render();

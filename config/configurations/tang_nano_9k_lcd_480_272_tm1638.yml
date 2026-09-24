@@ -49,9 +49,9 @@ Configuration:
           params: {clock_pixel_pll: null}
     - peripheral: tm1638_led_key
       bind:
-        dio: "gpio[0]"
-        clk: "gpio[1]"
         stb: "gpio[2]"
+        clk: "gpio[1]"
+        dio: "gpio[0]"
     - peripheral: inmp441_i2s_mic
       bind:
         lr: onboard_microsd.cs
@@ -61,8 +61,8 @@ Configuration:
     - peripheral: i2s_audio_out
       bind:
         bclk: "gpio[3]"
-        sdata: "gpio[4]"
         lrclk: "gpio[5]"
+        sdata: "gpio[4]"
     - peripheral: gpio_header
       params:
         width: 4

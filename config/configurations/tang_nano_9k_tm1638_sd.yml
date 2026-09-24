@@ -37,9 +37,9 @@ Configuration:
         rx: onboard_uart.rx
     - peripheral: tm1638_led_key
       bind:
-        dio: "gpio[0]"
-        clk: "gpio[1]"
         stb: "gpio[2]"
+        clk: "gpio[1]"
+        dio: "gpio[0]"
     - peripheral: inmp441_i2s_mic
       bind:
         lr: onboard_microsd.cs

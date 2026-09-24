@@ -201,3 +201,18 @@ def test_a_module_on_every_pin_of_a_header_binds_the_bank():
     r = config_init.resolve_configuration("icebreaker_dvi_24b_tm1638")
     dvi = next(a for a in r["peripherals"] if a["peripheral_id"] == "dvi_pmod_ddr_24b")
     assert dvi["bind"] == {"pmod_a": "pmod_p1a", "pmod_b": "pmod_p1b"}
+
+
+def test_a_modules_bind_does_not_depend_on_the_order_of_its_wires():
+    """A browser lists a Pmod's pins "1", "2", "4", "9" numerically whatever the
+    file says: the bind follows the peripheral's signals, so the editor cannot
+    reorder a configuration's ports."""
+    setup = su.read_setup("nexys4_ddr")
+    k = next(i for i, u in enumerate(setup["use"]) if u.get("module") == "digilent_pmod_amp3")
+    wires = setup["use"][k]["wires"]
+    shuffled = copy.deepcopy(setup)
+    shuffled["use"][k]["wires"] = {p: wires[p] for p in sorted(wires, key=int)}
+    assert list(su.generate(shuffled)["attach"][k]["bind"]) == list(su.generate(setup)["attach"][k]["bind"])
+    signals = [s["name"] for s in config_init.read_peripherals()["i2s_audio_out"]["signals"]]
+    bind = list(su.generate(setup)["attach"][k]["bind"])
+    assert bind == [s for s in signals if s in bind]

@@ -14,8 +14,8 @@ Setup:
     - onboard: uart
     - onboard: vga
     - module: tm1638_led_key
-      wires: {CLK: 'gpio.[0]', STB: 'gpio.[1]', DIO: 'gpio.[2]'}
+      wires: {STB: 'gpio.[1]', CLK: 'gpio.[0]', DIO: 'gpio.[2]'}
     - module: inmp441_breakout
-      wires: {L/R: 'gpio.[3]', WS: 'gpio.[4]', SCK: 'gpio.[5]', SD: 'gpio.[6]'}
+      wires: {SCK: 'gpio.[5]', WS: 'gpio.[4]', SD: 'gpio.[6]', L/R: 'gpio.[3]'}
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio.[7]', BCK: 'gpio.[8]', DIN: 'gpio.[9]', LCK: 'gpio.[10]'}
+      wires: {SCK: 'gpio.[7]', BCK: 'gpio.[8]', LCK: 'gpio.[10]', DIN: 'gpio.[9]'}

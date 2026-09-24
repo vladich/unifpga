@@ -49,8 +49,8 @@ Configuration:
         bl: onboard_lcd.bl
     - peripheral: tm1638_led_key
       bind:
-        clk: "gpio_1[2]"
         stb: "gpio_1[3]"
+        clk: "gpio_1[2]"
         dio: "gpio_1[1]"
     - peripheral: i2s_audio_out
       params:

@@ -20,11 +20,11 @@ Setup:
     - onboard: pwm_amp
     - onboard: uart
     - module: inmp441_breakout
-      wires: {L/R: 'pmod_jd.[6]', WS: 'pmod_jd.[5]', SCK: 'pmod_jd.[4]', SD: 'pmod_jd.[0]'}
+      wires: {SCK: 'pmod_jd.[4]', WS: 'pmod_jd.[5]', SD: 'pmod_jd.[0]', L/R: 'pmod_jd.[6]'}
     - module: i2s_dac_breakout
-      wires: {SCK: 'pmod_jc.[4]', BCK: 'pmod_jc.[5]', DIN: 'pmod_jc.[6]', LCK: 'pmod_jc.[7]'}
+      wires: {SCK: 'pmod_jc.[4]', BCK: 'pmod_jc.[5]', LCK: 'pmod_jc.[7]', DIN: 'pmod_jc.[6]'}
     - module: digilent_pmod_amp3
-      wires: {'9': 'pmod_jb.[6]', '4': 'pmod_jb.[3]', '2': 'pmod_jb.[1]', '1': 'pmod_jb.[0]'}
+      wires: {'9': 'pmod_jb.[6]', '4': 'pmod_jb.[3]', '1': 'pmod_jb.[0]', '2': 'pmod_jb.[1]'}
   extra:
     tie:
       onboard_mic.clk: 0

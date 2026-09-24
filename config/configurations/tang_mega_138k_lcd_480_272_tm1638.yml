@@ -41,18 +41,18 @@ Configuration:
         ck: onboard_lcd.ck
     - peripheral: tm1638_led_key
       bind:
-        dio: "pmod_1[6]"
-        clk: "pmod_1[4]"
         stb: "pmod_1[2]"
+        clk: "pmod_1[4]"
+        dio: "pmod_1[6]"
     - peripheral: inmp441_i2s_mic
       bind:
-        lr: "pmod_0[4]"
-        ws: "pmod_0[2]"
         sck: "pmod_0[0]"
+        ws: "pmod_0[2]"
         sd: "pmod_1[0]"
+        lr: "pmod_0[4]"
     - peripheral: i2s_audio_out
       bind:
         mclk: "pmod_1[1]"
         bclk: "pmod_1[3]"
-        sdata: "pmod_1[5]"
         lrclk: "pmod_1[7]"
+        sdata: "pmod_1[5]"

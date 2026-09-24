@@ -12,7 +12,7 @@ Setup:
     - onboard: switches
     - onboard: buttons
     - module: inmp441_breakout
-      wires: {L/R: j14.8, WS: j14.6, SCK: j14.10, SD: j14.12}
+      wires: {SCK: j14.10, WS: j14.6, SD: j14.12, L/R: j14.8}
     - onboard: headphone
     - module: i2s_dac_breakout
       wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}

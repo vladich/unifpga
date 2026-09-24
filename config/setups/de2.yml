@@ -15,7 +15,7 @@ Setup:
     - onboard: 7seg
     - onboard: vga
     - module: inmp441_breakout
-      wires: {L/R: 'gpio_1.[0]', WS: 'gpio_1.[2]', SCK: 'gpio_1.[4]', SD: 'gpio_1.[5]'}
+      wires: {SCK: 'gpio_1.[4]', WS: 'gpio_1.[2]', SD: 'gpio_1.[5]', L/R: 'gpio_1.[0]'}
     - onboard: audio_codec
     - gpio: gpio_1
       params: {width: 36}

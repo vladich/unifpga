@@ -21,9 +21,9 @@ Setup:
     - onboard: uart
     - onboard: reset
     - module: digilent_pmod_mic3
-      wires: {'1': jd.7, '4': jd.10, '3': jd.9}
+      plug: {connector: jd, row: 2}
     - module: tm1638_led_key
-      wires: {CLK: ck.IO40, STB: ck.IO41, DIO: ck.IO39}
+      wires: {STB: ck.IO41, CLK: ck.IO40, DIO: ck.IO39}
     - gpio: ck
       params: {width: 30}
     - module: digilent_pmod_vga

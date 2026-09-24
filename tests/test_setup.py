@@ -76,7 +76,7 @@ def test_plugged_pmod_wires_its_row():
     plugged = copy.deepcopy(base)
     for u in plugged["use"]:
         if u.get("module") == "digilent_pmod_mic3":
-            u.pop("wires")
+            u.pop("wires", None)
             u["plug"] = {"connector": "jd", "row": 2}
     got = [a for a in su.generate(plugged)["attach"] if a["peripheral"] == "pmod_mic3"][0]
     assert got["bind"] == {"cs": "pmod_jd[4]", "miso": "pmod_jd[6]", "sclk": "pmod_jd[7]"}
@@ -564,7 +564,7 @@ def test_conflicts_offer_buttons_that_resolve_them():
         assert not [q for q in ev["problems"] if "audio_in" in q["message"]] and ev["parts"] == []
     # a module wired onto pins another module uses: re-wire it or remove one
     rig = copy.deepcopy(base)
-    rig["use"].append({"module": "inmp441_breakout", "wires": dict(base["use"][mic3]["wires"], **{"L/R": "jd.8"})})
+    rig["use"].append({"module": "inmp441_breakout", "wires": {}})
     rig["use"][-1]["wires"] = {"SD": "jd.9", "WS": "jd.10", "SCK": "jd.7", "L/R": "jd.8"}
     (p,) = [p for p in studio.evaluate(rig)["problems"] if "used by both" in p["message"]]
     assert p["uses"] == [mic3, len(rig["use"]) - 1]
