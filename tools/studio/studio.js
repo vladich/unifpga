@@ -1175,14 +1175,63 @@ function adoptTab(file) {
   const tab = S.tabs.find((x) => tabKey(x) === tabKey(file));
   if (!tab) { file.rev = 1; S.tabs.push(file); return file; }
   if (tab !== file) {
-    if (tab.text !== file.text) { tab.text = file.text; tab.decl = null; tab.rev = (tab.rev || 1) + 1; }
-    Object.assign(tab, {title: file.title, highlight: file.highlight, note: file.note});
+    if (tab.text !== file.text && !dirty(tab)) {
+      tab.text = file.text; tab.decl = null; tab.rev = (tab.rev || 1) + 1;
+      if (tab.editable) tab.loaded = file.text;
+    }
+    if (!tab.pinned) Object.assign(tab, {title: file.title, highlight: file.highlight, note: file.note});
   }
   return tab;
 }
+
+// ---- the design chosen for the rig: a pinned tab, editable, not closable. It
+// follows the choice: another design replaces it, another board or rig starts
+// the Source panel afresh. A tab with unsaved edits is never dropped: it stays
+// open (closable, still savable) next to the new one.
+function dirty(tab) { return !!tab && tab.draft !== undefined && tab.draft !== tab.text; }
+function tabText(tab) { return tab.draft !== undefined ? tab.draft : tab.text; }
+async function pinDesign() {
+  const rig = S.board && S.setup ? S.board.board + "/" + S.setup.id : null;
+  const want = rig && S.design ? rig + "/" + S.design : null;
+  if (STATIC || S.pinnedFor === want) return;
+  const newRig = !S.pinnedFor || S.pinnedFor.split("/").slice(0, 2).join("/") !== rig;
+  S.pinnedFor = want;
+  S.tabs = (S.tabs || []).filter((x) => dirty(x) || !(x.pinned || newRig));
+  for (const x of S.tabs) x.pinned = false;
+  if (newRig) { S.srcHist = []; S.srcPos = 0; S.related = []; }
+  S.srcHist = (S.srcHist || []).filter((v) => S.tabs.includes(v.file));
+  S.srcPos = Math.max(0, Math.min(S.srcPos || 0, S.srcHist.length - 1));
+  if (S.srcView && !S.tabs.includes(S.srcView.file)) S.srcView = null;
+  if (!want) { renderSource(); return; }
+  const design = S.design;
+  const src = await api("/api/module", {name: "design_top", design});
+  if (S.pinnedFor !== want) return;                      // the choice moved on meanwhile
+  let tab = S.tabs.find((x) => x.path === src.path);     // its own earlier tab, still being edited
+  if (!tab) {
+    tab = {path: src.path, text: src.text, highlight: [], rev: 1};
+    S.tabs.unshift(tab);
+  } else {
+    S.tabs.splice(S.tabs.indexOf(tab), 1); S.tabs.unshift(tab);
+  }
+  Object.assign(tab, {pinned: true, editable: true, design, loaded: tab.loaded || src.text,
+                      title: "design " + design,
+                      note: "The design chosen for this rig (" + S.setup.id + "): edit it here, then Save. Choosing another design or board replaces this tab."});
+  openView(tab, src.line, [], "the design chosen for " + S.setup.id);
+}
+async function saveDesign(tab) {
+  try {
+    const r = await api("/api/design/save", {design: tab.design, text: tabText(tab), loaded: tab.loaded});
+    Object.assign(tab, {text: r.text, loaded: r.text, draft: undefined, decl: null, rev: (tab.rev || 1) + 1});
+    tab.editing = false;
+    S.dt = null;                                          // the Designs page reads the requirements again
+    renderSource();
+    await changed("saved " + r.path);                     // which designs fit may have changed
+  } catch (e) { status(e.message, true); }
+}
 function closeTab(tab) {
   const k = S.tabs.indexOf(tab);
-  if (k < 0) return;
+  if (k < 0 || tab.pinned) return;
+  if (dirty(tab) && !confirm("Close " + tab.path + " and lose its unsaved edits?")) return;
   S.tabs.splice(k, 1);
   S.srcHist = (S.srcHist || []).filter((v) => v.file !== tab);
   S.srcPos = Math.min(S.srcPos || 0, S.srcHist.length - 1);
@@ -1246,10 +1295,12 @@ function renderSource() {
   const v = S.srcView, f = v && v.file;
   $("src-back").disabled = !(S.srcPos > 0);
   $("src-fwd").disabled = !(S.srcHist && S.srcPos < S.srcHist.length - 1);
-  $("src-files").replaceChildren(...(S.tabs || []).map((x) => h("span", {class: "src-tab" + (x === f ? " cur" : "")},
-    h("button", {title: x.path || "top.sv generated for the rig on the page (not a file)",
-                 onclick: () => openView(x, x.view.line, x.view.marks, x.view.why)}, x.path ? x.path.split("/").pop() : "top.sv"),
-    h("button", {class: "x", title: "Close", onclick: () => closeTab(x)}, "×"))));
+  $("src-files").replaceChildren(...(S.tabs || []).map((x) => h("span", {class: "src-tab" + (x === f ? " cur" : "") + (x.pinned ? " pinned" : "")},
+    h("button", {title: (x.pinned ? "the design chosen for this rig: " : "") + (x.path || "top.sv generated for the rig on the page (not a file)"),
+                 onclick: () => openView(x, x.view.line, x.view.marks, x.view.why)},
+      (x.pinned ? "📌 " : "") + (x.path ? x.path.split("/").pop() : "top.sv") + (x.pinned ? " (" + x.design + ")" : "") + (dirty(x) ? " ●" : "")),
+    x.pinned ? null : h("button", {class: "x", title: "Close", onclick: () => closeTab(x)}, "×"))));
+  renderEditBar(f);
   const rel = (S.related || []).filter((x) => !f || tabKey(x) !== tabKey(f));
   $("src-related").replaceChildren(...(rel.length && f ? ["also: "].concat(rel.map((x) => h("button", {title: x.path || "generated",
     onclick: () => openView(x, x.highlight[0] || 1, x.highlight, v.why)}, x.title))) : []));
@@ -1257,10 +1308,23 @@ function renderSource() {
   $("src-title").textContent = (f.path || f.title) + (v.why ? "  —  " + v.why : "");
   $("src-note").textContent = f.note || "";
   const box = $("src-code");
+  if (f.editing) {
+    if (box.dataset.shown !== tabKey(f) + "#edit") {
+      const ta = h("textarea", {class: "src-editor", spellcheck: "false"});
+      ta.value = tabText(f);
+      ta.addEventListener("input", () => { f.draft = ta.value; renderTabsOnly(); });
+      box.replaceChildren(ta);
+      box.dataset.shown = tabKey(f) + "#edit";
+      const lines = ta.value.split("\n"), n = Math.max(0, Math.min(v.line, lines.length) - 1);
+      ta.focus(); ta.selectionStart = ta.selectionEnd = lines.slice(0, n).join("\n").length + (n ? 1 : 0);
+    }
+    renderMarksEmpty();
+    return;
+  }
   if (box.dataset.shown !== tabKey(f) + "#" + (f.rev || 1)) {
-    renderCode(box, f.text);
+    renderCode(box, tabText(f));
     box.dataset.shown = tabKey(f) + "#" + (f.rev || 1);
-    f.decl = f.decl || declarations(f.text);
+    f.decl = f.decl || declarations(tabText(f));
     for (const e of box.querySelectorAll(".id")) if (f.decl.has(e.textContent)) e.classList.add("nav");
   }
   const marks = new Set(v.marks);
@@ -1268,6 +1332,26 @@ function renderSource() {
   for (const e of box.querySelectorAll(".occ")) e.classList.remove("occ");
   renderMarks();
   scrollToLine(v.line);
+}
+
+// Edit / View, Save, Revert for an editable tab (the pinned design)
+function renderEditBar(f) {
+  const bar = $("src-edit");
+  if (!f || !f.editable || STATIC) { bar.replaceChildren(); return; }
+  const leave = () => { f.editing = false; f.rev = (f.rev || 1) + 1; f.decl = null; renderSource(); };
+  bar.replaceChildren(
+    f.editing ? h("button", {onclick: leave, title: "Back to the coloured, navigable view (edits are kept)"}, "View")
+              : h("button", {onclick: () => { f.editing = true; renderSource(); }}, "Edit"),
+    h("button", {onclick: () => saveDesign(f), disabled: !dirty(f)}, "Save"),
+    h("button", {disabled: !dirty(f), onclick: () => { if (confirm("Drop the unsaved edits to " + f.path + "?")) { f.draft = undefined; leave(); } }}, "Revert"),
+    h("span", {class: "muted"}, dirty(f) ? " unsaved edits" : " saved"));
+}
+// the tab strip and edit bar only (typing must not rebuild the editor)
+function renderTabsOnly() {
+  const f = S.srcView && S.srcView.file;
+  for (const b of $("src-files").querySelectorAll(".src-tab.cur button:first-child"))
+    b.textContent = (f.pinned ? "📌 " : "") + (f.path ? f.path.split("/").pop() : "top.sv") + (f.pinned ? " (" + f.design + ")" : "") + (dirty(f) ? " ●" : "");
+  renderEditBar(f);
 }
 
 function renderCode(box, text) {
@@ -1361,7 +1445,7 @@ async function openModule(name, focusName, why) {
   const src = await api("/api/module", {name, design: name === "design_top" ? S.design : undefined});
   const file = adoptTab((S.tabs || []).find((x) => x.path === src.path) ||
                         {path: src.path, title: "module " + name, text: src.text, highlight: [src.line], note: ""});
-  file.decl = file.decl || declarations(file.text);
+  file.decl = file.decl || declarations(tabText(file));
   const line = focusName && file.decl.has(focusName) ? file.decl.get(focusName) : src.line;
   openView(file, line, [line], why);
 }
@@ -1377,10 +1461,10 @@ function onCodeClick(e) {
   const go = (p) => p.catch((x) => status(x.message, true));
   if (tok.classList.contains("m")) return go(openModule(name, null, "module " + name));
   if (prev && /\.\s*$/.test(prev)) {               // .port(...) of an instance: the port in that module
-    const mod = instanceModuleAt(f.text, line);
+    const mod = instanceModuleAt(tabText(f), line);
     if (mod) return go(openModule(mod, name, mod + "." + name));
   }
-  f.decl = f.decl || declarations(f.text);
+  f.decl = f.decl || declarations(tabText(f));
   if (f.decl.has(name) && f.decl.get(name) !== line) openView(f, f.decl.get(name), [f.decl.get(name)], name);
 }
 
@@ -1858,6 +1942,7 @@ function designChoices() {
   for (const [d, unmet] of bad)
     items.push(h("div", {class: "design unfit", "data-design": d, title: unmet.join("\n")}, d, h("span", {class: "why"}, unmet.join("; "))));
   box.replaceChildren(...items);
+  pinDesign().catch((e) => status(e.message, true));
 }
 
 function staleWarning() {
@@ -2027,8 +2112,10 @@ async function main() {
   showTab(q.get("tab") || (q.get("selftest") || q.get("sel") || q.get("setup") ? "rig" : "designs"));
   if (q.get("selftest")) return selftest();
   if (q.get("sel")) { S.sel = parseSel(q.get("sel")); render(); }
+  if (q.get("side") === "source" || q.get("side") === "props") showSide(q.get("side"));
 }
 
+// ?side=source | props (the right panel's tab)
 // ?sel=vbit:leds:led:2 | vport:leds:led | pin:jd:7 | wire:11:CLK | use:11 | onboard:leds | conn:ck
 //      | driver:11:tm1638_board_controller | dseg:11:tm1638_board_controller:pin:dio|arduino_io[27]
 function parseSel(text) {
@@ -2385,6 +2472,35 @@ async function selftest() {
     await openRig(c, any.id);
     ok("Open rig opens that configuration's rig with the design chosen", !$("tab-rig").hidden && S.setup.id === c.id && S.design === any.id);
     $("d-search").value = ""; S.dsel = null;
+    // the chosen design is the Source panel's pinned, editable tab
+    for (let k = 0; k < 200 && !(S.tabs || []).some((x) => x.pinned && x.design === any.id); k++) await new Promise((r) => setTimeout(r, 50));
+    const pin = (S.tabs || []).find((x) => x.pinned);
+    ok("the chosen design is pinned in Source", !!pin && pin.design === any.id && pin.path === "designs/" + any.id + "/design_top.sv" &&
+       S.srcView && S.srcView.file === pin);
+    ok("the pinned design has no close button", !!pin && !$("src-files").querySelector(".src-tab.pinned .x"));
+    if (pin) {
+      const original = pin.text;
+      [...$("src-edit").querySelectorAll("button")].find((b) => b.textContent === "Edit").click();
+      const ta = $("src-code").querySelector("textarea");
+      ok("Edit turns it into an editor", !!ta && ta.value === original);
+      ta.value = original + "\n// edited by the self-test\n"; ta.dispatchEvent(new Event("input"));
+      ok("an edit marks it unsaved", dirty(pin) && $("src-files").textContent.includes("●") && !$("src-edit").querySelector("button:nth-child(2)").disabled);
+      await saveDesign(pin);
+      const back = await api("/api/module", {name: "design_top", design: any.id});
+      ok("Save writes the design file", back.text === original + "\n// edited by the self-test\n" && !dirty(pin));
+      const stale = await api("/api/design/save", {design: any.id, text: "x", loaded: original}).then(() => null, (e) => e.message);
+      ok("a save over a file changed since loading is refused", !!stale && stale.includes("changed on disk"));
+      pin.editing = true; pin.draft = original; await saveDesign(pin);
+      ok("saving the original text restores it", (await api("/api/module", {name: "design_top", design: any.id})).text === original);
+      // another design replaces the pinned tab
+      const other = S.board.designs.find((d) => d !== any.id && !((S.ev.designs || {})[d] || []).length);
+      if (other) {
+        S.design = other; designChoices();
+        for (let k = 0; k < 200 && !(S.tabs || []).some((x) => x.pinned && x.design === other); k++) await new Promise((r) => setTimeout(r, 50));
+        ok("choosing another design replaces the pinned tab", S.tabs.filter((x) => x.pinned).length === 1 && S.tabs.find((x) => x.pinned).design === other &&
+           !S.tabs.some((x) => x.path === pin.path));
+      }
+    }
   } catch (e) { ok("designs page: " + e.message, false); }
   document.body.append(h("pre", {id: "selftest"}, log.join("\n")));
 }

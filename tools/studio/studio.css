@@ -125,3 +125,8 @@ svg text { font-family: system-ui, sans-serif; }
 .fixes { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
 .fixes button { font-size: 12px; }
 .conflict .note { margin-bottom: 2px; }
+#src-edit { display: flex; gap: 4px; align-items: center; margin: 2px 0 4px; }
+#src-edit:empty { display: none; }
+.src-tab.pinned > button:first-child { font-weight: 600; }
+.src-editor { width: 100%; height: 100%; box-sizing: border-box; border: 0; resize: none; padding: 4px 8px;
+              font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; tab-size: 4; outline: none; }

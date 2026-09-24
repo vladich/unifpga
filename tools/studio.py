@@ -544,6 +544,27 @@ def module_source(name, design=None):
         return {"path": rel, "text": f.read(), "line": line}
 
 
+def save_design(design, text, loaded):
+    """Write the design's design_top file (the page's pinned, editable Source
+    tab). `loaded` is the text the page started editing from: when the file
+    no longer holds it (edited elsewhere since), nothing is written."""
+    if not isinstance(text, str) or not isinstance(loaded, str):
+        raise ApiError(400, "text and loaded must be strings")
+    src = module_source("design_top", design)          # validates the design id
+    path = os.path.realpath(os.path.join(REPO, src["path"]))
+    if not path.startswith(os.path.realpath(os.path.join(DESIGNS_DIR, design)) + os.sep):
+        raise ApiError(400, "the design's file is not under designs/{}".format(design))
+    if src["text"] != loaded:
+        raise ApiError(409, "{} changed on disk since the page loaded it: reload it (your edits stay in the "
+                            "page until you do) or copy them out first".format(src["path"]))
+    if text != loaded:
+        tmp = path + ".saving"
+        with open(tmp, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    return {"path": src["path"], "text": text}
+
+
 def _ref_names(ref):
     """How a pinmap entry appears in top.sv: as written (`arduino_io[27]`),
     and its port name (`onboard_uart.tx` -> `onboard_uart_tx`, the bus of an
@@ -778,6 +799,8 @@ def make_server(port=8765, host="127.0.0.1"):
                     return self._send(200, save(body["setup"]))
                 if path == "/api/verilog":
                     return self._send(200, verilog_view(body["setup"], body.get("target")))
+                if path == "/api/design/save":
+                    return self._send(200, save_design(body["design"], body["text"], body["loaded"]))
                 if path == "/api/module":
                     return self._send(200, module_source(body["name"], body.get("design")))
                 if path == "/api/project":

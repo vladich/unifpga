@@ -586,3 +586,20 @@ def test_design_table_covers_every_design_and_configuration():
         assert set(d["fits"]).isdisjoint(int(x) for x in d["unmet"]) and \
             len(d["fits"]) + len(d["unmet"]) == len(t["configurations"])
     assert studio.design_table() is t                     # cached until a file changes
+
+
+def test_the_pinned_design_saves_only_over_what_the_page_loaded(tmp_path, monkeypatch):
+    d = tmp_path / "designs" / "mine"
+    d.mkdir(parents=True)
+    f = d / "design_top.sv"
+    f.write_text("module design_top (input clk);\nendmodule\n")
+    monkeypatch.setattr(studio, "DESIGNS_DIR", str(tmp_path / "designs"))
+    loaded = f.read_text()
+    r = studio.save_design("mine", loaded + "// more\n", loaded)
+    assert f.read_text() == loaded + "// more\n" and r["text"].endswith("// more\n")
+    with pytest.raises(studio.ApiError, match="changed on disk"):
+        studio.save_design("mine", "module design_top (); endmodule\n", loaded)
+    assert f.read_text() == loaded + "// more\n"
+    with pytest.raises(studio.ApiError, match="unknown design"):
+        studio.save_design("../../etc", "x", "x")
+    assert not list(d.glob("*.saving"))
