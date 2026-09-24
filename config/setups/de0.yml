@@ -21,6 +21,7 @@ Setup:
       params: {width: 32}
     - gpio: gpio_0
       params: {width: 32}
+    - onboard: lcd
   extra:
     tie:
       gpio_0[3]: 0

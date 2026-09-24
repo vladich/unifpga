@@ -1,0 +1,37 @@
+# WS2812 / WS2812B smart RGB LEDs on one data line: the design's RGB LEDs, each
+# channel on (at `brightness`) or off. rtl/peripherals/ws2812_out.sv sends the
+# frames; `count` LEDs are chained from the board's LED (an aRGB strip on its
+# DOUT extends it).
+
+Peripheral:
+  id: ws2812
+  description: WS2812 / WS2812B smart RGB LED chain (one data line)
+  parameters:
+    count:
+      type: int
+      default: 1
+    brightness:
+      type: int
+      default: 32           # of 255: bright enough indoors, easy on the eyes
+  # the on-board devices it models: a board inventory's `ws2812` device
+  models: {kind: ws2812, pins: {din: [din]}}
+  signals:
+    - { name: din, type: scalar, direction: output, comment: "The first LED's data input" }
+  provides:
+    - capability: rgb_leds
+      params:
+        count: $count
+  driver:
+    module: ws2812_out
+    file: rtl/peripherals/ws2812_out.sv
+    parameters:
+      clk_mhz:    context.clk_mhz
+      count:      $count
+      brightness: $brightness
+    port_map:
+      clk:  context.clk
+      rst:  context.rst
+      r:    capability.rgb_leds.r
+      g:    capability.rgb_leds.g
+      b:    capability.rgb_leds.b
+      dout: pin.din

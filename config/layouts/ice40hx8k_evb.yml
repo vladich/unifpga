@@ -74,4 +74,4 @@ Layout:
       device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
     - id: pgm_uart
       label: PGM1 10-pin programming connector UART (RxD/TxD, for Olimex programmer)
-      device: {kind: uart, bank: onboard_pgm_uart}   # no peripheral model yet
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_pgm_uart.tx, rx: onboard_pgm_uart.rx}}

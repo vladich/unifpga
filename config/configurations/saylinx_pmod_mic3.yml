@@ -68,3 +68,10 @@ Configuration:
         width: 34
       bind:
         io: gpio_0
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: buzzer
+      bind:
+        pwm: onboard_buzzer.buzzer

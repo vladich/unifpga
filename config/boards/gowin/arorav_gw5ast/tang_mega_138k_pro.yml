@@ -119,6 +119,7 @@ Board:
       pins: {"clk": "D23", "cmd": "D24", "d0": "H23", "d1": "J23", "d2": "A25", "d3": "B25", "det": "J15"}
     onboard_audio_dac:   # PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30
       device: {"name": "PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30", "kind": "audio_dac"}
+      model_params: {"align_right": 1, "offset_by_one_cycle": 0}   # PT8211: LSB-justified input
       pins: {"bck": "E22", "ws": "F24", "din": "G24", "pa_en": "H17"}
     onboard_camera_dvp:   # DVP camera connector (FPC 24P, OV5640-style)
       device: {"name": "DVP camera connector (FPC 24P, OV5640-style)", "kind": "camera_dvp"}

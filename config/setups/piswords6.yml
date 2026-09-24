@@ -19,6 +19,7 @@ Setup:
       wires: {SCK: 'gpio.[12]', BCK: 'gpio.[10]', LCK: 'gpio.[6]', DIN: 'gpio.[8]'}
     - gpio: gpio
       params: {width: 16}
+    - onboard: buzzer
   extra:
     tie:
       gpio[1]: 0

@@ -163,11 +163,25 @@ def draft(board_id):
                        (x["peripheral"] == attach["peripheral"] and su.ordered(x["bind"]) == su.ordered(attach["bind"]))
                        for x in parts[main]):
                 parts[main].append(attach)
+    # a device the board data describes is attached as its model says: the model
+    # replaces a configuration's attach of the same peripheral (a better model,
+    # model_params, reaches the rigs), attaches of other peripherals stay variants
+    banks = pinmap.get("pinBanks") or {}
+    for main in order:
+        spec = banks.get(main)
+        dev = spec.get("device") if isinstance(spec, dict) else None
+        model = _model(dev.get("kind"), main, spec) if dev else None
+        if model:
+            kept = [x for x in parts[main] if x["peripheral"] != model["peripheral"]]
+            if len(kept) < len(parts[main]):
+                parts[main] = [model] + kept
     onboard = []
     for main in order:
         oid = re.sub(r"^onboard_", "", main)
         fact = facts_o.get(main)
-        label = fact.get("label") if main in ok_onboard and fact and fact.get("label") else _title(main)
+        dev = (banks.get(main) or {}).get("device") if isinstance(banks.get(main), dict) else None
+        label = fact.get("label") if main in ok_onboard and fact and fact.get("label") else \
+            (dev or {}).get("name") or _title(main)
         # variants in a canonical order, so their ids follow what they are and not
         # which configuration happened to be read first
         attaches = sorted(parts[main], key=lambda x: (x["peripheral"], json.dumps(x, sort_keys=True)))
@@ -213,41 +227,80 @@ def draft(board_id):
 
 
 def _model(kind, bank, spec):
-    """The attach of the peripheral whose `models:` names this device kind: for
-    a bank that is one list of pins, its `signal:` (led_bank for leds ...); for a
-    bank of named pins, the peripheral's signals of the same names (rgb_led's
-    r / g / b); else None."""
+    """The attach of the peripheral whose `models:` names this device kind
+    (`kind:` one kind or a list), or None. How the bank's pins meet its signals:
+
+      * `signal: s` — s is a bus: a bank that is one list of pins, or every pin of
+        a bank of named pins in order (led_bank for leds, button_array for buttons);
+      * `pins: {s: [names]}` — each signal to the first of its names the bank has,
+        a name may take a slice of a bus (`LCD_DATA[4:8]`); a signal that is not
+        optional must be found;
+      * neither — the bank's pins named as the signals (rgb_led's r / g / b).
+
+    A bank of hard-processor pins (`fabric: false`) is never modelled."""
+    if spec.get("fabric") is False:
+        return None
     pins = spec.get("pins")
+    low = str(spec.get("active") or "").split(" ")[0] == "low"
     for pid, p in sorted(config_init.read_peripherals().items()):
         m = p.get("models") or {}
-        if m.get("kind") != kind:
+        kinds = m.get("kind") if isinstance(m.get("kind"), list) else [m.get("kind")]
+        if kind not in kinds:
             continue
-        if isinstance(pins, dict):
-            names = [s["name"] for s in p.get("signals") or []]
-            if set(pins) != set(names):
+        params_def = p.get("parameters") or {}
+        signals = p.get("signals") or []
+        bind, width = {}, None
+        if m.get("signal"):
+            if isinstance(pins, list):
+                bind[m["signal"]], width = bank, len(pins)
+            elif isinstance(pins, dict):
+                refs = [r for k, v in pins.items() for r in
+                        (["{}.{}[{}]".format(bank, k, i) for i in range(len(v))] if isinstance(v, list)
+                         else ["{}.{}".format(bank, k)])]
+                bind[m["signal"]] = refs[0] if len(refs) == 1 and len(pins) == 1 and not isinstance(
+                    next(iter(pins.values())), list) else refs
+                if len(pins) == 1 and isinstance(next(iter(pins.values())), list):
+                    bind[m["signal"]] = "{}.{}".format(bank, next(iter(pins)))     # the one bus, whole
+                width = len(refs)
+            else:
                 continue
-            params = {}
+        elif m.get("pins"):
+            if not isinstance(pins, dict):
+                continue
+            by_name = {str(k).lower(): k for k in pins}
+            for sig in signals:
+                for name in m["pins"].get(sig["name"]) or []:
+                    base, _, rest = str(name).partition("[")
+                    key = by_name.get(base.lower())
+                    if key is None:
+                        continue
+                    if rest:                               # a slice of a bus: name[a:b]
+                        a, b = (int(x) for x in rest.rstrip("]").split(":"))
+                        if not isinstance(pins[key], list) or len(pins[key]) < b:
+                            continue
+                        bind[sig["name"]] = ["{}.{}[{}]".format(bank, key, i) for i in range(a, b)]
+                    else:
+                        bind[sig["name"]] = "{}.{}".format(bank, key)
+                    break
+            if any(not sg.get("optional") and sg["name"] not in bind for sg in signals):
+                continue
+        elif isinstance(pins, dict) and set(pins) == {sg["name"] for sg in signals}:
+            bind = {sg["name"]: "{}.{}".format(bank, sg["name"]) for sg in signals}
             buses = [v for v in pins.values() if isinstance(v, list)]
-            if "width" in (p.get("parameters") or {}) and len(buses) == 1:
-                params["width"] = len(buses[0])
-            if str(spec.get("active") or "").split(" ")[0] == "low" and "active" in (p.get("parameters") or {}):
-                params["active"] = "low"
-            attach = {"peripheral": pid}
-            if params:
-                attach["params"] = params
-            attach["bind"] = {n: "{}.{}".format(bank, n) for n in names}
-            return attach
-        if not isinstance(pins, list) or not m.get("signal"):
+            width = len(buses[0]) if len(buses) == 1 else None
+        else:
             continue
         params = {}
-        if "width" in (p.get("parameters") or {}):
-            params["width"] = len(pins)
-        if str(spec.get("active") or "").split(" ")[0] == "low" and "active" in (p.get("parameters") or {}):
+        if "width" in params_def and width is not None:
+            params["width"] = width
+        if low and "active" in params_def:
             params["active"] = "low"
+        # what the board data knows of the chip (a PT8211 DAC: LSB-justified)
+        params.update({k: v for k, v in (spec.get("model_params") or {}).items() if k in params_def})
         attach = {"peripheral": pid}
         if params:
             attach["params"] = params
-        attach["bind"] = {m["signal"]: bank}
+        attach["bind"] = bind
         return attach
     return None
 

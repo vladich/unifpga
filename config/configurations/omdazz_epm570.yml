@@ -65,3 +65,6 @@ Configuration:
         width: 11
       bind:
         io: onboard_char_lcd.d
+    - peripheral: buzzer
+      bind:
+        pwm: onboard_buzzer.beep

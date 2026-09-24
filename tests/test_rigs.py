@@ -213,3 +213,44 @@ def test_a_modules_bind_does_not_depend_on_the_order_of_its_wires():
     signals = [s["name"] for s in config_init.read_peripherals()["i2s_audio_out"]["signals"]]
     bind = list(su.generate(setup)["attach"][k]["bind"])
     assert bind == [s for s in signals if s in bind]
+
+
+# ---------------------------------------------------------------- on-board devices (Phase 2)
+
+def _part(board, part_id):
+    return next(o for o in su.read_layout(board)["onboard"] if o["id"] == part_id)
+
+
+def test_on_board_devices_get_the_peripheral_that_models_them():
+    lcd = _part("de2", "lcd")["attach"]                      # HD44780 in 4-bit mode on D4..D7
+    assert lcd["peripheral"] == "hd44780_lcd"
+    assert lcd["bind"]["d"] == ["onboard_lcd.LCD_DATA[{}]".format(k) for k in range(4, 8)]
+    assert _part("omdazz", "buzzer")["attach"] == {"peripheral": "buzzer", "bind": {"pwm": "onboard_buzzer.beep"}}
+    keys = _part("qmtech_kintex_7", "core_keys")["attach"]      # a bank of named pins as one bus, active low
+    assert keys["peripheral"] == "button_array" and keys["params"] == {"width": 2, "active": "low"}
+    amp = _part("tang_mega_138k", "audio")["attach"]
+    assert amp["peripheral"] == "i2s_audio_out" and amp["bind"]["bclk"] == "onboard_audio.bck"
+
+
+def test_hard_processor_pins_are_never_modelled():
+    """A Cyclone V HPS or Zynq PS pin is not reachable from the FPGA fabric."""
+    for board in ("de10_nano", "de1_soc", "eclypse_z7"):
+        pinmap = config_init.read_board_pinmap(board)["pinBanks"]
+        hard = {b for b, spec in pinmap.items() if isinstance(spec, dict) and spec.get("fabric") is False}
+        assert hard, board
+        for o in su.read_layout(board)["onboard"]:
+            bank = (o.get("device") or {}).get("bank")
+            if bank in hard:
+                assert "attach" not in o and not o.get("variants"), (board, o["id"])
+
+
+def test_the_editor_refuses_what_the_build_refuses():
+    """A pin that is both the design's gpio and a part's (the Primer 20K Dock's
+    WS2812 on gpio_0[3]) passes the rig checks as a warning, but strict codegen
+    stops on it: the editor says so as an error."""
+    from tools import studio
+    setup = su.read_setup("tang_primer_20k_dock_hdmi_tm1638_gpio")
+    errors = [p["message"] for p in studio.evaluate(dict(setup, use=setup["use"] + [{"onboard": "ws2812"}]))["problems"]
+              if p["level"] == "error"]
+    assert any("the build refuses it" in m and "T9" in m for m in errors), errors
+    assert not [p for p in studio.evaluate(setup)["problems"] if p["level"] == "error"]

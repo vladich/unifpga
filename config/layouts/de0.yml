@@ -45,12 +45,12 @@ Layout:
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: lcd
+      label: Character LCD module (16x2, HD44780 compatible)
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
     - id: clk2_50mhz
       label: CLOCK_50_2 (50 MHz)
       device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
-    - id: lcd
-      label: Character LCD module (16x2, HD44780 compatible)
-      device: {kind: lcd_char, bank: onboard_lcd}   # no peripheral model yet
     - id: ps2
       label: PS/2 port (keyboard + mouse via Y-cable)
       device: {kind: ps2, bank: onboard_ps2}   # no peripheral model yet

@@ -45,6 +45,9 @@ Layout:
     - id: uart
       label: uart
       attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: buzzer
+      label: BELL buzzer (PNP Q70)
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
     - id: clk_user
       label: USER oscillator socket (CLK_USER)
       device: {kind: clock, bank: onboard_clk_user}   # no peripheral model yet
@@ -53,10 +56,7 @@ Layout:
       device: {kind: other, bank: onboard_ps2}   # no peripheral model yet
     - id: lcd
       label: LCD1602 / LCD12864 socket (20-pin)
-      device: {kind: lcd, bank: onboard_lcd}   # no peripheral model yet
-    - id: buzzer
-      label: BELL buzzer (PNP Q70)
-      device: {kind: buzzer, bank: onboard_buzzer}   # no peripheral model yet
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.rs, e: onboard_lcd.en, d: ['onboard_lcd.d[4]', 'onboard_lcd.d[5]', 'onboard_lcd.d[6]', 'onboard_lcd.d[7]'], rw: onboard_lcd.rw}}
     - id: eeprom
       label: AT24C04 EEPROM U4A
       device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet

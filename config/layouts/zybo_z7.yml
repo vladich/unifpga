@@ -55,10 +55,10 @@ Layout:
       label: leds
       attach: {peripheral: led_bank, params: {width: 4}, bind: {led: onboard_leds}}
     - id: rgb_led_5
-      label: rgb led 5
+      label: RGB LED LD5 (Zybo Z7-20 only)
       attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_5.r, g: onboard_rgb_led_5.g, b: onboard_rgb_led_5.b}}
     - id: rgb_led_6
-      label: rgb led 6
+      label: RGB LED LD6
       attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_6.r, g: onboard_rgb_led_6.g, b: onboard_rgb_led_6.b}}
     - id: audio_codec
       label: Audio codec (I2S-style playback/record data + I2C control)

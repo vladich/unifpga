@@ -16,3 +16,4 @@ Setup:
     - onboard: uart
     - onboard: vga
     - onboard: char_lcd
+    - onboard: buzzer

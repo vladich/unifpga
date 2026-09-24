@@ -20,3 +20,5 @@ Setup:
       params: {width: 34}
     - gpio: gpio_0
       params: {width: 34}
+    - onboard: uart
+    - onboard: buzzer

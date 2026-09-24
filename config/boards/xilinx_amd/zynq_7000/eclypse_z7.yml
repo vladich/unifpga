@@ -44,20 +44,26 @@ Board:
       iostandard: "LVCMOS33"
       pins: {"rsvd": ["B22", "B21"]}
     onboard_ps_ethernet:   # PS Gigabit Ethernet (GEM0, RGMII PHY)
+      fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS Gigabit Ethernet (GEM0, RGMII PHY)", "kind": "ethernet"}
       pins: {"rgmii": ["MIO16", "MIO17", "MIO18", "MIO19", "MIO20", "MIO21", "MIO22", "MIO23", "MIO24", "MIO25", "MIO26", "MIO27"], "mdio": ["MIO52", "MIO53"], "reset": "MIO9"}
     onboard_ps_usb:   # PS USB 2.0 OTG (USB0, ULPI PHY)
+      fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS USB 2.0 OTG (USB0, ULPI PHY)", "kind": "other"}
       pins: {"ulpi": ["MIO28", "MIO29", "MIO30", "MIO31", "MIO32", "MIO33", "MIO34", "MIO35", "MIO36", "MIO37", "MIO38", "MIO39"], "reset": "MIO46"}
     onboard_ps_sdcard:   # PS microSD slot (SD0)
+      fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS microSD slot (SD0)", "kind": "sdcard"}
       pins: {"sd": ["MIO40", "MIO41", "MIO42", "MIO43", "MIO44", "MIO45"], "cd": "MIO47"}
     onboard_ps_qspi_flash:   # PS Quad-SPI flash (boot)
+      fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS Quad-SPI flash (boot)", "kind": "flash"}
       pins: {"qspi": ["MIO1", "MIO2", "MIO3", "MIO4", "MIO5", "MIO6"], "fbclk": "MIO8"}
     onboard_ps_uart:   # PS UART0 (the board USB-UART; the bridge is not named in the preset)
+      fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS UART0 (the board USB-UART; the bridge is not named in the preset)", "kind": "uart"}
       pins: {"rxtx": ["MIO14", "MIO15"]}
     onboard_ps_i2c1:   # PS I2C1
+      fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS I2C1", "kind": "other"}
       pins: {"scl_sda": ["MIO12", "MIO13"]}

@@ -33,12 +33,18 @@ Layout:
     - id: lcd
       label: lcd
       attach: {peripheral: lcd_480_272, params: {clock_pixel_mhz: 8, bits_r: 6, bits_g: 6, bits_b: 6}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck}}
+    - id: uart
+      label: BL616 USB-JTAG & UART debugger (USB-C J7 "USB-DEBUG")
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: audio
+      label: Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
+      attach: {peripheral: i2s_audio_out, params: {align_right: 1, offset_by_one_cycle: 0}, bind: {bclk: onboard_audio.bck, lrclk: onboard_audio.ws, sdata: onboard_audio.din, pa_en_n: onboard_audio.pa_en_n}}
     - id: spi_flash
       label: SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)
       device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet
     - id: som_leds
       label: SOM status LEDs DONE / READY (D2206, D2207)
-      device: {kind: leds, bank: onboard_som_leds}   # no peripheral model yet
+      attach: {peripheral: led_bank, params: {width: 2}, bind: {led: [onboard_som_leds.done, onboard_som_leds.ready]}}
     - id: som_keys
       label: 'SOM keys: CPU_RESET (U1304) and RECONFIG (U1303, also dock SW7)'
       device: {kind: reset, bank: onboard_som_keys}   # no peripheral model yet
@@ -62,13 +68,10 @@ Layout:
       device: {kind: other, bank: onboard_sma_gpio}   # no peripheral model yet
     - id: dip_switch
       label: DIP switch SW2 position 4 (DIP_Switch_0)
-      device: {kind: switches, bank: onboard_dip_switch}   # no peripheral model yet
+      attach: {peripheral: sw_bank, params: {width: 1}, bind: {sw: onboard_dip_switch.sw0}}
     - id: usr_clk
       label: MS5351M clock generator (USR_CLK_IN to fabric, SerDes refclk1)
       device: {kind: clock, bank: onboard_usr_clk}   # no peripheral model yet
-    - id: uart
-      label: BL616 USB-JTAG & UART debugger (USB-C J7 "USB-DEBUG")
-      device: {kind: uart, bank: onboard_uart}   # no peripheral model yet
     - id: hdmi_rx
       label: HDMI (DVI) connector J29, receive (same connector, DVI_DIR_SEL=0)
       device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet
@@ -81,12 +84,9 @@ Layout:
     - id: sdio_header
       label: SDIO header J10 (2x4 2.54 mm)
       device: {kind: header, bank: sdio_header}   # no peripheral model yet
-    - id: audio
-      label: Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
-      device: {kind: audio_i2s, bank: onboard_audio}   # no peripheral model yet
     - id: ws2812
       label: WS2812B-2020 RGB LED (U15) + aRGB strip connector J24
-      device: {kind: ws2812, bank: onboard_ws2812}   # no peripheral model yet
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: camera
       label: OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)
       device: {kind: camera_dvp, bank: onboard_camera}   # no peripheral model yet

@@ -53,7 +53,7 @@ Layout:
           attach: {peripheral: inmp441_i2s_mic, bind: {lr: 'onboard_char_lcd.d[5]', ws: 'onboard_char_lcd.d[3]', sck: 'onboard_char_lcd.d[1]', sd: 'onboard_char_lcd.d[2]'}}
     - id: buzzer
       label: Buzzer (BEEP, PNP driver)
-      device: {kind: buzzer, bank: onboard_buzzer}   # no peripheral model yet
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.beep}}
     - id: ps2
       label: PS/2 connector
       device: {kind: other, bank: onboard_ps2}   # no peripheral model yet

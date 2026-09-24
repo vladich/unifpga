@@ -58,3 +58,6 @@ Configuration:
         width: 5
       bind:
         io: gpio
+    - peripheral: ws2812
+      bind:
+        din: onboard_ws2812.din

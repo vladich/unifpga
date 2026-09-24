@@ -14,5 +14,6 @@ Setup:
     - onboard: buttons
     - onboard: switches
     - onboard: leds
+    - onboard: uart
   extra:
     manual: true

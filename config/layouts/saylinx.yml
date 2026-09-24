@@ -53,7 +53,7 @@ Layout:
       attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
     - id: buzzer
       label: 蜂鸣器 LS1 (S8550 Q7)
-      device: {kind: buzzer, bank: onboard_buzzer}   # no peripheral model yet
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
     - id: sdcard
       label: SD卡座 U14 (SPI mode)
       device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet

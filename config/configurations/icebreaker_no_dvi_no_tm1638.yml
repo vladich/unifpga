@@ -50,3 +50,15 @@ Configuration:
         r: onboard_rgb_led_0.r
         g: onboard_rgb_led_0.g
         b: onboard_rgb_led_0.b
+    - peripheral: led_bank
+      params:
+        width: 1
+        active: low
+      bind:
+        led: onboard_led_green
+    - peripheral: led_bank
+      params:
+        width: 1
+        active: low
+      bind:
+        led: onboard_led_red

@@ -61,3 +61,6 @@ Configuration:
         lrclk: onboard_headphone.ws
         sdata: onboard_headphone.din
         pa_en: onboard_pa_enable
+    - peripheral: ws2812
+      bind:
+        din: onboard_ws2812.din

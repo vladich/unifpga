@@ -45,6 +45,9 @@ Layout:
     - id: audio_codec
       label: audio codec
       attach: {peripheral: wm8731_i2s_out, bind: {xck: onboard_audio_codec.xck, bclk: onboard_audio_codec.bclk, dac_lrck: onboard_audio_codec.dac_lrck, dac_dat: onboard_audio_codec.dac_dat, i2c_sclk: onboard_i2c.sclk, i2c_sdat: onboard_i2c.sdat}}
+    - id: lcd
+      label: Character LCD module (16x2)
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
     - id: clk2_50mhz
       label: CLOCK2_50 (50 MHz)
       device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
@@ -57,9 +60,6 @@ Layout:
     - id: sma_clkin
       label: SMA clock input
       device: {kind: clock, bank: onboard_sma_clkin}   # no peripheral model yet
-    - id: lcd
-      label: Character LCD module (16x2)
-      device: {kind: lcd_char, bank: onboard_lcd}   # no peripheral model yet
     - id: hsmc
       label: HSMC connector
       device: {kind: header, bank: hsmc}   # no peripheral model yet

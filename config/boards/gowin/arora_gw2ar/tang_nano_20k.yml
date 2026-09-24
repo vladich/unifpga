@@ -66,7 +66,9 @@ Board:
         din: "54"
         ws: "55"
     onboard_pa_enable: { pins: "51" }
-    onboard_ws2812: { pins: "79" }
+    onboard_ws2812:   # WS2812 RGB LED (Sipeed's TangNano-20K-example ws2812.cst: pin 79)
+      device: {"name": "WS2812 RGB LED", "kind": "ws2812"}
+      pins: {"din": "79"}
     onboard_joystick:
       pins:
         miso: "71"

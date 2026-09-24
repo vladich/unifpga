@@ -34,3 +34,7 @@ Configuration:
         width: 8
       bind:
         led: onboard_leds
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx

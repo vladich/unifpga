@@ -110,6 +110,7 @@ Board:
       pins: {"1_d0_miso": "AA15", "2_cmd_mosi": "Y16", "3_d1": "AB15", "4_clk": "V15", "5_d3_cs": "W15", "6_d2": "W14"}
     onboard_audio:   # Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
       device: {"name": "Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)", "kind": "audio_i2s"}
+      model_params: {"align_right": 1, "offset_by_one_cycle": 0}   # PT8211: LSB-justified input
       active: "low"
       iostandard: "LVCMOS33"
       pins: {"bck": "Y17", "ws": "AB17", "din": "AA16", "pa_en_n": "AB16"}

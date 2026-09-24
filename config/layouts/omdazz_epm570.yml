@@ -41,4 +41,4 @@ Layout:
       attach: {peripheral: gpio_header, params: {width: 11}, bind: {io: onboard_char_lcd.d}}
     - id: buzzer
       label: Buzzer
-      device: {kind: buzzer, bank: onboard_buzzer}   # no peripheral model yet
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.beep}}

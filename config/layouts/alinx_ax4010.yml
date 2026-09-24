@@ -48,6 +48,9 @@ Layout:
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 5, bits_g: 6, bits_b: 5, pin_bits_r: 5, pin_bits_g: 6, pin_bits_b: 5, color_depth: 565}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: buzzer
+      label: Buzzer (transistor-driven, jumper CB1)
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
     - id: sdcard
       label: Micro SD card slot (SPI mode)
       device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
@@ -60,6 +63,3 @@ Layout:
     - id: rtc
       label: Real-time clock DS1302 (CR1220 backup battery)
       device: {kind: other, bank: onboard_rtc}   # no peripheral model yet
-    - id: buzzer
-      label: Buzzer (transistor-driven, jumper CB1)
-      device: {kind: audio, bank: onboard_buzzer}   # no peripheral model yet
