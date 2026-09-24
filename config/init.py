@@ -9,6 +9,8 @@ synthesize.py and toolchain modules consume.
 """
 
 import copy
+import hashlib
+import json
 import os
 import re
 import sys
@@ -135,6 +137,54 @@ def require_toolchain_operation(toolchain, operation):
         raise ConfigError("Toolchain '{t}' does not implement {op}; choose a "
                           "supported toolchain or implement its driver"
                           .format(t=toolchain.get("Id", "?"), op=operation))
+
+
+def pinmap_fingerprint(pinmap):
+    """Fingerprint the exact resolved board data used to generate constraints.
+
+    Configuration pin and I/O overrides change this digest, so an attestation
+    of the base board cannot accidentally authorize a different rig pinout.
+    """
+    try:
+        encoded = json.dumps({k: v for k, v in pinmap.items() if k != "verification"},
+                             sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise ConfigError("Board pinmap cannot be fingerprinted: {}".format(exc))
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def require_hardware_readiness(board, pinmap):
+    """Admit physical builds only with review of the exact resolved pinmap.
+
+    The YAML attestation is a review record, not a claim that this process can
+    independently verify a vendor schematic. Missing records fail closed.
+    """
+    board_id = board.get("Id", "?")
+    if not isinstance(pinmap, dict) or pinmap.get("id") != board_id:
+        raise ConfigError("Board '{}' pinmap identity does not match".format(board_id))
+    verification = pinmap.get("verification")
+    if not isinstance(verification, dict) or verification.get("status") != "verified":
+        raise ConfigError("Board '{}' pinmap is not verified for hardware; "
+                          "use UNIFPGA_DRY_RUN=1 to inspect generated files"
+                          .format(board_id))
+    digest = verification.get("pinmap_sha256")
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest) or \
+            digest != pinmap_fingerprint(pinmap):
+        raise ConfigError("Board '{}' pinmap verification digest is missing or stale"
+                          .format(board_id))
+    selected_part = board.get("PartOrderingCode") or board.get("Part")
+    parts = verification.get("parts")
+    if not isinstance(parts, list) or not parts or any(not isinstance(p, str) or not p for p in parts) \
+            or len(parts) != len(set(parts)) or selected_part not in parts:
+        raise ConfigError("Board '{}' pinmap verification does not cover selected part '{}'"
+                          .format(board_id, selected_part))
+    for subject in ("pinout", "electrical"):
+        evidence = verification.get(subject)
+        if not isinstance(evidence, dict) or any(
+                not isinstance(evidence.get(field), str) or not evidence[field].strip()
+                for field in ("source", "revision")):
+            raise ConfigError("Board '{}' pinmap verification lacks {} source and revision"
+                              .format(board_id, subject))
 
 
 def read_programmers():

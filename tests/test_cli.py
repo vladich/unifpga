@@ -264,6 +264,7 @@ def test_program_no_build_loads_the_last_build(design, captured, monkeypatch, ca
 def test_program_py_calls_the_toolchain_driver(tmp_path, monkeypatch):
     import program
     got = {}
+    monkeypatch.setenv("UNIFPGA_DRY_RUN", "1")
 
     class Driver:
         @staticmethod

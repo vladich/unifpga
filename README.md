@@ -65,6 +65,30 @@ ISE and Libero SoC currently support synthesis but require an external
 programming workflow. An implemented driver operation does not by itself
 verify a board's pinmap or electrical constraints.
 
+Physical builds and programming now require a reviewed `verification` record
+in the board pinmap. A missing record, a placeholder status, a stale resolved
+pinmap digest, an uncovered FPGA part, or missing pinout/electrical evidence
+stops the operation before tool setup. No existing pinmap has yet been
+attested for hardware, so the current catalog supports project inspection via
+`UNIFPGA_DRY_RUN=1` while board evidence is collected. Dry-run success is not
+a bitstream or a programmed device. To admit a board, review its exact pins
+and I/O electrical settings against versioned vendor sources, then add:
+
+```yaml
+verification:
+  status: verified
+  pinmap_sha256: <sha256 of the resolved Board mapping except verification>
+  parts: [<exact selected Part ordering code>]
+  pinout: {source: <vendor schematic or constraint>, revision: <exact revision>}
+  electrical: {source: <vendor electrical document>, revision: <exact revision>}
+```
+
+`config.init.pinmap_fingerprint(resolved["board_pinmap"])` computes the digest
+for a configuration. Pin or I/O overrides change it, so an attestation of a
+base board does not admit a different wiring variant. Evidence text is a
+review record; it is not independently checked against the vendor document
+at runtime. Build-artifact/device pairing remains a separate programming task.
+
 Before a build or board-programming request, version admission also checks the
 toolchain's configured `Version` against the detected install-directory version
 and checks that version against any chip constraint, such as

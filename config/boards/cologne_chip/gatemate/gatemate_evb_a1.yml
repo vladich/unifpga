@@ -17,6 +17,8 @@
 
 Board:
   id: gatemate_evb_a1
+  verification:
+    status: placeholder
   fpga:
     producer: Cologne Chip
     family: GateMate

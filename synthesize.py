@@ -44,6 +44,14 @@ def toolchain_module(toolchain):
     return importlib.import_module("toolchains.{id}.{id}".format(id=toolchain["Id"]))
 
 
+def driver_exit_code(result, operation):
+    """A driver must explicitly report an integer exit status."""
+    if type(result) is not int:
+        log.error("Toolchain %s returned %r instead of an integer exit code", operation, result)
+        return 2
+    return result
+
+
 def _build_parser():
     p = argparse.ArgumentParser(description="UniFPGA Compile")
     p.add_argument("-c", "--configuration",
@@ -114,6 +122,10 @@ def main(argv=None):
         if args.program:
             config.init.require_toolchain_operation(toolchain, "program")
         config.init.require_toolchain_version(toolchain)
+        if not os.environ.get("UNIFPGA_DRY_RUN"):
+            config.init.require_hardware_readiness(board, pinmap)
+        else:
+            log.warning("Dry run only: generated project is not admitted for hardware")
     except config.init.ConfigError as exc:
         log.error("%s", exc)
         return 2
@@ -180,6 +192,7 @@ def main(argv=None):
             output=output_folder,
             step=args.step,
         )
+        rc = driver_exit_code(rc, "synthesize")
         if rc:
             return rc
 
@@ -191,6 +204,7 @@ def main(argv=None):
                 toolchain=toolchain,
                 output=output_folder,
             )
+            rc = driver_exit_code(rc, "program")
             if rc:
                 return rc
     finally:

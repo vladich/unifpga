@@ -48,6 +48,10 @@ def main(argv=None):
     try:
         config.init.require_toolchain_operation(toolchain, "program")
         config.init.require_toolchain_version(toolchain)
+        if not os.environ.get("UNIFPGA_DRY_RUN"):
+            config.init.require_hardware_readiness(resolved["board"], resolved["board_pinmap"])
+        else:
+            log.warning("Dry run only: no physical board will be programmed")
     except config.init.ConfigError as exc:
         log.error("%s", exc)
         return 2
@@ -58,7 +62,7 @@ def main(argv=None):
         toolchain=toolchain,
         output=args.output,
     )
-    return rc or 0
+    return synthesize.driver_exit_code(rc, "program")
 
 
 if __name__ == "__main__":
