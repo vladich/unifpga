@@ -75,12 +75,12 @@ Layout:
     - id: leds
       label: leds
       attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
-    - id: ds1_reset_out_led_nreset_out
-      label: DS1 reset-out LED (nRESET_OUT)
-      device: {kind: other, bank: onboard_ds1_reset_out_led_nreset_out}   # no peripheral model yet
     - id: uart
       label: FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)
       attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: ds1_reset_out_led_nreset_out
+      label: DS1 reset-out LED (nRESET_OUT)
+      device: {kind: other, bank: onboard_ds1_reset_out_led_nreset_out}   # no peripheral model yet
     - id: usb_ulpi
       label: USB3300 ULPI USB OTG PHY on P19 mini-USB
       device: {kind: usb, bank: onboard_usb_ulpi}   # no peripheral model yet

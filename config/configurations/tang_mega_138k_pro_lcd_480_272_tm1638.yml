@@ -70,6 +70,9 @@ Configuration:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
     - peripheral: i2s_audio_out
+      params:
+        align_right: 1
+        offset_by_one_cycle: 0
       bind:
         bclk: onboard_audio_dac.bck
         lrclk: onboard_audio_dac.ws

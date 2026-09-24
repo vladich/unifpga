@@ -16,13 +16,14 @@ Peripheral:
     loud:                { type: int, default: 0, description: "1 doubles the sample (clips)" }
   # the on-board devices it models: a board inventory's I2S DAC or amplifier
   models: {kind: [audio_i2s, audio_dac], pins: {bclk: [bclk, bck], lrclk: [lrclk, lrck, ws], sdata: [sdata, din],
-                                               mclk: [mclk, sck], pa_en: [pa_en]}}
+                                               mclk: [mclk, sck], pa_en: [pa_en], pa_en_n: [pa_en_n]}}
   signals:
     - { name: mclk,  type: scalar, direction: output, optional: true, comment: "Master clock; left unconnected on DACs that do not need it" }
     - { name: bclk,  type: scalar, direction: output, comment: "Bit clock" }
     - { name: lrclk, type: scalar, direction: output, comment: "Word select (32-bit L, 32-bit R)" }
     - { name: sdata, type: scalar, direction: output, comment: "Serial data" }
     - { name: pa_en, type: scalar, direction: output, optional: true, comment: "Power-amplifier enable (LPA4809 on the Tang boards): held at 1" }
+    - { name: pa_en_n, type: scalar, direction: output, optional: true, comment: "Power-amplifier enable, active low (NS4263 on the Tang Mega 138K): held at 0" }
   provides:
     - capability: audio_out
   driver:
@@ -44,3 +45,4 @@ Peripheral:
       sdata:   pin.sdata
   pin_assigns:
     pin.pa_en: const.1     # assign PA_EN = 1'b1
+    pin.pa_en_n: const.0   # the active-low enable, likewise on

@@ -54,6 +54,12 @@ Layout:
     - id: lcd
       label: lcd
       attach: {peripheral: lcd_480_272, params: {clock_pixel_mhz: 8, bits_r: 6, bits_g: 6, bits_b: 6}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, de: onboard_lcd.de, ck: onboard_lcd.ck}}
+    - id: uart
+      label: BL616 USB-JTAG & UART (USB-C), debug UART
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: audio_dac
+      label: PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30
+      attach: {peripheral: i2s_audio_out, params: {align_right: 1, offset_by_one_cycle: 0}, bind: {bclk: onboard_audio_dac.bck, lrclk: onboard_audio_dac.ws, sdata: onboard_audio_dac.din, pa_en: onboard_audio_dac.pa_en}}
     - id: hdmi_rx
       label: DVI/HDMI B (RX) connector J12
       device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet
@@ -84,9 +90,6 @@ Layout:
     - id: ws2812
       label: WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
       device: {kind: ws2812, bank: onboard_ws2812}   # no peripheral model yet
-    - id: uart
-      label: BL616 USB-JTAG & UART (USB-C), debug UART
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
     - id: sfp_0
       label: SFP+ cage 0 (SerDes Q1 lane 0)
       device: {kind: serdes, bank: onboard_sfp_0}   # no peripheral model yet
@@ -111,9 +114,6 @@ Layout:
     - id: sdcard
       label: microSD card slot J19 (SDIO)
       device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
-    - id: audio_dac
-      label: PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30
-      attach: {peripheral: i2s_audio_out, bind: {bclk: onboard_audio_dac.bck, lrclk: onboard_audio_dac.ws, sdata: onboard_audio_dac.din, pa_en: onboard_audio_dac.pa_en}}
     - id: camera_dvp
       label: DVP camera connector (FPC 24P, OV5640-style)
       device: {kind: camera_dvp, bank: onboard_camera_dvp}   # no peripheral model yet
