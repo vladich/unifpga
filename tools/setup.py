@@ -8,7 +8,8 @@ order, what is used on it:
       params: {...}              (merged over the layout's attach params)
     - module: <id>               an add-on module (config/modules/<id>.yml)
       wires: {<module pin>: <connector>.<pin>, ...}
-      plug: {connector: jd, row: 2}   (instead of wires: a Pmod module plugged in)
+      plug: {connector: jd, row: 2}   (instead of wires: a module plugged by its
+                                       numbered header; reversed: true = rotated)
       params: {...}
     - gpio: <connector>          the connector's pins as the design's gpio bus
       params: {...}
@@ -121,17 +122,79 @@ def ref_index(layout):
     return out
 
 
-def plug_wires(connectors, layout, module, plug):
-    """{module pin: connector.pin} for a module plugged whole into a connector
-    (`form: pmod_1x6` into one row of a 2x6 Pmod)."""
+def module_header_size(module):
+    """N when the module's pins are numbered 1..N (a header it plugs in by),
+    else None (a module that is wired pin by pin)."""
+    keys = [str(k) for k in module.get("pins") or {}]
+    if not keys or not all(k.isdigit() for k in keys):
+        return None
+    return max(int(k) for k in keys)
+
+
+def _row_positions(connectors, layout, plug):
+    """The connector pin keys under module pins 1..N for a placement
+    {connector, row, reversed}."""
     c = connector(layout, plug["connector"])
-    ctype = connectors.get(c["type"]) or {}
-    rows = ctype.get("rows") or []
-    if module.get("form") != "pmod_1x6" or not rows:
-        raise SetupError("module '{}' cannot be plugged into '{}'".format(module["id"], c["id"]))
-    row = rows[int(plug.get("row", 1)) - 1]
+    rows = (connectors.get(c["type"]) or {}).get("rows") or []
+    r = int(plug.get("row", 1))
+    if not 1 <= r <= len(rows):
+        raise SetupError("connector '{}' has no row {}".format(c["id"], r))
+    row = [str(k) for k in rows[r - 1]]
+    return c, (list(reversed(row)) if plug.get("reversed") else row)
+
+
+def plug_fits(connectors, layout, module, plug):
+    """[] when the module's numbered header fits the placement: as many pins as
+    the row, its power / ground pins on the connector's VCC / GND and its
+    signal pins on signal pins; else the reasons."""
+    n = module_header_size(module)
+    c, row = _row_positions(connectors, layout, plug)
+    if n is None:
+        return ["{} has no numbered header to plug in".format(module.get("name") or module["id"])]
+    if n != len(row):
+        return ["{} has {} pins, a row of {} has {}".format(module.get("name") or module["id"], n, c["id"], len(row))]
+    power = {str(k): v for k, v in ((connectors.get(c["type"]) or {}).get("power") or {}).items()}
+    signal = {str(k) for k in c.get("pins") or {}}
+    wrong = []
+    for k in range(1, n + 1):
+        role = module["pins"].get(str(k), module["pins"].get(k))
+        at = row[k - 1]
+        want = {"power": "VCC", "ground": "GND"}.get(role)
+        if want and power.get(at) != want:
+            wrong.append("module pin {} ({}) would sit on {} pin {} ({})".format(k, role, c["id"], at, power.get(at, "a signal")))
+        elif role and not want and at not in signal:
+            wrong.append("module pin {} ({}) would sit on {} pin {} ({})".format(k, role, c["id"], at, power.get(at, "no signal")))
+    return wrong
+
+
+def plug_wires(connectors, layout, module, plug):
+    """{module pin: connector.pin} for a module plugged by its numbered header
+    into a connector row (plug: {connector, row, reversed})."""
+    wrong = plug_fits(connectors, layout, module, plug)
+    if wrong:
+        raise SetupError("{} does not plug into {} row {}{}: {}".format(
+            module.get("name") or module["id"], plug["connector"], plug.get("row", 1),
+            " reversed" if plug.get("reversed") else "", "; ".join(wrong)))
+    c, row = _row_positions(connectors, layout, plug)
     return {str(k): "{}.{}".format(c["id"], row[int(k) - 1])
             for k, sig in module["pins"].items() if sig not in _PASSIVE}
+
+
+def plug_placements(connectors, layout, module, conn_ids=None):
+    """Every placement a module's numbered header fits, in layout order."""
+    out = []
+    for c in layout.get("connectors") or []:
+        if conn_ids is not None and c["id"] not in conn_ids:
+            continue
+        rows = (connectors.get(c["type"]) or {}).get("rows") or []
+        for r in range(1, len(rows) + 1):
+            for rev in (False, True):
+                plug = {"connector": c["id"], "row": r}
+                if rev:
+                    plug["reversed"] = True
+                if not plug_fits(connectors, layout, module, plug):
+                    out.append(plug)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -257,15 +320,12 @@ def _derive_module(a, layout, modules, connectors, refs):
 
 
 def _as_plug(connectors, layout, module, wires):
-    if module.get("form") != "pmod_1x6":
+    if module_header_size(module) is None:
         return None
     conns = {w.partition(".")[0] for w in wires.values()}
     if len(conns) != 1:
         return None
-    conn_id = conns.pop()
-    rows = (connectors.get(connector(layout, conn_id)["type"]) or {}).get("rows") or []
-    for r in range(len(rows)):
-        plug = {"connector": conn_id, "row": r + 1}
+    for plug in plug_placements(connectors, layout, module, conns):
         if list(plug_wires(connectors, layout, module, plug).items()) == list(wires.items()):
             return plug
     return None
@@ -605,9 +665,7 @@ def plugged_row_refs(setup, layout, connectors, skip=None):
     for k, use in enumerate(setup.get("use") or []):
         if k == skip or "plug" not in use:
             continue
-        c = connector(layout, use["plug"]["connector"])
-        rows = (connectors.get(c["type"]) or {}).get("rows") or []
-        row = rows[int(use["plug"].get("row", 1)) - 1] if rows else []
+        c, row = _row_positions(connectors, layout, use["plug"])
         pins = {str(k2): ref for k2, ref in (c.get("pins") or {}).items()}
         for key in row:
             if str(key) in pins:
@@ -631,8 +689,8 @@ def used_pins(setup, skip=None):
 
 
 def autowire(setup, index):
-    """{"plug": ...} or {"wires": ...} for module use `index`: a Pmod module
-    plugged into the first free Pmod row, any other module wired in order to
+    """{"plug": ...} or {"wires": ...} for module use `index`: a module with a
+    numbered header plugged into the first free row it fits, any other wired in order to
     the first connector with enough free pins at a voltage it runs at. Pins
     other uses occupy (on-board devices, gpio headers, modules) are avoided."""
     use = setup["use"][index]
@@ -658,17 +716,11 @@ def autowire(setup, index):
         v = (ctypes.get(c["type"]) or {}).get("voltage")
         if lo is None or v is None or lo <= v <= hi:
             candidates.append(c)
-    if module.get("form") == "pmod_1x6":
-        for c in candidates:
-            rows = (ctypes.get(c["type"]) or {}).get("rows") or []
-            for r in range(len(rows)):
-                plug = {"connector": c["id"], "row": r + 1}
-                try:
-                    wires = plug_wires(ctypes, layout, module, plug)
-                except SetupError:
-                    continue
-                if all(free(c, w.partition(".")[2]) for w in wires.values()):
-                    return {"plug": plug}
+    for plug in plug_placements(ctypes, layout, module, {c["id"] for c in candidates}):
+        c = connector(layout, plug["connector"])
+        _c, row = _row_positions(ctypes, layout, plug)
+        if all(free(c, k) for k in row if k in {str(x) for x in c.get("pins") or {}}):
+            return {"plug": plug}
     spare = []                       # (connector, [free keys]) in layout order
     for c in candidates:
         rows = (ctypes.get(c["type"]) or {}).get("rows")

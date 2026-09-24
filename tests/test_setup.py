@@ -75,6 +75,25 @@ def test_plugged_pmod_wires_its_row():
     assert got["bind"] == {"cs": "pmod_jd[4]", "miso": "pmod_jd[6]", "sclk": "pmod_jd[7]"}
 
 
+def test_plugging_follows_pin_roles_in_either_orientation():
+    """A module plugs by its numbered header into any connector row as long as
+    the header lands power on VCC, ground on GND and signals on signal pins, in
+    whichever orientation does that; nothing names a module form."""
+    connectors, mic = su.read_connectors(), su.read_modules()["digilent_pmod_mic3"]
+    arty, dock = su.read_layout("arty_a7"), su.read_layout("tang_primer_20k_dock")
+    assert {"connector": "ja", "row": 1} in su.plug_placements(connectors, arty, mic)
+    placements = su.plug_placements(connectors, dock, mic)
+    assert placements and all(p.get("reversed") for p in placements)   # the Dock's rows run the other way
+    plug = placements[0]
+    wires = su.plug_wires(connectors, dock, mic, plug)
+    assert su._as_plug(connectors, dock, mic, wires) == plug
+    with pytest.raises(su.SetupError, match=r"pin 6 \(power\) would sit on"):
+        su.plug_wires(connectors, dock, mic, {"connector": plug["connector"], "row": plug["row"]})
+    rig = copy.deepcopy(su.read_setup("tang_primer_20k_dock_hdmi_no_tm1638"))
+    rig["use"].append({"module": "digilent_pmod_mic3", "wires": {}})
+    assert su.autowire(rig, len(rig["use"]) - 1)["plug"].get("reversed") is True
+
+
 def test_ordered_compares_key_order():
     assert su.ordered({"a": 1, "b": [{"x": 1, "y": 2}]}) != su.ordered({"b": [{"x": 1, "y": 2}], "a": 1})
     assert su.ordered({"a": 1}) == su.ordered({"a": 1})
