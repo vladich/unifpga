@@ -8,6 +8,8 @@ Peripheral:
       type: enum
       values: [high, low]
       default: high
+  # an inventory's `rgb_leds` device: one LED per bank, its pins named r / g / b
+  models: {kind: rgb_leds}
   signals:
     - { name: r, type: scalar, direction: output }
     - { name: g, type: scalar, direction: output }

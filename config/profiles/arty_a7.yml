@@ -3,19 +3,6 @@
 # top of it by config/init.py; synthesize.py --no-profile turns it off.
 Profile:
   configuration: arty_a7
-  tie:
-    onboard_rgb_led_0.b: 0
-    onboard_rgb_led_0.g: 0
-    onboard_rgb_led_0.r: 0
-    onboard_rgb_led_1.b: 0
-    onboard_rgb_led_1.g: 0
-    onboard_rgb_led_1.r: 0
-    onboard_rgb_led_2.b: 0
-    onboard_rgb_led_2.g: 0
-    onboard_rgb_led_2.r: 0
-    onboard_rgb_led_3.b: 0
-    onboard_rgb_led_3.g: 0
-    onboard_rgb_led_3.r: 0
   attach:
   - peripheral: sw_bank
     index: 0
@@ -28,18 +15,6 @@ Profile:
       switches: []
       leds: [0, 1, 2, 3, 4, 5, 6, 7]
       seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
-  - peripheral: rgb_led
-    index: 0
-    drop: true
-  - peripheral: rgb_led
-    index: 1
-    drop: true
-  - peripheral: rgb_led
-    index: 2
-    drop: true
-  - peripheral: rgb_led
-    index: 3
-    drop: true
   - peripheral: led_bank
     index: 0
     lab_bits:

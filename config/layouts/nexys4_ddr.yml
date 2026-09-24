@@ -64,13 +64,7 @@ Layout:
       attach: {peripheral: pwm_amp, params: {open_drain: true}, bind: {pwm: onboard_pwm_amp.pwm, sd: onboard_pwm_amp.sd}}
     - id: uart
       label: uart
-      variants:
-        - id: uart_2wire
-          label: uart_2wire
-          attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
-        - id: uart_4wire
-          label: uart_4wire
-          attach: {peripheral: uart_4wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
     - id: pmod_jxadc
       label: Pmod header JXADC (XADC analog pairs; usable as digital IO)
       device: {kind: xadc, bank: onboard_pmod_jxadc}   # no peripheral model yet

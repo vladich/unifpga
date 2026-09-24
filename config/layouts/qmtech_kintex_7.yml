@@ -63,7 +63,7 @@ Layout:
       device: {kind: buttons, bank: onboard_core_keys}   # no peripheral model yet
     - id: core_leds
       label: Core-board user LEDs D2 (LED2), D3 (LED3)
-      device: {kind: leds, bank: onboard_core_leds}   # no peripheral model yet
+      attach: {peripheral: led_bank, params: {width: 2, active: low}, bind: {led: onboard_core_leds.led}}
     - id: spi_flash
       label: SPI flash S25FL256L (32 MB, quad)
       device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet

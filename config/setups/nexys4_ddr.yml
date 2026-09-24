@@ -19,7 +19,6 @@ Setup:
     - onboard: vga
     - onboard: pwm_amp
     - onboard: uart
-      variant: uart_2wire
     - module: inmp441_breakout
       wires: {L/R: 'pmod_jd.[6]', WS: 'pmod_jd.[5]', SCK: 'pmod_jd.[4]', SD: 'pmod_jd.[0]'}
     - module: i2s_dac_breakout

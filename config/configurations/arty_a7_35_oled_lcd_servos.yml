@@ -65,3 +65,23 @@ Configuration:
         rw: "arduino_io[3]"
         e: "arduino_io[4]"
         d: ["arduino_io[5]", "arduino_io[6]", "arduino_io[7]", "arduino_io[8]"]
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_0.r
+        g: onboard_rgb_led_0.g
+        b: onboard_rgb_led_0.b
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_1.r
+        g: onboard_rgb_led_1.g
+        b: onboard_rgb_led_1.b
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_2.r
+        g: onboard_rgb_led_2.g
+        b: onboard_rgb_led_2.b
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_3.r
+        g: onboard_rgb_led_3.g
+        b: onboard_rgb_led_3.b

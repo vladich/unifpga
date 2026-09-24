@@ -42,3 +42,8 @@ Configuration:
         width: 5
       bind:
         io: ["pmod_p2[0]", "pmod_p2[1]", "pmod_p2[2]", "pmod_p2[3]", "pmod_p2[4]"]
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_0.r
+        g: onboard_rgb_led_0.g
+        b: onboard_rgb_led_0.b

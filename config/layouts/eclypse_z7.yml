@@ -33,25 +33,25 @@ Layout:
       variants:
         - id: led_bank
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.r}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.b}}
         - id: led_bank_2
           label: led_bank (other pins)
           attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.g}}
         - id: led_bank_3
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.b}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.r}}
     - id: rgb_led_0
       label: rgb led 0
       variants:
         - id: led_bank
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.r}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.b}}
         - id: led_bank_2
           label: led_bank (other pins)
           attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.g}}
         - id: led_bank_3
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.b}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.r}}
     - id: syzygy_a
       label: SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)
       device: {kind: header, bank: syzygy_a}   # no peripheral model yet

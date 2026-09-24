@@ -49,6 +49,12 @@ module design_top
 
     assign sound      = '0;
 
+    assign rgb_r      = '0;
+
+    assign rgb_g      = '0;
+
+    assign rgb_b      = '0;
+
     /*
     =====================================================
     CLK/RST adapter

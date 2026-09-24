@@ -19,3 +19,4 @@ Setup:
     - gpio: pmod_p2
       pins: ['1', '2', '3', '4', '7']
       params: {width: 5}
+    - onboard: rgb_led_0
