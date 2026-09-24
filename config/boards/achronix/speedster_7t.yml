@@ -13,7 +13,9 @@ Boards:
     Bridges:
       - jtag
     Programmer: ace_pgm
-    BoardURL: https://www.achronix.com/product/vectorpath-accelerator-card
+    BoardURL: https://www.achronix.com/product/vectorpath-accelerator-cards
+    Status: active
+    Notes: "BittWare lists it as a legacy product: still sold, not recommended for new designs."
   - Id: bittware_vp815
     BoardName: BittWare VectorPath VP815 Achronix Speedster7t
     Devices:
@@ -32,5 +34,5 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/vp815/
+    BoardURL: https://achronix.com/vectorpath-815-accelerator
     Status: active

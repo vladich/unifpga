@@ -344,12 +344,12 @@ Boards:
       - ftdi_ft4232h
       - silabs_si5342
       - ddr4_sodimm_socket
-    BoardURL: "https://www.bittware.com/products/520n/"
-    Status: active
+    BoardURL: https://www.bittware-molex.com/products/520n/
+    Status: eol
   - Id: bittware_520n_mx
     BoardName: "BittWare 520N-MX Stratix 10 MX PCIe Card (HBM2)"
     BoardProducer: bittware
-    Chip: 1SM21BHU2F53E2VG
+    Chip: 1SM21CHU2F53E2VG
     Bridges:
       - pcie-jtag
     Programmer: quartus_pgm
@@ -362,5 +362,6 @@ Boards:
     Devices:
       - ftdi_ft4232h
       - silabs_si5342
-    BoardURL: "https://www.bittware.com/products/520n-mx/"
+    BoardURL: https://www.bittware-molex.com/products/520n-mx/
     Status: active
+    Notes: "BittWare lists it as a legacy product: still sold, not recommended for new designs."

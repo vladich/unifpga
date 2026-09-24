@@ -28,6 +28,7 @@ Boards:
     Status: active
   - Id: bittware_xup_p3r
     BoardName: BittWare XUP-P3R Virtex UltraScale+ VU9P
+    Aliases: [bittware_xup_p3]
     Devices:
       - ftdi_ft4232h
       - silabs_si5342
@@ -35,7 +36,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: XCVU9P-2FLGA2104E
+    Chip: XCVU9P-2FLGB2104E
     Bridges:
       - pcie-jtag
     Programmer: vivado_hw
@@ -45,7 +46,7 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/xup-p3r/
+    BoardURL: https://www.bittware-molex.com/products/xup-p3r/
     Status: active
   - Id: bittware_xup_vv8
     BoardName: BittWare XUP-VV8 Virtex UltraScale+ VU13P
@@ -66,7 +67,7 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/xup-vv8/
+    BoardURL: https://www.bittware-molex.com/products/xup-vv8/
     Status: active
   - Id: htg_910
     BoardName: HTG-910 Virtex UltraScale+ Low-Profile PCIe VU9P
@@ -480,48 +481,6 @@ Boards:
       - silabs_si5342
       - micron_n25q256a
       - ddr4_sodimm_socket
-    BoardURL: "https://www.bittware.com/fpga/xup-vvh/"
+    BoardURL: https://www.bittware-molex.com/products/xup-vvh/
     Status: active
-  - Id: bittware_xupv5p
-    BoardName: "BittWare XUP-VVA1 / XUPV5P Virtex UltraScale+ VU5P / VU7P"
-    BoardProducer: bittware
-    Chip: XCVU7P-2FLVB2104E
-    Bridges:
-      - pcie-jtag
-    Programmer: vivado_hw
-    Features:
-      - ddr4_memory
-      - pcie_endpoint
-      - qsfp_cage
-      - qspi_flash
-      - usb_jtag_bridge
-      - usb_uart_bridge
-    Devices:
-      - ftdi_ft4232h
-      - silabs_si5342
-      - micron_n25q256a
-      - ddr4_sodimm_socket
-    BoardURL: "https://www.bittware.com/products/"
-    Status: eol
-  - Id: bittware_xup_p3
-    BoardName: "BittWare XUP-P3 Virtex UltraScale+ VU9P PCIe Card"
-    BoardProducer: bittware
-    Chip: XCVU9P-2FLGA2104E
-    Bridges:
-      - pcie-jtag
-    Programmer: vivado_hw
-    Features:
-      - ddr4_memory
-      - pcie_endpoint
-      - qsfp_cage
-      - qspi_flash
-      - usb_jtag_bridge
-      - usb_uart_bridge
-    Devices:
-      - ftdi_ft4232h
-      - silabs_si5342
-      - silabs_si570
-      - micron_n25q256a
-      - ddr4_sodimm_socket
-    BoardURL: "https://www.bittware.com/fpga/xup-p3/"
-    Status: eol
+    Notes: "BittWare lists it as a legacy product: still sold, not recommended for new designs."

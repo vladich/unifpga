@@ -52,7 +52,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: XCVP1502-2MSEVSVA2197
+    Chip: XCVP1802-2MSEVSVA5601
     Bridges:
       - pcie-jtag
     Programmer: vivado_hw
@@ -62,8 +62,9 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/av-811p/
+    BoardURL: https://www.bittware-molex.com/adding-av-811p-amd-versal-card/
     Status: active
+    Notes: "BittWare publishes VP1802 (VP2802 option) only; package and speed grade are not published (VSVA5601 is assumed)."
   - Id: htg_vsl1
     BoardName: HTG-VSL1 Versal AI Core PCIe Gen4
     Devices:

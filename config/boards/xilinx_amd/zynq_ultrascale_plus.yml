@@ -353,7 +353,7 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/250-soc/
+    BoardURL: https://www.bittware-molex.com/products/250-soc/
     Status: active
   - Id: digilent_genesys_zu_3eg
     BoardName: Genesys ZU-3EG

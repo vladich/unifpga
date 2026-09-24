@@ -92,7 +92,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: XCZU47DR-2FFVE1156E
+    Chip: XCZU43DR-2FFVG1517E
     Bridges:
       - pcie-jtag
     Programmer: vivado_hw
@@ -102,8 +102,9 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/rfx-770/
+    BoardURL: https://www.bittware-molex.com/products/rfx-770/
     Status: active
+    Notes: "BittWare publishes ZU43DR, G1517 package, speed grade -2; FFVG vs FSVG (same ball map) and the temperature grade are not published."
   - Id: bittware_rfx_880
     BoardName: BittWare RFX 880
     Devices:
@@ -112,7 +113,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: XCZU67DR-2FFVG1517E
+    Chip: XCZU43DR-2FFVG1517E
     Bridges:
       - pcie-jtag
     Programmer: vivado_hw
@@ -122,8 +123,9 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/rfx-880/
+    BoardURL: https://www.bittware-molex.com/products/rfx-880/
     Status: active
+    Notes: "BittWare publishes ZU43DR, G1517 package, speed grade -2; FFVG vs FSVG (same ball map) and the temperature grade are not published."
   - Id: enclustra_andromeda_xru30
     BoardName: Andromeda XRU30 RFSoC
     Devices:

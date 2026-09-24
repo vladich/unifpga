@@ -13,7 +13,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: AGFB014R24A2E2V
+    Chip: AGFB014R24B2E2V
     Bridges:
       - pcie-jtag
     Programmer: quartus_pgm
@@ -23,7 +23,7 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/ia-420f/
+    BoardURL: https://www.bittware-molex.com/products/ia-420f/
     Status: active
   - Id: bittware_ia_440i
     BoardName: IA-440i
@@ -33,7 +33,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: AGIB023R29B1E1V
+    Chip: AGIB023R18A1E1V
     Bridges:
       - pcie-jtag
     Programmer: quartus_pgm
@@ -43,8 +43,9 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/ia-440i/
+    BoardURL: https://www.bittware-molex.com/products/ia-440i/
     Status: active
+    Notes: "CESNET NDK also builds for a board variant with AGIB023R18A1E1VC."
   - Id: bittware_ia_441i
     BoardName: BittWare IA-441i Agilex 7 I-Series
     Devices:
@@ -53,7 +54,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: AGIB041R29A1E2VR0
+    Chip: AGIB023R18A1E1V
     Bridges:
       - pcie-jtag
     Programmer: quartus_pgm
@@ -63,8 +64,9 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/ia-441i/
+    BoardURL: https://www.bittware-molex.com/products/ia-441i/
     Status: active
+    Notes: "BittWare publishes AGI023 with core and transceiver speed grade -1 but no package; R18A is the package of IA-440i and IA-780i, unconfirmed for this card."
   - Id: bittware_ia_720i
     BoardName: BittWare IA-720i Agilex 7 I-Series
     Devices:
@@ -73,7 +75,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: AGIB027R29A1E2VR0
+    Chip: AGIB023R18A1E1V
     Bridges:
       - pcie-jtag
     Programmer: quartus_pgm
@@ -83,8 +85,9 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/ia-720i/
+    BoardURL: https://www.bittware-molex.com/products/ia-720i-agilex-7-pcie-fpga-card/
     Status: active
+    Notes: "BittWare publishes AGI023 with core and transceiver speed grade -1 but no package; R18A is the package of IA-440i and IA-780i, unconfirmed for this card."
   - Id: bittware_ia_780i
     BoardName: IA-780i
     Devices:
@@ -93,7 +96,7 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     BoardProducer: bittware
-    Chip: AGIB023R29B1E1V
+    Chip: AGIB023R18A1E1V
     Bridges:
       - pcie-jtag
     Programmer: quartus_pgm
@@ -103,7 +106,7 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/ia-780i/
+    BoardURL: https://www.bittware-molex.com/products/ia-780i/
     Status: active
   - Id: bittware_ia_840f
     BoardName: IA-840f
@@ -123,7 +126,7 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/ia-840f/
+    BoardURL: https://www.bittware-molex.com/products/ia-840f/
     Status: active
   - Id: bittware_ia_860m
     BoardName: IA-860m
@@ -132,7 +135,7 @@ Boards:
       - silabs_si5342
       - micron_n25q256a
     BoardProducer: bittware
-    Chip: AGMF039R47A2E1V
+    Chip: AGMF039R47A1E2VC
     Bridges:
       - pcie-jtag
     Programmer: quartus_pgm
@@ -142,8 +145,9 @@ Boards:
       - qsfp_cage
       - qspi_flash
       - usb_uart_bridge
-    BoardURL: https://www.bittware.com/products/ia-860m/
+    BoardURL: https://www.bittware-molex.com/products/ia-860m/
     Status: active
+    Notes: "Board revisions 0-3 carry AGMF039R47A2E2VR0 (CESNET NDK); revision 4 AGMF039R47A1E2VC."
   - Id: intel_agilex7_devkit_fseries
     BoardName: Agilex 7 F-Series FPGA Development Kit
     Aliases: [terasic_agilex7_f_series_devkit]
