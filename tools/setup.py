@@ -156,12 +156,19 @@ def pin_ref(layout, where):
 
 
 def ref_index(layout):
-    """{pinmap reference: `connector.pin`} over every connector of the layout; a
-    pin on a physical (verified) header wins over the same pin in a logical row."""
+    """{pinmap reference: `connector.pin`} over every connector of the layout. A
+    pin on several connectors (a Tang Mega 138K Pmod pin is also a J14 pin) is
+    the one of the connector of the reference's own bank, else a physical
+    (verified) header's rather than a logical row's."""
     out = {}
-    for c in sorted(layout.get("connectors") or [], key=lambda c: c.get("type") != "pin_row"):
+    conns = layout.get("connectors") or []
+    for c in sorted(conns, key=lambda c: c.get("type") != "pin_row"):
         for key, ref in (c.get("pins") or {}).items():
             out[ref] = "{}.{}".format(c["id"], key)
+    for c in conns:
+        for key, ref in (c.get("pins") or {}).items():
+            if c.get("bank") and re.match(r"^" + re.escape(c["bank"]) + r"\b", str(ref)):
+                out[ref] = "{}.{}".format(c["id"], key)
     return out
 
 
