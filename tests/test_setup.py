@@ -246,7 +246,11 @@ def test_editor_server_and_its_write_guard():
     httpd, base = _server()
     try:
         assert "studio.js" in urllib.request.urlopen(base + "/").read().decode()
-        assert "use strict" in urllib.request.urlopen(base + "/studio.js").read().decode()
+        js = urllib.request.urlopen(base + "/studio.js")
+        assert "use strict" in js.read().decode()
+        # the page is never taken from a browser cache: after a restart it is this server's code
+        assert js.headers["Cache-Control"] == "no-store"
+        assert urllib.request.urlopen(base + "/").headers["Cache-Control"] == "no-store"
         assert "arty_a7" in urllib.request.urlopen(base + "/api/boards").read().decode()
         setup = su.read_setup("arty_a7_35")
         ok = _post(base + "/api/evaluate", {"setup": setup}, {"X-Unifpga-Studio": "1"})

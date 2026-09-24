@@ -34,8 +34,14 @@ main { display: flex; gap: 0; align-items: stretch; padding: 8px 12px; }
 .stab.active { background: #1c7ed6; border-color: #1c7ed6; color: #fff; }
 #src-bar { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
 #src-bar button { font: inherit; min-width: 26px; }
-#src-files button { font: inherit; font-size: 11px; margin: 1px; }
-#src-files button.cur { background: #d0ebff; font-weight: 600; }
+#src-files { display: flex; flex-wrap: wrap; gap: 2px; flex-basis: 100%; order: 3; }
+.src-tab { display: inline-flex; align-items: center; border: 1px solid #ced4da; border-radius: 4px; background: #fff; font-size: 11px; }
+.src-tab.cur { background: #d0ebff; border-color: #74c0fc; font-weight: 600; }
+.src-tab button { font: inherit; border: none; background: none; padding: 2px 5px; cursor: pointer; }
+.src-tab .x { color: #868e96; padding: 2px 5px 2px 1px; }
+.src-tab .x:hover { color: #c92a2a; }
+#src-related { font-size: 11px; color: var(--muted); }
+#src-related button { font: inherit; font-size: 11px; margin: 1px 3px; }
 #src-marks { margin-left: auto; white-space: nowrap; }
 #src-count { color: var(--muted); padding: 0 4px; font-size: 11px; }
 #src-title { font-weight: 600; margin: 4px 0 2px; word-break: break-all; }

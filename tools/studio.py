@@ -419,13 +419,19 @@ def verilog_view(setup, target):
     refs = [r for r in target.get("refs") or [] if r]
     if span and not refs and not target.get("design_port"):
         hi.update(range(span[0], span[1]))
+    unused = []
     for ref in refs:
         exact, base = _ref_names(ref)
         lo, hi_end = span if span else (header_end + 1, len(lines))
         found = [k for k in range(lo, hi_end) if exact in lines[k]] or \
                 [k for k in range(lo, hi_end) if re.search(r"\b" + re.escape(base) + r"\b", lines[k])]
+        found += [k for k in range(top_start, header_end) if re.search(r"\b" + re.escape(base) + r"\b", lines[k])]
         hi.update(found)
-        hi.update(k for k in range(top_start, header_end) if re.search(r"\b" + re.escape(base) + r"\b", lines[k]))
+        if not found:
+            unused.append(ref)
+    if unused:
+        note = "; ".join(filter(None, [note, "not used by this rig, so the generated top has no port for it: " +
+                                       ", ".join(unused) + " (nothing in the rig is wired there)"]))
     port = target.get("design_port")
     if port:
         entry = next((e for e in codegen.DESIGN_PORTS if e[0] == port), None)
@@ -542,10 +548,13 @@ def make_server(port=8765, host="127.0.0.1"):
     import http.server
 
     class Handler(http.server.BaseHTTPRequestHandler):
-        def _send(self, status, body, ctype="application/json"):
+        def _send(self, status, body, ctype="application/json", cache=True):
             data = body if isinstance(body, bytes) else json.dumps(body).encode("utf-8")
             self.send_response(status)
             self.send_header("Content-Type", ctype)
+            if not cache or ctype == "application/json":
+                # the page and its answers always come from this server's code
+                self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", str(len(data)))
             self.send_header("X-Content-Type-Options", "nosniff")
             self.end_headers()
@@ -619,7 +628,7 @@ def make_server(port=8765, host="127.0.0.1"):
 
         def _static(self, name):
             with open(os.path.join(STATIC, name), "rb") as f:
-                return self._send(200, f.read(), _STATIC_TYPES[os.path.splitext(name)[1]])
+                return self._send(200, f.read(), _STATIC_TYPES[os.path.splitext(name)[1]], cache=False)
 
         def log_message(self, fmt, *args):
             pass

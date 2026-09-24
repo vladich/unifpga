@@ -676,6 +676,7 @@ function activate(sel) {
 }
 
 function onSvgClick(e) {
+  if (isDoubleClick(e)) return onSvgDoubleClick(e);
   const all = candidatesAt(e.clientX, e.clientY);
   const points = all.filter((s) => POINTS.has(s.kind)), conns = all.filter((s) => CONNECTIONS.has(s.kind));
   const parts = all.filter((s) => !POINTS.has(s.kind) && !CONNECTIONS.has(s.kind));
@@ -777,15 +778,34 @@ function wireZoomPan() {
   $("zoom-in").addEventListener("click", () => zoomCenter(1 / 1.25));
   $("zoom-out").addEventListener("click", () => zoomCenter(1.25));
   $("zoom-fit").addEventListener("click", () => { S.view = null; applyView(); });
-  svg.addEventListener("dblclick", (e) => {
-    const all = candidatesAt(e.clientX, e.clientY);
-    if (!all.length) { S.view = null; applyView(); return; }
-    closePicker();
-    const points = all.filter((s) => POINTS.has(s.kind)), conns = all.filter((s) => CONNECTIONS.has(s.kind));
-    const parts = all.filter((s) => !POINTS.has(s.kind) && !CONNECTIONS.has(s.kind));
-    const pick = e[MODS.connsKey] ? conns[0] || points[0] || parts[0] : points[0] || conns[0] || parts[0];
-    openVerilog(pick).catch((x) => status(x.message, true));
-  });
+}
+
+// A double click is two clicks close in time and place, told apart here
+// rather than by the browser's dblclick: the first click selects and redraws
+// the drawing, so the second lands on a new element and browsers then send no
+// dblclick. On the background it fits the drawing; on anything else it opens
+// the Verilog that defines it.
+const DOUBLE_MS = 450, DOUBLE_PX = 6;
+function isDoubleClick(e) {
+  const now = Date.now(), last = S.lastClick;
+  const mods = ["metaKey", "ctrlKey", "altKey", "shiftKey"].map((k) => !!e[k]).join();
+  S.lastClick = {t: now, x: e.clientX, y: e.clientY, mods};
+  if (last && last.mods === mods && now - last.t <= DOUBLE_MS &&
+      Math.abs(last.x - e.clientX) <= DOUBLE_PX && Math.abs(last.y - e.clientY) <= DOUBLE_PX) {
+    S.lastClick = null;
+    return true;
+  }
+  return false;
+}
+
+function onSvgDoubleClick(e) {
+  closePicker();
+  const all = candidatesAt(e.clientX, e.clientY);
+  if (!all.length) { S.view = null; applyView(); return; }
+  const points = all.filter((s) => POINTS.has(s.kind)), conns = all.filter((s) => CONNECTIONS.has(s.kind));
+  const parts = all.filter((s) => !POINTS.has(s.kind) && !CONNECTIONS.has(s.kind));
+  const pick = e[MODS.connsKey] ? conns[0] || points[0] || parts[0] : points[0] || conns[0] || parts[0];
+  openVerilog(pick).catch((x) => status(x.message, true));
 }
 
 // what the current selection lights up
@@ -983,15 +1003,48 @@ async function openVerilog(sel) {
   $("src-title").textContent = "generating the Verilog for " + selLabel(sel) + "…";
   const r = await api("/api/verilog", {setup: S.setup, target});
   S.modules = new Set(r.modules.concat(["design_top"]));
-  S.srcFiles = r.files;
-  // the definition itself first: a driver's or design_top's own module, else the rig's top
+  S.lastFiles = r.files;
+  // the definition itself first: a driver's or design_top's own module, else the rig's top;
+  // the other files are offered next to it
   const own = (sel.kind === "driver" || sel.kind === "vbit" || sel.kind === "vport") && r.files.length > 1 ? r.files[1] : r.files[0];
+  S.related = r.files.filter((x) => x !== own);
   openView(own, own.highlight[0] || 1, own.highlight, selLabel(sel));
+}
+
+// ---- open files: one tab each, kept until closed. A file is known by its
+// path (the generated top by its name); opening it again updates that tab.
+function tabKey(file) { return file.path || "top.sv"; }
+function adoptTab(file) {
+  S.tabs = S.tabs || [];
+  const tab = S.tabs.find((x) => tabKey(x) === tabKey(file));
+  if (!tab) { file.rev = 1; S.tabs.push(file); return file; }
+  if (tab !== file) {
+    if (tab.text !== file.text) { tab.text = file.text; tab.decl = null; tab.rev = (tab.rev || 1) + 1; }
+    Object.assign(tab, {title: file.title, highlight: file.highlight, note: file.note});
+  }
+  return tab;
+}
+function closeTab(tab) {
+  const k = S.tabs.indexOf(tab);
+  if (k < 0) return;
+  S.tabs.splice(k, 1);
+  S.srcHist = (S.srcHist || []).filter((v) => v.file !== tab);
+  S.srcPos = Math.min(S.srcPos || 0, S.srcHist.length - 1);
+  if (S.srcView && S.srcView.file === tab) {
+    const next = S.tabs[Math.min(k, S.tabs.length - 1)];
+    if (next) return openView(next, next.view.line, next.view.marks, next.view.why, true);
+    S.srcView = null;
+    $("src-code").replaceChildren(h("p", {class: "muted"}, "No file open. Double-click anything in the drawing to open the Verilog that defines it."));
+    $("src-code").dataset.shown = "";
+  }
+  renderSource();
 }
 
 // ---- the viewer
 function openView(file, line, marks, why, keepHistory) {
+  file = adoptTab(file);
   const v = {file, line, marks: marks || [], why: why || ""};
+  file.view = v;
   if (!keepHistory) {
     S.srcHist = (S.srcHist || []).slice(0, (S.srcPos || 0) + 1);
     S.srcHist.push(v); S.srcPos = S.srcHist.length - 1;
@@ -1012,8 +1065,11 @@ function markStep(d) {
   if (!v || !v.marks.length) return;
   const k = v.marks.indexOf(v.line);
   v.line = v.marks[(k < 0 ? 0 : (k + d + v.marks.length) % v.marks.length)];
+  v.file.view = v;
   renderMarks(); scrollToLine(v.line);
 }
+
+function renderMarksEmpty() { $("src-count").textContent = ""; for (const b of ["src-prev", "src-next"]) $(b).disabled = true; }
 
 function renderMarks() {
   const v = S.srcView, k = v.marks.indexOf(v.line);
@@ -1031,22 +1087,27 @@ function scrollToLine(n) {
 }
 
 function renderSource() {
-  const v = S.srcView, f = v.file;
+  const v = S.srcView, f = v && v.file;
   $("src-back").disabled = !(S.srcPos > 0);
   $("src-fwd").disabled = !(S.srcHist && S.srcPos < S.srcHist.length - 1);
-  $("src-files").replaceChildren(...(S.srcFiles || []).map((x) => h("button", {class: x === f ? "cur" : "",
-    title: x.path || "generated, not a file", onclick: () => openView(x, x.highlight[0] || 1, x.highlight, v.why)},
-    x.path ? x.path.split("/").pop() : "top.sv")));
+  $("src-files").replaceChildren(...(S.tabs || []).map((x) => h("span", {class: "src-tab" + (x === f ? " cur" : "")},
+    h("button", {title: x.path || "top.sv generated for the rig on the page (not a file)",
+                 onclick: () => openView(x, x.view.line, x.view.marks, x.view.why)}, x.path ? x.path.split("/").pop() : "top.sv"),
+    h("button", {class: "x", title: "Close", onclick: () => closeTab(x)}, "×"))));
+  const rel = (S.related || []).filter((x) => !f || tabKey(x) !== tabKey(f));
+  $("src-related").replaceChildren(...(rel.length && f ? ["also: "].concat(rel.map((x) => h("button", {title: x.path || "generated",
+    onclick: () => openView(x, x.highlight[0] || 1, x.highlight, v.why)}, x.title))) : []));
+  if (!f) { $("src-title").textContent = ""; $("src-note").textContent = ""; renderMarksEmpty(); return; }
   $("src-title").textContent = (f.path || f.title) + (v.why ? "  —  " + v.why : "");
   $("src-note").textContent = f.note || "";
   const box = $("src-code");
-  if (box.dataset.shown !== (f.path || f.title) + "#" + f.text.length) {
+  if (box.dataset.shown !== tabKey(f) + "#" + (f.rev || 1)) {
     box.replaceChildren(...highlightVerilog(f.text).map((toks, k) => {
       const ln = h("div", {class: "ln", "data-line": k + 1}, h("span", {class: "no"}, String(k + 1)));
       for (const [cls, text] of toks) ln.append(cls ? h("span", {class: cls}, text) : text);
       return ln;
     }));
-    box.dataset.shown = (f.path || f.title) + "#" + f.text.length;
+    box.dataset.shown = tabKey(f) + "#" + (f.rev || 1);
     f.decl = f.decl || declarations(f.text);
     for (const e of box.querySelectorAll(".id")) if (f.decl.has(e.textContent)) e.classList.add("nav");
   }
@@ -1138,9 +1199,8 @@ function instanceModuleAt(text, n) {
 
 async function openModule(name, focusName, why) {
   const src = await api("/api/module", {name, design: name === "design_top" ? S.design : undefined});
-  const file = (S.srcFiles || []).find((x) => x.path === src.path) ||
-               {path: src.path, title: "module " + name, text: src.text, highlight: [src.line], note: ""};
-  if (!(S.srcFiles || []).includes(file)) S.srcFiles = (S.srcFiles || []).concat([file]);
+  const file = adoptTab((S.tabs || []).find((x) => x.path === src.path) ||
+                        {path: src.path, title: "module " + name, text: src.text, highlight: [src.line], note: ""});
   file.decl = file.decl || declarations(file.text);
   const line = focusName && file.decl.has(focusName) ? file.decl.get(focusName) : src.line;
   openView(file, line, [line], why);
@@ -1856,7 +1916,14 @@ async function selftest() {
     const dbl = async (sel) => {
       const el = document.querySelector("[data-sel='" + JSON.stringify(sel) + "']");
       const b = el.getBoundingClientRect();
-      $("svg").dispatchEvent(new MouseEvent("dblclick", {clientX: b.left + Math.min(b.width / 2, 20), clientY: b.top + Math.min(b.height / 2, 6), bubbles: true}));
+      // two clicks through the page's own handler, as a browser sends them; the
+      // first selects and redraws the drawing, the second lands on a new element
+      const at = {clientX: b.left + Math.min(b.width / 2, 20), clientY: b.top + Math.min(b.height / 2, 6), bubbles: true, detail: 1};
+      S.lastClick = null;
+      $("svg").dispatchEvent(new MouseEvent("click", at));
+      const under = document.elementFromPoint(at.clientX, at.clientY);
+      $("svg").dispatchEvent(new MouseEvent("click", Object.assign({}, at, {detail: 2})));
+      S.dblTargetReplaced = !el.isConnected || under !== el;
       for (let k = 0; k < 100 && !(S.srcView && !$("src-title").textContent.startsWith("generating")); k++) await new Promise((r) => setTimeout(r, 30));
       await new Promise((r) => setTimeout(r, 0));
     };
@@ -1870,20 +1937,27 @@ async function selftest() {
       const opened = !$("side-source").hidden && v && v.file.path && v.file.text.split("\n")[v.line - 1].includes("module " + d0.via);
       ok("double-clicking a driver opens its module in the Source tab" + (opened ? "" : " [" + JSON.stringify({via: d0.via,
          path: v && v.file.path, line: v && v.line, title: $("src-title").textContent, status: $("status").textContent}) + "]"), opened);
+      ok("a double click works although the first click redrew the drawing", S.dblTargetReplaced === true && opened);
       ok("the definition is scrolled into view and marked", inView(v.line) && $("src-code").querySelector('[data-line="' + v.line + '"]').classList.contains("focus"));
       ok("the code is coloured", !!$("src-code").querySelector(".k") && !!$("src-code").querySelector(".c, .n"));
-      const top = S.srcFiles[0];
+      const top = S.lastFiles[0];
       ok("the rig's top marks the driver's section", top.path === null && top.highlight.some((n) => top.text.split("\n")[n - 1].includes(d0.via)));
       // navigation: a module name in the top opens that module; a signal jumps to its declaration
+      const tabsBefore = S.tabs.length;
       openView(top, top.highlight[0], top.highlight, "test");
+      ok("opening another file adds a tab and keeps the first", S.tabs.length === tabsBefore + 1 && S.tabs.some((x) => x.path && x.text.includes("module " + d0.via)));
       await new Promise((r) => setTimeout(r, 0));
       const mtok = [...$("src-code").querySelectorAll(".m")].find((e) => e.textContent === d0.via);
       if (mtok) { mtok.click(); for (let k = 0; k < 100 && S.srcView.file === top; k++) await new Promise((r) => setTimeout(r, 30));
         ok("clicking a module name opens its file", S.srcView.file.path && S.srcView.file.text.includes("module " + d0.via)); }
       historyStep(-1);
-      ok("back returns to the top", S.srcView.file === top);
+      ok("back returns to the top", tabKey(S.srcView.file) === "top.sv");
       const nav = [...$("src-code").querySelectorAll(".id.nav")].find((e) => top.decl.get(e.textContent) !== Number(e.closest(".ln").dataset.line));
-      if (nav) { nav.click(); ok("clicking a signal jumps to its declaration", S.srcView.line === top.decl.get(nav.textContent)); }
+      const topTab = S.srcView.file;
+      if (nav) { nav.click(); ok("clicking a signal jumps to its declaration", S.srcView.line === topTab.decl.get(nav.textContent)); }
+      const n0 = S.tabs.length;
+      closeTab(topTab);
+      ok("a tab closes with its ×, the others stay", S.tabs.length === n0 - 1 && !S.tabs.includes(topTab) && S.srcView && S.srcView.file !== topTab);
       showSide("props");
     }
     // a module whose exclusive capability the rig already has: marked in the
@@ -1905,6 +1979,34 @@ async function selftest() {
         ok("the part is marked in the drawing", $("svg").textContent.includes("capability already provided"));
         S.setup.use.splice(n0, 1); S.sel = null; await changed("remove clash"); await settle();
       }
+    }
+    {
+      S.lastClick = null;
+      const t0 = Date.now, fake = [0, DOUBLE_MS + 50];
+      Date.now = () => fake.shift();
+      const one = isDoubleClick({clientX: 5, clientY: 5}), two = isDoubleClick({clientX: 5, clientY: 5});
+      Date.now = t0;
+      ok("two clicks further apart than a double click stay single clicks", !one && !two);
+      S.lastClick = null;
+    }
+    // every kind of clickable thing in the drawing opens Verilog with marked lines
+    {
+      const seen = new Map();
+      for (const e of document.querySelectorAll("#svg [data-sel]")) {
+        const s = JSON.parse(e.getAttribute("data-sel"));
+        if (!seen.has(s.kind)) seen.set(s.kind, s);
+      }
+      const bad = [];
+      for (const [kind, s] of seen) {
+        S.srcView = null;
+        try { await openVerilog(s); } catch (x) { bad.push(kind + ": " + x.message); continue; }
+        const v = S.srcView;
+        if (!v) bad.push(kind + ": nothing opened");
+        else if (!v.marks.length && !/not used by this rig/.test(v.file.note || ""))
+          bad.push(kind + ": no marked line in " + (v.file.path || "top.sv") + " for " + JSON.stringify(verilogTarget(s)));
+      }
+      ok("double-clicking any kind of thing (" + [...seen.keys()].join(", ") + ") opens marked Verilog" + (bad.length ? " [" + bad.join("; ") + "]" : ""), !bad.length);
+      showSide("props");
     }
     // widths the rig sets are shown as design_top parameters
     const pp = ports().find((q) => q.width_parameter && q.providers.length);
