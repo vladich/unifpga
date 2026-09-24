@@ -1,0 +1,65 @@
+# Configuration 'arty_a7_35_oled_lcd_servos'.
+# Generated from config/setups/arty_a7_35_oled_lcd_servos.yml (./unifpga setup generate); edit the setup.
+
+Configuration:
+  id: arty_a7_35_oled_lcd_servos
+  board: arty_a7
+  toolchain: vivado
+  part: "35t"   # which of the board's chips this configuration targets
+
+  attach:
+    - peripheral: clock_input
+      params:
+        frequency_mhz: 100
+      bind:
+        clk: clk100mhz
+    - peripheral: sw_bank
+      params:
+        width: 4
+      bind:
+        sw: onboard_switches
+    - peripheral: led_bank
+      params:
+        width: 4
+      bind:
+        led: onboard_leds
+    - peripheral: button_array
+      params:
+        width: 4
+      bind:
+        btn: onboard_buttons
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: reset_button
+      bind:
+        rst: cpu_resetn
+    - peripheral: ssd1306_spi_oled
+      bind:
+        cs: "pmod_ja[0]"
+        sdin: "pmod_ja[1]"
+        sclk: "pmod_ja[3]"
+        dc: "pmod_ja[4]"
+        res: "pmod_ja[5]"
+        vbat: "pmod_ja[6]"
+        vdd: "pmod_ja[7]"
+    - peripheral: servo_pwm
+      params:
+        count: 4
+      bind:
+        pwm: ["pmod_jb[0]", "pmod_jb[1]", "pmod_jb[2]", "pmod_jb[3]"]
+    - peripheral: relay_bank
+      params:
+        count: 4
+      bind:
+        ctl: ["pmod_jb[4]", "pmod_jb[5]", "pmod_jb[6]", "pmod_jb[7]"]
+    - peripheral: hd44780_lcd
+      params:
+        columns: 16
+        rows: 2
+      bind:
+        rs: "arduino_io[2]"
+        rw: "arduino_io[3]"
+        e: "arduino_io[4]"
+        d: ["arduino_io[5]", "arduino_io[6]", "arduino_io[7]", "arduino_io[8]"]

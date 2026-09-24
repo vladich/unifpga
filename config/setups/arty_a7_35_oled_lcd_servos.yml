@@ -1,0 +1,23 @@
+# Setup arty_a7_35_oled_lcd_servos: the rig config/configurations/arty_a7_35_oled_lcd_servos.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: arty_a7_35_oled_lcd_servos
+  board: arty_a7
+  toolchain: vivado
+  part: "35t"
+  use:
+    - onboard: clock
+    - onboard: switches
+    - onboard: leds
+    - onboard: buttons
+    - onboard: uart
+    - onboard: reset
+    - module: digilent_pmod_oled
+      plug: {connector: ja, row: all}
+    - module: digilent_pmod_con3
+      plug: {connector: jb, row: 1}
+    - module: digilent_pmod_od1
+      plug: {connector: jb, row: 2}
+    - module: lcd1602_hd44780
+      wires: {RS: ck.IO2, RW: ck.IO3, E: ck.IO4, D4: ck.IO5, D5: ck.IO6, D6: ck.IO7, D7: ck.IO8}
