@@ -14,6 +14,7 @@
 
 Peripheral:
   id: pin_tie
+  role: tie                # the peripheral a configuration's `tie:` entries become
   description: Pin driven with a constant or the reset (`assign PIN = 1'b0` / `~ rst`)
   parameters:
     value:

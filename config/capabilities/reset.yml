@@ -11,6 +11,20 @@ Capability:
   # provide this capability without any explicit pin.
   aggregation: or
 
+  # the reset sources a configuration's `reset.sources` may take from other
+  # capabilities (tools/codegen.py reset_sources): a bit of that capability's
+  # signal, from its providers' own pins (`parts: pins`, the board's switches
+  # and keys, read even when they do not reach the design) or from the first
+  # provider with a driver (`parts: driver`, a TM1638's keys). `index`: the
+  # bit a flag form means (`switch_msb: true`, `any_key: true`), `kind` the
+  # source it is a form of.
+  sources:
+    switch:     {capability: switches, signal: sw, parts: pins}
+    switch_msb: {capability: switches, signal: sw, parts: pins, index: msb, kind: switch}
+    key:        {capability: buttons, signal: btn, parts: pins}
+    any_key:    {capability: buttons, signal: btn, parts: pins, index: any, kind: key}
+    tm_key:     {capability: buttons, signal: btn, parts: driver}
+
   design:
     ports:
       rst: {signal: rst, width: 1, net: {source: reset_net}}

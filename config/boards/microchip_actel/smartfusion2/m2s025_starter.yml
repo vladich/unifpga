@@ -22,6 +22,14 @@ Board:
   defaults:
     iostandard: LVCMOS25
 
+  toolchain_options:
+    libero:                # the Libero SoC target (new_project -family / -die / -package / -speed ...)
+      family: SmartFusion2
+      die: M2S025T
+      package: "325 FCSBGA"   # Libero's own spelling, with the space
+      speed: STD
+      part_range: COM
+      iostd: LVCMOS25
   pinBanks:
     clk:              { pins: "H17" }    # placeholder; 50 MHz osc
     onboard_reset:    { pins: "F20" }    # placeholder

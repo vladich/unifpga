@@ -7,6 +7,8 @@ Configuration:
   toolchain: vivado
   part: "35t"   # which of the board's chips this configuration targets
 
+  manual: true
+
   attach:
     - peripheral: clock_input
       params:

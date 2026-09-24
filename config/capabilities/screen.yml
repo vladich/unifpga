@@ -25,8 +25,8 @@ Capability:
     bits_g: { type: int, description: "Explicit green width (design_top's w_green)" }
     bits_b: { type: int, description: "Explicit blue width (design_top's w_blue)" }
   signals:
-    - { name: x,     type: bus, direction: hw_to_user, comment: "X position; width = ceil(log2(screen_width))" }
-    - { name: y,     type: bus, direction: hw_to_user, comment: "Y position; width = ceil(log2(screen_height))" }
+    - { name: x,     type: bus, direction: hw_to_user, extent: width, comment: "X position; width = ceil(log2(screen_width)); extent: what a mirrored axis counts down from" }
+    - { name: y,     type: bus, direction: hw_to_user, extent: height, comment: "Y position; width = ceil(log2(screen_height))" }
     - { name: red,   type: bus, direction: user_to_hw, comment: "Width comes from color_depth's R channel" }
     - { name: green, type: bus, direction: user_to_hw }
     - { name: blue,  type: bus, direction: user_to_hw }

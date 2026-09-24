@@ -6,6 +6,9 @@
 
 Board:
   id: tang_nano_1k
+  toolchain_options:
+    yosys:
+      loader_board: "tangnano1k"          # openFPGALoader -b
   pinBanks:
     sys_clk:
       pins: 47
