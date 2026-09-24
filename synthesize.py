@@ -134,6 +134,14 @@ def main(argv=None):
         log.info("All %d design_top capability requirements satisfied", len(requirements))
 
     try:
+        # Validate one design fileset and put ROM/data assets in the working
+        # directory before any frontend or dry-run project generation starts.
+        from tools import source_set
+        try:
+            source_set.stage_assets(os.path.dirname(os.path.abspath(args.top)), output_folder)
+        except source_set.SourceSetError as exc:
+            log.error("Invalid design fileset: %s", exc)
+            return 2
         # Generate the top-level Verilog wrapper from the configuration.
         # Strict mode: a configuration whose binds do not resolve, whose pins
         # collide, or whose clock frequency is unknown is refused (exit 3)

@@ -48,7 +48,7 @@ if REPO not in sys.path:                    # `python3 tools/cli.py` without the
 import config.init                          # noqa: E402
 import program                              # noqa: E402  (called, never shelled out)
 import synthesize                           # noqa: E402  (called, never shelled out)
-from tools import toolchain_detect          # noqa: E402
+from tools import source_set, toolchain_detect  # noqa: E402
 
 DESIGNS_DIR = os.path.join(REPO, "designs")
 TOP_NAME = "design_top.sv"
@@ -473,13 +473,12 @@ def _iverilog_language_option(version_text):
 
 
 def sim_sources(design_dir):
-    """The files a simulation compiles: the design
-    directory's *.sv / *.v (tb.sv included), the design-common helpers, and
-    the peripheral models the design directory does not shadow."""
+    """Simulation view of the same design fileset used by synthesis."""
     rtl = os.path.join(REPO, "rtl")
     files = [os.path.join(rtl, "sim", "timescale.sv")]          # `timescale 1 ns / 1 ps first
-    files += sorted(glob.glob(os.path.join(design_dir, "*.sv")) + glob.glob(os.path.join(design_dir, "*.v")))
-    files += sorted(glob.glob(os.path.join(design_dir, "cpu", "*.sv")) + glob.glob(os.path.join(design_dir, "cpu", "*.v")))
+    sources, simulation, _ = source_set.design_inputs(design_dir)
+    files += [p for p in sources if p.endswith((".sv", ".v"))]
+    files += simulation
     # peripherals/*.sv too (LCD testbenches instantiate the panel timing
     # modules); only tb's hierarchy is elaborated (-s tb), so
     # unreferenced models cost nothing
@@ -494,11 +493,22 @@ def sim_sources(design_dir):
 def sim_command(design_dir, out_dir, lang="-g2012"):
     # SIMULATION enables the simulation-only modules (fifo_monitor and
     # others sit behind `ifdef SIMULATION)
-    return (["iverilog", lang, "-D", "SIMULATION", "-s", "tb", "-o", os.path.join(out_dir, "a.out"),
-             "-I", design_dir, "-I", os.path.join(design_dir, "cpu"),
-             "-I", os.path.join(REPO, "rtl", "peripherals"),
-             "-I", os.path.join(REPO, "rtl", "peripherals", "designs_common")]
-            + sim_sources(design_dir))
+    files = sim_sources(design_dir)
+    includes = [design_dir, os.path.join(design_dir, "cpu"),
+                os.path.join(REPO, "rtl", "peripherals"),
+                os.path.join(REPO, "rtl", "peripherals", "designs_common")]
+    seen_includes = {os.path.abspath(path) for path in includes}
+    # Included headers may live beside a selected nested source, not only in
+    # the design root or the historical cpu/ subdirectory.
+    design_root = os.path.abspath(design_dir)
+    for source in files:
+        parent = os.path.dirname(source)
+        if (os.path.commonpath((design_root, os.path.abspath(parent))) == design_root and
+                os.path.abspath(parent) not in seen_includes):
+            includes.append(parent)
+            seen_includes.add(os.path.abspath(parent))
+    return (["iverilog", lang, "-D", "SIMULATION", "-s", "tb", "-o", os.path.join(out_dir, "a.out")]
+            + [arg for directory in includes for arg in ("-I", directory)] + files)
 
 
 def _waveform_viewer():
@@ -521,6 +531,10 @@ def cmd_sim(args):
         raise CliError("iverilog is not on PATH. Install Icarus Verilog (apt/yum/brew install iverilog).")
     out = os.path.join(run_dir(design_dir), SIM_DIR_NAME)
     os.makedirs(out, exist_ok=True)
+    try:
+        source_set.stage_assets(design_dir, out)
+    except source_set.SourceSetError as exc:
+        raise CliError(str(exc)) from exc
     version = subprocess.run(["iverilog", "-V"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              universal_newlines=True).stdout
     cmd = sim_command(design_dir, out, _iverilog_language_option(version))

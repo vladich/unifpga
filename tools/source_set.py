@@ -30,6 +30,10 @@ top instantiates, independent of the frontend.
 """
 
 import os
+import shutil
+import tempfile
+
+import yaml
 
 from tools import codegen
 
@@ -41,12 +45,130 @@ HELPER_MODULES = {
     "imitate_reset_on_power_up.sv": ("imitate_reset_on_power_up",),
 }
 
-# Files in the design directory that are never sources: the user top is added
-# explicitly (first, by its given path) and the testbench is simulation-only.
-SKIP_DESIGN_FILES = ("design_top.sv", "tb.sv")
+# The testbench is simulation-only. Explicit manifests place design_top.sv
+# where package dependencies require it; legacy scans keep it first.
+SKIP_DESIGN_DIRS = frozenset(("run", "build", "__pycache__", ".ater-tmp", ".git"))
+DESIGN_FILESET = "fileset.yml"
 
 DESIGNS_COMMON_DIR = os.path.join("rtl", "peripherals", "designs_common")
 COMPAT_STUBS_DIR = os.path.join("rtl", "peripherals", "_quartus_compat")
+
+
+class SourceSetError(ValueError):
+    """A design's explicit source or asset list cannot be resolved safely."""
+
+
+def _checked_files(design_dir, entries, field, extensions):
+    if not isinstance(entries, list):
+        raise SourceSetError("{}: {} must be a list".format(DESIGN_FILESET, field))
+    paths = []
+    seen = set()
+    seen_real = set()
+    root = os.path.realpath(design_dir)
+    for rel in entries:
+        if (not isinstance(rel, str) or not rel or "\\" in rel or ":" in rel or
+                os.path.isabs(rel) or any(part in ("", ".", "..") for part in rel.split("/"))):
+            raise SourceSetError("{}: invalid {} path {!r}".format(DESIGN_FILESET, field, rel))
+        if rel in seen:
+            raise SourceSetError("{}: duplicate {} path {!r}".format(DESIGN_FILESET, field, rel))
+        seen.add(rel)
+        path = os.path.join(design_dir, *rel.split("/"))
+        real_path = os.path.realpath(path)
+        if os.path.commonpath((root, real_path)) != root or not os.path.isfile(path):
+            raise SourceSetError("{}: {} path is missing or escapes the design: {!r}"
+                                 .format(DESIGN_FILESET, field, rel))
+        if real_path in seen_real:
+            raise SourceSetError("{}: duplicate {} file via {!r}"
+                                 .format(DESIGN_FILESET, field, rel))
+        seen_real.add(real_path)
+        if not rel.endswith(extensions):
+            raise SourceSetError("{}: unsupported {} file {!r}".format(DESIGN_FILESET, field, rel))
+        paths.append(os.path.abspath(path))
+    return paths
+
+
+def design_inputs(design_dir):
+    """Return ordered (sources, simulation-only sources, assets) for a design.
+
+    Explicit fileset.yml selects alternative implementations. Older designs use
+    a deterministic recursive scan, excluding generated build directories.
+    Paths in a fileset are relative to the design, never to the caller's cwd.
+    """
+    design_dir = os.path.abspath(design_dir)
+    manifest = os.path.join(design_dir, DESIGN_FILESET)
+    if os.path.lexists(manifest):
+        if os.path.islink(manifest):
+            raise SourceSetError("{}: manifest must not be a symlink".format(manifest))
+        try:
+            with open(manifest, encoding="utf-8") as fh:
+                data = yaml.safe_load(fh)
+        except (OSError, yaml.YAMLError) as exc:
+            raise SourceSetError("{}: {}".format(manifest, exc)) from exc
+        if not isinstance(data, dict) or set(data) != {"version", "sources", "simulation", "assets"}:
+            raise SourceSetError("{}: expected version, sources, simulation, assets".format(manifest))
+        if type(data["version"]) is not int or data["version"] != 1:
+            raise SourceSetError("{}: unsupported version".format(manifest))
+        sources = _checked_files(design_dir, data["sources"], "sources", (".sv", ".v", ".svh"))
+        simulation = _checked_files(design_dir, data["simulation"], "simulation", (".sv", ".v"))
+        assets = _checked_files(design_dir, data["assets"], "assets", (".hex", ".mem"))
+        if len({os.path.realpath(p) for p in sources + simulation}) != len(sources) + len(simulation):
+            raise SourceSetError("{}: source appears in both targets".format(manifest))
+        if any(os.path.basename(p) == "tb.sv" for p in sources):
+            raise SourceSetError("{}: tb.sv belongs in simulation".format(manifest))
+        if sources.count(os.path.join(design_dir, "design_top.sv")) != 1:
+            raise SourceSetError("{}: sources must include design_top.sv once".format(manifest))
+        return sources, simulation, assets
+
+    top = os.path.join(design_dir, "design_top.sv")
+    sources = [top] if os.path.isfile(top) else []
+    simulation, assets = [], []
+    real_root = os.path.realpath(design_dir)
+    for root, dirs, names in os.walk(design_dir):
+        dirs[:] = sorted(d for d in dirs if d not in SKIP_DESIGN_DIRS)
+        for name in sorted(names):
+            path = os.path.join(root, name)
+            if name.endswith((".sv", ".v", ".svh", ".hex", ".mem")):
+                if os.path.commonpath((real_root, os.path.realpath(path))) != real_root:
+                    raise SourceSetError("source or asset escapes the design: {!r}".format(path))
+            if name == "tb.sv":
+                if root == design_dir:
+                    simulation.append(path)
+            elif name == "design_top.sv":
+                continue
+            elif name.endswith((".sv", ".v", ".svh")):
+                sources.append(path)
+            elif name.endswith((".hex", ".mem")):
+                assets.append(path)
+    return sources, simulation, assets
+
+
+def stage_assets(design_dir, output):
+    """Copy declared ROM/data files to the tool's working directory."""
+    _, _, assets = design_inputs(design_dir)
+    output_root = os.path.realpath(output)
+    for source in assets:
+        rel = os.path.relpath(source, design_dir)
+        target = os.path.join(output, rel)
+        if (os.path.commonpath((output_root, os.path.realpath(target))) != output_root or
+                os.path.islink(target)):
+            raise SourceSetError("asset destination escapes output: {!r}".format(rel))
+        temporary = None
+        try:
+            parent = os.path.dirname(target)
+            os.makedirs(parent, exist_ok=True)
+            if os.path.exists(target) and os.path.samefile(source, target):
+                continue
+            fd, temporary = tempfile.mkstemp(prefix=".unifpga-asset-", dir=parent)
+            os.close(fd)
+            shutil.copyfile(source, temporary)
+            os.replace(temporary, target)
+            temporary = None
+        except OSError as exc:
+            raise SourceSetError("could not stage asset {!r}: {}".format(rel, exc)) from exc
+        finally:
+            if temporary is not None and os.path.exists(temporary):
+                os.unlink(temporary)
+    return assets
 
 
 def _read_text(path):
@@ -70,13 +192,23 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
                     compat_stubs=False):
     """Ordered, de-duplicated absolute source list for one synthesis run.
 
-    Order: generated top, the user's design top, the design directory walked
-    recursively (`.sv`/`.v`, plus `.svh` with include_svh; design_top.sv and
-    tb.sv skipped), each attached peripheral's `driver.file`, the
+    Order: generated top, the design's resolved sources (`.sv`/`.v`, plus
+    `.svh` with include_svh), each attached peripheral's `driver.file`, the
     rtl/peripherals helpers, designs_common, the compat stubs, and finally the
     clock-tree / `driver.files` sources from `codegen.pll_source_paths()`.
     """
-    files = [generated_top, os.path.abspath(user_design_top)]
+    design_dir = os.path.dirname(os.path.abspath(user_design_top))
+    sources, _, _ = design_inputs(design_dir)
+    manifest = os.path.join(design_dir, DESIGN_FILESET)
+    user_top = os.path.abspath(user_design_top)
+    if os.path.lexists(manifest):
+        if user_top not in sources:
+            raise SourceSetError("{}: selected top is not in sources: {!r}"
+                                 .format(manifest, user_top))
+        files = [generated_top]
+    else:
+        files = [generated_top, user_top]
+        sources = [p for p in sources if p != os.path.join(design_dir, "design_top.sv")]
     seen = {os.path.abspath(p) for p in files}
 
     def add(path):
@@ -85,12 +217,9 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
             seen.add(path)
 
     exts = (".sv", ".svh", ".v") if include_svh else (".sv", ".v")
-    design_dir = os.path.dirname(os.path.abspath(user_design_top))
-    if os.path.isdir(design_dir):
-        for root, _dirs, names in os.walk(design_dir):
-            for name in sorted(names):
-                if name.endswith(exts) and name not in SKIP_DESIGN_FILES:
-                    add(os.path.join(root, name))
+    for path in sources:
+        if path.endswith(exts):
+            add(path)
 
     for attach in peripherals or []:
         drv = (attach.get("peripheral") or {}).get("driver") or {}

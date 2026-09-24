@@ -1,0 +1,8 @@
+# The cpu/ copy of this package is byte-identical. Compile only one.
+version: 1
+sources:
+  - yrv_mcu_passthrough_pkg.sv
+  - design_top.sv
+  - cpu/yrv_mcu_passthrough.sv
+simulation: []
+assets: []

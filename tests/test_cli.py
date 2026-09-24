@@ -364,6 +364,16 @@ def test_sim_command_compiles_the_design_with_icarus(tmp_path):
     assert any(p.endswith(os.path.join("designs_common", "seven_segment_display.sv")) for p in cmd)
 
 
+def test_sim_uses_nested_aps_fileset_without_alternative_modules():
+    d = os.path.join(cli.DESIGNS_DIR, "5_5_aps")
+    files = cli.sim_sources(d)
+    assert os.path.join(d, "aps_cpu", "processor_system.sv") in files
+    assert os.path.join(d, "processor_core.sv") not in files
+    assert os.path.join(d, "tb.sv") in files
+    cmd = cli.sim_command(d, os.path.join(d, "run", "sim"))
+    assert ("-I", os.path.join(d, "aps_cpu")) in zip(cmd, cmd[1:])
+
+
 def test_iverilog_language_option_follows_the_icarus_version():
     assert cli._iverilog_language_option("Icarus Verilog version 12.0 (stable)") == "-g2012"
     assert cli._iverilog_language_option("Icarus Verilog version 14.0 (devel)") == "-g2023"
@@ -442,5 +452,3 @@ def test_clean_all_removes_every_design_run_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(cli, "DESIGNS_DIR", str(designs))
     assert cli.main(["clean", "--all"]) == 0
     assert not (designs / "a" / "run").exists() and not (designs / "b" / "run").exists()
-
-

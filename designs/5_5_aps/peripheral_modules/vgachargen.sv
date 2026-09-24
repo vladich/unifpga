@@ -12,11 +12,11 @@ module vgachargen
   import vgachargen_pkg::*;
 #(
   parameter int unsigned  CLK_FACTOR_25M           = 100 / 25,
-  parameter               CH_T_INIT_FILE_NAME      = "../mem_files/vga_ch_t.mem",
+  parameter               CH_T_INIT_FILE_NAME      = "mem_files/vga_ch_t.mem",
   parameter bit           CH_T_INIT_FILE_IS_BIN    = 1'b1,
-  parameter               CH_MAP_INIT_FILE_NAME    = "../mem_files/vga_ch_map.mem",
+  parameter               CH_MAP_INIT_FILE_NAME    = "mem_files/vga_ch_map.mem",
   parameter bit           CH_MAP_INIT_FILE_IS_BIN  = 1'b0,
-  parameter               COL_MAP_INIT_FILE_NAME   = "../mem_files/vga_col_map.mem",
+  parameter               COL_MAP_INIT_FILE_NAME   = "mem_files/vga_col_map.mem",
   parameter bit           COL_MAP_INIT_FILE_IS_BIN = 1'b0
 ) (
   input  logic        clk_i,             // системный синхроимпульс

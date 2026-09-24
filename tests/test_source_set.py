@@ -7,6 +7,7 @@ and de-duplication. No toolchain is needed.
 
 import os
 import sys
+import yaml
 
 import pytest
 
@@ -272,3 +273,110 @@ def test_unreadable_generated_top_gates_everything_out(repo, design, tmp_path):
     assert _helpers_in(files, repo) == []
     # helper.sv still names shift_reg, so sibling gating keeps working
     assert _common_in(files, repo) == ["shift_reg.sv"]
+
+
+def test_generated_runs_never_reenter_a_design_fileset(repo, design, gen_top):
+    d = os.path.dirname(design)
+    _write(os.path.join(d, "run", "board_a", "top.sv"), "module top; endmodule\n")
+    _write(os.path.join(d, "run", "board_b", "top.sv"), "module top; endmodule\n")
+    _write(os.path.join(d, "build", "old.sv"), "module old; endmodule\n")
+    files = source_set.collect_sources(repo, [], design, gen_top())
+    assert not any(p.startswith(os.path.join(d, sub) + os.sep)
+                   for p in files for sub in ("run", "build"))
+
+
+def test_explicit_fileset_selects_one_implementation_and_stages_assets(repo, design, gen_top, tmp_path):
+    d = os.path.dirname(design)
+    alternate = _write(os.path.join(d, "legacy", "core.sv"), "module core; endmodule\n")
+    selected = os.path.join(d, "cpu", "core.v")
+    tb = os.path.join(d, "tb.sv")
+    rom = _write(os.path.join(d, "data", "program.hex"), "00000000\n")
+    with open(os.path.join(d, source_set.DESIGN_FILESET), "w") as fh:
+        yaml.safe_dump({"version": 1, "sources": ["cpu/core.v", "design_top.sv"],
+                        "simulation": ["tb.sv"], "assets": ["data/program.hex"]}, fh)
+    generated = gen_top()
+    files = source_set.collect_sources(repo, [], design, generated)
+    assert files[:3] == [generated, selected, design]
+    assert alternate not in files and tb not in files
+    assert source_set.design_inputs(d) == ([selected, design], [tb], [rom])
+    out = str(tmp_path / "output")
+    source_set.stage_assets(d, out)
+    assert open(os.path.join(out, "data", "program.hex")).read() == "00000000\n"
+
+
+@pytest.mark.parametrize("entry", ["../outside.sv", "/absolute.sv", "cpu/../core.v", "missing.sv"])
+def test_explicit_fileset_rejects_unsafe_or_missing_sources(design, entry):
+    d = os.path.dirname(design)
+    with open(os.path.join(d, source_set.DESIGN_FILESET), "w") as fh:
+        yaml.safe_dump({"version": 1, "sources": ["design_top.sv", entry],
+                        "simulation": [], "assets": []}, fh)
+    with pytest.raises(source_set.SourceSetError):
+        source_set.design_inputs(d)
+
+
+def test_explicit_fileset_rejects_symlink_escape(design, tmp_path):
+    d = os.path.dirname(design)
+    outside = _write(str(tmp_path / "outside.sv"), "module outside; endmodule\n")
+    os.symlink(outside, os.path.join(d, "linked.sv"))
+    with open(os.path.join(d, source_set.DESIGN_FILESET), "w") as fh:
+        yaml.safe_dump({"version": 1, "sources": ["design_top.sv", "linked.sv"],
+                        "simulation": [], "assets": []}, fh)
+    with pytest.raises(source_set.SourceSetError, match="escapes"):
+        source_set.design_inputs(d)
+
+
+def test_explicit_fileset_rejects_two_paths_to_one_source(design):
+    d = os.path.dirname(design)
+    os.symlink(os.path.join(d, "cpu", "core.v"), os.path.join(d, "alias.v"))
+    with open(os.path.join(d, source_set.DESIGN_FILESET), "w") as fh:
+        yaml.safe_dump({"version": 1,
+                        "sources": ["design_top.sv", "cpu/core.v", "alias.v"],
+                        "simulation": [], "assets": []}, fh)
+    with pytest.raises(source_set.SourceSetError, match="duplicate"):
+        source_set.design_inputs(d)
+
+
+def test_asset_staging_rejects_output_symlink(design, tmp_path):
+    d = os.path.dirname(design)
+    _write(os.path.join(d, "data", "program.hex"), "00000000\n")
+    out = tmp_path / "output"
+    out.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    os.symlink(outside, out / "data")
+    with pytest.raises(source_set.SourceSetError, match="escapes output"):
+        source_set.stage_assets(d, str(out))
+    assert not (outside / "program.hex").exists()
+
+
+def test_asset_staging_failure_keeps_previous_complete_file(design, tmp_path, monkeypatch):
+    d = os.path.dirname(design)
+    source = _write(os.path.join(d, "program.hex"), "new\n")
+    out = tmp_path / "output"
+    out.mkdir()
+    target = out / "program.hex"
+    target.write_text("old\n")
+
+    def fail_replace(_source, _target):
+        raise OSError("simulated rename failure")
+
+    monkeypatch.setattr(source_set.os, "replace", fail_replace)
+    with pytest.raises(source_set.SourceSetError, match="simulated rename failure"):
+        source_set.stage_assets(d, str(out))
+    assert os.path.isfile(source)
+    assert target.read_text() == "old\n"
+    assert not list(out.glob(".unifpga-asset-*"))
+
+
+def test_aps_manifest_excludes_duplicate_legacy_modules_and_orders_packages():
+    d = os.path.join(REPO, "designs", "5_5_aps")
+    sources, simulation, assets = source_set.design_inputs(d)
+    rel = [os.path.relpath(p, d) for p in sources]
+    assert "aps_cpu/processor_system.sv" in rel
+    assert "aps_cpu/processor_core.sv" in rel
+    assert "processor_core.sv" not in rel
+    assert "decoder_pkg.sv" not in rel
+    assert rel.index("pkg/decoder_pkg.sv") < rel.index("design_top.sv")
+    assert rel.index("pkg/decoder_pkg.sv") < rel.index("aps_cpu/processor_core.sv")
+    assert simulation == [os.path.join(d, "tb.sv")]
+    assert os.path.join(d, "program.hex") in assets

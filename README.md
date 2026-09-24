@@ -241,6 +241,17 @@ intended SKIP, not a failure.
 - **A new design**: copy `rtl/peripherals/design_top_interface.sv` to
   `designs/<your_design>/design_top.sv`, add your logic in the body, optionally
   add a `// requires:` block.
+- **A design with multiple RTL files or ROM data**: add `fileset.yml` in the
+  design directory when source order or alternative implementations matter.
+  Its version 1 mapping has ordered `sources` (including `design_top.sv`),
+  `simulation` (usually `tb.sv`), and `assets` (`.hex`/`.mem`) lists. Paths are
+  relative to the design directory and must identify existing files inside it.
+  `sources` feed both synthesis and simulation; `simulation` feeds only
+  simulation. Assets are copied with their relative paths into each run's
+  working directory, so `$readmemh` paths should be relative to that directory.
+  Designs without a manifest use a recursive source scan that excludes `run/`
+  and `build/` outputs. See `designs/5_5_aps/fileset.yml` for an ordered
+  example that selects one of two CPU implementations.
 - **A new board**: write its pinmap under
   `config/boards/<producer>/<family>/<id>.yml` (copy a board on a similar
   chip), list it in the family catalog `config/boards/<producer>/<family>.yml`,

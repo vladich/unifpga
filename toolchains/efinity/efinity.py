@@ -141,14 +141,8 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     for sv in sv_files:
         log.info("  - %s", os.path.relpath(sv, REPO) if sv.startswith(REPO) else sv)
 
-    # Copy data files (.hex, .mem) referenced by `$readmemh` from the design
-    # dir into the work dir — Efinity runs efx_map.py from work_pnr/ and
-    # resolves relative paths against that, not the source location.
-    design_dir = os.path.dirname(os.path.abspath(top))
-    if os.path.isdir(design_dir):
-        for name in os.listdir(design_dir):
-            if name.endswith((".hex", ".mem")):
-                shutil.copy(os.path.join(design_dir, name), output)
+    # Direct driver callers get the same staged ROM files as synthesize.main().
+    source_set.stage_assets(os.path.dirname(os.path.abspath(top)), output)
 
     if os.environ.get("UNIFPGA_DRY_RUN"):
         log.info("[dry run] Efinity not invoked. Artifacts in %s", output)
