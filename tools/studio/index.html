@@ -9,7 +9,8 @@
 <body>
 <header id="bar">
   <nav id="tabs">
-    <button data-tab="rig" class="tab active">Rig</button>
+    <button data-tab="designs" class="tab active">Designs</button>
+    <button data-tab="rig" class="tab">Rig</button>
     <button data-tab="config" class="tab">Configuration</button>
   </nav>
   <span id="title"></span>
@@ -19,7 +20,20 @@
   <span id="status"></span>
 </header>
 
-<div id="tab-rig" class="page">
+<div id="tab-designs" class="page">
+  <section id="d-bar">
+    <input id="d-search" type="search" placeholder="Search designs and requirements">
+    <label>Board <select id="d-board"><option value="">all boards</option></select></label>
+    <label><input id="d-fitonly" type="checkbox"> only designs that fit it</label>
+    <span id="d-count" class="muted"></span>
+  </section>
+  <div id="d-main">
+    <div id="d-list"><p class="muted">Checking every design against every configuration…</p></div>
+    <div id="d-detail"><p class="muted">Pick a design to see what it needs and which configurations run it.</p></div>
+  </div>
+</div>
+
+<div id="tab-rig" class="page" hidden>
   <main>
     <section id="drawing">
       <div id="zoom"><button id="zoom-in" title="Zoom in (or scroll up)">+</button><button id="zoom-out" title="Zoom out (or scroll down)">−</button><button id="zoom-fit" title="Fit the drawing (or double-click the background)">Fit</button><span id="zoom-level"></span></div>
@@ -45,7 +59,7 @@
         <div id="src-title"></div>
         <div id="src-related"></div>
         <div id="src-note"></div>
-        <div id="src-code"><p class="muted">Double-click anything in the drawing to open the Verilog that defines it. In the code, click a module name or a signal to go to its definition.</p></div>
+        <div id="src-code" class="code"><p class="muted">Double-click anything in the drawing to open the Verilog that defines it. In the code, click a module name or a signal to go to its definition.</p></div>
       </div>
     </aside>
   </main>

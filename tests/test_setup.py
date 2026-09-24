@@ -499,3 +499,19 @@ def test_pins_several_parts_reach_are_warned_about():
     # the TM1638 sits on three ChipKit header pins the rig also hands to the design as gpio
     assert len(shared) == 3 and all("gpio ck" in m and "through the tm1638_board_controller driver" in m for m in shared), shared
     assert not [p for p in studio.evaluate(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))["problems"] if "is shared by" in p["message"]]
+
+
+def test_design_table_covers_every_design_and_configuration():
+    t = studio.design_table()
+    assert len(t["designs"]) == len(studio.list_designs())
+    assert [c["id"] for c in t["configurations"]] == sorted(config_init.read_configurations())
+    assert any(not c["layout"] for c in t["configurations"]) and any(c["setup"] for c in t["configurations"])
+    k = [c["id"] for c in t["configurations"]].index("arty_a7_35_pmod_mic3")
+    aps = next(d for d in t["designs"] if d["id"] == "5_5_aps")
+    assert aps["requires"] == ["seven_segment >= 1", "screen >= 320x240"] and k in aps["fits"]
+    fifo = next(d for d in t["designs"] if d["id"] == "4_2_12_multi_push_multi_pop_fifo")
+    assert k not in fifo["fits"] and "w_led=8" in fifo["unmet"][str(k)][0]
+    for d in t["designs"]:          # every configuration is either a fit or has its reasons
+        assert set(d["fits"]).isdisjoint(int(x) for x in d["unmet"]) and \
+            len(d["fits"]) + len(d["unmet"]) == len(t["configurations"])
+    assert studio.design_table() is t                     # cached until a file changes

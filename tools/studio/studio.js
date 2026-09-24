@@ -300,6 +300,9 @@ function draw() {
   S.pos = {pins: {}, uses: {}, ports: {}, mpins: {}, cells: {}, rows: {}, obpins: {}};
   const hi = highlight();
   const SHARED = sharedRefs();
+  // design bits whose pin several parts reach: "port.bit" -> why
+  const CONFLICT = new Map();
+  for (const e of traceEdges()) if (SHARED.has(e.ref)) for (const b of e.bits || []) CONFLICT.set(e.design_port + "." + b, "is " + sharedRefText(e.ref));
   const VX = 12, top = 16, OW = 290;
   let BX = 330;
 
@@ -357,6 +360,10 @@ function draw() {
       svg.append(r);
       if (sharedBitText(p, b))
         svg.append(el("path", {d: "M" + (cx + 5) + "," + cy + " h6 v6 z", fill: "#f76707", "pointer-events": "none"}));
+      if (CONFLICT.has(portName(p) + "." + b)) {
+        r.setAttribute("stroke", "#f76707"); r.setAttribute("stroke-width", "2");
+        r.querySelector("title").textContent += " — conflicted: its pin " + CONFLICT.get(portName(p) + "." + b);
+      }
     }
     const rowsUsed = Math.max(Math.ceil(cells / per), 2) - 0.6;          // room for the capability name
     portRows.push({p, x: VX + 118 + Math.min(cells, per) * 13, y: y + 6});
@@ -639,7 +646,7 @@ function draw() {
                                 "): design bits → driver → pins; the lines inside show which pin serves which bits"]);
   if (Object.keys(S.pos.groups).length) legend.push(["#4c6ef5", "3 2", "dotted outline: design bits a driver carries together over one pin"]);
   if (wires.length) legend.push(["#d9480f", "", "wire from a header pin to a module (one colour per module)"]);
-  if (SHARED.size) legend.push(["#f76707", "", "orange ring: an FPGA pin several parts reach (only one may drive it)"]);
+  if (SHARED.size) legend.push(["#f76707", "", "orange ring / outlined bit: an FPGA pin several parts reach, and the design bits on it (conflicted: only one may drive it)"]);
   if (ports().some((p) => sharedBits(p).size)) legend.push(["#f76707", "", "orange corner: a design bit several parts feed (inputs ORed, outputs drive all)"]);
   if (((S.ev && S.ev.profile_drops) || []).length) legend.push(["#adb5bd", "4 2", "part in the rig the design-wiring profile leaves out of the design (pins tied to constants)"]);
   legend.push(["var(--sel)", "", "the selection and everything it connects to (dashed when through a driver)"]);
@@ -950,6 +957,95 @@ function highlight() {
   return hi;
 }
 
+// ---------------------------------------------------------------- Designs: every design against every configuration
+async function loadDesigns() {
+  if (STATIC || S.dt || S.dtLoading) return;
+  S.dtLoading = true;
+  try { S.dt = await api("/api/designs"); }
+  catch (e) { $("d-list").replaceChildren(h("p", {class: "note"}, e.message)); return; }
+  finally { S.dtLoading = false; }
+  const boards = [...new Map(S.dt.configurations.map((c) => [c.board, c.board_name])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  $("d-board").replaceChildren(h("option", {value: ""}, "all boards (" + boards.length + ")"),
+                               ...boards.map(([id, name]) => h("option", {value: id}, name + " (" + id + ")")));
+  renderDesigns();
+}
+
+// designs are grouped by the number their name starts with (1_02_mux and 01_... in 1)
+function designGroup(id) { const m = id.match(/^(\d+)_/); return m ? String(parseInt(m[1], 10)) : "other"; }
+function requireText(d) { return d.requires.length ? d.requires.join(" · ") : "no requirements declared"; }
+function boardConfigs(board) { return S.dt.configurations.map((c, k) => [c, k]).filter(([c]) => !board || c.board === board).map(([, k]) => k); }
+
+function renderDesigns() {
+  if (!S.dt) return;
+  const q = $("d-search").value.trim().toLowerCase(), board = $("d-board").value, only = $("d-fitonly").checked && board;
+  const idx = new Set(boardConfigs(board));
+  const rows = S.dt.designs
+    .map((d) => ({d, n: d.fits.filter((k) => idx.has(k)).length}))
+    .filter(({d, n}) => (!q || (d.id + " " + d.requires.join(" ")).toLowerCase().includes(q)) && (!only || n))
+    .sort((a, b) => a.d.id.localeCompare(b.d.id, undefined, {numeric: true}));
+  $("d-count").textContent = rows.length + " of " + S.dt.designs.length + " designs · " + idx.size + " configuration" + (idx.size === 1 ? "" : "s") +
+                             (board ? " on " + board : " on " + new Set(S.dt.configurations.map((c) => c.board)).size + " boards");
+  const out = [];
+  let group = null;
+  for (const {d, n} of rows) {
+    const g = designGroup(d.id);
+    if (g !== group) { group = g; out.push(h("div", {class: "d-group"}, g === "other" ? "other designs" : "designs " + g + "_…")); }
+    const bar = h("div", {class: "fitbar", title: "fits " + n + " of " + idx.size + " configurations"}, h("span", {}), h("b", {}, n + " / " + idx.size));
+    bar.firstChild.style.width = (idx.size ? 100 * n / idx.size : 0) + "%";
+    out.push(h("div", {class: "d-row" + (d.id === S.dsel ? " cur" : "") + (n ? "" : " nofit"), "data-design": d.id, onclick: () => showDesign(d.id)},
+               h("span", {}, d.id), h("span", {class: "req"}, requireText(d)), bar));
+  }
+  $("d-list").replaceChildren(...(out.length ? out : [h("p", {class: "muted"}, "No design matches.")]));
+  if (S.dsel) showDesign(S.dsel, true);
+}
+
+function showDesign(id, keep) {
+  const d = S.dt.designs.find((x) => x.id === id);
+  if (!d) return;
+  S.dsel = id;
+  for (const r of document.querySelectorAll(".d-row")) r.classList.toggle("cur", r.dataset.design === id);
+  const board = $("d-board").value, cfgs = S.dt.configurations;
+  const byBoard = new Map();
+  for (const k of boardConfigs(board)) { const c = cfgs[k]; if (!byBoard.has(c.board)) byBoard.set(c.board, []); byBoard.get(c.board).push(k); }
+  const fits = new Set(d.fits);
+  const sections = [...byBoard.entries()]
+    .sort((a, b) => b[1].filter((k) => fits.has(k)).length - a[1].filter((k) => fits.has(k)).length || cfgs[a[1][0]].board_name.localeCompare(cfgs[b[1][0]].board_name))
+    .map(([b, ks]) => h("div", {},
+      h("div", {class: "board"}, cfgs[ks[0]].board_name + " (" + b + ") — fits " + ks.filter((k) => fits.has(k)).length + " of " + ks.length +
+                                 (cfgs[ks[0]].layout ? "" : "  · no rig drawing for this board yet")),
+      ...ks.map((k) => {
+        const c = cfgs[k], ok = fits.has(k);
+        return h("div", {class: "cfg" + (ok ? "" : " no")}, ok ? "✓" : "✗", h("span", {}, c.id + " · " + (c.toolchain || "?")),
+                 ok && c.setup ? h("button", {onclick: () => openRig(c, id).catch((x) => status(x.message, true))}, "Open rig") : "",
+                 ok ? "" : h("span", {class: "why"}, (d.unmet[k] || []).join("; ")));
+      })));
+  const dd = $("d-detail"), shown = dd.querySelector("#d-code");
+  dd.replaceChildren(
+    h("h3", {}, id),
+    d.requires.length ? h("div", {}, h("div", {class: "muted"}, "// requires:"), ...d.requires.map((r) => h("div", {class: "chain"}, r)))
+                      : h("p", {class: "muted"}, "No // requires: block: it runs on any configuration."),
+    h("p", {}, "Fits " + d.fits.length + " of " + cfgs.length + " configurations in the repository."),
+    h("button", {onclick: () => showDesignSource(id)}, "View design_top.sv"),
+    keep && shown ? shown : h("div", {id: "d-code", hidden: true}),
+    ...sections);
+}
+
+async function showDesignSource(id) {
+  const src = await api("/api/module", {name: "design_top", design: id});
+  const box = $("d-code");
+  box.hidden = false; box.classList.add("code");
+  renderCode(box, src.text);
+}
+
+// the rig editor on a configuration that has a setup, with this design chosen
+async function openRig(c, design) {
+  showTab("rig");
+  if (!S.board || S.board.board !== c.board) { $("board").value = c.board; await loadBoard(c.board, c.id); }
+  else if (!S.setup || S.setup.id !== c.id) { $("setup").value = c.id; await loadSetup(c.id); }
+  S.design = design; designChoices();
+  status("opened " + c.id + " with " + design + " chosen (Configuration tab: generate its project)");
+}
+
 // ---------------------------------------------------------------- side panel: splitter, tabs
 function wireSplitter() {
   const sp = $("splitter"), side = $("side");
@@ -1142,11 +1238,7 @@ function renderSource() {
   $("src-note").textContent = f.note || "";
   const box = $("src-code");
   if (box.dataset.shown !== tabKey(f) + "#" + (f.rev || 1)) {
-    box.replaceChildren(...highlightVerilog(f.text).map((toks, k) => {
-      const ln = h("div", {class: "ln", "data-line": k + 1}, h("span", {class: "no"}, String(k + 1)));
-      for (const [cls, text] of toks) ln.append(cls ? h("span", {class: cls}, text) : text);
-      return ln;
-    }));
+    renderCode(box, f.text);
     box.dataset.shown = tabKey(f) + "#" + (f.rev || 1);
     f.decl = f.decl || declarations(f.text);
     for (const e of box.querySelectorAll(".id")) if (f.decl.has(e.textContent)) e.classList.add("nav");
@@ -1156,6 +1248,14 @@ function renderSource() {
   for (const e of box.querySelectorAll(".occ")) e.classList.remove("occ");
   renderMarks();
   scrollToLine(v.line);
+}
+
+function renderCode(box, text) {
+  box.replaceChildren(...highlightVerilog(text).map((toks, k) => {
+    const ln = h("div", {class: "ln", "data-line": k + 1}, h("span", {class: "no"}, String(k + 1)));
+    for (const [cls, s] of toks) ln.append(cls ? h("span", {class: cls}, s) : s);
+    return ln;
+  }));
 }
 
 // ---- SystemVerilog tokens: [class, text] per line; classes k keyword, t type,
@@ -1307,6 +1407,9 @@ function details() {
     if (!p) return;
     d.append(h("h4", {}, "design " + p.signal + (sel.kind === "vbit" ? "[" + sel.bit + "]" : "") + "  (" + p.capability + ", " + p.direction + ")"));
     const sharedHere = sel.kind === "vbit" ? [sel.bit] : [...sharedBits(p).keys()];
+    const pinsHere = new Set(traceEdges().filter((e) => e.design_port === portName(p) && (sel.kind !== "vbit" || (e.bits || []).includes(sel.bit)) &&
+                                                        sharedRefs().has(e.ref)).map((e) => e.ref));
+    for (const ref of pinsHere) d.append(h("p", {class: "note"}, "Conflicted: pin " + ref + " is " + sharedRefText(ref) + "."));
     for (const b of sharedHere) if (sharedBitText(p, b)) d.append(h("p", {class: "note"}, sharedBitText(p, b) +
       (p.direction === "hw_to_user" ? " — the build ORs the parts' bits (the rig's design-wiring profile or lab_bits give them the same design bit)" : "")));
     const facts = [["Width", p.width_parameter
@@ -1708,9 +1811,11 @@ function staleWarning() {
 
 function showTab(name) {
   for (const b of document.querySelectorAll(".tab")) b.classList.toggle("active", b.dataset.tab === name);
-  $("tab-rig").hidden = name !== "rig";
-  $("tab-config").hidden = name !== "config";
+  for (const p of ["designs", "rig", "config"]) { const e = $("tab-" + p); if (e) e.hidden = name !== p; }
+  // the rig's own controls only where a rig is shown
+  for (const id of ["title", "add-module", "remove-sel", "save"]) $(id).style.visibility = name === "designs" ? "hidden" : "";
   if (name === "rig") applyView();
+  if (name === "designs") loadDesigns();
 }
 
 function renderTitle() {
@@ -1838,6 +1943,8 @@ async function main() {
   wireSplitter();
   if (STATIC) {
     document.body.classList.add("readonly");
+    $("tab-designs").remove(); document.querySelector('.tab[data-tab="designs"]').remove();   // needs the server
+    showTab("rig");
     S.board = STATIC.board; S.setup = STATIC.setup; S.ev = STATIC.evaluation;
     fillSelect($("board"), [S.board.board]); fillSelect($("setup"), [S.setup.id]);
     for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => showTab(b.dataset.tab));
@@ -1847,6 +1954,9 @@ async function main() {
     return;
   }
   wire();
+  $("d-search").addEventListener("input", renderDesigns);
+  $("d-board").addEventListener("change", renderDesigns);
+  $("d-fitonly").addEventListener("change", renderDesigns);
   const boards = await api("/api/boards");
   fillSelect($("board"), boards);
   const q = new URLSearchParams(location.search);
@@ -1855,9 +1965,10 @@ async function main() {
   if (!boards.includes(b)) b = boards[0];
   $("board").value = b;
   await loadBoard(b, q.get("setup"));
+  // the Designs page unless the link is about a rig
+  showTab(q.get("tab") || (q.get("selftest") || q.get("sel") || q.get("setup") ? "rig" : "designs"));
   if (q.get("selftest")) return selftest();
   if (q.get("sel")) { S.sel = parseSel(q.get("sel")); render(); }
-  if (q.get("tab")) showTab(q.get("tab"));
 }
 
 // ?sel=vbit:leds:led:2 | vport:leds:led | pin:jd:7 | wire:11:CLK | use:11 | onboard:leds | conn:ck
@@ -2058,6 +2169,8 @@ async function selftest() {
       if (sr.size) {
         const ref = [...sr.keys()][0], key = refIndex()[ref];
         ok("a pin several parts reach is warned about", (S.ev.problems || []).some((q) => q.level === "warning" && q.message.includes(ref)));
+        S.sel = null; render();
+        ok("the design bits on it are outlined as conflicted", [...document.querySelectorAll('#svg rect[stroke="#f76707"] title')].some((x) => x.textContent.includes("conflicted")));
         if (key) { select({kind: "pin", conn: key.split(".")[0], key: key.split(".")[1]});
                    ok("its panel says it is shared", $("details").textContent.includes("This pin is shared")); }
       }
@@ -2156,5 +2269,21 @@ async function selftest() {
       catch (e) { ok("an unfit design is refused", e.message.includes("does not fit")); }
     }
   } catch (e) { log.push("FAIL exception: " + e.message); }
+  try {
+    showTab("designs");
+    for (let k = 0; k < 600 && !S.dt; k++) await new Promise((r) => setTimeout(r, 50));
+    ok("the Designs page lists every design", !!S.dt && document.querySelectorAll(".d-row").length === S.dt.designs.length);
+    ok("it checks every configuration, not only boards with a rig drawing",
+       !!S.dt && S.dt.configurations.some((c) => !c.layout) && S.dt.configurations.some((c) => c.layout));
+    const any = S.dt.designs.find((d) => d.fits.some((k) => S.dt.configurations[k].setup));
+    $("d-search").value = any.id; renderDesigns();
+    ok("searching narrows the list", [...document.querySelectorAll(".d-row")].every((r) => r.dataset.design.includes(any.id) || S.dt.designs.find((d) => d.id === r.dataset.design).requires.join(" ").includes(any.id)));
+    document.querySelector('.d-row[data-design="' + any.id + '"]').click();
+    ok("a design shows every board's configurations with fit or reason", document.querySelectorAll("#d-detail .cfg").length === S.dt.configurations.length);
+    const k = any.fits.find((j) => S.dt.configurations[j].setup), c = S.dt.configurations[k];
+    await openRig(c, any.id);
+    ok("Open rig opens that configuration's rig with the design chosen", !$("tab-rig").hidden && S.setup.id === c.id && S.design === any.id);
+    $("d-search").value = ""; S.dsel = null;
+  } catch (e) { ok("designs page: " + e.message, false); }
   document.body.append(h("pre", {id: "selftest"}, log.join("\n")));
 }

@@ -20,6 +20,7 @@ import io
 import json
 import os
 import re
+import threading
 import zipfile
 
 from config import init as config_init
@@ -134,6 +135,84 @@ def design_requirements(design):
         cached = (key, dr.parse(path))
         _REQUIREMENTS[path] = cached
     return cached[1]
+
+
+def requires_lines(design):
+    """The lines of a design's `// requires:` block, as written."""
+    with open(os.path.join(DESIGNS_DIR, design, "design_top.sv"), encoding="utf-8", errors="replace") as f:
+        lines = f.read().splitlines()
+    out, inside = [], False
+    for line in lines:
+        if not inside:
+            inside = bool(re.match(r"^\s*//\s*requires\s*:\s*$", line, re.I))
+            continue
+        if not re.match(r"^\s*//", line):
+            break
+        text = re.sub(r"^\s*//\s*", "", line).strip()
+        if text:
+            out.append(text)
+    return out
+
+
+_TABLE = {"key": None, "data": None}
+_TABLE_LOCK = threading.Lock()
+
+
+def _table_key():
+    """Changes whenever a configuration, profile, peripheral, capability,
+    board or design file does."""
+    newest, count = 0, 0
+    for root in (os.path.join(REPO, "config"), DESIGNS_DIR):
+        for dirpath, _dirs, files in os.walk(root):
+            for name in files:
+                if name.endswith((".yml", ".yaml", ".sv")):
+                    count += 1
+                    newest = max(newest, os.stat(os.path.join(dirpath, name)).st_mtime_ns)
+    return count, newest
+
+
+def design_table():
+    """Every design against every configuration in the repository:
+    {configurations: [{id, board, board_name, toolchain, setup, layout, error?}],
+     designs: [{id, requires: [line], fits: [configuration index], unmet: {index: [reason]}}]}.
+    Computed once and kept until a file it depends on changes."""
+    from tools import design_requirements as dr
+    with _TABLE_LOCK:
+        key = _table_key()
+        if _TABLE["key"] == key:
+            return _TABLE["data"]
+        cfgs = config_init.read_configurations()
+        setups, layouts = su.read_setups(), su.read_layouts()
+        caps = config_init.read_capabilities()
+        configurations, resolved = [], []
+        for cid in sorted(cfgs):
+            c = cfgs[cid]
+            entry = {"id": cid, "board": c["board"], "board_name": c["board"], "toolchain": c.get("toolchain"),
+                     "setup": cid in setups, "layout": c["board"] in layouts}
+            try:
+                r = config_init.resolve_configuration(cid)
+                entry["board_name"] = r["board"].get("BoardName") or c["board"]
+                resolved.append((r, dr.design_parameters(r)))
+            except (config_init.ConfigError, codegen.CodegenError, KeyError, ValueError) as exc:
+                entry["error"] = str(exc).splitlines()[0]
+                resolved.append(None)
+            configurations.append(entry)
+        designs = []
+        for d in list_designs():
+            reqs = design_requirements(d)
+            unmet = {}
+            for k, x in enumerate(resolved):
+                if x is None:
+                    unmet[k] = ["the configuration cannot be resolved: " + configurations[k]["error"]]
+                elif reqs:
+                    u = dr.check(x[0], reqs, caps, x[1])
+                    if u:
+                        unmet[k] = u
+            designs.append({"id": d, "requires": requires_lines(d),
+                            "fits": [k for k in range(len(resolved)) if k not in unmet],
+                            "unmet": {str(k): v for k, v in unmet.items()}})
+        _TABLE.update(key=key, data={"configurations": configurations, "designs": designs})
+        return _TABLE["data"]
 
 
 def design_fit(resolved):
@@ -596,6 +675,8 @@ def make_server(port=8765, host="127.0.0.1"):
                     return self._static("index.html")
                 if parts[0] in ("studio.js", "studio.css") and len(parts) == 1:
                     return self._static(parts[0])
+                if parts[:2] == ["api", "designs"] and len(parts) == 2:
+                    return self._send(200, design_table())
                 if parts[:2] == ["api", "boards"]:
                     return self._send(200, sorted(su.read_layouts()))
                 if parts[:2] == ["api", "board"] and len(parts) == 3:
