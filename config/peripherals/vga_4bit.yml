@@ -50,6 +50,16 @@ Peripheral:
         bits_r: $bits_r
         bits_g: $bits_g
         bits_b: $bits_b
+  # which design ports each pin carries through the driver (tools/trace.py):
+  # the colour pins the colours, the syncs and the pixel timing the raster
+  serves:
+    r:       [screen.red]
+    g:       [screen.green]
+    b:       [screen.blue]
+    hs:      [screen.x]
+    vs:      [screen.y]
+    blank_n: [screen.x, screen.y]
+    clk:     [screen.x, screen.y]
   driver:
     module: vga
     file: rtl/peripherals/vga.sv

@@ -86,6 +86,22 @@ function designBitsOfRef(ref) {
     if (b.ref === ref && b.design_bit !== null) out.push({port: p, use: pr.attach_index, bit: b.design_bit});
   return out;
 }
+// the trace's record of a use's attach (pins and per-pin design-port links)
+function attachOf(i) { return ((S.ev && S.ev.trace && S.ev.trace.attaches) || []).find((a) => a.attach_index === i); }
+function portByKey(key) { return ports().find((p) => p.capability + "." + p.signal === key); }
+function baseSignal(sig) { return String(sig).replace(/\[\d+\]$/, ""); }
+
+// design ports one pin signal of a use serves: [{port, via, driver_port, port_at}]
+function linksOfPin(i, signal) {
+  const a = attachOf(i);
+  return a ? (a.links[baseSignal(signal)] || []).filter((l) => portByKey(l.port)).map((l) => Object.assign({}, l, {p: portByKey(l.port)})) : [];
+}
+
+// "design red ← vga red … vga_r" for one link
+function linkText(l) {
+  return "design " + portName(l.p) + (l.via ? "  →  " + l.via + " (" + l.port_at + " … " + l.driver_port + ")" : "");
+}
+
 // design ports a use provides
 function portsOfUse(i) {
   const out = [];
@@ -108,7 +124,9 @@ function connectionRows() {
       const c = conn(cid), pin = c && c.pins[key];
       // what the module provides; bits of other uses on the same pin (a header
       // also handed to the design as gpio) are listed after it
-      const prov = portsOfUse(i).map((x) => portName(x.port) + (x.bits.length ? "[" + x.bits.join(",") + "]" : "")).join(" ");
+      const links = linksOfPin(i, m.pins[p]);
+      const prov = links.length ? [...new Set(links.map((l) => portName(l.p) + (l.via ? " (via " + l.via + ")" : "")))].join(" ")
+                                : portsOfUse(i).map((x) => portName(x.port) + (x.bits.length ? "[" + x.bits.join(",") + "]" : "")).join(" ");
       const also = pin ? designBitsOfRef(pin.ref).filter((b) => b.use !== i).map((b) => portName(b.port) + "[" + b.bit + "]") : [];
       rows.push({sel: {kind: "wire", use: i, pin: p}, design: prov + (also.length ? "  (pin also " + also.join(" ") + ")" : ""),
                  provider: useLabel(use),
@@ -146,7 +164,8 @@ function draw() {
     for (const pr of p.providers) for (const b of pr.bits || []) if (b.design_bit !== null) width = Math.max(width, b.design_bit + 1);
     const perBit = p.providers.some((pr) => pr.bits);
     const g = el("g", {class: "clickable"});
-    const selPort = S.sel && S.sel.kind === "vport" && S.sel.signal === p.signal && S.sel.cap === p.capability;
+    const selPort = (S.sel && S.sel.kind === "vport" && S.sel.signal === p.signal && S.sel.cap === p.capability) ||
+                    hi.vports.has(p.capability + "." + p.signal);
     g.append(el("text", {x: VX, y: y + 11, "font-size": 12, fill: selPort ? "var(--sel)" : "#212529"},
                 portName(p) + (perBit ? "[" + (width - 1) + ":0]" : "")));
     g.append(el("title", {}, p.capability + "." + p.signal + " (" + (p.direction || "") + ")"));
@@ -396,10 +415,19 @@ function wireZoomPan() {
 
 // what the current selection lights up
 function highlight() {
-  const hi = {pins: new Set(), wires: new Set(), mpins: new Set(), uses: new Set(), vbits: new Set(), links: new Set()};
+  const hi = {pins: new Set(), wires: new Set(), mpins: new Set(), uses: new Set(), vbits: new Set(), links: new Set(), vports: new Set()};
   const sel = S.sel;
   if (!sel) return hi;
   const ri = refIndex();
+  // the module pins of use i that serve design port p (through a driver)
+  const addServingPins = (i, p) => {
+    hi.uses.add(i);
+    const use = S.setup.use[i];
+    if (!use || !use.module) return;
+    const m = moduleDef(use.module);
+    for (const [mp, w] of Object.entries(wiresOf(use)))
+      if (linksOfPin(i, m.pins[mp]).some((l) => l.p === p)) { hi.wires.add(i + "." + mp); hi.mpins.add(i + "." + mp); hi.pins.add(w); }
+  };
   const addUse = (i) => {
     hi.uses.add(i);
     const use = S.setup.use[i];
@@ -415,7 +443,7 @@ function highlight() {
         const use = S.setup.use[pr.attach_index];
         if (use && use.module) for (const [mp, w] of Object.entries(wiresOf(use))) if (w === ri[b.ref]) { hi.wires.add(pr.attach_index + "." + mp); hi.mpins.add(pr.attach_index + "." + mp); }
       }
-      if (!b.ref) addUse(pr.attach_index);      // through a driver: the whole part
+      if (!b.ref) addServingPins(pr.attach_index, p);      // through a driver: the pins serving this port
     }
   };
   if (sel.kind === "vbit") {
@@ -425,7 +453,7 @@ function highlight() {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
     if (p) for (const pr of p.providers) {
       hi.links.add(p.capability + "." + p.signal + "#" + pr.attach_index);
-      addUse(pr.attach_index);
+      addServingPins(pr.attach_index, p);
       for (const b of pr.bits || []) { if (b.design_bit !== null) hi.vbits.add(p.capability + "." + p.signal + "." + b.design_bit); if (b.ref && ri[b.ref]) hi.pins.add(ri[b.ref]); }
     }
   } else if (sel.kind === "use" || sel.kind === "onboard" || sel.kind === "conn") {
@@ -442,7 +470,10 @@ function highlight() {
   } else if (sel.kind === "pin" || sel.kind === "wire") {
     let key = sel.kind === "pin" ? sel.conn + "." + sel.key : wiresOf(S.setup.use[sel.use])[sel.pin];
     hi.pins.add(key);
-    (S.setup.use || []).forEach((u, i) => { if (u.module) for (const [p, w] of Object.entries(wiresOf(u))) if (w === key) { hi.wires.add(i + "." + p); hi.mpins.add(i + "." + p); hi.uses.add(i); } });
+    (S.setup.use || []).forEach((u, i) => { if (u.module) for (const [p, w] of Object.entries(wiresOf(u))) if (w === key) {
+      hi.wires.add(i + "." + p); hi.mpins.add(i + "." + p); hi.uses.add(i);
+      for (const l of linksOfPin(i, moduleDef(u.module).pins[p])) { hi.vports.add(l.port); hi.links.add(l.port + "#" + i); }
+    } });
     const [cid, k] = key.split(".");
     const pin = conn(cid) && conn(cid).pins[k];
     if (pin) for (const b of designBitsOfRef(pin.ref)) { hi.vbits.add(b.port.capability + "." + b.port.signal + "." + b.bit); hi.links.add(b.port.capability + "." + b.port.signal + "#" + b.use); }
@@ -497,9 +528,17 @@ function details() {
       const bits = (pr.bits || []).filter((b) => sel.kind === "vport" || b.design_bit === sel.bit);
       if (sel.kind === "vbit" && pr.bits && !bits.length) continue;
       if (!pr.bits || !bits.some((b) => b.ref)) {
-        d.append(chain(["design " + p.signal + (sel.kind === "vbit" ? "[" + sel.bit + "]" : ""), useLabel(use) + " (" + pr.peripheral + ")",
-                        pr.via ? "via " + pr.via : "",
-                        Object.entries(pr.pins).map(([s, ps]) => s + " " + ps.map((x) => x.pin).join(",")).join("; ")]));
+        const head = "design " + portName(p) + (sel.kind === "vbit" ? "[" + sel.bit + "]" : "");
+        let shown = 0;
+        if (use.module) {
+          const m = moduleDef(use.module);
+          for (const [mp, w] of Object.entries(wiresOf(use))) for (const l of linksOfPin(pr.attach_index, m.pins[mp])) if (l.p === p) {
+            d.append(chain([head, l.via ? l.via + " (" + l.port_at + " … " + l.driver_port + ")" : "", useLabel(use) + " pin " + mp + " (" + m.pins[mp] + ")", pinText(...w.split("."))]));
+            shown++;
+          }
+        }
+        if (!shown) d.append(chain([head, useLabel(use) + " (" + pr.peripheral + ")", pr.via ? "via " + pr.via : "",
+                                    Object.entries(pr.pins).map(([s, ps]) => s + " " + ps.map((x) => x.pin).join(",")).join("; ")]));
       } else {
         for (const b of bits) {
           const hp = b.ref && ri[b.ref];
@@ -522,9 +561,10 @@ function details() {
     uses.forEach((u, i) => { if (u.module) for (const [p, w] of Object.entries(wiresOf(u))) if (w === key) {
       any = true;
       const m = moduleDef(u.module);
-      const bits = designBitsOfRef(pin.ref).map((b) => "design " + b.port.signal + "[" + b.bit + "]");
-      const prov = portsOfUse(i).map((x) => "design " + x.port.signal + (x.via ? " (via " + x.via + ")" : ""));
-      d.append(chain([bits.join(", ") || prov.join(", "), useLabel(u) + " pin " + p + " (" + m.pins[p] + ")", pinText(cid, k)]));
+      const bits = designBitsOfRef(pin.ref).filter((b) => b.use === i).map((b) => "design " + portName(b.port) + "[" + b.bit + "]");
+      const links = linksOfPin(i, m.pins[p]);
+      if (bits.length || !links.length) d.append(chain([bits.join(", ") || "(no design port)", useLabel(u) + " pin " + p + " (" + m.pins[p] + ")", pinText(cid, k)]));
+      for (const l of links) d.append(chain([linkText(l), useLabel(u) + " pin " + p + " (" + m.pins[p] + ")", pinText(cid, k)]));
       if (!STATIC) d.append(h("button", {onclick: () => { const uu = S.setup.use[i]; if (uu.plug) { uu.wires = wiresOf(uu); delete uu.plug; } delete uu.wires[p]; S.sel = {kind: "use", use: i}; changed("disconnected " + p); }}, "Disconnect " + p));
     } });
     const gi = uses.findIndex((u) => u.gpio === cid);
@@ -895,6 +935,18 @@ async function selftest() {
     ok("a drag is not a click", S.sel === sel0);
     $("zoom-fit").click();
     ok("fit shows everything again", S.view === null && $("zoom-level").textContent === "100%");
+    // driver-mediated trace (PmodVGA on arty_a7_35_pmod_mic3 style rigs)
+    const vi = S.setup.use.findIndex((u) => u.module === "digilent_pmod_vga");
+    if (vi >= 0) {
+      select({kind: "wire", use: vi, pin: "R0"});
+      const hiW = highlight();
+      ok("a VGA pin lights the design port it serves", hiW.vports.has("screen.red") && !hiW.vports.has("screen.green"));
+      select({kind: "vport", cap: "screen", signal: "red"});
+      const hiP = highlight();
+      ok("the design's red lights exactly its four pins", ["R0", "R1", "R2", "R3"].every((p) => hiP.wires.has(vi + "." + p)) &&
+         [...hiP.wires].filter((w) => w.startsWith(vi + ".")).length === 4);
+      ok("the trace names the driver ports", $("details").textContent.includes("vga (red … vga_r)"));
+    }
     S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
     await changed("copy"); await settle();
     const n = S.setup.use.length;

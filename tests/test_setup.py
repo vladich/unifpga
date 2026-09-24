@@ -258,3 +258,32 @@ def test_designs_that_do_not_fit_the_rig_are_flagged_and_refused(scratch, tmp_pa
         real(), arty_no_display=su.generate(rig)))
     with pytest.raises(studio.ApiError, match="does not fit"):
         studio.project("arty_no_display", screen[0])
+
+
+def _links(peripheral):
+    return {s: sorted((l["port"], l["driver_port"]) for l in ls)
+            for s, ls in trace.pin_links(config_init.read_peripherals()[peripheral]).items()}
+
+
+def test_module_pins_link_to_the_design_ports_they_serve():
+    vga = _links("vga_4bit")
+    assert vga["r"] == [("screen.red", "vga_r")] and vga["hs"] == [("screen.x", "hsync")]
+    assert _links("pmod_mic3") == {"cs": [("audio_in.sample", "cs")], "sclk": [("audio_in.sample", "sck")],
+                                   "miso": [("audio_in.sample", "sdo")]}
+    tm = {p for p, _d in _links("tm1638_led_key")["dio"]}
+    assert tm == {"switches.sw", "buttons.btn", "leds.led", "seven_segment.abcdefgh", "seven_segment.digit"}
+    lcd = _links("lcd_800_480")
+    assert lcd["r"] == [("screen.red", None)] and ("screen.x", "LCD_HSYNC") in lcd["hs"]
+    assert _links("uart_2wire") == {"tx": [("serial_console.tx", None)], "rx": [("serial_console.rx", None)]}
+
+
+def test_serves_names_real_pins_and_provided_ports():
+    caps = config_init.read_capabilities()
+    for pid, p in config_init.read_peripherals().items():
+        signals = {s["name"] for s in p.get("signals") or []}
+        provided = {e["capability"] for e in p.get("provides") or []}
+        for sig, ports in (p.get("serves") or {}).items():
+            assert sig in signals, (pid, sig)
+            for port in ports:
+                cap, _, name = port.partition(".")
+                assert cap in provided and any(s["name"] == name for s in caps[cap]["signals"]), (pid, port)
