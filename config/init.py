@@ -1062,7 +1062,7 @@ def _tie_value(configuration_id, ref, value):
 def _apply_pin_overrides(configuration_id, cfg, pinmap):
     """Apply the configuration's `pin_overrides:` to its (private copy of the)
     board pinmap. A variant that wires a header differently from the board's
-    default (`tang_nano_20k_lcd_800_480_tm1638_alt` uses another LCD
+    default (`tang_nano_20k_lcd_800_480_49mhz_tm1638` uses another LCD
     adapter) says so here instead of getting a second board:
 
         pin_overrides:

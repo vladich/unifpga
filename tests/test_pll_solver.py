@@ -21,7 +21,7 @@ RPLL_VECTORS = [
     ("tang_primer_20k_dock_hdmi_no_tm1638",       27, 2, 13, 4,  2, False, 126.0),
     ("tang_nano_20k_hdmi_no_tm1638",              27, 7, 36, 8,  2, False, 124.875),
     ("tang_nano_9k_lcd_480_272_no_tm1638_yosys",  27, 4, 23, 4,  4, True,  32.4),
-    ("tang_nano_20k_lcd_800_480_tm1638_alt",      27, 1, 28, 2,  8, True,  48.9375),
+    ("tang_nano_20k_lcd_800_480_49mhz_tm1638",    27, 1, 28, 2,  8, True,  48.9375),
 ]
 
 
