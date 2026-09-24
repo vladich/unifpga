@@ -160,18 +160,31 @@ def trace(resolved):
 
 
 def edges(ports, attaches):
-    """Design bit <-> pin edges: [{design_port, bit (None = the whole port),
-    use, signal, ref, pin, via}]. Direct providers give one edge per bit; a
-    driver's pins give one per pin, bit for bit where the pin bus is as wide
-    as the design port (VGA r[k] <-> red[k]), else to the whole port (hs -> x)."""
+    """Design bit <-> pin edges: [{design_port, bit, bits, use, signal, ref,
+    pin, via}]. Direct providers give one edge per bit (bit). A driver's pins
+    give one per pin: bit for bit where the pin bus is as wide as the design
+    port (VGA r[k] <-> red[k]), else `bit` None and `bits` the design bits the
+    provider occupies in that port (a TM1638 given led[0..7] by lab_bits; all
+    bits of a port without a per-bit mapping, such as mic_sample or x). A port
+    the provider occupies no bit of gets no edge."""
     out = []
     by_key = {p["capability"] + "." + p["signal"]: p for p in ports}
+
+    def occupied(port, use):
+        """The design bits `use` provides in `port`: a list, or None for
+        all of them (no per-bit mapping)."""
+        for pr in port["providers"]:
+            if pr["attach_index"] == use:
+                if pr["bits"] is None:
+                    return None
+                return sorted({b["design_bit"] for b in pr["bits"] if b["design_bit"] is not None})
+        return []
     for p in ports:
         for pr in p["providers"]:
             for b in pr["bits"] or []:
                 if b["ref"] and b["design_bit"] is not None:
-                    out.append({"design_port": p["design_port"], "bit": b["design_bit"], "use": pr["attach_index"],
-                                "signal": None, "ref": b["ref"], "pin": b["pin"], "via": None})
+                    out.append({"design_port": p["design_port"], "bit": b["design_bit"], "bits": [b["design_bit"]],
+                                "use": pr["attach_index"], "signal": None, "ref": b["ref"], "pin": b["pin"], "via": None})
     direct = {(e["use"], e["ref"]) for e in out}
     for a in attaches:
         for sig, links in (a.get("links") or {}).items():
@@ -180,15 +193,21 @@ def edges(ports, attaches):
                 port = by_key.get(link["port"])
                 if port is None or not port["providers"]:
                     continue
+                bits = occupied(port, a["attach_index"])
+                if bits == []:
+                    continue                  # the provider has no bit of this port
+                if bits is None:
+                    bits = list(range(port["width"]))
                 for k, pin in enumerate(pins):
                     if (a["attach_index"], pin["ref"]) in direct:
                         continue
-                    if port["width"] == len(pins) and len(pins) > 1:
-                        bit = k
-                    elif port["width"] == 1:
-                        bit = 0
+                    if len(bits) == len(pins) and len(pins) > 1:
+                        bit = bits[k]
+                    elif len(bits) == 1:
+                        bit = bits[0]
                     else:
                         bit = None
-                    out.append({"design_port": port["design_port"], "bit": bit, "use": a["attach_index"],
+                    out.append({"design_port": port["design_port"], "bit": bit,
+                                "bits": [bit] if bit is not None else bits, "use": a["attach_index"],
                                 "signal": sig, "ref": pin["ref"], "pin": pin["pin"], "via": link["via"]})
     return out

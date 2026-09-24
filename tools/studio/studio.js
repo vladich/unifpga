@@ -107,19 +107,31 @@ function linksOfPin(i, signal) {
   return a ? ((a.links || {})[baseSignal(signal)] || []).filter((l) => portByKey(l.port)).map((l) => Object.assign({}, l, {p: portByKey(l.port)})) : [];
 }
 
+// "led[7:0]", "led[3], led[5:4]" for a sorted bit list
+function bitRange(port, bits) {
+  const runs = [];
+  for (const b of bits) { const r = runs[runs.length - 1]; if (r && r[1] + 1 === b) r[1] = b; else runs.push([b, b]); }
+  return runs.map(([a, b]) => port + (a === b ? "[" + a + "]" : "[" + b + ":" + a + "]")).join(", ");
+}
+
+// why a connection goes to several bits rather than to one
+function wholePortText(ed, p) {
+  const n = (ed.bits || []).length;
+  return n > 1 ? "no single bit: the " + ed.via + " driver carries " + bitRange(ed.design_port, ed.bits) +
+                 " over this one pin (shifted serially / time-multiplexed, or as timing such as a sync)"
+               : "the pin carries " + bitRange(ed.design_port, ed.bits || []) + " through the " + ed.via + " driver";
+}
+
 // one design bit <-> pin edge, spelled out
 function edgeText(ed) {
   const ri = refIndex(), hp = ri[ed.ref], c = hp && conn(hp.split(".")[0]);
   const where = hp ? c.label + " pin " + hp.split(".")[1] + " = " + ed.ref : ed.ref;
   const use = S.setup.use[ed.use];
-  return "design " + ed.design_port + (ed.bit === null ? "" : "[" + ed.bit + "]") +
+  const p = ports().find((q) => q.design_port === ed.design_port);
+  return "design " + (ed.bit === null ? bitRange(ed.design_port, ed.bits || []) + " (together, over this one pin)"
+                                      : ed.design_port + "[" + ed.bit + "]") +
          (ed.via ? "  →  " + ed.via + " (driver)" : "  →  directly") +
          "  →  " + where + " = FPGA " + (ed.pin || "?") + (use ? "   [" + useLabel(use) + (ed.signal ? " " + ed.signal : "") + "]" : "");
-}
-
-// "design red ← vga red … vga_r" for one link
-function linkText(l) {
-  return "design " + portName(l.p) + (l.via ? "  →  " + l.via + " (" + l.port_at + " … " + l.driver_port + ")" : "");
 }
 
 // design ports a use provides
@@ -144,9 +156,9 @@ function connectionRows() {
       const c = conn(cid), pin = c && c.pins[key];
       // what the module provides; bits of other uses on the same pin (a header
       // also handed to the design as gpio) are listed after it
-      const links = linksOfPin(i, m.pins[p]);
-      const prov = links.length ? [...new Set(links.map((l) => portName(l.p) + (l.via ? " (via " + l.via + ")" : "")))].join(" ")
-                                : portsOfUse(i).map((x) => portName(x.port) + (x.bits.length ? "[" + x.bits.join(",") + "]" : "")).join(" ");
+      const mine = pin ? ((S.ev && S.ev.trace && S.ev.trace.edges) || []).filter((ed) => ed.use === i && ed.ref === pin.ref) : [];
+      const prov = mine.map((ed) => (ed.bit === null ? bitRange(ed.design_port, ed.bits || []) : ed.design_port + "[" + ed.bit + "]") +
+                                    (ed.via ? " (via " + ed.via + ")" : "")).join(", ");
       const also = pin ? designBitsOfRef(pin.ref).filter((b) => b.use !== i).map((b) => portName(b.port) + "[" + b.bit + "]") : [];
       rows.push({sel: {kind: "wire", use: i, pin: p}, design: prov + (also.length ? "  (pin also " + also.join(" ") + ")" : ""),
                  provider: useLabel(use),
@@ -192,7 +204,7 @@ function draw() {
     g.append(el("text", {x: VX, y: y + 22, "font-size": 9, fill: "#868e96"}, p.capability + "." + p.signal));
     g.append(el("title", {}, "design_top " + portName(p) + (width > 1 ? "[" + (width - 1) + ":0]" : "") + " — capability " +
                              p.capability + "." + p.signal + " (" + (p.direction || "") + ")" + (none ? " — nothing in the rig provides it" : "")));
-    g.addEventListener("click", () => select({kind: "vport", cap: p.capability, signal: p.signal}));
+    target(g.firstChild, {kind: "vport", cap: p.capability, signal: p.signal});
     svg.append(g);
     const cells = Math.max(width, 1), per = 14;
     for (let b = 0; b < cells; b++) {
@@ -202,16 +214,43 @@ function draw() {
                            fill: on ? "var(--sel)" : none ? "#f8f9fa" : "#e7f5ff", stroke: none ? "#ced4da" : "#1c7ed6"});
       r.append(el("title", {}, portName(p) + (width > 1 ? "[" + b + "]" : "") + "  (" + p.capability + "." + p.signal + ")"));
       S.pos.cells[portName(p) + "." + b] = {x: cx + 11, y: cy + 5.5};
-      r.addEventListener("click", (e) => { e.stopPropagation();
-        select(perBit ? {kind: "vbit", cap: p.capability, signal: p.signal, bit: b} : {kind: "vport", cap: p.capability, signal: p.signal}); });
+      target(r, width > 1 || perBit ? {kind: "vbit", cap: p.capability, signal: p.signal, bit: b} : {kind: "vport", cap: p.capability, signal: p.signal});
       svg.append(r);
     }
     const rowsUsed = Math.max(Math.ceil(cells / per), 2) - 0.6;          // room for the capability name
     portRows.push({p, x: VX + 118 + Math.min(cells, per) * 13, y: y + 6});
-    S.pos.rows[portName(p)] = {x: VX + 118 + Math.min(cells, per) * 13, y: y + 6};
+    S.pos.rows[portName(p)] = {x: VX + 118 + Math.min(cells, per) * 13 + 6, y: y + 6};
     y += 14 * rowsUsed + 8;
   }
   if (!ports().length) svg.append(el("text", {x: VX, y: y + 10, fill: "#868e96"}, "(nothing in the rig can be traced yet)"));
+
+  // connections that carry several bits of a port over one pin (through a
+  // driver): an outline around exactly those bits, the line starts at it
+  S.pos.groups = {};
+  const allEdges = (S.ev && S.ev.trace && S.ev.trace.edges) || [];
+  allEdges.forEach((ed, n) => {
+    if (ed.bit !== null) return;
+    const key = ed.design_port + ":" + ed.bits.join(",");
+    if (!S.pos.groups[key]) {
+      const cellsOf = ed.bits.map((b) => [b, S.pos.cells[ed.design_port + "." + b]]).filter(([, c]) => c);
+      if (!cellsOf.length) return;
+      const runs = [];
+      for (const [b, c] of cellsOf) {
+        const last = runs[runs.length - 1];
+        if (last && last.b + 1 === b && last.y === c.y) { last.x1 = c.x; last.b = b; }
+        else runs.push({x0: c.x - 11, x1: c.x, y: c.y, b});
+      }
+      const end = runs[runs.length - 1];
+      S.pos.groups[key] = {runs, x: end.x1 + 4, y: end.y, edges: []};
+    }
+    S.pos.groups[key].edges.push(n);
+  });
+  for (const g of Object.values(S.pos.groups)) {
+    const lit = g.edges.some((n) => hi.edges.has(n));
+    for (const r of g.runs)
+      svg.append(el("rect", {x: r.x0 - 2, y: r.y - 8, width: r.x1 - r.x0 + 4, height: 16, rx: 3, fill: "none",
+                             stroke: lit ? "var(--sel)" : "#4c6ef5", "stroke-width": lit ? 2 : 1, "stroke-dasharray": lit ? "" : "3 2"}));
+  }
 
   // board frame, on-board devices
   const used = new Map();
@@ -234,13 +273,14 @@ function draw() {
       const lit = hi.refs.has(pp.ref);
       const dot = el("circle", {cx: px, cy: py, r: 4, fill: lit ? "var(--sel)" : "#ffffff", stroke: lit ? "var(--sel)" : "#2b8a3e"});
       dot.append(el("title", {}, o.label + ": " + pp.s + " = " + pp.ref + " = FPGA " + (pp.pin || "?")));
-      dot.addEventListener("click", (e) => { e.stopPropagation(); select({kind: "ref", ref: pp.ref}); });
+      target(dot, {kind: "ref", ref: pp.ref});
       g.append(dot);
     });
     const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null ? "#868e96" : "#212529"}, o.label);
     lt.append(el("title", {}, o.label + (i === null ? " — not used by this setup" : "")));
     g.append(lt);
-    g.addEventListener("click", () => select({kind: "onboard", id: o.id}));
+    target(g.firstChild, {kind: "onboard", id: o.id});
+    target(lt, {kind: "onboard", id: o.id});
     boardItems.push(g);
     if (i !== null) S.pos.uses[i] = {x: BX + 12, y: oy + 10, xr: BX + 12 + OW};
     oy += boxH + 6;
@@ -263,7 +303,7 @@ function draw() {
     const g = el("g");
     const lbl = el("text", {x: GX - 6, y: cy - 8, "font-size": 12, class: "clickable", fill: csel ? "var(--sel)" : "#343a40"},
                    c.label + (gi !== null ? "  — design gpio" : ""));
-    lbl.addEventListener("click", () => select({kind: "conn", id: c.id}));
+    target(lbl, {kind: "conn", id: c.id});
     g.append(lbl);
     const boxY = cy + lab + 6;
     g.append(el("rect", {x: GX - 6, y: boxY - 6, width: w + 12, height: c.rows.length * PITCH + 12, rx: 3,
@@ -277,7 +317,7 @@ function draw() {
       const circ = el("circle", {cx: px, cy: py, r: 6, fill, stroke: isSel ? "var(--sel)" : "#495057",
                                  "stroke-width": isSel ? 2 : 1, class: pin ? "clickable" : ""});
       circ.append(el("title", {}, c.label + " pin " + key + (pin ? ": " + pin.ref + " = " + pin.pin : pw ? ": " + pw : "")));
-      if (pin) circ.addEventListener("click", (e) => { e.stopPropagation(); pinClicked(c.id, key); });
+      if (pin) target(circ, {kind: "pin", conn: c.id, key});
       g.append(circ);
       // the pin's number / name outside its row
       const above = r === 0;
@@ -317,10 +357,10 @@ function draw() {
     const g = el("g");
     const box = el("rect", {x: MX, y: my, width: 230, height: hgt, rx: 5, fill: "#fff", stroke: col,
                            "stroke-width": on ? 3.5 : 2, class: "clickable"});
-    box.addEventListener("click", () => select({kind: "use", use: i}));
+    target(box, {kind: "use", use: i});
     g.append(box);
     const title = el("text", {x: MX + 8, y: my + 17, "font-weight": "bold", "font-size": 12, fill: col, class: "clickable"}, useLabel(use));
-    title.addEventListener("click", () => select({kind: "use", use: i}));
+    target(title, {kind: "use", use: i});
     g.append(title);
     S.pos.uses[i] = {x: MX, y: my + 12, xr: MX + 230};
     pins.forEach((p, k) => {
@@ -332,7 +372,7 @@ function draw() {
                             fill: pend ? "#f76707" : isSel ? "var(--sel)" : "#343a40",
                             "font-weight": pend || isSel ? "bold" : "normal"},
                    p + "  (" + m.pins[p] + ")" + (w[p] ? "  → " + w[p] : "  — not wired"));
-      t.addEventListener("click", (e) => { e.stopPropagation(); modulePinClicked(i, p); });
+      target(t, {kind: "mpin", use: i, pin: p});
       g.append(t);
       const dot = el("circle", {cx: MX, cy: py, r: 4, fill: col});
       g.append(dot);
@@ -351,7 +391,7 @@ function draw() {
     const d = "M" + wdef.from.x + "," + wdef.from.y + " C" + (wdef.from.x - 100) + "," + wdef.from.y + " " +
               (to.x + 80) + "," + to.y + " " + (to.x + 7) + "," + to.y;
     const hit = el("path", {d, fill: "none", stroke: "transparent", "stroke-width": 10, class: "clickable"});
-    hit.addEventListener("click", () => select({kind: "wire", use: wdef.use, pin: wdef.pin}));
+    target(hit, {kind: "wire", use: wdef.use, pin: wdef.pin});
     const path = el("path", {d, fill: "none", stroke: isSel ? "var(--sel)" : wdef.col, "stroke-width": isSel ? 3.5 : 1.6,
                              opacity: S.sel && !isSel ? 0.35 : 0.9});
     path.append(el("title", {}, useLabel(S.setup.use[wdef.use]) + " " + wdef.pin + " → " + wdef.to));
@@ -363,7 +403,8 @@ function draw() {
   // dot or a header pin; faint, the selection's in red
   const ri = refIndex();
   ((S.ev && S.ev.trace && S.ev.trace.edges) || []).forEach((ed, n) => {
-    const from = ed.bit === null ? S.pos.rows[ed.design_port] : S.pos.cells[ed.design_port + "." + ed.bit];
+    const from = ed.bit === null ? (S.pos.groups[ed.design_port + ":" + ed.bits.join(",")] || S.pos.rows[ed.design_port])
+                                 : S.pos.cells[ed.design_port + "." + ed.bit];
     const to = ri[ed.ref] ? S.pos.pins[ri[ed.ref]] : S.pos.obpins[ed.ref];
     if (!from || !to) return;
     const isSel = hi.edges.has(n);
@@ -371,9 +412,9 @@ function draw() {
     const path = el("path", {d, fill: "none", stroke: isSel ? "var(--sel)" : ed.via ? "#4c6ef5" : "#2f9e44",
                              "stroke-width": isSel ? 2.4 : 1.2, opacity: isSel ? 1 : S.sel ? 0.18 : 0.55,
                              "stroke-dasharray": ed.via ? "6 3" : ""});
-    const hit = el("path", {d, fill: "none", stroke: "transparent", "stroke-width": 9, class: "clickable"});
+    const hit = el("path", {d, fill: "none", stroke: "transparent", "stroke-width": 9, "stroke-linecap": "round", class: "clickable"});
     hit.append(el("title", {}, edgeText(ed)));
-    hit.addEventListener("click", (e) => { e.stopPropagation(); select({kind: "edge", n}); });
+    target(hit, {kind: "edge", n});
     svg.append(path);
     svg.append(hit);
   });
@@ -394,6 +435,82 @@ function draw() {
   const W = MX + 260, H = LY + 4 * 16 + 14;
   S.content = {w: W, h: H};
   applyView();
+}
+
+// ---------------------------------------------------------------- what a click means
+// Every clickable shape says what selecting it means (data-sel). A click looks
+// at everything under the pointer: pins and bits ("points"), connections
+// (design <-> pin lines, header <-> module wires) and parts (devices, modules,
+// connectors). ⌘ / Ctrl-click prefers points, ⌥ / Alt-click connections; a
+// plain click on overlapping candidates asks which one.
+
+const POINTS = new Set(["vbit", "vport", "pin", "ref", "mpin"]);
+const CONNECTIONS = new Set(["edge", "wire"]);
+
+function target(elem, sel) {
+  elem.setAttribute("data-sel", JSON.stringify(sel));
+  elem.classList.add("clickable");
+}
+
+function selLabel(sel) {
+  const ev = (S.ev && S.ev.trace) || {};
+  if (sel.kind === "edge") return "connection: " + edgeText((ev.edges || [])[sel.n] || {});
+  if (sel.kind === "wire") { const u = S.setup.use[sel.use]; return "wire: " + useLabel(u) + " pin " + sel.pin + " → header " + wiresOf(u)[sel.pin]; }
+  if (sel.kind === "mpin") return "module pin: " + useLabel(S.setup.use[sel.use]) + " " + sel.pin;
+  if (sel.kind === "pin") { const c = conn(sel.conn), p = c && c.pins[sel.key]; return "header pin: " + c.label + " pin " + sel.key + (p ? " (" + p.ref + " = " + p.pin + ")" : ""); }
+  if (sel.kind === "ref") return "on-board pin: " + sel.ref;
+  if (sel.kind === "vbit") { const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal); return "design bit: " + (p ? portName(p) : sel.signal) + "[" + sel.bit + "]"; }
+  if (sel.kind === "vport") { const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal); return "design port: " + (p ? portName(p) : sel.signal); }
+  if (sel.kind === "use") return "part: " + useLabel(S.setup.use[sel.use]);
+  if (sel.kind === "onboard") return "on-board device: " + ((onboardDef(sel.id) || {}).label || sel.id);
+  if (sel.kind === "conn") return "connector: " + ((conn(sel.id) || {}).label || sel.id);
+  return sel.kind;
+}
+
+function candidatesAt(x, y) {
+  const seen = new Set(), out = [];
+  for (const e of document.elementsFromPoint(x, y)) {
+    const t = e.closest && e.closest("[data-sel]");
+    if (!t) continue;
+    const key = t.getAttribute("data-sel");
+    if (!seen.has(key)) { seen.add(key); out.push(JSON.parse(key)); }
+  }
+  return out;
+}
+
+function activate(sel) {
+  closePicker();
+  if (sel.kind === "pin") return pinClicked(sel.conn, sel.key);
+  if (sel.kind === "mpin") return modulePinClicked(sel.use, sel.pin);
+  select(sel);
+}
+
+function onSvgClick(e) {
+  const all = candidatesAt(e.clientX, e.clientY);
+  const points = all.filter((s) => POINTS.has(s.kind)), conns = all.filter((s) => CONNECTIONS.has(s.kind));
+  const parts = all.filter((s) => !POINTS.has(s.kind) && !CONNECTIONS.has(s.kind));
+  let pick = null;
+  if (e.metaKey || e.ctrlKey) pick = points[0] || parts[0] || conns[0];
+  else if (e.altKey) pick = conns[0] || points[0] || parts[0];
+  else {
+    const primary = points.concat(conns);
+    if (primary.length > 1) return openPicker(e.clientX, e.clientY, primary);
+    pick = primary[0] || parts[0];
+  }
+  if (pick) activate(pick);
+}
+
+function closePicker() { const p = $("picker"); if (p) p.remove(); }
+
+function openPicker(x, y, options) {
+  closePicker();
+  const box = h("div", {id: "picker"},
+    h("div", {class: "picker-head"}, "Several things are under the pointer — pick one:"),
+    ...options.slice(0, 12).map((s) => h("button", {class: "picker-item", onclick: () => activate(s)}, selLabel(s))),
+    h("div", {class: "picker-tip"}, "⌘-click (Ctrl-click) picks the pin or bit, ⌥-click (Alt-click) the connection."));
+  box.style.left = Math.min(x + 8, window.innerWidth - 420) + "px";
+  box.style.top = Math.min(y + 8, window.innerHeight - 40 - 28 * Math.min(options.length, 12)) + "px";
+  document.body.append(box);
 }
 
 // ---------------------------------------------------------------- zoom and pan
@@ -465,6 +582,8 @@ function wireZoomPan() {
   };
   svg.addEventListener("pointerup", end);
   svg.addEventListener("pointercancel", end);
+  svg.addEventListener("click", onSvgClick);
+  document.addEventListener("pointerdown", (e) => { const p = $("picker"); if (p && !p.contains(e.target)) closePicker(); });
   $("zoom-in").addEventListener("click", () => zoomCenter(1 / 1.25));
   $("zoom-out").addEventListener("click", () => zoomCenter(1.25));
   $("zoom-fit").addEventListener("click", () => { S.view = null; applyView(); });
@@ -485,19 +604,19 @@ function highlight() {
     if (ri0[ed.ref]) hi.pins.add(ri0[ed.ref]);
     const p = ports().find((q) => q.design_port === ed.design_port);
     if (!p) return;
-    if (ed.bit === null) hi.vports.add(p.capability + "." + p.signal);
-    else hi.vbits.add(p.capability + "." + p.signal + "." + ed.bit);
+    for (const b of ed.bits || (ed.bit === null ? [] : [ed.bit])) hi.vbits.add(p.capability + "." + p.signal + "." + b);
   };
   const edgesWhere = (f) => allEdges.forEach((ed, n) => { if (f(ed)) takeEdge(ed, n); });
   const ri = refIndex();
-  // the module pins of use i that serve design port p (through a driver)
+  // the module pins of use i that serve design port p: the pins its edges reach
   const addServingPins = (i, p) => {
     hi.uses.add(i);
     const use = S.setup.use[i];
+    const refs = new Set(allEdges.filter((ed) => ed.use === i && ed.design_port === p.design_port).map((ed) => ed.ref));
+    for (const r of refs) { hi.refs.add(r); if (ri0[r]) hi.pins.add(ri0[r]); }
     if (!use || !use.module) return;
-    const m = moduleDef(use.module);
     for (const [mp, w] of Object.entries(wiresOf(use)))
-      if (linksOfPin(i, m.pins[mp]).some((l) => l.p === p)) { hi.wires.add(i + "." + mp); hi.mpins.add(i + "." + mp); hi.pins.add(w); }
+      if ([...refs].some((r) => ri0[r] === w)) { hi.wires.add(i + "." + mp); hi.mpins.add(i + "." + mp); }
   };
   const addUse = (i) => {
     hi.uses.add(i);
@@ -530,7 +649,7 @@ function highlight() {
     hi.refs.add(sel.ref);
   } else if (sel.kind === "vbit") {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
-    if (p) { addBit(p, sel.bit); edgesWhere((ed) => ed.design_port === p.design_port && (ed.bit === sel.bit || ed.bit === null)); }
+    if (p) { addBit(p, sel.bit); edgesWhere((ed) => ed.design_port === p.design_port && (ed.bits || [ed.bit]).includes(sel.bit)); }
   } else if (sel.kind === "vport") {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
     if (p) edgesWhere((ed) => ed.design_port === p.design_port);
@@ -558,7 +677,6 @@ function highlight() {
     if (kp) edgesWhere((ed) => ed.ref === kp.ref);
     (S.setup.use || []).forEach((u, i) => { if (u.module) for (const [p, w] of Object.entries(wiresOf(u))) if (w === key) {
       hi.wires.add(i + "." + p); hi.mpins.add(i + "." + p); hi.uses.add(i);
-      for (const l of linksOfPin(i, moduleDef(u.module).pins[p])) { hi.vports.add(l.port); hi.links.add(l.port + "#" + i); }
     } });
     const [cid, k] = key.split(".");
     const pin = conn(cid) && conn(cid).pins[k];
@@ -648,14 +766,11 @@ function details() {
     uses.forEach((u, i) => { if (u.module) for (const [p, w] of Object.entries(wiresOf(u))) if (w === key) {
       any = true;
       const m = moduleDef(u.module);
-      const bits = designBitsOfRef(pin.ref).filter((b) => b.use === i).map((b) => "design " + portName(b.port) + "[" + b.bit + "]");
-      const links = linksOfPin(i, m.pins[p]);
-      if (bits.length || !links.length) d.append(chain([bits.join(", ") || "(no design port)", useLabel(u) + " pin " + p + " (" + m.pins[p] + ")", pinText(cid, k)]));
-      for (const l of links) d.append(chain([linkText(l), useLabel(u) + " pin " + p + " (" + m.pins[p] + ")", pinText(cid, k)]));
+      d.append(chain([pinText(cid, k), useLabel(u) + " pin " + p + " (" + m.pins[p] + ")"]));
       if (!STATIC) d.append(h("button", {onclick: () => { const uu = S.setup.use[i]; if (uu.plug) { uu.wires = wiresOf(uu); delete uu.plug; } delete uu.wires[p]; S.sel = {kind: "use", use: i}; changed("disconnected " + p); }}, "Disconnect " + p));
     } });
     const gi = uses.findIndex((u) => u.gpio === cid);
-    if (gi >= 0) { any = true; d.append(chain(designBitsOfRef(pin.ref).map((b) => "design " + b.port.signal + "[" + b.bit + "]").concat(["gpio " + c.label])) ); }
+    if (gi >= 0) any = true;
     if (!any) d.append(h("p", {}, "Not connected."));
   } else if (sel.kind === "edge") {
     const ed = ((S.ev && S.ev.trace && S.ev.trace.edges) || [])[sel.n];
@@ -713,7 +828,8 @@ function connectionPanel(d, ed) {
   const active = (a.params || {}).active;
   const rows = [
     ["Connection", ed.via ? "through the " + ed.via + " driver" : "direct (no logic between the design bit and the pin)"],
-    ["Design port", "design_top." + ed.design_port + (ed.bit === null ? range + " (the whole port)" : "[" + ed.bit + "] of " + ed.design_port + range)],
+    ["Design port", "design_top." + (ed.bit === null ? bitRange(ed.design_port, ed.bits || []) : ed.design_port + "[" + ed.bit + "]") +
+                    " of " + ed.design_port + range],
     ["Capability", (p.capability || "?") + "." + (p.signal || "?")],
     ["Direction", dir],
     ["Provided by", useLabel(use) + (use.onboard ? " (on the board)" : use.module ? " (add-on module)" : "") +
@@ -722,7 +838,7 @@ function connectionPanel(d, ed) {
   if (ed.via) {
     rows.push(["Driver", ed.via + (per.driver_file ? "  (" + per.driver_file + ")" : "")]);
     if (link) rows.push(["Driver ports", "design side ." + link.port_at + ", pin side ." + link.driver_port]);
-    rows.push(["Bit relation", ed.bit === null ? "none: the pin serves the port as a whole (e.g. a sync or a serial line)"
+    rows.push(["Bit relation", ed.bit === null ? wholePortText(ed, p)
                                                : "bit for bit (pin " + ed.signal + "[" + ed.bit + "] ↔ " + ed.design_port + "[" + ed.bit + "])"]);
   }
   rows.push(["Peripheral signal", (ed.signal || (p.signal || "")) + (a.peripheral ? " of " + a.peripheral : "")]);
@@ -733,18 +849,29 @@ function connectionPanel(d, ed) {
   if (mod) rows.push(["Module pin", modPins.length ? modPins.join(", ") + " of " + mod.name : "not wired to this pin"]);
   if (mod && mod.verified === false) rows.push(["Module pinout", "not verified against a vendor document: " + (mod.source || "")]);
   if (active) rows.push(["Active level", active + (active === "low" ? " (the build inverts the bit)" : "")]);
-  d.append(h("h4", {}, "design " + ed.design_port + (ed.bit === null ? "" : "[" + ed.bit + "]") + "  ↔  " + (ed.pin || ed.ref)));
+  d.append(h("h4", {}, "design " + (ed.bit === null ? bitRange(ed.design_port, ed.bits || []) : ed.design_port + "[" + ed.bit + "]") + "  ↔  " + (ed.pin || ed.ref)));
   d.append(h("table", {class: "facts"}, ...rows.map(([k, v]) => h("tr", {}, h("th", {}, k), h("td", {}, v)))));
 }
 
-// the connections (design bit <-> pin edges) at one pinmap entry, clickable
+// the connections (design bit <-> pin edges) at one pinmap entry, grouped by
+// the part that makes them, each clickable
 function edgeList(d, ref) {
   const all = (S.ev && S.ev.trace && S.ev.trace.edges) || [];
   const mine = all.map((ed, n) => [ed, n]).filter(([ed]) => ed.ref === ref);
   if (!mine.length) return;
-  d.append(h("h4", {}, "Connections at this pin"));
-  for (const [ed, n] of mine)
-    d.append(h("div", {class: "chain clickable", onclick: () => select({kind: "edge", n})}, edgeText(ed)));
+  d.append(h("h4", {}, "What this pin carries"));
+  const byUse = new Map();
+  for (const [ed, n] of mine) { if (!byUse.has(ed.use)) byUse.set(ed.use, []); byUse.get(ed.use).push([ed, n]); }
+  for (const [u, list] of byUse) {
+    const use = S.setup.use[u] || {}, via = list[0][0].via;
+    const what = via ? (list.length > 1 ? "time-multiplexed by the " : "through the ") + via + " driver of " + useLabel(use)
+                     : use.gpio ? "directly: " + useLabel(use) + " hands this pin to the design"
+                     : "directly, for " + useLabel(use);
+    d.append(h("div", {class: "muted"}, what + ":"));
+    for (const [ed, n] of list)
+      d.append(h("div", {class: "chain clickable", onclick: () => select({kind: "edge", n})},
+                 ed.bit === null ? bitRange(ed.design_port, ed.bits || []) : ed.design_port + "[" + ed.bit + "]"));
+  }
 }
 
 function useDetails(d, i) {
@@ -1039,7 +1166,7 @@ function wire() {
     } catch (e) { out.textContent = e.message; }
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { S.pending = null; S.sel = null; status(""); render(); }
+    if (e.key === "Escape") { closePicker(); S.pending = null; S.sel = null; status(""); render(); }
     const typing = /^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement || {}).tagName || "");
     if ((e.key === "Delete" || e.key === "Backspace") && !typing && removableUse() !== null) { e.preventDefault(); removeSelected(); }
   });
@@ -1123,7 +1250,7 @@ async function selftest() {
     if (vi >= 0) {
       select({kind: "wire", use: vi, pin: "R0"});
       const hiW = highlight();
-      ok("a VGA pin lights the design port it serves", hiW.vports.has("screen.red") && !hiW.vports.has("screen.green"));
+      ok("a VGA pin lights the design bit it serves", hiW.vbits.has("screen.red.0") && ![...hiW.vbits].some((b) => b.startsWith("screen.green")));
       select({kind: "vport", cap: "screen", signal: "red"});
       const hiP = highlight();
       ok("the design's red lights exactly its four pins", ["R0", "R1", "R2", "R3"].every((p) => hiP.wires.has(vi + "." + p)) &&
@@ -1138,6 +1265,27 @@ async function selftest() {
          txt.includes("pmod_jb[5]") && txt.includes("JB pin 8") && txt.includes("Module pinR1 (r[1])"));
       const nl = edgesNow.findIndex((ed) => ed.design_port === "led" && ed.bit === 2 && !ed.via);
       if (nl >= 0) { select({kind: "edge", n: nl}); ok("a direct connection says so", $("details").textContent.includes("direct (no logic")); }
+    }
+    // overlapping targets: a design bit whose line starts at it
+    S.sel = null; render();
+    // a line leaves its bit to the right, over the next bit's cell
+    const cellOf = (ed, b) => { const p = ports().find((q) => q.design_port === ed.design_port);
+      return p && document.querySelector('[data-sel=\'' + JSON.stringify({kind: "vbit", cap: p.capability, signal: p.signal, bit: b}) + '\']'); };
+    const withEdge = (S.ev.trace.edges || []).find((ed) => ed.bit !== null && cellOf(ed, ed.bit + 1) &&
+      Math.abs(cellOf(ed, ed.bit + 1).getBoundingClientRect().top - cellOf(ed, ed.bit).getBoundingClientRect().top) < 2);
+    if (withEdge) {
+      const cell = cellOf(withEdge, withEdge.bit + 1);
+      const rb = cell.getBoundingClientRect();
+      const pt = {clientX: rb.left + rb.width / 2, clientY: rb.top + rb.height / 2, bubbles: true};
+      const kinds = candidatesAt(pt.clientX, pt.clientY).map((s) => s.kind);
+      ok("a bit and its connection overlap there", kinds.includes("vbit") && kinds.includes("edge"));
+      $("svg").dispatchEvent(new MouseEvent("click", pt));
+      ok("a plain click on both asks which one", !!$("picker") && $("picker").textContent.includes("⌘-click"));
+      closePicker();
+      $("svg").dispatchEvent(new MouseEvent("click", Object.assign({metaKey: true}, pt)));
+      ok("⌘-click picks the bit", S.sel && S.sel.kind === "vbit" && !$("picker"));
+      $("svg").dispatchEvent(new MouseEvent("click", Object.assign({altKey: true}, pt)));
+      ok("⌥-click picks the connection", S.sel && S.sel.kind === "edge");
     }
     S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
     S.setup.use.push({module: "tm1638_led_key", wires: {CLK: S.board.connectors[0].id + ".99"}});

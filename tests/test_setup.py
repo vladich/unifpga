@@ -355,5 +355,8 @@ def test_edges_connect_design_bits_to_pins():
     leds = sorted((e["bit"], e["ref"], e["via"]) for e in edges if e["design_port"] == "led" and e["via"] is None)
     assert leds == [(0, "onboard_leds[0]", None), (1, "onboard_leds[1]", None), (2, "onboard_leds[2]", None),
                     (3, "onboard_leds[3]", None)]
+    # the TM1638's pins carry the bits its lab_bits give it, and no sw bit here
+    tm = {e["design_port"]: e["bits"] for e in edges if e["ref"] == "arduino_io[27]" and e["via"]}
+    assert tm == {"btn": list(range(8)), "led": list(range(8)), "abcdefgh": list(range(8)), "digit": list(range(8))}
     mic = {e["ref"] for e in edges if e["design_port"] == "mic_sample"}
     assert mic == {"pmod_jd[4]", "pmod_jd[6]", "pmod_jd[7]"}

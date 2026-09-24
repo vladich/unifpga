@@ -56,3 +56,9 @@ svg text { font-family: system-ui, sans-serif; }
 .readonly .edit { display: none; }
 @media (max-width: 900px) { main { flex-direction: column; } #side { flex-basis: auto; width: 100%; } }
 #add-module { max-width: 220px; }
+#picker { position: fixed; z-index: 10; max-width: 420px; background: #fff; border: 1px solid #adb5bd; border-radius: 6px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+#picker .picker-head { font-weight: 600; padding: 2px 4px; }
+#picker .picker-item { font: inherit; text-align: left; padding: 4px 6px; border: 1px solid #e9ecef; background: #f8f9fa; border-radius: 4px; cursor: pointer; }
+#picker .picker-item:hover { background: #e7f5ff; border-color: #74c0fc; }
+#picker .picker-tip { color: var(--muted); font-size: 11px; padding: 2px 4px; }
