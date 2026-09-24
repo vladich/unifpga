@@ -66,6 +66,9 @@ Configuration:
         width: 14
       bind:
         io: gpio_pseudo_sdram
+    - peripheral: buzzer
+      bind:
+        pwm: onboard_buzzer.beep
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

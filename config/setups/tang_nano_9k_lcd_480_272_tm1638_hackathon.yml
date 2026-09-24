@@ -16,3 +16,4 @@ Setup:
     - onboard: microsd
     - module: i2s_dac_breakout
       wires: {BCK: 'gpio.[3]', LCK: 'gpio.[5]', DIN: 'gpio.[4]'}
+    - onboard: uart

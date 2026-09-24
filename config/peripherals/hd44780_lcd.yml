@@ -7,6 +7,10 @@ Peripheral:
   parameters:
     columns: { type: int, default: 16 }
     rows:    { type: int, default: 2 }
+  # the on-board devices it models: a board inventory's character LCD, its pins
+  # named as below (the 4-bit bus is the top half of an 8-bit data bank)
+  models: {kind: [lcd_char, lcd], pins: {rs: [rs, LCD_RS], e: [e, en, LCD_EN], rw: [rw, LCD_RW],
+                                        d: ["d[4:8]", "LCD_DATA[4:8]", "data[4:8]"]}}
   signals:
     - { name: rs, type: scalar, direction: output, comment: "Register select: 0 = instruction, 1 = data" }
     - { name: e,  type: scalar, direction: output, comment: "Enable (falling edge latches)" }

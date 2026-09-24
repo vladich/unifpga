@@ -44,3 +44,13 @@ Configuration:
         active: low
       bind:
         btn: ["onboard_buttons[4]"]
+    - peripheral: led_bank
+      params:
+        width: 5
+      bind:
+        led: onboard_db_leds.user_led
+    - peripheral: button_array
+      params:
+        width: 5
+      bind:
+        btn: onboard_db_buttons.user_btn

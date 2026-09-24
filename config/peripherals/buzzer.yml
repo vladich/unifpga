@@ -1,0 +1,23 @@
+# An on-board buzzer behind a transistor, driven with PWM audio: the design's
+# sound (the top 8 bits of the sample), as pwm_amp drives an amplifier.
+
+Peripheral:
+  id: buzzer
+  description: On-board buzzer (transistor-driven), PWM audio
+  # the on-board devices it models: a board inventory's `buzzer` (or an `audio`
+  # device whose only pin is the buzzer's), its pin named as below
+  models: {kind: [buzzer, audio], pins: {pwm: [beep, buzzer, bell]}}
+  signals:
+    - { name: pwm, type: scalar, direction: output, comment: "PWM-modulated audio to the buzzer's transistor" }
+  provides:
+    - capability: audio_out
+  driver:
+    module: audio_pwm
+    file: rtl/peripherals/audio_pwm.sv
+    parameters:
+      data_w: 8
+    port_map:
+      clk_i:  context.clk
+      rst_i:  context.rst
+      data_i: capability.audio_out.sample[15:8]
+      pwm_o:  pin.pwm

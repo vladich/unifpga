@@ -19,3 +19,5 @@ Setup:
       wires: {SCK: 'pmod_0.[0]', WS: 'pmod_0.[2]', SD: 'pmod_1.[0]', L/R: 'pmod_0.[4]'}
     - module: i2s_dac_breakout
       wires: {SCK: 'pmod_1.[1]', BCK: 'pmod_1.[3]', LCK: 'pmod_1.[7]', DIN: 'pmod_1.[5]'}
+    - onboard: uart
+    - onboard: audio

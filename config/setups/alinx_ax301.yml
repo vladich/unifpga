@@ -20,6 +20,7 @@ Setup:
       params: {width: 34}
     - gpio: gpio_0
       params: {width: 34}
+    - onboard: buzzer
   extra:
     tie:
       gpio_0[1]: 0

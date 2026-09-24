@@ -59,4 +59,4 @@ Layout:
       device: {kind: other, bank: onboard_feather_i2c}   # no peripheral model yet
     - id: feather_serial
       label: Feather UART pins 0/1 (RX/TX)
-      device: {kind: uart, bank: onboard_feather_serial}   # no peripheral model yet
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_feather_serial.tx, rx: onboard_feather_serial.rx}}

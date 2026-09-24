@@ -19,6 +19,7 @@ Setup:
     - onboard: audio_codec
     - gpio: gpio
       params: {width: 36}
+    - onboard: lcd
   extra:
     tie:
       onboard_vga.sync_n: 0

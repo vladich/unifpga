@@ -65,6 +65,16 @@ Configuration:
         bclk: "pmod_1[5]"
         lrclk: "pmod_1[7]"
         sdata: "pmod_1[6]"
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: i2s_audio_out
+      bind:
+        bclk: onboard_audio_dac.bck
+        lrclk: onboard_audio_dac.ws
+        sdata: onboard_audio_dac.din
+        pa_en: onboard_audio_dac.pa_en
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

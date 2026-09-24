@@ -71,7 +71,7 @@ Layout:
       device: {kind: other, bank: onboard_jtag}   # no peripheral model yet
     - id: leds
       label: READY / DONE LEDs (LED3, LED4) on configuration pins
-      device: {kind: leds, bank: onboard_leds}   # no peripheral model yet
+      attach: {peripheral: led_bank, params: {width: 2}, bind: {led: [onboard_leds.ready, onboard_leds.done]}}
     - id: usb
       label: USB-A host port J13 (USB 1.1, direct FPGA D+/D-)
       device: {kind: usb, bank: onboard_usb}   # no peripheral model yet

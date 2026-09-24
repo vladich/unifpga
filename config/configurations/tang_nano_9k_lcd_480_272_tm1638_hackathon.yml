@@ -50,3 +50,7 @@ Configuration:
         bclk: "gpio[3]"
         lrclk: "gpio[5]"
         sdata: "gpio[4]"
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx

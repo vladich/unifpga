@@ -68,6 +68,9 @@ Configuration:
         width: 11
       bind:
         io: [onboard_char_lcd.d, onboard_char_lcd.e, onboard_char_lcd.rw, onboard_char_lcd.rs]
+    - peripheral: buzzer
+      bind:
+        pwm: onboard_buzzer.beep
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

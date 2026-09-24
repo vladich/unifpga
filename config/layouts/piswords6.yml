@@ -41,7 +41,7 @@ Layout:
       attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
     - id: buzzer
       label: BUZZER SP1 (S8550 Q1)
-      device: {kind: buzzer, bank: onboard_buzzer}   # no peripheral model yet
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.beep}}
     - id: eeprom
       label: EEPROM AT24C08 U3
       device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
@@ -53,7 +53,7 @@ Layout:
       device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
     - id: lcd
       label: LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets
-      device: {kind: lcd, bank: onboard_lcd}   # no peripheral model yet
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.rs, e: onboard_lcd.en, d: ['onboard_lcd.d[4]', 'onboard_lcd.d[5]', 'onboard_lcd.d[6]', 'onboard_lcd.d[7]'], rw: onboard_lcd.rw}}
     - id: epcs4si8n_config_flash_u4
       label: EPCS4SI8N config flash U4
       device: {kind: flash, bank: onboard_epcs4si8n_config_flash_u4}   # no peripheral model yet

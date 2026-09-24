@@ -56,3 +56,12 @@ Configuration:
         bclk: "pmod_1[3]"
         lrclk: "pmod_1[7]"
         sdata: "pmod_1[5]"
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: i2s_audio_out
+      bind:
+        bclk: onboard_audio.bck
+        lrclk: onboard_audio.ws
+        sdata: onboard_audio.din

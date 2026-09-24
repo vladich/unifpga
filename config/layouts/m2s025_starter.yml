@@ -80,7 +80,7 @@ Layout:
       device: {kind: other, bank: onboard_ds1_reset_out_led_nreset_out}   # no peripheral model yet
     - id: uart
       label: FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)
-      device: {kind: uart, bank: onboard_uart}   # no peripheral model yet
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
     - id: usb_ulpi
       label: USB3300 ULPI USB OTG PHY on P19 mini-USB
       device: {kind: usb, bank: onboard_usb_ulpi}   # no peripheral model yet

@@ -62,4 +62,4 @@ Layout:
       device: {kind: other, bank: onboard_rtc}   # no peripheral model yet
     - id: buzzer
       label: Buzzer (transistor-driven, jumper CB1)
-      device: {kind: audio, bank: onboard_buzzer}   # no peripheral model yet
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}

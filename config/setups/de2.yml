@@ -21,6 +21,7 @@ Setup:
       params: {width: 36}
     - gpio: gpio_0
       params: {width: 36}
+    - onboard: lcd
   extra:
     tie:
       onboard_vga.sync: 0

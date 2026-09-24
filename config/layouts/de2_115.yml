@@ -59,7 +59,7 @@ Layout:
       device: {kind: clock, bank: onboard_sma_clkin}   # no peripheral model yet
     - id: lcd
       label: Character LCD module (16x2)
-      device: {kind: lcd_char, bank: onboard_lcd}   # no peripheral model yet
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
     - id: hsmc
       label: HSMC connector
       device: {kind: header, bank: hsmc}   # no peripheral model yet

@@ -16,3 +16,5 @@ Setup:
       variant: button_array
     - onboard: buttons
       variant: button_array_2
+    - onboard: db_leds
+    - onboard: db_buttons

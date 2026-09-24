@@ -65,7 +65,7 @@ Layout:
           attach: {peripheral: button_array, params: {width: 1, active: low}, bind: {btn: ['onboard_buttons[4]']}}
     - id: core_keys
       label: Core-board user keys SW2, SW3
-      device: {kind: buttons, bank: onboard_core_keys}   # no peripheral model yet
+      attach: {peripheral: button_array, params: {width: 2, active: low}, bind: {btn: [onboard_core_keys.sw2, onboard_core_keys.sw3]}}
     - id: core_leds
       label: Core-board user LEDs D2 (LED2), D3 (LED3)
       attach: {peripheral: led_bank, params: {width: 2, active: low}, bind: {led: onboard_core_leds.led}}
@@ -77,13 +77,13 @@ Layout:
       device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet
     - id: db_uart
       label: Daughterboard USB-UART (CP2102N, J4 mini-USB)
-      device: {kind: uart, bank: onboard_db_uart}   # no peripheral model yet
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_db_uart.tx, rx: onboard_db_uart.rx}}
     - id: db_leds
       label: Daughterboard LEDs (5)
-      device: {kind: leds, bank: onboard_db_leds}   # no peripheral model yet
+      attach: {peripheral: led_bank, params: {width: 5}, bind: {led: onboard_db_leds.user_led}}
     - id: db_buttons
       label: Daughterboard keys (5)
-      device: {kind: buttons, bank: onboard_db_buttons}   # no peripheral model yet
+      attach: {peripheral: button_array, params: {width: 5}, bind: {btn: onboard_db_buttons.user_btn}}
     - id: db_ethernet_clocks
       label: Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)
       device: {kind: ethernet, bank: onboard_db_ethernet_clocks}   # no peripheral model yet

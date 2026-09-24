@@ -50,7 +50,7 @@ Layout:
       device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
     - id: lcd
       label: Character LCD module (16x2, HD44780 compatible)
-      device: {kind: lcd_char, bank: onboard_lcd}   # no peripheral model yet
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
     - id: ps2
       label: PS/2 port (keyboard + mouse via Y-cable)
       device: {kind: ps2, bank: onboard_ps2}   # no peripheral model yet

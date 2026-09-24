@@ -299,38 +299,47 @@ Board:
         sda: AE13
         wr_n: AK6
     onboard_hps_ethernet:   # HPS Gigabit Ethernet PHY (KSZ9021RN)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS Gigabit Ethernet PHY (KSZ9021RN)", "kind": "ethernet"}
       iostandard: "3.3V"
       pins: {"HPS_ENET_TX_EN": "A20", "HPS_ENET_TX_DATA": ["F20", "J19", "F21", "F19"], "HPS_ENET_RX_DV": "K17", "HPS_ENET_RX_DATA": ["A21", "B20", "B18", "D21"], "HPS_ENET_RX_CLK": "G20", "HPS_ENET_RESET_n": "E18", "HPS_ENET_MDIO": "E21", "HPS_ENET_MDC": "B21", "HPS_ENET_INT_n": "C19", "HPS_ENET_GTX_CLK": "H19"}
     onboard_hps_uart:   # HPS UART to USB (FT232R)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS UART to USB (FT232R)", "kind": "uart"}
       iostandard: "3.3V"
       pins: {"HPS_UART_RX": "B25", "HPS_UART_TX": "C25", "HPS_CONV_USB_n": "B15"}
     onboard_hps_ddr3:   # HPS DDR3 SDRAM (1 GB, 32-bit)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS DDR3 SDRAM (1 GB, 32-bit)", "kind": "ddr3"}
       iostandard: "SSTL-15 Class I"
       pins: {"HPS_DDR3_A": ["F26", "G30", "F28", "F30", "J25", "J27", "F29", "E28", "H27", "G26", "D29", "C30", "B30", "C29", "H25"], "HPS_DDR3_BA": ["E29", "J24", "J23"], "HPS_DDR3_CAS_n": "E27", "HPS_DDR3_CKE": "L29", "HPS_DDR3_CK_n": "L23", "HPS_DDR3_CK_p": "M23", "HPS_DDR3_CS_n": "H24", "HPS_DDR3_DM": ["K28", "M28", "R28", "W30"], "HPS_DDR3_DQ": ["K23", "K22", "H30", "G28", "L25", "L24", "J30", "J29", "K26", "L26", "K29", "K27", "M26", "M27", "L28", "M30", "U26", "T26", "N29", "N28", "P26", "P27", "N27", "R29", "P24", "P25", "T29", "T28", "R27", "R26", "V30", "W29"], "HPS_DDR3_DQS_n": ["M19", "N24", "R18", "R21"], "HPS_DDR3_DQS_p": ["N18", "N25", "R19", "R22"], "HPS_DDR3_ODT": "H28", "HPS_DDR3_RAS_n": "D30", "HPS_DDR3_RESET_n": "P30", "HPS_DDR3_WE_n": "C28", "HPS_DDR3_RZQ": "D27"}
     onboard_hps_qspi_flash:   # HPS QSPI flash (1 Gb)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS QSPI flash (1 Gb)", "kind": "flash"}
       iostandard: "3.3V"
       pins: {"HPS_FLASH_DATA": ["C20", "H18", "A19", "E19"], "HPS_FLASH_DCLK": "D19", "HPS_FLASH_NCSO": "A18"}
     onboard_hps_sdcard:   # HPS micro SD card socket
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS micro SD card socket", "kind": "sdcard"}
       iostandard: "3.3V"
       pins: {"HPS_SD_CLK": "A16", "HPS_SD_CMD": "F18", "HPS_SD_DATA": ["G18", "C17", "D17", "B16"]}
     onboard_hps_usb_otg:   # HPS USB 2.0 OTG PHY (USB3300)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS USB 2.0 OTG PHY (USB3300)", "kind": "usb"}
       iostandard: "3.3V"
       pins: {"HPS_USB_CLKOUT": "N16", "HPS_USB_DATA": ["E16", "G16", "D16", "D14", "A15", "C14", "D15", "M17"], "HPS_USB_DIR": "E14", "HPS_USB_NXT": "A14", "HPS_USB_RESET_PHY": "G17", "HPS_USB_STP": "C15"}
     onboard_hps_gsensor:   # HPS accelerometer (ADXL345 G-sensor)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS accelerometer (ADXL345 G-sensor)", "kind": "other"}
       iostandard: "3.3V"
       pins: {"HPS_GSENSOR_INT": "B22"}
     onboard_hps_i2c:   # HPS I2C bus (G-sensor, LTC connector)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS I2C bus (G-sensor, LTC connector)", "kind": "other"}
       iostandard: "3.3V"
       pins: {"HPS_I2C_CLK": "H23", "HPS_I2C_SDA": "A25"}
     onboard_hps_lcm:   # HPS 128x64 graphic LCD module (SPI)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
       device: {"name": "HPS 128x64 graphic LCD module (SPI)", "kind": "other"}
       iostandard: "3.3V"
       pins: {"HPS_LCM_D_C": "G22", "HPS_LCM_RST_N": "B26", "HPS_LCM_SPIM_CLK": "C23", "HPS_LCM_SPIM_MOSI": "D22", "HPS_LCM_SPIM_SS": "D24"}
