@@ -652,3 +652,20 @@ def test_catalogue_aliases_name_no_real_entry_twice():
             assert a not in ids, "{} is an alias of {} and an entry of its own".format(a, e["Id"])
             assert a not in seen, "{} is an alias of {} and of {}".format(a, e["Id"], seen[a])
             seen[a] = e["Id"]
+
+
+def test_unwired_pin_notes_name_module_pins_and_a_level():
+    """A module's `unwired:` (what a pin must be when the rig leaves it
+    unwired: the PCM5102A's SCK held low) names its own signal pins, a level
+    and why; such a pin's signal is optional in the peripheral."""
+    from tools import setup as su
+    peripherals = config_init.read_peripherals()
+    seen = 0
+    for mid, m in su.read_modules().items():
+        for pin, spec in (m.get("unwired") or {}).items():
+            seen += 1
+            assert pin in m["pins"] and m["pins"][pin] not in ("power", "ground"), (mid, pin)
+            assert spec.get("tie") in ("ground", "power") and spec.get("why"), (mid, pin)
+            sig = next(s for s in peripherals[m["peripheral"]]["signals"] if s["name"] == m["pins"][pin])
+            assert sig.get("optional"), (mid, pin, "a pin left unwired must be an optional signal")
+    assert seen

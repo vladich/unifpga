@@ -46,6 +46,11 @@ function onboardDef(id) { return S.board.onboard.find((o) => o.id === id); }
 function variantsOf(o) { return (o && o.variants) || (o ? [{id: null, label: o.label, attach: o.attach, pins: o.pins}] : []); }
 function variantOf(o, use) { const vs = variantsOf(o); return vs.find((v) => v.id === ((use && use.variant) || null)) || vs[0]; }
 function onboardPins(o, use) { const v = variantOf(o, use); return v ? v.pins : {}; }
+// what a module pin must be when it is left unwired (the module's `unwired:`), "tie to GND" ...
+function unwiredTie(m, p) {
+  const u = ((m && m.unwired) || {})[p];
+  return u ? "tie to " + ({ground: "GND", power: "VCC"}[u.tie] || u.tie) : "";
+}
 function passive(sig) { return sig === "power" || sig === "ground"; }
 
 // wires of a module use, plug expanded ({module pin: "conn.key"})
@@ -576,7 +581,7 @@ function draw() {
       const t = el("text", {x: MX + 16, y: py + 4, "font-size": 11, class: "clickable",
                             fill: pend ? "#f76707" : isSel ? "var(--sel)" : "#343a40",
                             "font-weight": pend || isSel ? "bold" : "normal"},
-                   p + "  (" + m.pins[p] + ")" + (w[p] ? "  → " + w[p] : "  — not wired"));
+                   p + "  (" + m.pins[p] + ")" + (w[p] ? "  → " + w[p] : unwiredTie(m, p) ? "  — " + unwiredTie(m, p) + " on the module" : "  — not wired"));
       target(t, {kind: "mpin", use: i, pin: p});
       g.append(t);
       const dot = el("circle", {cx: MX, cy: py, r: 4, fill: col});
@@ -1770,6 +1775,8 @@ function useDetails(d, i) {
       t.append(h("tr", {}, h("td", {}, p), h("td", {}, sig), cell));
     }
     d.append(t);
+    for (const p of Object.keys(m.unwired || {}))
+      if (!w[p]) d.append(h("p", {class: "note"}, p + " is not wired: " + unwiredTie(m, p) + " on the module — " + m.unwired[p].why + "."));
     if (!STATIC) {
       d.append(h("div", {}, h("button", {onclick: () => autoWire(i)}, "Auto-wire"),
                  " picks free header pins (a Pmod module plugs into a free Pmod row)."));

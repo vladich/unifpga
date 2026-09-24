@@ -1862,9 +1862,13 @@ def _emit_passthrough(resolved, idx, attach, plans):
                 if pin_sig_name not in bind:
                     continue
                 if cap_sig.get("direction") == "inout":
+                    # an inout cannot go through an `assign`: design_top's port
+                    # is wired to the pins in its instance (_gpio_connection)
                     hi, lo = offset + width - 1, offset
-                    lines.append("    // {}[{}:{}] <-> {} (bidirectional, connected at design_top)"
-                                 .format(cap_id, hi, lo, _attach_label(attach)))
+                    port = next((d[0] for d in design_ports() if d[1] == cap_id and d[2] == cap_sig_name), cap_id)
+                    lines.append("    // {}[{}] is {}: inout pins, wired in the design_top instance below (.{}), not here"
+                                 .format(port, hi if hi == lo else "{}:{}".format(hi, lo),
+                                         _resolve_ref("pin." + pin_sig_name, attach, plans, bind), port))
                     continue
                 pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind)
                 cap_base = "cap_{}_{}".format(cap_id, cap_sig_name)
