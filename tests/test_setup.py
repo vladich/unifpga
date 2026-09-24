@@ -379,3 +379,48 @@ def test_edges_connect_design_bits_to_pins():
     assert tm == {"btn": list(range(8)), "led": list(range(8)), "abcdefgh": list(range(8)), "digit": list(range(8))}
     mic = {e["ref"] for e in edges if e["design_port"] == "mic_sample"}
     assert mic == {"pmod_jd[4]", "pmod_jd[6]", "pmod_jd[7]"}
+
+
+def test_design_port_widths_are_the_interface_declarations():
+    """Each DESIGN_PORTS width is the declaration in design_top_interface.sv:
+    a parameter name for `[w_x - 1 : 0]`, a number for `[7 : 0]`, 1 without a range."""
+    import re
+    with open(os.path.join(os.path.dirname(su.CONFIG_DIR), "rtl", "peripherals", "design_top_interface.sv")) as f:
+        text = f.read()
+    body = text[text.index(")\n(") + 3:text.index(");")]
+    declared = {}
+    for m in re.finditer(r"^\s*(?:input|output|inout)\b(?:\s+logic)?\s*(\[[^\]]*\])?\s*(\w+)", body, re.M):
+        rng, port = m.group(1), m.group(2)
+        if not rng:
+            declared[port] = 1
+        else:
+            hi = rng[1:-1].split(":")[0].strip()
+            p = re.match(r"^(\w+)\s*-\s*1$", hi)
+            declared[port] = p.group(1) if p else int(hi) + 1
+    assert {p: w for p, _c, _s, w in codegen.DESIGN_PORTS} == declared
+    r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    t = trace.trace(r)
+    red = [p for p in t["ports"] if p["design_port"] == "red"][0]
+    assert red["width_parameter"] == "w_red" and t["parameters"]["w_red"] == red["width"] == 4
+
+
+def test_driver_bit_relations_follow_the_pin_fit():
+    assert trace._fit([0, 1, 2, 3], 4, 2, "msb") == (2, "bit")
+    assert trace._fit([0, 1, 2, 3], 1, 0, "msb") == (None, "or")
+    assert trace._fit(list(range(8)), 4, 0, "msb") == (4, "msb")
+    assert trace._fit(list(range(8)), 3, 1, None) == (None, "shared")
+    # one pin per colour (omdazz, rgb12 onto 3 pins): the driver ORs the channel onto it
+    om = trace.trace(config_init.resolve_configuration("omdazz"))
+    assert [(e["bits"], e["relation"]) for e in om["edges"] if e["design_port"] == "red"] == [([0, 1, 2, 3], "or")]
+    # a 10-bit DAC (de2, rgb30): bit for bit
+    de2 = trace.trace(config_init.resolve_configuration("de2"))
+    assert de2["parameters"]["w_red"] == 10
+    assert sorted(e["bit"] for e in de2["edges"] if e["design_port"] == "red" and e["relation"] == "bit") == list(range(10))
+    # 8 design bits onto a 4-pin PmodVGA: the top four reach the pins
+    rig = copy.deepcopy(su.read_setup("arty_a7_35_pmod_mic3"))
+    vga = [u for u in rig["use"] if u.get("module") == "digilent_pmod_vga"][0]
+    vga["params"].update(bits_r=8)
+    ev = studio.evaluate(rig)
+    got = sorted((e["signal"], e["bit"], e["relation"]) for e in ev["trace"]["edges"] if e["design_port"] == "red")
+    assert got == [("r", 4, "msb"), ("r", 5, "msb"), ("r", 6, "msb"), ("r", 7, "msb")], got
+    assert ev["trace"]["parameters"]["w_red"] == 8

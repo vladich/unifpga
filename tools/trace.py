@@ -127,14 +127,18 @@ def trace(resolved):
         links = pin_links(a["peripheral"])
         attaches.append({"attach_index": a.get("attach_index"), "peripheral": a["peripheral_id"],
                          "params": a.get("params") or {},
+                         "pin_fit": a["peripheral"].get("pin_fit") or {},
                          "pins": {sig: _pins(pinmap, ref) for sig, ref in (a.get("bind") or {}).items()},
                          "links": {sig: links.get(sig, []) for sig in (a.get("bind") or {})}})
-    widths = codegen.design_top_parameters(resolved, plans)
+    parameters = codegen.design_top_parameters(resolved, plans)
+    widths = codegen.design_top_widths(parameters)
     ports = []
     for design_port, cap_id, sig_name, width in codegen.DESIGN_PORTS:
         plan = plans.get(cap_id)
         sig = next((s for s in (plan.cap.get("signals") or []) if s["name"] == sig_name), {}) if plan else {}
-        port = {"design_port": design_port, "width": width(widths) if plan and plan.providers else 0,
+        port = {"design_port": design_port,
+                "width": codegen.design_port_width(width, widths) if plan and plan.providers else 0,
+                "width_parameter": width if isinstance(width, str) else None,
                 "capability": cap_id, "signal": sig_name, "direction": sig.get("direction"), "providers": []}
         for pidx, perif, _params in (plan.providers if plan else []):
             a = resolved["peripherals"][pidx]
@@ -156,14 +160,35 @@ def trace(resolved):
                                  for k, b in enumerate(design_bits)]
             port["providers"].append(entry)
         ports.append(port)
-    return {"ports": ports, "attaches": attaches, "edges": edges(ports, attaches)}
+    return {"ports": ports, "attaches": attaches, "edges": edges(ports, attaches),
+            "parameters": dict(widths)}
+
+
+def _fit(bits, npins, k, fit):
+    """(design bit or None, relation) for pin k of a driver signal with npins
+    pins serving the design bits `bits`:
+      bit     as many pins as bits (or one of each): pin k is bits[k]
+      msb     fewer pins, the driver keeps the top bits (pin_fit: msb)
+      or      one pin, the driver ORs the bits (pin_fit: msb)
+      shared  the pin carries all the bits (serial, multiplexed or timing)"""
+    if len(bits) == npins:
+        return bits[k], "bit"
+    if len(bits) == 1:
+        return bits[0], "bit"
+    if fit == "msb" and npins == 1:
+        return None, "or"
+    if fit == "msb" and npins < len(bits):
+        return bits[len(bits) - npins + k], "msb"
+    return None, "shared"
 
 
 def edges(ports, attaches):
     """Design bit <-> pin edges: [{design_port, bit, bits, use, signal, ref,
-    pin, via}]. Direct providers give one edge per bit (bit). A driver's pins
-    give one per pin: bit for bit where the pin bus is as wide as the design
-    port (VGA r[k] <-> red[k]), else `bit` None and `bits` the design bits the
+    pin, via, relation}]. Direct providers give one edge per bit (relation
+    direct). A driver's pins give one per pin, as _fit() relates them: bit for
+    bit where the pin bus is as wide as the design port (VGA r[k] <-> red[k]),
+    the top bits or an OR where the peripheral's pin_fit says the driver
+    narrows the port so, else `bit` None and `bits` the design bits the
     provider occupies in that port (a TM1638 given led[0..7] by lab_bits; all
     bits of a port without a per-bit mapping, such as mic_sample or x). A port
     the provider occupies no bit of gets no edge."""
@@ -184,7 +209,8 @@ def edges(ports, attaches):
             for b in pr["bits"] or []:
                 if b["ref"] and b["design_bit"] is not None:
                     out.append({"design_port": p["design_port"], "bit": b["design_bit"], "bits": [b["design_bit"]],
-                                "use": pr["attach_index"], "signal": None, "ref": b["ref"], "pin": b["pin"], "via": None})
+                                "use": pr["attach_index"], "signal": None, "ref": b["ref"], "pin": b["pin"], "via": None,
+                                "relation": "direct"})
     direct = {(e["use"], e["ref"]) for e in out}
     for a in attaches:
         for sig, links in (a.get("links") or {}).items():
@@ -198,16 +224,13 @@ def edges(ports, attaches):
                     continue                  # the provider has no bit of this port
                 if bits is None:
                     bits = list(range(port["width"]))
+                fit = (a.get("pin_fit") or {}).get(sig)
                 for k, pin in enumerate(pins):
                     if (a["attach_index"], pin["ref"]) in direct:
                         continue
-                    if len(bits) == len(pins) and len(pins) > 1:
-                        bit = bits[k]
-                    elif len(bits) == 1:
-                        bit = bits[0]
-                    else:
-                        bit = None
+                    bit, relation = _fit(bits, len(pins), k, fit)
                     out.append({"design_port": port["design_port"], "bit": bit,
                                 "bits": [bit] if bit is not None else bits, "use": a["attach_index"],
-                                "signal": sig, "ref": pin["ref"], "pin": pin["pin"], "via": link["via"]})
+                                "signal": sig, "ref": pin["ref"], "pin": pin["pin"], "via": link["via"],
+                                "relation": relation})
     return out

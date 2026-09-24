@@ -2424,30 +2424,45 @@ def _clog2(n):
 
 
 # design_top's ports (rtl/peripherals/design_top_interface.sv), in its order:
-# (port, capability, signal, width from the parameters above)
+# (port, capability, signal, width): a fixed width, or the design_top
+# parameter (design_top_widths) that sets it, as the interface declares it
 DESIGN_PORTS = (
-    ("clk",        "clock",          "clk",      lambda p: 1),
-    ("rst",        "reset",          "rst",      lambda p: 1),
-    ("sw",         "switches",       "sw",       lambda p: p["w_sw"]),
-    ("btn",        "buttons",        "btn",      lambda p: p["w_btn"]),
-    ("led",        "leds",           "led",      lambda p: p["w_led"]),
-    ("abcdefgh",   "seven_segment",  "abcdefgh", lambda p: 8),
-    ("digit",      "seven_segment",  "digit",    lambda p: p["w_digit"]),
-    ("rgb_r",      "rgb_leds",       "r",        lambda p: p["w_rgb_led"]),
-    ("rgb_g",      "rgb_leds",       "g",        lambda p: p["w_rgb_led"]),
-    ("rgb_b",      "rgb_leds",       "b",        lambda p: p["w_rgb_led"]),
-    ("x",          "screen",         "x",        lambda p: _clog2(p["screen_width"]) if p["screen_width"] > 0 else 1),
-    ("y",          "screen",         "y",        lambda p: _clog2(p["screen_height"]) if p["screen_height"] > 0 else 1),
-    ("red",        "screen",         "red",      lambda p: p["w_red"]),
-    ("green",      "screen",         "green",    lambda p: p["w_green"]),
-    ("blue",       "screen",         "blue",     lambda p: p["w_blue"]),
-    ("mic_sample", "audio_in",       "sample",   lambda p: 24),
-    ("mic_valid",  "audio_in",       "valid",    lambda p: 1),
-    ("sound",      "audio_out",      "sample",   lambda p: 16),
-    ("uart_rx",    "serial_console", "rx",       lambda p: 1),
-    ("uart_tx",    "serial_console", "tx",       lambda p: 1),
-    ("gpio",       "gpio",           "io",       lambda p: p["w_gpio"]),
+    ("clk",        "clock",          "clk",      1),
+    ("rst",        "reset",          "rst",      1),
+    ("sw",         "switches",       "sw",       "w_sw"),
+    ("btn",        "buttons",        "btn",      "w_btn"),
+    ("led",        "leds",           "led",      "w_led"),
+    ("abcdefgh",   "seven_segment",  "abcdefgh", 8),
+    ("digit",      "seven_segment",  "digit",    "w_digit"),
+    ("rgb_r",      "rgb_leds",       "r",        "w_rgb_led"),
+    ("rgb_g",      "rgb_leds",       "g",        "w_rgb_led"),
+    ("rgb_b",      "rgb_leds",       "b",        "w_rgb_led"),
+    ("x",          "screen",         "x",        "w_x"),
+    ("y",          "screen",         "y",        "w_y"),
+    ("red",        "screen",         "red",      "w_red"),
+    ("green",      "screen",         "green",    "w_green"),
+    ("blue",       "screen",         "blue",     "w_blue"),
+    ("mic_sample", "audio_in",       "sample",   24),
+    ("mic_valid",  "audio_in",       "valid",    1),
+    ("sound",      "audio_out",      "sample",   16),
+    ("uart_rx",    "serial_console", "rx",       1),
+    ("uart_tx",    "serial_console", "tx",       1),
+    ("gpio",       "gpio",           "io",       "w_gpio"),
 )
+
+
+def design_top_widths(parameters):
+    """design_top's parameters plus the widths it derives from them (w_x /
+    w_y: $clog2 of the screen size, 1 without one)."""
+    out = OrderedDict(parameters)
+    out["w_x"] = _clog2(parameters["screen_width"]) if parameters["screen_width"] > 0 else 1
+    out["w_y"] = _clog2(parameters["screen_height"]) if parameters["screen_height"] > 0 else 1
+    return out
+
+
+def design_port_width(width, widths):
+    """A DESIGN_PORTS width for design_top_widths() values."""
+    return widths[width] if isinstance(width, str) else width
 
 
 def _emit_lab_top(resolved, plans):

@@ -619,3 +619,11 @@ def test_every_design_requirement_parses_and_names_design_parameters():
         for cap, req in design_requirements.parse(p).items():
             for w in req.get("when") or []:
                 design_requirements.condition_holds(w["condition"], params)   # raises on a bad name
+
+
+def test_design_requirements_colour_depth_is_the_design_widths():
+    from tools import design_requirements
+    resolved = config_init.resolve_configuration("arty_a7_35_pmod_mic3")     # 4-4-4
+    assert design_requirements.check(resolved, {"screen": {"min_width": 640, "min_height": 480, "min_color_depth": 444}}) == []
+    errs = design_requirements.check(resolved, {"screen": {"min_width": 640, "min_height": 480, "min_color_depth": 888}})
+    assert len(errs) == 1 and "4/4/4 (rgb12)" in errs[0] and "8/8/8" in errs[0], errs

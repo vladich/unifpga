@@ -220,11 +220,19 @@ def _unmet(config_id, cap_id, req, provided, parameters):
                 "Configuration '{c}': screen height {h} < required {rh}{w}"
                 .format(c=config_id, h=provided.get("height"), rh=req["min_height"], w=_when(req)))
         if req.get("min_color_depth"):
-            # Treat 444/565/888 as ordered integers.
-            if (provided.get("color_depth") or 0) < req["min_color_depth"]:
+            # @444 / @565 / @888: bits per channel, against the widths design_top is given
+            depth = str(req["min_color_depth"])
+            if len(depth) != 3:
+                raise ValueError("screen @{}: a colour depth is three digits, bits of red, green and blue "
+                                 "(@444, @565, @888)".format(depth))
+            need = [int(ch) for ch in depth]
+            have = [parameters.get("w_" + c) or 0 for c in ("red", "green", "blue")]
+            if any(h < n for h, n in zip(have, need)):
                 errors.append(
-                    "Configuration '{c}': screen color_depth {a} < required {n}{w}"
-                    .format(c=config_id, a=provided.get("color_depth"), n=req["min_color_depth"], w=_when(req)))
+                    "Configuration '{c}': screen gives design_top w_red/w_green/w_blue = {a} (rgb{s}), "
+                    "the design needs {n} (@{d}){w}"
+                    .format(c=config_id, a="/".join(map(str, have)), s=sum(have), n="/".join(map(str, need)),
+                            d=req["min_color_depth"], w=_when(req)))
     return errors
 
 

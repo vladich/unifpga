@@ -88,6 +88,18 @@ function devicePorts() {
 }
 // a port's design_top name (mic_sample, rgb_r, uart_tx, ...)
 function portName(p) { return p.design_port || p.capability + "." + p.signal; }
+function designParams() { return (S.ev && S.ev.trace && S.ev.trace.parameters) || {}; }
+// "w_red = 4": a port whose width is a design_top parameter the rig sets
+function widthText(p) { return p.width_parameter ? p.width_parameter + " = " + (p.width || 0) : ""; }
+// the screen variant design_top is given: rgb12 (4-4-4), rgb16 (5-6-5), ...
+function screenVariant() {
+  const q = designParams(), c = ["w_red", "w_green", "w_blue"].map((k) => q[k] || 0);
+  return "rgb" + (c[0] + c[1] + c[2]) + " (" + c.join("-") + ")";
+}
+function providersText(p) {
+  return p.providers.map((pr) => { const a = attachOf(pr.attach_index) || {}, prm = Object.entries(a.params || {});
+    return useLabel(S.setup.use[pr.attach_index] || {}) + " (" + pr.peripheral + (prm.length ? ": " + prm.map(([k, v]) => k + " = " + v).join(", ") : "") + ")"; }).join("; ");
+}
 
 // design bits a pinmap ref carries, with the port and the providing use
 function designBitsOfRef(ref) {
@@ -117,9 +129,22 @@ function bitRange(port, bits) {
 // why a connection goes to several bits rather than to one
 function wholePortText(ed, p) {
   const n = (ed.bits || []).length;
+  if (ed.relation === "or") return "the " + ed.via + " driver ORs " + bitRange(ed.design_port, ed.bits) + " onto this one pin";
   return n > 1 ? "no single bit: the " + ed.via + " driver carries " + bitRange(ed.design_port, ed.bits) +
                  " over this one pin (shifted serially / time-multiplexed, or as timing such as a sync)"
                : "the pin carries " + bitRange(ed.design_port, ed.bits || []) + " through the " + ed.via + " driver";
+}
+
+// how a driver relates a pin to design bits (tools/trace.py _fit), in words
+function relationText(ed, p) {
+  if (ed.bit === null) return wholePortText(ed, p);
+  const pin = pinLabel(ed) + " ↔ " + ed.design_port + "[" + ed.bit + "]";
+  if (ed.relation === "msb") {
+    const w = p.width || 0, npins = ((attachOf(ed.use) || {}).pins || {})[ed.signal] || [];
+    return "the driver keeps the top " + npins.length + " of " + w + " bits (" + pin + "); " +
+           bitRange(ed.design_port, [...Array(Math.max(w - npins.length, 0)).keys()]) + " reach no pin";
+  }
+  return "bit for bit (" + pin + ")";
 }
 
 // one design bit <-> pin edge, spelled out
@@ -128,7 +153,7 @@ function edgeText(ed) {
   const where = hp ? c.label + " pin " + hp.split(".")[1] + " = " + ed.ref : ed.ref;
   const use = S.setup.use[ed.use];
   const p = ports().find((q) => q.design_port === ed.design_port);
-  return "design " + (ed.bit === null ? bitRange(ed.design_port, ed.bits || []) + " (together, over this one pin)"
+  return "design " + (ed.bit === null ? bitRange(ed.design_port, ed.bits || []) + (ed.relation === "or" ? " (ORed onto this one pin)" : " (together, over this one pin)")
                                       : ed.design_port + "[" + ed.bit + "]") +
          (ed.via ? "  →  " + ed.via + " (driver)" : "  →  directly") +
          "  →  " + where + " = FPGA " + (ed.pin || "?") + (use ? "   [" + useLabel(use) + (ed.signal ? " " + ed.signal : "") + "]" : "");
@@ -234,8 +259,24 @@ function draw() {
   // virtual device
   let y = top + 24;
   svg.append(el("text", {x: VX, y: top + 8, "font-weight": "bold", "font-size": 14}, "Virtual device (design_top)"));
+  svg.append(el("text", {x: VX + 190, y: top + 8, "font-size": 9, fill: "#7048e8"}, "w_… = a width this rig gives the design"));
   const portRows = [];
+  const captioned = new Set();
   for (const p of devicePorts()) {
+    // a capability whose ports are sized by several parameters gets a line naming the variant
+    if (p.capability === "screen" && p.providers.length && !captioned.has("screen")) {
+      captioned.add("screen");
+      const q = designParams();
+      const cap = el("text", {x: VX, y: y + 9, "font-size": 10, fill: "#7048e8", class: "clickable"},
+                     "screen " + q.screen_width + "×" + q.screen_height + ", " + screenVariant() + " — parameters, set by " +
+                     p.providers.map((pr) => useLabel(S.setup.use[pr.attach_index] || {})).join(", "));
+      cap.append(el("title", {}, "design_top is parameterized: screen_width / screen_height and w_red / w_green / w_blue come from the rig. " +
+                                 "This rig gives " + screenVariant() + "; other rigs give other colour depths, and a design reads the parameters " +
+                                 "(or asks for a depth with `// requires: screen >= 640x480@888`)."));
+      target(cap, {kind: "vport", cap: p.capability, signal: "red"});
+      svg.append(cap);
+      y += 16;
+    }
     let width = p.width || 0;
     for (const pr of p.providers) for (const b of pr.bits || []) if (b.design_bit !== null) width = Math.max(width, b.design_bit + 1);
     const perBit = p.providers.some((pr) => pr.bits);
@@ -245,9 +286,13 @@ function draw() {
                     hi.vports.has(p.capability + "." + p.signal);
     g.append(el("text", {x: VX, y: y + 11, "font-size": 12, fill: selPort ? "var(--sel)" : none ? "#adb5bd" : "#212529"},
                 portName(p) + (width > 1 ? "[" + (width - 1) + ":0]" : "")));
-    g.append(el("text", {x: VX, y: y + 22, "font-size": 9, fill: "#868e96"}, p.capability + "." + p.signal));
-    g.append(el("title", {}, "design_top " + portName(p) + (width > 1 ? "[" + (width - 1) + ":0]" : "") + " — capability " +
-                             p.capability + "." + p.signal + " (" + (p.direction || "") + ")" + (none ? " — nothing in the rig provides it" : "")));
+    const sub = el("text", {x: VX, y: y + 22, "font-size": 9, fill: "#868e96"});
+    if (p.width_parameter) sub.append(el("tspan", {fill: "#7048e8"}, widthText(p) + " · "));
+    sub.append(el("tspan", {}, p.capability + "." + p.signal));
+    g.append(sub);
+    g.append(el("title", {}, "design_top " + portName(p) + (p.width_parameter ? "[" + p.width_parameter + " - 1 : 0]" : width > 1 ? "[" + (width - 1) + ":0]" : "") +
+                             (p.width_parameter ? " — " + widthText(p) + " on this rig (a design_top parameter; other rigs give other widths)" : "") +
+                             " — capability " + p.capability + "." + p.signal + " (" + (p.direction || "") + ")" + (none ? " — nothing in the rig provides it" : "")));
     target(g.firstChild, {kind: "vport", cap: p.capability, signal: p.signal});
     svg.append(g);
     const cells = Math.max(width, 1), per = 14;
@@ -847,6 +892,14 @@ function details() {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
     if (!p) return;
     d.append(h("h4", {}, "design " + p.signal + (sel.kind === "vbit" ? "[" + sel.bit + "]" : "") + "  (" + p.capability + ", " + p.direction + ")"));
+    const facts = [["Width", p.width_parameter
+      ? widthText(p) + " — a design_top parameter (" + portName(p) + "[" + p.width_parameter + " - 1 : 0]): this rig sets it, other rigs give other widths, and a design reads " + p.width_parameter
+      : (p.width || 0) + " bit" + (p.width === 1 ? "" : "s") + ", fixed by the design_top interface"]];
+    if (p.capability === "screen" && p.providers.length)
+      facts.push(["Screen", designParams().screen_width + "×" + designParams().screen_height + ", " + screenVariant() +
+                            " on this rig; a design that needs more colour asks for it (`// requires: screen >= 640x480@888`)"]);
+    if (p.providers.length) facts.push(["Set by", providersText(p)]);
+    d.append(h("table", {class: "facts"}, ...facts.map(([k, v]) => h("tr", {}, h("th", {}, k), h("td", {}, v)))));
     for (const pr of p.providers) {
       const use = uses[pr.attach_index] || {};
       const bits = (pr.bits || []).filter((b) => sel.kind === "vport" || b.design_bit === sel.bit);
@@ -961,8 +1014,7 @@ function connectionPanel(d, ed) {
   if (ed.via) {
     rows.push(["Driver", ed.via + (per.driver_file ? "  (" + per.driver_file + ")" : "")]);
     if (link) rows.push(["Driver ports", "design side ." + link.port_at + ", pin side ." + link.driver_port]);
-    rows.push(["Bit relation", ed.bit === null ? wholePortText(ed, p)
-                                               : "bit for bit (pin " + ed.signal + "[" + ed.bit + "] ↔ " + ed.design_port + "[" + ed.bit + "])"]);
+    rows.push(["Bit relation", relationText(ed, p)]);
   }
   rows.push(["Peripheral signal", (ed.signal || (p.signal || "")) + (a.peripheral ? " of " + a.peripheral : "")]);
   rows.push(["Pinmap entry", ed.ref]);
@@ -1011,7 +1063,9 @@ function driverPanel(d, sel) {
     for (const n of an.edges) d.append(item(n, designLabel(all[n]) + (all[n].bit === null && (all[n].bits || []).length > 1 ? "  (together)" : "")));
   } else {
     d.append(h("h4", {}, "design " + an.label + "  ↔  " + dr.via + " driver"));
-    d.append(h("p", {}, an.edges.length > 1
+    const rel = all[an.edges[0]].relation;
+    d.append(h("p", {}, rel === "or" ? "The driver ORs these design bits onto one pin:"
+      : an.edges.length > 1
       ? "The driver connects these design bits to " + an.edges.length + " of its pins; each pin carries them together " +
         "(data, clock, strobe or timing), not one pin per bit:"
       : "The driver connects these design bits to one pin:"));
@@ -1454,6 +1508,15 @@ async function selftest() {
       ok("a driver's panel lists its pins and design bits", $("details").textContent.includes("Its pins") && $("details").textContent.includes(bd.via));
       ok("the legend names the drivers present", $("svg").textContent.includes(bd.via + ")") || $("svg").textContent.includes(bd.via + ","));
     }
+    // widths the rig sets are shown as design_top parameters
+    const pp = ports().find((q) => q.width_parameter && q.providers.length);
+    if (pp) {
+      ok("a parameterized port shows its parameter", $("svg").textContent.includes(widthText(pp)));
+      select({kind: "vport", cap: pp.capability, signal: pp.signal});
+      ok("its panel says the width is a design_top parameter set by the rig", $("details").textContent.includes("a design_top parameter"));
+    }
+    if (ports().some((q) => q.capability === "screen" && q.providers.length))
+      ok("the screen variant is named", $("svg").textContent.includes(screenVariant()));
     // parts the design-wiring profile leaves out are marked and explained
     for (const x of (S.ev.profile_drops || []).slice(0, 1)) {
       select({kind: "use", use: x.use});
