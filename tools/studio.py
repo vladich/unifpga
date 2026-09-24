@@ -104,7 +104,7 @@ def board_data(board_id):
                         "attach": variants[0]["attach"], "pins": variants[0]["pins"]})
     peripherals = config_init.read_peripherals()
     modules = su.read_modules()
-    used = {m["peripheral"] for m in modules.values()} | {"gpio_header"} | \
+    used = {m["peripheral"] for m in modules.values()} | {su.gpio_passthrough()[0]} | \
            {attach["peripheral"] for o in layout.get("onboard") or [] for _v, _l, attach in su.onboard_variants(o)}
     return {
         "board": board_id,
@@ -120,7 +120,13 @@ def board_data(board_id):
         "setups": sorted(s for s, v in su.read_setups().items() if v["board"] == board_id),
         "capabilities": [{"id": cid, "aggregation": c.get("aggregation"),
                           "signals": [{"name": s["name"], "direction": s.get("direction")}
-                                      for s in c.get("signals") or []]}
+                                      for s in c.get("signals") or []],
+                          # what the editor says about it: every rig needs one (clock), the
+                          # peripheral `gpio:` attaches, a summary line of its design_top
+                          # parameters, their names, and the WxH its requirements compare
+                          "required": bool(c.get("required")), "passthrough": c.get("passthrough"),
+                          "summary": c.get("summary"), "size": c.get("size"), "depth": c.get("depth"),
+                          "design_parameters": list(((c.get("design") or {}).get("parameters") or {}))}
                          for cid, c in config_init.read_capabilities().items()],
         "toolchains": sorted(config_init.read_toolchains()),
         "designs": list_designs(),
@@ -380,7 +386,7 @@ def part_status(setup, kept, excluded, resolved, trace, profile_path, drops):
                 if cid not in first:
                     first[cid] = k
                 elif first[cid] != k:
-                    ports = [p for p, c, _s, _w in codegen.DESIGN_PORTS if c == cid]
+                    ports = [p for p, c, _s, _w in codegen.design_ports() if c == cid]
                     reasons.setdefault(k, []).append(("exclusive", (
                         "design_top has one {} ({}) and {} already provides it; the build keeps the first "
                         "provider, so this part's {} does not reach the design. Remove one of them.").format(
@@ -546,7 +552,7 @@ def verilog_view(setup, target):
                                        ", ".join(unused) + " (nothing in the rig is wired there)"]))
     port = target.get("design_port")
     if port:
-        entry = next((e for e in codegen.DESIGN_PORTS if e[0] == port), None)
+        entry = next((e for e in codegen.design_ports() if e[0] == port), None)
         hi.update(k for k in range(lab_start, len(lines)) if re.match(r"^\s*\." + re.escape(port) + r"\(", lines[k]))
         if entry and span:
             bus = "cap_{}_{}".format(entry[1], entry[2])

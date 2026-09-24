@@ -95,7 +95,7 @@ def draft(board_id):
         if cfg["board"] != board_id:
             continue
         for a in cfg.get("attach") or []:
-            if a["peripheral"] == "gpio_header" or set(a) - {"peripheral", "params", "bind"}:
+            if a["peripheral"] == su.gpio_passthrough()[0] or set(a) - {"peripheral", "params", "bind"}:
                 continue
             banks = _banks_of(list((a.get("bind") or {}).values()))
             if not banks or banks & set(headers):

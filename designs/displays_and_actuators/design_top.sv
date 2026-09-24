@@ -1,36 +1,12 @@
-// =============================================================================
-// THE VIRTUAL DEVICE INTERFACE
+// A small display, a character display and actuators together: the
+// character LCD greets and counts seconds in hex, the OLED draws a frame and
+// a sweeping bar, switch i turns actuator i on and the actuators' levels
+// (servo positions) sweep back and forth.
 //
-// This file defines the canonical port list every user-written `design_top`
-// targets. The interface is identical on every supported configuration. Per-
-// configuration widths (number of switches, presence of a screen, etc.) come
-// from `parameter` overrides set by the codegen-generated top module.
-//
-// Capabilities a particular board lacks are declared with width 0; SystemVerilog
-// vectors of width 0 are zero-element arrays (no driver, no consumer), which
-// silently optimize away. User code that references e.g. `led[3]` on a board
-// with `w_led = 2` produces a synthesis error — which is the correct behaviour:
-// the design requires more than the board provides, surface the mismatch.
-//
-// To write a new design, copy the body of this file into your project as
-// `design_top.sv` and add your logic. Never rename the ports or change their
-// directions — every board adapter binds to these names.
-//
-// To declare hard capability requirements that synthesize.py should check
-// before building, add a `// requires:` block before the module keyword.
-// Example:
-//
-//     // requires:
-//     //   switches >= 4
-//     //   leds     >= 4
-//     //   buttons  >= 2
-//     //   screen   >= 640x480
-//     //   audio_in
-//     //   serial_console
-//
-// `synthesize.py` parses that block and fails fast if the chosen configuration
-// doesn't meet the requirements.
-// =============================================================================
+// requires:
+//   small_display
+//   text_display >= 16x2
+//   actuators >= 1
 
 module design_top
 # (
@@ -136,10 +112,67 @@ module design_top
     output logic [w_act_level - 1 : 0] act_level
 );
 
-    // -------------------------------------------------------------------------
-    // Default tie-offs. Override below as needed.
-    // -------------------------------------------------------------------------
-    assign led      = '0;
+    // ---- a second counter ---------------------------------------------------
+    localparam int CYC_S = clk_mhz * 1000 * 1000;
+    logic [$clog2(CYC_S + 1) - 1:0] cyc;
+    logic [31:0] seconds;
+    logic [23:0] fast;          // ~ 6 Hz .. 12 Hz steps for the animations
+
+    always_ff @ (posedge clk)
+        if (rst)
+        begin
+            cyc     <= '0;
+            seconds <= '0;
+            fast    <= '0;
+        end
+        else
+        begin
+            fast <= fast + 1'd1;
+            if (cyc == CYC_S - 1)
+            begin
+                cyc     <= '0;
+                seconds <= seconds + 1'd1;
+            end
+            else
+                cyc <= cyc + 1'd1;
+        end
+
+    // ---- character display: a greeting and the seconds in hex ---------------
+    function automatic [7:0] hex (input [3:0] v);
+        hex = v < 10 ? 8'h30 + v : 8'h41 + v - 10;
+    endfunction
+
+    localparam string GREETING = "unifpga  hello! ";
+
+    always_comb
+        if (txt_row == 0)
+            txt_char = txt_col < GREETING.len () ? GREETING [txt_col] : 8'h20;
+        else if (txt_col < 8)
+            txt_char = hex (seconds [4 * (7 - txt_col) +: 4]);
+        else
+            txt_char = 8'h20;
+
+    // ---- small display: a frame and a bar that sweeps across ----------------
+    wire [w_sd_x - 1:0] bar = w_sd_x' (fast [23 -: 8] % (sd_width > 0 ? sd_width : 1));
+
+    assign sd_pixel = w_sd_pixel' (   sd_x == 0 || sd_x == sd_width  - 1
+                                   || sd_y == 0 || sd_y == sd_height - 1
+                                   || sd_x == bar);
+
+    // ---- actuators: switch i turns actuator i on, the levels sweep ----------
+    wire [7:0] sweep = fast [23] ? ~ fast [22 -: 8] : fast [22 -: 8];
+
+    for (genvar i = 0; i < w_act; i++)
+    begin : g_act
+        if (i < w_sw)
+            assign act_on [i] = sw [i];
+        else
+            assign act_on [i] = 1'b1;
+        assign act_level [8 * i +: 8] = sweep + 8' (i * 64);
+    end
+
+    // ---- the rest -----------------------------------------------------------
+    assign led      = w_led' (act_on);
     assign abcdefgh = '0;
     assign digit    = '0;
     assign rgb_r    = '0;
@@ -150,13 +183,5 @@ module design_top
     assign blue     = '0;
     assign sound    = '0;
     assign uart_tx  = 1'b1;
-    assign sd_pixel  = '0;
-    assign txt_char  = 8'h20;    // a space
-    assign act_on    = '0;
-    assign act_level = '0;
-
-    // -------------------------------------------------------------------------
-    // User logic goes here.
-    // -------------------------------------------------------------------------
 
 endmodule

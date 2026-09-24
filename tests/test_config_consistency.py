@@ -605,7 +605,11 @@ def test_design_requirements_widths_are_design_top_parameters():
     from tools import codegen, design_requirements
     resolved = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
     params = design_requirements.design_parameters(resolved)
-    assert set(codegen.CAPABILITY_WIDTH_PARAMETER.values()) <= set(params)
+    caps = config_init.read_capabilities()
+    widths = {c: codegen.capability_width_parameter(c) for c in caps}
+    assert {w for w in widths.values() if w} == {"w_sw", "w_btn", "w_led", "w_digit", "w_rgb_led", "w_gpio", "w_act"}
+    # an optional capability's parameter reaches design_top only with a provider (or the design declaring it)
+    assert {w for c, w in widths.items() if w and not caps[c].get("optional")} <= set(params) and "w_act" not in params
     assert design_requirements.check(resolved, {"leds": {"min_width": params["w_led"]}}) == []
     errs = design_requirements.check(resolved, {"leds": {"min_width": params["w_led"] + 1}})
     assert len(errs) == 1 and "w_led={}".format(params["w_led"]) in errs[0], errs

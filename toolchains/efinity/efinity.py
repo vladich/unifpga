@@ -108,7 +108,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     if generated_top is None:
         generated_top = os.path.join(output, "top.sv")
         with open(generated_top, "w") as f:
-            f.write(codegen.emit_top_sv(resolved))
+            f.write(codegen.emit_top_sv(resolved, design=top))
 
     device = (board.get("Part") or "").strip()
     family = (board.get("PartFamily") or "Trion").strip()

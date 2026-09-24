@@ -134,7 +134,7 @@ def main(argv=None):
         from tools import codegen
         top_path = os.path.join(output_folder, "top.sv")
         try:
-            top_text = codegen.emit_top_sv(resolved)
+            top_text = codegen.emit_top_sv(resolved, design=args.top)
         except codegen.CodegenError as exc:
             log.error("Configuration '%s' cannot be built (audit code GEN-ERROR):\n%s",
                       cfg["id"], exc)

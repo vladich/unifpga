@@ -382,7 +382,7 @@ def test_design_ports_follow_the_design_top_interface():
         text = f.read()
     body = text[text.index(")\n(") + 3:text.index(");")]
     declared = re.findall(r"^\s*(?:input|output|inout)\b[^\n]*?(\w+)\s*,?\s*(?://[^\n]*)?$", body, re.M)
-    assert [p for p, *_ in codegen.DESIGN_PORTS] == declared
+    assert [p for p, *_ in codegen.design_ports()] == declared
     r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
     ports = {p["design_port"]: p for p in trace.trace(r)["ports"]}
     assert (ports["x"]["width"], ports["y"]["width"], ports["red"]["width"]) == (10, 9, 4)
@@ -422,7 +422,7 @@ def test_design_port_widths_are_the_interface_declarations():
             hi = rng[1:-1].split(":")[0].strip()
             p = re.match(r"^(\w+)\s*-\s*1$", hi)
             declared[port] = p.group(1) if p else int(hi) + 1
-    assert {p: w for p, _c, _s, w in codegen.DESIGN_PORTS} == declared
+    assert {p: w for p, _c, _s, w in codegen.design_ports()} == declared
     r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
     t = trace.trace(r)
     red = [p for p in t["ports"] if p["design_port"] == "red"][0]

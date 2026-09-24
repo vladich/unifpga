@@ -83,13 +83,13 @@ def cmd_generate(args):
         resolved = config_init.resolve_configuration(cfg_id)
         strict_ok = True
         try:
-            text = codegen.emit_top_sv(resolved, strict=True)
+            text = codegen.emit_top_sv(resolved, strict=True, design=design_top)
         except codegen.CodegenError:
             strict_ok = False
             if not args.all:
                 n_skipped += 1
                 continue
-            text = codegen.emit_top_sv(resolved, strict=False)
+            text = codegen.emit_top_sv(resolved, strict=False, design=design_top)
         d = os.path.join(tops_dir, cfg_id)
         os.makedirs(d, exist_ok=True)
         top_path = os.path.join(d, "top.sv")

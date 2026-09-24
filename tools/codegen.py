@@ -146,16 +146,6 @@ def clock_active(clock_def, attach):
     return True
 
 
-_PRIMARY_PARAM = {
-    "switches":      "width",
-    "buttons":       "width",
-    "leds":          "width",
-    "rgb_leds":      "count",
-    "seven_segment": "digits",
-    "gpio":          "width",
-}
-
-
 def build_capability_plans(resolved):
     capabilities = config_init.read_capabilities()
     plans = OrderedDict((cid, CapabilityPlan(cid, cdef)) for cid, cdef in capabilities.items())
@@ -192,7 +182,7 @@ def build_capability_plans(resolved):
             _, _, params = plan.providers[0]
             plan.params = dict(params)
         elif plan.aggregation == "concat":
-            primary = _PRIMARY_PARAM.get(plan.id, "width")
+            primary = capability_primary(plan.id, plan.cap)
             explicit = {pidx: resolved["peripherals"][pidx].get("lab_bits", {}).get(plan.id)
                         for pidx, _perif, _params in plan.providers
                         if resolved["peripherals"][pidx].get("lab_bits", {}).get(plan.id) is not None}
@@ -1244,8 +1234,9 @@ def validate_configuration(resolved, plans=None):
 # Phase 3: emit SV
 # ---------------------------------------------------------------------------
 
-def emit_top_sv(resolved, strict=True):
-    """Generate top.sv. With `strict` (the default, what synthesize.py uses)
+def emit_top_sv(resolved, strict=True, design=None):
+    """Generate top.sv (`design`: the design_top source, text or path, when
+    known; it decides which optional capabilities reach design_top). With `strict` (the default, what synthesize.py uses)
     any wiring problem found by validate_configuration() raises CodegenError
     instead of producing a top that silently drops or shorts signals."""
     cfg = resolved["configuration"]
@@ -1315,7 +1306,7 @@ def emit_top_sv(resolved, strict=True):
     if merge:
         out.extend(merge)
         out.append("")
-    out.extend(_emit_lab_top(resolved, plans))
+    out.extend(_emit_lab_top(resolved, plans, design))
     out.append("")
     out.append("endmodule")
     return "\n".join(out)
@@ -1684,49 +1675,21 @@ def _signal_width(plan, sig):
     """Resolve a capability signal's bit width using the plan's params."""
     raw = sig.get("width")
     if raw is None:
-        # Default for 'bus' signals (e.g. screen.x/y) — derive from params.
-        if plan.id == "screen" and sig["name"] == "x":
-            from math import ceil, log2
-            w = plan.params.get("width", 1) or 1
-            return max(1, int(ceil(log2(max(2, w)))))
-        if plan.id == "screen" and sig["name"] == "y":
-            from math import ceil, log2
-            h = plan.params.get("height", 1) or 1
-            return max(1, int(ceil(log2(max(2, h)))))
-        if plan.id == "screen" and sig["name"] in ("red", "green", "blue"):
-            return _screen_channel_width(plan.params, sig["name"])
-        return 1
+        # no width of its own: the design port's it feeds (screen x, red)
+        w = _signal_contract_width(plan, sig["name"])
+        return int(w) if w else 1
     if isinstance(raw, str) and raw.startswith("$"):
         key = raw[1:]
         v = plan.params.get(key)
         if v is None:
             return 1
-        return int(v)
+        return int(v) * _signal_unit(sig)
     return int(raw)
 
 
-def _screen_channel_width(params, channel):
-    """User-visible bits for one colour channel: an explicit `bits_r/g/b`
-    capability param (design_top's w_red/w_green/w_blue) wins over `color_depth`."""
-    explicit = (params or {}).get("bits_" + channel[0])
-    if explicit:
-        return int(explicit)
-    return _channel_width((params or {}).get("color_depth", 444), channel)
-
-
-def _channel_width(depth, channel):
-    """Bits per colour channel for a screen `color_depth` (444 / 565 / 888,
-    plus 111 for one-bit-per-channel displays such as HUB75 panels and
-    resistor-less VGA)."""
-    if depth == 111:
-        return 1
-    if depth == 444:
-        return 4
-    if depth == 565:
-        return {"red": 5, "green": 6, "blue": 5}[channel]
-    if depth == 888:
-        return 8
-    return 4
+def _signal_unit(sig):
+    """Bits per unit of a mapped signal (actuators.level: 8 per actuator)."""
+    return int((sig or {}).get("unit") or 1)
 
 
 # ---- Attachment emission --------------------------------------------------
@@ -2177,8 +2140,9 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
                 if (plan is not None and plan.aggregation == "concat"
                         and len(plan.providers) > 1
                         and slice_for_idx in plan.offsets):
-                    off = plan.offsets[slice_for_idx]
-                    w = plan.widths[slice_for_idx]
+                    unit = _signal_unit(next((x for x in plan.cap.get("signals", []) if x["name"] == sig), None))
+                    off = plan.offsets[slice_for_idx] * unit
+                    w = plan.widths[slice_for_idx] * unit
                     idx_suffix = "[{}]".format(off) if w == 1 else "[{}:{}]".format(off+w-1, off)
             return invert + base + idx_suffix
     if s.startswith("context."):
@@ -2361,151 +2325,303 @@ def _gpio_connection(resolved, plans):
 
 
 # ---- design_top instantiation -----------------------------------------------
+#
+# What design_top gets from each capability is the capability's own data
+# (config/capabilities/<id>.yml, `design:`): the parameters it sets, the widths
+# the interface derives from them and the ports it connects. The order is
+# rtl/peripherals/design_top_interface.sv's. A capability marked `optional`
+# (small_display, text_display, actuators) reaches design_top only when the
+# design declares its parameters and ports, so designs that don't use it are
+# untouched; without the design at hand (a bare configuration), only when the
+# configuration provides it.
 
-# capability -> the design_top parameter giving its width
-CAPABILITY_WIDTH_PARAMETER = OrderedDict([
-    ("switches",      "w_sw"),
-    ("buttons",       "w_btn"),
-    ("leds",          "w_led"),
-    ("seven_segment", "w_digit"),
-    ("rgb_leds",      "w_rgb_led"),
-    ("gpio",          "w_gpio"),
-])
+DESIGN_INTERFACE = os.path.join(REPO, "rtl", "peripherals", "design_top_interface.sv")
+
+# named values a contract may refer to (`{source: <name>}`): what the top
+# computes itself rather than reads from a capability parameter
+_SOURCES = {
+    "lab_clock_mhz": lambda resolved, plans, plan: _lab_mhz_int(lab_clock(resolved, plans), resolve_clock(resolved, plans)),
+    "lab_width":     lambda resolved, plans, plan: _lab_width(resolved, plan),
+    "lab_clock_net": lambda resolved, plans, plan: lab_clock(resolved, plans)["net"],
+    "reset_net":     lambda resolved, plans, plan: "rst",
+    "uart_rx_idle":  lambda resolved, plans, plan: "1'b{}".format(_uart_rx_idle(resolved)),
+}
+
+DesignParameter = namedtuple("DesignParameter", "name capability spec optional")
+DesignPort = namedtuple("DesignPort", "name capability signal width spec optional")
+
+_CONTRACT = {}
 
 
-def design_top_parameters(resolved, plans):
+def _strip_sv_comments(text):
+    return re.sub(r"/\*.*?\*/", " ", re.sub(r"//[^\n]*", "", text), flags=re.S)
+
+
+def _split_top(text):
+    """`text` split on the commas outside brackets and parentheses."""
+    out, depth, cur = [], 0, []
+    for ch in text:
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        if ch == "," and depth == 0:
+            out.append("".join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+    out.append("".join(cur))
+    return [c for c in (x.strip() for x in out) if c]
+
+
+def design_declarations(source, module="design_top"):
+    """(parameter names, port names) `module` declares, from the SystemVerilog
+    text or file `source` (ANSI headers); None when it has no such module."""
+    if source and os.path.exists(str(source)):
+        with open(source, encoding="utf-8", errors="replace") as f:
+            source = f.read()
+    text = _strip_sv_comments(source or "")
+    m = re.search(r"\bmodule\s+{}\b".format(re.escape(module)), text)
+    if not m:
+        return None
+    pos = m.end()
+
+    def group(start):
+        # the (...) that opens at `start` (after whitespace), and where it ends
+        i = start
+        while i < len(text) and text[i].isspace():
+            i += 1
+        if i >= len(text) or text[i] != "(":
+            return None, start
+        depth = 0
+        for j in range(i, len(text)):
+            depth += text[j] == "("
+            depth -= text[j] == ")"
+            if depth == 0:
+                return text[i + 1:j], j + 1
+        return None, start
+
+    params = []
+    rest = text[pos:].lstrip()
+    if rest.startswith("#"):
+        body, pos = group(text.index("#", pos) + 1)
+        for chunk in _split_top(body or ""):
+            name = re.search(r"(\w+)\s*(?:\[[^\]]*\]\s*)*(?:=|$)", chunk.split("=")[0].strip() + "=")
+            if name:
+                params.append(name.group(1))
+    body, _ = group(pos)
+    ports = []
+    for chunk in _split_top(body or ""):
+        name = re.search(r"(\w+)\s*(?:\[[^\]]*\]\s*)*$", chunk.split("=")[0].strip())
+        if name:
+            ports.append(name.group(1))
+    return params, ports
+
+
+def design_contract():
+    """The design_top contract: (parameters, derived widths, ports), each in
+    the interface's order, from the capabilities' `design:` data."""
+    cap_dir = os.path.join(REPO, "config", "capabilities")
+    key = tuple((f, os.stat(f).st_mtime_ns, os.stat(f).st_size) for f in
+                [DESIGN_INTERFACE] + sorted(os.path.join(cap_dir, n) for n in os.listdir(cap_dir) if n.endswith(".yml")))
+    if _CONTRACT.get("key") == key:
+        return _CONTRACT["value"]
+    capabilities = config_init.read_capabilities()
+    order_params, order_ports = design_declarations(DESIGN_INTERFACE) or ([], [])
+    params, derived, ports = {}, {}, {}
+    for cid, cap in capabilities.items():
+        design = cap.get("design") or {}
+        optional = bool(cap.get("optional"))
+        for name, spec in (design.get("parameters") or {}).items():
+            params[name] = DesignParameter(name, cid, spec, optional)
+        for name, spec in (design.get("derived") or {}).items():
+            derived[name] = DesignParameter(name, cid, spec, optional)
+        for name, spec in (design.get("ports") or {}).items():
+            ports[name] = DesignPort(name, cid, spec["signal"], spec["width"], spec, optional)
+    for what, have, order in (("parameter", dict(params, **derived), order_params), ("port", ports, order_ports)):
+        missing = sorted(set(have) - set(order))
+        if missing:
+            raise CodegenError("design_top_interface.sv does not declare the {}s {} that capabilities give "
+                               "design_top".format(what, ", ".join(missing)))
+        extra = sorted(set(order) - set(have))
+        if extra:
+            raise CodegenError("design_top_interface.sv declares the {}s {} that no capability gives "
+                               "(config/capabilities/*.yml, design:)".format(what, ", ".join(extra)))
+    value = ([params[n] for n in order_params if n in params],
+             [derived[n] for n in order_params if n in derived],
+             [ports[n] for n in order_ports])
+    _CONTRACT.update(key=key, value=value)
+    return value
+
+
+def design_ports():
+    """(port, capability, signal, width) for every design_top port, in the
+    interface's order; a width is a number or the parameter that sets it."""
+    return [(p.name, p.capability, p.signal, p.width) for p in design_contract()[2]]
+
+
+def capability_primary(cap_id, cap=None):
+    """The parameter a concat capability sums across providers, and what
+    `<cap> >= N` constrains (leds: width, rgb_leds: count)."""
+    cap = cap if cap is not None else config_init.read_capabilities().get(cap_id) or {}
+    return cap.get("primary") or "width"
+
+
+def capability_width_parameter(cap_id):
+    """The design_top parameter that carries a capability's primary width
+    (leds: w_led), or None."""
+    cap = config_init.read_capabilities().get(cap_id) or {}
+    if not cap.get("primary"):
+        return None
+    for p in design_contract()[0]:
+        if p.capability == cap_id and p.spec.get("value") == cap["primary"]:
+            return p.name
+    return None
+
+
+def _contract_value(spec, resolved, plans, plan):
+    """A contract value: a capability parameter name, the first set of a
+    list of them, `{param: .., digit: i}` (that digit of a number such as
+    color_depth 565) or `{source: <name>}`."""
+    if isinstance(spec, list):
+        for alt in spec:
+            v = _contract_value(alt, resolved, plans, plan)
+            if v:
+                return v
+        return 0
+    if isinstance(spec, dict):
+        if "source" in spec:
+            return _SOURCES[spec["source"]](resolved, plans, plan)
+        v = plan.params.get(spec["param"], spec.get("default"))
+        if "digit" in spec:
+            digits = str(v)
+            if not (digits.isdigit() and len(digits) > spec["digit"]):
+                return spec.get("otherwise", 0)
+            return int(digits[spec["digit"]])
+        return v
+    return plan.params.get(spec, 0) or 0
+
+
+def _parameter_value(p, resolved, plans):
+    plan = plans[p.capability]
+    if not plan.providers and "absent" in p.spec:
+        absent = p.spec["absent"]
+        return _contract_value(absent, resolved, plans, plan) if isinstance(absent, dict) else absent
+    return _contract_value(p.spec["value"], resolved, plans, plan)
+
+
+def _included(name, plan, declared):
+    """Does an optional capability's parameter or port reach design_top?"""
+    return name in declared if declared is not None else bool(plan.providers)
+
+
+def design_top_parameters(resolved, plans, design=None):
     """design_top's parameter values for a resolved configuration, in the
-    order the instance lists them (clk_mhz, w_sw, ..., w_gpio)."""
-    cap_widths = {
-        "switches":      plans["switches"].params.get("width", 0)      if plans["switches"].providers else 0,
-        "buttons":       plans["buttons"].params.get("width", 0)       if plans["buttons"].providers else 0,
-        "leds":          plans["leds"].params.get("width", 0)          if plans["leds"].providers else 0,
-        # rgb_leds is concat-aggregated on `count` (see _PRIMARY_PARAM), not `width`.
-        "rgb_leds":      plans["rgb_leds"].params.get("count", 0)      if plans["rgb_leds"].providers else 0,
-        "seven_segment": plans["seven_segment"].params.get("digits", 0) if plans["seven_segment"].providers else 0,
-        "gpio":          plans["gpio"].params.get("width", 0)          if plans["gpio"].providers
-                         else _lab_width(resolved, plans["gpio"]),
-    }
+    order the instance lists them (clk_mhz, w_sw, ..., w_gpio). `design`: the
+    design's source (text or path), which decides the optional capabilities."""
+    declared = _declared(design, 0)
+    return OrderedDict((p.name, _parameter_value(p, resolved, plans)) for p in design_contract()[0]
+                       if not p.optional or _included(p.name, plans[p.capability], declared))
 
-    if plans["screen"].providers:
-        sp = plans["screen"].params
-        sw, sh = sp.get("width", 0), sp.get("height", 0)
-        wr = _screen_channel_width(sp, "red")
-        wg = _screen_channel_width(sp, "green")
-        wb = _screen_channel_width(sp, "blue")
-    else:
-        # no display: the lab_top defaults (screen_width 640, screen_height
-        # 480, 4-bit colours) — the lab's x / y stay 10 / 9 bits wide
-        # (`w_x = $clog2 (screen_width)`)
-        sw, sh, wr, wg, wb = 640, 480, 4, 4, 4
 
-    lab = lab_clock(resolved, plans)
-    clk_mhz = _lab_mhz_int(lab, resolve_clock(resolved, plans))
-
-    width = {p: cap_widths[c] for c, p in CAPABILITY_WIDTH_PARAMETER.items()}
-    return OrderedDict([
-        ("clk_mhz",       clk_mhz),
-        ("w_sw",          width["w_sw"]),
-        ("w_btn",         width["w_btn"]),
-        ("w_led",         width["w_led"]),
-        ("w_digit",       width["w_digit"]),
-        ("w_rgb_led",     width["w_rgb_led"]),
-        ("screen_width",  sw),
-        ("screen_height", sh),
-        ("w_red",         wr),
-        ("w_green",       wg),
-        ("w_blue",        wb),
-        ("w_gpio",        width["w_gpio"]),
-    ])
+def _declared(design, which):
+    if design is None:
+        return None
+    found = design_declarations(design)
+    return set(found[which]) if found else None
 
 
 def _clog2(n):
     return max(1, (int(n) - 1).bit_length()) if n and int(n) > 1 else 1
 
 
-# design_top's ports (rtl/peripherals/design_top_interface.sv), in its order:
-# (port, capability, signal, width): a fixed width, or the design_top
-# parameter (design_top_widths) that sets it, as the interface declares it
-DESIGN_PORTS = (
-    ("clk",        "clock",          "clk",      1),
-    ("rst",        "reset",          "rst",      1),
-    ("sw",         "switches",       "sw",       "w_sw"),
-    ("btn",        "buttons",        "btn",      "w_btn"),
-    ("led",        "leds",           "led",      "w_led"),
-    ("abcdefgh",   "seven_segment",  "abcdefgh", 8),
-    ("digit",      "seven_segment",  "digit",    "w_digit"),
-    ("rgb_r",      "rgb_leds",       "r",        "w_rgb_led"),
-    ("rgb_g",      "rgb_leds",       "g",        "w_rgb_led"),
-    ("rgb_b",      "rgb_leds",       "b",        "w_rgb_led"),
-    ("x",          "screen",         "x",        "w_x"),
-    ("y",          "screen",         "y",        "w_y"),
-    ("red",        "screen",         "red",      "w_red"),
-    ("green",      "screen",         "green",    "w_green"),
-    ("blue",       "screen",         "blue",     "w_blue"),
-    ("mic_sample", "audio_in",       "sample",   24),
-    ("mic_valid",  "audio_in",       "valid",    1),
-    ("sound",      "audio_out",      "sample",   16),
-    ("uart_rx",    "serial_console", "rx",       1),
-    ("uart_tx",    "serial_console", "tx",       1),
-    ("gpio",       "gpio",           "io",       "w_gpio"),
-)
-
-
 def design_top_widths(parameters):
     """design_top's parameters plus the widths it derives from them (w_x /
     w_y: $clog2 of the screen size, 1 without one)."""
     out = OrderedDict(parameters)
-    out["w_x"] = _clog2(parameters["screen_width"]) if parameters["screen_width"] > 0 else 1
-    out["w_y"] = _clog2(parameters["screen_height"]) if parameters["screen_height"] > 0 else 1
+    for d in design_contract()[1]:
+        v = _derived_value(d.spec, out)
+        if v is not None:
+            out[d.name] = v
+    return out
+
+
+def _derived_value(spec, values):
+    """A derived width (`{clog2: p}`: $clog2(p), 1 for p <= 0; `{multiply:
+    [a, b]}`) from `values`, None when an operand is absent."""
+    if "clog2" in spec:
+        v = values.get(spec["clog2"])
+        return None if v is None else (_clog2(v) if v > 0 else 1)
+    operands = [values.get(x, x) if isinstance(x, str) else x for x in spec["multiply"]]
+    if any(isinstance(x, str) or x is None for x in operands):
+        return None
+    out = 1
+    for x in operands:
+        out *= int(x)
     return out
 
 
 def design_port_width(width, widths):
-    """A DESIGN_PORTS width for design_top_widths() values."""
-    return widths[width] if isinstance(width, str) else width
+    """A design port's width for design_top_widths() values."""
+    return widths.get(width, 0) if isinstance(width, str) else width
 
 
-def _emit_lab_top(resolved, plans):
+def _signal_contract_width(plan, sig_name):
+    """A capability signal's width from the design port it feeds (screen x:
+    $clog2 of its width; red: w_red), for signals without their own width."""
+    port = next((p for p in design_contract()[2] if p.capability == plan.id and p.signal == sig_name), None)
+    if port is None:
+        return None
+    if not isinstance(port.width, str):
+        return port.width
+    values = {p.name: _contract_value(p.spec["value"], None, None, plan)
+              for p in design_contract()[0] if p.capability == plan.id
+              and not (isinstance(p.spec["value"], dict) and "source" in p.spec["value"])}
+    for d in design_contract()[1]:
+        if d.capability == plan.id:
+            values[d.name] = _derived_value(d.spec, values)
+    return int(values.get(port.width) or 1)
+
+
+def _emit_lab_top(resolved, plans, design=None):
     lines = ["    // ---- User logic (design_top) ----"]
-    gpio_expr, gpio_decls = _gpio_connection(resolved, plans)
-    if gpio_decls:
-        lines.append("    // gpio bits without a usable pin (claimed by a driver peripheral, or")
-        lines.append("    // absent on this header) are left dangling so numbering matches the board.")
-        lines.extend(gpio_decls)
+    declared = _declared(design, 1)
+    ports = [p for p in design_contract()[2] if not p.optional or _included(p.name, plans[p.capability], declared)]
+    nets = {}
+    for p in ports:
+        net = (p.spec.get("net") or {}).get("source")
+        if net == "gpio_connection":
+            expr, decls = _gpio_connection(resolved, plans)
+            if decls:
+                lines.append("    // gpio bits without a usable pin (claimed by a driver peripheral, or")
+                lines.append("    // absent on this header) are left dangling so numbering matches the board.")
+                lines.extend(decls)
+            nets[p.name] = expr or ""
+        elif net:
+            nets[p.name] = _SOURCES[net](resolved, plans, plans[p.capability])
 
-    params = list(design_top_parameters(resolved, plans).items())
-    lab = lab_clock(resolved, plans)
-    param_block = ",\n".join("        .{}({})".format(n, v) for n, v in params)
+    params = list(design_top_parameters(resolved, plans, design).items())
     lines.append("    design_top # (")
-    lines.append(param_block)
+    lines.append(",\n".join("        .{}({})".format(n, v) for n, v in params))
     lines.append("    ) i_design_top (")
 
-    port_lines = [
-        "        .clk({})".format(lab["net"]),
-        "        .rst(rst)",
-        "        .sw(cap_switches_sw)"        if plans["switches"].providers      else "        .sw('0)",
-        "        .btn(cap_buttons_btn)"       if plans["buttons"].providers       else "        .btn('0)",
-        "        .led(cap_leds_led)"          if plans["leds"].providers          else "        .led()",
-        "        .abcdefgh(cap_seven_segment_abcdefgh)" if plans["seven_segment"].providers else "        .abcdefgh()",
-        "        .digit(cap_seven_segment_digit)"       if plans["seven_segment"].providers else "        .digit()",
-        "        .rgb_r(cap_rgb_leds_r)"      if plans["rgb_leds"].providers      else "        .rgb_r()",
-        "        .rgb_g(cap_rgb_leds_g)"      if plans["rgb_leds"].providers      else "        .rgb_g()",
-        "        .rgb_b(cap_rgb_leds_b)"      if plans["rgb_leds"].providers      else "        .rgb_b()",
-        "        .x(cap_screen_x)"            if plans["screen"].providers        else "        .x('0)",
-        "        .y(cap_screen_y)"            if plans["screen"].providers        else "        .y('0)",
-        "        .red(cap_screen_red)"        if plans["screen"].providers        else "        .red()",
-        "        .green(cap_screen_green)"    if plans["screen"].providers        else "        .green()",
-        "        .blue(cap_screen_blue)"      if plans["screen"].providers        else "        .blue()",
-        "        .mic_sample(cap_audio_in_sample)" if plans["audio_in"].providers else "        .mic_sample('0)",
-        "        .mic_valid(cap_audio_in_valid)"   if plans["audio_in"].providers else "        .mic_valid(1'b0)",
-        "        .sound(cap_audio_out_sample)"     if plans["audio_out"].providers else "        .sound()",
-        # no UART: an unconnected uart_rx input, which the vendor
-        # tools synthesise as ground, so 0 is the exact value
-        "        .uart_rx(cap_serial_console_rx)"  if plans["serial_console"].providers
-        else "        .uart_rx(1'b{})".format(_uart_rx_idle(resolved)),
-        "        .uart_tx(cap_serial_console_tx)"  if plans["serial_console"].providers else "        .uart_tx()",
-        "        .gpio({})".format(gpio_expr)      if gpio_expr                   else "        .gpio()",
-    ]
+    port_lines = []
+    for p in ports:
+        plan = plans[p.capability]
+        if p.name in nets:
+            net = nets[p.name]
+        elif plan.providers:
+            net = "cap_{}_{}".format(p.capability, p.signal)
+        else:
+            sig = next(s for s in plan.cap.get("signals", []) if s["name"] == p.signal)
+            absent = p.spec.get("absent")
+            if absent is not None:
+                net = _SOURCES[absent["source"]](resolved, plans, plan)
+            elif sig.get("direction") == "hw_to_user":
+                net = "1'b0" if p.width == 1 else "'0"   # an input with no provider reads 0
+            else:
+                net = ""                                  # an output with no consumer
+        port_lines.append("        .{}({})".format(p.name, net))
     lines.append(",\n".join(port_lines))
     lines.append("    );")
     return lines

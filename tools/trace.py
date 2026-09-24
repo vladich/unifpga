@@ -142,8 +142,11 @@ def trace(resolved):
     parameters = codegen.design_top_parameters(resolved, plans)
     widths = codegen.design_top_widths(parameters)
     ports = []
-    for design_port, cap_id, sig_name, width in codegen.DESIGN_PORTS:
+    for contract_port in codegen.design_contract()[2]:
+        design_port, cap_id, sig_name, width = contract_port[:4]
         plan = plans.get(cap_id)
+        if contract_port.optional and not (plan and plan.providers):
+            continue                      # an optional capability this rig lacks: not on the device
         sig = next((s for s in (plan.cap.get("signals") or []) if s["name"] == sig_name), {}) if plan else {}
         port = {"design_port": design_port,
                 "width": codegen.design_port_width(width, widths) if plan and plan.providers else 0,

@@ -48,6 +48,17 @@ class SetupError(Exception):
 # data
 # ---------------------------------------------------------------------------
 
+def gpio_passthrough():
+    """(peripheral, signal) a setup's `gpio: <connector>` attaches: the
+    peripheral the gpio capability names as its passthrough (gpio_header)
+    and the capability's bidirectional signal (io)."""
+    for c in config_init.read_capabilities().values():
+        if c.get("passthrough"):
+            sig = next(s["name"] for s in c.get("signals") or [] if s.get("direction") == "inout")
+            return c["passthrough"], sig
+    raise SetupError("no capability names a passthrough peripheral (config/capabilities/*.yml, passthrough:)")
+
+
 def read_connectors():
     """Connector types: config/connectors.yml plus the ones generated layouts
     carry for their boards (`connector_types:`, from the board-sources registry)."""
@@ -166,13 +177,17 @@ def module_header_size(module):
 
 def _row_positions(connectors, layout, plug):
     """The connector pin keys under module pins 1..N for a placement
-    {connector, row, reversed}."""
+    {connector, row, reversed}; row `all`: a module as big as the connector
+    (a 2x6 Pmod), its pins over the rows in order (reversed: turned round)."""
     c = connector(layout, plug["connector"])
     rows = (connectors.get(c["type"]) or {}).get("rows") or []
-    r = int(plug.get("row", 1))
-    if not 1 <= r <= len(rows):
-        raise SetupError("connector '{}' has no row {}".format(c["id"], r))
-    row = [str(k) for k in rows[r - 1]]
+    if plug.get("row") == "all":
+        row = [str(k) for r in rows for k in r]
+    else:
+        r = int(plug.get("row", 1))
+        if not 1 <= r <= len(rows):
+            raise SetupError("connector '{}' has no row {}".format(c["id"], r))
+        row = [str(k) for k in rows[r - 1]]
     return c, (list(reversed(row)) if plug.get("reversed") else row)
 
 
@@ -220,7 +235,7 @@ def plug_placements(connectors, layout, module, conn_ids=None):
         if conn_ids is not None and c["id"] not in conn_ids:
             continue
         rows = (connectors.get(c["type"]) or {}).get("rows") or []
-        for r in range(1, len(rows) + 1):
+        for r in list(range(1, len(rows) + 1)) + (["all"] if len(rows) > 1 else []):
             for rev in (False, True):
                 plug = {"connector": c["id"], "row": r}
                 if rev:
@@ -267,8 +282,10 @@ def _module_attach(connectors, layout, modules, use):
             raise SetupError("module '{}': {} is not wired bit 0 upwards".format(module["id"], name))
         bind[name] = [bits[i] for i in range(len(bits))]
     attach = {"peripheral": module["peripheral"]}
-    if use.get("params"):
-        attach["params"] = copy.deepcopy(use["params"])
+    # the module's own parameters (a Pmod's 4 servo channels), the use's over them
+    params = dict(module.get("params") or {}, **(use.get("params") or {}))
+    if params:
+        attach["params"] = copy.deepcopy(params)
     attach["bind"] = bind
     return attach
 
@@ -297,10 +314,11 @@ def generate(setup):
             c = connector(layout, use["gpio"])
             if not c.get("bank"):
                 raise SetupError("connector '{}' is not one pinmap bank: it cannot be the design's gpio".format(c["id"]))
-            a = {"peripheral": "gpio_header"}
+            pid, sig = gpio_passthrough()
+            a = {"peripheral": pid}
             if use.get("params"):
                 a["params"] = copy.deepcopy(use["params"])
-            a["bind"] = {"io": c["bank"]}
+            a["bind"] = {sig: c["bank"]}
             attach.append(a)
         elif "raw" in use:
             attach.append(copy.deepcopy(use["raw"]))
@@ -340,14 +358,18 @@ def _derive_module(a, layout, modules, connectors, refs):
                 break
         if not wires:
             continue
+        base, have = module.get("params") or {}, _params(a)
+        if list(dict(base, **have)) != list(have):
+            continue                    # parameters the module's defaults cannot reproduce
         use = {"module": module["id"]}
         plug = _as_plug(connectors, layout, module, wires)
         if plug:
             use["plug"] = plug
         else:
             use["wires"] = wires
-        if _params(a):
-            use["params"] = copy.deepcopy(a["params"])
+        own = {k: v for k, v in have.items() if base.get(k) != v}
+        if own:
+            use["params"] = copy.deepcopy(own)
         return use
     return None
 
@@ -394,10 +416,11 @@ def derive(configuration):
                     use = None                   # the configuration orders its params otherwise
                     continue
                 break
-        io = (a.get("bind") or {}).get("io")
-        if use is None and a["peripheral"] == "gpio_header" and isinstance(io, str) and io in banks \
-                and set(a["bind"]) == {"io"}:
-            use = {"gpio": banks[a["bind"]["io"]]}
+        gpio_pid, gpio_sig = gpio_passthrough()
+        io = (a.get("bind") or {}).get(gpio_sig)
+        if use is None and a["peripheral"] == gpio_pid and isinstance(io, str) and io in banks \
+                and set(a["bind"]) == {gpio_sig}:
+            use = {"gpio": banks[io]}
             if _params(a):
                 use["params"] = copy.deepcopy(a["params"])
         if use is None:

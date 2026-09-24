@@ -52,7 +52,9 @@ function passive(sig) { return sig === "power" || sig === "ground"; }
 function wiresOf(use) {
   if (use.plug) {
     const m = moduleDef(use.module), c = conn(use.plug.connector);
-    const row = c.rows[(use.plug.row || 1) - 1] || [];
+    // row "all": a module as big as the connector, over its rows in order; reversed: turned round
+    let row = use.plug.row === "all" ? c.rows.flat() : (c.rows[(use.plug.row || 1) - 1] || []);
+    if (use.plug.reversed) row = row.slice().reverse();
     const w = {};
     for (const [p, sig] of Object.entries(m.pins)) if (!passive(sig)) w[p] = c.id + "." + row[Number(p) - 1];
     return w;
@@ -96,10 +98,20 @@ function portName(p) { return p.design_port || p.capability + "." + p.signal; }
 function designParams() { return (S.ev && S.ev.trace && S.ev.trace.parameters) || {}; }
 // "w_red = 4": a port whose width is a design_top parameter the rig sets
 function widthText(p) { return p.width_parameter ? p.width_parameter + " = " + (p.width || 0) : ""; }
-// the screen variant design_top is given: rgb12 (4-4-4), rgb16 (5-6-5), ...
-function screenVariant() {
-  const q = designParams(), c = ["w_red", "w_green", "w_blue"].map((k) => q[k] || 0);
-  return "rgb" + (c[0] + c[1] + c[2]) + " (" + c.join("-") + ")";
+// a capability's summary of what this rig gives design_top, from its template
+// (config/capabilities/<id>.yml `summary`: "{screen_width}×{screen_height}, rgb{w_red + w_green + w_blue} ...")
+function capDef(cid) { return (S.board.capabilities || []).find((c) => c.id === cid) || {}; }
+function capSummary(cid) {
+  const q = designParams();
+  return (capDef(cid).summary || "").replace(/\{([^}]+)\}/g, (_, e) => String(e.split("+").reduce((s, k) => s + (Number(q[k.trim()]) || 0), 0)));
+}
+// the requirement line a design writes for a sized capability (`screen >= 640x480@444`)
+function sizeRequirement(cid) {
+  const c = capDef(cid), q = designParams();
+  if (!c.size) return "";
+  const own = c.design_parameters || [];
+  return "// requires: " + cid + " >= " + own.slice(0, 2).map((k) => q[k] || 0).join("x") +
+         (c.depth ? "@" + c.depth.map((k) => q[k] || 0).join("") : "");
 }
 function providersText(p) {
   return p.providers.map((pr) => { const a = attachOf(pr.attach_index) || {}, prm = Object.entries(a.params || {});
@@ -210,8 +222,10 @@ function partShort(i) {
 // the peripheral a use attaches, and the capabilities it provides
 function usePeripheral(u) {
   return u.module ? (moduleDef(u.module) || {}).peripheral : u.onboard ? ((variantOf(onboardDef(u.onboard), u) || {}).attach || {}).peripheral
-       : u.gpio ? "gpio_header" : (u.raw || {}).peripheral;
+       : u.gpio ? gpioPeripheral() : (u.raw || {}).peripheral;
 }
+// the peripheral a `gpio: <connector>` use attaches (the gpio capability's passthrough)
+function gpioPeripheral() { return ((S.board.capabilities || []).find((c) => c.passthrough) || {}).passthrough; }
 function providedCaps(pid) { return ((S.board.peripherals[pid] || {}).provides || []).map((p) => p.capability); }
 function capAggregation(cid) { return ((S.board.capabilities || []).find((c) => c.id === cid) || {}).aggregation; }
 
@@ -318,19 +332,19 @@ function draw() {
   const portRows = [];
   const captioned = new Set();
   for (const p of devicePorts()) {
-    // a capability whose ports are sized by several parameters gets a line naming the variant
-    if (p.capability === "screen" && p.providers.length && !captioned.has("screen")) {
-      captioned.add("screen");
-      const q = designParams();
+    // a capability whose ports are sized by several parameters (its `summary`) gets a line naming the variant
+    if (capDef(p.capability).summary && p.providers.length && !captioned.has(p.capability)) {
+      captioned.add(p.capability);
       // two short lines, cut to the virtual device's column (the full text is the tooltip)
       const fit = (s) => s.length > 52 ? s.slice(0, 51) + "…" : s;
       const cap = el("text", {x: VX, y: y + 9, "font-size": 10, fill: "#7048e8", class: "clickable"});
-      cap.append(el("tspan", {x: VX}, fit("screen " + q.screen_width + "×" + q.screen_height + ", " + screenVariant() + " (parameters)")));
+      cap.append(el("tspan", {x: VX}, fit(p.capability.replace(/_/g, " ") + " " + capSummary(p.capability) + " (parameters)")));
       cap.append(el("tspan", {x: VX, dy: 12}, fit("set by " + p.providers.map((pr) => useLabel(S.setup.use[pr.attach_index] || {})).join(", "))));
-      cap.append(el("title", {}, "design_top is parameterized: screen_width / screen_height and w_red / w_green / w_blue come from the rig. " +
-                                 "This rig gives " + screenVariant() + "; other rigs give other colour depths, and a design reads the parameters " +
-                                 "(or asks for a depth with `// requires: screen >= 640x480@888`)."));
-      target(cap, {kind: "vport", cap: p.capability, signal: "red"});
+      const req = sizeRequirement(p.capability);
+      cap.append(el("title", {}, "design_top is parameterized: " + (capDef(p.capability).design_parameters || []).join(" / ") + " come from the rig. " +
+                                 "This rig gives " + capSummary(p.capability) + "; other rigs give others, and a design reads the parameters" +
+                                 (req ? " (and states its minimum with a line like `" + req + "`)" : "") + "."));
+      target(cap, {kind: "vport", cap: p.capability, signal: p.signal});
       svg.append(cap);
       y += 28;
     }
@@ -1421,9 +1435,11 @@ function details() {
     const facts = [["Width", p.width_parameter
       ? widthText(p) + " — a design_top parameter (" + portName(p) + "[" + p.width_parameter + " - 1 : 0]): this rig sets it, other rigs give other widths, and a design reads " + p.width_parameter
       : (p.width || 0) + " bit" + (p.width === 1 ? "" : "s") + ", fixed by the design_top interface"]];
-    if (p.capability === "screen" && p.providers.length)
-      facts.push(["Screen", designParams().screen_width + "×" + designParams().screen_height + ", " + screenVariant() +
-                            " on this rig; a design that needs more colour asks for it (`// requires: screen >= 640x480@888`)"]);
+    if (capDef(p.capability).summary && p.providers.length) {
+      const req = sizeRequirement(p.capability);
+      facts.push([p.capability.replace(/_/g, " ").replace(/^./, (ch) => ch.toUpperCase()), capSummary(p.capability) +
+                  " on this rig" + (req ? "; a design states its minimum with a line like `" + req + "`" : "")]);
+    }
     if (p.providers.length) facts.push(["Set by", providersText(p)]);
     d.append(h("table", {class: "facts"}, ...facts.map(([k, v]) => h("tr", {}, h("th", {}, k), h("td", {}, v)))));
     for (const pr of p.providers) {
@@ -1694,7 +1710,7 @@ async function autoWire(i) {
     Object.assign(use, got);
     S.pending = null;
     S.sel = {kind: "use", use: i};
-    const what = "auto-wired " + useLabel(use) + (got.plug ? " (plugged into " + got.plug.connector + " row " + got.plug.row + ")" : "");
+    const what = "auto-wired " + useLabel(use) + (got.plug ? " (plugged into " + got.plug.connector + (got.plug.row === "all" ? "" : " row " + got.plug.row) + (got.plug.reversed ? ", turned round" : "") + ")" : "");
     await changed(what);
     const st = partStatus(i);
     if (st) status(what + " — the pins are free, but it " + (st.connected ? "reaches the design only in part: " : "does not reach the design: ") + partText(i), true);
@@ -1930,8 +1946,10 @@ function wire() {
     const id = prompt("New setup id (a-z, 0-9, _):", S.board.board + "_my_rig");
     if (!id) return;
     const copy = confirm("Start from the current setup? (Cancel starts empty with the board's clock)");
-    const clocks = S.board.onboard.filter((o) => variantsOf(o).some((v) => ((S.board.peripherals[v.attach.peripheral] || {}).provides || []).some((p) => p.capability === "clock")));
-    const base = copy ? clone(S.setup) : {board: S.board.board, toolchain: $("toolchain").value, use: clocks.slice(0, 1).map((o) => ({onboard: o.id}))};
+    // an empty rig starts with an on-board part for every capability a rig needs (the clock)
+    const needed = (S.board.capabilities || []).filter((c) => c.required).map((c) => c.id);
+    const starts = needed.map((cid) => S.board.onboard.find((o) => variantsOf(o).some((v) => providedCaps(v.attach.peripheral).includes(cid)))).filter(Boolean);
+    const base = copy ? clone(S.setup) : {board: S.board.board, toolchain: $("toolchain").value, use: [...new Set(starts)].map((o) => ({onboard: o.id}))};
     base.id = id; delete base.notes;
     S.setup = base; S.sel = null;
     $("setup").append(h("option", {value: id}, id)); $("setup").value = id;
@@ -2215,8 +2233,8 @@ async function selftest() {
       select({kind: "vport", cap: pp.capability, signal: pp.signal});
       ok("its panel says the width is a design_top parameter set by the rig", $("details").textContent.includes("a design_top parameter"));
     }
-    if (ports().some((q) => q.capability === "screen" && q.providers.length))
-      ok("the screen variant is named", $("svg").textContent.includes(screenVariant()));
+    for (const q of ports().filter((q) => capDef(q.capability).summary && q.providers.length).slice(0, 1))
+      ok("a parameterized capability's variant is named", $("svg").textContent.includes(capSummary(q.capability)));
     // parts the design-wiring profile leaves out are marked and explained
     for (const x of (S.ev.profile_drops || []).slice(0, 1)) {
       select({kind: "use", use: x.use});
@@ -2292,9 +2310,10 @@ async function selftest() {
       $("remove-sel").click(); await settle();
       ok("removing the module restores the rig", S.setup.use.length === n && $("remove-sel").disabled);
     }
-    // an on-board part that is not the clock (by capability, not by name)
+    // an on-board part that provides no capability a rig needs (not the clock)
+    const needed = (S.board.capabilities || []).filter((c) => c.required).map((c) => c.id);
     const ob = S.board.onboard.find((o) => S.setup.use.some((u) => u.onboard === o.id &&
-                                      !providedCaps(usePeripheral(u)).includes("clock")));
+                                      !providedCaps(usePeripheral(u)).some((c) => needed.includes(c))));
     const oi = S.setup.use.findIndex((u) => u.onboard === ob.id);
     S.setup.use.splice(oi, 1); await changed("unuse"); await settle();
     ok("an on-board device can be dropped", !S.setup.use.some((u) => u.onboard === ob.id));

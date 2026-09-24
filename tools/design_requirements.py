@@ -40,19 +40,6 @@ import re
 from collections import OrderedDict
 
 
-# Capability primary parameter names — what `>= N` constrains for each.
-_CAP_WIDTH_PARAM = {
-    "switches":      "width",
-    "buttons":       "width",
-    "leds":          "width",
-    "rgb_leds":      "count",
-    "seven_segment": "digits",
-    "gpio":          "width",
-}
-
-_PRESENCE_ONLY = {"clock", "reset", "audio_in", "audio_out", "serial_console"}
-
-
 _REQ_LINE = re.compile(
     r"^\s*//\s*"
     r"(?P<cap>[a-z_][a-z0-9_]*)"
@@ -181,7 +168,7 @@ def check(resolved, requirements, capabilities=None, parameters=None):
                 c=config_id, cap=cap_id, w=_when(applicable[0])))
             continue
         for r in applicable:
-            errors.extend(_unmet(config_id, cap_id, r, provided, parameters))
+            errors.extend(_unmet(config_id, cap_id, r, provided, parameters, capabilities))
     return errors
 
 
@@ -196,11 +183,11 @@ def _when(r):
     return " (the design needs it when {})".format(r["condition"]) if r.get("condition") else ""
 
 
-def _unmet(config_id, cap_id, req, provided, parameters):
+def _unmet(config_id, cap_id, req, provided, parameters, capabilities):
     from tools import codegen
     errors = []
     # Width-parameterized capabilities: the width design_top is given
-    param = codegen.CAPABILITY_WIDTH_PARAMETER.get(cap_id)
+    param = codegen.capability_width_parameter(cap_id)
     if param and "min_width" in req:
         actual = parameters.get(param) or 0
         if actual < req["min_width"]:
@@ -208,35 +195,43 @@ def _unmet(config_id, cap_id, req, provided, parameters):
                 "Configuration '{c}': capability '{cap}' gives design_top {p}={a}, "
                 "the design needs >= {n}{w}"
                 .format(c=config_id, cap=cap_id, p=param, a=actual, n=req["min_width"], w=_when(req)))
-    # Screen-specific
-    if cap_id == "screen":
-        if req.get("min_width") and provided.get("width", 0) < req["min_width"]:
+    # sized capabilities (`screen >= 640x480@444`): the capability's `size`
+    # names its width and height parameters, `depth` the design_top
+    # parameters holding bits per colour channel
+    cap = capabilities.get(cap_id) or {}
+    if cap.get("size") and not param:
+        wk, hk = cap["size"]
+        have_w, have_h = provided.get(wk, 0) or 0, provided.get(hk, 0) or 0
+        if req.get("min_width") and have_w < req["min_width"]:
             errors.append(
-                "Configuration '{c}': screen is {w}x{h}, design_top requires {rw}x{rh}{when}"
-                .format(c=config_id, w=provided.get("width"), h=provided.get("height"),
+                "Configuration '{c}': {cap} is {w}x{h}, design_top requires {rw}x{rh}{when}"
+                .format(c=config_id, cap=cap_id, w=provided.get(wk), h=provided.get(hk),
                         rw=req["min_width"], rh=req.get("min_height", 0), when=_when(req)))
-        if req.get("min_height") and provided.get("height", 0) < req["min_height"]:
+        if req.get("min_height") and have_h < req["min_height"]:
             errors.append(
-                "Configuration '{c}': screen height {h} < required {rh}{w}"
-                .format(c=config_id, h=provided.get("height"), rh=req["min_height"], w=_when(req)))
-        if req.get("min_color_depth"):
-            # @444 / @565 / @888: bits per channel, against the widths design_top is given
-            depth = str(req["min_color_depth"])
-            if len(depth) != 3:
-                raise ValueError("screen @{}: a colour depth is three digits, bits of red, green and blue "
-                                 "(@444, @565, @888)".format(depth))
-            need = [int(ch) for ch in depth]
-            have = [parameters.get("w_" + c) or 0 for c in ("red", "green", "blue")]
-            if any(h < n for h, n in zip(have, need)):
-                errors.append(
-                    "Configuration '{c}': screen gives design_top w_red/w_green/w_blue = {a} (rgb{s}), "
-                    "the design needs {n} (@{d}){w}"
-                    .format(c=config_id, a="/".join(map(str, have)), s=sum(have), n="/".join(map(str, need)),
-                            d=req["min_color_depth"], w=_when(req)))
+                "Configuration '{c}': {cap} height {h} < required {rh}{w}"
+                .format(c=config_id, cap=cap_id, h=provided.get(hk), rh=req["min_height"], w=_when(req)))
+    if req.get("min_color_depth"):
+        # @444 / @565 / @888: bits per channel, against the widths design_top is given
+        depth = str(req["min_color_depth"])
+        channels = cap.get("depth") or []
+        if len(depth) != len(channels) or not channels:
+            raise ValueError("{} @{}: {}".format(
+                cap_id, depth, "a colour depth is one digit per channel ({})".format(", ".join(channels))
+                if channels else "{} has no colour depth".format(cap_id)))
+        need = [int(ch) for ch in depth]
+        have = [parameters.get(c) or 0 for c in channels]
+        if any(h < n for h, n in zip(have, need)):
+            errors.append(
+                "Configuration '{c}': {cap} gives design_top {p} = {a} (rgb{s}), "
+                "the design needs {n} (@{d}){w}"
+                .format(c=config_id, cap=cap_id, p="/".join(channels), a="/".join(map(str, have)), s=sum(have),
+                        n="/".join(map(str, need)), d=req["min_color_depth"], w=_when(req)))
     return errors
 
 
 def _summarize_capabilities(resolved, capabilities):
+    from tools import codegen
     """For each capability, sum widths over providers (or pick exclusive params).
     Falls back to the peripheral's parameter defaults when the configuration
     doesn't override them."""
@@ -265,7 +260,7 @@ def _summarize_capabilities(resolved, capabilities):
             s = summary[cap_id]
             s["providers"] += 1
             if agg == "concat":
-                primary = _CAP_WIDTH_PARAM.get(cap_id, "width")
+                primary = codegen.capability_primary(cap_id, cap)
                 w = resolved_cap_params.get(primary) or 1
                 s[primary] = (s.get(primary) or 0) + w
             else:
