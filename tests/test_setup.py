@@ -516,10 +516,59 @@ def test_parts_that_do_not_reach_the_design_say_why():
 
 def test_pins_several_parts_reach_are_warned_about():
     ev = studio.evaluate(su.read_setup("arty_a7_35_pmod_mic3"))
-    shared = [p["message"] for p in ev["problems"] if p["level"] == "warning" and "is shared by" in p["message"]]
-    # the TM1638 sits on three ChipKit header pins the rig also hands to the design as gpio
-    assert len(shared) == 3 and all("gpio ck" in m and "through the tm1638_board_controller driver" in m for m in shared), shared
-    assert not [p for p in studio.evaluate(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))["problems"] if "is shared by" in p["message"]]
+    shared = [p["message"] for p in ev["problems"] if p["level"] == "warning" and "shared by" in p["message"]]
+    # the TM1638 sits on three ChipKit header pins the rig also hands to the design as gpio: one warning naming them
+    (m,) = shared
+    assert m.startswith("pins ") and m.count("(FPGA ") == 3 and "gpio ck" in m, m
+    assert "tm1638_led_key (its dio, clk, stb, through the tm1638_board_controller driver)" in m, m
+    assert not [p for p in studio.evaluate(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))["problems"] if "shared by" in p["message"]]
+
+
+def _apply(rig, fix):
+    """What the page does with a problem's button."""
+    rig = copy.deepcopy(rig)
+    if fix["op"] == "remove":
+        del rig["use"][fix["use"]]
+    else:
+        use = rig["use"][fix["use"]]
+        use.pop("plug", None)
+        use.pop("wires", None)
+        use.update(su.autowire(rig, fix["use"]))
+    return rig
+
+
+def test_conflicts_offer_buttons_that_resolve_them():
+    base = su.read_setup("arty_a7_35_pmod_mic3")
+    mic3 = next(k for k, u in enumerate(base["use"]) if u.get("module") == "digilent_pmod_mic3")
+    # two microphones: keep either
+    rig = copy.deepcopy(base)
+    rig["use"].append({"module": "inmp441_breakout", "wires": {}})
+    rig["use"][-1].update(su.autowire(rig, len(rig["use"]) - 1))
+    (p,) = [p for p in studio.evaluate(rig)["problems"] if "audio_in" in p["message"]]
+    new = len(rig["use"]) - 1
+    assert p["uses"] == [mic3, new]
+    assert [(f["op"], f["use"]) for f in p["resolve"]] == [("remove", mic3), ("remove", new)]
+    assert p["resolve"][0]["label"] == "Use inmp441_breakout for audio_in (remove digilent_pmod_mic3)"
+    for f in p["resolve"]:
+        ev = studio.evaluate(_apply(rig, f))
+        assert not [q for q in ev["problems"] if "audio_in" in q["message"]] and ev["parts"] == []
+    # a module wired onto pins another module uses: re-wire it or remove one
+    rig = copy.deepcopy(base)
+    rig["use"].append({"module": "inmp441_breakout", "wires": dict(base["use"][mic3]["wires"], **{"L/R": "jd.8"})})
+    rig["use"][-1]["wires"] = {"SD": "jd.9", "WS": "jd.10", "SCK": "jd.7", "L/R": "jd.8"}
+    (p,) = [p for p in studio.evaluate(rig)["problems"] if "used by both" in p["message"]]
+    assert p["uses"] == [mic3, len(rig["use"]) - 1]
+    ops = [(f["op"], f["use"]) for f in p["resolve"]]
+    assert ("autowire", len(rig["use"]) - 1) in ops and ("remove", mic3) in ops
+    fixed = _apply(rig, next(f for f in p["resolve"] if f["op"] == "autowire" and f["use"] == len(rig["use"]) - 1))
+    assert not [q for q in studio.evaluate(fixed)["problems"] if "used by both" in q["message"]]
+    # a driver's pins inside the design's gpio header: move the module off it
+    ev = studio.evaluate(base)
+    (p,) = [p for p in ev["problems"] if "shared by" in p["message"]]
+    tm = next(k for k, u in enumerate(base["use"]) if u.get("module") == "tm1638_led_key")
+    rewire = next(f for f in p["resolve"] if f["op"] == "autowire")
+    assert rewire["use"] == tm and rewire["label"] == "Re-wire tm1638_led_key to free pins"
+    assert not [q for q in studio.evaluate(_apply(base, rewire))["problems"] if "shared by" in q["message"]]
 
 
 def test_design_table_covers_every_design_and_configuration():

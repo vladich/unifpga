@@ -281,7 +281,13 @@ def evaluate(setup):
         cfg = su.generate(setup)
         out["profile_drops"] = profile_drops(cfg, prof)
         out["configuration_text"] = su.emit_configuration(cfg, setup.get("notes"))
-        out["problems"] = [{"level": level, "message": msg} for level, msg in su.validate(setup)]
+        clashes = []
+        out["problems"] = [{"level": level, "message": msg} for level, msg in su.validate(setup, clashes)]
+        fixes = _Fixes(setup)
+        for a, b, pins in clashes:
+            msg = next(p for p in out["problems"] if p["message"].startswith(
+                ("pin " if len(pins) == 1 else "pins ") + ", ".join(pins) + " used by both"))
+            msg.update(uses=[a, b], resolve=fixes.either(a, b))
     except su.SetupError as exc:
         out["problems"] = [{"level": "error", "message": str(exc)}]
     kept, excluded = _traceable(setup)
@@ -307,40 +313,90 @@ def evaluate(setup):
     out["excluded"] = sorted(excluded, key=lambda x: x["use"])
     out["parts"] = part_status(setup, kept, out["excluded"], resolved if out["trace"] is not None else None,
                                out["trace"], out["profile"], out["profile_drops"])
-    out["problems"].extend(shared_pin_warnings(setup, out["trace"]))
+    fixes = _Fixes(setup)
+    out["problems"].extend(shared_pin_warnings(setup, out["trace"], fixes))
     for x in out["parts"]:
-        for kind, reason in x["reasons"]:
-            if kind == "exclusive":
-                out["problems"].append({"level": "warning", "message": x["label"] + ": " + reason})
+        for reason in x["reasons"]:
+            if reason[0] == "exclusive":
+                first, cid = reason[2]["with"], reason[2]["capability"]
+                out["problems"].append({"level": "warning", "message": x["label"] + ": " + reason[1],
+                                        "uses": [first, x["use"]], "resolve": fixes.choose(cid, first, x["use"])})
     if out["trace"] is not None and not any(p["level"] == "error" for p in out["problems"]) and not excluded:
         out["designs"] = design_fit(resolved)
     return out
 
 
-def shared_pin_warnings(setup, trace):
-    """A warning for every FPGA pin that more than one part reaches (the design's
-    gpio on a header that also carries a driver's pins, say): the generated top
-    connects both, and whichever drives it while the other does fights it."""
+class _Fixes:
+    """The buttons a problem between two parts offers: re-wire a module to free
+    pins (when auto-wiring finds some), or remove a part. Each is
+    {label, op: autowire | remove, use}; the page applies it and re-evaluates."""
+
+    def __init__(self, setup):
+        self.setup = setup
+        self.uses = setup.get("use") or []
+        self._rewire = {}
+
+    def name(self, k):
+        u = self.uses[k] if k is not None and k < len(self.uses) else {}
+        return su.use_label(u, u.get("raw") or {})
+
+    def rewirable(self, k):
+        if k not in self._rewire:
+            ok = bool(self.uses[k].get("module"))
+            if ok:
+                try:
+                    su.autowire(self.setup, k)
+                except su.SetupError:
+                    ok = False
+            self._rewire[k] = ok
+        return self._rewire[k]
+
+    def either(self, *ks):
+        """two parts on the same pins: move one elsewhere or remove one"""
+        out = [{"label": "Re-wire {} to free pins".format(self.name(k)), "op": "autowire", "use": k}
+               for k in ks if self.rewirable(k)]
+        return out + [{"label": "Remove {}".format(self.name(k)), "op": "remove", "use": k} for k in ks]
+
+    def choose(self, cid, first, other):
+        """two parts providing a capability design_top has one of: keep either"""
+        return [{"label": "Use {} for {} (remove {})".format(self.name(other), cid, self.name(first)),
+                 "op": "remove", "use": first},
+                {"label": "Keep {} (remove {})".format(self.name(first), self.name(other)),
+                 "op": "remove", "use": other}]
+
+
+def shared_pin_warnings(setup, trace, fixes=None):
+    """A warning for every set of parts that reach the same FPGA pins (the
+    design's gpio on a header that also carries a driver's pins, say): the
+    generated top connects all of them, and whichever drives a pin while
+    another does fights it. One warning per set of parts, naming the pins."""
     uses = setup.get("use") or []
+    fixes = fixes or _Fixes(setup)
     by_ref = {}
     for e in (trace or {}).get("edges") or []:
         by_ref.setdefault(e["ref"], {}).setdefault(e["use"], e)
-    out = []
+    groups = {}                               # the parts -> [(ref, {use: edge})]
     for ref, users in by_ref.items():
-        if len(users) < 2:
-            continue
+        if len(users) > 1:
+            groups.setdefault(tuple(sorted(users, key=lambda k: -1 if k is None else k)), []).append((ref, users))
+    out = []
+    for ks, refs in groups.items():
         parts = []
-        for k, e in users.items():
-            name = su.use_label(uses[k], uses[k].get("raw") or {}) if k is not None and k < len(uses) else "?"
-            if e["via"]:
-                parts.append("{} (its {}, through the {} driver)".format(name, e["signal"], e["via"]))
+        for k in ks:
+            edges = [users[k] for _ref, users in refs]
+            if edges[0]["via"]:
+                what = "its {}, through the {} driver".format(", ".join(e["signal"] for e in edges), edges[0]["via"])
             else:
-                bits = e["design_port"] + ("[{}]".format(e["bit"]) if e["bit"] is not None else "")
-                parts.append("{} (the design's {}, direct)".format(name, bits))
-        pin = next(iter(users.values()))["pin"]
-        out.append({"level": "warning", "message": (
-            "pin {} (FPGA {}) is shared by {}: the generated top connects all of them, so only one may drive it "
-            "at a time").format(ref, pin or "?", " and ".join(parts))})
+                what = "the design's {}, direct".format(", ".join(
+                    e["design_port"] + ("[{}]".format(e["bit"]) if e["bit"] is not None else "") for e in edges))
+            parts.append("{} ({})".format(fixes.name(k), what))
+        pins = ", ".join("{} (FPGA {})".format(ref, next(iter(users.values()))["pin"] or "?") for ref, users in refs)
+        many = len(refs) > 1
+        out.append({"level": "warning", "uses": [k for k in ks if k is not None],
+                    "resolve": fixes.either(*[k for k in ks if k is not None]),
+                    "message": "{} {} {} shared by {}: the generated top connects all of them, so only one may "
+                               "drive {} at a time".format("pins" if many else "pin", pins, "are" if many else "is",
+                                                           " and ".join(parts), "each" if many else "it")})
     return out
 
 
@@ -389,8 +445,8 @@ def part_status(setup, kept, excluded, resolved, trace, profile_path, drops):
                     ports = [p for p, c, _s, _w in codegen.design_ports() if c == cid]
                     reasons.setdefault(k, []).append(("exclusive", (
                         "design_top has one {} ({}) and {} already provides it; the build keeps the first "
-                        "provider, so this part's {} does not reach the design. Remove one of them.").format(
-                            cid, ", ".join(ports), label(first[cid]), cid)))
+                        "provider, so this part's {} does not reach the design. Keep one of them.").format(
+                            cid, ", ".join(ports), label(first[cid]), cid), {"with": first[cid], "capability": cid}))
     dropped = {d["use"] for d in drops or []}
     edges = {e["use"] for e in (trace or {}).get("edges") or []}
     provides = {pr["attach_index"] for p in (trace or {}).get("ports") or [] for pr in p["providers"]}

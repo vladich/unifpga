@@ -519,9 +519,12 @@ def _voltage_range(v):
     return v, v
 
 
-def validate(setup):
-    """[(level, message)]: level 'error' or 'warning'."""
+def validate(setup, clashes=None):
+    """[(level, message)]: level 'error' or 'warning'. `clashes`, a list,
+    receives (use a, use b, [FPGA pins]) for every two uses wired to the same
+    pins (the editor offers to re-wire or remove one of them)."""
     problems = []
+    pair_pins = {}                       # (earlier use, later use) -> pins both use
     try:
         layout = read_layout(setup["board"])
         cfg = generate(setup)
@@ -581,8 +584,13 @@ def validate(setup):
                 for p in str(pin).split(","):
                     prev = owner.get(p)          # (use index, label, is gpio)
                     if prev and prev[0] != n and not (prev[2] or gpio):
-                        problems.append(("error", "pin {} used by both {} and {}".format(p, prev[1], label)))
+                        pair_pins.setdefault((prev[0], n, prev[1], label), []).append(p)
                     owner.setdefault(p, (n, label, gpio))
+    for (a, b, la, lb), pins in pair_pins.items():
+        problems.append(("error", "{} {} used by both {} and {}".format(
+            "pin" if len(pins) == 1 else "pins", ", ".join(pins), la, lb)))
+        if clashes is not None:
+            clashes.append((a, b, pins))
     return problems
 
 

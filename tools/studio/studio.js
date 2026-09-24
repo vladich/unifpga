@@ -1663,6 +1663,7 @@ function useDetails(d, i) {
   d.append(h("h4", {}, useLabel(use) + (use.module ? " (" + moduleDef(use.module).peripheral + ")" : "")));
   if (profileDrop(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + dropText(i) + "."));
   if (partStatus(i)) d.append(h("p", {class: "note"}, (partStatus(i).connected ? "Only partly connected to the design: " : "Not connected to the design: ") + partText(i)));
+  for (const p of problemsOfUse(i)) d.append(h("div", {class: "conflict"}, h("p", {class: "note"}, "Conflict: " + p.message), fixButtons(p)));
   if (use.module) {
     const m = moduleDef(use.module);
     if (m.verified === false) d.append(h("div", {class: "chain"}, "pinout not verified: " + (m.source || "")));
@@ -1701,6 +1702,24 @@ function useDetails(d, i) {
     d.append(h("div", {class: "chain"}, "Order decides which design bits a part gets when several provide the same port."));
   }
 }
+
+// the buttons that resolve a problem between parts (the server's `resolve`:
+// re-wire a module to free pins, or remove a part, the parts named)
+function fixButtons(p) {
+  if (STATIC || !(p.resolve || []).length) return null;
+  return h("div", {class: "fixes"}, ...p.resolve.map((f) => h("button", {onclick: () => applyFix(f)}, f.label)));
+}
+async function applyFix(f) {
+  if (f.op === "autowire") return autoWire(f.use);
+  if (f.op === "remove") {
+    const label = useLabel(S.setup.use[f.use]);
+    S.setup.use.splice(f.use, 1);
+    S.sel = null;
+    return changed("removed " + label + " (resolving a conflict)");
+  }
+}
+// the problems a part is in, with their buttons
+function problemsOfUse(i) { return ((S.ev && S.ev.problems) || []).filter((p) => (p.uses || []).includes(i)); }
 
 async function autoWire(i) {
   try {
@@ -1768,7 +1787,7 @@ function tables() {
   for (const x of (S.ev && S.ev.excluded) || [])
     pl.append(h("li", {class: "warning"}, "not traced (the drawing leaves it out): " + useLabel(S.setup.use[x.use] || {}) + " — " + x.reason));
   if (!probs.length) pl.append(h("li", {}, "no problems"));
-  for (const p of probs) pl.append(h("li", {class: p.level}, p.level + ": " + p.message));
+  for (const p of probs) pl.append(h("li", {class: p.level}, p.level + ": " + p.message, fixButtons(p)));
   $("config-text").textContent = (S.ev && S.ev.configuration_text) || "";
 }
 
@@ -2218,6 +2237,24 @@ async function selftest() {
         ok("the design bits on it are outlined as conflicted", [...document.querySelectorAll('#svg rect[stroke="#f76707"] title')].some((x) => x.textContent.includes("conflicted")));
         if (key) { select({kind: "pin", conn: key.split(".")[0], key: key.split(".")[1]});
                    ok("its panel says it is shared", $("details").textContent.includes("This pin is shared")); }
+      }
+    }
+    // a conflict offers buttons that resolve it; pressing one re-evaluates without it
+    {
+      const p = (S.ev.problems || []).find((q) => (q.resolve || []).length);
+      if (p) {
+        const saved = clone(S.setup);
+        ok("a conflict in Problems has resolve buttons", [...$("problems").querySelectorAll(".fixes button")].some((b) => b.textContent === p.resolve[0].label));
+        select({kind: "use", use: p.uses[0]});
+        ok("the parts' panels show the conflict with its buttons", $("details").textContent.includes("Conflict: ") &&
+           [...$("details").querySelectorAll(".fixes button")].length === p.resolve.length);
+        const fix = p.resolve.find((f) => f.op === "autowire") || p.resolve[0];
+        const ev0 = S.ev;
+        [...$("problems").querySelectorAll(".fixes button")].find((b) => b.textContent === fix.label).click();
+        for (let n = 0; S.ev === ev0 && n < 200; n++) await new Promise((r) => setTimeout(r, 50));   // auto-wiring asks the server first
+        await settle();
+        ok("pressing '" + fix.label + "' resolves the conflict", !(S.ev.problems || []).some((q) => q.message === p.message));
+        S.setup = saved; S.sel = null; await changed("restored"); await settle();
       }
       const sp = ports().find((q) => sharedBits(q).size);
       if (sp) {

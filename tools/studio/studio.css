@@ -122,3 +122,6 @@ svg text { font-family: system-ui, sans-serif; }
 #d-detail .cfg .why { color: #c92a2a; }
 #d-detail .cfg button { font: inherit; font-size: 11px; }
 #d-code { max-height: 60vh; overflow: auto; border: 1px solid #dee2e6; border-radius: 4px; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #fcfcfd; margin: 6px 0; }
+.fixes { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
+.fixes button { font-size: 12px; }
+.conflict .note { margin-bottom: 2px; }
