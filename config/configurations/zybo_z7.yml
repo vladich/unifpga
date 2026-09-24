@@ -5,6 +5,12 @@ Configuration:
   id: zybo_z7
   board: zybo_z7
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]   # every toolchain it is checked with, the default first
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    zybo_z7_openxc7:
+      toolchain: nextpnr_openxc7
 
   attach:
     - peripheral: clock_input

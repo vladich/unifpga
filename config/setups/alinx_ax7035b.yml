@@ -5,6 +5,8 @@ Setup:
   id: alinx_ax7035b
   board: alinx_ax7035b
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
+  aliases: {alinx_ax7035b_openxc7: {toolchain: nextpnr_openxc7}}
   use:
     - onboard: clk
     - onboard: cpu_resetn

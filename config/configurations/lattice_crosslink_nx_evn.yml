@@ -7,6 +7,12 @@ Configuration:
   id: lattice_crosslink_nx_evn
   board: lattice_crosslink_nx_evn
   toolchain: nextpnr_nexus
+  toolchains: [nextpnr_nexus, nextpnr_oxide]   # every toolchain it is checked with, the default first
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    lattice_crosslink_nx_evn_oxide:
+      toolchain: nextpnr_oxide
 
   manual: true
 
@@ -38,3 +44,8 @@ Configuration:
       bind:
         rx: onboard_uart.rx
         tx: onboard_uart.tx
+
+  # What a toolchain builds differently (config/overlay.py patches, from the setup)
+  for_toolchain:
+    nextpnr_oxide:
+      manual: null

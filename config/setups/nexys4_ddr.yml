@@ -5,6 +5,8 @@ Setup:
   id: nexys4_ddr
   board: nexys4_ddr
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
+  aliases: {nexys4_ddr_default: {}, nexys4_ddr_default_openxc7: {toolchain: nextpnr_openxc7}, nexys4_ddr_openxc7: {toolchain: nextpnr_openxc7}, nexys4_ddr_tm1638_inmp441_jc: {}, nexys4_ddr_tm1638_inmp441_jc_openxc7: {toolchain: nextpnr_openxc7}}
   use:
     - onboard: clk100mhz
     - onboard: switches

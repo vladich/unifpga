@@ -5,6 +5,12 @@ Configuration:
   id: nexys4
   board: nexys4
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]   # every toolchain it is checked with, the default first
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    nexys4_openxc7:
+      toolchain: nextpnr_openxc7
 
   attach:
     - peripheral: clock_input

@@ -1,0 +1,15 @@
+# Setup icebreaker_dvi_24b_no_tm1638: the rig config/configurations/icebreaker_dvi_24b_no_tm1638.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: icebreaker_dvi_24b_no_tm1638
+  board: icebreaker
+  toolchain: nextpnr_icestorm
+  aliases: {icebreaker_dvi_24b_no_tm1638_yosys: {}}
+  use:
+    - onboard: clk
+    - onboard: uart
+    - onboard: button
+    - onboard: leds
+    - onboard: buttons
+    - raw: {peripheral: dvi_pmod_ddr_24b, bind: {pmod_a: pmod_p1a, pmod_b: pmod_p1b}}

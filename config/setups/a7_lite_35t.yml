@@ -5,6 +5,8 @@ Setup:
   id: a7_lite_35t
   board: a7_lite_35t
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
+  aliases: {a7_lite_35t_openxc7: {toolchain: nextpnr_openxc7}}
   use:
     - onboard: clk50mhz
     - onboard: cpu_resetn

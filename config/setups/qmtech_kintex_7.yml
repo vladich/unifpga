@@ -5,6 +5,8 @@ Setup:
   id: qmtech_kintex_7
   board: qmtech_kintex_7
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
+  aliases: {qmtech_kintex_7_openxc7: {toolchain: nextpnr_openxc7}}
   use:
     - onboard: clk
     - onboard: cpu_resetn

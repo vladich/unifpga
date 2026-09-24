@@ -5,6 +5,8 @@ Setup:
   id: nexys4
   board: nexys4
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
+  aliases: {nexys4_openxc7: {toolchain: nextpnr_openxc7}}
   use:
     - onboard: clk
     - onboard: switches

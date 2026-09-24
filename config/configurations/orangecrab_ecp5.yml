@@ -1,0 +1,58 @@
+# Configuration 'orangecrab_ecp5'.
+# Generated from config/setups/orangecrab_ecp5.yml (./unifpga setup generate); edit the setup.
+
+Configuration:
+  id: orangecrab_ecp5
+  board: orangecrab_ecp5
+  toolchain: nextpnr_trellis
+  part: "25F"   # which of the board's chips this configuration targets
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    orangecrab_ecp5_yosys: {}
+
+  attach:
+    - peripheral: clock_input
+      bind:
+        clk: clk
+    - peripheral: led_bank
+      params:
+        width: 3
+      bind:
+        led: onboard_leds
+    - peripheral: button_array
+      params:
+        width: 1
+      bind:
+        btn: onboard_buttons
+    - peripheral: vga_4bit
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        color_depth: 444
+        gate: false
+      bind:
+        r: onboard_vga.r
+        g: onboard_vga.g
+        b: onboard_vga.b
+        hs: onboard_vga.hs
+        vs: onboard_vga.vs
+    - peripheral: sw_bank
+      params:
+        width: 2
+      bind:
+        sw: onboard_switches
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: inmp441_i2s_mic
+      bind:
+        lr: "gpio[3]"
+        ws: "gpio[4]"
+        sck: "gpio[5]"
+        sd: "gpio[6]"

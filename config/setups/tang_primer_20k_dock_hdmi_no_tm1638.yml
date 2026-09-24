@@ -5,6 +5,8 @@ Setup:
   id: tang_primer_20k_dock_hdmi_no_tm1638
   board: tang_primer_20k_dock
   toolchain: gowin_eda
+  toolchains: [gowin_eda, nextpnr_apicula]
+  aliases: {tang_primer_20k_dock_hdmi_no_tm1638_yosys: {toolchain: nextpnr_apicula}}
   use:
     - onboard: clock
     - onboard: leds
@@ -12,6 +14,7 @@ Setup:
     - onboard: switches
     - onboard: buttons
     - onboard: hdmi
+      for_toolchain: {nextpnr_apicula: {raw: {peripheral: hdmi_tmds, params: {timing: dvi}, bind: {clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n, d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n}}, onboard: null}}
     - module: inmp441_breakout
       wires: {L/R: j14.8, WS: j14.6, SCK: j14.10, SD: j14.12}
     - onboard: headphone
@@ -33,3 +36,8 @@ Setup:
       onboard_leds[4]: LVCMOS33
       onboard_leds[5]: LVCMOS33
       onboard_pa_enable: LVCMOS33
+  for_toolchain:
+    nextpnr_apicula:
+      extra:
+        io_overrides:
+          clk: null

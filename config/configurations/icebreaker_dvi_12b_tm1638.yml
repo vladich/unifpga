@@ -1,0 +1,44 @@
+# Configuration 'icebreaker_dvi_12b_tm1638'.
+# Generated from config/setups/icebreaker_dvi_12b_tm1638.yml (./unifpga setup generate); edit the setup.
+
+Configuration:
+  id: icebreaker_dvi_12b_tm1638
+  board: icebreaker
+  toolchain: nextpnr_icestorm
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    icebreaker_dvi_12b_tm1638_yosys: {}
+
+  attach:
+    - peripheral: clock_input
+      bind:
+        clk: clk
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: button_array
+      params:
+        width: 1
+      bind:
+        btn: onboard_button
+    - peripheral: dvi_12bit
+      bind:
+        r: ["pmod_p1a[5]", "pmod_p1a[1]", "pmod_p1a[4]", "pmod_p1a[0]"]
+        g: ["pmod_p1a[7]", "pmod_p1a[3]", "pmod_p1a[6]", "pmod_p1a[2]"]
+        b: ["pmod_p1b[5]", "pmod_p1b[2]", "pmod_p1b[4]", "pmod_p1b[0]"]
+        hs: "pmod_p1b[3]"
+        vs: "pmod_p1b[7]"
+        de: "pmod_p1b[6]"
+        ck: "pmod_p1b[1]"
+    - peripheral: tm1638_led_key
+      bind:
+        clk: "pmod_p2[6]"
+        stb: "pmod_p2[7]"
+        dio: "pmod_p2[5]"
+    - peripheral: gpio_header
+      params:
+        width: 5
+      bind:
+        io: ["pmod_p2[0]", "pmod_p2[1]", "pmod_p2[2]", "pmod_p2[3]", "pmod_p2[4]"]

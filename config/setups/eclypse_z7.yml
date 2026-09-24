@@ -5,6 +5,8 @@ Setup:
   id: eclypse_z7
   board: eclypse_z7
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
+  aliases: {eclypse_z7_openxc7: {toolchain: nextpnr_openxc7}}
   use:
     - onboard: clk
     - onboard: buttons

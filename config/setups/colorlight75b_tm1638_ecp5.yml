@@ -1,0 +1,13 @@
+# Setup colorlight75b_tm1638_ecp5: the rig config/configurations/colorlight75b_tm1638_ecp5.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: colorlight75b_tm1638_ecp5
+  board: colorlight75b
+  toolchain: nextpnr_trellis
+  aliases: {colorlight75b_tm1638_ecp5_yosys: {}}
+  use:
+    - onboard: clk
+    - onboard: leds
+    - raw: {peripheral: tm1638_led_key, bind: {clk: 'gpio[0]', stb: 'gpio[1]', dio: 'onboard_buttons[0]'}}
+    - onboard: hdmi

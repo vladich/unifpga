@@ -6,6 +6,10 @@ Configuration:
   board: omdazz_epm570
   toolchain: quartus2
 
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    omdazz_epm570_quartus_13_1_or_older: {}
+
   attach:
     - peripheral: clock_input
       bind:

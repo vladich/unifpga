@@ -1,0 +1,19 @@
+# Setup karnix_ecp5: the rig config/configurations/karnix_ecp5.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: karnix_ecp5
+  board: karnix_ecp5
+  toolchain: nextpnr_trellis
+  aliases: {karnix_ecp5_yosys: {}}
+  use:
+    - onboard: clk
+    - onboard: leds
+    - onboard: buttons
+    - onboard: vga
+    - onboard: switches
+    - onboard: uart
+    - module: inmp441_breakout
+      wires: {L/R: 'gpio.[3]', WS: 'gpio.[4]', SCK: 'gpio.[5]', SD: 'gpio.[6]'}
+    - module: i2s_dac_breakout
+      wires: {SCK: 'gpio.[7]', BCK: 'gpio.[8]', DIN: 'gpio.[9]', LCK: 'gpio.[10]'}

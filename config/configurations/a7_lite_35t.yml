@@ -5,6 +5,12 @@ Configuration:
   id: a7_lite_35t
   board: a7_lite_35t
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]   # every toolchain it is checked with, the default first
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    a7_lite_35t_openxc7:
+      toolchain: nextpnr_openxc7
 
   attach:
     - peripheral: clock_input

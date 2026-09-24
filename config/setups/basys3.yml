@@ -5,6 +5,8 @@ Setup:
   id: basys3
   board: basys3
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
+  aliases: {basys3_openxc7: {toolchain: nextpnr_openxc7}}
   use:
     - onboard: clk
     - onboard: switches

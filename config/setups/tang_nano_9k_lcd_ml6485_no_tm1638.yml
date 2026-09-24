@@ -1,0 +1,22 @@
+# Setup tang_nano_9k_lcd_ml6485_no_tm1638: the rig config/configurations/tang_nano_9k_lcd_ml6485_no_tm1638.yml describes.
+# tools/setup.py generates that configuration from it (./unifpga setup check).
+
+Setup:
+  id: tang_nano_9k_lcd_ml6485_no_tm1638
+  board: tang_nano_9k
+  toolchain: nextpnr_apicula
+  aliases: {tang_nano_9k_lcd_ml6485_no_tm1638_yosys: {}}
+  use:
+    - onboard: clk
+    - onboard: buttons
+    - onboard: leds
+    - onboard: uart
+    - onboard: lcd
+      variant: lcd_ml6485
+    - onboard: microsd
+    - module: i2s_dac_breakout
+      wires: {BCK: 'gpio.[3]', DIN: 'gpio.[4]', LCK: 'gpio.[5]'}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.data}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.clk}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.cs}}
+    - raw: {peripheral: gpio_header, params: {width: 1}, bind: {io: onboard_small_lcd.rs}}

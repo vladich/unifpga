@@ -5,7 +5,10 @@ Setup:
   id: nexys_a7
   board: nexys_a7
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]
   part: "100t"
+  parts: [100t, 50t]
+  aliases: {nexys_a7_100: {part: 100t}, nexys_a7_100_openxc7: {toolchain: nextpnr_openxc7, part: 100t}, nexys_a7_50: {part: 50t}, nexys_a7_50_openxc7: {toolchain: nextpnr_openxc7, part: 50t}, nexys_a7_openxc7: {toolchain: nextpnr_openxc7, part: 100t}}
   use:
     - onboard: clk100mhz
     - onboard: switches

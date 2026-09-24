@@ -1,0 +1,68 @@
+# Configuration 'ice40hx8k_evb'.
+# Generated from config/setups/ice40hx8k_evb.yml (./unifpga setup generate); edit the setup.
+
+Configuration:
+  id: ice40hx8k_evb
+  board: ice40hx8k_evb
+  toolchain: nextpnr_icestorm
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    ice40hx8k_evb_yosys: {}
+
+  attach:
+    - peripheral: clock_input
+      bind:
+        clk: clk
+    - peripheral: button_array
+      params:
+        width: 3
+      bind:
+        btn: onboard_buttons
+    - peripheral: led_bank
+      params:
+        width: 2
+      bind:
+        led: onboard_leds
+    - peripheral: sw_bank
+      params:
+        width: 2
+      bind:
+        sw: onboard_switches
+    - peripheral: uart_2wire
+      bind:
+        tx: onboard_uart.tx
+        rx: onboard_uart.rx
+    - peripheral: vga_4bit
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        color_depth: 444
+        gate: false
+      bind:
+        r: onboard_vga.r
+        g: onboard_vga.g
+        b: onboard_vga.b
+        hs: onboard_vga.hs
+        vs: onboard_vga.vs
+    - peripheral: tm1638_led_key
+      bind:
+        clk: "gpio[0]"
+        stb: "gpio[1]"
+        dio: "gpio[2]"
+    - peripheral: inmp441_i2s_mic
+      bind:
+        lr: "gpio[3]"
+        ws: "gpio[4]"
+        sck: "gpio[5]"
+        sd: "gpio[6]"
+    - peripheral: i2s_audio_out
+      bind:
+        mclk: "gpio[7]"
+        bclk: "gpio[8]"
+        sdata: "gpio[9]"
+        lrclk: "gpio[10]"

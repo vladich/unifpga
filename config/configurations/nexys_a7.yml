@@ -5,7 +5,25 @@ Configuration:
   id: nexys_a7
   board: nexys_a7
   toolchain: vivado
+  toolchains: [vivado, nextpnr_openxc7]   # every toolchain it is checked with, the default first
   part: "100t"   # which of the board's chips this configuration targets
+  parts: ["100t", "50t"]   # every chip it is checked with, the default first
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    nexys_a7_100:
+      part: "100t"
+    nexys_a7_100_openxc7:
+      toolchain: nextpnr_openxc7
+      part: "100t"
+    nexys_a7_50:
+      part: "50t"
+    nexys_a7_50_openxc7:
+      toolchain: nextpnr_openxc7
+      part: "50t"
+    nexys_a7_openxc7:
+      toolchain: nextpnr_openxc7
+      part: "100t"
 
   attach:
     - peripheral: clock_input

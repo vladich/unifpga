@@ -9,3 +9,7 @@ Profile:
   lab_clock: pixel
   lab_width:
     gpio: 32
+  for_toolchain:
+    nextpnr_apicula:
+      lab_width:
+        switches: 5
