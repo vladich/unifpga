@@ -86,7 +86,7 @@ Layout:
       device: {kind: header, bank: sdio_header}   # no peripheral model yet
     - id: ws2812
       label: WS2812B-2020 RGB LED (U15) + aRGB strip connector J24
-      device: {kind: ws2812, bank: onboard_ws2812}   # no peripheral model yet
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: camera
       label: OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)
       device: {kind: camera_dvp, bank: onboard_camera}   # no peripheral model yet

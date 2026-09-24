@@ -69,3 +69,6 @@ Configuration:
         lrclk: onboard_audio.ws
         sdata: onboard_audio.din
         pa_en_n: onboard_audio.pa_en_n
+    - peripheral: ws2812
+      bind:
+        din: onboard_ws2812.din

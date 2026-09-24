@@ -56,6 +56,9 @@ Layout:
       label: HDMI out
       attach: {peripheral: hdmi_tmds, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p,
                                              clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: ws2812
+      label: WS2812B RGB LED U17
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: headphone
       label: Headphone DAC + speaker amplifier
       attach: {peripheral: i2s_audio_out, params: {align_right: 1, offset_by_one_cycle: 0},

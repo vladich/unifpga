@@ -72,6 +72,9 @@ Layout:
         - id: lcd_800_480_2
           label: 'lcd_800_480 (clock_pixel_pll={idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}; clock_pixel_mhz=48.9375)'
           attach: {peripheral: lcd_800_480, params: {clock_pixel_pll: {idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}, clock_pixel_mhz: 48.9375}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck}}
+    - id: ws2812
+      label: WS2812 RGB LED
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: ms5351_clk
       label: MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)
       device: {kind: clock, bank: onboard_ms5351_clk}   # no peripheral model yet

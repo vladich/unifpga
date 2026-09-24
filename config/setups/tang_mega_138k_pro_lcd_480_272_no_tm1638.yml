@@ -22,6 +22,7 @@ Setup:
       wires: {SCK: 'pmod_1.[4]', BCK: 'pmod_1.[5]', LCK: 'pmod_1.[7]', DIN: 'pmod_1.[6]'}
     - onboard: uart
     - onboard: audio_dac
+    - onboard: ws2812
   extra:
     pin_overrides:
       pmod_0:

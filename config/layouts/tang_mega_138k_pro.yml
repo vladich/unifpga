@@ -89,7 +89,7 @@ Layout:
       device: {kind: other, bank: onboard_config}   # no peripheral model yet
     - id: ws2812
       label: WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
-      device: {kind: ws2812, bank: onboard_ws2812}   # no peripheral model yet
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: sfp_0
       label: SFP+ cage 0 (SerDes Q1 lane 0)
       device: {kind: serdes, bank: onboard_sfp_0}   # no peripheral model yet

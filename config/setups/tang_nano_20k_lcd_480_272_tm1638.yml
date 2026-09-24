@@ -19,3 +19,4 @@ Setup:
     - onboard: headphone
     - gpio: gpio
       params: {width: 5}
+    - onboard: ws2812
