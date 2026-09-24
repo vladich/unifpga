@@ -61,7 +61,8 @@ def test_layout_pins_are_distinct_board_pins_on_signal_positions(board_id):
                 assert p not in seen, "{} is {} and {}".format(p, seen.get(p), (conn["id"], key))
                 seen[p] = (conn["id"], key)
     for o in layout["onboard"]:
-        assert o["attach"]["peripheral"] in config_init.read_peripherals()
+        for _vid, _label, attach in su.onboard_variants(o):
+            assert attach["peripheral"] in config_init.read_peripherals()
 
 
 def test_plugged_pmod_wires_its_row():
@@ -204,6 +205,7 @@ def test_save_writes_setup_and_configuration(scratch):
     for wrong in ("../evil", "Upper", ""):
         with pytest.raises(studio.ApiError):
             studio.save(dict(rig, id=wrong))
+    (scratch / "setups" / "de10_lite.yml").unlink()          # a configuration without a setup
     with pytest.raises(studio.ApiError, match="exists and has no setup"):
         studio.save(dict(rig, id="de10_lite"))
 
@@ -308,9 +310,28 @@ def test_serves_names_real_pins_and_provided_ports():
         provided = {e["capability"] for e in p.get("provides") or []}
         for sig, ports in (p.get("serves") or {}).items():
             assert sig in signals, (pid, sig)
-            for port in ports:
+            per_pin = all(isinstance(x, list) for x in ports)
+            if per_pin:          # one list per pin of a bus: as many as the bus is wide
+                width = next(s for s in p["signals"] if s["name"] == sig).get("width")
+                assert not isinstance(width, int) or len(ports) == width, (pid, sig)
+            for port in (x for group in ports for x in group) if per_pin else ports:
                 cap, _, name = port.partition(".")
                 assert cap in provided and any(s["name"] == name for s in caps[cap]["signals"]), (pid, port)
+
+
+def test_hdmi_channels_carry_their_colour():
+    """TMDS channel k carries one colour (d[0] blue with the syncs, d[1] green,
+    d[2] red: rtl/peripherals/hdmi_tmds_out.sv), not every screen port."""
+    rig = su.read_setup("tang_nano_9k_hdmi_tm1638")
+    ev = studio.evaluate(rig)
+    hdmi = [e for e in ev["trace"]["edges"] if e["via"] and e["signal"] in ("d_p", "d_n")]
+    by_pin = {}
+    for e in hdmi:
+        by_pin.setdefault((e["signal"], e["ref"]), set()).add(e["design_port"])
+    a = next(x for x in ev["trace"]["attaches"] if x["peripheral"] == "hdmi_tmds")
+    refs = [p["ref"] for p in a["pins"]["d_p"]]
+    assert by_pin[("d_p", refs[0])] == {"blue", "x", "y"}
+    assert by_pin[("d_p", refs[1])] == {"green"} and by_pin[("d_p", refs[2])] == {"red"}
 
 
 def test_autowire_plugs_or_wires_free_pins():
@@ -505,7 +526,8 @@ def test_design_table_covers_every_design_and_configuration():
     t = studio.design_table()
     assert len(t["designs"]) == len(studio.list_designs())
     assert [c["id"] for c in t["configurations"]] == sorted(config_init.read_configurations())
-    assert any(not c["layout"] for c in t["configurations"]) and any(c["setup"] for c in t["configurations"])
+    # every configuration now has a rig drawing (a generated layout where nobody drew one)
+    assert all(c["layout"] and c["setup"] for c in t["configurations"])
     k = [c["id"] for c in t["configurations"]].index("arty_a7_35_pmod_mic3")
     aps = next(d for d in t["designs"] if d["id"] == "5_5_aps")
     assert aps["requires"] == ["seven_segment >= 1", "screen >= 320x240"] and k in aps["fits"]

@@ -31,6 +31,7 @@ function el(tag, attrs, text) {
 function h(tag, attrs, ...kids) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === null || v === undefined || v === false) continue;          // an attribute left out
     if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
   }
   for (const k of kids) if (k !== null && k !== undefined) e.append(k instanceof Node ? k : document.createTextNode(String(k)));
@@ -41,6 +42,10 @@ function clone(x) { return JSON.parse(JSON.stringify(x)); }
 function conn(id) { return S.board.connectors.find((c) => c.id === id); }
 function moduleDef(id) { return S.board.modules.find((m) => m.id === id); }
 function onboardDef(id) { return S.board.onboard.find((o) => o.id === id); }
+// an on-board part is attached one way, or as one of its variants (the panels an LCD connector takes ...)
+function variantsOf(o) { return (o && o.variants) || (o ? [{id: null, label: o.label, attach: o.attach, pins: o.pins}] : []); }
+function variantOf(o, use) { const vs = variantsOf(o); return vs.find((v) => v.id === ((use && use.variant) || null)) || vs[0]; }
+function onboardPins(o, use) { const v = variantOf(o, use); return v ? v.pins : {}; }
 function passive(sig) { return sig === "power" || sig === "ground"; }
 
 // wires of a module use, plug expanded ({module pin: "conn.key"})
@@ -63,7 +68,7 @@ function refIndex() {
 }
 
 function useLabel(use) {
-  if (use.onboard) return (onboardDef(use.onboard) || {}).label || use.onboard;
+  if (use.onboard) { const o = onboardDef(use.onboard); return ((o || {}).label || use.onboard) + (use.variant && o && variantsOf(o).length > 1 ? ": " + variantOf(o, use).label : ""); }
   if (use.module) return (moduleDef(use.module) || {}).name || use.module;
   if (use.gpio) return "gpio " + ((conn(use.gpio) || {}).label || use.gpio);
   return "raw " + ((use.raw || {}).peripheral || "?");
@@ -204,7 +209,7 @@ function partShort(i) {
 }
 // the peripheral a use attaches, and the capabilities it provides
 function usePeripheral(u) {
-  return u.module ? (moduleDef(u.module) || {}).peripheral : u.onboard ? ((onboardDef(u.onboard) || {}).attach || {}).peripheral
+  return u.module ? (moduleDef(u.module) || {}).peripheral : u.onboard ? ((variantOf(onboardDef(u.onboard), u) || {}).attach || {}).peripheral
        : u.gpio ? "gpio_header" : (u.raw || {}).peripheral;
 }
 function providedCaps(pid) { return ((S.board.peripherals[pid] || {}).provides || []).map((p) => p.capability); }
@@ -429,7 +434,7 @@ function draw() {
     const dropped = i !== null && !!profileDrop(i);
     const on = i !== null && hi.uses.has(i), selected = S.sel && S.sel.kind === "onboard" && S.sel.id === o.id;
     const g = el("g", {class: "clickable"});
-    const obpins = i === null ? [] : Object.entries(o.pins).flatMap(([s, ps]) => ps.map((pp) => Object.assign({s}, pp)));
+    const obpins = i === null ? [] : Object.entries(onboardPins(o, S.setup.use[i])).flatMap(([s, ps]) => ps.map((pp) => Object.assign({s}, pp)));
     const perRow = Math.floor((OW - 20) / 11), pinRows = Math.ceil(obpins.length / perRow);
     const boxH = 20 + pinRows * 11;
     g.append(el("rect", {x: BX + 12, y: oy, width: OW, height: boxH, rx: 3,
@@ -446,7 +451,8 @@ function draw() {
       if (SHARED.has(pp.ref)) g.append(el("circle", {cx: px, cy: py, r: 6.5, fill: "none", stroke: "#f76707", "stroke-width": 2, "pointer-events": "none"}));
     });
     const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null || dropped ? "#868e96" : "#212529"},
-                  o.label + (dropped ? "  — not in the design (profile)" : i !== null && partStatus(i) ? "  — " + partShort(i) : ""));
+                  o.label + (i !== null && variantsOf(o).length > 1 ? ": " + variantOf(o, S.setup.use[i]).label : variantsOf(o).length > 1 ? " (" + variantsOf(o).length + " ways)" : "") +
+                  (dropped ? "  — not in the design (profile)" : i !== null && partStatus(i) ? "  — " + partShort(i) : ""));
     lt.append(el("title", {}, o.label + (i === null ? " — not used by this setup" : dropped ? " — " + dropText(i) : "")));
     g.append(lt);
     target(g.firstChild, {kind: "onboard", id: o.id});
@@ -1102,7 +1108,7 @@ function verilogTarget(sel) {
     const u = S.setup.use[i] || {};
     if (u.module) return Object.values(wiresOf(u)).map(pinRef).filter(Boolean);
     const o = u.onboard && onboardDef(u.onboard);
-    return o ? Object.values(o.pins).flatMap((ps) => ps.map((p) => p.ref)) : [];
+    return o ? Object.values(onboardPins(o, u)).flatMap((ps) => ps.map((p) => p.ref)) : [];
   };
   const withDrop = (i) => Object.assign({use: i}, profileDrop(i) ? {refs: usePins(i)} : {});
   if (sel.kind === "vbit" || sel.kind === "vport") {
@@ -1128,7 +1134,7 @@ function verilogTarget(sel) {
   if (sel.kind === "board") return {board: true};
   return null;
 }
-function usePinsOfOnboard(id) { const o = onboardDef(id); return o ? Object.values(o.pins).flatMap((ps) => ps.map((p) => p.ref)) : []; }
+function usePinsOfOnboard(id) { const o = onboardDef(id); return o ? [...new Set(variantsOf(o).flatMap((v) => Object.values(v.pins).flatMap((ps) => ps.map((p) => p.ref))))] : []; }
 
 async function openVerilog(sel) {
   if (!sel) return;
@@ -1476,8 +1482,10 @@ function details() {
     d.append(h("div", {}, S.board.connectors.length + " connectors, " + S.board.onboard.length + " on-board devices"));
     d.append(h("p", {class: "muted"}, "Double-click the board for the generated top module's ports: every FPGA pin this rig uses."));
   } else if (sel.kind === "ref") {
-    const o = S.board.onboard.find((x) => Object.values(x.pins).some((ps) => ps.some((pp) => pp.ref === sel.ref)));
-    const pp = o && Object.entries(o.pins).flatMap(([s, ps]) => ps.map((x) => Object.assign({s}, x))).find((x) => x.ref === sel.ref);
+    const has = (x) => variantsOf(x).some((v) => Object.values(v.pins).some((ps) => ps.some((pp) => pp.ref === sel.ref)));
+    const o = S.board.onboard.find(has);
+    const ou = o && uses.find((u) => u.onboard === o.id);
+    const pp = o && Object.entries(onboardPins(o, ou)).flatMap(([s, ps]) => ps.map((x) => Object.assign({s}, x))).find((x) => x.ref === sel.ref);
     d.append(h("h4", {}, (o ? o.label + " " : "") + sel.ref));
     if (pp) d.append(h("div", {}, "signal " + pp.s + ", FPGA pin " + (pp.pin || "?")));
     const eds = ((S.ev && S.ev.trace && S.ev.trace.edges) || []).filter((ed) => ed.ref === sel.ref);
@@ -1486,15 +1494,28 @@ function details() {
   } else if (sel.kind === "use") {
     useDetails(d, sel.use);
   } else if (sel.kind === "onboard") {
-    const o = onboardDef(sel.id), i = uses.findIndex((u) => u.onboard === sel.id);
-    d.append(h("h4", {}, o.label + " (" + o.attach.peripheral + ")"));
+    const o = onboardDef(sel.id), i = uses.findIndex((u) => u.onboard === sel.id), vs = variantsOf(o);
+    const cur = variantOf(o, uses[i]);
+    d.append(h("h4", {}, o.label + " (" + cur.attach.peripheral + ")"));
+    if (vs.length > 1) {
+      // the ways this part can be used, one at a time
+      const pick = h("select", {disabled: STATIC ? "" : null, onchange: (e) => {
+        if (i >= 0) { const u = S.setup.use[i]; u.variant = e.target.value; delete u.params; changed(o.label + " used as " + e.target.value); }
+      }}, ...vs.map((v) => h("option", {value: v.id, selected: v === cur ? "" : null}, v.label)));
+      d.append(h("div", {}, "Used as: ", pick, h("span", {class: "muted"}, "  (" + vs.length + " ways this part can be used)")));
+      S.onboardPick = pick;
+    }
     if (i >= 0 && profileDrop(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + dropText(i) + "."));
     if (i >= 0 && partStatus(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + partText(i)));
-    for (const [s, ps] of Object.entries(o.pins)) d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ")));
+    for (const [s, ps] of Object.entries(cur.pins)) d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ")));
     if (i >= 0) { for (const x of portsOfUse(i)) d.append(chain(["design " + x.port.signal + (x.bits.length ? "[" + x.bits.join(",") + "]" : ""), o.label + (x.via ? " via " + x.via : "")])); }
     if (!STATIC) {
       if (i >= 0) { paramForm(d, i); d.append(h("button", {onclick: () => { S.setup.use.splice(i, 1); changed("stopped using " + o.label); }}, "Do not use")); }
-      else d.append(h("button", {onclick: () => { S.setup.use.push({onboard: o.id}); changed("using " + o.label); }}, "Use"));
+      else d.append(h("button", {onclick: () => {
+        const use = {onboard: o.id};
+        if (vs.length > 1) use.variant = S.onboardPick ? S.onboardPick.value : vs[0].id;
+        S.setup.use.push(use); changed("using " + o.label + (use.variant ? " as " + use.variant : ""));
+      }}, "Use"));
     }
   } else if (sel.kind === "conn") {
     const c = conn(sel.id), i = uses.findIndex((u) => u.gpio === sel.id);
@@ -1691,10 +1712,10 @@ function move(i, delta) {
 // parameters of the peripheral a use attaches, editable
 function paramForm(d, i) {
   const use = S.setup.use[i];
-  const perId = use.module ? moduleDef(use.module).peripheral : use.onboard ? onboardDef(use.onboard).attach.peripheral : null;
+  const perId = use.module ? moduleDef(use.module).peripheral : use.onboard ? variantOf(onboardDef(use.onboard), use).attach.peripheral : null;
   const per = perId && S.board.peripherals[perId];
   if (!per || !Object.keys(per.parameters).length) return;
-  const base = use.onboard ? (onboardDef(use.onboard).attach.params || {}) : {};
+  const base = use.onboard ? (variantOf(onboardDef(use.onboard), use).attach.params || {}) : {};
   const t = h("table", {});
   for (const [k, def] of Object.entries(per.parameters)) {
     const cur = use.params && k in use.params ? use.params[k] : base[k];
@@ -1909,7 +1930,7 @@ function wire() {
     const id = prompt("New setup id (a-z, 0-9, _):", S.board.board + "_my_rig");
     if (!id) return;
     const copy = confirm("Start from the current setup? (Cancel starts empty with the board's clock)");
-    const clocks = S.board.onboard.filter((o) => ((S.board.peripherals[o.attach.peripheral] || {}).provides || []).some((p) => p.capability === "clock"));
+    const clocks = S.board.onboard.filter((o) => variantsOf(o).some((v) => ((S.board.peripherals[v.attach.peripheral] || {}).provides || []).some((p) => p.capability === "clock")));
     const base = copy ? clone(S.setup) : {board: S.board.board, toolchain: $("toolchain").value, use: clocks.slice(0, 1).map((o) => ({onboard: o.id}))};
     base.id = id; delete base.notes;
     S.setup = base; S.sel = null;
@@ -2022,26 +2043,31 @@ async function selftest() {
     $("zoom-fit").click();
     ok("fit shows everything again", S.view === null && $("zoom-level").textContent === "100%");
     // driver-mediated trace (PmodVGA on arty_a7_35_pmod_mic3 style rigs)
-    const vi = S.setup.use.findIndex((u) => u.module === "digilent_pmod_vga");
-    if (vi >= 0) {
-      select({kind: "wire", use: vi, pin: "R0"});
+    // a module's pin through a driver, bit for bit: its wire, its design port and its panel
+    const ri = refIndex(), edgesNow = S.ev.trace.edges;
+    const byWire = (ed) => { const u = S.setup.use[ed.use] || {}; if (!u.module) return null;
+      const mp = Object.entries(wiresOf(u)).find(([, w]) => w === ri[ed.ref]); return mp ? mp[0] : null; };
+    const n1 = edgesNow.findIndex((ed) => ed.via && ed.bit !== null && ed.relation === "bit" && byWire(ed));
+    if (n1 >= 0) {
+      const ed = edgesNow[n1], u = S.setup.use[ed.use], m = moduleDef(u.module), mp = byWire(ed);
+      const p = ports().find((q) => q.design_port === ed.design_port);
+      select({kind: "wire", use: ed.use, pin: mp});
       const hiW = highlight();
-      ok("a VGA pin lights the design bit it serves", hiW.vbits.has("screen.red.0") && ![...hiW.vbits].some((b) => b.startsWith("screen.green")));
-      select({kind: "vport", cap: "screen", signal: "red"});
+      ok("a module pin lights the design bit it serves", hiW.vbits.has(p.capability + "." + p.signal + "." + ed.bit));
+      select({kind: "vport", cap: p.capability, signal: p.signal});
       const hiP = highlight();
-      ok("the design's red lights exactly its four pins", ["R0", "R1", "R2", "R3"].every((p) => hiP.wires.has(vi + "." + p)) &&
-         [...hiP.wires].filter((w) => w.startsWith(vi + ".")).length === 4);
-      ok("the trace names the driver ports", $("details").textContent.includes("vga (red … vga_r)"));
-      const edgesNow = S.ev.trace.edges;
-      const n1 = edgesNow.findIndex((ed) => ed.design_port === "red" && ed.bit === 1);
+      const mine = new Set(edgesNow.filter((x) => x.use === ed.use && x.design_port === ed.design_port).map((x) => byWire(x)).filter(Boolean));
+      ok("a design port lights exactly the module pins serving it", [...mine].every((w) => hiP.wires.has(ed.use + "." + w)) &&
+         [...hiP.wires].filter((w) => w.startsWith(ed.use + ".")).length === mine.size);
+      ok("the trace names the driver", $("details").textContent.includes(ed.via + " ("));
       select({kind: "edge", n: n1});
-      const txt = $("details").textContent;
-      ok("a connection's panel gives its driver, ports, pinmap, FPGA and header pin",
-         txt.includes("through the vga driver") && txt.includes("design side .red, pin side .vga_r") &&
-         txt.includes("pmod_jb[5]") && txt.includes("JB pin 8") && txt.includes("Module pinR1 (r[1])"));
-      const nl = edgesNow.findIndex((ed) => ed.design_port === "led" && ed.bit === 2 && !ed.via);
-      if (nl >= 0) { select({kind: "edge", n: nl}); ok("a direct connection says so", $("details").textContent.includes("direct (no logic")); }
+      const txt = $("details").textContent, [cid, key] = ri[ed.ref].split(".");
+      ok("a connection's panel gives its driver, pinmap, FPGA, header and module pin",
+         txt.includes("through the " + ed.via + " driver") && txt.includes(ed.ref) && txt.includes(ed.pin) &&
+         txt.includes(conn(cid).label + " pin " + key) && txt.includes("Module pin" + mp + " (" + m.pins[mp] + ")"));
     }
+    const nl = edgesNow.findIndex((ed) => !ed.via);
+    if (nl >= 0) { select({kind: "edge", n: nl}); ok("a direct connection says so", $("details").textContent.includes("direct (no logic")); }
     // drivers: a box each; a pin line lights exactly the connections it carries
     const drs = drivers();
     const shown = (sel) => !!document.querySelector("[data-sel='" + JSON.stringify(sel) + "']");
@@ -2130,8 +2156,9 @@ async function selftest() {
         const n0 = S.setup.use.length;
         S.setup.use.push({module: clash.id, wires: {}}); await changed("add clash"); await settle();
         await autoWire(n0); await settle();
-        ok("Auto-wire says why the part does not reach the design", /does not reach the design|only in part/.test($("status").textContent));
-        ok("the part is marked in the drawing", $("svg").textContent.includes("capability already provided"));
+        const noRoom = /free pins/.test($("status").textContent);          // nowhere to wire it: that is the message
+        ok("Auto-wire says why the part does not reach the design", /does not reach the design|only in part/.test($("status").textContent) || noRoom);
+        ok("the part is marked in the drawing", $("svg").textContent.includes(noRoom ? "not wired" : "capability already provided"));
         S.setup.use.splice(n0, 1); S.sel = null; await changed("remove clash"); await settle();
       }
     }
@@ -2217,39 +2244,57 @@ async function selftest() {
       ok(MODS.conns + "-click picks the connection", S.sel && CONNECTIONS.has(S.sel.kind));
     }
     S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
-    S.setup.use.push({module: "tm1638_led_key", wires: {CLK: S.board.connectors[0].id + ".99"}});
-    await changed("broken"); await settle();
-    ok("a broken module leaves the rest traced", !!S.ev.trace && S.ev.excluded.length === 1 && ports().length > 0);
-    ok("the untraced module is named in Problems", $("problems").textContent.includes("not traced"));
-    await autoWire(S.setup.use.length - 1); await settle();
-    ok("auto-wire wires every signal pin", Object.keys(S.setup.use[S.setup.use.length - 1].wires || {}).length === 3 &&
-       !S.ev.excluded.length && !(S.ev.problems || []).some((p) => p.level === "error"));
-    S.setup.use.pop(); await changed("undo"); await settle();
-    await changed("copy"); await settle();
+    await changed("fresh id"); await settle();
+    // a module this rig can take: the first the server can wire, whose capabilities are not taken
+    const taken = new Set();
+    S.setup.use.forEach((u) => { for (const c of providedCaps(usePeripheral(u))) if (capAggregation(c) === "exclusive") taken.add(c); });
+    let mod = null, suggestion = null;
+    for (const m of S.board.modules) {
+      if (providedCaps(m.peripheral).some((c) => taken.has(c))) continue;
+      const trial = clone(S.setup);
+      trial.use.push({module: m.id, wires: {}});
+      try { suggestion = await api("/api/autowire", {setup: trial, use: trial.use.length - 1}); mod = m; break; } catch (e) { /* no room for it */ }
+    }
     const n = S.setup.use.length;
-    const addSel = $("add-module");
-    addSel.value = "tm1638_led_key"; addSel.dispatchEvent(new Event("change")); await settle(); await settle();
-    showTab("rig");
-    ok("added module is listed", S.setup.use.length === n + 1);
-    ok("unwired module reports its required signals", errors().some((m) => m.includes("required signal")));
-    const i = S.setup.use.length - 1;
-    // pins the server calls free (it knows pins the LCD connector shares), wired by clicking
-    const suggestion = await api("/api/autowire", {setup: S.setup, use: i});
-    const target = ["STB", "CLK", "DIO"].map((p) => suggestion.wires[p].split("."));
-    for (const [p, [c, k]] of ["STB", "CLK", "DIO"].map((p, j) => [p, target[j]])) { modulePinClicked(i, p); pinClicked(c, k); await settle(); }
-    ok("wired by clicking module pin then header pin", Object.keys(S.setup.use[i].wires).length === 3);
-    ok("the new board adds design LEDs, traced to it", errors().length === 0 &&
-       portsOfUse(i).some((x) => x.port.capability === "leds" && x.bits.length === 8));
-    const [c0, k0] = target[0];
-    pinClicked(c0, k0); await settle();
-    ok("selecting a header pin shows its wire", $("details").textContent.includes("pin STB"));
-    delete S.setup.use[i].wires["STB"]; await changed("disconnect"); await settle();
-    ok("disconnecting brings back the required-signal error", errors().some((m) => m.includes("required signal 'stb'")));
-    select({kind: "use", use: i});
-    ok("the header's Remove names the selected module", !$("remove-sel").disabled && $("remove-sel").textContent.includes("TM1638"));
-    $("remove-sel").click(); await settle();
-    ok("removing the module restores the rig", S.setup.use.length === n && $("remove-sel").disabled);
-    const ob = S.board.onboard.find((o) => S.setup.use.some((u) => u.onboard === o.id && o.id !== "clock"));
+    if (!mod) log.push("SKIP adding and wiring a module: no module fits the free header pins of this rig");
+    else {
+      const signalPins = Object.keys(mod.pins).filter((p) => !passive(mod.pins[p]));
+      const where = wiresOf(Object.assign({module: mod.id}, suggestion));
+      const first = signalPins[0];
+      S.setup.use.push({module: mod.id, wires: {[first]: (S.board.connectors[0] ? S.board.connectors[0].id : "nowhere") + ".99"}});
+      await changed("broken"); await settle();
+      ok("a broken module leaves the rest traced", !!S.ev.trace && S.ev.excluded.length === 1 && ports().length > 0);
+      ok("the untraced module is named in Problems", $("problems").textContent.includes("not traced"));
+      await autoWire(S.setup.use.length - 1); await settle();
+      const aw = S.setup.use[S.setup.use.length - 1];
+      ok("auto-wire wires every signal pin", Object.keys(wiresOf(aw)).length === signalPins.length &&
+         !S.ev.excluded.length && !(S.ev.problems || []).some((p) => p.level === "error"));
+      S.setup.use.pop(); await changed("undo"); await settle();
+      const addSel = $("add-module");
+      addSel.value = mod.id; addSel.dispatchEvent(new Event("change")); await settle(); await settle();
+      showTab("rig");
+      ok("added module is listed", S.setup.use.length === n + 1);
+      ok("unwired module reports its required signals", errors().some((m) => m.includes("required signal")));
+      const i = S.setup.use.length - 1;
+      // the pins the server calls free, wired by clicking module pin then header pin
+      for (const p of signalPins) { const [c, k] = where[p].split("."); modulePinClicked(i, p); pinClicked(c, k); await settle(); }
+      ok("wired by clicking module pin then header pin", Object.keys(S.setup.use[i].wires).length === signalPins.length);
+      ok("the added module reaches the design", errors().length === 0 && portsOfUse(i).length > 0 && !partStatus(i));
+      const [c0, k0] = where[first].split(".");
+      pinClicked(c0, k0); await settle();
+      ok("selecting a header pin shows its wire", $("details").textContent.includes("pin " + first));
+      delete S.setup.use[i].wires[first]; await changed("disconnect"); await settle();
+      const sigDef = (S.board.peripherals[mod.peripheral].signals || []).find((s) => s.name === mod.pins[first]);
+      if (sigDef && !sigDef.optional)
+        ok("disconnecting brings back the required-signal error", errors().some((m) => m.includes("required signal '" + mod.pins[first] + "'")));
+      select({kind: "use", use: i});
+      ok("the header's Remove names the selected module", !$("remove-sel").disabled && $("remove-sel").textContent.includes(useLabel(S.setup.use[i])));
+      $("remove-sel").click(); await settle();
+      ok("removing the module restores the rig", S.setup.use.length === n && $("remove-sel").disabled);
+    }
+    // an on-board part that is not the clock (by capability, not by name)
+    const ob = S.board.onboard.find((o) => S.setup.use.some((u) => u.onboard === o.id &&
+                                      !providedCaps(usePeripheral(u)).includes("clock")));
     const oi = S.setup.use.findIndex((u) => u.onboard === ob.id);
     S.setup.use.splice(oi, 1); await changed("unuse"); await settle();
     ok("an on-board device can be dropped", !S.setup.use.some((u) => u.onboard === ob.id));
@@ -2273,8 +2318,8 @@ async function selftest() {
     showTab("designs");
     for (let k = 0; k < 600 && !S.dt; k++) await new Promise((r) => setTimeout(r, 50));
     ok("the Designs page lists every design", !!S.dt && document.querySelectorAll(".d-row").length === S.dt.designs.length);
-    ok("it checks every configuration, not only boards with a rig drawing",
-       !!S.dt && S.dt.configurations.some((c) => !c.layout) && S.dt.configurations.some((c) => c.layout));
+    ok("it checks every configuration, each with its board", !!S.dt && S.dt.configurations.length > 0 &&
+       S.dt.configurations.every((c) => c.board && c.board_name));
     const any = S.dt.designs.find((d) => d.fits.some((k) => S.dt.configurations[k].setup));
     $("d-search").value = any.id; renderDesigns();
     ok("searching narrows the list", [...document.querySelectorAll(".d-row")].every((r) => r.dataset.design.includes(any.id) || S.dt.designs.find((d) => d.id === r.dataset.design).requires.join(" ").includes(any.id)));

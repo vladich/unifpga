@@ -102,6 +102,30 @@ def onboard_item(layout, item_id):
     raise SetupError("board '{}' has no on-board item '{}'".format(layout["board"], item_id))
 
 
+def onboard_variants(item):
+    """[(variant id or None, label, attach)]: an on-board part attaches one way
+    (`attach:`), or one of several (`variants:`, e.g. the panels an LCD
+    connector takes, or two ways of driving an HDMI connector)."""
+    if item.get("variants"):
+        return [(v["id"], v.get("label") or v["id"], v["attach"]) for v in item["variants"]]
+    return [(None, item.get("label") or item["id"], item["attach"])]
+
+
+def onboard_attach(layout, use):
+    """The attach template of an `onboard:` use (its `variant:` when the part has several)."""
+    item = onboard_item(layout, use["onboard"])
+    variants = onboard_variants(item)
+    if len(variants) == 1 and variants[0][0] is None:
+        if use.get("variant") is not None:
+            raise SetupError("on-board item '{}' has no variants".format(item["id"]))
+        return variants[0][2]
+    for vid, _label, attach in variants:
+        if vid == use.get("variant"):
+            return attach
+    raise SetupError("on-board item '{}' is used as one of: {} (variant: ...)".format(
+        item["id"], ", ".join(v[0] for v in variants)))
+
+
 def pin_ref(layout, where):
     """`jd.7` -> the pinmap reference that connector pin is (`pmod_jd[4]`)."""
     conn_id, _, pin = str(where).partition(".")
@@ -251,7 +275,7 @@ def generate(setup):
     attach = []
     for use in setup.get("use") or []:
         if "onboard" in use:
-            t = onboard_item(layout, use["onboard"])["attach"]
+            t = onboard_attach(layout, use)
             params = dict(t.get("params") or {}, **(use.get("params") or {}))
             a = {"peripheral": t["peripheral"]}
             if params:
@@ -345,11 +369,12 @@ def derive(configuration):
     uses = []
     for a in configuration.get("attach") or []:
         use = None
-        for o in layout.get("onboard") or []:
-            t = o["attach"]
+        for o, vid, t in ((o, vid, t) for o in layout.get("onboard") or [] for vid, _l, t in onboard_variants(o)):
             if t["peripheral"] == a["peripheral"] and ordered(t.get("bind")) == ordered(a.get("bind")) \
                     and list(a) == [k for k in ("peripheral", "params", "bind") if k in a]:
                 use = {"onboard": o["id"]}
+                if vid is not None:
+                    use["variant"] = vid
                 base, have = _params(t), _params(a)
                 if have != base:
                     if any(k not in have for k in base):
@@ -360,7 +385,8 @@ def derive(configuration):
                     use = None                   # the configuration orders its params otherwise
                     continue
                 break
-        if use is None and a["peripheral"] == "gpio_header" and (a.get("bind") or {}).get("io") in banks \
+        io = (a.get("bind") or {}).get("io")
+        if use is None and a["peripheral"] == "gpio_header" and isinstance(io, str) and io in banks \
                 and set(a["bind"]) == {"io"}:
             use = {"gpio": banks[a["bind"]["io"]]}
             if _params(a):
@@ -444,7 +470,7 @@ def check_roundtrip(configuration):
 def use_label(use, attach):
     """How a use is named in messages and drawings."""
     if "onboard" in use:
-        return use["onboard"]
+        return use["onboard"] + (" ({})".format(use["variant"]) if use.get("variant") else "")
     if "module" in use:
         return use["module"]
     if "gpio" in use:
@@ -509,16 +535,22 @@ def validate(setup):
                 if v and lo is not None and not lo <= v <= hi:
                     problems.append(("error", "{}: a module for {} V on the {} V connector {}".format(
                         label, lo if lo == hi else "{}-{}".format(lo, hi), v, conn_id)))
+        # the design's gpio may share a pin with a part (the generated top connects
+        # both; the editor warns): a gpio use, or a raw attach of a peripheral that
+        # hands its pins straight to the design
+        gpio = "gpio" in use or codegen._is_gpio_passthrough(contract)
         for sig, ref in (a.get("bind") or {}).items():
             for port_bit, pin in codegen._bind_pins(pinmap, ref):
                 if pin is None:
-                    problems.append(("error", "{}: {} ({}) is not a pin of the board".format(label, sig, port_bit)))
+                    bank = (pinmap.get("pinBanks") or {}).get(re.split(r"[.\[]", str(ref))[0])
+                    if not (isinstance(bank, dict) and bank.get("virtual")):     # an on-chip source has no pin
+                        problems.append(("error", "{}: {} ({}) is not a pin of the board".format(label, sig, port_bit)))
                     continue
                 for p in str(pin).split(","):
                     prev = owner.get(p)          # (use index, label, is gpio)
-                    if prev and prev[0] != n and not (prev[2] or "gpio" in use):
+                    if prev and prev[0] != n and not (prev[2] or gpio):
                         problems.append(("error", "pin {} used by both {} and {}".format(p, prev[1], label)))
-                    owner.setdefault(p, (n, label, "gpio" in use))
+                    owner.setdefault(p, (n, label, gpio))
     return problems
 
 
@@ -550,9 +582,9 @@ def dump_setup(setup):
             L.append("    - raw: {}".format(_flow(use["raw"])))
             continue
         L.append("    - {}: {}".format(head, use[head]))
-        for k in ("plug", "wires", "params"):
+        for k in ("variant", "plug", "wires", "params"):
             if k in use:
-                L.append("      {}: {}".format(k, _flow(use[k])))
+                L.append("      {}: {}".format(k, _scalar(use[k]) if k == "variant" else _flow(use[k])))
     if setup.get("extra"):
         import yaml
         L.append("  extra:")

@@ -721,6 +721,82 @@ def cmd_serve(args):
     return 0
 
 
+def cmd_layout(args):
+    """layout draft [board...] [--all]: write config/layouts/<board>.yml from the
+    board's pinmap, configurations and registry (tools/layout_draft.py); hand-made
+    layouts are left alone."""
+    from tools import layout_draft
+    boards = sorted({c["board"] for c in config.init.read_configurations().values()})
+    ids = boards if args.all else args.boards
+    if not ids:
+        raise CliError("name boards, or --all")
+    for b in ids:
+        if b not in boards:
+            raise CliError("no configuration uses board '{}'".format(b))
+        if not layout_draft.is_generated(b):
+            print("{:<32} hand-made layout, left alone".format(b))
+            continue
+        path, changed = layout_draft.write(b)
+        layout = layout_draft.draft(b)
+        print("{:<32} {} {} ({} headers, {} on-board parts{})".format(
+            b, "wrote" if changed else "unchanged", _shown(path), len(layout["connectors"]), len(layout["onboard"]),
+            ", verified" if layout["verified"] else ""))
+    return 0
+
+
+def cmd_sources(args):
+    """sources fetch [board...]: download the registry's documents into the cache
+    and record their SHA-256; sources text <board> <doc> [--pages a-b] [--grep re]:
+    a document's text; sources verify [board...]: facts against the pinmaps."""
+    from tools import board_sources as bs
+    registry = bs.read_all()
+    if args.action == "text":
+        if len(args.ids) != 2:
+            raise CliError("sources text <board> <document id>")
+        entry = registry.get(args.ids[0]) or {}
+        doc = next((d for d in entry.get("documents") or [] if d["id"] == args.ids[1]), None)
+        if doc is None:
+            raise CliError("no document '{}' for {}".format(args.ids[1], args.ids[0]))
+        pages = tuple(int(x) for x in args.pages.split("-")) if args.pages else None
+        if pages and len(pages) == 1:
+            pages = (pages[0], pages[0])
+        for n, txt in bs.text(args.ids[0], doc, pages):
+            lines = txt.splitlines()
+            if args.grep:
+                lines = [l for l in lines if re.search(args.grep, l, re.I)]
+                if not lines:
+                    continue
+            print("=== page {} ===".format(n))
+            print("\n".join(lines))
+        return 0
+    ids = args.ids or sorted(registry)
+    failed = 0
+    for b in ids:
+        if b not in registry:
+            raise CliError("no registry entry config/board_sources/{}.yml".format(b))
+        if args.action == "fetch":
+            for doc in registry[b].get("documents") or []:
+                try:
+                    got = bs.fetch(b, doc)
+                    if got["sha256"] != doc.get("sha256") or got["bytes"] != doc.get("bytes"):
+                        bs.record_fetch(b, doc["id"], got)
+                    print("{:<28} {:<14} {} ({} bytes)".format(b, doc["id"], "fetched" if got["fresh"] else "cached", got["bytes"]))
+                except bs.SourcesError as exc:
+                    failed += 1
+                    print("{:<28} {:<14} FAILED: {}".format(b, doc["id"], exc))
+            continue
+        v = bs.verify(b, registry[b])
+        bad = v["documents"] + ["header {}: {}".format(k, p) for k, ps in v["headers"].items() for p in ps] + \
+            ["on-board {}: {}".format(k, p) for k, ps in v["onboard"].items() for p in ps]
+        failed += bool(bad)
+        print("{:<32} {} ({} headers, {} on-board parts checked)".format(b, "FAIL" if bad else "ok", len(v["headers"]), len(v["onboard"])))
+        for line in bad:
+            print("    " + line)
+        for line in v["info"]:
+            print("    note: " + line)
+    return 1 if failed else 0
+
+
 COMMANDS = {
     "board": cmd_board,
     "build": cmd_build,
@@ -732,6 +808,8 @@ COMMANDS = {
     "tools": cmd_tools,
     "designs": cmd_designs,
     "setup": cmd_setup,
+    "layout": cmd_layout,
+    "sources": cmd_sources,
     "view": cmd_view,
     "serve": cmd_serve,
 }
@@ -794,6 +872,19 @@ def build_parser():
                                       "or derive a setup from a configuration")
     st.add_argument("action", choices=["check", "generate", "derive"])
     st.add_argument("ids", nargs="*", help="setup / configuration ids (check: default all)")
+
+    ly = sub.add_parser("layout", help="generate board layouts (config/layouts/) from pinmaps, configurations "
+                                        "and the board-sources registry")
+    ly.add_argument("action", choices=["draft"])
+    ly.add_argument("boards", nargs="*")
+    ly.add_argument("--all", action="store_true", help="every board a configuration uses")
+
+    so = sub.add_parser("sources", help="the board-sources registry (config/board_sources/): fetch documents, "
+                                        "show their text, verify the facts against the pinmaps")
+    so.add_argument("action", choices=["fetch", "text", "verify"])
+    so.add_argument("ids", nargs="*", help="boards (text: <board> <document id>)")
+    so.add_argument("--pages", help="text: a page or a range, e.g. 30-34")
+    so.add_argument("--grep", help="text: only lines matching this regular expression")
 
     vw = sub.add_parser("view", help="write a read-only page drawing a setup (or a board with --board)")
     vw.add_argument("id", help="setup id, or board id with --board")

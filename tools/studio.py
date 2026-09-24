@@ -94,13 +94,18 @@ def board_data(board_id):
             "pins": {str(k): {"ref": ref, "pin": ", ".join(p["pin"] or "?" for p in pins(ref))}
                      for k, ref in (c.get("pins") or {}).items()},
         })
-    onboard = [{"id": o["id"], "label": o.get("label") or o["id"], "attach": o["attach"],
-                "pins": {s: pins(ref) for s, ref in (o["attach"].get("bind") or {}).items()}}
-               for o in layout.get("onboard") or []]
+    onboard = []
+    for o in layout.get("onboard") or []:
+        variants = [{"id": vid, "label": label, "attach": attach,
+                     "pins": {s: pins(ref) for s, ref in (attach.get("bind") or {}).items()}}
+                    for vid, label, attach in su.onboard_variants(o)]
+        # attach / pins: the first variant's, for an older page
+        onboard.append({"id": o["id"], "label": o.get("label") or o["id"], "variants": variants,
+                        "attach": variants[0]["attach"], "pins": variants[0]["pins"]})
     peripherals = config_init.read_peripherals()
     modules = su.read_modules()
     used = {m["peripheral"] for m in modules.values()} | {"gpio_header"} | \
-           {o["attach"]["peripheral"] for o in layout.get("onboard") or []}
+           {attach["peripheral"] for o in layout.get("onboard") or [] for _v, _l, attach in su.onboard_variants(o)}
     return {
         "board": board_id,
         "verified": bool(layout.get("verified")),

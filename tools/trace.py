@@ -50,7 +50,9 @@ def pin_links(perif):
       * pin_assigns `pin.X: capability.C.S`: pin X is design port C.S;
       * driver port_map: a pin on the driver serves every design port on it,
         narrowed by the contract's `serves: {X: [C.S, ...]}` where the pins do
-        not all serve all ports (VGA: r serves red, hs serves x);
+        not all serve all ports (VGA: r serves red, hs serves x), or
+        `serves: {X: [[...], [...]]}` pin by pin of a bus (HDMI: d_p[0] carries
+        blue and the syncs, d_p[1] green, d_p[2] red; the link then has `pins`);
       * no driver: a pin named like a capability signal it provides (uart tx,
         rx) is that signal.
     """
@@ -83,10 +85,17 @@ def pin_links(perif):
                 continue
             sig = v[4:]
             wanted = serves.get(sig)
+            # `serves: {d_p: [[blue, x, y], [green], [red]]}`: one list per pin of a bus
+            per_pin = isinstance(wanted, list) and bool(wanted) and all(isinstance(w, list) for w in wanted)
             for cport, cap in caps:
-                if wanted is None or cap in wanted:
-                    out.setdefault(sig, []).append({"port": cap, "via": driver.get("module"),
-                                                    "driver_port": port, "port_at": cport})
+                link = {"port": cap, "via": driver.get("module"), "driver_port": port, "port_at": cport}
+                if per_pin:
+                    link["pins"] = [k for k, w in enumerate(wanted) if cap in w]
+                    if not link["pins"]:
+                        continue
+                elif wanted is not None and cap not in wanted:
+                    continue
+                out.setdefault(sig, []).append(link)
     else:
         for sig in names:
             for cap in provided:
@@ -226,7 +235,7 @@ def edges(ports, attaches):
                     bits = list(range(port["width"]))
                 fit = (a.get("pin_fit") or {}).get(sig)
                 for k, pin in enumerate(pins):
-                    if (a["attach_index"], pin["ref"]) in direct:
+                    if (a["attach_index"], pin["ref"]) in direct or ("pins" in link and k not in link["pins"]):
                         continue
                     bit, relation = _fit(bits, len(pins), k, fit)
                     out.append({"design_port": port["design_port"], "bit": bit,
