@@ -8,3 +8,4 @@ DefaultToolchains:
   - libero_soc[*]
 Chips:
   - Id: M2GL090TS-FG484
+  - Id: M2GL010T-1FGG484

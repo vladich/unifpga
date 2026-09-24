@@ -426,7 +426,7 @@ Boards:
       - marvell_88e1512
       - emmc_chip_generic
     BoardProducer: avnet
-    Chip: XC7Z030-1FBG485C
+    Chip: XC7Z030-1SBG485C
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -734,7 +734,7 @@ Boards:
   - Id: imperix_bboard_pro
     BoardName: B-Board PRO
     BoardProducer: imperix
-    Chip: XC7Z030-1FBG484C
+    Chip: XC7Z030-3FBG676E
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -747,7 +747,7 @@ Boards:
   - Id: imperix_bbox_micro
     BoardName: B-Box Micro
     BoardProducer: imperix
-    Chip: XC7Z020-1CLG484C
+    Chip: XC7Z030-3FBG676E
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -761,7 +761,7 @@ Boards:
   - Id: imperix_bbox_rcp3
     BoardName: B-Box RCP 3.0
     BoardProducer: imperix
-    Chip: XC7Z030-1FBG484C
+    Chip: XC7Z030-3FBG676E
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -808,7 +808,7 @@ Boards:
   - Id: krtkl_snickerdoodle_black
     BoardName: Snickerdoodle black
     BoardProducer: krtkl
-    Chip: XC7Z020-1CLG400C
+    Chip: XC7Z020-3CLG400
     Bridges:
       - jtag
     Programmer: vivado_hw

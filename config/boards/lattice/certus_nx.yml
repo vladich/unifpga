@@ -15,7 +15,7 @@ Boards:
       - ftdi_ft2232h
       - microsd_socket_generic
     BoardProducer: lattice
-    Chip: LFD2NX-40-7BBG196C
+    Chip: LFD2NX-40-8BG256C
     Bridges:
       - jtag
     Programmer: openFPGALoader

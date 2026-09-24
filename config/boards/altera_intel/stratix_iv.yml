@@ -103,4 +103,4 @@ Boards:
     Bridges:
       - jtag
     Programmer: quartus_pgm
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=138&No=501
+    BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=683"

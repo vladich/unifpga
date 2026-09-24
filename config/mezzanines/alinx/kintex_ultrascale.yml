@@ -20,6 +20,7 @@ Mezzanines:
     DefaultCarrier: alinx_axku040
   - Id: alinx_acku060
     Name: "Alinx ACKU060 SOM"
+    DefaultCarrier: alinx_axku062
     Producer: alinx
     Type: som
     Connector: b2b_custom_alinx

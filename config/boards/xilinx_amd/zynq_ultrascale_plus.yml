@@ -70,7 +70,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: alinx
-    Chip: XCZU3EG-2SFVC784E
+    Chip: XCZU3EG-1SFVC784E
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -764,7 +764,7 @@ Boards:
       - microsd_socket_generic
       - led_discrete_generic
     BoardProducer: myir
-    Chip: XCZU3EG-1SFVC784I
+    Chip: XCZU3EG-1SFVC784E
     Bridges:
       - jtag
     Programmer: vivado_hw

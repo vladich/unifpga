@@ -310,5 +310,5 @@ Boards:
       - ftdi_ft4232h
       - silabs_si5342
       - ddr4_sodimm_socket
-    BoardURL: "https://www.bittware.com/products/"
+    BoardURL: "https://www.bittware-molex.com/products/385a-soc/"
     Status: eol

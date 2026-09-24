@@ -221,7 +221,7 @@ Boards:
   - Id: bunnie_netv2
     BoardName: NeTV2
     BoardProducer: bunnie_studios
-    Chip: XC7A35T-1CSG324C
+    Chip: XC7A35T-2FGG484
     Bridges:
       - pcie-jtag
     Programmer: vivado_hw
@@ -292,7 +292,7 @@ Boards:
       - pushbutton_smd_generic
       - led_discrete_generic
     BoardProducer: digilent
-    Chip: xc7a100tfgg484-2
+    Chip: xc7a100tcsg324-1
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -300,7 +300,7 @@ Boards:
   - Id: edge_artix_7
     BoardName: EDGE Artix 7 (35T)
     BoardProducer: invent_logics
-    Chip: XC7A35T-1CSG324C
+    Chip: XC7A35T-1FTG256C
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -339,7 +339,7 @@ Boards:
       - user_buttons
       - dip_switches
       - usb_powered
-    BoardURL: https://allaboutfpga.com/product/edge-artix-7-fpga-development-board/
+    BoardURL: "https://allaboutfpga.com/product/edge-artix-7-200t-fpga-motor-inverter-pwm-controller/"
     Status: active
   - Id: nexys4
     BoardName: Nexys 4
@@ -530,7 +530,7 @@ Boards:
       - dip_switch_generic
       - microsd_socket_generic
     BoardProducer: numato_lab
-    Chip: XC7A50T-1CSG324C
+    Chip: XC7A50T-1FGG484C
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -543,7 +543,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: numato_lab
-    Chip: XC7A35T-1CPG236C
+    Chip: XC7A35T-1FTG256C
     Bridges:
       - usb-jtag
     Programmer: vivado_hw

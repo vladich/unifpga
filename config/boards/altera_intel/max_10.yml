@@ -131,7 +131,7 @@ Boards:
     Bridges:
       - jtag
     Programmer: quartus_pgm
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1021
+    BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=944"
   - Id: terasic_max10_nanoboard
     BoardName: MAX 10 NanoBoard
     Features:
@@ -177,4 +177,4 @@ Boards:
     Bridges:
       - jtag
     Programmer: quartus_pgm
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1101
+    BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=956"

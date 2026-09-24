@@ -4,6 +4,7 @@ Producer: efinix
 Mezzanines:
   - Id: efinix_qse_camera_daughter
     Name: "Efinix MIPI Camera QSE Daughter Card"
+    BoardName: "Dual Raspberry Pi Camera Connector Daughter Card (part number EFINIX_IFB_PICAMX2); card-side J2 40-pin Samtec QTE-020-01-F-D-A mating the dev-board QSE"
     Producer: efinix
     Type: piggyback
     Connector: qse_high_speed

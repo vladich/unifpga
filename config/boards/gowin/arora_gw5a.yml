@@ -45,7 +45,7 @@ Boards:
       - usb_jtag_bridge
       - user_buttons
       - user_leds
-    BoardURL: "https://www.gowinsemi.com/en/support/devkits/37/"
+    BoardURL: "https://www.gowinsemi.com/en/support/devkits_detail/56/"
     Status: active
   - Id: sipeed_tang_console_retro
     BoardName: "Sipeed Tang Retro Console (retail)"

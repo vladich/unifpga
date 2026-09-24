@@ -132,7 +132,7 @@ Boards:
     Devices:
       - microsd_socket_generic
     BoardProducer: efinix
-    Chip: T8Q144C3
+    Chip: T8F81C2
     Bridges:
       - jtag
     Programmer: efinity_pgm
@@ -155,6 +155,7 @@ Boards:
     Status: eol
   - Id: trion_t20
     BoardName: Trion T20
+    BoardURL: "https://www.efinixinc.com/products-devkits-triont20.html"
     BoardProducer: efinix
     Chip: T20F256C2
     Bridges:

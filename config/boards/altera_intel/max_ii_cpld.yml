@@ -14,7 +14,7 @@ Boards:
       - dip_switch_generic
       - seven_seg_module_shared
     BoardProducer: intel_altera
-    Chip: 5M2210ZF256C4N
+    Chip: 5M570ZF256C5N
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm

@@ -204,7 +204,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: alinx
-    Chip: PG2L100HFBG484
+    Chip: PG2L100H-6IFBG676
     Bridges:
       - jtag
     Programmer: pango_pgm
@@ -234,7 +234,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: alinx
-    Chip: PG2L100HFBG484
+    Chip: PG2L100H-6IFBG676
     Bridges:
       - jtag
     Programmer: pango_pgm

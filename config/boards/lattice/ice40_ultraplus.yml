@@ -36,7 +36,7 @@ Boards:
     BoardURL: https://www.crowdsupply.com/sutajio-kosagi/fomu
   - Id: greatscott_glasgow_revc
     BoardName: Glasgow Interface Explorer Rev C
-    BoardProducer: great_scott_gadgets
+    BoardProducer: onebitsquared
     Chip: ICE40HX8K-BG121
     Bridges:
       - jtag
@@ -66,7 +66,7 @@ Boards:
   - Id: lattice_ice40up_evalkit
     BoardName: iCE40 UltraPlus Evaluation Kit
     BoardProducer: lattice
-    Chip: iCE40UP5K-B-EVN
+    Chip: iCE40UP5K-SG48
     Bridges:
       - jtag
     Programmer: iceprog

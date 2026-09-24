@@ -299,7 +299,7 @@ Boards:
       - pushbutton_smd_generic
       - dip_switch_generic
     BoardProducer: terasic
-    Chip: AGFB023R25A2E2VR0
+    Chip: AGFD023R24C2E1VC
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm
@@ -380,7 +380,7 @@ Boards:
       - pushbutton_smd_generic
       - dip_switch_generic
     BoardProducer: terasic
-    Chip: AGIB027R29A1E2VR3
+    Chip: AGIB027R31B1E1VC
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm

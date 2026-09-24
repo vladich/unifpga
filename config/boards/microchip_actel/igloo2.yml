@@ -22,7 +22,7 @@ Boards:
       - winbond_w25q128
       - microchip_lan8720a
     BoardProducer: microchip
-    Chip: M2GL090TS-FG484
+    Chip: M2GL010T-1FGG484
     Bridges:
       - jtag
     Programmer: libero_fpexpress

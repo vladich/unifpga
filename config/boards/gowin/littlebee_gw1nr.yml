@@ -8,7 +8,7 @@ Boards:
   - Id: brisbane_silicon_brs_100_gw1nr9
     BoardName: BRS-100-GW1NR9
     BoardProducer: brisbane_silicon
-    Chip: GW1NR-LV9QN88PC6/I5
+    Chip: GW1NR-LV9QN88PC7/I6
     Bridges:
       - usb-jtag
     Programmer: gowin_pgm

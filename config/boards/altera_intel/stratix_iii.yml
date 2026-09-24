@@ -24,4 +24,4 @@ Boards:
     Bridges:
       - jtag
     Programmer: quartus_pgm
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=104&No=215
+    BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=260"

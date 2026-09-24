@@ -28,7 +28,7 @@ Boards:
       - usb_uart_bridge
       - user_buttons
       - user_leds
-    BoardURL: https://www.en.alinx.com/Product/SoC-Development-Boards/Zynq-UltraScale-plus-RFSoC/AXRF47.html
+    BoardURL: "https://docs.alinx.com/wiki/AMD-Dev-Board/RFSoC/AXRF47/AXRF47-User-Manual.html"
     Status: active
   - Id: avnet_xrf16_gen3_som
     BoardName: XRF16 Gen3 RFSoC SOM with Carrier
@@ -483,7 +483,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: alinx
-    Chip: XCZU49DR-2FFVF1760I
+    Chip: XCZU49DR-2FSVF1760I
     Bridges:
       - usb-jtag
     Programmer: vivado_hw
@@ -505,7 +505,7 @@ Boards:
       - usb_uart_bridge
       - user_buttons
       - user_leds
-    BoardURL: https://coderobin.com/products/alinx-axrf49-xilinx-zynq-ultrascale-rfsoc-xczu49dr-fpga-development-board
+    BoardURL: "https://docs.alinx.com/wiki/AMD-Dev-Board/RFSoC/AXRF49/AXRF49-User-Manual.html"
     Status: active
     Notes: "ZU49DR — 16 RF-ADCs/DACs, GPS, MCX RF ports."
   - Id: alinx_axrf67
@@ -562,7 +562,7 @@ Boards:
       - usb_uart_bridge
       - user_leds
       - user_buttons
-    BoardURL: https://coderobin.com/products/alinx-axw22-xilinx-zynq-ultrascale-rfsoc-xczu47dr-fpga-development-board
+    BoardURL: "https://docs.alinx.com/wiki/AMD-Dev-Board/RFSoC/AXW22/AXW22-User-Manual.html"
     Status: active
     Notes: "SDR card variant; ZU47DR with 1x QSFP+ / 1x SFP+."
   - Id: alinx_axw47
@@ -612,7 +612,7 @@ Boards:
       - usb_uart_bridge
       - user_leds
       - user_buttons
-    BoardURL: https://coderobin.com/products/alinx-axw49-xilinx-zynq-ultrascale-rfsoc-xczu49dr-fpga-development-board
+    BoardURL: "https://docs.alinx.com/wiki/AMD-Dev-Board/RFSoC/AXW49/AXW49-User-Manual.html"
     Status: active
     Notes: "ZU49DR SDR; -E extended-grade speed -2 part."
   - Id: alinx_axw23

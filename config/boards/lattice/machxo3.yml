@@ -19,7 +19,7 @@ Boards:
       - user_leds
       - usb_jtag_bridge
       - usb_powered
-    BoardURL: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/MachXO3LBreakoutBoard.aspx
+    BoardURL: "https://www.latticesemi.com/products/developmentboardsandkits/machxo3lbreakoutboard"
     Status: active
   - Id: lattice_machxo3lf_9400
     BoardName: MachXO3LF Starter Kit
@@ -28,7 +28,7 @@ Boards:
     Devices:
       - ftdi_ft2232h
     BoardProducer: lattice
-    Chip: LCMXO3LF-9400C-5BG400C
+    Chip: LCMXO3LF-6900C-5BG256C
     Bridges:
       - jtag
     Programmer: openFPGALoader

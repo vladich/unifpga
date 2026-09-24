@@ -280,7 +280,7 @@ Boards:
       - pushbutton_smd_generic
       - dip_switch_generic
     BoardProducer: terasic
-    Chip: 1SD110PT2F55E1VG
+    Chip: 1SD280PT2F55E1VG
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm
@@ -317,7 +317,7 @@ Boards:
     Bridges:
       - jtag
     Programmer: quartus_pgm
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1232
+    BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1068"
   - Id: terasic_stratix10_mx_devkit
     BoardName: Stratix 10 MX FPGA Development Kit
     Devices:

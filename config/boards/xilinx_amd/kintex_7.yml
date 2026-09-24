@@ -265,7 +265,7 @@ Boards:
       - micron_mt41k256m16
       - micron_n25q256a
     BoardProducer: trenz_electronic
-    Chip: XC7K160T-2FFG676I
+    Chip: XC7K160T-2FBG676I
     Bridges:
       - jtag
     Programmer: vivado_hw

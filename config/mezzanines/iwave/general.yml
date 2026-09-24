@@ -52,7 +52,7 @@ Mezzanines:
     Devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
-    BoardURL: "https://www.iwavesystems.com/product/zynq-ultrascale-mpsoc-zu5-zu4-zu3t-zu3-zu2-zu1-system-on-module/"
+    BoardURL: "https://iwave-global.com/product/zynq-ultrascale-zu5-zu4-zu3t-zu3-zu2-zu1-system-on-module/"
     Status: active
     DefaultCarrier: iwave_rainbow_g36d
   - Id: iwave_g42m_som

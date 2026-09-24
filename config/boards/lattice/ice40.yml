@@ -101,7 +101,7 @@ Boards:
   - Id: lattice_ice40lp1k_evalkit
     BoardName: "iCE40LP1K Evaluation Kit"
     BoardProducer: lattice
-    Chip: iCE40LP1K-CM36
+    Chip: iCE40LP1K-SWG16
     Bridges:
       - jtag
     Programmer: icecube2_pgm
@@ -113,7 +113,7 @@ Boards:
   - Id: lattice_ice40_ultra_breakout
     BoardName: "iCE40 Ultra Breakout Board"
     BoardProducer: lattice
-    Chip: iCE5LP4K-SG48
+    Chip: iCE5LP4K-SWG36
     Bridges:
       - jtag
     Programmer: icecube2_pgm
@@ -124,5 +124,5 @@ Boards:
       - usb_powered
     Devices:
       - ftdi_ft2232h
-    BoardURL: "https://www.latticesemi.com/Products/DevelopmentBoardsAndKits/iCE40UltraBreakoutBoard.aspx"
+    BoardURL: "https://www.latticesemi.com/products/developmentboardsandkits/ice40ultrabreakoutboard"
     Status: active

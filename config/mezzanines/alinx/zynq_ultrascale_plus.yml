@@ -85,6 +85,7 @@ Mezzanines:
     DefaultCarrier: alinx_axu9eg
   - Id: alinx_acu11eg
     Name: "Alinx ACU11EG SOM"
+    DefaultCarrier: alinx_z11_p
     Producer: alinx
     Type: som
     Connector: b2b_custom_alinx
@@ -110,6 +111,7 @@ Mezzanines:
     DefaultCarrier: alinx_axu15eg
   - Id: alinx_acu19eg
     Name: "Alinx ACU19EG SOM"
+    DefaultCarrier: alinx_z19_p
     Producer: alinx
     Type: som
     Connector: b2b_custom_alinx

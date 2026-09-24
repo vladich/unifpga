@@ -165,7 +165,7 @@ Mezzanines:
       - enclustra_mercury_plus_pe1
       - enclustra_mercury_plus_pe3
   - Id: enclustra_mercury_plus_xu5_som
-    Name: "Enclustra Mercury+ XU5 ZU5EV SoM"
+    Name: "Mercury XU5 (not Mercury+), two Hirose FX10 connectors"
     Producer: enclustra
     Type: som
     Connector: hirose_fx10
@@ -237,7 +237,7 @@ Mezzanines:
       - enclustra_mercury_plus_pe1
       - enclustra_mercury_plus_pe3
   - Id: enclustra_mercury_plus_zx1_som
-    Name: "Enclustra Mercury+ ZX1 Zynq-7030 SoM"
+    Name: "Mercury ZX1 (not Mercury+), two Hirose FX10 connectors"
     Producer: enclustra
     Type: som
     Connector: hirose_fx10

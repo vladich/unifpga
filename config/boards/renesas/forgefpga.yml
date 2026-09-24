@@ -8,7 +8,7 @@ Boards:
   - Id: renesas_forgefpga_workshop
     BoardName: ForgeFPGA Workshop Board
     BoardProducer: renesas
-    Chip: SLG47004V
+    Chip: SLG47910V
     Bridges:
       - jtag
     Programmer: renesas_go_pgm

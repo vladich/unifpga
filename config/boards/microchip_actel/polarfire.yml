@@ -73,7 +73,7 @@ Boards:
     Bridges:
       - jtag
     Programmer: libero_fpexpress
-    BoardURL: https://www.microchip.com/en-us/development-tool/MPF300-VIDEO-KIT
+    BoardURL: "https://www.microchip.com/en-us/development-tool/MPF300-SPLASH-KIT"
   - Id: microchip_polarfire_video
     BoardName: PolarFire Video Kit
     Features:
@@ -101,7 +101,7 @@ Boards:
     Bridges:
       - jtag
     Programmer: libero_fpexpress
-    BoardURL: https://www.microchip.com/en-us/development-tool/MPF300-EVAL-KIT
+    BoardURL: "https://www.crowdsupply.com/microchip/hifive-unleashed-expansion-board"
   - Id: microchip_pf_avalanche
     BoardName: "PolarFire Avalanche Board (MPF200T)"
     BoardProducer: microchip

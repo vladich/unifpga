@@ -17,7 +17,7 @@ Boards:
       - pushbutton_smd_generic
       - dip_switch_generic
     BoardProducer: intel_altera
-    Chip: 5SGXEABK2H40C2
+    Chip: 5SGXEA7N2F45C2N
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm
@@ -149,4 +149,4 @@ Boards:
     Bridges:
       - jtag
     Programmer: quartus_pgm
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=727
+    BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1001"

@@ -8,10 +8,11 @@ Producer: alinx
 Mezzanines:
   - Id: alinx_acvu13
     Name: "Alinx ACVU13 SOM"
+    DefaultCarrier: alinx_axvu13g
     Producer: alinx
     Type: som
     Connector: b2b_custom_alinx
-    Chip: XCVU13P-2FHGB2104E
+    Chip: XCVU13P-2FHGB2104I
     Features:
       - ddr4_memory
       - qspi_flash

@@ -8,6 +8,7 @@ Producer: alinx
 Mezzanines:
   - Id: alinx_ac7k325b
     Name: "Alinx AC7K325B SOM"
+    DefaultCarrier: alinx_av7k325
     Producer: alinx
     Type: som
     Connector: b2b_custom_alinx

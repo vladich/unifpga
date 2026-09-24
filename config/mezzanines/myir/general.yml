@@ -17,7 +17,7 @@ Mezzanines:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - realtek_rtl8211e
-    BoardURL: "https://www.myirtech.com/list.asp?id=628"
+    BoardURL: "https://www.myirtech.com/list.asp?id=552"
     Status: active
     DefaultCarrier: myir_myd_c7z015
   - Id: myir_myc_czu3eg_som
@@ -35,7 +35,7 @@ Mezzanines:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - realtek_rtl8211fd
-    BoardURL: "https://www.myirtech.com/list.asp?id=628"
+    BoardURL: "https://www.myirtech.com/list.asp?id=837"
     Status: active
     DefaultCarrier: myir_myd_czu3eg_v3
   - Id: myir_myc_czu4ev_som
@@ -53,7 +53,7 @@ Mezzanines:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - realtek_rtl8211fd
-    BoardURL: "https://www.myirtech.com/list.asp?id=628"
+    BoardURL: "https://www.myirtech.com/list.asp?id=712"
     Status: active
     DefaultCarrier: myir_myd_czu4ev_v2
   - Id: myir_myc_czu5ev_som
@@ -71,7 +71,7 @@ Mezzanines:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - realtek_rtl8211fd
-    BoardURL: "https://www.myirtech.com/list.asp?id=628"
+    BoardURL: "https://www.myirtech.com/list.asp?id=712"
     Status: active
     DefaultCarrier: myir_myd_czu5ev_v2
   - Id: myir_myc_y7z010_som
@@ -88,6 +88,6 @@ Mezzanines:
       - micron_mt41k128m16
       - macronix_mx25l25645g
       - realtek_rtl8211e
-    BoardURL: "https://www.myirtech.com/list.asp?id=628"
+    BoardURL: "https://www.myirtech.com/list.asp?id=679"
     Status: active
     DefaultCarrier: myir_myd_y7z010_v2

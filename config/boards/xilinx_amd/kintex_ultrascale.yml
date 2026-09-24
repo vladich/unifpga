@@ -239,7 +239,7 @@ Boards:
       - ddr4_memory
       - pcie_endpoint
       - jtag_header
-    BoardURL: https://www.tulembedded.com/FPGA/images/TUL_PCIe_KU115_Introduction.pdf
+    BoardURL: "https://web.archive.org/web/20251221132110/https://www.tulembedded.com/FPGA/images/TUL_PCIe_KU115_Introduction.pdf"
     Status: active
   - Id: xilinx_kcu105
     BoardName: KCU105

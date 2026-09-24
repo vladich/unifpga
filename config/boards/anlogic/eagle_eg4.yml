@@ -24,4 +24,4 @@ Boards:
     Bridges:
       - jtag
     Programmer: td_pgm
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/Tang-Nano/Nano.html"
+    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/Tang-primer/Tang-primer.html"

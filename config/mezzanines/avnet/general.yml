@@ -62,7 +62,7 @@ Mezzanines:
       - micron_n25q256a
       - marvell_88e1512
       - emmc_chip_generic
-    BoardURL: "https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/picozed/"
+    BoardURL: "https://www.tria-technologies.com/product/picozed/"
     Status: active
     DefaultCarrier: avnet_picozed_fmc_cc_v2
     CompatibleBoards:
@@ -72,7 +72,7 @@ Mezzanines:
     Producer: avnet
     Type: som
     Connector: b2b_picozed_3x100
-    Chip: XC7Z030-1FBG485C
+    Chip: XC7Z030-1SBG485C
     Features:
       - ddr3_memory
       - qspi_flash
@@ -164,5 +164,5 @@ Mezzanines:
     Devices:
       - adi_adv7611
       - adi_adv7511
-    BoardURL: "https://www.avnet.com/wps/portal/us/products/avnet-boards/"
+    BoardURL: "https://www.avnet.com/fsp/opasdata/d120001/medias/docus/53/AES-FMC-HDMI-CAM-G-FMC_HDMI_CAM_HG_v0_1.pdf"
     Status: active

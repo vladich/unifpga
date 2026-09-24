@@ -20,7 +20,7 @@ Boards:
     Bridges:
       - jtag
     Programmer: openFPGALoader
-    BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/30/
+    BoardURL: "https://www.gowinsemi.com/en/support/devkits_detail/28/"
   - Id: gowin_gw1nsr_lv4c_g_devkit
     BoardName: GW1NSR-LV4C Dev Kit (G-variant)
     Devices:

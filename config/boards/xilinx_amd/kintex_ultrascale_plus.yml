@@ -99,7 +99,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: alinx
-    Chip: XCKU5P-2FFVB676E
+    Chip: XCKU5P-2FFVB676I
     Bridges:
       - usb-jtag
     Programmer: vivado_hw
@@ -124,7 +124,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: alinx
-    Chip: XCKU15P-2FFVE1760E
+    Chip: XCKU15P-2FFVE1517I
     Bridges:
       - usb-jtag
     Programmer: vivado_hw

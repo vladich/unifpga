@@ -13,7 +13,7 @@ Boards:
       - microsd_socket_generic
       - led_discrete_generic
       - pushbutton_smd_generic
-    BoardProducer: pangomicro
+    BoardProducer: alinx
     Chip: PGL12G-6MBG324
     Bridges:
       - jtag
@@ -41,7 +41,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: alinx
-    Chip: PGL12G-6MBG324
+    Chip: PGL12G-6CFBG256
     Bridges:
       - jtag
     Programmer: pango_pgm

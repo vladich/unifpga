@@ -10,3 +10,4 @@ DefaultToolchains:
 Chips:
   - Id: GW1NR-LV9LQ144PC6/I5
   - Id: GW1NR-LV9QN88PC6/I5
+  - Id: "GW1NR-LV9QN88PC7/I6"

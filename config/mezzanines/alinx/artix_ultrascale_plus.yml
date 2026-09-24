@@ -11,7 +11,7 @@ Mezzanines:
     Producer: alinx
     Type: som
     Connector: b2b_custom_alinx
-    Chip: XCAU15P-2FFVB676E
+    Chip: XCAU15P-2FFVB676I
     Features:
       - ddr4_memory
       - qspi_flash
@@ -23,7 +23,7 @@ Mezzanines:
     Producer: alinx
     Type: som
     Connector: b2b_custom_alinx
-    Chip: XCAU25P-2E
+    Chip: XCAU25P-2FFVB676I
     Features:
       - ddr4_memory
       - qspi_flash

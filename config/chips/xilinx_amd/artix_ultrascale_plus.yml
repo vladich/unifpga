@@ -8,3 +8,5 @@ DefaultToolchains:
 Chips:
   - Id: XCAU15P-2FFVB676E
   - Id: XCAU25P-2E
+  - Id: XCAU15P-2FFVB676I
+  - Id: XCAU25P-2FFVB676I

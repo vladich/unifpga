@@ -65,7 +65,7 @@ Boards:
     Bridges:
       - jtag
     Programmer: quartus_pgm
-    BoardURL: "https://www.altera.com/products/devkit/po-3196/agilex-5-fpga-e-series-013b-development-kit"
+    BoardURL: "https://www.altera.com/products/devkit/po-3002/agilex-5-fpga-and-soc-e-series-premium-development-kit-es"
   - Id: iwave_rainbow_g58m
     BoardName: iW-RainboW-G58M Intel Agilex 5 FPGA SoM
     Devices:
@@ -131,7 +131,7 @@ Boards:
       - dip_switch_generic
       - ti_sn75dp159
     BoardProducer: terasic
-    Chip: A5ED065BB32AE6SR0
+    Chip: A5ED065BB32AE4S
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm
@@ -160,7 +160,7 @@ Boards:
       - led_discrete_generic
       - pushbutton_smd_generic
     BoardProducer: terasic
-    Chip: A5ED014BB32AE6SR0
+    Chip: A5EB013BB23BE4SCS
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm
@@ -189,7 +189,7 @@ Boards:
       - dip_switch_generic
       - seven_seg_module_shared
     BoardProducer: terasic
-    Chip: A5ED014BB32AE6SR0
+    Chip: A5ED013BB32AE4SCS
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm

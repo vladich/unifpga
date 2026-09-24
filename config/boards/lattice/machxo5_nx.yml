@@ -22,7 +22,7 @@ Boards:
   - Id: lattice_machxo5_nx_15d_devkit
     BoardName: "MachXO5-NX-15D Development Board"
     BoardProducer: lattice
-    Chip: LFMXO5-15D-9MG324I
+    Chip: LFMXO5-15D-8BBG400C
     Bridges:
       - jtag
     Programmer: radiant_pgm
@@ -43,7 +43,7 @@ Boards:
   - Id: lattice_machxo5_nx_25_devkit
     BoardName: "MachXO5-NX Development Board (25K)"
     BoardProducer: lattice
-    Chip: LFMXO5-25-9MG324I
+    Chip: LFMXO5-25-9BBG400C
     Bridges:
       - jtag
     Programmer: radiant_pgm

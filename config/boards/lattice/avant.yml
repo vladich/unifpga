@@ -10,7 +10,7 @@ Boards:
     Devices:
       - ftdi_ft2232h
     BoardProducer: lattice
-    Chip: LAV-AT-E70-2LFG1156C
+    Chip: LAV-AT-E70-3LFG1156C
     Bridges:
       - jtag
     Programmer: radiant_pgm
@@ -45,7 +45,7 @@ Boards:
     Devices:
       - ftdi_ft2232h
     BoardProducer: lattice
-    Chip: LAV-AT-G70-3LFG1156C
+    Chip: LAV-AT-G70-3LFG1156I
     Bridges:
       - jtag
     Programmer: radiant_pgm
@@ -68,7 +68,7 @@ Boards:
     Devices:
       - ftdi_ft2232h
     BoardProducer: lattice
-    Chip: LAV-AT-X70-3LFE1156C
+    Chip: LAV-AT-X70-3LFG1156I
     Bridges:
       - jtag
     Programmer: radiant_pgm

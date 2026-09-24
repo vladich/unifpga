@@ -172,7 +172,7 @@ Boards:
   - Id: edge_spartan_7
     BoardName: EDGE Spartan 7
     BoardProducer: invent_logics
-    Chip: XC7S50-1CSGA324C
+    Chip: XC7S15-1FTGB196C
     Bridges:
       - jtag
     Programmer: vivado_hw
@@ -294,11 +294,11 @@ Boards:
     Bridges:
       - jtag
     Programmer: vivado_hw
-    BoardURL: https://www.xilinx.com/products/boards-and-kits/ek-s7-sp701-g.html
+    BoardURL: "https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/sp701.html"
   - Id: numato_narvi
     BoardName: "Numato Narvi Spartan 7 FPGA Module"
     BoardProducer: numato_lab
-    Chip: XC7S50-2CSGA324C
+    Chip: XC7S50-1CSGA324
     Bridges:
       - jtag
     Programmer: vivado_hw

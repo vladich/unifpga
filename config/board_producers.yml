@@ -538,7 +538,7 @@ Producers:
     DefunctSince: null
     Notes: null
 
-  - Id: pango_logic
+  - Id: pano_logic
     Name: "Pano Logic"
     AKA: ["Pano Logic Inc.", "PanoLogic"]
     URL: "https://en.wikipedia.org/wiki/Pano_Logic"

@@ -10,3 +10,4 @@ DefaultToolchains:
   - lattice_radiant[*]
 Chips:
   - Id: LFD2NX-40-7BBG196C
+  - Id: LFD2NX-40-8BG256C

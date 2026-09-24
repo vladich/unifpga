@@ -109,5 +109,5 @@ Boards:
       - usb_jtag_bridge
       - user_buttons
       - user_leds
-    BoardURL: "https://www.gowinsemi.com/en/support/devkits/37/"
+    BoardURL: "https://www.gowinsemi.com/en/support/devkits_detail/55/"
     Status: active

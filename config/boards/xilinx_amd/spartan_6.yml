@@ -198,7 +198,7 @@ Boards:
       - dip_switch_generic
       - seven_seg_module_shared
     BoardProducer: numato_lab
-    Chip: XC6SLX9-2TQG144C
+    Chip: XC6SLX9-2CSG324
     Bridges:
       - jtag
     Programmer: ise_impact
@@ -230,7 +230,7 @@ Boards:
     Programmer: ise_impact
   - Id: panologic_g2
     BoardName: Pano Logic G2
-    BoardProducer: pango_logic
+    BoardProducer: pano_logic
     Chip: XC6SLX150-2CSG484C
     Bridges:
       - jtag

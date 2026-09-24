@@ -9,3 +9,4 @@ DefaultToolchains:
 Chips:
   - Id: 5M2210ZF256C4N
   - Id: EPM570T100C5
+  - Id: 5M570ZF256C5N

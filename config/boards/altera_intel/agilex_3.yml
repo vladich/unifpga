@@ -28,7 +28,7 @@ Boards:
       - pushbutton_smd_generic
       - dip_switch_generic
     BoardProducer: intel_altera
-    Chip: A3CZ100BB18AE6SR0
+    Chip: A3CW135BM16AE6S
     Bridges:
       - jtag
     Programmer: quartus_pgm
@@ -44,7 +44,7 @@ Boards:
       - seven_seg_module_shared
       - ti_adc128s022
     BoardProducer: terasic
-    Chip: A3XD025BB18AE3VR0
+    Chip: A3CZ135BB18AE7S
     Bridges:
       - usb-jtag
     Programmer: quartus_pgm

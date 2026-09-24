@@ -24,7 +24,7 @@ Boards:
     Bridges:
       - jtag
     Programmer: openFPGALoader
-    BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/32/
+    BoardURL: "https://www.gowinsemi.com/en/support/devkits_detail/31/"
   - Id: gowin_gw2a18_video_devkit
     BoardName: GW2A-18 Video Dev Kit
     Devices:
