@@ -2362,14 +2362,9 @@ def _gpio_connection(resolved, plans):
 
 # ---- design_top instantiation -----------------------------------------------
 
-def _emit_lab_top(resolved, plans):
-    lines = ["    // ---- User logic (design_top) ----"]
-    gpio_expr, gpio_decls = _gpio_connection(resolved, plans)
-    if gpio_decls:
-        lines.append("    // gpio bits without a usable pin (claimed by a driver peripheral, or")
-        lines.append("    // absent on this header) are left dangling so numbering matches the board.")
-        lines.extend(gpio_decls)
-
+def design_top_parameters(resolved, plans):
+    """design_top's parameter values for a resolved configuration, in the
+    order the instance lists them (clk_mhz, w_sw, ..., w_gpio)."""
     cap_widths = {
         "switches":      plans["switches"].params.get("width", 0)      if plans["switches"].providers else 0,
         "buttons":       plans["buttons"].params.get("width", 0)       if plans["buttons"].providers else 0,
@@ -2396,7 +2391,7 @@ def _emit_lab_top(resolved, plans):
     lab = lab_clock(resolved, plans)
     clk_mhz = _lab_mhz_int(lab, resolve_clock(resolved, plans))
 
-    params = [
+    return OrderedDict([
         ("clk_mhz",       clk_mhz),
         ("w_sw",          cap_widths["switches"]),
         ("w_btn",         cap_widths["buttons"]),
@@ -2409,7 +2404,50 @@ def _emit_lab_top(resolved, plans):
         ("w_green",       wg),
         ("w_blue",        wb),
         ("w_gpio",        cap_widths["gpio"]),
-    ]
+    ])
+
+
+def _clog2(n):
+    return max(1, (int(n) - 1).bit_length()) if n and int(n) > 1 else 1
+
+
+# design_top's ports (rtl/peripherals/design_top_interface.sv), in its order:
+# (port, capability, signal, width from the parameters above)
+DESIGN_PORTS = (
+    ("clk",        "clock",          "clk",      lambda p: 1),
+    ("rst",        "reset",          "rst",      lambda p: 1),
+    ("sw",         "switches",       "sw",       lambda p: p["w_sw"]),
+    ("btn",        "buttons",        "btn",      lambda p: p["w_btn"]),
+    ("led",        "leds",           "led",      lambda p: p["w_led"]),
+    ("abcdefgh",   "seven_segment",  "abcdefgh", lambda p: 8),
+    ("digit",      "seven_segment",  "digit",    lambda p: p["w_digit"]),
+    ("rgb_r",      "rgb_leds",       "r",        lambda p: p["w_rgb_led"]),
+    ("rgb_g",      "rgb_leds",       "g",        lambda p: p["w_rgb_led"]),
+    ("rgb_b",      "rgb_leds",       "b",        lambda p: p["w_rgb_led"]),
+    ("x",          "screen",         "x",        lambda p: _clog2(p["screen_width"]) if p["screen_width"] > 0 else 1),
+    ("y",          "screen",         "y",        lambda p: _clog2(p["screen_height"]) if p["screen_height"] > 0 else 1),
+    ("red",        "screen",         "red",      lambda p: p["w_red"]),
+    ("green",      "screen",         "green",    lambda p: p["w_green"]),
+    ("blue",       "screen",         "blue",     lambda p: p["w_blue"]),
+    ("mic_sample", "audio_in",       "sample",   lambda p: 24),
+    ("mic_valid",  "audio_in",       "valid",    lambda p: 1),
+    ("sound",      "audio_out",      "sample",   lambda p: 16),
+    ("uart_rx",    "serial_console", "rx",       lambda p: 1),
+    ("uart_tx",    "serial_console", "tx",       lambda p: 1),
+    ("gpio",       "gpio",           "io",       lambda p: p["w_gpio"]),
+)
+
+
+def _emit_lab_top(resolved, plans):
+    lines = ["    // ---- User logic (design_top) ----"]
+    gpio_expr, gpio_decls = _gpio_connection(resolved, plans)
+    if gpio_decls:
+        lines.append("    // gpio bits without a usable pin (claimed by a driver peripheral, or")
+        lines.append("    // absent on this header) are left dangling so numbering matches the board.")
+        lines.extend(gpio_decls)
+
+    params = list(design_top_parameters(resolved, plans).items())
+    lab = lab_clock(resolved, plans)
     param_block = ",\n".join("        .{}({})".format(n, v) for n, v in params)
     lines.append("    design_top # (")
     lines.append(param_block)

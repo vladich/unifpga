@@ -113,7 +113,8 @@ def _pins(pinmap, ref):
 def trace(resolved):
     """{"ports": [...], "attaches": [...]} — see the module docstring.
 
-    ports: {capability, signal, direction, providers: [{attach_index, peripheral,
+    ports: every design_top port in its order: {design_port, width, capability, signal,
+            direction, providers: [{attach_index, peripheral,
             bits: [{design_bit, provider_bit, ref, pin}] | None, via, pins}]}
     attaches: per resolved attach, {attach_index, peripheral, pins: {signal: [{ref, pin}]},
                links: {signal: pin_links() entries}}.
@@ -126,31 +127,31 @@ def trace(resolved):
         attaches.append({"attach_index": a.get("attach_index"), "peripheral": a["peripheral_id"],
                          "pins": {sig: _pins(pinmap, ref) for sig, ref in (a.get("bind") or {}).items()},
                          "links": {sig: links.get(sig, []) for sig in (a.get("bind") or {})}})
+    widths = codegen.design_top_parameters(resolved, plans)
     ports = []
-    for cap_id, plan in plans.items():
-        if not plan.providers:
-            continue
-        for sig in plan.cap.get("signals") or []:
-            port = {"capability": cap_id, "signal": sig["name"], "direction": sig.get("direction"),
-                    "providers": []}
-            for pidx, perif, _params in plan.providers:
-                a = resolved["peripherals"][pidx]
-                entry = {"attach_index": a.get("attach_index"), "peripheral": a["peripheral_id"],
-                         "via": (perif.get("driver") or {}).get("module"), "bits": None,
-                         "pins": attaches[pidx]["pins"]}
-                design_bits = _provider_bits(plan, pidx, sig["name"])
-                direct = _direct_signal(perif, cap_id, sig["name"])
-                if design_bits is not None and direct and direct in (a.get("bind") or {}):
-                    pins = _pins(pinmap, a["bind"][direct])
-                    if codegen._peripheral_mirror(a, pinmap):
-                        pins = list(reversed(pins))
-                    entry["bits"] = [{"design_bit": b, "provider_bit": k,
-                                      "ref": pins[k]["ref"] if k < len(pins) else None,
-                                      "pin": pins[k]["pin"] if k < len(pins) else None}
-                                     for k, b in enumerate(design_bits)]
-                elif design_bits is not None:
-                    entry["bits"] = [{"design_bit": b, "provider_bit": k, "ref": None, "pin": None}
-                                     for k, b in enumerate(design_bits)]
-                port["providers"].append(entry)
-            ports.append(port)
+    for design_port, cap_id, sig_name, width in codegen.DESIGN_PORTS:
+        plan = plans.get(cap_id)
+        sig = next((s for s in (plan.cap.get("signals") or []) if s["name"] == sig_name), {}) if plan else {}
+        port = {"design_port": design_port, "width": width(widths) if plan and plan.providers else 0,
+                "capability": cap_id, "signal": sig_name, "direction": sig.get("direction"), "providers": []}
+        for pidx, perif, _params in (plan.providers if plan else []):
+            a = resolved["peripherals"][pidx]
+            entry = {"attach_index": a.get("attach_index"), "peripheral": a["peripheral_id"],
+                     "via": (perif.get("driver") or {}).get("module"), "bits": None,
+                     "pins": attaches[pidx]["pins"]}
+            design_bits = _provider_bits(plan, pidx, sig_name)
+            direct = _direct_signal(perif, cap_id, sig_name)
+            if design_bits is not None and direct and direct in (a.get("bind") or {}):
+                pins = _pins(pinmap, a["bind"][direct])
+                if codegen._peripheral_mirror(a, pinmap):
+                    pins = list(reversed(pins))
+                entry["bits"] = [{"design_bit": b, "provider_bit": k,
+                                  "ref": pins[k]["ref"] if k < len(pins) else None,
+                                  "pin": pins[k]["pin"] if k < len(pins) else None}
+                                 for k, b in enumerate(design_bits)]
+            elif design_bits is not None:
+                entry["bits"] = [{"design_bit": b, "provider_bit": k, "ref": None, "pin": None}
+                                 for k, b in enumerate(design_bits)]
+            port["providers"].append(entry)
+        ports.append(port)
     return {"ports": ports, "attaches": attaches}

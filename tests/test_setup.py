@@ -330,3 +330,17 @@ def test_evaluation_traces_around_a_broken_part():
     profiled["use"].append({"module": "tm1638_led_key", "wires": {"STB": "ja.1", "CLK": "ja.2", "DIO": "ja.3"}})
     ev = studio.evaluate(profiled)
     assert ev["trace"] and ev["excluded"][0]["use"] == len(profiled["use"]) - 1 and "lab_bits" in ev["excluded"][0]["reason"]
+
+
+def test_design_ports_follow_the_design_top_interface():
+    import re
+    with open(os.path.join(os.path.dirname(su.CONFIG_DIR), "rtl", "peripherals", "design_top_interface.sv")) as f:
+        text = f.read()
+    body = text[text.index(")\n(") + 3:text.index(");")]
+    declared = re.findall(r"^\s*(?:input|output|inout)\b[^\n]*?(\w+)\s*,?\s*(?://[^\n]*)?$", body, re.M)
+    assert [p for p, *_ in codegen.DESIGN_PORTS] == declared
+    r = config_init.resolve_configuration("arty_a7_35_pmod_mic3")
+    ports = {p["design_port"]: p for p in trace.trace(r)["ports"]}
+    assert (ports["x"]["width"], ports["y"]["width"], ports["red"]["width"]) == (10, 9, 4)
+    assert (ports["mic_sample"]["width"], ports["sound"]["width"], ports["sound"]["providers"]) == (24, 0, [])
+    assert ports["gpio"]["width"] == 42 and ports["led"]["width"] == 8

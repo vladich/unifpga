@@ -77,6 +77,7 @@ function ports() { return (S.ev && S.ev.trace && S.ev.trace.ports) || []; }
 // catalogue's other signals with no provider (drawn greyed)
 function devicePorts() {
   const traced = ports();
+  if (traced.length && traced[0].design_port) return traced;       // every design_top port, with widths
   const out = [];
   for (const c of (S.board && S.board.capabilities) || []) for (const s of c.signals) {
     out.push(traced.find((p) => p.capability === c.id && p.signal === s.name) ||
@@ -85,12 +86,8 @@ function devicePorts() {
   for (const p of traced) if (!out.includes(p)) out.push(p);
   return out;
 }
-// a port's name in design_top; the capability is added where two share a name
-// (audio_in.sample, audio_out.sample)
-function portName(p) {
-  const same = ports().filter((q) => q.signal === p.signal).length > 1;
-  return same ? p.capability + "." + p.signal : p.signal;
-}
+// a port's design_top name (mic_sample, rgb_r, uart_tx, ...)
+function portName(p) { return p.design_port || p.capability + "." + p.signal; }
 
 // design bits a pinmap ref carries, with the port and the providing use
 function designBitsOfRef(ref) {
@@ -173,29 +170,32 @@ function draw() {
   svg.append(el("text", {x: VX, y: top + 8, "font-weight": "bold", "font-size": 14}, "Virtual device (design_top)"));
   const portRows = [];
   for (const p of devicePorts()) {
-    let width = 1;
+    let width = p.width || 0;
     for (const pr of p.providers) for (const b of pr.bits || []) if (b.design_bit !== null) width = Math.max(width, b.design_bit + 1);
     const perBit = p.providers.some((pr) => pr.bits);
+    const none = p.none || !p.providers.length;
     const g = el("g", {class: "clickable"});
     const selPort = (S.sel && S.sel.kind === "vport" && S.sel.signal === p.signal && S.sel.cap === p.capability) ||
                     hi.vports.has(p.capability + "." + p.signal);
-    g.append(el("text", {x: VX, y: y + 11, "font-size": 12, fill: selPort ? "var(--sel)" : p.none ? "#adb5bd" : "#212529"},
-                portName(p) + (perBit ? "[" + (width - 1) + ":0]" : "")));
-    g.append(el("title", {}, p.capability + "." + p.signal + " (" + (p.direction || "") + ")" + (p.none ? " — nothing in the rig provides it" : "")));
+    g.append(el("text", {x: VX, y: y + 11, "font-size": 12, fill: selPort ? "var(--sel)" : none ? "#adb5bd" : "#212529"},
+                portName(p) + (width > 1 ? "[" + (width - 1) + ":0]" : "")));
+    g.append(el("text", {x: VX, y: y + 22, "font-size": 9, fill: "#868e96"}, p.capability + "." + p.signal));
+    g.append(el("title", {}, "design_top " + portName(p) + (width > 1 ? "[" + (width - 1) + ":0]" : "") + " — capability " +
+                             p.capability + "." + p.signal + " (" + (p.direction || "") + ")" + (none ? " — nothing in the rig provides it" : "")));
     g.addEventListener("click", () => select({kind: "vport", cap: p.capability, signal: p.signal}));
     svg.append(g);
-    const cells = perBit ? width : 1, per = 14;
+    const cells = Math.max(width, 1), per = 14;
     for (let b = 0; b < cells; b++) {
       const cx = VX + 118 + (b % per) * 13, cy = y + Math.floor(b / per) * 14;
       const on = hi.vbits.has(p.capability + "." + p.signal + "." + b) || selPort;
       const r = el("rect", {x: cx, y: cy, width: 11, height: 11, rx: 2, class: "clickable",
-                           fill: on ? "var(--sel)" : p.none ? "#f8f9fa" : "#e7f5ff", stroke: p.none ? "#ced4da" : "#1c7ed6"});
-      r.append(el("title", {}, perBit ? p.signal + "[" + b + "]" : p.signal));
+                           fill: on ? "var(--sel)" : none ? "#f8f9fa" : "#e7f5ff", stroke: none ? "#ced4da" : "#1c7ed6"});
+      r.append(el("title", {}, portName(p) + (width > 1 ? "[" + b + "]" : "") + "  (" + p.capability + "." + p.signal + ")"));
       r.addEventListener("click", (e) => { e.stopPropagation();
         select(perBit ? {kind: "vbit", cap: p.capability, signal: p.signal, bit: b} : {kind: "vport", cap: p.capability, signal: p.signal}); });
       svg.append(r);
     }
-    const rowsUsed = Math.ceil(cells / per);
+    const rowsUsed = Math.max(Math.ceil(cells / per), 2) - 0.6;          // room for the capability name
     portRows.push({p, x: VX + 118 + Math.min(cells, per) * 13, y: y + 6});
     y += 14 * rowsUsed + 8;
   }
@@ -1008,10 +1008,9 @@ async function selftest() {
     ok("added module is listed", S.setup.use.length === n + 1);
     ok("unwired module reports its required signals", errors().some((m) => m.includes("required signal")));
     const i = S.setup.use.length - 1;
-    const free = S.board.connectors.flatMap((c) => Object.keys(c.pins).map((k) => [c.id, k]))
-      .filter(([c, k]) => !connectionRows().some((r) => r.header === conn(c).label + " pin " + k) &&
-                        !S.setup.use.some((u) => u.gpio === c));
-    const target = free.slice(-3);
+    // pins the server calls free (it knows pins the LCD connector shares), wired by clicking
+    const suggestion = await api("/api/autowire", {setup: S.setup, use: i});
+    const target = ["STB", "CLK", "DIO"].map((p) => suggestion.wires[p].split("."));
     for (const [p, [c, k]] of ["STB", "CLK", "DIO"].map((p, j) => [p, target[j]])) { modulePinClicked(i, p); pinClicked(c, k); await settle(); }
     ok("wired by clicking module pin then header pin", Object.keys(S.setup.use[i].wires).length === 3);
     ok("the new board adds design LEDs, traced to it", errors().length === 0 &&
