@@ -734,13 +734,18 @@ function selLabel(sel) {
   return sel.kind;
 }
 
+// what is under the pointer, topmost first; a filled box (a part, a driver)
+// hides what lies beneath it, so nothing under it is a candidate
 function candidatesAt(x, y) {
   const seen = new Set(), out = [];
   for (const e of document.elementsFromPoint(x, y)) {
     const t = e.closest && e.closest("[data-sel]");
-    if (!t) continue;
-    const key = t.getAttribute("data-sel");
-    if (!seen.has(key)) { seen.add(key); out.push(JSON.parse(key)); }
+    if (t) {
+      const key = t.getAttribute("data-sel");
+      if (!seen.has(key)) { seen.add(key); out.push(JSON.parse(key)); }
+    }
+    const fill = e.tagName === "rect" ? (e.getAttribute("fill") || "") : "none";
+    if (fill && fill !== "none" && fill !== "transparent") break;
   }
   return out;
 }
