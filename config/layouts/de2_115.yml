@@ -12,7 +12,8 @@ Layout:
   connectors:
     - id: gpio
       type: pin_row
-      label: GPIO (pin order from the pinmap)
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
       pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]', '[20]': 'gpio[20]', '[21]': 'gpio[21]', '[22]': 'gpio[22]', '[23]': 'gpio[23]', '[24]': 'gpio[24]', '[25]': 'gpio[25]', '[26]': 'gpio[26]', '[27]': 'gpio[27]', '[28]': 'gpio[28]', '[29]': 'gpio[29]', '[30]': 'gpio[30]', '[31]': 'gpio[31]', '[32]': 'gpio[32]', '[33]': 'gpio[33]', '[34]': 'gpio[34]', '[35]': 'gpio[35]'}
 

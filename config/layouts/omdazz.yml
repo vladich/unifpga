@@ -12,7 +12,8 @@ Layout:
   connectors:
     - id: gpio_pseudo_sdram
       type: pin_row
-      label: GPIO_PSEUDO_SDRAM (pin order from the pinmap)
+      label: GPIO_PSEUDO_SDRAM
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_pseudo_sdram
       pins: {'[0]': 'gpio_pseudo_sdram[0]', '[1]': 'gpio_pseudo_sdram[1]', '[2]': 'gpio_pseudo_sdram[2]', '[3]': 'gpio_pseudo_sdram[3]', '[4]': 'gpio_pseudo_sdram[4]', '[5]': 'gpio_pseudo_sdram[5]', '[6]': 'gpio_pseudo_sdram[6]', '[7]': 'gpio_pseudo_sdram[7]', '[8]': 'gpio_pseudo_sdram[8]', '[9]': 'gpio_pseudo_sdram[9]', '[10]': 'gpio_pseudo_sdram[10]', '[11]': 'gpio_pseudo_sdram[11]', '[12]': 'gpio_pseudo_sdram[12]', '[13]': 'gpio_pseudo_sdram[13]'}
 

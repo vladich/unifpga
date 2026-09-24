@@ -12,12 +12,14 @@ Layout:
   connectors:
     - id: pmod_0
       type: pin_row
-      label: PMOD_0 (pin order from the pinmap)
+      label: PMOD_0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_0
       pins: {'[0]': 'pmod_0[0]', '[1]': 'pmod_0[1]', '[2]': 'pmod_0[2]', '[3]': 'pmod_0[3]', '[4]': 'pmod_0[4]', '[5]': 'pmod_0[5]', '[6]': 'pmod_0[6]', '[7]': 'pmod_0[7]'}
     - id: pmod_1
       type: pin_row
-      label: PMOD_1 (pin order from the pinmap)
+      label: PMOD_1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_1
       pins: {'[0]': 'pmod_1[0]', '[1]': 'pmod_1[1]', '[2]': 'pmod_1[2]', '[3]': 'pmod_1[3]', '[4]': 'pmod_1[4]', '[5]': 'pmod_1[5]', '[6]': 'pmod_1[6]', '[7]': 'pmod_1[7]'}
 

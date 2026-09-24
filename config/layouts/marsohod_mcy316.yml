@@ -12,32 +12,38 @@ Layout:
   connectors:
     - id: gpio_a
       type: pin_row
-      label: GPIO_A (pin order from the pinmap)
+      label: GPIO_A
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_a
       pins: {'[0]': 'gpio_a[0]', '[1]': 'gpio_a[1]', '[2]': 'gpio_a[2]', '[3]': 'gpio_a[3]', '[4]': 'gpio_a[4]', '[5]': 'gpio_a[5]', '[6]': 'gpio_a[6]', '[7]': 'gpio_a[7]', '[8]': 'gpio_a[8]', '[9]': 'gpio_a[9]', '[10]': 'gpio_a[10]', '[11]': 'gpio_a[11]', '[12]': 'gpio_a[12]', '[13]': 'gpio_a[13]', '[14]': 'gpio_a[14]', '[15]': 'gpio_a[15]', '[16]': 'gpio_a[16]', '[17]': 'gpio_a[17]', '[18]': 'gpio_a[18]', '[19]': 'gpio_a[19]', '[20]': 'gpio_a[20]', '[21]': 'gpio_a[21]', '[22]': 'gpio_a[22]', '[23]': 'gpio_a[23]'}
     - id: gpio_a_i
       type: pin_row
-      label: GPIO_A_I (pin order from the pinmap)
+      label: GPIO_A_I
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_a_i
       pins: {'[0]': 'gpio_a_i[0]', '[1]': 'gpio_a_i[1]', '[2]': 'gpio_a_i[2]', '[3]': 'gpio_a_i[3]'}
     - id: gpio
       type: pin_row
-      label: GPIO (pin order from the pinmap)
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
       pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]'}
     - id: gpio_i
       type: pin_row
-      label: GPIO_I (pin order from the pinmap)
+      label: GPIO_I
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_i
       pins: {'[0]': 'gpio_i[0]', '[1]': 'gpio_i[1]', '[2]': 'gpio_i[2]', '[3]': 'gpio_i[3]'}
     - id: gpio_b
       type: pin_row
-      label: GPIO_B (pin order from the pinmap)
+      label: GPIO_B
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_b
       pins: {'[0]': 'gpio_b[0]', '[1]': 'gpio_b[1]', '[2]': 'gpio_b[2]', '[3]': 'gpio_b[3]', '[4]': 'gpio_b[4]', '[5]': 'gpio_b[5]', '[6]': 'gpio_b[6]', '[7]': 'gpio_b[7]', '[8]': 'gpio_b[8]', '[9]': 'gpio_b[9]', '[10]': 'gpio_b[10]'}
     - id: gpio_b_i
       type: pin_row
-      label: GPIO_B_I (pin order from the pinmap)
+      label: GPIO_B_I
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_b_i
       pins: {'[0]': 'gpio_b_i[0]', '[1]': 'gpio_b_i[1]', '[2]': 'gpio_b_i[2]'}
 
