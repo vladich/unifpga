@@ -1,0 +1,8 @@
+{
+  "schema": "unifpga.slang-probe/v1",
+  "sources": ["bad.sv"],
+  "include_dirs": ["."],
+  "defines": [],
+  "top": "bad",
+  "compilation_unit": "separate"
+}

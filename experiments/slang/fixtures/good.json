@@ -1,0 +1,8 @@
+{
+  "schema": "unifpga.slang-probe/v1",
+  "sources": ["numbers_pkg.sv", "stream_if.sv", "top.sv"],
+  "include_dirs": ["includes"],
+  "defines": ["FEATURE=1"],
+  "top": "top",
+  "compilation_unit": "separate"
+}
