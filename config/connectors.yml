@@ -22,3 +22,10 @@ Connectors:
     name: chipKIT / Arduino shield header
     voltage: 3.3
     source: Digilent Arty-A7-35-Master.xdc (Sch=ck_io[n])
+
+  pin_row:
+    name: Header of unverified physical numbering (pins in pinmap order)
+    source: >-
+      tools/layout_draft.py, for a header whose facts in config/board_sources/ do
+      not verify yet: its pins are named by pinmap index, it has no power pins and
+      no voltage

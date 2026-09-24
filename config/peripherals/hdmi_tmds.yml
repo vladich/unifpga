@@ -29,6 +29,15 @@ Peripheral:
         width: 640
         height: 480
         color_depth: 888
+  # which design ports each pin carries through the driver (tools/trace.py),
+  # rtl/peripherals/hdmi_tmds_out.sv and dvi.sv: TMDS channel 0 (d[0]) is blue
+  # with hsync / vsync in its control periods, 1 green, 2 red; the clock pair
+  # is the pixel clock the raster (x, y) runs on
+  serves:
+    clk_p: [screen.x, screen.y]
+    clk_n: [screen.x, screen.y]
+    d_p: [[screen.blue, screen.x, screen.y], [screen.green], [screen.red]]
+    d_n: [[screen.blue, screen.x, screen.y], [screen.green], [screen.red]]
   # 640x480@60: 25.2 MHz pixel clock, 252 MHz serial (10x, SDR). The pixel
   # clock is divided from the serial one (Gowin CLKDIV2 + CLKDIV 5; a second
   # MMCM output on Xilinx; the board clock itself when
