@@ -2414,10 +2414,10 @@ async function selftest() {
     // zoom and pan
     const svg = $("svg"), box = svg.getBoundingClientRect();
     const at = {clientX: box.left + box.width * 0.3, clientY: box.top + box.height * 0.3};
-    const before = svgPoint(at);
+    const before = svgPoint(at), fitted = currentView().w;   // a tall drawing fits wider than its content
     svg.dispatchEvent(new WheelEvent("wheel", Object.assign({deltaY: -300, bubbles: true, cancelable: true}, at)));
     const after = svgPoint(at);
-    ok("scrolling up zooms in", S.view && S.view.w < S.content.w);
+    ok("scrolling up zooms in", S.view && S.view.w < fitted);
     ok("zoom keeps the point under the cursor", Math.abs(after.x - before.x) < 1 && Math.abs(after.y - before.y) < 1);
     const v0 = Object.assign({}, S.view), sel0 = S.sel;
     const pe = (type, dx) => svg.dispatchEvent(new PointerEvent(type, {clientX: at.clientX + dx, clientY: at.clientY,

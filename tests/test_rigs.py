@@ -213,3 +213,32 @@ def test_a_modules_bind_does_not_depend_on_the_order_of_its_wires():
     signals = [s["name"] for s in config_init.read_peripherals()["i2s_audio_out"]["signals"]]
     bind = list(su.generate(setup)["attach"][k]["bind"])
     assert bind == [s for s in signals if s in bind]
+
+
+# ---------------------------------------------------------------- on-board devices (Phase 2)
+
+def _part(board, part_id):
+    return next(o for o in su.read_layout(board)["onboard"] if o["id"] == part_id)
+
+
+def test_on_board_devices_get_the_peripheral_that_models_them():
+    lcd = _part("de2", "lcd")["attach"]                      # HD44780 in 4-bit mode on D4..D7
+    assert lcd["peripheral"] == "hd44780_lcd"
+    assert lcd["bind"]["d"] == ["onboard_lcd.LCD_DATA[{}]".format(k) for k in range(4, 8)]
+    assert _part("omdazz", "buzzer")["attach"] == {"peripheral": "buzzer", "bind": {"pwm": "onboard_buzzer.beep"}}
+    keys = _part("qmtech_kintex_7", "core_keys")["attach"]      # a bank of named pins as one bus, active low
+    assert keys["peripheral"] == "button_array" and keys["params"] == {"width": 2, "active": "low"}
+    amp = _part("tang_mega_138k", "audio")["attach"]
+    assert amp["peripheral"] == "i2s_audio_out" and amp["bind"]["bclk"] == "onboard_audio.bck"
+
+
+def test_hard_processor_pins_are_never_modelled():
+    """A Cyclone V HPS or Zynq PS pin is not reachable from the FPGA fabric."""
+    for board in ("de10_nano", "de1_soc", "eclypse_z7"):
+        pinmap = config_init.read_board_pinmap(board)["pinBanks"]
+        hard = {b for b, spec in pinmap.items() if isinstance(spec, dict) and spec.get("fabric") is False}
+        assert hard, board
+        for o in su.read_layout(board)["onboard"]:
+            bank = (o.get("device") or {}).get("bank")
+            if bank in hard:
+                assert "attach" not in o and not o.get("variants"), (board, o["id"])
