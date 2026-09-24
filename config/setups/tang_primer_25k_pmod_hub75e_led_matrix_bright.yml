@@ -9,7 +9,9 @@ Setup:
     - onboard: clk
     - onboard: buttons
     - onboard: uart
-    - raw: {peripheral: hub75e_led_matrix, params: {rows: 64, brightness: 8}, bind: {ck: 'pmod_0[6]', oe: 'pmod_0[7]', st: 'pmod_0[2]', a: 'pmod_0[4]', b: 'pmod_0[0]', c: 'pmod_0[5]', d: 'pmod_0[1]', e: 'pmod_1[3]', r1: 'pmod_1[4]', r2: 'pmod_1[6]', g1: 'pmod_1[0]', g2: 'pmod_1[2]', b1: 'pmod_1[5]', b2: 'pmod_1[7]'}}
+    - module: hub75e_led_panel
+      wires: {CLK: 'pmod_0.[6]', OE: 'pmod_0.[7]', LAT: 'pmod_0.[2]', A: 'pmod_0.[4]', B: 'pmod_0.[0]', C: 'pmod_0.[5]', D: 'pmod_0.[1]', E: 'pmod_1.[3]', R1: 'pmod_1.[4]', R2: 'pmod_1.[6]', G1: 'pmod_1.[0]', G2: 'pmod_1.[2]', B1: 'pmod_1.[5]', B2: 'pmod_1.[7]'}
+      params: {rows: 64, brightness: 8}
     - module: tm1638_led_key
       wires: {STB: 'pmod_2.[3]', CLK: 'pmod_2.[2]', DIO: 'pmod_2.[1]'}
     - module: inmp441_breakout

@@ -115,6 +115,30 @@ def draft(board_id):
                  "bank": bank, "pins": {"[{}]".format(k): ref for k, ref in enumerate(refs)}}
         connectors.append(c)
 
+    # an on-board part's pins a module is soldered to (a TM1638's DIO on the
+    # Colorlight 5A-75B's button pin): a small connector of those pins, so the
+    # module is wired like any other; only for a module that also uses header pins
+    module_peripherals = {m["peripheral"] for m in su.read_modules().values()}
+    pads = {}
+    for cfg in builds:
+        for a in cfg.get("attach") or []:
+            if a["peripheral"] not in module_peripherals:
+                continue
+            refs = [r for v in (a.get("bind") or {}).values() for r in (v if isinstance(v, list) else [v])
+                    if isinstance(r, str)]
+            if not any(_banks_of(r) & set(headers) for r in refs):
+                continue
+            for r in refs:
+                bank = sorted(_banks_of(r))[0]
+                if bank not in headers and not any(r in c["pins"].values() for c in connectors):
+                    pads.setdefault(bank, [])
+                    if r not in pads[bank]:
+                        pads[bank].append(r)
+    for bank, refs in sorted(pads.items()):
+        connectors.append({"id": bank + "_pads", "type": "pin_row", "label": _title(bank).upper() + " PADS",
+                           "note": "pins of the on-board " + _title(bank) + ", reached by a wire soldered to them",
+                           "bank": None, "pins": {"[{}]".format(k): r for k, r in enumerate(refs)}})
+
     # one part per physical pin group (its first bank), the ways configurations
     # attach it as its variants
     parts, order = {}, []
@@ -177,8 +201,9 @@ def draft(board_id):
         part = {"id": oid, "label": dev.get("name") or _title(bank)}
         onboard.append(dict(part, attach=attach) if attach else dict(part, device={"kind": dev.get("kind"), "bank": bank}))
 
-    everything = [c["bank"] for c in connectors] + [_main(o) for o in onboard if "device" not in o]
-    verified = bool(everything) and all(b in ok_headers for b in [c["bank"] for c in connectors]) and \
+    real = [c["bank"] for c in connectors if c.get("bank")]          # pads are not headers to verify
+    everything = real + [_main(o) for o in onboard if "device" not in o]
+    verified = bool(everything) and all(b in ok_headers for b in real) and \
         all(_main(o) in ok_onboard for o in onboard)
     # the types the registry defines travel with the layout: builds and the
     # editor never read the registry
@@ -282,7 +307,7 @@ def emit(layout):
         out += ["    - id: {}".format(c["id"]), "      type: {}".format(c["type"]),
                 "      label: {}".format(_flow(c["label"]))] + \
                (["      note: {}".format(_flow(c["note"]))] if c.get("note") else []) + \
-               ["      bank: {}".format(c["bank"]),
+               (["      bank: {}".format(c["bank"])] if c.get("bank") else []) + [
                 "      pins: {}".format(_flow({str(k): v for k, v in c["pins"].items()}))]
     out += ["", "  onboard:" + ("" if layout["onboard"] else " []")]
     for o in layout["onboard"]:

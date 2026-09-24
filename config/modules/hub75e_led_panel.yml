@@ -1,0 +1,27 @@
+# An RGB LED matrix panel with a HUB75E input (64 rows: address lines A-E), wired
+# to the board pin by pin. Pins are the 2x8 HUB75E connector's names.
+Module:
+  id: hub75e_led_panel
+  name: HUB75E RGB LED panel (64 rows)
+  peripheral: hub75e_led_matrix
+  voltage: 3.3
+  pins:
+    R1: r1
+    G1: g1
+    B1: b1
+    R2: r2
+    G2: g2
+    B2: b2
+    A: a
+    B: b
+    C: c
+    D: d
+    E: e
+    CLK: ck
+    LAT: st
+    OE: oe
+    GND: ground
+  source: >-
+    the HUB75E connector's signal names (R1 G1 B1 GND R2 G2 B2 E A B C D CLK LAT OE GND on
+    pins 1-16), common to such panels; which board pin each goes to is the setup's wiring
+  verified: false

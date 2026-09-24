@@ -23,7 +23,8 @@ Setup:
       params: {width: 36}
     - gpio: gpio_0
       params: {width: 36}
-    - raw: {peripheral: uart_2wire, bind: {tx: 'gpio_1[35]', rx: 'gpio_1[34]'}}
+    - module: usb_uart_adapter
+      wires: {RXD: 'gpio_1.[35]', TXD: 'gpio_1.[34]'}
   extra:
     tie:
       gpio_0[1]: 0

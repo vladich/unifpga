@@ -145,16 +145,13 @@ def test_setup_and_configuration_carry_patches_both_ways():
 
 # ---------------------------------------------------------------- no raw uses (Phase 1c)
 
-# raw uses left, a ratchet down to none: every part of a rig is an on-board part,
-# a module or the design's gpio (lower it with each conversion, never raise it)
-RAW_USES_LEFT = 7
-
-
-def test_raw_uses_only_go_down():
-    uses = [u for s in su.read_setups().values() for u in s.get("use") or []]
-    raw = sum("raw" in u for u in uses) + \
-        sum("raw" in p for u in uses for p in (u.get("for_toolchain") or {}).values())
-    assert raw <= RAW_USES_LEFT, "{} raw uses (was {}): model the part instead".format(raw, RAW_USES_LEFT)
+def test_no_setup_has_a_raw_use():
+    """Every part of a rig is an on-board part, a module or the design's gpio:
+    drawn and traced in the editor (a raw attach is neither)."""
+    uses = [(sid, u) for sid, s in su.read_setups().items() for u in s.get("use") or []]
+    raw = [sid for sid, u in uses if "raw" in u] + \
+        [sid for sid, u in uses for p in (u.get("for_toolchain") or {}).values() if "raw" in p]
+    assert not raw, "raw uses in {}: model the part instead".format(sorted(set(raw)))
 
 
 def test_some_pins_of_a_connector_are_the_designs_gpio():

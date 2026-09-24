@@ -1,0 +1,13 @@
+# A 3.3 V USB-to-serial adapter (CP2102, CH340, FT232 breakouts): its TXD drives
+# the FPGA's receive pin, its RXD reads the FPGA's transmit pin.
+Module:
+  id: usb_uart_adapter
+  name: USB-UART adapter (3.3 V)
+  peripheral: uart_2wire
+  voltage: 3.3
+  pins:
+    TXD: rx
+    RXD: tx
+    GND: ground
+  source: generic; the silkscreen names every such breakout carries (TXD, RXD, GND)
+  verified: true

@@ -1,0 +1,29 @@
+# marsohod.org 7-segment + 4-button extension shield for the Marsohod3GW / 3GW2:
+# its four-digit display (multiplexed common segments). The shield's keys are the
+# module marsohod3_shield_keys: one board, two modules (a module drives one
+# peripheral).
+Module:
+  id: marsohod3_shield_display
+  name: Marsohod3 7-segment + 4-button shield (display)
+  peripheral: seven_segment_8digit_shared
+  voltage: 3.3
+  params: {digits: 4, active: low, digits_active: high}
+  pins:
+    IO6: segments[0]
+    IO7: segments[1]
+    IO4: segments[2]
+    IO2: segments[3]
+    IO0: segments[4]
+    IO5: segments[5]
+    IO3: segments[6]
+    IO1: dp
+    IO14: digits[0]
+    IO12: digits[1]
+    IO13: digits[2]
+    IO15: digits[3]
+  source: >-
+    marsohod4you/Marsohod3GW, branch Marsohod3GW2_GW1NR-LV9QN88PC6I5, _clk_pll_counter_7seg
+    (the shield maker's demo): top.v A IO6, B IO7, C IO4, D IO2, E IO0, F IO5, G IO3, dot IO1,
+    digit selects IO15 / IO13 / IO12 / IO14 from the most significant; seg4x7.v drives the
+    segments low and the selects high; board.cst IO[k] = the pinmap's gpio[k]
+  verified: true

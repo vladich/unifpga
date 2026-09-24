@@ -16,6 +16,11 @@ Layout:
       note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
       pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]'}
+    - id: onboard_buttons_pads
+      type: pin_row
+      label: BUTTONS PADS
+      note: pins of the on-board buttons, reached by a wire soldered to them
+      pins: {'[0]': 'onboard_buttons[0]'}
 
   onboard:
     - id: clk

@@ -24,20 +24,20 @@ Configuration:
         rows: 64
         brightness: 8
       bind:
-        ck: "pmod_0[6]"
-        oe: "pmod_0[7]"
-        st: "pmod_0[2]"
+        r1: "pmod_1[4]"
+        g1: "pmod_1[0]"
+        b1: "pmod_1[5]"
+        r2: "pmod_1[6]"
+        g2: "pmod_1[2]"
+        b2: "pmod_1[7]"
         a: "pmod_0[4]"
         b: "pmod_0[0]"
         c: "pmod_0[5]"
         d: "pmod_0[1]"
         e: "pmod_1[3]"
-        r1: "pmod_1[4]"
-        r2: "pmod_1[6]"
-        g1: "pmod_1[0]"
-        g2: "pmod_1[2]"
-        b1: "pmod_1[5]"
-        b2: "pmod_1[7]"
+        ck: "pmod_0[6]"
+        st: "pmod_0[2]"
+        oe: "pmod_0[7]"
     - peripheral: tm1638_led_key
       bind:
         stb: "pmod_2[3]"
