@@ -10,9 +10,10 @@ Setup:
     - onboard: clk
     - onboard: uart
     - onboard: button
-    - raw: {peripheral: dvi_pmod_ddr_24b, bind: {pmod_a: pmod_p1a, pmod_b: pmod_p1b}}
+    - module: 1bitsquared_dvi_pmod_24b
+      wires: {A1: pmod_p1a.1, A2: pmod_p1a.2, A3: pmod_p1a.3, A4: pmod_p1a.4, A7: pmod_p1a.7, A8: pmod_p1a.8, A9: pmod_p1a.9, A10: pmod_p1a.10, B1: pmod_p1b.1, B2: pmod_p1b.2, B3: pmod_p1b.3, B4: pmod_p1b.4, B7: pmod_p1b.7, B8: pmod_p1b.8, B9: pmod_p1b.9, B10: pmod_p1b.10}
     - module: tm1638_led_key
-      wires: {CLK: 'pmod_p2.[6]', STB: 'pmod_p2.[7]', DIO: 'pmod_p2.[5]'}
+      wires: {CLK: pmod_p2.9, STB: pmod_p2.10, DIO: pmod_p2.8}
     - gpio: pmod_p2
-      pins: ['[0]', '[1]', '[2]', '[3]', '[4]']
+      pins: ['1', '2', '3', '4', '7']
       params: {width: 5}

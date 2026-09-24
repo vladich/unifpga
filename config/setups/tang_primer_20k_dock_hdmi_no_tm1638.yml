@@ -14,7 +14,7 @@ Setup:
     - onboard: switches
     - onboard: buttons
     - onboard: hdmi
-      for_toolchain: {nextpnr_apicula: {raw: {peripheral: hdmi_tmds, params: {timing: dvi}, bind: {clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n, d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n}}, onboard: null}}
+      for_toolchain: {nextpnr_apicula: {params: {timing: dvi}}}
     - module: inmp441_breakout
       wires: {L/R: j14.8, WS: j14.6, SCK: j14.10, SD: j14.12}
     - onboard: headphone

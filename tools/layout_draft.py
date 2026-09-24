@@ -97,9 +97,10 @@ def draft(board_id):
     # one part per physical pin group (its first bank), the ways configurations
     # attach it as its variants
     parts, order = {}, []
-    for cid, cfg in sorted(config_init.read_configurations().items()):
-        if cfg["board"] != board_id:
-            continue
+    builds = [config_init.for_target(cfg, toolchain)        # every toolchain's build of each rig
+              for _cid, cfg in sorted(config_init.read_configurations().items()) if cfg["board"] == board_id
+              for toolchain in config_init.rig_toolchains(cfg)]
+    for cfg in builds:
         for a in cfg.get("attach") or []:
             # (a gpio passthrough on an on-board device's pins is that device handed
             # to the design's gpio: one of its variants, like any other attach)

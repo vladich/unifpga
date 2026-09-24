@@ -1,0 +1,38 @@
+# 1BitSquared 24-bit DVI Pmod: a TFP410 on a dual Pmod driven with DDR outputs (two
+# 12-bit halves of each pixel per clock); dvi_pmod_ddr_24b drives the eight data
+# pins of each header in pin order and interleaves the colours itself.
+Module:
+  id: 1bitsquared_dvi_pmod_24b
+  name: 1BitSquared DVI Pmod (24 bit, DDR)
+  peripheral: dvi_pmod_ddr_24b
+  voltage: 3.3
+  pins:
+    A1: pmod_a[0]
+    A2: pmod_a[1]
+    A3: pmod_a[2]
+    A4: pmod_a[3]
+    A5: ground
+    A6: power
+    A7: pmod_a[4]
+    A8: pmod_a[5]
+    A9: pmod_a[6]
+    A10: pmod_a[7]
+    A11: ground
+    A12: power
+    B1: pmod_b[0]
+    B2: pmod_b[1]
+    B3: pmod_b[2]
+    B4: pmod_b[3]
+    B5: ground
+    B6: power
+    B7: pmod_b[4]
+    B8: pmod_b[5]
+    B9: pmod_b[6]
+    B10: pmod_b[7]
+    B11: ground
+    B12: power
+  source: >-
+    the peripheral's contract (pmod_a / pmod_b: the top / bottom header's pins 1-4, 7-10);
+    the colour interleaving lives in rtl/peripherals/dvi_pmod_ddr_24b.sv, not checked
+    against 1BitSquared's board files
+  verified: false

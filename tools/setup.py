@@ -255,6 +255,27 @@ def plug_placements(connectors, layout, module, conn_ids=None):
 # setup -> configuration
 # ---------------------------------------------------------------------------
 
+def _connector_banks(layout):
+    """{bank: [its pin refs in bank order]} for the connectors that are one bank."""
+    out = {}
+    for c in layout.get("connectors") or []:
+        if c.get("bank"):
+            refs = [str(r) for r in (c.get("pins") or {}).values()]
+            idx = {r: int(m.group(1)) for r in refs for m in [re.match(r"^" + re.escape(c["bank"]) + r"\[(\d+)\]$", r)] if m}
+            if len(idx) == len(refs) and sorted(idx.values()) == list(range(len(refs))):
+                out[c["bank"]] = sorted(refs, key=idx.get)
+    return out
+
+
+def _whole_bank(layout, refs):
+    """A module signal wired to every pin of a header bank in bank order is
+    that bank (the generated top connects the bank, not its pins one by one)."""
+    for bank, pins in _connector_banks(layout).items():
+        if [str(r) for r in refs] == pins:
+            return bank
+    return refs
+
+
 def _module_attach(connectors, layout, modules, use):
     module = modules.get(use["module"])
     if module is None:
@@ -286,7 +307,7 @@ def _module_attach(connectors, layout, modules, use):
         bits = vectors[name]
         if sorted(bits) != list(range(len(bits))):
             raise SetupError("module '{}': {} is not wired bit 0 upwards".format(module["id"], name))
-        bind[name] = [bits[i] for i in range(len(bits))]
+        bind[name] = _whole_bank(layout, [bits[i] for i in range(len(bits))])
     attach = {"peripheral": module["peripheral"]}
     # the module's own parameters (a Pmod's 4 servo channels), the use's over them
     params = dict(module.get("params") or {}, **(use.get("params") or {}))
@@ -336,7 +357,9 @@ def _generate(setup):
     for use in setup.get("use") or []:
         if "onboard" in use:
             t = onboard_attach(layout, use)
-            params = dict(t.get("params") or {}, **(use.get("params") or {}))
+            # the use's params over the part's; `name: null` leaves one of the part's out
+            params = {k: v for k, v in dict(t.get("params") or {}, **(use.get("params") or {})).items()
+                      if v is not None}
             a = {"peripheral": t["peripheral"]}
             if params:
                 a["params"] = params
@@ -386,7 +409,10 @@ def _derive_module(a, layout, modules, connectors, refs):
             continue
         by_signal = {sig: pin for pin, sig in module["pins"].items() if sig not in _PASSIVE}
         wires = {}
+        whole = _connector_banks(layout)
         for sig, ref in (a.get("bind") or {}).items():
+            if isinstance(ref, str) and ref in whole and "{}[0]".format(sig) in by_signal:
+                ref = whole[ref]                 # a whole header bank: its pins, in bank order
             items = [(sig, ref)] if not isinstance(ref, list) else \
                     [("{}[{}]".format(sig, i), r) for i, r in enumerate(ref)]
             for s, r in items:
@@ -457,11 +483,10 @@ def _derive(configuration):
                     use["variant"] = vid
                 base, have = _params(t), _params(a)
                 if have != base:
-                    if any(k not in have for k in base):
-                        use = None           # a template parameter dropped: not an override
-                        continue
-                    use["params"] = {k: v for k, v in have.items() if base.get(k) != v}
-                if list(dict(base, **use.get("params", {}))) != list(have):
+                    use["params"] = dict({k: v for k, v in have.items() if base.get(k) != v},
+                                         **{k: None for k in base if k not in have})   # null: left out
+                merged = {k: v for k, v in dict(base, **use.get("params", {})).items() if v is not None}
+                if list(merged) != list(have):
                     use = None                   # the configuration orders its params otherwise
                     continue
                 break
