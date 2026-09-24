@@ -821,13 +821,11 @@ def for_target(cfg, toolchain=None, part=None):
     return cfg
 
 
-def is_compatible(boards, chips, board_id, toolchain_id):
-    """
-    Check if toolchain_id can synthesize for board_id.
+def toolchain_constraints(boards, chips, board_id, toolchain_id, selected_chip_id=None):
+    """Chip constraints for this board/toolchain pair, across chip variants.
 
-    The board's chip (or any of its chip variants) must list toolchain_id
-    in its Toolchains. (Chip toolchains are inherited from the family's
-    DefaultToolchains when the chip doesn't override.)
+    An empty list means the toolchain is not catalogued for this board. A
+    matching unqualified reference is represented by the wildcard '*'.
     """
     if board_id not in boards:
         raise ConfigError("Board {b} was not found in the catalog".format(b=board_id))
@@ -845,34 +843,80 @@ def is_compatible(boards, chips, board_id, toolchain_id):
         raise ConfigError(
             "Board {b} has no Chip / Chips field — can't determine toolchain support"
             .format(b=board_id))
+    if selected_chip_id is not None:
+        if selected_chip_id not in chip_ids:
+            raise ConfigError("Chip '{c}' is not a variant of board '{b}'"
+                              .format(c=selected_chip_id, b=board_id))
+        chip_ids = [selected_chip_id]
 
+    constraints = []
     for cid in chip_ids:
         chip = chips.get(cid)
         if chip is None:
             log.warning("Board %s references unknown chip %s", board_id, cid)
             continue
         for ref in chip.get("Toolchains", []):
-            tc_id, _ = parse_versioned_ref(ref)
+            tc_id, constraint = parse_versioned_ref(ref)
             if tc_id == toolchain_id:
-                return True
-    log.error("Toolchain %s is not compatible with board %s", toolchain_id, board_id)
-    return False
+                constraints.append(constraint or "*")
+    return constraints
+
+
+def is_compatible(boards, chips, board_id, toolchain_id):
+    """Whether the board lists this toolchain, before version admission."""
+    return bool(toolchain_constraints(boards, chips, board_id, toolchain_id))
+
+
+def require_toolchain_version(toolchain):
+    """Reject an installation that conflicts with its pin or chip limits."""
+    configured = toolchain.get("ConfiguredVersion")
+    detected = toolchain.get("DetectedInstallVersion")
+    if toolchain.get("DetectSource") and configured:
+        if not detected:
+            raise ConfigError("Toolchain '{t}' version could not be determined for "
+                              "the detected installation; configured version is {v}"
+                              .format(t=toolchain["Id"], v=configured))
+        if str(configured).casefold() != str(detected).casefold():
+            raise ConfigError("Toolchain '{t}' detected version {found} conflicts "
+                              "with configured version {expected}"
+                              .format(t=toolchain["Id"], found=detected,
+                                      expected=configured))
+    version = detected if toolchain.get("DetectSource") else configured
+    constraints = toolchain.get("ChipVersionConstraints") or []
+    if not constraints:
+        raise ConfigError("Toolchain '{t}' has no chip compatibility evidence"
+                          .format(t=toolchain["Id"]))
+    from tools import toolchain_detect
+    try:
+        matches = [toolchain_detect.matches_version(version, constraint)
+                   for constraint in constraints]
+        if any(matches):
+            return
+    except ValueError as exc:
+        raise ConfigError("Toolchain '{t}' has invalid chip version constraint: {e}"
+                          .format(t=toolchain["Id"], e=exc)) from exc
+    raise ConfigError("Toolchain '{t}' version {v} does not meet chip constraint(s) {c}"
+                      .format(t=toolchain["Id"], v=version or "unknown",
+                              c=", ".join(constraints)))
 
 
 def resolve_toolchain_install(toolchain):
     """Copy of a toolchains.yml entry with the install resolved by
     tools/toolchain_detect.py: the `InstallDir` pin when it exists, else the
     vendor environment variable, PATH, then the default install parents.
-    Adds `BinDirs` (for PATH), `Bins`, `DetectSource` and `DetectNotes`;
+    Adds `BinDirs` (for PATH), `Bins`, `DetectSource`, `DetectNotes`, and
+    separate configured and install-path version evidence;
     leaves `InstallDir` as written when nothing is found so the driver's own
     error message still names it."""
     tc = dict(toolchain)
+    tc["ConfiguredVersion"] = str(tc["Version"]) if tc.get("Version") else None
     try:
         from tools import toolchain_detect
     except ImportError:              # config/ imported without the repo root on sys.path
         return tc
     det = toolchain_detect.detect(tc["Id"], pin=tc.get("InstallDir"))
     tc["DetectSource"] = det.source
+    tc["DetectedInstallVersion"] = str(det.version) if det.found and det.version else None
     tc["DetectNotes"] = list(det.notes)
     tc["BinDirs"] = list(det.bin_dirs)
     tc["Bins"] = dict(det.bins)
@@ -940,16 +984,14 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
     if toolchain_id not in toolchains:
         raise ConfigError("Configuration '{c}' references unknown toolchain '{t}'"
                           .format(c=configuration_id, t=toolchain_id))
-    if not is_compatible(boards, chips, board_id, toolchain_id):
-        raise ConfigError("Configuration '{c}': toolchain '{t}' is not compatible with board '{b}'"
-                          .format(c=configuration_id, t=toolchain_id, b=board_id))
-
     # Resolve the chip part number — toolchain drivers expect `board["Part"]`
     # (or `board["Parts"]` for multi-variant boards). We inject these by
     # looking up the chip(s) the board references.
     board_resolved = copy.deepcopy(boards[board_id])
+    selected_chip_id = None
     if board_resolved.get("Chip"):
         cid = board_resolved["Chip"]
+        selected_chip_id = cid
         chip = chips.get(cid)
         if chip is None:
             raise ConfigError("Board '{b}' references unknown chip '{c}'"
@@ -990,10 +1032,22 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
                             opts=", ".join("{}={}".format(p.get("Name", "?"), p["Id"]) for p in parts_list)))
             board_resolved["Part"] = chosen["Part"]
             board_resolved["PartName"] = chosen.get("Name")
+            selected_chip_id = chosen["Id"]
         else:
             log.warning("Configuration '%s': board '%s' has %d chips but no part: is set; "
                         "toolchains will default to %s (audit code PART)",
                         configuration_id, board_id, len(parts_list), parts_list[0]["Part"])
+            selected_chip_id = parts_list[0]["Id"]
+
+    constraints = toolchain_constraints(boards, chips, board_id, toolchain_id,
+                                        selected_chip_id=selected_chip_id)
+    if not constraints:
+        raise ConfigError("Configuration '{c}': toolchain '{t}' is not compatible with "
+                          "selected chip '{chip}' on board '{b}'"
+                          .format(c=configuration_id, t=toolchain_id,
+                                  chip=selected_chip_id, b=board_id))
+    resolved_toolchain = resolve_toolchain_install(toolchains[toolchain_id])
+    resolved_toolchain["ChipVersionConstraints"] = constraints
 
     board_pinmap = read_board_pinmap(board_id)
     if board_pinmap is None:
@@ -1061,7 +1115,7 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
         "configuration": cfg,
         "board":         board_resolved,
         "board_pinmap":  board_pinmap,
-        "toolchain":     resolve_toolchain_install(toolchains[toolchain_id]),
+        "toolchain":     resolved_toolchain,
         "peripherals":   attached,
         "target":        {"id": target_id(rig_id, rig_cfg, toolchain_id, cfg.get("part")) if configuration is None
                           else configuration_id,

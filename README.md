@@ -65,6 +65,13 @@ ISE and Libero SoC currently support synthesis but require an external
 programming workflow. An implemented driver operation does not by itself
 verify a board's pinmap or electrical constraints.
 
+Before a build or board-programming request, version admission also checks the
+toolchain's configured `Version` against the detected install-directory version
+and checks that version against any chip constraint, such as
+`vivado[2024.1+]`. `*`, exact versions, minimum versions, and inclusive ranges
+are supported. The detected version comes from the installation path; a
+vendor-binary version probe is still needed for hardware-grade provenance.
+
 A `// requires:` block at the top of any design declares hard capability
 needs (`screen >= 320x240`, `leds >= 4`, `gpio >= 8`, …) which `synthesize.py`
 checks against the resolved configuration before invoking any tool. Boards

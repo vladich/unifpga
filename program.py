@@ -47,6 +47,7 @@ def main(argv=None):
     toolchain = resolved["toolchain"]
     try:
         config.init.require_toolchain_operation(toolchain, "program")
+        config.init.require_toolchain_version(toolchain)
     except config.init.ConfigError as exc:
         log.error("%s", exc)
         return 2

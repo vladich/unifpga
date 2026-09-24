@@ -180,7 +180,7 @@ def test_efinity_search_and_env():
 def test_libero_default_location():
     fs = FakeFS(exes=["/usr/local/microchip/Libero_SoC_v2024.1/Libero/bin/libero"])
     d = _detect("libero_soc", fs)
-    assert d.found and d.install_dir == "/usr/local/microchip/Libero_SoC_v2024.1/Libero" and d.version == "Libero_SoC_v2024.1"
+    assert d.found and d.install_dir == "/usr/local/microchip/Libero_SoC_v2024.1/Libero" and d.version == "2024.1"
 
 
 # ---------------------------------------------------------------- open flows

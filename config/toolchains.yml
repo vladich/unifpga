@@ -10,10 +10,10 @@
 #   KnownVersions:  list of versions seen in the wild; lets chip entries
 #                   reference a constrained range like `vivado[2017.4+]` or
 #                   `quartus_prime_lite[18.1-23.1std]`
-#   Version:        the version installed locally on this machine; the
-#                   resolver uses this to compute InstallDir paths and to
-#                   tell whether a chip's version-constraint matches what
-#                   the user has
+#   Version:        optional configured version pin. When an installation is
+#                   found, its path-derived version must agree with this pin;
+#                   chip version constraints are checked at build/program
+#                   admission. A binary version probe is not yet available.
 #   InstallDir:     optional pin for where the toolchain lives locally; `~`
 #                   and `$VAR` expand at read time. When the pin is empty or
 #                   does not exist, tools/toolchain_detect.py finds the

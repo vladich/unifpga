@@ -87,6 +87,33 @@ def _vkey(name):
     return tuple((0, int(t)) if t.isdigit() else (1, t.lower()) for t in re.findall(r"\d+|[A-Za-z]+", name))
 
 
+def matches_version(version, constraint):
+    """Match a catalogue constraint: *, exact, minimum+, or inclusive range.
+
+    Numeric bounds use the same natural ordering as installation selection.
+    Non-numeric identities (for example git-master) may only match exactly.
+    """
+    if constraint == "*":
+        return True
+    if not isinstance(constraint, str) or not constraint:
+        raise ValueError("empty or non-string version constraint")
+    numeric = r"\d[0-9A-Za-z.]*"
+    if constraint.endswith("+"):
+        bound = constraint[:-1]
+        if not re.fullmatch(numeric, bound):
+            raise ValueError("invalid minimum version constraint {!r}".format(constraint))
+        return bool(version) and bool(re.match(r"^\d", str(version))) and _vkey(str(version)) >= _vkey(bound)
+    bounds = re.fullmatch(r"({0})-({0})".format(numeric), constraint)
+    if bounds:
+        low, high = bounds.groups()
+        if _vkey(low) > _vkey(high):
+            raise ValueError("reversed version range {!r}".format(constraint))
+        return bool(version) and bool(re.match(r"^\d", str(version))) and _vkey(low) <= _vkey(str(version)) <= _vkey(high)
+    if "+" in constraint or "[" in constraint or "]" in constraint:
+        raise ValueError("invalid version constraint {!r}".format(constraint))
+    return bool(version) and str(version).casefold() == constraint.casefold()
+
+
 def _parents(system, env, home, extra_env=()):
     out = []
     for var in extra_env:
@@ -387,8 +414,10 @@ def _detect_libero(tid, pin, env, home, system, fs):
         return fs.isexe(os.path.join(d, "bin", "libero"))
 
     def result(d, source):
+        install_name = os.path.basename(os.path.dirname(d))
+        version = install_name[len("Libero_SoC_v"):] if install_name.startswith("Libero_SoC_v") else install_name
         return _found(tid, d, [os.path.join(d, "bin")], {"libero": os.path.join(d, "bin", "libero")},
-                      source, os.path.basename(os.path.dirname(d)), notes)
+                      source, version, notes)
 
     if pin and ok(pin):
         return result(pin, "pin")
