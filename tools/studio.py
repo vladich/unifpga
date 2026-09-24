@@ -182,10 +182,13 @@ def evaluate(setup):
     out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None,
            "excluded": [], "server_stale": _code_fingerprint() != _STARTED_WITH}
     from config import profile
-    if profile.enabled() and profile.load(setup.get("id")):
+    prof = profile.load(setup.get("id")) if profile.enabled() else None
+    if prof:
         out["profile"] = os.path.relpath(profile.path_for(setup["id"]), REPO)
+    out["profile_drops"] = []
     try:
         cfg = su.generate(setup)
+        out["profile_drops"] = profile_drops(cfg, prof)
         out["configuration_text"] = su.emit_configuration(cfg, setup.get("notes"))
         out["problems"] = [{"level": level, "message": msg} for level, msg in su.validate(setup)]
     except su.SetupError as exc:
@@ -213,6 +216,28 @@ def evaluate(setup):
     out["excluded"] = sorted(excluded, key=lambda x: x["use"])
     if out["trace"] is not None and not any(p["level"] == "error" for p in out["problems"]) and not excluded:
         out["designs"] = design_fit(resolved)
+    return out
+
+
+def profile_drops(cfg, prof):
+    """[{use, peripheral, ties}]: the uses a design-wiring profile leaves out of
+    the design (drop: true, matched as config/profile.py applies it: the n-th
+    attach of that peripheral; the generated configuration has one attach per
+    use, in order) and the constants the profile ties their pins to."""
+    if not prof:
+        return []
+    ties = prof.get("tie") or {}
+    occ, out = {}, []
+    for k, att in enumerate(cfg.get("attach") or []):
+        pid = att["peripheral"]
+        i = occ.get(pid, 0)
+        occ[pid] = i + 1
+        if any(e.get("drop") and e.get("peripheral") == pid and int(e.get("index", 0)) == i
+               for e in prof.get("attach") or []):
+            binds = [str(v) for v in (att.get("bind") or {}).values()]
+            mine = {key: val for key, val in ties.items()
+                    if any(key == b or key.startswith(b + "[") for b in binds)}
+            out.append({"use": k, "peripheral": pid, "ties": mine})
     return out
 
 
