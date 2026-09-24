@@ -5,6 +5,12 @@ Configuration:
   id: de0_nano_soc_vga666
   board: de0_nano_soc
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]   # every toolchain it is checked with, the default first
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    de0_nano_soc_vga666_mistral:
+      toolchain: nextpnr_mistral
 
   attach:
     - peripheral: clock_input

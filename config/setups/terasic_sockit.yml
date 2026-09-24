@@ -5,6 +5,8 @@ Setup:
   id: terasic_sockit
   board: terasic_sockit
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]
+  aliases: {terasic_sockit_mistral: {toolchain: nextpnr_mistral}}
   use:
     - onboard: buttons
     - onboard: leds

@@ -5,6 +5,8 @@ Setup:
   id: c5gx
   board: c5gx
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]
+  aliases: {c5gx_mistral: {toolchain: nextpnr_mistral}}
   use:
     - onboard: clk50mhz
     - onboard: uart

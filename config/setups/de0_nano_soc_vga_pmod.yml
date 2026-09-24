@@ -5,6 +5,8 @@ Setup:
   id: de0_nano_soc_vga_pmod
   board: de0_nano_soc
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]
+  aliases: {de0_nano_soc_vga_pmod_mistral: {toolchain: nextpnr_mistral}}
   use:
     - onboard: fpga_clk1_50mhz
     - onboard: buttons

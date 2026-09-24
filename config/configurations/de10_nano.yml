@@ -5,6 +5,12 @@ Configuration:
   id: de10_nano
   board: de10_nano
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]   # every toolchain it is checked with, the default first
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    de10_nano_mistral:
+      toolchain: nextpnr_mistral
 
   attach:
     - peripheral: clock_input

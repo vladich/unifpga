@@ -5,6 +5,8 @@ Setup:
   id: de10_nano
   board: de10_nano
   toolchain: quartus_prime_lite
+  toolchains: [quartus_prime_lite, nextpnr_mistral]
+  aliases: {de10_nano_mistral: {toolchain: nextpnr_mistral}}
   use:
     - onboard: fpga_clk1_50mhz
     - onboard: buttons
