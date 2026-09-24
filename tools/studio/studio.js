@@ -648,7 +648,38 @@ function tables() {
   $("config-text").textContent = (S.ev && S.ev.configuration_text) || "";
 }
 
-function render() { draw(); details(); tables(); designChoices(); renderTitle(); }
+function render() { draw(); details(); tables(); designChoices(); renderTitle(); headerActions(); }
+
+// the use a Remove in the header would take out: a selected module (or one of
+// its wires) or a raw attach
+function removableUse() {
+  const sel = S.sel;
+  if (!sel || !S.setup) return null;
+  const i = sel.kind === "use" || sel.kind === "wire" ? sel.use : null;
+  const use = i === null ? null : S.setup.use[i];
+  return use && (use.module || use.raw) ? i : null;
+}
+
+function headerActions() {
+  if (STATIC || !S.board) return;
+  const add = $("add-module");
+  if (add.options.length !== S.board.modules.length + 1) {
+    add.replaceChildren(h("option", {value: ""}, "Add module…"),
+                        ...S.board.modules.map((m) => h("option", {value: m.id}, m.name + " (" + m.peripheral + ")")));
+  }
+  const i = removableUse(), btn = $("remove-sel");
+  btn.disabled = i === null;
+  btn.textContent = i === null ? "Remove" : "Remove " + useLabel(S.setup.use[i]);
+}
+
+function removeSelected() {
+  const i = removableUse();
+  if (i === null) return;
+  const label = useLabel(S.setup.use[i]);
+  S.setup.use.splice(i, 1);
+  S.sel = null; S.pending = null;
+  changed("removed " + label);
+}
 
 // the design list: the designs this rig satisfies, selectable; the others
 // greyed with what they need that the rig lacks (their `// requires:` block)
@@ -759,6 +790,8 @@ function wire() {
   $("setup").addEventListener("change", (e) => loadSetup(e.target.value).catch((x) => status(x.message, true)));
   $("toolchain").addEventListener("change", (e) => { S.setup.toolchain = e.target.value; changed("toolchain " + e.target.value); });
   for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => showTab(b.dataset.tab));
+  $("add-module").addEventListener("change", (e) => { const id = e.target.value; e.target.value = ""; if (id) addModule(id); });
+  $("remove-sel").addEventListener("click", removeSelected);
   $("new-setup").addEventListener("click", () => {
     const id = prompt("New setup id (a-z, 0-9, _):", S.board.board + "_my_rig");
     if (!id) return;
@@ -784,7 +817,11 @@ function wire() {
       out.replaceChildren((r.ok ? "written to " : "written, with errors, to ") + r.output + " (" + r.files.length + " files) — ", link);
     } catch (e) { out.textContent = e.message; }
   });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { S.pending = null; S.sel = null; status(""); render(); } });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { S.pending = null; S.sel = null; status(""); render(); }
+    const typing = /^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement || {}).tagName || "");
+    if ((e.key === "Delete" || e.key === "Backspace") && !typing && removableUse() !== null) { e.preventDefault(); removeSelected(); }
+  });
 }
 
 async function main() {
@@ -861,7 +898,9 @@ async function selftest() {
     S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
     await changed("copy"); await settle();
     const n = S.setup.use.length;
-    S.setup.use.push({module: "tm1638_led_key", wires: {}}); await changed("add"); await settle();
+    const addSel = $("add-module");
+    addSel.value = "tm1638_led_key"; addSel.dispatchEvent(new Event("change")); await settle(); await settle();
+    showTab("rig");
     ok("added module is listed", S.setup.use.length === n + 1);
     ok("unwired module reports its required signals", errors().some((m) => m.includes("required signal")));
     const i = S.setup.use.length - 1;
@@ -878,8 +917,10 @@ async function selftest() {
     ok("selecting a header pin shows its wire", $("details").textContent.includes("pin STB"));
     delete S.setup.use[i].wires["STB"]; await changed("disconnect"); await settle();
     ok("disconnecting brings back the required-signal error", errors().some((m) => m.includes("required signal 'stb'")));
-    S.setup.use.splice(i, 1); await changed("remove"); await settle();
-    ok("removing the module restores the rig", S.setup.use.length === n);
+    select({kind: "use", use: i});
+    ok("the header's Remove names the selected module", !$("remove-sel").disabled && $("remove-sel").textContent.includes("TM1638"));
+    $("remove-sel").click(); await settle();
+    ok("removing the module restores the rig", S.setup.use.length === n && $("remove-sel").disabled);
     const ob = S.board.onboard.find((o) => S.setup.use.some((u) => u.onboard === o.id && o.id !== "clock"));
     const oi = S.setup.use.findIndex((u) => u.onboard === ob.id);
     S.setup.use.splice(oi, 1); await changed("unuse"); await settle();

@@ -6,7 +6,7 @@ body { margin: 0; font: 13px system-ui, sans-serif; color: var(--fg); background
 .tab { font: inherit; padding: 5px 14px; border: 1px solid #ced4da; background: #fff; border-radius: 4px 4px 0 0; cursor: pointer; }
 .tab.active { background: #1c7ed6; border-color: #1c7ed6; color: #fff; }
 #title { font-weight: 600; }
-#bar button#save { font: inherit; }
+#bar button, #bar select { font: inherit; }
 #status { color: var(--muted); }
 #status.err { color: #c92a2a; }
 .page[hidden] { display: none; }
@@ -51,3 +51,4 @@ svg text { font-family: system-ui, sans-serif; }
 .clickable { cursor: pointer; }
 .readonly .edit { display: none; }
 @media (max-width: 900px) { main { flex-direction: column; } #side { flex-basis: auto; width: 100%; } }
+#add-module { max-width: 220px; }
