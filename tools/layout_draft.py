@@ -163,11 +163,25 @@ def draft(board_id):
                        (x["peripheral"] == attach["peripheral"] and su.ordered(x["bind"]) == su.ordered(attach["bind"]))
                        for x in parts[main]):
                 parts[main].append(attach)
+    # a device the board data describes is attached as its model says: the model
+    # replaces a configuration's attach of the same peripheral (a better model,
+    # model_params, reaches the rigs), attaches of other peripherals stay variants
+    banks = pinmap.get("pinBanks") or {}
+    for main in order:
+        spec = banks.get(main)
+        dev = spec.get("device") if isinstance(spec, dict) else None
+        model = _model(dev.get("kind"), main, spec) if dev else None
+        if model:
+            kept = [x for x in parts[main] if x["peripheral"] != model["peripheral"]]
+            if len(kept) < len(parts[main]):
+                parts[main] = [model] + kept
     onboard = []
     for main in order:
         oid = re.sub(r"^onboard_", "", main)
         fact = facts_o.get(main)
-        label = fact.get("label") if main in ok_onboard and fact and fact.get("label") else _title(main)
+        dev = (banks.get(main) or {}).get("device") if isinstance(banks.get(main), dict) else None
+        label = fact.get("label") if main in ok_onboard and fact and fact.get("label") else \
+            (dev or {}).get("name") or _title(main)
         # variants in a canonical order, so their ids follow what they are and not
         # which configuration happened to be read first
         attaches = sorted(parts[main], key=lambda x: (x["peripheral"], json.dumps(x, sort_keys=True)))
@@ -281,6 +295,8 @@ def _model(kind, bank, spec):
             params["width"] = width
         if low and "active" in params_def:
             params["active"] = "low"
+        # what the board data knows of the chip (a PT8211 DAC: LSB-justified)
+        params.update({k: v for k, v in (spec.get("model_params") or {}).items() if k in params_def})
         attach = {"peripheral": pid}
         if params:
             attach["params"] = params
