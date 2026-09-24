@@ -1315,13 +1315,8 @@ function renderSource() {
   const box = $("src-code");
   if (f.editing) {
     if (box.dataset.shown !== tabKey(f) + "#edit") {
-      const ta = h("textarea", {class: "src-editor", spellcheck: "false"});
-      ta.value = tabText(f);
-      ta.addEventListener("input", () => { f.draft = ta.value; renderTabsOnly(); });
-      box.replaceChildren(ta);
+      box.replaceChildren(codeEditor(f, v.line));
       box.dataset.shown = tabKey(f) + "#edit";
-      const lines = ta.value.split("\n"), n = Math.max(0, Math.min(v.line, lines.length) - 1);
-      ta.focus(); ta.selectionStart = ta.selectionEnd = lines.slice(0, n).join("\n").length + (n ? 1 : 0);
     }
     renderMarksEmpty();
     return;
@@ -1351,6 +1346,55 @@ function renderEditBar(f) {
     h("button", {disabled: !dirty(f), onclick: () => { if (confirm("Drop the unsaved edits to " + f.path + "?")) { f.draft = undefined; leave(); } }}, "Revert"),
     h("span", {class: "muted"}, dirty(f) ? " unsaved edits" : " saved"));
 }
+// an editor that stays coloured: the text is typed into a transparent
+// textarea over the same text coloured by highlightVerilog, with line
+// numbers beside it; the three scroll together and recolour as you type
+function codeEditor(f, line) {
+  const gutter = h("div", {class: "ed-gutter", "aria-hidden": "true"});
+  const layer = h("pre", {class: "ed-layer code", "aria-hidden": "true"});
+  const ta = h("textarea", {class: "ed-input", spellcheck: "false", autocapitalize: "off", autocomplete: "off", wrap: "off"});
+  ta.value = tabText(f);
+  const paint = () => {
+    const lines = highlightVerilog(ta.value);
+    layer.replaceChildren(...lines.flatMap((toks, k) => {
+      const out = toks.map(([cls, s]) => cls ? h("span", {class: cls}, s) : s);
+      return k < lines.length - 1 ? out.concat("\n") : out.concat("\n ");   // a last newline keeps the heights equal
+    }));
+    gutter.textContent = lines.map((_, k) => k + 1).join("\n") + "\n";
+    sync();
+  };
+  const sync = () => {
+    // plain offsets, not transforms: a transformed layer is composited on its
+    // own and was left partly unpainted
+    layer.style.top = -ta.scrollTop + "px";
+    layer.style.left = -ta.scrollLeft + "px";
+    gutter.style.marginTop = -ta.scrollTop + "px";
+  };
+  let pending = 0;
+  ta.addEventListener("input", () => {
+    f.draft = ta.value; renderTabsOnly();
+    cancelAnimationFrame(pending); pending = requestAnimationFrame(paint);
+  });
+  ta.addEventListener("scroll", sync);
+  ta.addEventListener("keydown", (e) => {          // Tab indents instead of leaving the editor
+    if (e.key !== "Tab" || e.metaKey || e.ctrlKey || e.altKey) return;
+    e.preventDefault();
+    const s = ta.selectionStart;
+    ta.setRangeText("    ", s, ta.selectionEnd, "end");
+    ta.dispatchEvent(new Event("input"));
+  });
+  const wrap = h("div", {class: "ed-wrap"}, gutter, h("div", {class: "ed-body"}, layer, ta));
+  paint();
+  requestAnimationFrame(() => {
+    const lines = ta.value.split("\n"), n = Math.max(0, Math.min(line || 1, lines.length) - 1);
+    ta.focus();
+    ta.selectionStart = ta.selectionEnd = lines.slice(0, n).join("\n").length + (n ? 1 : 0);
+    ta.scrollTop = Math.max(0, n * parseFloat(getComputedStyle(ta).lineHeight) - ta.clientHeight / 2);
+    sync();
+  });
+  return wrap;
+}
+
 // the tab strip and edit bar only (typing must not rebuild the editor)
 function renderTabsOnly() {
   const f = S.srcView && S.srcView.file;
@@ -2120,9 +2164,14 @@ async function main() {
   if (q.get("selftest")) return selftest();
   if (q.get("sel")) { S.sel = parseSel(q.get("sel")); render(); }
   if (q.get("side") === "source" || q.get("side") === "props") showSide(q.get("side"));
+  if (q.get("edit")) {                  // ?edit=1: the pinned design, open for editing
+    for (let k = 0; k < 100 && !(S.tabs || []).some((x) => x.pinned); k++) await new Promise((r) => setTimeout(r, 50));
+    const pin = (S.tabs || []).find((x) => x.pinned);
+    if (pin) { showSide("source"); pin.editing = true; openView(pin, pin.view.line, [], pin.view.why, true); }
+  }
 }
 
-// ?side=source | props (the right panel's tab)
+// ?side=source | props (the right panel's tab), ?edit=1 (the pinned design in the editor)
 // ?sel=vbit:leds:led:2 | vport:leds:led | pin:jd:7 | wire:11:CLK | use:11 | onboard:leds | conn:ck
 //      | driver:11:tm1638_board_controller | dseg:11:tm1638_board_controller:pin:dio|arduino_io[27]
 function parseSel(text) {
@@ -2490,6 +2539,9 @@ async function selftest() {
       [...$("src-edit").querySelectorAll("button")].find((b) => b.textContent === "Edit").click();
       const ta = $("src-code").querySelector("textarea");
       ok("Edit turns it into an editor", !!ta && ta.value === original);
+      const layer = $("src-code").querySelector(".ed-layer");
+      ok("the editor stays coloured", !!layer && layer.querySelectorAll(".k").length > 0 && layer.textContent.startsWith(original) &&
+         $("src-code").querySelector(".ed-gutter").textContent.split("\n").length >= original.split("\n").length);
       ta.value = original + "\n// edited by the self-test\n"; ta.dispatchEvent(new Event("input"));
       ok("an edit marks it unsaved", dirty(pin) && $("src-files").textContent.includes("●") && !$("src-edit").querySelector("button:nth-child(2)").disabled);
       await saveDesign(pin);

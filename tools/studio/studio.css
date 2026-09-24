@@ -128,5 +128,17 @@ svg text { font-family: system-ui, sans-serif; }
 #src-edit { display: flex; gap: 4px; align-items: center; margin: 2px 0 4px; }
 #src-edit:empty { display: none; }
 .src-tab.pinned > button:first-child { font-weight: 600; }
-.src-editor { width: 100%; height: 100%; box-sizing: border-box; border: 0; resize: none; padding: 4px 8px;
-              font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; tab-size: 4; outline: none; }
+/* the coloured editor: gutter | coloured layer under a transparent textarea,
+   every piece with the same font, line height and padding so the caret sits on the text */
+.ed-wrap { display: flex; height: 100%; overflow: hidden; }
+.ed-gutter { flex: none; width: 5.5ch; padding: 4px 1ch 4px 0; text-align: right; color: #adb5bd; white-space: pre;
+             font: inherit; user-select: none; background: #f8f9fa; border-right: 1px solid #e9ecef; }
+.ed-body { position: relative; flex: 1; overflow: hidden; }
+.ed-layer, .ed-input { margin: 0; padding: 4px 8px; border: 0; font: inherit; letter-spacing: 0; tab-size: 4;
+                       white-space: pre; box-sizing: border-box; }
+.ed-layer { position: absolute; top: 0; left: 0; min-width: 100%; pointer-events: none;
+             max-height: none; overflow: visible; background: transparent; }   /* not the generic pre box */
+.ed-layer .k, .ed-layer .c { font-weight: normal; font-style: normal; }   /* same glyph widths as the plain text */
+.ed-input { position: absolute; inset: 0; width: 100%; height: 100%; resize: none; outline: none; overflow: auto;
+            background: transparent; color: transparent; caret-color: #212529; }
+.ed-input::selection { background: rgba(116, 143, 252, 0.3); color: transparent; }
