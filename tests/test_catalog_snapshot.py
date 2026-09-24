@@ -10,6 +10,7 @@ import pytest
 
 from tools.catalog_snapshot import (CatalogSnapshotError, capture_catalog,
                                     capture_catalog_revision)
+from tools.catalog_candidate import compare_catalog_revisions
 
 
 def _write(root, name, contents):
@@ -204,3 +205,81 @@ def test_catalog_semantic_budget_bounds_many_files(tmp_path, monkeypatch):
     monkeypatch.setattr("tools.catalog_snapshot.MAX_TOTAL_SEMANTIC_NODES", 5)
     with pytest.raises(CatalogSnapshotError, match="catalog exceeds semantic node limit"):
         capture_catalog(tmp_path)
+
+
+def test_candidate_classifies_exact_source_changes_without_accepting_them(tmp_path):
+    repo, _ = _committed_catalog(tmp_path)
+    _write(repo, "config/format.yml", "value: {b: 2, a: 1}\n")
+    _write(repo, "config/removed.yml", "value: gone\n")
+    _git(repo, "add", "config")
+    _git(repo, "commit", "-qm", "baseline")
+    base = _git(repo, "rev-parse", "HEAD")
+    _write(repo, "config/item.yml", "value: 2\n")
+    _write(repo, "config/format.yml", "# comment\nvalue: {a: 1, b: 2}\n")
+    (repo / "config" / "removed.yml").unlink()
+    _write(repo, "config/added.yml", "value: new\n")
+    _git(repo, "add", "-A", "config")
+    _git(repo, "commit", "-qm", "candidate")
+    candidate = _git(repo, "rev-parse", "HEAD")
+    report = compare_catalog_revisions(repo, base, candidate)
+    assert report == compare_catalog_revisions(repo, base, candidate)
+    assert report["state"] == "candidate"
+    assert report["validation"] == {"source": "passed", "domain": "not_run"}
+    assert report["summary"] == {"added": 1, "removed": 1,
+                                 "semantic_changed": 1, "formatting_only": 1,
+                                 "unchanged": 0}
+    assert [(change["path"], change["kind"]) for change in report["changes"]] == [
+        ("added.yml", "added"), ("format.yml", "formatting_only"),
+        ("item.yml", "semantic_changed"), ("removed.yml", "removed")]
+    assert [finding["code"] for finding in report["findings"]] == [
+        "source_removed", "domain_validation_pending"]
+    assert report["base"]["commit"] == base
+    assert report["candidate"]["commit"] == candidate
+    result = subprocess.run(
+        [sys.executable, "-m", "tools.catalog_candidate", "config", "--repo",
+         str(repo), "--base", base, "--candidate", candidate],
+        cwd=Path(__file__).resolve().parents[1], check=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert json.loads(result.stdout) == report
+
+
+def test_candidate_does_not_infer_rename_or_withdrawal(tmp_path):
+    repo, base = _committed_catalog(tmp_path)
+    (repo / "config" / "item.yml").rename(repo / "config" / "renamed.yml")
+    _git(repo, "add", "-A", "config")
+    _git(repo, "commit", "-qm", "rename source path")
+    report = compare_catalog_revisions(repo, base, _git(repo, "rev-parse", "HEAD"))
+    assert [(change["path"], change["kind"]) for change in report["changes"]] == [
+        ("item.yml", "removed"), ("renamed.yml", "added")]
+    assert report["findings"][0]["code"] == "source_removed"
+
+
+def test_invalid_candidate_is_a_failed_source_report(tmp_path):
+    repo, base = _committed_catalog(tmp_path)
+    _write(repo, "config/item.yml", "value: 1\nvalue: 2\n")
+    _git(repo, "add", "config")
+    _git(repo, "commit", "-qm", "invalid YAML")
+    candidate = _git(repo, "rev-parse", "HEAD")
+    report = compare_catalog_revisions(repo, base, candidate)
+    assert report["state"] == "invalid_source"
+    assert report["candidate"] is None
+    assert report["summary"] is None
+    assert report["changes"] == []
+    assert report["validation"] == {"source": "failed", "domain": "not_run"}
+    assert report["findings"][0]["code"] == "invalid_source"
+    assert "duplicate key" in report["findings"][0]["detail"]
+    result = subprocess.run(
+        [sys.executable, "-m", "tools.catalog_candidate", "config", "--repo",
+         str(repo), "--base", base, "--candidate", candidate],
+        cwd=Path(__file__).resolve().parents[1],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 2
+    assert json.loads(result.stdout) == report
+
+
+def test_unchanged_candidate_still_requires_domain_validation(tmp_path):
+    repo, commit = _committed_catalog(tmp_path)
+    report = compare_catalog_revisions(repo, commit, commit)
+    assert report["summary"]["unchanged"] == 1
+    assert report["changes"] == []
+    assert report["findings"][0]["code"] == "domain_validation_pending"
