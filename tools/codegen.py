@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import sys
+import time
 from collections import OrderedDict, defaultdict, namedtuple
 
 import yaml
@@ -2424,15 +2425,42 @@ def design_declarations(source, module="design_top"):
     return params, ports
 
 
+_KEY = {}
+
+
+def _contract_key():
+    """The capability files' and the interface's stats, looked at no more
+    than once a second (the Designs page asks tens of thousands of times)."""
+    now = time.monotonic()
+    if _KEY.get("at") is None or now - _KEY["at"] > 1.0:
+        cap_dir = os.path.join(REPO, "config", "capabilities")
+        _KEY["value"] = tuple((f, os.stat(f).st_mtime_ns, os.stat(f).st_size) for f in
+                              [DESIGN_INTERFACE] + sorted(os.path.join(cap_dir, n) for n in os.listdir(cap_dir)
+                                                          if n.endswith(".yml")))
+        _KEY["at"] = now
+    return _KEY["value"]
+
+
+_CAPS = {}
+
+
+def _capabilities():
+    """config_init.read_capabilities(), read once per change of the files and
+    shared read-only (the design contract and the requirement checks ask for
+    it thousands of times on the Designs page)."""
+    key = _contract_key()
+    if _CAPS.get("key") != key:
+        _CAPS.update(key=key, value=config_init.read_capabilities())
+    return _CAPS["value"]
+
+
 def design_contract():
     """The design_top contract: (parameters, derived widths, ports), each in
     the interface's order, from the capabilities' `design:` data."""
-    cap_dir = os.path.join(REPO, "config", "capabilities")
-    key = tuple((f, os.stat(f).st_mtime_ns, os.stat(f).st_size) for f in
-                [DESIGN_INTERFACE] + sorted(os.path.join(cap_dir, n) for n in os.listdir(cap_dir) if n.endswith(".yml")))
+    key = _contract_key()
     if _CONTRACT.get("key") == key:
         return _CONTRACT["value"]
-    capabilities = config_init.read_capabilities()
+    capabilities = _capabilities()
     order_params, order_ports = design_declarations(DESIGN_INTERFACE) or ([], [])
     params, derived, ports = {}, {}, {}
     for cid, cap in capabilities.items():
@@ -2469,14 +2497,14 @@ def design_ports():
 def capability_primary(cap_id, cap=None):
     """The parameter a concat capability sums across providers, and what
     `<cap> >= N` constrains (leds: width, rgb_leds: count)."""
-    cap = cap if cap is not None else config_init.read_capabilities().get(cap_id) or {}
+    cap = cap if cap is not None else _capabilities().get(cap_id) or {}
     return cap.get("primary") or "width"
 
 
 def capability_width_parameter(cap_id):
     """The design_top parameter that carries a capability's primary width
     (leds: w_led), or None."""
-    cap = config_init.read_capabilities().get(cap_id) or {}
+    cap = _capabilities().get(cap_id) or {}
     if not cap.get("primary"):
         return None
     for p in design_contract()[0]:

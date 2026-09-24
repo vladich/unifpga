@@ -37,6 +37,16 @@ class ConfigError(Exception):
 # ---------------------------------------------------------------------------
 
 _yaml_cache = {}
+# libyaml's safe loader when PyYAML has it: the same documents (checked on
+# every file under config/), about ten times faster than the pure-Python one
+_SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+
+def _parsed(path):
+    """The cached parse of `path` itself, NOT a copy: for read-only indexes
+    built here, never handed to callers."""
+    _read_yaml_file(path)
+    return _yaml_cache[path][1]
 
 
 def _read_yaml_file(path):
@@ -51,7 +61,7 @@ def _read_yaml_file(path):
     if cached is None or cached[0] != key:
         try:
             with open(path, encoding="utf-8") as f:
-                data = yaml.safe_load(f)
+                data = yaml.load(f, Loader=_SAFE_LOADER)
         except yaml.YAMLError as exc:
             raise ConfigError("YAML parse error in {p}: {e}".format(p=path, e=exc))
         cached = (key, data)
@@ -428,6 +438,41 @@ def read_boards_catalog():
 # Back-compat alias.
 read_boards = read_boards_catalog
 
+_BOARD_INDEX = {}
+
+
+def _board_index():
+    """{board_id: catalog entry} like read_boards_catalog(), built once per
+    change of the catalog files and shared read-only: callers take copies
+    (read_board_entry) or only read it. read_boards_catalog() deep-copies
+    every family file, which made each resolve_configuration slow."""
+    files = list(_walk_board_catalog_files())
+    key = tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p, _pr, _f in files)
+    if _BOARD_INDEX.get("key") != key:
+        out = {}
+        for fam_path, prod_name, fam_slug in files:
+            data = _parsed(fam_path)
+            if not data:
+                continue
+            for b in data.get("Boards") or []:
+                if "Id" not in b:
+                    continue
+                entry = dict(b)
+                entry.setdefault("PartProducer", data.get("Producer"))
+                entry.setdefault("PartFamily", data.get("Family"))
+                entry["_catalog_path"] = fam_path
+                entry["_producer_dir"] = prod_name
+                entry["_family_dir"] = fam_slug
+                out[b["Id"]] = entry
+        _BOARD_INDEX.update(key=key, value=out)
+    return _BOARD_INDEX["value"]
+
+
+def read_board_entry(board_id):
+    """One board's catalog entry (a copy), or None."""
+    entry = _board_index().get(board_id)
+    return copy.deepcopy(entry) if entry is not None else None
+
 
 def read_board_pinmap(board_id):
     """Load the per-board pin-map YAML for `board_id`.
@@ -438,8 +483,7 @@ def read_board_pinmap(board_id):
 
     Returns the inner Board dict (with id, fpga, defaults, pinBanks) or
     None when no pinmap file exists for this board."""
-    catalog = read_boards_catalog()
-    entry = catalog.get(board_id)
+    entry = _board_index().get(board_id)
     if entry is None:
         return None
     prod_dir = entry.get("_producer_dir")
@@ -632,6 +676,17 @@ def read_capabilities():
     return _load_yaml_dir("capabilities", "Capability", "id")
 
 
+def _read_configuration(configuration_id):
+    """One configuration: its own file when it is named after its id (all
+    are), else a search of them all; None when there is none."""
+    path = os.path.join(dir_path, "configurations", str(configuration_id) + ".yml")
+    if os.path.isfile(path):
+        item = (_read_yaml_file(path) or {}).get("Configuration") or {}
+        if item.get("id") == configuration_id:
+            return item
+    return read_configurations().get(configuration_id)
+
+
 def read_configurations():
     """Read every configuration under config/configurations/."""
     return _load_yaml_dir("configurations", "Configuration", "id")
@@ -725,13 +780,12 @@ def resolve_configuration(configuration_id, configuration=None):
     if configuration is not None:
         cfg = copy.deepcopy(configuration)
     else:
-        configurations = read_configurations()
-        if configuration_id not in configurations:
+        cfg = _read_configuration(configuration_id)
+        if cfg is None:
             raise ConfigError("Unknown configuration '{c}'. Run init_settings.py to pick one."
                               .format(c=configuration_id))
-        cfg = configurations[configuration_id]
 
-    boards = read_boards_catalog()
+    boards = _board_index()                 # read-only; the board is copied below
     toolchains = read_toolchains()
     chips = read_chips()
     peripherals = read_peripherals()
@@ -753,7 +807,7 @@ def resolve_configuration(configuration_id, configuration=None):
     # Resolve the chip part number — toolchain drivers expect `board["Part"]`
     # (or `board["Parts"]` for multi-variant boards). We inject these by
     # looking up the chip(s) the board references.
-    board_resolved = dict(boards[board_id])
+    board_resolved = copy.deepcopy(boards[board_id])
     if board_resolved.get("Chip"):
         cid = board_resolved["Chip"]
         chip = chips.get(cid)
