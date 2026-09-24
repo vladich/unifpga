@@ -490,19 +490,3 @@ Boards:
       - micron_n25q256a
       - ddr4_sodimm_socket
     Status: eol
-  - Id: iwave_rainbow_g46m
-    BoardName: "iW-RainboW-G46M Versal HBM VHK158 SoM"
-    BoardProducer: iwave
-    Chip: XCVH1582-2MSEVSVA3697
-    Bridges:
-      - jtag
-    Programmer: vivado_hw
-    Features:
-      - ddr4_memory
-      - hbm2e_in_package
-      - qsfp_dd_cage
-      - usb_uart_bridge
-    Devices:
-      - ftdi_ft4232h
-    BoardURL: "https://www.iwavesystems.com/product/versal-premium-vp1802/"
-    Status: active

@@ -5,7 +5,7 @@ Mezzanines:
   - Id: sipeed_tang_primer_20k_dock_carrier
     Name: "Sipeed Tang Primer 20K Dock (carrier)"
     Producer: sipeed
-    Type: mezzanine
+    Type: carrier
     Connector: ddr3_sodimm_footprint
     Features:
       - usb_jtag_bridge
@@ -26,7 +26,7 @@ Mezzanines:
   - Id: sipeed_tang_primer_20k_lite_carrier
     Name: "Sipeed Tang Primer 20K Lite (carrier, IO-breakout)"
     Producer: sipeed
-    Type: mezzanine
+    Type: carrier
     Connector: ddr3_sodimm_footprint
     Features:
       - pmod_connector
@@ -38,7 +38,7 @@ Mezzanines:
   - Id: sipeed_tang_primer_25k_dock_carrier
     Name: "Sipeed Tang Primer 25K Dock (carrier)"
     Producer: sipeed
-    Type: mezzanine
+    Type: carrier
     Connector: tang_primer_25k_b2b
     Features:
       - usb_jtag_bridge
@@ -49,11 +49,10 @@ Mezzanines:
     Status: active
     CompatibleBoards:
       - tang_primer_25k
-      - sipeed_tang_primer_25k_dock
   - Id: sipeed_tang_console_carrier
     Name: "Sipeed Tang Console carrier (Mega SoM socket)"
     Producer: sipeed
-    Type: piggyback
+    Type: carrier
     Connector: tang_mega_b2b
     Features:
       - hdmi_output
@@ -73,12 +72,12 @@ Mezzanines:
     Status: active
     CompatibleBoards:
       - sipeed_tang_mega_60k
-      - sipeed_tang_mega_138k_dock
+      - tang_mega_138k
       - tang_mega_138k_pro
   - Id: sipeed_tang_mega_neo_dock
     Name: "Sipeed Tang Mega NEO Dock (shared 60K / 138K carrier)"
     Producer: sipeed
-    Type: mezzanine
+    Type: carrier
     Connector: tang_mega_b2b
     Features:
       - hdmi_output
@@ -96,7 +95,6 @@ Mezzanines:
     Status: active
     CompatibleBoards:
       - sipeed_tang_mega_60k
-      - sipeed_tang_mega_138k_dock
       - tang_mega_138k
       - tang_mega_138k_pro
   - Id: sipeed_pmod_dvi

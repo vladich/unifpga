@@ -829,19 +829,6 @@ Boards:
       - jtag
     Programmer: vivado_hw
     BoardURL: "https://shop.trenz-electronic.de/en/TE0725-04-72C-1-A-FPGA-Module-with-AMD-Artix-7A100T-2C-2-x-50-Pin-Header-3-5-x-7-3-cm"
-  - Id: trenz_te0790
-    BoardName: TE0790
-    Features:
-      - usb_jtag_bridge
-    Devices:
-      - ftdi_ft2232h
-    BoardProducer: trenz_electronic
-    Chip: XC7A35T-2CSG324I
-    Bridges:
-      - jtag
-    Programmer: vivado_hw
-    BoardURL: "https://shop.trenz-electronic.de/en/Products/Trenz-Electronic/Open-Hardware/Xmod-FTDI-JTAG-Adapter/"
-    Notes: "Catalog erroneously lists FPGA chip XC7A35T; TE0790 is actually Trenz's XMOD FTDI JTAG adapter (no FPGA). Entry kept for slug stability; chip field is incorrect."
   - Id: usb104_a7_100t
     BoardName: USB104 A7-100T
     Features:

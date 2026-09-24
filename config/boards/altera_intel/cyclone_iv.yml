@@ -195,14 +195,6 @@ Boards:
       - pcie_endpoint
       - fmc_hpc
     Status: eol
-  - Id: marsohod3
-    BoardName: Marsohod3
-    BoardProducer: marsohod
-    Chip: EP4CE10E22C8N
-    Bridges:
-      - jtag
-    Programmer: quartus_pgm
-    Status: eol
   - Id: omdazz
     BoardName: Omdazz Cyclone IV
     BoardProducer: omdazz

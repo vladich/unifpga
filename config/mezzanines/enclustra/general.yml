@@ -64,7 +64,7 @@ Mezzanines:
   - Id: enclustra_mars_pm3_som
     Name: "Enclustra Mars PM3 SoM (Cyclone V GX SoDIMM)"
     Producer: enclustra
-    Type: som
+    Type: carrier
     Connector: sodimm_ddr3_200pin
     Chip: 5CGXFC5C6F23C7N
     Features:
@@ -95,26 +95,6 @@ Mezzanines:
       - marvell_88e1512
       - emmc_chip_generic
     BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mars-xu3/"
-    Status: active
-    DefaultCarrier: enclustra_mars_eb1
-    CompatibleBoards:
-      - enclustra_mars_eb1
-      - enclustra_mars_pe1
-  - Id: enclustra_mars_kx2_som
-    Name: "Enclustra Mars KX2 Kintex-7 K160T SoM (SoDIMM)"
-    Producer: enclustra
-    Type: som
-    Connector: sodimm_ddr3_200pin
-    Chip: XC7K160T-2FFG676I
-    Features:
-      - ddr3_memory
-      - qspi_flash
-      - ethernet_phy_gigabit
-    Devices:
-      - micron_mt41k256m16
-      - macronix_mx25l25645g
-      - marvell_88e1512
-    BoardURL: "https://www.enclustra.com/en/products/fpga-modules/mercury-kx2/"
     Status: active
     DefaultCarrier: enclustra_mars_eb1
     CompatibleBoards:

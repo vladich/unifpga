@@ -7,6 +7,7 @@ Description: 14 nm high-end with eASIC tile options. Quartus Prime Pro.
 Boards:
   - Id: intel_stratix10_gx_devkit
     BoardName: Stratix 10 GX FPGA Development Kit
+    Aliases: [terasic_stratix10_gx]
     Features:
       - ddr4_memory
       - dip_switches
@@ -83,6 +84,7 @@ Boards:
     Status: eol
   - Id: intel_stratix10_mx_devkit
     BoardName: Stratix 10 MX FPGA Development Kit
+    Aliases: [terasic_stratix10_mx_devkit]
     Features:
       - ddr4_memory
       - dip_switches
@@ -295,52 +297,6 @@ Boards:
       - user_buttons
       - user_leds
     BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=248&No=1258
-    Status: active
-  - Id: terasic_stratix10_gx
-    BoardName: Stratix 10 GX Dev Kit (Terasic)
-    Features:
-      - ddr4_memory
-      - dip_switches
-      - qspi_flash
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    Devices:
-      - ddr4_sodimm_socket
-      - cypress_s25fl128s
-      - usb_blaster_ii_built_in
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - dip_switch_generic
-    BoardProducer: terasic
-    Chip: 1SG280HU2F50E2VG
-    Bridges:
-      - jtag
-    Programmer: quartus_pgm
-    BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1068"
-  - Id: terasic_stratix10_mx_devkit
-    BoardName: Stratix 10 MX FPGA Development Kit
-    Devices:
-      - ddr4_sodimm_socket
-      - usb_blaster_ii_built_in
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - dip_switch_generic
-    BoardProducer: terasic
-    Chip: 1SM21BHU2F53E2VG
-    Bridges:
-      - usb-jtag
-    Programmer: quartus_pgm
-    Features:
-      - ddr4_memory
-      - dip_switches
-      - fmc_plus
-      - pcie_endpoint
-      - qsfp_cage
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=248&No=1205
     Status: active
   - Id: terasic_stratix10_sx_soc_devkit
     BoardName: Stratix 10 SX SoC Development Kit

@@ -173,26 +173,6 @@ Boards:
       - jtag
     Programmer: vivado_hw
     Status: eol
-  - Id: numato_skoll
-    BoardName: Skoll
-    Features:
-      - ddr4_memory
-      - qspi_flash
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    Devices:
-      - ftdi_ft2232h
-      - micron_n25q256a
-      - ddr4_sodimm_socket
-      - led_discrete_generic
-      - pushbutton_smd_generic
-    BoardProducer: numato_lab
-    Chip: XCKU040-2FFVA1156I
-    Bridges:
-      - jtag
-    Programmer: vivado_hw
-    Status: eol
   - Id: qmtech_kintex_ultrascale_ku040_core
     BoardName: QMtech Kintex UltraScale XCKU040 Core Board
     Devices:

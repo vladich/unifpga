@@ -113,6 +113,7 @@ Boards:
     BoardURL: https://1bitsquared.com/products/orangecrab
   - Id: radiona_ulx3s_12f
     BoardName: ULX3S 12F
+    Aliases: [ulx3s_12f]
     BoardProducer: radiona
     Chip: LFE5U-12F-6BG381C
     Bridges:
@@ -152,28 +153,6 @@ Boards:
     Bootloader: usb-dfu
     Programmer: dfu_util
     BoardURL: https://tinyfpga.com/
-  - Id: ulx3s_12f
-    BoardName: ULX3S (12F)
-    BoardProducer: intergalaktik
-    Chip: LFE5U-12F-6BG381C
-    Bridges:
-      - jtag
-    Programmer: openFPGALoader
-    ExtraProgrammers:
-      - ecpprog[*]
-    Features:
-      - hdmi_output
-      - audio_codec
-      - microsd_socket
-      - usb_uart_bridge
-      - usb_jtag_bridge
-      - qspi_flash
-      - user_leds
-      - user_buttons
-      - pmod_connector
-      - usb_powered
-    BoardURL: https://www.intergalaktik.eu/projects/ulx3s
-    Status: active
   - Id: ulx3s_25f
     BoardName: ULX3S (25F)
     BoardProducer: intergalaktik

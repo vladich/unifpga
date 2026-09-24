@@ -74,14 +74,6 @@ Boards:
       - jtag
     Programmer: iceprog
     BoardURL: https://www.olimex.com/Products/FPGA/iCE40/iCE40HX1K-EVB/
-  - Id: olimex_ice40_io
-    BoardName: iCE40-IO
-    BoardProducer: olimex
-    Chip: iCE40HX1K-VQ100
-    Bridges:
-      - jtag
-    Programmer: iceprog
-    BoardURL: https://www.olimex.com/Products/FPGA/iCE40/iCE40-IO/
   - Id: olimex_ice40hx1k_evb
     BoardName: iCE40HX1K-EVB
     BoardProducer: olimex
@@ -126,3 +118,19 @@ Boards:
       - ftdi_ft2232h
     BoardURL: "https://www.latticesemi.com/products/developmentboardsandkits/ice40ultrabreakoutboard"
     Status: active
+  - Id: blackice_mx
+    BoardName: BlackIce MX
+    BoardProducer: folknology
+    Chip: iCE40HX4K-TQ144
+    Bridges:
+      - stm32-bridge
+    Programmer: iceprog
+    BoardURL: https://github.com/folknology/BlackIceMX
+  - Id: greatscott_glasgow_revc
+    BoardName: Glasgow Interface Explorer Rev C
+    BoardProducer: onebitsquared
+    Chip: iCE40HX8K-BG121
+    Bridges:
+      - jtag
+    Programmer: iceprog
+    BoardURL: https://www.crowdsupply.com/1bitsquared/glasgow

@@ -334,20 +334,6 @@ Boards:
       - qspi_flash
     BoardURL: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE0741-Kintex-7/
     Status: active
-  - Id: trenz_te0745
-    BoardName: TE0745
-    Features:
-      - ddr3_memory
-      - qspi_flash
-    Devices:
-      - micron_mt41k256m16
-      - micron_n25q256a
-    BoardProducer: trenz_electronic
-    Chip: XC7K325T-2FFG676I
-    Bridges:
-      - jtag
-    Programmer: vivado_hw
-    BoardURL: "https://shop.trenz-electronic.de/en/TE0745-02-91C31-A-SoM-with-AMD-Zynq-XC7Z045-1FBG676C-1-GByte-DDR3L-SDRAM-5.2-x-7.6-cm"
   - Id: xilinx_kc705
     BoardName: KC705
     Features:
@@ -492,3 +478,23 @@ Boards:
       - led_discrete_generic
     BoardURL: "https://numato.com/product/nereid-kintex-7-pci-express-fpga-development-board/"
     Status: active
+  - Id: numato_skoll
+    BoardName: Skoll
+    Features:
+      - ddr4_memory
+      - qspi_flash
+      - usb_jtag_bridge
+      - user_buttons
+      - user_leds
+    Devices:
+      - ftdi_ft2232h
+      - micron_n25q256a
+      - ddr4_sodimm_socket
+      - led_discrete_generic
+      - pushbutton_smd_generic
+    BoardProducer: numato_lab
+    Chip: XC7K70T-1FBG484
+    Bridges:
+      - jtag
+    Programmer: vivado_hw
+    Status: eol

@@ -5,16 +5,9 @@ Producer: Microchip (Actel)
 Family: PolarFire SoC
 Description: PolarFire + RISC-V quad-core. Libero SoC + SoftConsole.
 Boards:
-  - Id: beagleboard_beaglev_fire
-    BoardName: BeagleV-Fire
-    BoardProducer: beagleboard
-    Chip: MPFS025T-FCSG325E
-    Bridges:
-      - jtag
-    Programmer: libero_fpexpress
-    BoardURL: https://www.beagleboard.org/boards/beaglev-fire
   - Id: microchip_beaglev_fire
     BoardName: BeagleV-Fire
+    Aliases: [beagleboard_beaglev_fire]
     Devices:
       - microchip_ksz9031rnx
       - microsd_socket_generic
@@ -61,28 +54,9 @@ Boards:
       - jtag
     Programmer: libero_fpexpress
     BoardURL: https://www.microchip.com/en-us/development-tool/MPFS-ICICLE-KIT-ES
-  - Id: microchip_iglooicicle_disco
-    BoardName: PolarFire SoC Discovery Kit
-    Features:
-      - microsd_socket
-      - spi_flash
-      - usb_uart_bridge
-      - user_buttons
-      - user_leds
-    Devices:
-      - ftdi_ft4232h
-      - microsd_socket_generic
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - winbond_w25q128
-    BoardProducer: microchip
-    Chip: MPFS095T-1FCSG325E
-    Bridges:
-      - jtag
-    Programmer: libero_fpexpress
-    BoardURL: https://www.microchip.com/en-us/development-tool/MPFS-DISCO-KIT
   - Id: microchip_polarfiresoc_disco
     BoardName: PolarFire SoC Discovery Kit
+    Aliases: [microchip_iglooicicle_disco]
     Devices:
       - ftdi_ft4232h
       - microsd_socket_generic

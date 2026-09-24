@@ -5,14 +5,6 @@ Producer: Lattice
 Family: ICE40 UltraPlus
 Description: UP5K/UWG30. Both iCEcube2 and Radiant cover this on vendor side.
 Boards:
-  - Id: blackice_mx
-    BoardName: BlackIce MX
-    BoardProducer: folknology
-    Chip: iCE40UP5K-SG48
-    Bridges:
-      - stm32-bridge
-    Programmer: iceprog
-    BoardURL: https://github.com/folknology/BlackIceMX
   - Id: bunnie_precursor_ec
     BoardName: Precursor EC (iCE40UP5K co-controller)
     BoardProducer: bunnie_studios
@@ -34,14 +26,6 @@ Boards:
       - jtag
     Programmer: dfu_util
     BoardURL: https://www.crowdsupply.com/sutajio-kosagi/fomu
-  - Id: greatscott_glasgow_revc
-    BoardName: Glasgow Interface Explorer Rev C
-    BoardProducer: onebitsquared
-    Chip: ICE40HX8K-BG121
-    Bridges:
-      - jtag
-    Programmer: iceprog
-    BoardURL: https://www.crowdsupply.com/1bitsquared/glasgow
   - Id: icebreaker
     BoardName: iCEBreaker
     BoardProducer: onebitsquared

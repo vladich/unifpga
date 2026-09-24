@@ -1,9 +1,9 @@
 # Renesas / ForgeFPGA
-# ~1k LUT mini-FPGA (SLG47004/47010). Go Configure Hub + ForgeFPGA Workshop.
+# ~1k LUT mini-FPGA (SLG4791x / SLG4792x). Go Configure Hub + ForgeFPGA Workshop.
 
 Producer: Renesas
 Family: ForgeFPGA
-Description: ~1k LUT mini-FPGA (SLG47004/47010). Go Configure Hub + ForgeFPGA Workshop.
+Description: ~1k LUT mini-FPGA (SLG4791x / SLG4792x). Go Configure Hub + ForgeFPGA Workshop.
 Boards:
   - Id: renesas_forgefpga_workshop
     BoardName: ForgeFPGA Workshop Board
@@ -13,22 +13,6 @@ Boards:
       - jtag
     Programmer: renesas_go_pgm
     BoardURL: "https://www.renesas.com/en/design-resources/boards-kits/slg7evbforge"
-  - Id: renesas_slg47004_eval
-    BoardName: SLG47004 ForgeFPGA Eval Kit
-    BoardProducer: renesas
-    Chip: SLG47004V
-    Bridges:
-      - jtag
-    Programmer: renesas_go_pgm
-    Status: eol
-  - Id: renesas_slg47010_eval
-    BoardName: SLG47010 ForgeFPGA Eval Kit
-    BoardProducer: renesas
-    Chip: SLG47010V
-    Bridges:
-      - jtag
-    Programmer: renesas_go_pgm
-    Status: eol
   - Id: vicharak_shrike
     BoardName: Vicharak Shrike
     BoardProducer: vicharak

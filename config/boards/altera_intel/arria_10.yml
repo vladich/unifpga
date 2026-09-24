@@ -7,6 +7,7 @@ Description: 20 nm with hard FP DSP. Quartus Prime Std/Pro.
 Boards:
   - Id: intel_arria10_gx_devkit
     BoardName: Arria 10 GX FPGA Development Kit
+    Aliases: [terasic_arria10_gx_devkit]
     Features:
       - ddr3_memory
       - ddr4_memory
@@ -37,6 +38,7 @@ Boards:
     Status: eol
   - Id: intel_arria10_soc_devkit
     BoardName: Arria 10 SoC Development Kit
+    Aliases: [terasic_arria10_sx_soc_devkit]
     Features:
       - ddr4_memory
       - dip_switches
@@ -70,60 +72,6 @@ Boards:
       - jtag
     Programmer: quartus_pgm
     Status: eol
-  - Id: terasic_arria10_gx_devkit
-    BoardName: Arria 10 GX FPGA Development Kit
-    Devices:
-      - ddr4_sodimm_socket
-      - usb_blaster_ii_built_in
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - dip_switch_generic
-    BoardProducer: terasic
-    Chip: 10AX115S2F45I1SG
-    Bridges:
-      - usb-jtag
-    Programmer: quartus_pgm
-    Features:
-      - ddr3_memory
-      - ddr4_memory
-      - dip_switches
-      - fmc_lpc
-      - pcie_endpoint
-      - qsfp_cage
-      - sfp_cage
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=228&No=996
-    Status: active
-  - Id: terasic_arria10_sx_soc_devkit
-    BoardName: Altera Arria 10 SX SoC Development Kit
-    Devices:
-      - ddr4_sodimm_socket
-      - microchip_ksz9031rnx
-      - microsd_socket_generic
-      - usb_blaster_ii_built_in
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - dip_switch_generic
-    BoardProducer: terasic
-    Chip: 10AS066N3F40E2SG
-    Bridges:
-      - usb-jtag
-    Programmer: quartus_pgm
-    Features:
-      - ddr4_memory
-      - dip_switches
-      - ethernet_phy_gigabit
-      - fmc_hpc
-      - microsd_socket
-      - pcie_endpoint
-      - sfp_cage
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=228&No=997
-    Status: active
   - Id: terasic_de10_advanced
     BoardName: DE10-Advanced
     Features:

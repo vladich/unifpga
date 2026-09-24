@@ -25,24 +25,9 @@ Boards:
       - jtag
     Programmer: openFPGALoader
     BoardURL: https://www.latticesemi.com/products/developmentboardsandkits/machxo2picodevelopmentkit
-  - Id: tinyfpga_a1
-    BoardName: TinyFPGA A1
-    BoardProducer: tinyfpga
-    Chip: LCMXO2-256HC-4SG32C
-    Bridges:
-      - jtag
-    Programmer: openFPGALoader
-    BoardURL: "https://tinyfpga.com/a-series-guide.html"
-  - Id: tinyfpga_a2
-    BoardName: TinyFPGA A2
-    BoardProducer: tinyfpga
-    Chip: LCMXO2-1200HC-4SG32C
-    Bridges:
-      - jtag
-    Programmer: openFPGALoader
-    BoardURL: "https://tinyfpga.com/a-series-guide.html"
   - Id: tinyfpga_ax1
     BoardName: TinyFPGA AX1
+    Aliases: [tinyfpga_a1]
     BoardProducer: tinyfpga
     Chip: LCMXO2-256HC-4SG32C
     Bridges:
@@ -51,6 +36,7 @@ Boards:
     BoardURL: "https://tinyfpga.com/a-series-guide.html"
   - Id: tinyfpga_ax2
     BoardName: TinyFPGA AX2
+    Aliases: [tinyfpga_a2]
     BoardProducer: tinyfpga
     Chip: LCMXO2-1200HC-4SG32C
     Bridges:

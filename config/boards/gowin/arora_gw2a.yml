@@ -27,6 +27,7 @@ Boards:
     BoardURL: "https://www.gowinsemi.com/en/support/devkits_detail/31/"
   - Id: gowin_gw2a18_video_devkit
     BoardName: GW2A-18 Video Dev Kit
+    Aliases: [gowin_dk_video_gw2a18]
     Devices:
       - micron_mt41k128m16
       - tmds_direct
@@ -122,3 +123,22 @@ Boards:
       - jtag
     Programmer: openFPGALoader
     BoardURL: https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html
+  - Id: gowin_dk_motor_gw2a55
+    BoardName: "GW2A-55 Motor Control Dev Kit (DK_Motor_GW2A-LV55PG484C8I7)"
+    Devices:
+      - ftdi_ft2232h
+      - led_discrete_generic
+      - pushbutton_smd_generic
+    BoardProducer: gowin_semi
+    Chip: GW2A-LV55PG484C8/I7
+    Bridges:
+      - jtag
+    Programmer: gowin_pgm
+    Features:
+      - gpio_header_generic
+      - jtag_header
+      - usb_jtag_bridge
+      - user_buttons
+      - user_leds
+    BoardURL: "https://www.gowinsemi.com/en/support/devkits_detail/56/"
+    Status: active

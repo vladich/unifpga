@@ -5,14 +5,6 @@ Producer: Cologne Chip
 Family: GateMate
 Description: German open-flow-friendly 28 nm FPGA. Vendor flow uses yosys + p_r; nextpnr-himbaechel also covers it.
 Boards:
-  - Id: cologne_gatemate_pgm
-    BoardName: GateMate Programmer Board
-    BoardProducer: cologne_chip
-    Chip: CCGM1A1
-    Bridges:
-      - jtag
-    Programmer: openFPGALoader
-    BoardURL: https://www.colognechip.com/programmable-logic/gatemate/
   - Id: gatemate_evb_a1
     BoardName: GateMate Evaluation Board A1
     BoardProducer: cologne_chip

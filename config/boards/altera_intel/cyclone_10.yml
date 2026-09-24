@@ -85,6 +85,7 @@ Boards:
     Status: eol
   - Id: qmtech_cyc10lp_10cl025_core
     BoardName: QMtech Cyclone 10 LP 10CL025 Core Board
+    Aliases: [qmtech_cyc10lp_core]
     Devices:
       - winbond_w9825g6kh
       - winbond_w25q128
@@ -163,24 +164,6 @@ Boards:
       - user_leds
     BoardURL: https://qmtech.aliexpress.com/store/1199788
     Status: active
-  - Id: qmtech_cyc10lp_core
-    BoardName: Cyclone 10 LP Core Board
-    Features:
-      - sdr_sdram
-      - spi_flash
-      - user_buttons
-      - user_leds
-    Devices:
-      - winbond_w9825g6kh
-      - winbond_w25q128
-      - led_discrete_generic
-      - pushbutton_smd_generic
-    BoardProducer: qmtech
-    Chip: 10CL025YU256I7G
-    Bridges:
-      - jtag
-    Programmer: quartus_pgm
-    BoardURL: https://qmtech.aliexpress.com/store/1199788
   - Id: alinx_ax1006
     BoardName: "Alinx AX1006"
     Devices:

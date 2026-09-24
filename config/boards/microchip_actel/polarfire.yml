@@ -74,26 +74,6 @@ Boards:
       - jtag
     Programmer: libero_fpexpress
     BoardURL: "https://www.microchip.com/en-us/development-tool/MPF300-SPLASH-KIT"
-  - Id: microchip_polarfire_video
-    BoardName: PolarFire Video Kit
-    Features:
-      - microsd_socket
-      - spi_flash
-      - usb_uart_bridge
-      - user_buttons
-      - user_leds
-    Devices:
-      - ftdi_ft4232h
-      - microsd_socket_generic
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - winbond_w25q128
-    BoardProducer: microchip
-    Chip: MPF300TS-1FCG1152I
-    Bridges:
-      - jtag
-    Programmer: libero_fpexpress
-    BoardURL: https://www.microchip.com/en-us/development-tool/MPF300-VIDEO-KIT
   - Id: sifive_hifive_unleashed_expansion
     BoardName: HiFive Unleashed Expansion Board
     BoardProducer: sifive
@@ -123,6 +103,7 @@ Boards:
     Status: active
   - Id: microchip_pf_video_kit_300t
     BoardName: "PolarFire FPGA Video Kit (MPF300T-1FCG1152I)"
+    Aliases: [microchip_polarfire_video]
     BoardProducer: microchip
     Chip: MPF300TS-1FCG1152I
     Bridges:

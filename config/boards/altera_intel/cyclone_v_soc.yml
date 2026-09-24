@@ -7,6 +7,7 @@ Description: Cyclone V with hard ARM A9 dual-core (HPS). Quartus Prime.
 Boards:
   - Id: de0_nano_soc
     BoardName: DE0-Nano-SoC
+    Aliases: [terasic_atlas_soc]
     Features:
       - accelerometer
       - adc_chip
@@ -164,32 +165,6 @@ Boards:
       - user_leds
     BoardURL: https://qmtech.aliexpress.com/store/1199788
     Status: active
-  - Id: terasic_atlas_soc
-    BoardName: Atlas-SoC Kit
-    Features:
-      - accelerometer
-      - ddr3_memory
-      - dip_switches
-      - ethernet_phy_gigabit
-      - microsd_socket
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    Devices:
-      - micron_mt41k256m16
-      - microsd_socket_generic
-      - microchip_ksz9031rnx
-      - usb_blaster_ii_built_in
-      - adi_adxl345
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - dip_switch_generic
-    BoardProducer: terasic
-    Chip: 5CSXFC6D6F31C6N
-    Bridges:
-      - jtag
-    Programmer: quartus_pgm
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=205&No=941
   - Id: terasic_de10_standard
     BoardName: DE10-Standard
     Features:

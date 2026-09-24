@@ -146,6 +146,7 @@ Boards:
     Status: active
   - Id: intel_agilex7_devkit_fseries
     BoardName: Agilex 7 F-Series FPGA Development Kit
+    Aliases: [terasic_agilex7_f_series_devkit]
     Features:
       - ddr4_memory
       - dip_switches
@@ -234,6 +235,7 @@ Boards:
     Status: eol
   - Id: intel_agilex7_soc_devkit
     BoardName: Agilex 7 SoC FPGA Development Kit
+    Aliases: [terasic_agilex7_f_series_soc_devkit]
     Features:
       - ddr4_memory
       - dip_switches
@@ -314,61 +316,6 @@ Boards:
       - user_buttons
       - user_leds
     BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=142&No=1294
-    Status: active
-  - Id: terasic_agilex7_f_series_devkit
-    BoardName: Altera Agilex 7 FPGA F-Series Development Kit
-    Devices:
-      - ddr4_sodimm_socket
-      - usb_blaster_ii_built_in
-      - microsd_socket_generic
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - dip_switch_generic
-    BoardProducer: terasic
-    Chip: AGFB014R24B2E2V
-    Bridges:
-      - usb-jtag
-    Programmer: quartus_pgm
-    Features:
-      - ddr4_memory
-      - dip_switches
-      - fmc_plus
-      - microsd_socket
-      - pcie_endpoint
-      - qsfp_cage
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=142&No=1262
-    Status: active
-  - Id: terasic_agilex7_f_series_soc_devkit
-    BoardName: Altera Agilex 7 FPGA F-Series Transceiver-SoC Development Kit
-    Devices:
-      - ddr4_sodimm_socket
-      - usb_blaster_ii_built_in
-      - microsd_socket_generic
-      - led_discrete_generic
-      - pushbutton_smd_generic
-      - dip_switch_generic
-      - microchip_ksz9031rnx
-    BoardProducer: terasic
-    Chip: AGFB014R24A2E2VR0
-    Bridges:
-      - usb-jtag
-    Programmer: quartus_pgm
-    Features:
-      - ddr4_memory
-      - dip_switches
-      - emmc_flash
-      - ethernet_phy_gigabit
-      - fmc_plus
-      - microsd_socket
-      - pcie_endpoint
-      - qsfp_cage
-      - usb_jtag_bridge
-      - user_buttons
-      - user_leds
-    BoardURL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=142&No=1261
     Status: active
   - Id: terasic_agilex7_i_series_4x_f_tile
     BoardName: Altera Agilex 7 FPGA I-Series Transceiver-SoC Development Kit (4x F-Tile)

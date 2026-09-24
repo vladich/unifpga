@@ -85,3 +85,11 @@ Boards:
     ExtraProgrammers:
       - papilio_loader[*]
     BoardURL: https://papilio.cc/index.php?n=Papilio.PapilioOne
+  - Id: replay_board
+    BoardName: Replay Board
+    BoardProducer: replay
+    Chip: XC3S1600E-FG320
+    Bridges:
+      - jtag
+    Programmer: ise_impact
+    Status: eol

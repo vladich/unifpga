@@ -178,3 +178,11 @@ Boards:
       - jtag
     Programmer: quartus_pgm
     BoardURL: "https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=956"
+  - Id: marsohod3
+    BoardName: Marsohod3
+    BoardProducer: marsohod
+    Chip: 10M50SAE144C8GES
+    Bridges:
+      - jtag
+    Programmer: quartus_pgm
+    Status: eol

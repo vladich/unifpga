@@ -70,3 +70,67 @@ Boards:
       - user_buttons
     BoardURL: https://wiki.sipeed.com/hardware/en/tang/tang-mega-60k/mega-60k.html
     Status: active
+  - Id: gowin_dk_video_gw5at60_ug225
+    BoardName: "GW5AT-60 UG225 Video Dev Kit (DK_VIDEO_GW5AT-LV60UG225)"
+    Devices:
+      - micron_mt41k128m16
+      - tmds_direct
+      - ftdi_ft2232h
+      - led_discrete_generic
+      - pushbutton_smd_generic
+    BoardProducer: gowin_semi
+    Chip: GW5AT-LV60UG225C1/I0
+    Bridges:
+      - jtag
+    Programmer: gowin_pgm
+    Features:
+      - ddr3_memory
+      - hdmi_input
+      - hdmi_output
+      - jtag_header
+      - mipi_csi2_input
+      - usb_jtag_bridge
+      - user_buttons
+      - user_leds
+    BoardURL: "https://www.gowinsemi.com/en/support/devkits/37/"
+    Status: active
+  - Id: gowin_dk_usb_gw5at60_ug225
+    BoardName: "GW5AT-60 UG225 USB Dev Kit (DK_USB_GW5AT-LV60UG225)"
+    Devices:
+      - micron_mt41k128m16
+      - ftdi_ft2232h
+      - led_discrete_generic
+      - pushbutton_smd_generic
+    BoardProducer: gowin_semi
+    Chip: GW5AT-LV60UG225C1/I0
+    Bridges:
+      - jtag
+    Programmer: gowin_pgm
+    Features:
+      - ddr3_memory
+      - jtag_header
+      - usb_2_device
+      - usb_2_host
+      - usb_jtag_bridge
+      - user_buttons
+      - user_leds
+    BoardURL: "https://www.gowinsemi.com/en/support/devkits/37/"
+    Status: active
+  - Id: sipeed_tang_console_retro
+    BoardName: "Sipeed Tang Retro Console (retail)"
+    BoardProducer: sipeed
+    Chip: GW5AT-LV60PG484AC1/I0
+    Bridges:
+      - usb_jtag
+    Programmer: gowin_pgm
+    Features:
+      - hdmi_output
+      - usb_2_host
+      - microsd_socket
+      - pmod_connector
+      - user_buttons
+      - usb_jtag_bridge
+    Devices:
+      - microsd_socket_generic
+    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-console/retro-console.html"
+    Status: active

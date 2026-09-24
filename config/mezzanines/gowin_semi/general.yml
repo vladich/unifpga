@@ -2,35 +2,3 @@
 
 Producer: gowin_semi
 Mezzanines:
-  - Id: gowin_gw1nsr_lv4cmpg64p_som
-    Name: "Gowin GW1NSR-LV4CMPG64P SoM (FPGA + PSRAM SiP)"
-    Producer: gowin_semi
-    Type: som
-    Connector: b2b_custom_gowin
-    Chip: GW1NSR-LV4CMPG64PC7/I6
-    Features:
-      - hyperram
-      - user_leds
-    BoardURL: "https://www.gowinsemi.com/en/product/detail/59/"
-    Status: active
-  - Id: gowin_gw1nsr_lv4cmg64p_som
-    Name: "Gowin GW1NSR-LV4CMG64P SoM (FPGA + PSRAM SiP)"
-    Producer: gowin_semi
-    Type: som
-    Connector: b2b_custom_gowin
-    Chip: GW1NSR-LV4CMG64PC7/I6
-    Features:
-      - hyperram
-      - user_leds
-    BoardURL: "https://www.gowinsemi.com/en/product/detail/59/"
-    Status: active
-  - Id: gowin_gw2ar18_qn88p_som
-    Name: "Gowin GW2AR-18 QN88P SiP (FPGA + 64 Mbit PSRAM)"
-    Producer: gowin_semi
-    Type: som
-    Connector: b2b_custom_gowin
-    Chip: GW2AR-LV18QN88PC8/I7
-    Features:
-      - hyperram
-    BoardURL: "https://www.gowinsemi.com/en/product/detail/43/"
-    Status: active

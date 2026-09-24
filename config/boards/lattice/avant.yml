@@ -7,6 +7,7 @@ Description: 16 nm mid-range Lattice (2023+). Radiant Avant.
 Boards:
   - Id: lattice_avant_e_evn
     BoardName: Avant-E Evaluation Board
+    Aliases: [lattice_avant_evalboard]
     Devices:
       - ftdi_ft2232h
     BoardProducer: lattice
@@ -28,18 +29,6 @@ Boards:
       - barrel_jack_input
     BoardURL: https://www.latticesemi.com/products/developmentboardsandkits/avant-e-evaluation-board
     Status: active
-  - Id: lattice_avant_evalboard
-    BoardName: Avant Evaluation Board
-    Features:
-      - usb_jtag_bridge
-    Devices:
-      - ftdi_ft2232h
-    BoardProducer: lattice
-    Chip: LAV-AT-E70BG676C
-    Bridges:
-      - jtag
-    Programmer: openFPGALoader
-    BoardURL: "https://www.latticesemi.com/products/developmentboardsandkits/avant-e-evaluation-board"
   - Id: lattice_avant_g_versa
     BoardName: Avant-G Versa Board
     Devices:

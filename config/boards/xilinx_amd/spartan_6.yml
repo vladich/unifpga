@@ -318,14 +318,6 @@ Boards:
       - jtag
     Programmer: ise_impact
     BoardURL: https://qmtech.aliexpress.com/store/1199788
-  - Id: replay_board
-    BoardName: Replay Board
-    BoardProducer: replay
-    Chip: XC6SLX150-2FGG484C
-    Bridges:
-      - jtag
-    Programmer: ise_impact
-    Status: eol
   - Id: trenz_te0600
     BoardName: TE0600 GigaBee Spartan-6
     Devices:

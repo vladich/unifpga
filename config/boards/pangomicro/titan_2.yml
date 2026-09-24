@@ -5,49 +5,6 @@ Producer: Pangomicro
 Family: Titan-2
 Description: 28 nm Titan II. PDS.
 Boards:
-  - Id: pango_titan2_evb
-    BoardName: Pango Titan-2 Development Kit
-    Devices:
-      - silabs_cp2102
-      - microsd_socket_generic
-      - led_discrete_generic
-      - pushbutton_smd_generic
-    BoardProducer: pangomicro
-    Chip: PGT2L100H-6FBG676
-    Bridges:
-      - usb-jtag
-    Programmer: pango_pgm
-    Features:
-      - ddr4_memory
-      - ethernet_phy_gigabit
-      - fmc_hpc
-      - microsd_socket
-      - pcie_endpoint
-      - qspi_flash
-      - usb_jtag_bridge
-      - usb_uart_bridge
-      - user_buttons
-      - user_leds
-    BoardURL: "https://www.pangomicro.com/product/titan_family/"
-    Status: active
-  - Id: pangomicro_pg2t560h_devkit
-    BoardName: PG2T560H Development Kit
-    Features:
-      - microsd_socket
-      - usb_uart_bridge
-      - user_buttons
-      - user_leds
-    Devices:
-      - silabs_cp2102
-      - microsd_socket_generic
-      - led_discrete_generic
-      - pushbutton_smd_generic
-    BoardProducer: pangomicro
-    Chip: PG2T560HFBG676
-    Bridges:
-      - jtag
-    Programmer: pango_pgm
-    BoardURL: "https://www.pangomicro.com/product/titan_family/"
   - Id: alinx_axp390
     BoardName: "ALINX AXP390 Development Board"
     Devices:

@@ -25,35 +25,9 @@ Boards:
       - jtag
     Programmer: openFPGALoader
     BoardURL: https://www.gowinsemi.com/en/support/devkits_detail/81/
-  - Id: sipeed_tang_mega_138k_dock
-    BoardName: Sipeed Tang Mega 138K Dock
-    Devices:
-      - microsd_socket_generic
-    BoardProducer: sipeed
-    Chip: GW5AST-LV138PG484AC1/I0
-    Bridges:
-      - usb-jtag
-    Programmer: gowin_pgm_standard
-    ExtraProgrammers:
-      - openFPGALoader[*]
-    Features:
-      - ddr3_memory
-      - qspi_flash
-      - microsd_socket
-      - hdmi_output
-      - audio_codec
-      - ethernet_phy_gigabit
-      - usb_3_host
-      - usb_uart_bridge
-      - usb_jtag_bridge
-      - pmod_connector
-      - user_leds
-      - rgb_leds
-      - user_buttons
-    BoardURL: https://wiki.sipeed.com/hardware/en/tang/tang-mega-138k/mega-138k.html
-    Status: active
   - Id: tang_mega_138k
     BoardName: Tang Mega 138k
+    Aliases: [sipeed_tang_mega_138k_dock]
     Features:
       - microsd_socket
     Devices:
@@ -66,18 +40,7 @@ Boards:
     BoardURL: https://wiki.sipeed.com/hardware/en/tang/tang-mega-138k/mega-138k.html
   - Id: tang_mega_138k_pro
     BoardName: Tang Mega 138k Pro
-    Features:
-      - microsd_socket
-    Devices:
-      - microsd_socket_generic
-    BoardProducer: sipeed
-    Chip: GW5AST-LV138FPG676AES
-    Bridges:
-      - jtag
-    Programmer: openFPGALoader
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-mega-138k/mega-138k-pro.html"
-  - Id: tang_mega_138k_pro_dock
-    BoardName: Tang Mega 138k Pro Dock
+    Aliases: [tang_mega_138k_pro_dock]
     Features:
       - microsd_socket
     Devices:

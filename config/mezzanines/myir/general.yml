@@ -4,6 +4,7 @@ Producer: myir
 Mezzanines:
   - Id: myir_myc_c7z015_som
     Name: "MyIR MYC-C7Z015 Zynq-7015 SoM"
+    Aliases: [myir_myc_c7z015]
     Producer: myir
     Type: som
     Connector: b2b_custom_myir

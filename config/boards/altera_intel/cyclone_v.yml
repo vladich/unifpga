@@ -7,6 +7,7 @@ Description: 28 nm Cyclone (2011). Quartus Prime + nextpnr-mistral (open).
 Boards:
   - Id: c5gx
     BoardName: Cyclone V GX Starter Kit
+    Aliases: [intel_cyclonev_gx_starter]
     Features:
       - audio_codec
       - ddr3_memory
@@ -107,14 +108,6 @@ Boards:
       - dip_switch_generic
     BoardProducer: intel_altera
     Chip: 5CGTFD9E5F35I7N
-    Bridges:
-      - jtag
-    Programmer: quartus_pgm
-    Status: eol
-  - Id: intel_cyclonev_gx_starter
-    BoardName: Cyclone V GX Starter Kit
-    BoardProducer: intel_altera
-    Chip: 5CGXFC5C6F27C7N
     Bridges:
       - jtag
     Programmer: quartus_pgm
