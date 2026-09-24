@@ -101,10 +101,33 @@ def board_data(board_id):
     }
 
 
+_REQUIREMENTS = {}
+
+
+def design_requirements(design):
+    """The design's `// requires:` block, parsed (cached on the file's mtime)."""
+    from tools import design_requirements as dr
+    path = os.path.join(DESIGNS_DIR, design, "design_top.sv")
+    key = os.stat(path).st_mtime_ns
+    cached = _REQUIREMENTS.get(path)
+    if cached is None or cached[0] != key:
+        cached = (key, dr.parse(path))
+        _REQUIREMENTS[path] = cached
+    return cached[1]
+
+
+def design_fit(resolved):
+    """{design: [unmet requirement, ...]} for every design; [] = it fits."""
+    from tools import design_requirements as dr
+    capabilities = config_init.read_capabilities()
+    return {d: dr.check(resolved, design_requirements(d), capabilities) if design_requirements(d) else []
+            for d in list_designs()}
+
+
 def evaluate(setup):
     """What the build makes of a (possibly unsaved) setup: problems, the
     configuration text, and the virtual device traced to pins."""
-    out = {"problems": [], "configuration_text": None, "trace": None, "profile": None}
+    out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None}
     from config import profile
     if profile.enabled() and profile.load(setup.get("id")):
         out["profile"] = os.path.relpath(profile.path_for(setup["id"]), REPO)
@@ -120,6 +143,7 @@ def evaluate(setup):
     try:
         resolved = config_init.resolve_configuration(setup["id"], configuration=cfg)
         out["trace"] = tr.trace(resolved)
+        out["designs"] = design_fit(resolved)
     except (config_init.ConfigError, codegen.CodegenError) as exc:
         out["problems"].append({"level": "error", "message": str(exc)})
     return out
@@ -157,7 +181,11 @@ def project(setup_id, design):
         raise ApiError(400, "save the setup first")
     if design not in list_designs():
         raise ApiError(400, "unknown design '{}'".format(design))
-    from tools import cli
+    from tools import cli, design_requirements as dr
+    unmet = dr.check(config_init.resolve_configuration(setup_id), design_requirements(design),
+                     config_init.read_capabilities())
+    if unmet:
+        raise ApiError(400, "{} does not fit {}: {}".format(design, setup_id, "; ".join(unmet)))
     design_dir = os.path.join(DESIGNS_DIR, design)
     rc = cli.prepare_design(design_dir, setup_id)
     out = cli.run_dir(design_dir, setup_id)

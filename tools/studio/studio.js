@@ -315,7 +315,83 @@ function draw() {
   }
 
   const W = MX + 260, H = Math.max(top + boardH, my, y) + 30;
-  svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  S.content = {w: W, h: H};
+  applyView();
+}
+
+// ---------------------------------------------------------------- zoom and pan
+// S.view is the visible part of the drawing (SVG user units); null = fit it all.
+// Wheel zooms around the cursor, dragging pans; a drag does not click.
+
+function applyView() {
+  const svg = $("svg"), c = S.content || {w: 100, h: 100};
+  const v = S.view || {x: 0, y: 0, w: c.w, h: c.h};
+  svg.setAttribute("viewBox", [v.x, v.y, v.w, v.h].join(" "));
+  const z = $("zoom-level");
+  if (z) z.textContent = Math.round(100 * (S.view ? c.w / v.w : 1)) + "%";
+}
+
+function currentView() {
+  const c = S.content;
+  if (S.view) return S.view;
+  // the fitted view with the drawing box's aspect, as the browser shows it
+  const r = $("svg").getBoundingClientRect(), k = Math.max(c.w / r.width, c.h / r.height);
+  return {x: 0, y: 0, w: r.width * k, h: r.height * k};
+}
+
+function svgPoint(evt) {
+  const r = $("svg").getBoundingClientRect(), v = currentView();
+  return {x: v.x + (evt.clientX - r.left) / r.width * v.w, y: v.y + (evt.clientY - r.top) / r.height * v.h};
+}
+
+function zoomAt(p, factor) {
+  const v = currentView(), c = S.content;
+  const w = Math.min(Math.max(v.w * factor, c.w / 20), c.w * 4);
+  const k = w / v.w;
+  S.view = {x: p.x - (p.x - v.x) * k, y: p.y - (p.y - v.y) * k, w, h: v.h * k};
+  applyView();
+}
+
+function zoomCenter(factor) {
+  const v = currentView();
+  zoomAt({x: v.x + v.w / 2, y: v.y + v.h / 2}, factor);
+}
+
+function wireZoomPan() {
+  const svg = $("svg");
+  svg.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const f = Math.pow(1.0015, e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);   // lines or pixels
+    zoomAt(svgPoint(e), f);
+  }, {passive: false});
+  let drag = null;
+  svg.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    drag = {x: e.clientX, y: e.clientY, view: currentView(), moved: false, id: e.pointerId};
+  });
+  svg.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+    if (!drag.moved) { drag.moved = true; svg.setPointerCapture(drag.id); svg.classList.add("panning"); }
+    const r = svg.getBoundingClientRect(), v = drag.view;
+    S.view = {x: v.x - dx / r.width * v.w, y: v.y - dy / r.height * v.h, w: v.w, h: v.h};
+    applyView();
+  });
+  const end = () => {
+    if (drag && drag.moved) {
+      svg.classList.remove("panning");
+      // the click that ends a drag is not a selection
+      svg.addEventListener("click", (ev) => { ev.stopPropagation(); ev.preventDefault(); }, {capture: true, once: true});
+    }
+    drag = null;
+  };
+  svg.addEventListener("pointerup", end);
+  svg.addEventListener("pointercancel", end);
+  $("zoom-in").addEventListener("click", () => zoomCenter(1 / 1.25));
+  $("zoom-out").addEventListener("click", () => zoomCenter(1.25));
+  $("zoom-fit").addEventListener("click", () => { S.view = null; applyView(); });
+  svg.addEventListener("dblclick", (e) => { if (e.target === svg) { S.view = null; applyView(); } });
 }
 
 // what the current selection lights up
@@ -572,7 +648,61 @@ function tables() {
   $("config-text").textContent = (S.ev && S.ev.configuration_text) || "";
 }
 
-function render() { draw(); details(); tables(); }
+function render() { draw(); details(); tables(); designChoices(); renderTitle(); }
+
+// the design list: the designs this rig satisfies, selectable; the others
+// greyed with what they need that the rig lacks (their `// requires:` block)
+function designChoices() {
+  const box = $("designs"), fit = S.ev && S.ev.designs;
+  if (!S.board) return;
+  const good = [], bad = [];
+  for (const d of S.board.designs) {
+    const unmet = fit ? fit[d] || [] : [];
+    (unmet.length ? bad : good).push([d, unmet]);
+  }
+  if (!good.some(([d]) => d === S.design))
+    S.design = good.some(([d]) => d === "1_06_binary_counter") ? "1_06_binary_counter" : good.length ? good[0][0] : null;
+  const items = [h("div", {class: "designs-head"}, fit ? "Fit this rig (" + good.length + ")" : "Designs (fix the rig's problems to check them)")];
+  for (const [d] of good)
+    items.push(h("div", {class: "design fit" + (d === S.design ? " chosen" : ""), "data-design": d,
+                         onclick: () => { S.design = d; designChoices(); }}, d));
+  if (bad.length) items.push(h("div", {class: "designs-head"}, "Do not fit (" + bad.length + ")"));
+  for (const [d, unmet] of bad)
+    items.push(h("div", {class: "design unfit", "data-design": d, title: unmet.join("\n")}, d, h("span", {class: "why"}, unmet.join("; "))));
+  box.replaceChildren(...items);
+}
+
+function showTab(name) {
+  for (const b of document.querySelectorAll(".tab")) b.classList.toggle("active", b.dataset.tab === name);
+  $("tab-rig").hidden = name !== "rig";
+  $("tab-config").hidden = name !== "config";
+  if (name === "rig") applyView();
+}
+
+function renderTitle() {
+  if (!S.setup) return;
+  $("title").textContent = (S.setup.id || "(new setup)") + " — " + S.setup.board + " · " + (S.setup.toolchain || "") +
+                           (S.dirty ? "  (not saved)" : "");
+}
+
+function renderModules() {
+  const box = $("modules");
+  box.replaceChildren(...S.board.modules.map((m) => h("div", {class: "module"},
+    h("div", {class: "name"}, m.name), h("div", {class: "meta"}, "peripheral " + m.peripheral + " · " +
+      Object.values(m.pins).filter((s) => !passive(s)).length + " signal pins" + (m.verified === false ? " · pinout not vendor-verified" : "")),
+    STATIC ? null : h("button", {onclick: () => addModule(m.id)}, "Add"))));
+}
+
+function addModule(id) {
+  S.setup.use.push({module: id, wires: {}});
+  const i = S.setup.use.length - 1;
+  const first = Object.entries(moduleDef(id).pins).find(([, s]) => !passive(s));
+  S.sel = {kind: "use", use: i};
+  showTab("rig");
+  changed("added " + moduleDef(id).name).then(() => {
+    if (first) { S.pending = {use: i, pin: first[0]}; render(); status("now click the header pin for " + first[0] + " (Esc cancels)"); }
+  });
+}
 
 // ---------------------------------------------------------------- server
 
@@ -604,8 +734,7 @@ async function loadBoard(id, setupId) {
   S.board = await api("/api/board/" + encodeURIComponent(id));
   fillSelect($("setup"), S.board.setups, setupId);
   fillSelect($("toolchain"), S.board.toolchains);
-  fillSelect($("add-module"), S.board.modules.map((m) => m.id), null, (id) => moduleDef(id).name + " (" + moduleDef(id).peripheral + ")");
-  fillSelect($("design"), S.board.designs, S.board.designs.includes("1_06_binary_counter") ? "1_06_binary_counter" : null);
+  renderModules();
   const sid = setupId || S.board.setups[0];
   if (sid) await loadSetup(sid);
   else { S.setup = {id: "", board: id, toolchain: S.board.toolchains[0], use: []}; S.ev = null; render(); }
@@ -613,7 +742,7 @@ async function loadBoard(id, setupId) {
 
 async function loadSetup(id) {
   S.setup = await api("/api/setup/" + encodeURIComponent(id));
-  S.sel = null; S.pending = null; S.dirty = false;
+  S.sel = null; S.pending = null; S.dirty = false; S.view = null;
   $("setup").value = id;
   $("toolchain").value = S.setup.toolchain;
   S.ev = await api("/api/evaluate", {setup: S.setup});
@@ -629,12 +758,7 @@ function wire() {
   $("board").addEventListener("change", (e) => loadBoard(e.target.value).catch((x) => status(x.message, true)));
   $("setup").addEventListener("change", (e) => loadSetup(e.target.value).catch((x) => status(x.message, true)));
   $("toolchain").addEventListener("change", (e) => { S.setup.toolchain = e.target.value; changed("toolchain " + e.target.value); });
-  $("add").addEventListener("click", () => {
-    const id = $("add-module").value;
-    S.setup.use.push({module: id, wires: {}});
-    S.sel = {kind: "use", use: S.setup.use.length - 1};
-    changed("added " + moduleDef(id).name + " — wire its pins");
-  });
+  for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => showTab(b.dataset.tab));
   $("new-setup").addEventListener("click", () => {
     const id = prompt("New setup id (a-z, 0-9, _):", S.board.board + "_my_rig");
     if (!id) return;
@@ -646,27 +770,31 @@ function wire() {
     changed("new setup " + id);
   });
   $("save").addEventListener("click", async () => {
-    try { const r = await api("/api/save", {setup: S.setup}); S.dirty = false; status("saved " + r.setup + " and " + r.configuration); }
+    try { const r = await api("/api/save", {setup: S.setup}); S.dirty = false; renderTitle(); status("saved " + r.setup + " and " + r.configuration); }
     catch (e) { status(e.message, true); }
   });
   $("project").addEventListener("click", async () => {
+    const out = $("project-result");
     try {
       if (S.dirty) throw new Error("save the setup first");
-      const design = $("design").value;
-      status("generating the project for " + design + "…");
-      const r = await api("/api/project", {setup_id: S.setup.id, design});
-      const link = h("a", {href: "/api/project/" + encodeURIComponent(S.setup.id) + "/" + encodeURIComponent(design) + ".zip"}, "download zip");
-      $("status").replaceChildren((r.ok ? "project written to " : "project (with errors) in ") + r.output + " (" + r.files.length + " files) — ", link);
-    } catch (e) { status(e.message, true); }
+      if (!S.design) throw new Error("no design fits this rig");
+      out.textContent = "generating the project for " + S.design + "…";
+      const r = await api("/api/project", {setup_id: S.setup.id, design: S.design});
+      const link = h("a", {href: "/api/project/" + encodeURIComponent(S.setup.id) + "/" + encodeURIComponent(S.design) + ".zip"}, "download zip");
+      out.replaceChildren((r.ok ? "written to " : "written, with errors, to ") + r.output + " (" + r.files.length + " files) — ", link);
+    } catch (e) { out.textContent = e.message; }
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { S.pending = null; S.sel = null; status(""); render(); } });
 }
 
 async function main() {
+  wireZoomPan();
   if (STATIC) {
     document.body.classList.add("readonly");
     S.board = STATIC.board; S.setup = STATIC.setup; S.ev = STATIC.evaluation;
     fillSelect($("board"), [S.board.board]); fillSelect($("setup"), [S.setup.id]);
+    for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => showTab(b.dataset.tab));
+    renderModules();
     status("read-only view (./unifpga serve to edit)");
     render();
     return;
@@ -682,6 +810,7 @@ async function main() {
   await loadBoard(b, q.get("setup"));
   if (q.get("selftest")) return selftest();
   if (q.get("sel")) { S.sel = parseSel(q.get("sel")); render(); }
+  if (q.get("tab")) showTab(q.get("tab"));
 }
 
 // ?sel=vbit:leds:led:2 | vport:leds:led | pin:jd:7 | wire:11:CLK | use:11 | onboard:leds | conn:ck
@@ -712,6 +841,23 @@ async function selftest() {
   const ok = (name, cond) => log.push((cond ? "PASS " : "FAIL ") + name);
   const errors = () => (S.ev.problems || []).filter((p) => p.level === "error").map((p) => p.message);
   try {
+    // zoom and pan
+    const svg = $("svg"), box = svg.getBoundingClientRect();
+    const at = {clientX: box.left + box.width * 0.3, clientY: box.top + box.height * 0.3};
+    const before = svgPoint(at);
+    svg.dispatchEvent(new WheelEvent("wheel", Object.assign({deltaY: -300, bubbles: true, cancelable: true}, at)));
+    const after = svgPoint(at);
+    ok("scrolling up zooms in", S.view && S.view.w < S.content.w);
+    ok("zoom keeps the point under the cursor", Math.abs(after.x - before.x) < 1 && Math.abs(after.y - before.y) < 1);
+    const v0 = Object.assign({}, S.view), sel0 = S.sel;
+    const pe = (type, dx) => svg.dispatchEvent(new PointerEvent(type, {clientX: at.clientX + dx, clientY: at.clientY,
+                                                                      button: 0, pointerId: 1, bubbles: true}));
+    pe("pointerdown", 0); pe("pointermove", 40); pe("pointermove", 120); pe("pointerup", 120);
+    svg.dispatchEvent(new MouseEvent("click", {bubbles: true, clientX: at.clientX + 120, clientY: at.clientY}));
+    ok("dragging pans", S.view.x < v0.x && S.view.w === v0.w);
+    ok("a drag is not a click", S.sel === sel0);
+    $("zoom-fit").click();
+    ok("fit shows everything again", S.view === null && $("zoom-level").textContent === "100%");
     S.setup.id = "selftest_rig"; delete S.setup.notes;       // a fresh rig: no design-wiring profile
     await changed("copy"); await settle();
     const n = S.setup.use.length;
@@ -743,6 +889,13 @@ async function selftest() {
     S.dirty = false;
     const pr = await api("/api/project", {setup_id: "selftest_rig", design: "1_06_binary_counter"});
     ok("project generated with a top", pr.ok && pr.files.includes("top.sv"));
+    const misfit = Object.entries(S.ev.designs || {}).find(([, unmet]) => unmet.length);
+    const unfitEl = misfit && document.querySelector('#designs .design.unfit[data-design="' + misfit[0] + '"] .why');
+    ok("a design this rig cannot run is greyed with its reason", !!unfitEl && unfitEl.textContent === misfit[1].join("; "));
+    ok("only fitting designs are selectable", [...document.querySelectorAll("#designs .design.fit")]
+       .every((e) => !(S.ev.designs[e.dataset.design] || []).length));
+    try { await api("/api/project", {setup_id: "selftest_rig", design: misfit[0]}); ok("an unfit design is refused", false); }
+    catch (e) { ok("an unfit design is refused", e.message.includes("does not fit")); }
   } catch (e) { log.push("FAIL exception: " + e.message); }
   document.body.append(h("pre", {id: "selftest"}, log.join("\n")));
 }

@@ -159,8 +159,10 @@ def test_board_data_and_evaluation():
 
 @pytest.fixture
 def scratch(tmp_path, monkeypatch):
-    """Setups and configurations written to a scratch directory."""
-    (tmp_path / "setups").mkdir()
+    """Setups and configurations written to a scratch directory (starting
+    with a copy of the repository's setups)."""
+    import shutil
+    shutil.copytree(su.SETUP_DIR, str(tmp_path / "setups"))
     (tmp_path / "configurations").mkdir()
     monkeypatch.setattr(su, "SETUP_DIR", str(tmp_path / "setups"))
     monkeypatch.setattr(su, "configuration_path", lambda cid: str(tmp_path / "configurations" / (cid + ".yml")))
@@ -239,3 +241,20 @@ def test_editor_server_and_its_write_guard():
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+def test_designs_that_do_not_fit_the_rig_are_flagged_and_refused(scratch, tmp_path, monkeypatch):
+    rig = copy.deepcopy(su.read_setup("arty_a7_35"))
+    rig["id"] = "arty_no_display"
+    rig["use"] = [u for u in rig["use"] if u.get("module") != "digilent_pmod_vga"]
+    fit = studio.evaluate(rig)["designs"]
+    screen = [d for d, unmet in fit.items() if any("screen" in m for m in unmet)]
+    assert screen and fit["1_06_binary_counter"] == []
+    with_vga = studio.evaluate(dict(su.read_setup("arty_a7_35"), id="arty_with_vga"))["designs"]
+    assert all(not any("screen" in m for m in with_vga[d]) for d in screen)
+    studio.save(rig)
+    config_init.clear_cache()
+    monkeypatch.setattr(config_init, "read_configurations", lambda real=config_init.read_configurations: dict(
+        real(), arty_no_display=su.generate(rig)))
+    with pytest.raises(studio.ApiError, match="does not fit"):
+        studio.project("arty_no_display", screen[0])
