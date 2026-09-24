@@ -58,7 +58,7 @@ def test_placeholder_driver_methods_cannot_report_success(toolchain_id, tmp_path
 def test_unsupported_build_is_rejected_before_output_or_tool_setup(tmp_path, monkeypatch):
     resolved = config.init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
     resolved["toolchain"] = config.init.read_toolchains()["qorc_sdk"]
-    monkeypatch.setattr(config.init, "read_or_init", lambda _: resolved)
+    monkeypatch.setattr(config.init, "read_or_init", lambda _, **__: resolved)
     monkeypatch.setattr(synthesize, "prepare_toolchain", lambda _: pytest.fail("tool setup ran"))
     output = tmp_path / "new-build"
     assert synthesize.main(["--top", "design_top.sv", "-o", str(output)]) == 2
@@ -67,7 +67,7 @@ def test_unsupported_build_is_rejected_before_output_or_tool_setup(tmp_path, mon
 
 def test_build_and_program_reject_unimplemented_programmer_before_build(tmp_path, monkeypatch):
     resolved = config.init.resolve_configuration("mojo_v3")
-    monkeypatch.setattr(config.init, "read_or_init", lambda _: resolved)
+    monkeypatch.setattr(config.init, "read_or_init", lambda _, **__: resolved)
     monkeypatch.setattr(synthesize, "prepare_toolchain", lambda _: pytest.fail("tool setup ran"))
     output = tmp_path / "new-build"
     assert synthesize.main(["--top", "design_top.sv", "-o", str(output), "--program"]) == 2

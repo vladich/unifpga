@@ -94,7 +94,7 @@ def test_synthesis_rejects_version_conflict_before_output(tmp_path, monkeypatch)
     resolved = config.init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
     resolved["toolchain"]["DetectedInstallVersion"] = "wrong-version"
     resolved["toolchain"]["DetectSource"] = "test"
-    monkeypatch.setattr(config.init, "read_or_init", lambda _: resolved)
+    monkeypatch.setattr(config.init, "read_or_init", lambda _, **__: resolved)
     monkeypatch.setattr(synthesize, "prepare_toolchain", lambda _: pytest.fail("tool setup ran"))
     output = tmp_path / "new-build"
     assert synthesize.main(["--top", "design_top.sv", "-o", str(output)]) == 2
