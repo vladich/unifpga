@@ -22,6 +22,7 @@ Setup:
     - gpio: gpio_0
       params: {width: 32}
     - onboard: lcd
+    - onboard: ps2
   extra:
     tie:
       gpio_0[3]: 0

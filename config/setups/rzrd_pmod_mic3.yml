@@ -20,6 +20,7 @@ Setup:
     - gpio: gpio_pseudo_sdram
       params: {width: 14}
     - onboard: buzzer
+    - onboard: ps2
   extra:
     tie:
       gpio_pseudo_sdram[8]: 0

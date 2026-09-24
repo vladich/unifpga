@@ -83,6 +83,10 @@ Configuration:
       bind:
         tx: "gpio_1[35]"
         rx: "gpio_1[34]"
+    - peripheral: ps2_keyboard
+      bind:
+        clk: onboard_ps2.PS2_CLK
+        data: onboard_ps2.PS2_DAT
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

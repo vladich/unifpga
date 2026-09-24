@@ -85,6 +85,10 @@ Configuration:
         e: onboard_lcd.LCD_EN
         d: ["onboard_lcd.LCD_DATA[4]", "onboard_lcd.LCD_DATA[5]", "onboard_lcd.LCD_DATA[6]", "onboard_lcd.LCD_DATA[7]"]
         rw: onboard_lcd.LCD_RW
+    - peripheral: ps2_keyboard
+      bind:
+        clk: onboard_ps2.PS2_CLK
+        data: onboard_ps2.PS2_DAT
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

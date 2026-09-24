@@ -20,6 +20,7 @@ Setup:
       params: {width: 36}
     - gpio: gpio_0
       params: {width: 36}
+    - onboard: ps2
   extra:
     tie:
       gpio_1[1]: 0

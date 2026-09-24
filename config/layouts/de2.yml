@@ -62,7 +62,7 @@ Layout:
       device: {kind: clock, bank: onboard_ext_clock}   # no peripheral model yet
     - id: ps2
       label: PS/2 port
-      device: {kind: ps2, bank: onboard_ps2}   # no peripheral model yet
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: ethernet
       label: Fast Ethernet (DM9000A)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet

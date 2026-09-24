@@ -25,6 +25,7 @@ Setup:
       params: {width: 36}
     - module: usb_uart_adapter
       wires: {RXD: 'gpio_1.[35]', TXD: 'gpio_1.[34]'}
+    - onboard: ps2
   extra:
     tie:
       gpio_0[1]: 0

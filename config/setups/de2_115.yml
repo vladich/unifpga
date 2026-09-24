@@ -20,6 +20,7 @@ Setup:
     - gpio: gpio
       params: {width: 36}
     - onboard: lcd
+    - onboard: ps2
   extra:
     tie:
       onboard_vga.sync_n: 0

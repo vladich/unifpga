@@ -56,7 +56,7 @@ Layout:
       device: {kind: clock, bank: onboard_clk4_50mhz}   # no peripheral model yet
     - id: ps2
       label: PS/2 port (primary)
-      device: {kind: ps2, bank: onboard_ps2}   # no peripheral model yet
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: ps2_secondary
       label: PS/2 port (secondary, via Y-cable)
       device: {kind: ps2, bank: onboard_ps2_secondary}   # no peripheral model yet
