@@ -11,5 +11,6 @@ Setup:
     - onboard: leds
     - onboard: uart
     - onboard: hdmi
-    - raw: {peripheral: inmp441_i2s_mic, bind: {lr: 'gpio[1]', ws: 'gpio[2]', sck: 'gpio[3]', sd: 'onboard_microsd.dat[1]'}}
+    - module: inmp441_breakout
+      wires: {L/R: header_j6.1, WS: header_j6.2, SCK: header_j6.3, SD: header_j6.4}
     - onboard: headphone
