@@ -1,0 +1,20 @@
+# A keyboard as key events: which key (its USB HID usage code, page 7: A = 0x04,
+# Enter = 0x28, left Ctrl = 0xE0 ...) went down or up. The same events come from
+# a PS/2 keyboard (the driver translates its scan codes) or a USB HID one.
+
+Capability:
+  id: keyboard
+  description: Key events (USB HID usage codes), one clock pulse per press or release.
+  signals:
+    - { name: valid, type: scalar, direction: hw_to_user, comment: "One-clock pulse: a key event" }
+    - { name: key,   type: bus, width: 8, direction: hw_to_user, comment: "USB HID usage code (keyboard page)" }
+    - { name: down,  type: scalar, direction: hw_to_user, comment: "1: pressed, 0: released" }
+  aggregation: exclusive
+
+  optional: true           # reaches design_top only when the design declares its ports
+  summary: "key events"
+  design:
+    ports:
+      kbd_valid: {signal: valid, width: 1}
+      kbd_key: {signal: key, width: 8}
+      kbd_down: {signal: down, width: 1}

@@ -254,3 +254,14 @@ def test_the_editor_refuses_what_the_build_refuses():
               if p["level"] == "error"]
     assert any("the build refuses it" in m and "T9" in m for m in errors), errors
     assert not [p for p in studio.evaluate(setup)["problems"] if p["level"] == "error"]
+
+
+def test_a_keyboard_reaches_a_design_that_asks_for_it():
+    """The DE2's PS/2 port is a keyboard (key events as USB HID usage codes);
+    designs/keyboard_keys requires one: it fits the DE2 rig, not the Arty's."""
+    from tools import codegen, design_requirements as dr, studio
+    design = os.path.join(REPO, "designs", "keyboard_keys", "design_top.sv")
+    fit = {rig: studio.design_fit(config_init.resolve_configuration(rig))["keyboard_keys"] for rig in ("de2", "arty_a7")}
+    assert fit["de2"] == [] and any("keyboard" in m for m in fit["arty_a7"])
+    top = codegen.emit_top_sv(config_init.resolve_configuration("de2"), design=design)
+    assert "ps2_keyboard # (.clk_mhz(clk_mhz))" in top and ".kbd_key(cap_keyboard_key)" in top

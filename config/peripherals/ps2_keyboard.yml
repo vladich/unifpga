@@ -1,0 +1,29 @@
+# A PS/2 keyboard port: the keyboard drives clock and data (open collector, the
+# board pulls them up); the FPGA only listens. rtl/peripherals/ps2_keyboard.sv
+# decodes the frames and turns scan code set 2 into keyboard key events.
+
+Peripheral:
+  id: ps2_keyboard
+  description: PS/2 keyboard (receive only), key events as USB HID usage codes
+  # the on-board devices it models: a board inventory's PS/2 port (its first
+  # port where a Y-cable splits keyboard and mouse)
+  models: {kind: ps2, pins: {clk: [PS2_CLK, PS2_KBCLK, ps2_clk, kb_clk, clk],
+                             data: [PS2_DAT, PS2_KBDAT, ps2_dat, ps2_data, kb_dat, data, dat]}}
+  signals:
+    - { name: clk,  type: scalar, direction: input, comment: "PS/2 clock (from the keyboard)" }
+    - { name: data, type: scalar, direction: input, comment: "PS/2 data (from the keyboard)" }
+  provides:
+    - capability: keyboard
+  driver:
+    module: ps2_keyboard
+    file: rtl/peripherals/ps2_keyboard.sv
+    parameters:
+      clk_mhz: context.clk_mhz
+    port_map:
+      clk:      context.clk
+      rst:      context.rst
+      ps2_clk:  pin.clk
+      ps2_data: pin.data
+      valid:    capability.keyboard.valid
+      key:      capability.keyboard.key
+      down:     capability.keyboard.down
