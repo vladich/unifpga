@@ -91,7 +91,8 @@ def draft(board_id):
             c = {"id": fact.get("id") or bank, "type": fact["type"], "label": fact.get("label") or bank.upper(),
                  "bank": bank, "pins": dict(sorted(pins.items(), key=lambda kv: _natural(kv[0])))}
         else:
-            c = {"id": bank, "type": "pin_row", "label": bank.upper() + " (pin order from the pinmap)",
+            c = {"id": bank, "type": "pin_row", "label": bank.upper(),
+                 "note": "pins in the pinmap's order: the header's physical pin numbers are not verified yet",
                  "bank": bank, "pins": {"[{}]".format(k): ref for k, ref in enumerate(refs)}}
         connectors.append(c)
 
@@ -263,7 +264,9 @@ def emit(layout):
     out.append("  connectors:" + ("" if layout["connectors"] else " []"))
     for c in layout["connectors"]:
         out += ["    - id: {}".format(c["id"]), "      type: {}".format(c["type"]),
-                "      label: {}".format(_flow(c["label"])), "      bank: {}".format(c["bank"]),
+                "      label: {}".format(_flow(c["label"]))] + \
+               (["      note: {}".format(_flow(c["note"]))] if c.get("note") else []) + \
+               ["      bank: {}".format(c["bank"]),
                 "      pins: {}".format(_flow({str(k): v for k, v in c["pins"].items()}))]
     out += ["", "  onboard:" + ("" if layout["onboard"] else " []")]
     for o in layout["onboard"]:

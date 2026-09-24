@@ -101,7 +101,8 @@ def board_data(board_id):
             half = (len(keys) + 1) // 2
             rows = [keys[:half], keys[half:]]
         connectors.append({
-            "id": c["id"], "label": c.get("label") or c["id"], "type": c["type"], "bank": c.get("bank"),
+            "id": c["id"], "label": c.get("label") or c["id"], "note": c.get("note"), "type": c["type"],
+            "bank": c.get("bank"),
             "voltage": ctype.get("voltage"), "rows": rows,
             "power": {str(k): v for k, v in (ctype.get("power") or {}).items()},
             "pins": {str(k): {"ref": ref, "pin": ", ".join(p["pin"] or "?" for p in pins(ref))}
