@@ -5,9 +5,11 @@ constraints for pads driven straight from a PLL clock.
 """
 
 import copy
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import os
 import sys
+import threading
 
 import pytest
 
@@ -118,6 +120,29 @@ def test_power_up_reset_follows_the_lab_clock():
     assert "(.clk (clk_pixel), .rst (rst_on_power_up))" in top
 
 
+def test_concurrent_top_emission_keeps_each_configuration_context(monkeypatch):
+    configs = [_resolve("icebreaker_dvi_12b_tm1638_yosys"),
+               _resolve("tang_nano_9k_hdmi_tm1638")]
+    configs[0]["configuration"]["lab_clock"] = "pixel"
+    expected = [codegen.emit_top_sv(config) for config in configs]
+    assert expected[0] != expected[1]
+
+    # Both requests reach this point after resolving their own clock and
+    # differential-buffer settings. The old module-level _EMIT state was
+    # overwritten here, making at least one generated top depend on order.
+    rendezvous = threading.Barrier(2)
+    original = codegen._emit_clock_tree
+
+    def interleaved(*args, **kwargs):
+        rendezvous.wait(timeout=15)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(codegen, "_emit_clock_tree", interleaved)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        actual = list(pool.map(codegen.emit_top_sv, configs))
+    assert actual == expected
+
+
 def test_unknown_lab_clock_is_rejected_by_validation():
     r = _resolve("icebreaker_dvi_12b_no_tm1638_yosys")
     r["configuration"]["lab_clock"] = "serial"
@@ -180,5 +205,4 @@ def test_ecp5_hdmi_serial_pll_and_pixel_alias():
     assert "wire clk_pixel = clk;" in top
     assert 'hdmi_tmds_out # (.DIFF_BUF("generic")' in top          # pseudo-differential pairs
     assert codegen.pll_source_files(top) == [os.path.join("rtl", "pll", "pll_ecp5.sv")]
-
 

@@ -420,10 +420,10 @@ def test_tmds_timing_follows_the_vga_clock():
         assert ".lab_clk_i(clk)" in top or ".lab_clk_i(clk_pixel)" in top
     # the ref form
     from tools import codegen as cg
-    cg._EMIT["clock_mhz"] = {"serial": 252}
-    assert cg._resolve_ref("clock.serial.mhz", {"peripheral_id": "x"}, {}, {}) == "252"
+    emit = cg.EmissionContext("clk", "generic", {"serial": 252})
+    assert cg._resolve_ref("clock.serial.mhz", {"peripheral_id": "x"}, {}, {}, emit) == "252"
     with pytest.raises(cg.CodegenError):
-        cg._resolve_ref("clock.other.mhz", {"peripheral_id": "x"}, {}, {})
+        cg._resolve_ref("clock.other.mhz", {"peripheral_id": "x"}, {}, {}, emit)
 
 
 def test_dvi_timing_where_the_design_instantiates_dvi_top():
@@ -432,5 +432,4 @@ def test_dvi_timing_where_the_design_instantiates_dvi_top():
         hdmi = next(a for a in r["peripherals"] if a["peripheral_id"] == "hdmi_tmds")
         assert hdmi["params"].get("timing") == "dvi", cid
         assert '.TIMING("dvi")' in codegen.emit_top_sv(r)
-
 

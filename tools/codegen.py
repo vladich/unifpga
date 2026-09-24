@@ -735,10 +735,9 @@ def lab_clock(resolved, plans=None):
     return {"net": "clk_" + name, "mhz": reqs[name]["mhz"], "name": name}
 
 
-# Emission state for the top being generated (codegen is single-threaded):
-# the lab clock net `context.clk` resolves to, and the differential buffer
-# kind `context.diff_buf` renders as.
-_EMIT = {"lab_clk": "clk", "diff_buf": "generic"}
+# Values resolved for one top emission. Passing them through the emitters
+# keeps concurrent requests from changing one another's context references.
+EmissionContext = namedtuple("EmissionContext", "lab_clk diff_buf clock_mhz")
 
 
 def _emit_clock_tree(resolved, plans, clock, strict=True):
@@ -1259,8 +1258,8 @@ def emit_top_sv(resolved, strict=True, design=None):
         if problems:
             raise CodegenError("\n".join(problems))
     referenced_banks = collect_referenced_banks(resolved)
-    _EMIT["lab_clk"] = lab_clock(resolved, plans)["net"]
-    _EMIT["diff_buf"] = diff_buf_kind(resolved)
+    lab_clk = lab_clock(resolved, plans)["net"]
+    diff_buf = diff_buf_kind(resolved)
 
     out = []
     out.append("// =============================================================================")
@@ -1295,19 +1294,20 @@ def emit_top_sv(resolved, strict=True, design=None):
     # the solved frequencies, for drivers that need them as parameters
     # (`clock.<name>.mhz`: hdmi_tmds's vga timing generator on the serial clock)
     try:
-        _EMIT["clock_mhz"] = {name: int(round(sol.f_out)) for name, _r, _v, sol in plan_clock_tree(resolved, plans)}
+        clock_mhz = {name: int(round(sol.f_out)) for name, _r, _v, sol in plan_clock_tree(resolved, plans)}
     except CodegenError:
-        _EMIT["clock_mhz"] = {}
+        clock_mhz = {}
+    emit = EmissionContext(lab_clk, diff_buf, clock_mhz)
 
     # ---- Reset (may reference the switches / buttons buses) ----
-    out.extend(_emit_reset(resolved, plans))
+    out.extend(_emit_reset(resolved, plans, emit))
     out.append("")
 
     # ---- Peripheral wiring (passthroughs + driver instances) ----
     for idx, attach in enumerate(resolved["peripherals"]):
         out.append("    // ---- {} (peripheral '{}') ----"
                    .format(_attach_label(attach), attach["peripheral_id"]))
-        out.extend(_emit_attachment(resolved, idx, attach, plans))
+        out.extend(_emit_attachment(resolved, idx, attach, plans, emit))
         out.append("")
 
     # ---- design_top instantiation ----
@@ -1578,7 +1578,7 @@ def _capability_reset_term(resolved, plans, d):
     return [_index_expr("cap_{}_{}".format(cap, sig), w, d["index"], what, cfg_id)]
 
 
-def _emit_reset(resolved, plans):
+def _emit_reset(resolved, plans, emit):
     lines = ["    // ---- Reset: OR of the configured sources, active-high ----"]
     terms = []
     for kind, d in reset_sources(resolved, plans):
@@ -1591,7 +1591,7 @@ def _emit_reset(resolved, plans):
                 net = "rst_sync_{}".format(len(terms))
                 lines.append("    // {}: asserted with the pin, released {} clock(s) after it (synchronised deassertion)".format(ref, k))
                 lines.append("    logic [{}:0] {};".format(k - 1, net))
-                lines.append("    always_ff @ (posedge {} or {} {})".format(_EMIT.get("lab_clk", "clk"), "negedge" if low else "posedge", ref))
+                lines.append("    always_ff @ (posedge {} or {} {})".format(emit.lab_clk, "negedge" if low else "posedge", ref))
                 lines.append("        if ({}{}) {} <= '0;".format("! " if low else "", ref, net))
                 lines.append("        else {} <= {};".format(net, "1'b1" if k == 1 else "{{ {} [{}:0], 1'b1 }}".format(net, k - 2)))
                 terms.append("(~ {} [{}])".format(net, k - 1))
@@ -1607,7 +1607,7 @@ def _emit_reset(resolved, plans):
         elif kind == "power_up":
             lines.append("    wire rst_on_power_up;")
             lines.append("    imitate_reset_on_power_up i_imitate_reset_on_power_up "
-                         "(.clk ({}), .rst (rst_on_power_up));".format(_EMIT["lab_clk"]))
+                         "(.clk ({}), .rst (rst_on_power_up));".format(emit.lab_clk))
             terms.append("rst_on_power_up")
     lines.append("    assign rst = {};".format(" | ".join(terms) if terms else "1'b0"))
     return lines
@@ -1697,11 +1697,11 @@ def _signal_unit(sig):
 
 # ---- Attachment emission --------------------------------------------------
 
-def _emit_attachment(resolved, idx, attach, plans):
+def _emit_attachment(resolved, idx, attach, plans, emit):
     perif = attach["peripheral"]
     if perif.get("driver") is None:
-        return _emit_passthrough(resolved, idx, attach, plans)
-    return _emit_driver_instance(resolved, idx, attach, plans)
+        return _emit_passthrough(resolved, idx, attach, plans, emit)
+    return _emit_driver_instance(resolved, idx, attach, plans, emit)
 
 
 def _bank_attr(pinmap, ref, name):
@@ -1774,7 +1774,7 @@ def _reversed_slice(base, hi, lo):
     return "{" + ", ".join("{}[{}]".format(base, i) for i in range(lo, hi + 1)) + "}"
 
 
-def _emit_passthrough(resolved, idx, attach, plans):
+def _emit_passthrough(resolved, idx, attach, plans, emit):
     """For peripherals with driver: null. Wire pin signals to capability slices
     or vice versa, depending on each capability's aggregation rule and the
     peripheral signal's direction. Inverts when the peripheral is active-low."""
@@ -1818,7 +1818,7 @@ def _emit_passthrough(resolved, idx, attach, plans):
                 pin_sig_name = sig_map.get(cap_sig_name, cap_sig_name)
                 if pin_sig_name not in bind:
                     continue
-                pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind)
+                pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind, emit)
                 cap_target = "cap_{}_{}".format(cap_id, cap_sig_name)
                 if cap_sig.get("direction") == "user_to_hw":
                     lines.append("    assign {} = {}{};".format(pin_expr, inv, cap_target))
@@ -1869,9 +1869,9 @@ def _emit_passthrough(resolved, idx, attach, plans):
                     port = next((d[0] for d in design_ports() if d[1] == cap_id and d[2] == cap_sig_name), cap_id)
                     lines.append("    // {}[{}] is {}: inout pins, wired in the design_top instance below (.{}), not here"
                                  .format(port, hi if hi == lo else "{}:{}".format(hi, lo),
-                                         _resolve_ref("pin." + pin_sig_name, attach, plans, bind), port))
+                                         _resolve_ref("pin." + pin_sig_name, attach, plans, bind, emit), port))
                     continue
-                pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind)
+                pin_expr = _resolve_ref("pin." + pin_sig_name, attach, plans, bind, emit)
                 cap_base = "cap_{}_{}".format(cap_id, cap_sig_name)
                 if width == 1:
                     slice_expr = "{}[{}]".format(cap_base, offset)
@@ -1909,8 +1909,8 @@ def _emit_passthrough(resolved, idx, attach, plans):
         if _pin_of(lhs) in optional_unbound or _pin_of(rhs) in optional_unbound:
             lines.append("    // {} <- {}: optional pin not present on this board".format(lhs, rhs))
             continue
-        lhs_resolved = _resolve_ref(lhs, attach, plans, bind, lhs_context=True, slice_for_idx=idx)
-        rhs_resolved = _resolve_ref(rhs, attach, plans, bind, slice_for_idx=idx)
+        lhs_resolved = _resolve_ref(lhs, attach, plans, bind, emit, lhs_context=True, slice_for_idx=idx)
+        rhs_resolved = _resolve_ref(rhs, attach, plans, bind, emit, slice_for_idx=idx)
         # Only auto-invert when RHS comes from a capability (active-high
         # user-perspective signal heading to an active-low pin). A signal
         # with its own `<signal>_active` parameter (the shared display's
@@ -1928,7 +1928,7 @@ def _emit_passthrough(resolved, idx, attach, plans):
     return lines
 
 
-def _emit_driver_instance(resolved, idx, attach, plans):
+def _emit_driver_instance(resolved, idx, attach, plans, emit):
     lines = []
     perif = attach["peripheral"]
     drv = perif["driver"]
@@ -1945,7 +1945,7 @@ def _emit_driver_instance(resolved, idx, attach, plans):
     # Driver parameters
     param_decls = []
     for pname, pval in (drv.get("parameters") or {}).items():
-        param_decls.append(".{}({})".format(pname, _resolve_ref(pval, attach, plans, bind)))
+        param_decls.append(".{}({})".format(pname, _resolve_ref(pval, attach, plans, bind, emit)))
 
     lines.append("    {mod} {params}{inst} (".format(
         mod=drv["module"],
@@ -1972,7 +1972,7 @@ def _emit_driver_instance(resolved, idx, attach, plans):
             pre.append("    wire [{}:0] {};".format(w - 1, net))
             port_lines.append("        .{}({})".format(port, net))
             post.extend(_format_conversion(net, w, fmt.get("encoding", "signed"),
-                                           _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx),
+                                           _resolve_ref(ref, attach, plans, bind, emit, slice_for_idx=idx),
                                            _capability_ref_width(ref, plans, attach)))
         elif mirror_screen and _axis_extent(ref, plans) is not None:
             # a raster axis (a capability signal with an `extent`, screen x / y)
@@ -1982,7 +1982,7 @@ def _emit_driver_instance(resolved, idx, attach, plans):
             pre.append("    wire [{}:0] {};".format(w - 1, net))
             port_lines.append("        .{}({})".format(port, net))
             post.append("    assign {} = {}'({} - 1 - {});   // mirrored (mirror_screen)".format(
-                _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx), w, extent, net))
+                _resolve_ref(ref, attach, plans, bind, emit, slice_for_idx=idx), w, extent, net))
         elif open_drain and _pin_of(ref) in out_sigs:
             # Digilent AUD_PWM (board datasheet: 0 V is 1'b0, 3.3 V is high-Z):
             # the driver's output is 0 or floats, never driven high
@@ -1991,10 +1991,10 @@ def _emit_driver_instance(resolved, idx, attach, plans):
             port_lines.append("        .{}({})".format(port, net))
             post.append("    // {}: open drain, floats when high".format(_pin_of(ref)))
             post.append("    assign {} = {} ? 1'bz : 1'b0;".format(
-                _resolve_ref(ref, attach, plans, bind, lhs_context=True, slice_for_idx=idx), net))
+                _resolve_ref(ref, attach, plans, bind, emit, lhs_context=True, slice_for_idx=idx), net))
         else:
             port_lines.append("        .{}({})".format(
-                port, _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx)))
+                port, _resolve_ref(ref, attach, plans, bind, emit, slice_for_idx=idx)))
     lines.append(",\n".join(port_lines))
     lines.append("    );")
 
@@ -2003,8 +2003,8 @@ def _emit_driver_instance(resolved, idx, attach, plans):
         if _pin_of(lhs) in optional_unbound or _pin_of(rhs) in optional_unbound:
             lines.append("    // {} <- {}: optional pin not present on this board".format(lhs, rhs))
             continue
-        lhs_resolved = _resolve_ref(lhs, attach, plans, bind, lhs_context=True, slice_for_idx=idx)
-        rhs_resolved = _resolve_ref(rhs, attach, plans, bind, slice_for_idx=idx)
+        lhs_resolved = _resolve_ref(lhs, attach, plans, bind, emit, lhs_context=True, slice_for_idx=idx)
+        rhs_resolved = _resolve_ref(rhs, attach, plans, bind, emit, slice_for_idx=idx)
         lines.append("    assign {} = {};".format(lhs_resolved, rhs_resolved))
     return pre + lines + post
 
@@ -2073,7 +2073,7 @@ def _bank_ref_to_port(ref):
     return s.replace(".", "_") + suffix
 
 
-def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None):
+def _resolve_ref(ref, attach, plans, bind, emit, lhs_context=False, slice_for_idx=None):
     """Translate a YAML reference (`pin.x`, `capability.<id>.<sig>`, `context.<x>`,
     `const.<v>`) into the SV expression usable in the generated top module.
 
@@ -2084,7 +2084,7 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
     if ref is None:
         return ""
     if isinstance(ref, list):
-        return "{" + ", ".join(_resolve_ref(x, attach, plans, bind, lhs_context, slice_for_idx) for x in ref) + "}"
+        return "{" + ", ".join(_resolve_ref(x, attach, plans, bind, emit, lhs_context, slice_for_idx) for x in ref) + "}"
     if not isinstance(ref, str):
         return str(ref)
     s = ref.strip()
@@ -2155,14 +2155,14 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
     if s.startswith("context."):
         name = s[len("context."):]
         if name == "clk":
-            name = _EMIT["lab_clk"]
+            name = emit.lab_clk
         elif name == "diff_buf":
-            return _sv_literal(_EMIT["diff_buf"])
+            return _sv_literal(emit.diff_buf)
         return invert + name + idx_suffix
     if s.startswith("clock."):
         name = s[len("clock."):]
         if name.endswith(".mhz"):
-            mhz = (_EMIT.get("clock_mhz") or {}).get(name[:-len(".mhz")])
+            mhz = emit.clock_mhz.get(name[:-len(".mhz")])
             if mhz is None:
                 raise CodegenError("{}: {} — the clock tree defines no clock {!r}".format(
                     attach.get("peripheral_id", "?"), s, name[:-len(".mhz")]))
@@ -2186,7 +2186,7 @@ def _resolve_ref(ref, attach, plans, bind, lhs_context=False, slice_for_idx=None
             # `params: {bl: const.0}` / `{bl: context.rst_n}`: a wiring choice
             # the configuration makes (`assign LCD_BL = ~ rst` on one
             # board, `1'b0` on another).
-            return invert + _resolve_ref(v, attach, plans, bind, lhs_context, slice_for_idx) + idx_suffix
+            return invert + _resolve_ref(v, attach, plans, bind, emit, lhs_context, slice_for_idx) + idx_suffix
         return invert + _sv_literal(v) + idx_suffix
     return invert + s + idx_suffix
 
