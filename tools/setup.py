@@ -299,6 +299,11 @@ def _module_attach(connectors, layout, modules, use):
             vectors.setdefault(name, {})[int(m.group(2))] = ref
         else:
             scalars[name] = ref
+    # the peripheral's own signal order, not the order the wires are listed in (a
+    # browser lists a Pmod's pins "1", "2", "4", "9" numerically, whatever the file says)
+    rank = {sg["name"]: k for k, sg in enumerate((config_init.read_peripherals().get(module["peripheral"]) or {})
+                                                   .get("signals") or [])}
+    order.sort(key=lambda n: rank.get(n, len(rank)))
     bind = {}
     for name in order:
         if name in scalars:
@@ -450,7 +455,7 @@ def _as_plug(connectors, layout, module, wires):
     if len(conns) != 1:
         return None
     for plug in plug_placements(connectors, layout, module, conns):
-        if list(plug_wires(connectors, layout, module, plug).items()) == list(wires.items()):
+        if plug_wires(connectors, layout, module, plug) == wires:     # the order of wires does not matter
             return plug
     return None
 
