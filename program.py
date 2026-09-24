@@ -45,6 +45,11 @@ def main(argv=None):
         log.error("Could not resolve configuration: %s", args.configuration)
         return 1
     toolchain = resolved["toolchain"]
+    try:
+        config.init.require_toolchain_operation(toolchain, "program")
+    except config.init.ConfigError as exc:
+        log.error("%s", exc)
+        return 2
     synthesize.prepare_toolchain(toolchain)
     rc = synthesize.toolchain_module(toolchain).program(
         board=resolved["board"],

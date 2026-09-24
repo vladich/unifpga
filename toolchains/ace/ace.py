@@ -7,7 +7,7 @@ Synopsys Synplify Pro for synthesis. The Speedster 7t targets ML /
 networking workloads with hard MLP (machine learning processor) blocks.
 
 Stub module. Synthesis isn't wired up yet — this just logs what would
-have been built and returns 0. Replace `synthesize()` with a real driver
+have been built and fails explicitly. Replace `synthesize()` with a real driver
 when implementing.
 """
 
@@ -18,15 +18,15 @@ log = logging.getLogger(__name__)
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain,
                peripherals, top, include, output, step="full", **_):
-    log.info(
-        "[stub %s] would synthesize configuration=%s, board=%s, top=%s, "
+    log.error(
+        "[stub %s] cannot synthesize configuration=%s, board=%s, top=%s, "
         "step=%s, output=%s, peripherals=%d",
         toolchain["Id"], configuration["id"], board["Id"], top, step, output,
         len(peripherals),
     )
-    return 0
+    return 2
 
 
 def program(**kwargs):
-    log.info("[stub program] not implemented")
-    return 0
+    log.error("[stub program] not implemented")
+    return 2

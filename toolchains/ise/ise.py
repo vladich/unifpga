@@ -381,14 +381,14 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
       - Generic ISE board with JTAG: ISE ships `iMPACT`; openFPGALoader
         also works for many Spartan-6 boards.
 
-    Stub: log what would happen and return 0. Concrete programmers can
+    Stub: report that programming is unavailable. Concrete programmers can
     be added per board family as use cases land.
     """
     bit = os.path.join(output, PROJECT_NAME + ".bit")
     if not os.path.exists(bit) and not os.environ.get("UNIFPGA_DRY_RUN"):
         log.error("Bitstream not found: %s — run synthesis first", bit)
         return 1
-    log.info("[ise] would program %s to %s; programming logic not implemented yet "
-             "(use openFPGALoader or vendor iMPACT manually).",
-             bit, board.get("Id"))
-    return 0
+    log.error("[ise] cannot program %s to %s; programming logic is not implemented "
+              "(use openFPGALoader or vendor iMPACT manually).",
+              bit, board.get("Id"))
+    return 2

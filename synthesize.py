@@ -109,6 +109,13 @@ def main(argv=None):
     log.info("Configuration: %s  (%sboard: %s, toolchain: %s, %d peripherals)",
              target["id"], "" if target["id"] == target["rig"] else "rig " + target["rig"] + ", ",
              board["Id"], toolchain["Id"], len(peripherals))
+    try:
+        config.init.require_toolchain_operation(toolchain, "synthesize")
+        if args.program:
+            config.init.require_toolchain_operation(toolchain, "program")
+    except config.init.ConfigError as exc:
+        log.error("%s", exc)
+        return 2
     prepare_toolchain(toolchain)
 
     if args.output is None:

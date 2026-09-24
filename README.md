@@ -58,6 +58,13 @@ and build scripts. uni-fpga decouples the three concerns:
 maps physical pins to the design's virtual capability ports, emits the right
 constraint file, then dispatches to the toolchain driver.
 
+The toolchain registry declares `SupportedOperations` separately from install
+detection. `./unifpga tools` shows both. Catalogue-only toolchains have `[]`;
+attempting their build or program operation exits before creating build output.
+ISE and Libero SoC currently support synthesis but require an external
+programming workflow. An implemented driver operation does not by itself
+verify a board's pinmap or electrical constraints.
+
 A `// requires:` block at the top of any design declares hard capability
 needs (`screen >= 320x240`, `leds >= 4`, `gpio >= 8`, …) which `synthesize.py`
 checks against the resolved configuration before invoking any tool. Boards
@@ -80,7 +87,7 @@ by Yuri Panchul and contributors; see
 | `config/boards/<producer>/<family>.yml` | Family-level board catalog: list of boards on that chip family + family description. |
 | `config/boards/<producer>/<family>/<id>.yml` | Per-board pinmap (when available). |
 | `config/chips/<producer>/<family>.yml` | Chip registry per family — each chip lists eligible toolchains (with optional `[version]` constraints). Boards reference these chips by Id. |
-| `config/toolchains.yml` | Registry of synthesis toolchains (33 entries, vendor + open-flow). |
+| `config/toolchains.yml` | Registry of 33 toolchains, including the executable operations each driver supports. |
 | `config/programmers.yml` | Registry of bitstream loaders (27 entries: bundled vendor programmers + third-party + board-specific). |
 | `config/board_producers.yml` | Registry of board makers (75 entries: Digilent, Terasic, Sipeed, Trenz, BittWare, …) with URL, country, founding year, categories, description. Each board's `BoardProducer:` references one of these by Id. |
 | `config/board_features.yml` | Vocabulary of board-feature tokens (91 entries across `memory`, `connectivity`, `display`, etc.). Boards may list `Features: [ethernet_1gbe, hdmi_out, pmod_x4, …]` for filtering / display. |
@@ -259,8 +266,10 @@ intended SKIP, not a failure.
   peripherals to its pin banks. For Digilent boards,
   `tools/verify_pinmap_against_vendor.py` checks the pins against the vendor XDC.
 - **A new toolchain**: add `toolchains/<id>/<id>.py` exposing `synthesize`
-  and `program`, plus a `config/toolchains.yml` entry. The twelve existing
-  drivers are good templates — `vivado.py` for vendor TCL flows,
+  and `program`, plus a `config/toolchains.yml` entry with an explicit
+  `SupportedOperations` list. Mark unfinished methods unsupported and make
+  them return a nonzero error. Existing functional drivers are templates —
+  `vivado.py` for vendor TCL flows,
   `nextpnr_icestorm.py` for yosys/nextpnr open flows, `nextpnr_gatemate.py`
   for himbaechel-uarch flows, `quartus2.py` / `gowin_standard.py` for thin
   re-exports of an adjacent driver with a different InstallDir.

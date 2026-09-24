@@ -108,7 +108,33 @@ def _load_yaml_dir(subdir, root_key, id_key):
 def read_toolchains():
     """Read the list of toolchains from toolchains.yml."""
     items = _load_yaml(os.path.join(dir_path, "toolchains.yml"), "Toolchains")
+    for toolchain in items:
+        supported_operations(toolchain)
     return {t["Id"]: t for t in items}
+
+
+def supported_operations(toolchain):
+    """Validate the explicit list of executable driver operations.
+
+    A catalogue entry may describe a chip/tool even before its driver exists.
+    That description must never be treated as executable support by default.
+    """
+    operations = toolchain.get("SupportedOperations")
+    if not isinstance(operations, list) or any(
+            not isinstance(op, str) or op not in ("synthesize", "program")
+            for op in operations) or len(operations) != len(set(operations)):
+        raise ConfigError("Toolchain '{t}' needs a unique SupportedOperations list "
+                          "containing only synthesize and/or program"
+                          .format(t=toolchain.get("Id", "?")))
+    return operations
+
+
+def require_toolchain_operation(toolchain, operation):
+    """Reject a catalogue-only driver before a build or board action starts."""
+    if operation not in supported_operations(toolchain):
+        raise ConfigError("Toolchain '{t}' does not implement {op}; choose a "
+                          "supported toolchain or implement its driver"
+                          .format(t=toolchain.get("Id", "?"), op=operation))
 
 
 def read_programmers():

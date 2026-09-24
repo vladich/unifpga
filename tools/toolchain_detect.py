@@ -530,12 +530,15 @@ def report(toolchains):
     lines = []
     for tid, tc in sorted(toolchains.items()):
         det = detect(tid, pin=tc.get("InstallDir"))
+        operations = ", ".join(tc.get("SupportedOperations") or []) or "catalogue only"
         if det.found:
             where = det.install_dir or ", ".join(det.bin_dirs)
-            lines.append("{:24s} found   {} ({}{})".format(tid, where, det.source,
-                                                          ", version " + det.version if det.version else ""))
+            lines.append("{:24s} found   {} ({}{}); operations: {}".format(
+                tid, where, det.source,
+                ", version " + det.version if det.version else "", operations))
         else:
-            lines.append("{:24s} missing {}".format(tid, "; ".join(det.notes)))
+            lines.append("{:24s} missing {}; operations: {}".format(
+                tid, "; ".join(det.notes), operations))
         for n in (det.notes if det.found else []):
             lines.append("{:24s}         note: {}".format("", n))
     return lines

@@ -225,6 +225,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if not os.path.isdir(project_dir):
         log.error("No Libero project at %s — run synthesis first", project_dir)
         return 1
-    log.info("Libero bitstream is at %s/designer/<top>/<top>.{stp,pdb}.", project_dir)
-    log.info("Use Libero's FlashPro GUI or `fpexpress` headless to load it.")
-    return 0
+    log.error("Libero programming is not implemented; bitstream is at "
+              "%s/designer/<top>/<top>.{stp,pdb}. Use Libero's FlashPro "
+              "GUI or `fpexpress` headless to load it.", project_dir)
+    return 2
