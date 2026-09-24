@@ -265,3 +265,23 @@ def test_a_keyboard_reaches_a_design_that_asks_for_it():
     assert fit["de2"] == [] and any("keyboard" in m for m in fit["arty_a7"])
     top = codegen.emit_top_sv(config_init.resolve_configuration("de2"), design=design)
     assert "ps2_keyboard # (.clk_mhz(clk_mhz))" in top and ".kbd_key(cap_keyboard_key)" in top
+
+
+def test_no_pin_is_both_a_gpio_bit_and_another_parts():
+    """In every rig, a pin the design reaches through its gpio port is no other
+    part's (a microphone, a TM1638, a tie): one master per pad."""
+    from tools import trace as tr
+    for rig_id in config_init.read_configurations():
+        r = config_init.resolve_configuration(rig_id)
+        t = tr.trace(r)
+        gpio_uses = {a.get("attach_index") for a in r["peripherals"] if a["peripheral_id"] == "gpio_header"}
+        gpio_refs = {e["ref"] for e in t["edges"] if e["use"] in gpio_uses}
+        other = {p for a in r["peripherals"] if a["peripheral_id"] != "gpio_header"
+                 for ref in (a.get("bind") or {}).values() for p in codegen_ports(r, ref)}
+        both = {ref for ref in gpio_refs if set(codegen_ports(r, ref)) & other}
+        assert not both, (rig_id, sorted(both))
+
+
+def codegen_ports(r, ref):
+    from tools import codegen
+    return codegen._bind_bit_ports(r, ref)

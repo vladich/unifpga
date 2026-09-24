@@ -139,6 +139,10 @@ def trace(resolved):
                          "pin_fit": a["peripheral"].get("pin_fit") or {},
                          "pins": {sig: _pins(pinmap, ref) for sig, ref in (a.get("bind") or {}).items()},
                          "links": {sig: links.get(sig, []) for sig in (a.get("bind") or {})}})
+    # a gpio bit whose pin another part uses dangles (codegen): no edge to the pin
+    gpio_plan = plans.get("gpio")
+    gpio_indices = {pidx for pidx, _p, _q in gpio_plan.providers} if gpio_plan else set()
+    claimed = codegen._claimed_port_bits(resolved, plans, gpio_indices) if gpio_indices else set()
     parameters = codegen.design_top_parameters(resolved, plans)
     widths = codegen.design_top_widths(parameters)
     ports = []
@@ -163,17 +167,21 @@ def trace(resolved):
                 pins = _pins(pinmap, a["bind"][direct])
                 if codegen._peripheral_mirror(a, pinmap):
                     pins = list(reversed(pins))
+                taken = lambda k: pidx in gpio_indices and k < len(pins) and pins[k]["ref"] and \
+                    set(codegen._bind_bit_ports(resolved, pins[k]["ref"])) & claimed
                 entry["bits"] = [{"design_bit": b, "provider_bit": k,
-                                  "ref": pins[k]["ref"] if k < len(pins) else None,
-                                  "pin": pins[k]["pin"] if k < len(pins) else None}
+                                  "ref": pins[k]["ref"] if k < len(pins) and not taken(k) else None,
+                                  "pin": pins[k]["pin"] if k < len(pins) and not taken(k) else None}
                                  for k, b in enumerate(design_bits)]
             elif design_bits is not None:
                 entry["bits"] = [{"design_bit": b, "provider_bit": k, "ref": None, "pin": None}
                                  for k, b in enumerate(design_bits)]
             port["providers"].append(entry)
         ports.append(port)
-    return {"ports": ports, "attaches": attaches, "edges": edges(ports, attaches),
-            "parameters": dict(widths)}
+    gpio_uses = {resolved["peripherals"][pidx].get("attach_index") for pidx in gpio_indices}
+    kept = [e for e in edges(ports, attaches)
+            if not (e["use"] in gpio_uses and set(codegen._bind_bit_ports(resolved, e["ref"])) & claimed)]
+    return {"ports": ports, "attaches": attaches, "edges": kept, "parameters": dict(widths)}
 
 
 def _fit(bits, npins, k, fit):

@@ -2316,13 +2316,15 @@ def _gpio_connection(resolved, plans):
                 decls.append("    assign {} = {} [{}];".format(port, out_net, i))
                 bits[n] = "{} [{}]".format(out_net, i)
             else:
-                # The lab gets the whole header (`.gpio ({ ARDUINO_IO, GPIO })`),
-                # including the bits a microphone or a TM1638 drives: the lab
-                # reads what is on the pad. Same here; a lab that drives such
-                # a bit collides with the peripheral.
+                # A pin another part uses (a microphone, a TM1638, a tie) is that
+                # part's: its gpio bit dangles, so the design can neither drive
+                # the pad against the part nor mistake it for a free pin, and the
+                # other bits keep the header's numbering.
                 if port in claimed:
-                    decls.append("    // gpio[{}] = {}: also driven by another peripheral".format(n, port))
-                bits[n] = port
+                    decls.append("    wire gpio_nc_{};   // gpio[{}]: {} is taken by another part".format(n, n, port))
+                    bits[n] = "gpio_nc_{}".format(n)
+                else:
+                    bits[n] = port
     for n, b in enumerate(bits):
         if b is None:
             decls.append("    wire gpio_nc_{};".format(n))

@@ -521,7 +521,7 @@ function draw() {
     const csel = (S.sel && S.sel.kind === "conn" && S.sel.id === c.id) || (gi !== null && hi.uses.has(gi));
     const g = el("g");
     const lbl = el("text", {x: GX - 6, y: cy - 8, "font-size": 12, class: "clickable", fill: csel ? "var(--sel)" : "#343a40"},
-                   c.label + (gi !== null ? "  — design gpio" + (S.setup.use[gi].pins ? " (" + S.setup.use[gi].pins.length + " pins)" : "") : ""));
+                   c.label + (gi !== null ? "  → " + gpioBits(gi) : ""));
     if (c.note) lbl.append(el("title", {}, c.label + ": " + c.note));   // hover: how far the model is verified
     target(lbl, {kind: "conn", id: c.id});
     g.append(lbl);
@@ -1806,8 +1806,8 @@ function details() {
     }
     d.append(t);
     if (!STATIC && c.bank) {
-      if (i >= 0) d.append(h("button", {onclick: () => { S.setup.use.splice(i, 1); changed(c.label + " no longer design gpio"); }}, "Stop handing it to the design as gpio"));
-      else d.append(h("button", {onclick: () => { S.setup.use.push({gpio: c.id, params: {width: Object.keys(c.pins).length}}); changed(c.label + " is design gpio"); }}, "Hand to the design as gpio"));
+      if (i >= 0) d.append(h("button", {onclick: () => { S.setup.use.splice(i, 1); changed(c.label + " no longer in design_top's gpio"); }}, "Take it out of design_top's gpio port"));
+      else d.append(h("button", {onclick: () => { S.setup.use.push({gpio: c.id, params: {width: Object.keys(c.pins).length}}); changed(c.label + " is in design_top's gpio"); }}, "Hand its pins to design_top's gpio port (raw, no driver)"));
     }
   }
 }
@@ -2062,6 +2062,15 @@ function setDefault(key, listKey, value) {
   S.setup[key] = value;
   if (S.setup[listKey]) S.setup[listKey] = [value, ...S.setup[listKey].filter((v) => v !== value)];
 }
+// "design_top gpio[35:0]": the bits of design_top's gpio port a `gpio:` use hands
+// the header's pins to (a pin another part uses is not among them)
+function gpioBits(i) {
+  const bits = traceEdges().filter((e) => e.use === i && e.bit !== null).map((e) => e.bit);
+  if (!bits.length) return "design_top gpio (no bit: its pins are taken)";
+  return "design_top gpio[" + Math.max(...bits) + (bits.length > 1 ? ":" + Math.min(...bits) : "") + "]" +
+         (bits.length < Math.max(...bits) - Math.min(...bits) + 1 ? " (" + bits.length + " bits)" : "");
+}
+
 function renderTargets() {
   const box = $("targets");
   if (!box || !S.setup || !S.board) return;

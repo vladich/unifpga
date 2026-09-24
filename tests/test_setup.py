@@ -524,14 +524,17 @@ def test_parts_that_do_not_reach_the_design_say_why():
     assert kinds and set(kinds) <= {"unwired", "untraced"}, kinds
 
 
-def test_pins_several_parts_reach_are_warned_about():
-    ev = studio.evaluate(su.read_setup("arty_a7_pmod_mic3"))
-    shared = [p["message"] for p in ev["problems"] if p["level"] == "warning" and "shared by" in p["message"]]
-    # the TM1638 sits on three ChipKit header pins the rig also hands to the design as gpio: one warning naming them
-    (m,) = shared
-    assert m.startswith("pins ") and m.count("(FPGA ") == 3 and "gpio ck" in m, m
-    assert "tm1638_led_key (its dio, clk, stb, through the tm1638_board_controller driver)" in m, m
-    assert not [p for p in studio.evaluate(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))["problems"] if "shared by" in p["message"]]
+def test_a_part_on_the_designs_gpio_header_takes_its_pins():
+    """The TM1638 sits on three ChipKit pins of a header the rig hands to
+    design_top's gpio: those pins are the TM1638's, their gpio bits dangle, so
+    nothing is shared and nothing warns."""
+    rig = su.read_setup("arty_a7_pmod_mic3")
+    ev = studio.evaluate(rig)
+    assert not [p for p in ev["problems"] if "shared by" in p["message"]]
+    tm = next(k for k, u in enumerate(rig["use"]) if u.get("module") == "tm1638_led_key")
+    gp = next(k for k, u in enumerate(rig["use"]) if u.get("gpio") == "ck")
+    tm_refs = {e["ref"] for e in ev["trace"]["edges"] if e["use"] == tm}
+    assert tm_refs and not tm_refs & {e["ref"] for e in ev["trace"]["edges"] if e["use"] == gp}
 
 
 def _apply(rig, fix):
@@ -572,13 +575,6 @@ def test_conflicts_offer_buttons_that_resolve_them():
     assert ("autowire", len(rig["use"]) - 1) in ops and ("remove", mic3) in ops
     fixed = _apply(rig, next(f for f in p["resolve"] if f["op"] == "autowire" and f["use"] == len(rig["use"]) - 1))
     assert not [q for q in studio.evaluate(fixed)["problems"] if "used by both" in q["message"]]
-    # a driver's pins inside the design's gpio header: move the module off it
-    ev = studio.evaluate(base)
-    (p,) = [p for p in ev["problems"] if "shared by" in p["message"]]
-    tm = next(k for k, u in enumerate(base["use"]) if u.get("module") == "tm1638_led_key")
-    rewire = next(f for f in p["resolve"] if f["op"] == "autowire")
-    assert rewire["use"] == tm and rewire["label"] == "Re-wire tm1638_led_key to free pins"
-    assert not [q for q in studio.evaluate(_apply(base, rewire))["problems"] if "shared by" in q["message"]]
 
 
 def test_design_table_covers_every_design_and_configuration():

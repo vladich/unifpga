@@ -125,14 +125,19 @@ def test_reset_from_keys_reads_the_board_buttons():
     assert codegen._board_provider_terms(r, plans, "buttons", "btn") == ["(~ onboard_buttons[0])", "(~ onboard_buttons[1])"]
 
 
-def test_header_bits_reach_the_design_even_when_a_peripheral_drives_them():
-    """`.gpio ({ ARDUINO_IO, GPIO })` whole, microphone clocks included."""
+def test_header_bits_a_part_uses_dangle_on_the_design_side():
+    """The header is the design's gpio, but a pin the microphone (or a tie)
+    uses is the microphone's: its gpio bit dangles, the other bits keep the
+    header's numbering (BGM hands the lab the whole header; unifpga does not
+    let the design drive a pad another part drives)."""
     r = config_init.resolve_configuration("de10_lite")
     text = codegen.emit_top_sv(r)
     gpio_line = next(l for l in text.splitlines() if l.strip().startswith(".gpio("))
-    assert "gpio_nc_" not in gpio_line
-    assert "gpio[0]" in gpio_line and "gpio[4]" in gpio_line
-    assert "also driven by another peripheral" in text
+    taken = {p for a in r["peripherals"] if a["peripheral_id"] not in ("gpio_header",)
+             for ref in (a.get("bind") or {}).values() for p in codegen._bind_bit_ports(r, ref)}
+    header_bits = [b for b in re.findall(r"gpio\[\d+\]", gpio_line)]
+    assert header_bits and not set(header_bits) & taken
+    assert "gpio_nc_" in gpio_line and "is taken by another part" in text
     assert ".uart_rx(1'b0)" in text                                          # unconnected = ground
 
 
