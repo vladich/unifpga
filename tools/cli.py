@@ -28,6 +28,7 @@ import glob
 import logging
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -738,6 +739,15 @@ def cmd_layout(args):
             continue
         path, changed = layout_draft.write(b)
         layout = layout_draft.draft(b)
+        if args.setups:
+            # the board's setups follow its layout (connector ids, variants)
+            from tools import setup as su
+            for cid, cfg in sorted(config.init.read_configurations().items()):
+                if cfg["board"] == b:
+                    diffs = su.check_roundtrip(cfg)
+                    if diffs:
+                        raise CliError("{} does not round-trip with the new layout:\n  {}".format(cid, "\n  ".join(diffs)))
+                    su.write_setup(su.derive(cfg))
         print("{:<32} {} {} ({} headers, {} on-board parts{})".format(
             b, "wrote" if changed else "unchanged", _shown(path), len(layout["connectors"]), len(layout["onboard"]),
             ", verified" if layout["verified"] else ""))
@@ -878,6 +888,7 @@ def build_parser():
     ly.add_argument("action", choices=["draft"])
     ly.add_argument("boards", nargs="*")
     ly.add_argument("--all", action="store_true", help="every board a configuration uses")
+    ly.add_argument("--setups", action="store_true", help="re-derive the board's setups from its configurations")
 
     so = sub.add_parser("sources", help="the board-sources registry (config/board_sources/): fetch documents, "
                                         "show their text, verify the facts against the pinmaps")

@@ -49,7 +49,17 @@ class SetupError(Exception):
 # ---------------------------------------------------------------------------
 
 def read_connectors():
-    return config_init._load_yaml(os.path.join(CONFIG_DIR, "connectors.yml"), "Connectors")
+    """Connector types: config/connectors.yml plus the ones board-sources
+    registry entries define for their boards (`connector_types:`)."""
+    out = dict(config_init._load_yaml(os.path.join(CONFIG_DIR, "connectors.yml"), "Connectors") or {})
+    from tools import board_sources
+    for board, entry in sorted(board_sources.read_all().items()):
+        for tid, ctype in (entry.get("connector_types") or {}).items():
+            if tid in out and out[tid] != ctype:
+                raise SetupError("connector type '{}' of config/board_sources/{}.yml is defined differently "
+                                 "elsewhere".format(tid, board))
+            out[tid] = ctype
+    return out
 
 
 def read_layouts():

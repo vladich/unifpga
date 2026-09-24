@@ -15,6 +15,13 @@ config/board_sources/<board>.yml:
           sha256: ...                     # written by `./unifpga sources fetch`
           bytes: 123456
           retrieved: 2026-09-23
+      connector_types:                    # optional: types config/connectors.yml does not have
+        terasic_gpio_2x20:
+          name: Terasic 2x20 GPIO header
+          voltage: 3.3
+          rows: [[1, 3, 5, ...], [2, 4, 6, ...]]
+          power: {11: VCC5, 12: GND, 29: VCC3P3, 30: GND}
+          source: DE10-Lite User Manual, Figure 3-17
       headers:                            # one per header the pinmap has a bank for
         - bank: gpio                      # the pinmap bank
           id: jp1                         # the layout's connector id (default: the bank)
@@ -197,7 +204,9 @@ def verify(board_id, entry=None, connectors=None):
     entry = entry or read(board_id)
     if entry is None:
         raise SourcesError("no registry entry config/board_sources/{}.yml".format(board_id))
-    connectors = connectors if connectors is not None else config_init._load_yaml(os.path.join(CONFIG_DIR, "connectors.yml"), "Connectors")
+    if connectors is None:
+        from tools import setup as su
+        connectors = su.read_connectors()        # with every registry's connector_types
     pinmap = config_init.read_board_pinmap(board_id) or {}
     banks = pinmap.get("pinBanks") or {}
     docs = {d["id"]: d for d in entry.get("documents") or []}
