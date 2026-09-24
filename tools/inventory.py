@@ -41,7 +41,8 @@ from tools import board_sources
 
 PIN_TOKEN = re.compile(r"^[A-Za-z0-9_]+$")
 HEADER_KINDS = {"pmod", "header"}
-POWER = re.compile(r"^(GND|AGND|DGND|VCC\w*|VDD\w*|VIO\w*|V\d\w*|\d+V\d*|3V3|5V|NC|N/C)$", re.I)
+# a header's power / ground positions (never a ball name: V16 is a ball, 3V3 is a rail)
+POWER = re.compile(r"^(GND|AGND|DGND|VCC\w*|VDD\w*|VIO\w*|VBUS|VIN|\d+V\d*|3V3|5V|NC|N/C)$", re.I)
 
 
 class InventoryError(Exception):

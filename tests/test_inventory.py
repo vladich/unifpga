@@ -43,5 +43,6 @@ def test_new_devices_become_onboard_banks_and_shared_pins_are_named():
 
 
 def test_header_pins_drop_power_and_repeated_rails():
-    d = {"kind": "header", "pins": {"1": "Vapp", "2": "Vapp", "3": "IO_A0", "4": "GND", "5": "IO_A1", "6": "3V3"}}
-    assert iv._as_bank_pins(d) == ["IO_A0", "IO_A1"]
+    d = {"kind": "header", "pins": {"1": "Vapp", "2": "Vapp", "3": "IO_A0", "4": "GND", "5": "IO_A1", "6": "3V3",
+                                    "7": "V16", "8": "V1", "9": "VCCIO"}}
+    assert iv._as_bank_pins(d) == ["IO_A0", "IO_A1", "V16", "V1"]   # V16 / V1 are balls, not rails
