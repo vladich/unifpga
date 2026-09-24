@@ -2,7 +2,10 @@
 Board sources: the registry of vendor documents a board's physical model is
 checked against, and the facts read from them.
 
-config/board_sources/<board>.yml:
+<registry>/<board>.yml, where <registry> is $UNIFPGA_SOURCES_DIR, by default the
+sibling repository ../unifpga-board-sources (outside this one: it is the
+evidence the physical model was checked against, not something a build or the
+editor reads; generated layouts carry everything they need):
 
     BoardSources:
       board: de10_lite
@@ -58,7 +61,12 @@ from config import init as config_init
 from tools import codegen
 
 CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
-SOURCES_DIR = os.path.join(CONFIG_DIR, "board_sources")
+REPO_DIR = os.path.dirname(CONFIG_DIR)
+
+
+def sources_dir():
+    return os.environ.get("UNIFPGA_SOURCES_DIR") or \
+        os.path.join(os.path.dirname(REPO_DIR), "unifpga-board-sources")
 USER_AGENT = "unifpga-board-sources/1 (+https://github.com/vladich/unifpga)"
 
 
@@ -71,10 +79,21 @@ def cache_dir():
 
 
 def read_all():
-    """{board: registry entry} for every config/board_sources/<board>.yml."""
-    if not os.path.isdir(SOURCES_DIR):
-        return {}
-    return config_init._load_yaml_dir("board_sources", "BoardSources", "board")
+    """{board: registry entry} for every <registry>/<board>.yml ({} without a registry)."""
+    import yaml
+    base = sources_dir()
+    out = {}
+    if not os.path.isdir(base):
+        return out
+    for name in sorted(os.listdir(base)):
+        if not name.endswith(".yml"):
+            continue
+        with open(os.path.join(base, name), encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        entry = data.get("BoardSources")
+        if entry and entry.get("board"):
+            out[entry["board"]] = entry
+    return out
 
 
 def read(board_id):
@@ -82,7 +101,7 @@ def read(board_id):
 
 
 def registry_path(board_id):
-    return os.path.join(SOURCES_DIR, board_id + ".yml")
+    return os.path.join(sources_dir(), board_id + ".yml")
 
 
 # ---------------------------------------------------------------------------
@@ -192,6 +211,19 @@ def _norm_pin(p):
     return re.sub(r"^PIN_", "", s)
 
 
+def connector_types(entry):
+    """The connector catalogue a registry entry's facts are read against: the
+    project's types (config/connectors.yml and the ones layouts carry) plus the
+    entry's own `connector_types`."""
+    from tools import setup as su
+    out = dict(su.read_connectors())
+    for tid, ctype in ((entry or {}).get("connector_types") or {}).items():
+        if tid in out and out[tid] != ctype:
+            raise SourcesError("connector type '{}' is defined differently elsewhere".format(tid))
+        out[tid] = ctype
+    return out
+
+
 def bank_pins(pinmap, bank):
     """The bank's pins as [(ref, FPGA pin)] in pinmap order."""
     return [(ref, _norm_pin(pin)) for ref, pin in codegen._bind_pins(pinmap, bank) if pin]
@@ -203,10 +235,9 @@ def verify(board_id, entry=None, connectors=None):
     facts and the pinmap agree."""
     entry = entry or read(board_id)
     if entry is None:
-        raise SourcesError("no registry entry config/board_sources/{}.yml".format(board_id))
+        raise SourcesError("no registry entry {}".format(registry_path(board_id)))
     if connectors is None:
-        from tools import setup as su
-        connectors = su.read_connectors()        # with every registry's connector_types
+        connectors = connector_types(entry)
     pinmap = config_init.read_board_pinmap(board_id) or {}
     banks = pinmap.get("pinBanks") or {}
     docs = {d["id"]: d for d in entry.get("documents") or []}

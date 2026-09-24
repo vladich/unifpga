@@ -783,7 +783,7 @@ def cmd_sources(args):
     failed = 0
     for b in ids:
         if b not in registry:
-            raise CliError("no registry entry config/board_sources/{}.yml".format(b))
+            raise CliError("no registry entry {} ($UNIFPGA_SOURCES_DIR)".format(bs.registry_path(b)))
         if args.action == "fetch":
             for doc in registry[b].get("documents") or []:
                 try:
@@ -890,7 +890,8 @@ def build_parser():
     ly.add_argument("--all", action="store_true", help="every board a configuration uses")
     ly.add_argument("--setups", action="store_true", help="re-derive the board's setups from its configurations")
 
-    so = sub.add_parser("sources", help="the board-sources registry (config/board_sources/): fetch documents, "
+    so = sub.add_parser("sources", help="the board-sources registry ($UNIFPGA_SOURCES_DIR, default "
+                                        "../unifpga-board-sources): fetch documents, "
                                         "show their text, verify the facts against the pinmaps")
     so.add_argument("action", choices=["fetch", "text", "verify"])
     so.add_argument("ids", nargs="*", help="boards (text: <board> <document id>)")
