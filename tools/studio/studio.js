@@ -780,6 +780,11 @@ function designChoices() {
   box.replaceChildren(...items);
 }
 
+function staleWarning() {
+  if (S.ev && S.ev.server_stale)
+    status("unifpga's code changed since this server started: restart ./unifpga serve and reload the page", true);
+}
+
 function showTab(name) {
   for (const b of document.querySelectorAll(".tab")) b.classList.toggle("active", b.dataset.tab === name);
   $("tab-rig").hidden = name !== "rig";
@@ -834,6 +839,7 @@ async function changed(msg) {
     S.ev = ev;
     S.lastDone = seq;
     status(msg + (S.dirty ? " (not saved)" : ""));
+    staleWarning();
   } catch (e) { status(e.message, true); }
   render();
 }
@@ -855,6 +861,7 @@ async function loadSetup(id) {
   $("toolchain").value = S.setup.toolchain;
   S.ev = await api("/api/evaluate", {setup: S.setup});
   status("loaded " + id);
+  staleWarning();
   render();
 }
 

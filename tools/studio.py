@@ -34,6 +34,21 @@ ID_RE = re.compile(r"^[a-z0-9_]{1,80}$")
 WRITE_HEADER = "X-Unifpga-Studio"
 
 
+def _code_fingerprint():
+    """Modification times of the Python code the server runs; the page is
+    told when they change under a running server (restart it)."""
+    out = []
+    for sub in ("tools", "config"):
+        base = os.path.join(REPO, sub)
+        for name in sorted(os.listdir(base)):
+            if name.endswith(".py"):
+                out.append(os.stat(os.path.join(base, name)).st_mtime_ns)
+    return tuple(out)
+
+
+_STARTED_WITH = _code_fingerprint()
+
+
 class ApiError(Exception):
     def __init__(self, status, message):
         Exception.__init__(self, message)
@@ -163,7 +178,7 @@ def evaluate(setup):
     setup as can be traced: uses that break it are listed in `excluded`), and
     which designs fit."""
     out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None,
-           "excluded": []}
+           "excluded": [], "server_stale": _code_fingerprint() != _STARTED_WITH}
     from config import profile
     if profile.enabled() and profile.load(setup.get("id")):
         out["profile"] = os.path.relpath(profile.path_for(setup["id"]), REPO)
