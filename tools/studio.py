@@ -112,8 +112,9 @@ def board_data(board_id):
                               "driver_file": (p.get("driver") or {}).get("file") if p.get("driver") else None}
                         for pid, p in peripherals.items() if pid in used},
         "setups": sorted(s for s, v in su.read_setups().items() if v["board"] == board_id),
-        "capabilities": [{"id": cid, "signals": [{"name": s["name"], "direction": s.get("direction")}
-                                                 for s in c.get("signals") or []]}
+        "capabilities": [{"id": cid, "aggregation": c.get("aggregation"),
+                          "signals": [{"name": s["name"], "direction": s.get("direction")}
+                                      for s in c.get("signals") or []]}
                          for cid, c in config_init.read_capabilities().items()],
         "toolchains": sorted(config_init.read_toolchains()),
         "designs": list_designs(),
@@ -179,7 +180,7 @@ def evaluate(setup):
     configuration text, the virtual device traced to pins (for as much of the
     setup as can be traced: uses that break it are listed in `excluded`), and
     which designs fit."""
-    out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None,
+    out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None, "parts": [],
            "excluded": [], "server_stale": _code_fingerprint() != _STARTED_WITH}
     from config import profile
     prof = profile.load(setup.get("id")) if profile.enabled() else None
@@ -214,8 +215,80 @@ def evaluate(setup):
                 out["problems"].append({"level": "error", "message": error})
                 break
     out["excluded"] = sorted(excluded, key=lambda x: x["use"])
+    out["parts"] = part_status(setup, kept, out["excluded"], resolved if out["trace"] is not None else None,
+                               out["trace"], out["profile"], out["profile_drops"])
+    for x in out["parts"]:
+        for kind, reason in x["reasons"]:
+            if kind == "exclusive":
+                out["problems"].append({"level": "warning", "message": x["label"] + ": " + reason})
     if out["trace"] is not None and not any(p["level"] == "error" for p in out["problems"]) and not excluded:
         out["designs"] = design_fit(resolved)
+    return out
+
+
+def part_status(setup, kept, excluded, resolved, trace, profile_path, drops):
+    """[{use, label, connected, reasons: [(kind, text)]}] for every part that
+    does not reach the design, or reaches it only in part:
+      untraced   the build cannot place it (a design-wiring profile without
+                 an entry for it, or another error), so it is not traced
+      exclusive  design_top has one of a capability (audio_in, screen, ...)
+                 and an earlier part already provides it: codegen keeps the
+                 first provider, this one's gets no design port
+      unwired    a module with none of its signal pins wired
+      nothing    it provides nothing design_top has
+    Profile drops are reported by profile_drops()."""
+    uses = setup.get("use") or []
+    names = [su.use_label(u, u.get("raw") or {}) for u in uses]
+
+    def label(k):
+        """a part's name, numbered when the rig has several of its kind"""
+        same = [j for j, n in enumerate(names) if n == names[k]]
+        return names[k] + (" #{}".format(same.index(k) + 1) if len(same) > 1 else "")
+    reasons = {}
+    for x in excluded:
+        m = re.search(r"lab_bits\.(\w+) is set on one provider", x["reason"])
+        if m and profile_path:
+            text = ("the rig's design-wiring profile {} says which design bits of {} each part takes, and this part "
+                    "has no entry there, so the build cannot place it. Save the rig under a new id (no profile "
+                    "applies to it) or add the part to the profile.").format(profile_path, m.group(1))
+        else:
+            text = "the build cannot place it: " + x["reason"]
+        reasons.setdefault(x["use"], []).append(("untraced", text))
+    if resolved is not None:
+        caps = config_init.read_capabilities()
+        first = {}
+        for a in resolved["peripherals"]:
+            if a.get("attach_index") is None:
+                continue
+            k = kept[a["attach_index"]]
+            for entry in codegen._active_provides(a["peripheral"], a.get("params") or {}):
+                cid = entry["capability"]
+                if (caps.get(cid) or {}).get("aggregation") != "exclusive":
+                    continue
+                if cid not in first:
+                    first[cid] = k
+                elif first[cid] != k:
+                    ports = [p for p, c, _s, _w in codegen.DESIGN_PORTS if c == cid]
+                    reasons.setdefault(k, []).append(("exclusive", (
+                        "design_top has one {} ({}) and {} already provides it; the build keeps the first "
+                        "provider, so this part's {} does not reach the design. Remove one of them.").format(
+                            cid, ", ".join(ports), label(first[cid]), cid)))
+    dropped = {d["use"] for d in drops or []}
+    edges = {e["use"] for e in (trace or {}).get("edges") or []}
+    provides = {pr["attach_index"] for p in (trace or {}).get("ports") or [] for pr in p["providers"]}
+    out = []
+    for k, u in enumerate(uses):
+        if k in dropped:
+            continue
+        rs = reasons.get(k, [])
+        connected = k in edges or k in provides
+        if u.get("module") and not u.get("wires") and not u.get("plug"):
+            connected = False
+            rs = rs + [("unwired", "none of its pins are wired yet (wire them, or Auto-wire)")]
+        elif not connected and not rs and trace is not None and k in kept:
+            rs = [("nothing", "it provides nothing design_top has a port for")]
+        if rs:
+            out.append({"use": k, "label": label(k), "connected": connected, "reasons": rs})
     return out
 
 
@@ -239,6 +312,160 @@ def profile_drops(cfg, prof):
                     if any(key == b or key.startswith(b + "[") for b in binds)}
             out.append({"use": k, "peripheral": pid, "ties": mine})
     return out
+
+
+# ---------------------------------------------------------------- Verilog
+# What a double click in the editor opens: the Verilog that defines the thing,
+# from this checkout. The rig's top.sv is generated for the setup as it is on
+# the page (saved or not); modules come from rtl/ (and the chosen design).
+
+RTL_DIR = os.path.join(REPO, "rtl")
+_MODULE_RE = re.compile(r"^\s*module\s+([A-Za-z_]\w*)", re.M)
+IDENT_RE = re.compile(r"^[A-Za-z_]\w{0,127}$")
+_SECTION_RE = re.compile(r"^    // ---- .* \(peripheral '[^']*'\) ----$")
+
+
+def module_index():
+    """{module name: (repo-relative path, 1-based line)} for every module under
+    rtl/ (a simulation model only where nothing else defines the name)."""
+    out = {}
+    for root, _dirs, files in os.walk(RTL_DIR):
+        for name in sorted(files):
+            if not name.endswith((".sv", ".v", ".svh")):
+                continue
+            path = os.path.join(root, name)
+            with open(path, encoding="utf-8", errors="replace") as f:
+                text = f.read()
+            rel = os.path.relpath(path, REPO)
+            for m in _MODULE_RE.finditer(text):
+                sim = rel.startswith(os.path.join("rtl", "sim") + os.sep)
+                if m.group(1) not in out or (not sim and out[m.group(1)][2]):
+                    out[m.group(1)] = (rel, text.count("\n", 0, m.start(1)) + 1, sim)
+    return {k: (p, line) for k, (p, line, _sim) in out.items()}
+
+
+def module_source(name, design=None):
+    """{path, text, line} of the module `name`: a design's own module when
+    `design` names one that defines it, else rtl/."""
+    if not IDENT_RE.match(str(name)):
+        raise ApiError(400, "not a module name")
+    if design is not None:
+        if design not in list_designs():
+            raise ApiError(400, "unknown design '{}'".format(design))
+        ddir = os.path.join(DESIGNS_DIR, design)
+        for fname in sorted(os.listdir(ddir)):
+            if fname.endswith((".sv", ".v")):
+                path = os.path.join(ddir, fname)
+                with open(path, encoding="utf-8", errors="replace") as f:
+                    text = f.read()
+                m = re.search(r"^\s*module\s+" + name + r"\b", text, re.M)
+                if m:
+                    return {"path": os.path.relpath(path, REPO), "text": text,
+                            "line": text.count("\n", 0, m.end()) + 1}
+    idx = module_index()
+    if name not in idx:
+        raise ApiError(404, "no module '{}' under rtl/".format(name))
+    rel, line = idx[name]
+    with open(os.path.join(REPO, rel), encoding="utf-8", errors="replace") as f:
+        return {"path": rel, "text": f.read(), "line": line}
+
+
+def _ref_names(ref):
+    """How a pinmap entry appears in top.sv: as written (`arduino_io[27]`),
+    and its port name (`onboard_uart.tx` -> `onboard_uart_tx`, the bus of an
+    indexed entry)."""
+    ref = str(ref)
+    base = re.sub(r"\[\d+\]$", "", ref).replace(".", "_")
+    return ref.replace(".", "_"), base
+
+
+def verilog_view(setup, target):
+    """The rig's generated top.sv with the lines that define `target`:
+      use          its part's section (its pins' lines when the profile left it out)
+      refs         lines using these pinmap entries (within the use's section when given)
+      design_port  the design_top instance's port line, and the lines of the
+                   use's section that drive its capability bus
+      parameter    the design_top instance's parameter line
+      board        the top's port list
+    plus the files of the modules it names (`module`, and any the section
+    instantiates)."""
+    target = target or {}
+    kept, _excluded = _traceable(setup)
+    cfg = su.generate(dict(setup, use=[setup["use"][k] for k in kept]))
+    resolved = config_init.resolve_configuration(setup["id"], configuration=cfg)
+    try:
+        text = codegen.emit_top_sv(resolved)
+        note = ""
+    except codegen.CodegenError as exc:
+        text = codegen.emit_top_sv(resolved, strict=False)
+        note = "the build would refuse this rig: " + str(exc).splitlines()[0]
+    lines = text.split("\n")
+    heads = [k for k, l in enumerate(lines) if _SECTION_RE.match(l)]
+    sections = {}
+    if len(heads) == len(resolved["peripherals"]):
+        for n, (k, a) in enumerate(zip(heads, resolved["peripherals"])):
+            end = heads[n + 1] if n + 1 < len(heads) else next(
+                (j for j in range(k + 1, len(lines)) if lines[j].startswith("    // ---- ")), len(lines))
+            if a.get("attach_index") is not None:
+                sections[kept[a["attach_index"]]] = (k, end)
+    header_end = next((k for k, l in enumerate(lines) if l.strip() == ");"), 0)
+    top_start = next((k for k, l in enumerate(lines) if l.startswith("module top")), 0)
+    lab_start = next((k for k, l in enumerate(lines) if "i_design_top (" in l), len(lines))
+    lab_params = next((k for k, l in enumerate(lines) if l.strip().startswith("design_top #")), lab_start)
+    hi = set()
+
+    use = target.get("use")
+    span = sections.get(use) if use is not None else None
+    refs = [r for r in target.get("refs") or [] if r]
+    if span and not refs and not target.get("design_port"):
+        hi.update(range(span[0], span[1]))
+    for ref in refs:
+        exact, base = _ref_names(ref)
+        lo, hi_end = span if span else (header_end + 1, len(lines))
+        found = [k for k in range(lo, hi_end) if exact in lines[k]] or \
+                [k for k in range(lo, hi_end) if re.search(r"\b" + re.escape(base) + r"\b", lines[k])]
+        hi.update(found)
+        hi.update(k for k in range(top_start, header_end) if re.search(r"\b" + re.escape(base) + r"\b", lines[k]))
+    port = target.get("design_port")
+    if port:
+        entry = next((e for e in codegen.DESIGN_PORTS if e[0] == port), None)
+        hi.update(k for k in range(lab_start, len(lines)) if re.match(r"^\s*\." + re.escape(port) + r"\(", lines[k]))
+        if entry and span:
+            bus = "cap_{}_{}".format(entry[1], entry[2])
+            hi.update(k for k in range(*span) if re.search(r"\b" + re.escape(bus) + r"(\b|__)", lines[k]))
+    param = target.get("parameter")
+    if param:
+        hi.update(k for k in range(lab_params, lab_start + 1) if re.match(r"^\s*\." + re.escape(param) + r"\(", lines[k]))
+    if target.get("board"):
+        hi.update(range(top_start, header_end + 1))
+
+    files = [{"path": None, "title": "top.sv generated for " + setup["id"] + " (as on the page)", "text": text,
+              "highlight": sorted(k + 1 for k in hi), "note": note}]
+    names = []
+    if target.get("module"):
+        names.append(target["module"])
+    if span:
+        for k in range(*span):
+            m = re.match(r"^\s*([A-Za-z_]\w*)\s*(#|\w+\s*\()", lines[k])
+            if m and m.group(1) not in ("assign", "wire", "logic", "reg") and m.group(1) not in names:
+                names.append(m.group(1))
+    idx = module_index()
+    design = target.get("design")
+    for name in names:
+        try:
+            src = module_source(name, design if name == "design_top" and design else None)
+        except ApiError:
+            continue
+        mlines = src["text"].split("\n")
+        marks = []
+        # the port or parameter the target names, as the module declares it
+        for word, pattern in ((port, r"^\s*(input|output|inout)\b[^;]*\b{}\b"),
+                              (param, r"^\s*(parameter\b[^;]*?\b)?{}\s*=")):
+            if word:
+                marks += [k + 1 for k, l in enumerate(mlines) if re.search(pattern.format(re.escape(word)), l)][:1]
+        files.append({"path": src["path"], "title": "module " + name + (" of " + design if src["path"].startswith("designs") else ""),
+                      "text": src["text"], "highlight": sorted(set(marks)) or [src["line"]], "note": ""})
+    return {"files": files, "modules": sorted(idx)}
 
 
 def _check_setup(setup):
@@ -364,6 +591,10 @@ def make_server(port=8765, host="127.0.0.1"):
                     return self._send(200, su.autowire(body["setup"], int(body["use"])))
                 if path == "/api/save":
                     return self._send(200, save(body["setup"]))
+                if path == "/api/verilog":
+                    return self._send(200, verilog_view(body["setup"], body.get("target")))
+                if path == "/api/module":
+                    return self._send(200, module_source(body["name"], body.get("design")))
                 if path == "/api/project":
                     return self._send(200, project(body.get("setup_id"), body.get("design")))
                 raise ApiError(404, "not found")

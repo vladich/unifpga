@@ -424,3 +424,66 @@ def test_driver_bit_relations_follow_the_pin_fit():
     got = sorted((e["signal"], e["bit"], e["relation"]) for e in ev["trace"]["edges"] if e["design_port"] == "red")
     assert got == [("r", 4, "msb"), ("r", 5, "msb"), ("r", 6, "msb"), ("r", 7, "msb")], got
     assert ev["trace"]["parameters"]["w_red"] == 8
+
+
+def test_verilog_view_marks_what_defines_the_target():
+    rig = su.read_setup("arty_a7_35_pmod_mic3")
+    tm = next(k for k, u in enumerate(rig["use"]) if u.get("module") == "tm1638_led_key")
+    ev = studio.evaluate(rig)
+    dio = next(e for e in ev["trace"]["edges"] if e["use"] == tm and e["signal"] == "dio")
+    v = studio.verilog_view(rig, {"use": tm, "refs": [dio["ref"]], "design_port": "led", "module": dio["via"]})
+    top, lines = v["files"][0], v["files"][0]["text"].split("\n")
+    marked = [lines[n - 1] for n in top["highlight"]]
+    assert top["path"] is None and any(dio["ref"] in l and ".sio_data(" in l for l in marked), marked
+    assert any(l.strip().startswith(".led(") for l in marked)          # the design_top port
+    assert v["files"][1]["path"].startswith("rtl/") and "module " + dio["via"] in v["files"][1]["text"]
+    # the whole section of a part, the board's port list, a design_top parameter
+    sec = studio.verilog_view(rig, {"use": tm})["files"][0]
+    assert len(sec["highlight"]) > 5 and dio["via"] in sec["text"].split("\n")[sec["highlight"][1] - 1]
+    b = studio.verilog_view(rig, {"board": True})["files"][0]
+    assert b["text"].split("\n")[b["highlight"][0] - 1].startswith("module top")
+    p = studio.verilog_view(rig, {"design_port": "red", "parameter": "w_red", "module": "design_top", "design": "2_9_pong"})
+    assert p["files"][1]["path"] == "designs/2_9_pong/design_top.sv"
+    assert [p["files"][1]["text"].split("\n")[n - 1].strip()[:5] for n in p["files"][1]["highlight"]] == ["w_red", "outpu"]
+
+
+def test_module_source_is_limited_to_module_names():
+    assert "module vga" in studio.module_source("vga")["text"]
+    # the line is the module's own, also after leading blank lines
+    for name in ("vga", "digilent_pmod_mic3_spi_receiver", "tm1638_board_controller"):
+        src = studio.module_source(name)
+        assert src["text"].split("\n")[src["line"] - 1].lstrip().startswith("module " + name), name
+    for bad in ("../etc/passwd", "vga;rm", ""):
+        with pytest.raises(studio.ApiError):
+            studio.module_source(bad)
+    with pytest.raises(studio.ApiError):
+        studio.module_source("no_such_module_here")
+    with pytest.raises(studio.ApiError):
+        studio.module_source("design_top", "../x")
+
+
+def test_parts_that_do_not_reach_the_design_say_why():
+    for sid in su.read_setups():
+        assert studio.evaluate(su.read_setup(sid))["parts"] == [], sid
+    base = su.read_setup("arty_a7_35_pmod_mic3")
+    # a second microphone: audio_in is exclusive, the first provider keeps it
+    rig = copy.deepcopy(base)
+    rig["use"].append({"module": "inmp441_breakout", "wires": {}})
+    rig["use"][-1].update(su.autowire(rig, len(rig["use"]) - 1))
+    ev = studio.evaluate(rig)
+    (x,) = ev["parts"]
+    assert x["use"] == len(rig["use"]) - 1 and not x["connected"] and x["reasons"][0][0] == "exclusive"
+    assert "digilent_pmod_mic3 already provides it" in x["reasons"][0][1]
+    assert any(p["level"] == "warning" and "audio_in" in p["message"] for p in ev["problems"])
+    # a second TM1638 on a rig whose profile has no entry for it
+    rig = copy.deepcopy(base)
+    rig["use"].append({"module": "tm1638_led_key", "wires": {}})
+    rig["use"][-1].update(su.autowire(rig, len(rig["use"]) - 1))
+    (x,) = studio.evaluate(rig)["parts"]
+    assert x["reasons"][0][0] == "untraced" and "design-wiring profile" in x["reasons"][0][1]
+    assert x["label"] == "tm1638_led_key #2"
+    # an unwired module
+    rig = copy.deepcopy(base)
+    rig["use"].append({"module": "i2s_dac_breakout", "wires": {}})
+    kinds = [r[0] for p in studio.evaluate(rig)["parts"] for r in p["reasons"]]
+    assert kinds and set(kinds) <= {"unwired", "untraced"}, kinds

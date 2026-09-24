@@ -192,6 +192,24 @@ function drivers() {
 }
 function driverOf(sel) { return drivers().find((d) => d.use === sel.use && d.via === sel.via); }
 
+// why a part does not reach the design (server evaluate `parts`): {connected, reasons: [[kind, text]]}
+function partStatus(i) { return ((S.ev && S.ev.parts) || []).find((x) => x.use === i); }
+function partText(i) { const x = partStatus(i); return x ? x.reasons.map((r) => r[1]).join(" ") : ""; }
+function partShort(i) {
+  const x = partStatus(i);
+  if (!x) return "";
+  const kinds = {untraced: "no profile entry / not placed", exclusive: "capability already provided", unwired: "not wired", nothing: "nothing design_top uses"};
+  const k = x.reasons[0][0];
+  return (x.connected ? "partly in the design: " : "not in the design: ") + (k === "untraced" && !/profile/.test(x.reasons[0][1]) ? "cannot be placed" : kinds[k] || k);
+}
+// the peripheral a use attaches, and the capabilities it provides
+function usePeripheral(u) {
+  return u.module ? (moduleDef(u.module) || {}).peripheral : u.onboard ? ((onboardDef(u.onboard) || {}).attach || {}).peripheral
+       : u.gpio ? "gpio_header" : (u.raw || {}).peripheral;
+}
+function providedCaps(pid) { return ((S.board.peripherals[pid] || {}).provides || []).map((p) => p.capability); }
+function capAggregation(cid) { return ((S.board.capabilities || []).find((c) => c.id === cid) || {}).aggregation; }
+
 // a use the rig's design-wiring profile leaves out of the design: {peripheral, ties}
 function profileDrop(i) { return ((S.ev && S.ev.profile_drops) || []).find((x) => x.use === i); }
 function dropText(i) {
@@ -267,15 +285,17 @@ function draw() {
     if (p.capability === "screen" && p.providers.length && !captioned.has("screen")) {
       captioned.add("screen");
       const q = designParams();
-      const cap = el("text", {x: VX, y: y + 9, "font-size": 10, fill: "#7048e8", class: "clickable"},
-                     "screen " + q.screen_width + "×" + q.screen_height + ", " + screenVariant() + " — parameters, set by " +
-                     p.providers.map((pr) => useLabel(S.setup.use[pr.attach_index] || {})).join(", "));
+      // two short lines, cut to the virtual device's column (the full text is the tooltip)
+      const fit = (s) => s.length > 52 ? s.slice(0, 51) + "…" : s;
+      const cap = el("text", {x: VX, y: y + 9, "font-size": 10, fill: "#7048e8", class: "clickable"});
+      cap.append(el("tspan", {x: VX}, fit("screen " + q.screen_width + "×" + q.screen_height + ", " + screenVariant() + " (parameters)")));
+      cap.append(el("tspan", {x: VX, dy: 12}, fit("set by " + p.providers.map((pr) => useLabel(S.setup.use[pr.attach_index] || {})).join(", "))));
       cap.append(el("title", {}, "design_top is parameterized: screen_width / screen_height and w_red / w_green / w_blue come from the rig. " +
                                  "This rig gives " + screenVariant() + "; other rigs give other colour depths, and a design reads the parameters " +
                                  "(or asks for a depth with `// requires: screen >= 640x480@888`)."));
       target(cap, {kind: "vport", cap: p.capability, signal: "red"});
       svg.append(cap);
-      y += 16;
+      y += 28;
     }
     let width = p.width || 0;
     for (const pr of p.providers) for (const b of pr.bits || []) if (b.design_bit !== null) width = Math.max(width, b.design_bit + 1);
@@ -386,7 +406,7 @@ function draw() {
       g.append(dot);
     });
     const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null || dropped ? "#868e96" : "#212529"},
-                  o.label + (dropped ? "  — not in the design (profile)" : ""));
+                  o.label + (dropped ? "  — not in the design (profile)" : i !== null && partStatus(i) ? "  — " + partShort(i) : ""));
     lt.append(el("title", {}, o.label + (i === null ? " — not used by this setup" : dropped ? " — " + dropText(i) : "")));
     g.append(lt);
     target(g.firstChild, {kind: "onboard", id: o.id});
@@ -446,7 +466,10 @@ function draw() {
     cy = boxY + c.rows.length * PITCH + (long ? 50 : 40);
   }
   const boardW = GX - BX + widest + 24, boardH = Math.max(cy - top, oy - top + 10);
-  svg.append(el("rect", {x: BX, y: top, width: boardW, height: boardH, rx: 8, fill: "#e7f5ff", stroke: "#1c7ed6", "stroke-width": 2}));
+  const frame = el("rect", {x: BX, y: top, width: boardW, height: boardH, rx: 8, fill: "#e7f5ff",
+                            stroke: S.sel && S.sel.kind === "board" ? "var(--sel)" : "#1c7ed6", "stroke-width": 2});
+  target(frame, {kind: "board"});
+  svg.append(frame);
   svg.append(el("text", {x: BX + 12, y: top + 24, "font-weight": "bold", "font-size": 15}, S.board.board));
   boardItems.forEach((g) => svg.append(g));
   connItems.forEach((g) => svg.append(g));
@@ -462,19 +485,26 @@ function draw() {
     const m = use.module ? moduleDef(use.module) : null;
     const w = use.module ? wiresOf(use) : {};
     const pins = m ? Object.keys(m.pins).filter((p) => !passive(m.pins[p])) : [];
-    const hgt = 28 + PITCH * Math.max(pins.length, 1);
+    const st = partStatus(i), gap = st ? 14 : 0;
+    const hgt = 28 + gap + PITCH * Math.max(pins.length, 1);
     const on = hi.uses.has(i) || (S.sel && S.sel.kind === "use" && S.sel.use === i);
     const g = el("g");
-    const box = el("rect", {x: MX, y: my, width: 230, height: hgt, rx: 5, fill: "#fff", stroke: col,
-                           "stroke-width": on ? 3.5 : 2, class: "clickable"});
+    const box = el("rect", {x: MX, y: my, width: 230, height: hgt, rx: 5, fill: st && !st.connected ? "#f8f9fa" : "#fff", stroke: col,
+                           "stroke-width": on ? 3.5 : 2, "stroke-dasharray": st && !st.connected ? "5 3" : "", class: "clickable"});
     target(box, {kind: "use", use: i});
     g.append(box);
     const title = el("text", {x: MX + 8, y: my + 17, "font-weight": "bold", "font-size": 12, fill: col, class: "clickable"}, useLabel(use));
     target(title, {kind: "use", use: i});
     g.append(title);
     S.pos.uses[i] = {x: MX, y: my + 12, xr: MX + 230};
+    if (st) {
+      const note = el("text", {x: MX + 8, y: my + 31, "font-size": 10, fill: "#c92a2a", class: "clickable"}, partShort(i));
+      note.append(el("title", {}, partText(i)));
+      target(note, {kind: "use", use: i});
+      g.append(note);
+    }
     pins.forEach((p, k) => {
-      const py = my + 28 + k * PITCH + PITCH / 2;
+      const py = my + 28 + gap + k * PITCH + PITCH / 2;
       S.pos.mpins[i + "." + p] = {x: MX, y: py};
       const pend = S.pending && S.pending.use === i && S.pending.pin === p;
       const isSel = hi.mpins.has(i + "." + p);
@@ -536,7 +566,8 @@ function draw() {
     g.append(el("rect", {x: DX, y: d.y, width: DW, height: d.h, rx: 5, fill: "#f3f0ff",
                          stroke: boxSel || lit(d.edges) ? "var(--sel)" : "#7048e8", "stroke-width": boxSel ? 2.5 : 1.2}));
     g.append(el("text", {x: DX + 8, y: d.y + 14, "font-size": 11, "font-weight": "bold", fill: "#5f3dc4"}, d.via));
-    g.append(el("text", {x: DX + 8, y: d.y + 26, "font-size": 9, fill: "#868e96"}, "driver in the FPGA for " + useLabel(use)));
+    const sub = "driver in the FPGA for " + useLabel(use);
+    g.append(el("text", {x: DX + 8, y: d.y + 26, "font-size": 9, fill: "#868e96"}, sub.length > 40 ? sub.slice(0, 39) + "…" : sub));
     g.append(el("title", {}, d.via + ": logic inside the FPGA between design_top and " + useLabel(use) + "'s pins"));
     for (const c of g.children) if (c.tagName !== "title") target(c, {kind: "driver", use: d.use, via: d.via});
     svg.append(g);
@@ -622,6 +653,7 @@ function selLabel(sel) {
   if (sel.kind === "use") return "part: " + useLabel(S.setup.use[sel.use]);
   if (sel.kind === "onboard") return "on-board device: " + ((onboardDef(sel.id) || {}).label || sel.id);
   if (sel.kind === "conn") return "connector: " + ((conn(sel.id) || {}).label || sel.id);
+  if (sel.kind === "board") return "board: " + S.board.board;
   return sel.kind;
 }
 
@@ -745,7 +777,15 @@ function wireZoomPan() {
   $("zoom-in").addEventListener("click", () => zoomCenter(1 / 1.25));
   $("zoom-out").addEventListener("click", () => zoomCenter(1.25));
   $("zoom-fit").addEventListener("click", () => { S.view = null; applyView(); });
-  svg.addEventListener("dblclick", (e) => { if (e.target === svg) { S.view = null; applyView(); } });
+  svg.addEventListener("dblclick", (e) => {
+    const all = candidatesAt(e.clientX, e.clientY);
+    if (!all.length) { S.view = null; applyView(); return; }
+    closePicker();
+    const points = all.filter((s) => POINTS.has(s.kind)), conns = all.filter((s) => CONNECTIONS.has(s.kind));
+    const parts = all.filter((s) => !POINTS.has(s.kind) && !CONNECTIONS.has(s.kind));
+    const pick = e[MODS.connsKey] ? conns[0] || points[0] || parts[0] : points[0] || conns[0] || parts[0];
+    openVerilog(pick).catch((x) => status(x.message, true));
+  });
 }
 
 // what the current selection lights up
@@ -850,6 +890,280 @@ function highlight() {
   return hi;
 }
 
+// ---------------------------------------------------------------- side panel: splitter, tabs
+function wireSplitter() {
+  const sp = $("splitter"), side = $("side");
+  const set = (w, keep) => {
+    const max = Math.max(260, document.querySelector("main").clientWidth * 0.75);
+    w = Math.round(Math.max(240, Math.min(max, w)));
+    side.style.flexBasis = w + "px";
+    if (keep) try { localStorage.setItem("unifpga.studio.side", String(w)); } catch (e) { /* storage unavailable */ }
+    return w;
+  };
+  try { const w = Number(localStorage.getItem("unifpga.studio.side")); if (w) set(w); } catch (e) { /* storage unavailable */ }
+  sp.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    try { sp.setPointerCapture(e.pointerId); } catch (x) { /* no live pointer (a synthetic event) */ }
+    sp.classList.add("dragging");
+    const x0 = e.clientX, w0 = side.getBoundingClientRect().width;
+    const move = (ev) => set(w0 - (ev.clientX - x0));
+    const up = (ev) => { set(w0 - (ev.clientX - x0), true); sp.classList.remove("dragging");
+                         sp.removeEventListener("pointermove", move); sp.removeEventListener("pointerup", up); };
+    sp.addEventListener("pointermove", move); sp.addEventListener("pointerup", up);
+  });
+  sp.addEventListener("keydown", (e) => {
+    const w = side.getBoundingClientRect().width;
+    if (e.key === "ArrowLeft") { e.preventDefault(); set(w + 24, true); }
+    if (e.key === "ArrowRight") { e.preventDefault(); set(w - 24, true); }
+  });
+}
+
+function showSide(name) {
+  for (const b of document.querySelectorAll(".stab")) b.classList.toggle("active", b.dataset.side === name);
+  $("side-props").hidden = name !== "props";
+  $("side-source").hidden = name !== "source";
+  if (name === "source" && S.srcView) scrollToLine(S.srcView.line);
+}
+
+function wireSide() {
+  for (const b of document.querySelectorAll(".stab")) b.addEventListener("click", () => showSide(b.dataset.side));
+  $("src-back").addEventListener("click", () => historyStep(-1));
+  $("src-fwd").addEventListener("click", () => historyStep(1));
+  $("src-prev").addEventListener("click", () => markStep(-1));
+  $("src-next").addEventListener("click", () => markStep(1));
+  $("src-code").addEventListener("click", onCodeClick);
+}
+
+// ---------------------------------------------------------------- Verilog: what a double click opens
+// The server generates the rig's top.sv as it is on the page and marks the
+// lines that define the target; the modules it names come from rtl/ (and the
+// chosen design). All from this checkout.
+
+function verilogTarget(sel) {
+  const ri = refIndex(), all = traceEdges();
+  const pinRef = (key) => { const [cid, k] = String(key).split("."); const c = conn(cid), p = c && c.pins[k]; return p ? p.ref : null; };
+  const usePins = (i) => {
+    const u = S.setup.use[i] || {};
+    if (u.module) return Object.values(wiresOf(u)).map(pinRef).filter(Boolean);
+    const o = u.onboard && onboardDef(u.onboard);
+    return o ? Object.values(o.pins).flatMap((ps) => ps.map((p) => p.ref)) : [];
+  };
+  const withDrop = (i) => Object.assign({use: i}, profileDrop(i) ? {refs: usePins(i)} : {});
+  if (sel.kind === "vbit" || sel.kind === "vport") {
+    const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
+    return p && {design_port: portName(p), parameter: p.width_parameter, module: "design_top", design: S.design};
+  }
+  if (sel.kind === "pin") return {refs: [pinRef(sel.conn + "." + sel.key)]};
+  if (sel.kind === "ref") return {refs: [sel.ref]};
+  if (sel.kind === "wire" || sel.kind === "mpin") {
+    const w = wiresOf(S.setup.use[sel.use] || {})[sel.pin];
+    return w ? {use: sel.use, refs: [pinRef(w)]} : withDrop(sel.use);
+  }
+  if (sel.kind === "edge") { const ed = all[sel.n]; return ed && {use: ed.use, refs: [ed.ref], design_port: ed.design_port, module: ed.via || undefined}; }
+  if (sel.kind === "dseg") {
+    const d = driverOf(sel), an = d && (sel.side === "pin" ? d.pin : d.design).get(sel.key);
+    if (!an) return null;
+    return sel.side === "pin" ? {use: sel.use, refs: [an.ref], module: sel.via} : {use: sel.use, design_port: an.ed.design_port, module: sel.via};
+  }
+  if (sel.kind === "driver") return {use: sel.use, module: sel.via};
+  if (sel.kind === "use") return withDrop(sel.use);
+  if (sel.kind === "onboard") { const i = S.setup.use.findIndex((u) => u.onboard === sel.id); return i >= 0 ? withDrop(i) : {refs: usePinsOfOnboard(sel.id)}; }
+  if (sel.kind === "conn") return {refs: Object.values((conn(sel.id) || {pins: {}}).pins).map((p) => p.ref)};
+  if (sel.kind === "board") return {board: true};
+  return null;
+}
+function usePinsOfOnboard(id) { const o = onboardDef(id); return o ? Object.values(o.pins).flatMap((ps) => ps.map((p) => p.ref)) : []; }
+
+async function openVerilog(sel) {
+  if (!sel) return;
+  if (STATIC) { status("the Verilog view needs the editor server (./unifpga serve)", true); return; }
+  const target = verilogTarget(sel);
+  if (!target) return;
+  showSide("source");
+  $("src-title").textContent = "generating the Verilog for " + selLabel(sel) + "…";
+  const r = await api("/api/verilog", {setup: S.setup, target});
+  S.modules = new Set(r.modules.concat(["design_top"]));
+  S.srcFiles = r.files;
+  // the definition itself first: a driver's or design_top's own module, else the rig's top
+  const own = (sel.kind === "driver" || sel.kind === "vbit" || sel.kind === "vport") && r.files.length > 1 ? r.files[1] : r.files[0];
+  openView(own, own.highlight[0] || 1, own.highlight, selLabel(sel));
+}
+
+// ---- the viewer
+function openView(file, line, marks, why, keepHistory) {
+  const v = {file, line, marks: marks || [], why: why || ""};
+  if (!keepHistory) {
+    S.srcHist = (S.srcHist || []).slice(0, (S.srcPos || 0) + 1);
+    S.srcHist.push(v); S.srcPos = S.srcHist.length - 1;
+  }
+  S.srcView = v;
+  renderSource();
+}
+
+function historyStep(d) {
+  const n = (S.srcPos || 0) + d;
+  if (!S.srcHist || n < 0 || n >= S.srcHist.length) return;
+  S.srcPos = n;
+  openView(S.srcHist[n].file, S.srcHist[n].line, S.srcHist[n].marks, S.srcHist[n].why, true);
+}
+
+function markStep(d) {
+  const v = S.srcView;
+  if (!v || !v.marks.length) return;
+  const k = v.marks.indexOf(v.line);
+  v.line = v.marks[(k < 0 ? 0 : (k + d + v.marks.length) % v.marks.length)];
+  renderMarks(); scrollToLine(v.line);
+}
+
+function renderMarks() {
+  const v = S.srcView, k = v.marks.indexOf(v.line);
+  $("src-count").textContent = v.marks.length ? (k >= 0 ? k + 1 : "–") + " of " + v.marks.length : "";
+  for (const b of ["src-prev", "src-next"]) $(b).disabled = v.marks.length < 2;
+  const box = $("src-code");
+  for (const e of box.querySelectorAll(".ln.focus")) e.classList.remove("focus");
+  const el = box.querySelector('[data-line="' + v.line + '"]');
+  if (el) el.classList.add("focus");
+}
+
+function scrollToLine(n) {
+  const box = $("src-code"), el = box.querySelector('[data-line="' + n + '"]');
+  if (el && box.clientHeight) box.scrollTop = Math.max(0, el.offsetTop - box.clientHeight / 2 + el.offsetHeight / 2);
+}
+
+function renderSource() {
+  const v = S.srcView, f = v.file;
+  $("src-back").disabled = !(S.srcPos > 0);
+  $("src-fwd").disabled = !(S.srcHist && S.srcPos < S.srcHist.length - 1);
+  $("src-files").replaceChildren(...(S.srcFiles || []).map((x) => h("button", {class: x === f ? "cur" : "",
+    title: x.path || "generated, not a file", onclick: () => openView(x, x.highlight[0] || 1, x.highlight, v.why)},
+    x.path ? x.path.split("/").pop() : "top.sv")));
+  $("src-title").textContent = (f.path || f.title) + (v.why ? "  —  " + v.why : "");
+  $("src-note").textContent = f.note || "";
+  const box = $("src-code");
+  if (box.dataset.shown !== (f.path || f.title) + "#" + f.text.length) {
+    box.replaceChildren(...highlightVerilog(f.text).map((toks, k) => {
+      const ln = h("div", {class: "ln", "data-line": k + 1}, h("span", {class: "no"}, String(k + 1)));
+      for (const [cls, text] of toks) ln.append(cls ? h("span", {class: cls}, text) : text);
+      return ln;
+    }));
+    box.dataset.shown = (f.path || f.title) + "#" + f.text.length;
+    f.decl = f.decl || declarations(f.text);
+    for (const e of box.querySelectorAll(".id")) if (f.decl.has(e.textContent)) e.classList.add("nav");
+  }
+  const marks = new Set(v.marks);
+  for (const e of box.querySelectorAll(".ln")) e.classList.toggle("hl", marks.has(Number(e.dataset.line)));
+  for (const e of box.querySelectorAll(".occ")) e.classList.remove("occ");
+  renderMarks();
+  scrollToLine(v.line);
+}
+
+// ---- SystemVerilog tokens: [class, text] per line; classes k keyword, t type,
+// c comment, s string, n number, d directive, f system task, m module name, id identifier
+const SV_KEYWORDS = new Set(("module endmodule macromodule input output inout parameter localparam assign always always_ff always_comb " +
+  "always_latch initial final begin end if else case casez casex endcase default for foreach while do repeat forever generate endgenerate " +
+  "genvar function endfunction task endtask return posedge negedge or and not xor typedef enum struct packed union interface endinterface " +
+  "modport import export package endpackage automatic static unique unique0 priority wait disable fork join join_any join_none signed unsigned " +
+  "const break continue inside assert assume cover property endproperty sequence endsequence").split(" "));
+const SV_TYPES = new Set("wire logic reg bit byte int integer shortint longint real realtime time tri tri0 tri1 wand wor supply0 supply1 var string void".split(" "));
+const SV_TOKEN = /(\/\/.*$)|(\/\*)|("(?:[^"\\]|\\.)*")|(`[A-Za-z_]\w*)|(\$[A-Za-z_]\w*)|(\d*'[sS]?[bBoOdDhH]\s*[0-9a-fA-FxXzZ_?]+|\d[\d_]*(?:\.\d+)?|'[01xXzZ])|([A-Za-z_]\w*)|(\s+|.)/g;
+
+function highlightVerilog(text) {
+  let inBlock = false;
+  return text.split("\n").map((line) => {
+    const out = [];
+    let i = 0;
+    if (inBlock) {
+      const e = line.indexOf("*/");
+      if (e < 0) return [["c", line]];
+      out.push(["c", line.slice(0, e + 2)]); i = e + 2; inBlock = false;
+    }
+    SV_TOKEN.lastIndex = i;
+    let m;
+    while (i < line.length && (m = SV_TOKEN.exec(line))) {
+      i = SV_TOKEN.lastIndex;
+      const [tok, lc, bc, str, dir, sys, num, id] = m;
+      if (lc) out.push(["c", tok]);
+      else if (bc) {
+        const e = line.indexOf("*/", m.index + 2);
+        if (e < 0) { out.push(["c", line.slice(m.index)]); inBlock = true; break; }
+        out.push(["c", line.slice(m.index, e + 2)]); i = e + 2; SV_TOKEN.lastIndex = i;
+      } else if (str) out.push(["s", tok]);
+      else if (dir) out.push(["d", tok]);
+      else if (sys) out.push(["f", tok]);
+      else if (num) out.push(["n", tok]);
+      else if (id) out.push([SV_KEYWORDS.has(id) ? "k" : SV_TYPES.has(id) ? "t" : S.modules && S.modules.has(id) ? "m" : "id", tok]);
+      else out.push(["", tok]);
+    }
+    return out;
+  });
+}
+
+// where each name is declared in a file (1-based line): modules, ports,
+// nets, parameters (also continued parameter lists), instances, functions,
+// tasks, typedefs and named blocks. Linear in the file.
+function declarations(text) {
+  const decl = new Map();
+  const add = (name, k) => { if (name && !decl.has(name) && !SV_KEYWORDS.has(name) && !SV_TYPES.has(name)) decl.set(name, k + 1); };
+  let inParams = false;
+  text.split("\n").forEach((raw, k) => {
+    const l = raw.replace(/\/\/.*$/, "");
+    let m;
+    if ((m = l.match(/^\s*module\s+([A-Za-z_]\w*)/))) add(m[1], k);
+    if ((m = l.match(/^\s*(?:input|output|inout|wire|logic|reg|tri|integer|genvar|int|bit|byte|parameter|localparam)\b(.*)$/))) {
+      const rest = m[1].replace(/\b(?:wire|logic|reg|signed|unsigned|int|integer|bit|byte|type|var)\b/g, " ").replace(/\[[^\]]*\]/g, " ");
+      for (const part of rest.split(",")) { const id = part.trim().match(/^([A-Za-z_]\w*)/); if (id) add(id[1], k); }
+      inParams = /^\s*(?:parameter|localparam)\b/.test(l) && /,\s*$/.test(l);
+    } else if (inParams && (m = l.match(/^\s*([A-Za-z_]\w*)\s*=/))) { add(m[1], k); inParams = /,\s*$/.test(l); }
+    else inParams = false;
+    if ((m = l.match(/^\s*([A-Za-z_]\w*)\s*(?:#\s*\(.*\)\s*)?([A-Za-z_]\w*)\s*\(/)) && !SV_KEYWORDS.has(m[1]) && !SV_TYPES.has(m[1])) add(m[2], k);
+    if ((m = l.match(/^\s*\)\s*([A-Za-z_]\w*)\s*\(/))) add(m[1], k);
+    if ((m = l.match(/\b(?:function|task)\b.*?\b([A-Za-z_]\w*)\s*[(;]/))) add(m[1], k);
+    if ((m = l.match(/\bbegin\s*:\s*([A-Za-z_]\w*)/))) add(m[1], k);
+    if ((m = l.match(/^\s*typedef\b.*\b([A-Za-z_]\w*)\s*;/))) add(m[1], k);
+  });
+  return decl;
+}
+
+// the module a `.port (...)` connection on line n belongs to: the nearest
+// instance head above it
+function instanceModuleAt(text, n) {
+  const lines = text.split("\n");
+  for (let k = n - 1; k >= 0; k--) {
+    const m = lines[k].match(/^\s*([A-Za-z_]\w*)\s*(#|[A-Za-z_]\w*\s*\()/);
+    if (m && S.modules && S.modules.has(m[1])) return m[1];
+    if (/;\s*$/.test(lines[k]) && k < n - 1) return null;
+  }
+  return null;
+}
+
+async function openModule(name, focusName, why) {
+  const src = await api("/api/module", {name, design: name === "design_top" ? S.design : undefined});
+  const file = (S.srcFiles || []).find((x) => x.path === src.path) ||
+               {path: src.path, title: "module " + name, text: src.text, highlight: [src.line], note: ""};
+  if (!(S.srcFiles || []).includes(file)) S.srcFiles = (S.srcFiles || []).concat([file]);
+  file.decl = file.decl || declarations(file.text);
+  const line = focusName && file.decl.has(focusName) ? file.decl.get(focusName) : src.line;
+  openView(file, line, [line], why);
+}
+
+function onCodeClick(e) {
+  const tok = e.target.closest(".id, .m");
+  if (!tok || !S.srcView) return;
+  const f = S.srcView.file, name = tok.textContent, box = $("src-code");
+  for (const x of box.querySelectorAll(".occ")) x.classList.remove("occ");
+  for (const x of box.querySelectorAll(".id, .m")) if (x.textContent === name) x.classList.add("occ");
+  const line = Number(tok.closest(".ln").dataset.line);
+  const prev = tok.previousSibling && tok.previousSibling.textContent;
+  const go = (p) => p.catch((x) => status(x.message, true));
+  if (tok.classList.contains("m")) return go(openModule(name, null, "module " + name));
+  if (prev && /\.\s*$/.test(prev)) {               // .port(...) of an instance: the port in that module
+    const mod = instanceModuleAt(f.text, line);
+    if (mod) return go(openModule(mod, name, mod + "." + name));
+  }
+  f.decl = f.decl || declarations(f.text);
+  if (f.decl.has(name) && f.decl.get(name) !== line) openView(f, f.decl.get(name), [f.decl.get(name)], name);
+}
+
 // ---------------------------------------------------------------- selection and details
 
 function select(sel) { S.sel = sel; S.pending = null; render(); }
@@ -950,6 +1264,10 @@ function details() {
     if (ed) connectionPanel(d, ed);
   } else if (sel.kind === "dseg" || sel.kind === "driver") {
     driverPanel(d, sel);
+  } else if (sel.kind === "board") {
+    d.append(h("h4", {}, S.board.board + (S.board.verified ? "" : " (layout not verified)")));
+    d.append(h("div", {}, S.board.connectors.length + " connectors, " + S.board.onboard.length + " on-board devices"));
+    d.append(h("p", {class: "muted"}, "Double-click the board for the generated top module's ports: every FPGA pin this rig uses."));
   } else if (sel.kind === "ref") {
     const o = S.board.onboard.find((x) => Object.values(x.pins).some((ps) => ps.some((pp) => pp.ref === sel.ref)));
     const pp = o && Object.entries(o.pins).flatMap(([s, ps]) => ps.map((x) => Object.assign({s}, x))).find((x) => x.ref === sel.ref);
@@ -964,6 +1282,7 @@ function details() {
     const o = onboardDef(sel.id), i = uses.findIndex((u) => u.onboard === sel.id);
     d.append(h("h4", {}, o.label + " (" + o.attach.peripheral + ")"));
     if (i >= 0 && profileDrop(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + dropText(i) + "."));
+    if (i >= 0 && partStatus(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + partText(i)));
     for (const [s, ps] of Object.entries(o.pins)) d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ")));
     if (i >= 0) { for (const x of portsOfUse(i)) d.append(chain(["design " + x.port.signal + (x.bits.length ? "[" + x.bits.join(",") + "]" : ""), o.label + (x.via ? " via " + x.via : "")])); }
     if (!STATIC) {
@@ -1099,6 +1418,7 @@ function useDetails(d, i) {
   const use = S.setup.use[i];
   d.append(h("h4", {}, useLabel(use) + (use.module ? " (" + moduleDef(use.module).peripheral + ")" : "")));
   if (profileDrop(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + dropText(i) + "."));
+  if (partStatus(i)) d.append(h("p", {class: "note"}, (partStatus(i).connected ? "Only partly connected to the design: " : "Not connected to the design: ") + partText(i)));
   if (use.module) {
     const m = moduleDef(use.module);
     if (m.verified === false) d.append(h("div", {class: "chain"}, "pinout not verified: " + (m.source || "")));
@@ -1146,7 +1466,10 @@ async function autoWire(i) {
     Object.assign(use, got);
     S.pending = null;
     S.sel = {kind: "use", use: i};
-    await changed("auto-wired " + useLabel(use) + (got.plug ? " (plugged into " + got.plug.connector + " row " + got.plug.row + ")" : ""));
+    const what = "auto-wired " + useLabel(use) + (got.plug ? " (plugged into " + got.plug.connector + " row " + got.plug.row + ")" : "");
+    await changed(what);
+    const st = partStatus(i);
+    if (st) status(what + " — the pins are free, but it " + (st.connected ? "reaches the design only in part: " : "does not reach the design: ") + partText(i), true);
   } catch (e) { status(e.message, true); }
 }
 
@@ -1225,11 +1548,19 @@ function removableUse() {
 
 function headerActions() {
   if (STATIC || !S.board) return;
-  const add = $("add-module");
-  if (add.options.length !== S.board.modules.length + 1) {
-    add.replaceChildren(h("option", {value: ""}, "Add module…"),
-                        ...S.board.modules.map((m) => h("option", {value: m.id}, m.name + " (" + m.peripheral + ")")));
-  }
+  const add = $("add-module"), uses = S.setup.use || [];
+  // exclusive capabilities already provided, and by which part
+  const taken = new Map();
+  uses.forEach((u, i) => { for (const c of providedCaps(usePeripheral(u))) if (capAggregation(c) === "exclusive" && !taken.has(c) && !profileDrop(i)) taken.set(c, useLabel(u)); });
+  const text = (m) => {
+    const n = uses.filter((u) => u.module === m.id).length;
+    const clash = providedCaps(m.peripheral).filter((c) => taken.has(c)).map((c) => c + " already provided by " + taken.get(c));
+    return m.name + " (" + m.peripheral + ")" + (n ? " — in the rig" + (n > 1 ? " ×" + n : "") : "") +
+           (clash.length ? " — a new one would not reach the design: " + clash.join(", ") : "");
+  };
+  const want = ["Add module…"].concat(S.board.modules.map(text));
+  if ([...add.options].map((o) => o.textContent).join("\n") !== want.join("\n"))
+    add.replaceChildren(h("option", {value: ""}, want[0]), ...S.board.modules.map((m, k) => h("option", {value: m.id}, want[k + 1])));
   const i = removableUse(), btn = $("remove-sel");
   btn.disabled = i === null;
   btn.textContent = i === null ? "Remove" : "Remove " + useLabel(S.setup.use[i]);
@@ -1255,7 +1586,7 @@ function designChoices() {
     (unmet.length ? bad : good).push([d, unmet]);
   }
   if (!good.some(([d]) => d === S.design))
-    S.design = good.some(([d]) => d === "1_06_binary_counter") ? "1_06_binary_counter" : good.length ? good[0][0] : null;
+    S.design = good.length ? good[0][0] : null;
   const items = [h("div", {class: "designs-head"}, fit ? "Fit this rig (" + good.length + ")" : "Designs (fix the rig's problems to check them)")];
   for (const [d] of good)
     items.push(h("div", {class: "design fit" + (d === S.design ? " chosen" : ""), "data-design": d,
@@ -1309,6 +1640,8 @@ async function api(path, body) {
   const opt = body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json", "X-Unifpga-Studio": "1"}, body: JSON.stringify(body)};
   const r = await fetch(path, opt);
   const data = r.headers.get("Content-Type").startsWith("application/json") ? await r.json() : null;
+  if (r.status === 404 && path.startsWith("/api/") && data && data.error === "not found")
+    throw new Error("the editor server does not know " + path + ": it is older than this page — restart ./unifpga serve");
   if (!r.ok) throw new Error((data && data.error) || r.statusText);
   return data;
 }
@@ -1361,12 +1694,14 @@ function wire() {
   $("toolchain").addEventListener("change", (e) => { S.setup.toolchain = e.target.value; changed("toolchain " + e.target.value); });
   for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => showTab(b.dataset.tab));
   $("add-module").addEventListener("change", (e) => { const id = e.target.value; e.target.value = ""; if (id) addModule(id); });
+  wireSide();
   $("remove-sel").addEventListener("click", removeSelected);
   $("new-setup").addEventListener("click", () => {
     const id = prompt("New setup id (a-z, 0-9, _):", S.board.board + "_my_rig");
     if (!id) return;
     const copy = confirm("Start from the current setup? (Cancel starts empty with the board's clock)");
-    const base = copy ? clone(S.setup) : {board: S.board.board, toolchain: $("toolchain").value, use: [{onboard: "clock"}]};
+    const clocks = S.board.onboard.filter((o) => ((S.board.peripherals[o.attach.peripheral] || {}).provides || []).some((p) => p.capability === "clock"));
+    const base = copy ? clone(S.setup) : {board: S.board.board, toolchain: $("toolchain").value, use: clocks.slice(0, 1).map((o) => ({onboard: o.id}))};
     base.id = id; delete base.notes;
     S.setup = base; S.sel = null;
     $("setup").append(h("option", {value: id}, id)); $("setup").value = id;
@@ -1396,6 +1731,7 @@ function wire() {
 
 async function main() {
   wireZoomPan();
+  wireSplitter();
   if (STATIC) {
     document.body.classList.add("readonly");
     S.board = STATIC.board; S.setup = STATIC.setup; S.ev = STATIC.evaluation;
@@ -1508,6 +1844,68 @@ async function selftest() {
       ok("a driver's panel lists its pins and design bits", $("details").textContent.includes("Its pins") && $("details").textContent.includes(bd.via));
       ok("the legend names the drivers present", $("svg").textContent.includes(bd.via + ")") || $("svg").textContent.includes(bd.via + ","));
     }
+    // the splitter resizes the side panel
+    {
+      const side = $("side"), sp = $("splitter"), w0 = side.getBoundingClientRect().width, r = sp.getBoundingClientRect();
+      const pe = (type, x) => sp.dispatchEvent(new PointerEvent(type, {clientX: x, clientY: r.top + 20, pointerId: 7, bubbles: true}));
+      pe("pointerdown", r.left + 4); pe("pointermove", r.left - 96); pe("pointerup", r.left - 96);
+      ok("dragging the splitter widens the side panel", Math.abs(side.getBoundingClientRect().width - (w0 + 100)) < 3);
+      pe("pointerdown", r.left - 96); pe("pointerup", r.left + 4);
+    }
+    // double click: the Verilog that defines it, scrolled to the marked line
+    const dbl = async (sel) => {
+      const el = document.querySelector("[data-sel='" + JSON.stringify(sel) + "']");
+      const b = el.getBoundingClientRect();
+      $("svg").dispatchEvent(new MouseEvent("dblclick", {clientX: b.left + Math.min(b.width / 2, 20), clientY: b.top + Math.min(b.height / 2, 6), bubbles: true}));
+      for (let k = 0; k < 100 && !(S.srcView && !$("src-title").textContent.startsWith("generating")); k++) await new Promise((r) => setTimeout(r, 30));
+      await new Promise((r) => setTimeout(r, 0));
+    };
+    const inView = (n) => { const box = $("src-code"), e = box.querySelector('[data-line="' + n + '"]');
+      return !!e && e.offsetTop >= box.scrollTop && e.offsetTop + e.offsetHeight <= box.scrollTop + box.clientHeight; };
+    if (drs.length) {
+      const d0 = drs[0];
+      S.srcView = null;
+      await dbl({kind: "driver", use: d0.use, via: d0.via});
+      const v = S.srcView;
+      const opened = !$("side-source").hidden && v && v.file.path && v.file.text.split("\n")[v.line - 1].includes("module " + d0.via);
+      ok("double-clicking a driver opens its module in the Source tab" + (opened ? "" : " [" + JSON.stringify({via: d0.via,
+         path: v && v.file.path, line: v && v.line, title: $("src-title").textContent, status: $("status").textContent}) + "]"), opened);
+      ok("the definition is scrolled into view and marked", inView(v.line) && $("src-code").querySelector('[data-line="' + v.line + '"]').classList.contains("focus"));
+      ok("the code is coloured", !!$("src-code").querySelector(".k") && !!$("src-code").querySelector(".c, .n"));
+      const top = S.srcFiles[0];
+      ok("the rig's top marks the driver's section", top.path === null && top.highlight.some((n) => top.text.split("\n")[n - 1].includes(d0.via)));
+      // navigation: a module name in the top opens that module; a signal jumps to its declaration
+      openView(top, top.highlight[0], top.highlight, "test");
+      await new Promise((r) => setTimeout(r, 0));
+      const mtok = [...$("src-code").querySelectorAll(".m")].find((e) => e.textContent === d0.via);
+      if (mtok) { mtok.click(); for (let k = 0; k < 100 && S.srcView.file === top; k++) await new Promise((r) => setTimeout(r, 30));
+        ok("clicking a module name opens its file", S.srcView.file.path && S.srcView.file.text.includes("module " + d0.via)); }
+      historyStep(-1);
+      ok("back returns to the top", S.srcView.file === top);
+      const nav = [...$("src-code").querySelectorAll(".id.nav")].find((e) => top.decl.get(e.textContent) !== Number(e.closest(".ln").dataset.line));
+      if (nav) { nav.click(); ok("clicking a signal jumps to its declaration", S.srcView.line === top.decl.get(nav.textContent)); }
+      showSide("props");
+    }
+    // a module whose exclusive capability the rig already has: marked in the
+    // selector, and Auto-wire says it will not reach the design
+    {
+      const taken = new Set();
+      S.setup.use.forEach((u, i) => { for (const c of providedCaps(usePeripheral(u))) if (capAggregation(c) === "exclusive" && !profileDrop(i)) taken.add(c); });
+      const inRig = S.board.modules.find((m) => S.setup.use.some((u) => u.module === m.id));
+      if (inRig) ok("the module selector marks a module already in the rig",
+                    [...$("add-module").options].some((o) => o.value === inRig.id && o.textContent.includes("in the rig")));
+      const clash = S.board.modules.find((m) => providedCaps(m.peripheral).some((c) => taken.has(c)));
+      if (clash) {
+        ok("the selector says a new one would not reach the design",
+           [...$("add-module").options].some((o) => o.value === clash.id && o.textContent.includes("would not reach the design")));
+        const n0 = S.setup.use.length;
+        S.setup.use.push({module: clash.id, wires: {}}); await changed("add clash"); await settle();
+        await autoWire(n0); await settle();
+        ok("Auto-wire says why the part does not reach the design", /does not reach the design|only in part/.test($("status").textContent));
+        ok("the part is marked in the drawing", $("svg").textContent.includes("capability already provided"));
+        S.setup.use.splice(n0, 1); S.sel = null; await changed("remove clash"); await settle();
+      }
+    }
     // widths the rig sets are shown as design_top parameters
     const pp = ports().find((q) => q.width_parameter && q.providers.length);
     if (pp) {
@@ -1583,7 +1981,8 @@ async function selftest() {
     const r = await api("/api/save", {setup: S.setup});
     ok("saved", r.configuration.endsWith("selftest_rig.yml"));
     S.dirty = false;
-    const pr = await api("/api/project", {setup_id: "selftest_rig", design: "1_06_binary_counter"});
+    const fitting = Object.entries(S.ev.designs || {}).find(([, unmet]) => !unmet.length);
+    const pr = await api("/api/project", {setup_id: "selftest_rig", design: fitting[0]});
     ok("project generated with a top", pr.ok && pr.files.includes("top.sv"));
     const misfit = Object.entries(S.ev.designs || {}).find(([, unmet]) => unmet.length);
     const unfitEl = misfit && document.querySelector('#designs .design.unfit[data-design="' + misfit[0] + '"] .why');

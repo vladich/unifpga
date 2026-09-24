@@ -25,10 +25,27 @@
       <div id="zoom"><button id="zoom-in" title="Zoom in (or scroll up)">+</button><button id="zoom-out" title="Zoom out (or scroll down)">−</button><button id="zoom-fit" title="Fit the drawing (or double-click the background)">Fit</button><span id="zoom-level"></span></div>
       <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"></svg>
     </section>
+    <div id="splitter" role="separator" aria-orientation="vertical" tabindex="0" title="Drag to resize the panels (or use the arrow keys)"></div>
     <aside id="side">
-      <div id="hint">Click a design port bit, a header pin, a wire, a module or an on-board device to trace it. Scroll to zoom, drag to pan.</div>
-      <div id="details"></div>
-      <h3>Problems</h3><ul id="problems"></ul>
+      <nav id="side-tabs">
+        <button data-side="props" class="stab active">Properties</button>
+        <button data-side="source" class="stab">Source</button>
+      </nav>
+      <div id="side-props">
+        <div id="hint">Click a design port bit, a header pin, a wire, a module or an on-board device to trace it; double-click anything to open its Verilog. Scroll to zoom, drag to pan.</div>
+        <div id="details"></div>
+        <h3>Problems</h3><ul id="problems"></ul>
+      </div>
+      <div id="side-source" hidden>
+        <div id="src-bar">
+          <button id="src-back" title="Back">←</button><button id="src-fwd" title="Forward">→</button>
+          <span id="src-files"></span>
+          <span id="src-marks"><button id="src-prev" title="Previous marked line">▲</button><span id="src-count"></span><button id="src-next" title="Next marked line">▼</button></span>
+        </div>
+        <div id="src-title"></div>
+        <div id="src-note"></div>
+        <div id="src-code"><p class="muted">Double-click anything in the drawing to open the Verilog that defines it. In the code, click a module name or a signal to go to its definition.</p></div>
+      </div>
     </aside>
   </main>
   <section id="tables">

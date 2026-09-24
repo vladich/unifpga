@@ -26,7 +26,37 @@ body { margin: 0; font: 13px system-ui, sans-serif; color: var(--fg); background
 .design.unfit { color: #adb5bd; cursor: not-allowed; }
 .design .why { display: block; font-size: 11px; color: #c92a2a; opacity: 0.75; }
 .designs-head { grid-column: 1 / -1; font-weight: 600; margin-top: 6px; }
-main { display: flex; gap: 12px; align-items: flex-start; padding: 8px 12px; }
+main { display: flex; gap: 0; align-items: stretch; padding: 8px 12px; }
+#splitter { flex: 0 0 8px; cursor: col-resize; margin: 0 2px; border-radius: 3px; background: linear-gradient(90deg, transparent 3px, #dee2e6 3px, #dee2e6 5px, transparent 5px); }
+#splitter:hover, #splitter:focus, #splitter.dragging { background: #a5d8ff; outline: none; }
+#side-tabs { display: flex; gap: 2px; border-bottom: 1px solid #dee2e6; margin-bottom: 6px; position: sticky; top: 0; background: var(--bg); z-index: 1; }
+.stab { font: inherit; padding: 4px 12px; border: 1px solid #ced4da; border-bottom: none; background: #fff; border-radius: 4px 4px 0 0; cursor: pointer; }
+.stab.active { background: #1c7ed6; border-color: #1c7ed6; color: #fff; }
+#src-bar { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+#src-bar button { font: inherit; min-width: 26px; }
+#src-files button { font: inherit; font-size: 11px; margin: 1px; }
+#src-files button.cur { background: #d0ebff; font-weight: 600; }
+#src-marks { margin-left: auto; white-space: nowrap; }
+#src-count { color: var(--muted); padding: 0 4px; font-size: 11px; }
+#src-title { font-weight: 600; margin: 4px 0 2px; word-break: break-all; }
+#src-note { color: #c92a2a; font-size: 11px; }
+#src-code { position: relative; height: calc(85vh - 110px); overflow: auto; border: 1px solid #dee2e6; border-radius: 4px;
+            font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #fcfcfd; }
+#src-code .ln { white-space: pre; padding-right: 8px; }
+#src-code .no { display: inline-block; width: 4.5ch; margin-right: 1.2ch; text-align: right; color: #adb5bd; user-select: none; }
+#src-code .ln.hl { background: #fff3bf; }
+#src-code .ln.focus { background: #ffe066; box-shadow: inset 3px 0 0 #f08c00; }
+#src-code .k { color: #7048e8; font-weight: 600; }
+#src-code .t { color: #1971c2; }
+#src-code .c { color: #2b8a3e; font-style: italic; }
+#src-code .s { color: #c92a2a; }
+#src-code .n { color: #d9480f; }
+#src-code .d { color: #862e9c; }
+#src-code .f { color: #0b7285; }
+#src-code .m { color: #5f3dc4; text-decoration: underline dotted; cursor: pointer; }
+#src-code .id.nav { cursor: pointer; }
+#src-code .id.nav:hover, #src-code .m:hover { text-decoration: underline; }
+#src-code .occ { background: #d0ebff; border-radius: 2px; }
 #drawing { flex: 1 1 auto; min-width: 0; position: relative; border: 1px solid #dee2e6; border-radius: 6px; overflow: hidden; }
 #svg { display: block; width: 100%; height: 78vh; cursor: grab; touch-action: none; user-select: none; }
 #svg.panning { cursor: grabbing; }
@@ -34,7 +64,7 @@ main { display: flex; gap: 12px; align-items: flex-start; padding: 8px 12px; }
         border-bottom: 1px solid #e9ecef; background: var(--panel); }
 #zoom button { min-width: 28px; font: inherit; }
 #zoom-level { color: var(--muted); min-width: 40px; text-align: right; }
-#side { flex: 0 0 340px; max-height: 85vh; overflow: auto; }
+#side { flex: 0 0 340px; min-width: 0; max-height: 85vh; overflow: auto; }
 #details .chain { margin: 4px 0; padding: 6px 8px; background: var(--panel); border-radius: 4px; }
 #details h4 { margin: 4px 0; }
 #details button { margin: 2px 4px 2px 0; }
@@ -54,7 +84,7 @@ pre { background: var(--panel); padding: 8px; overflow: auto; max-height: 400px;
 svg text { font-family: system-ui, sans-serif; }
 .clickable { cursor: pointer; }
 .readonly .edit { display: none; }
-@media (max-width: 900px) { main { flex-direction: column; } #side { flex-basis: auto; width: 100%; } }
+@media (max-width: 900px) { main { flex-direction: column; } #side { flex-basis: auto !important; width: 100%; } #splitter { display: none; } }
 #add-module { max-width: 220px; }
 #picker { position: fixed; z-index: 10; max-width: 420px; background: #fff; border: 1px solid #adb5bd; border-radius: 6px;
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); padding: 6px; display: flex; flex-direction: column; gap: 3px; }
