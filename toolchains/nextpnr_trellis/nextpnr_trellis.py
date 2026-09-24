@@ -54,20 +54,14 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
         include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=True)
 
 
-# Map our boards.yml board id to nextpnr-ecp5 (DEVICE, PACKAGE, SPEED).
-_BOARD_TO_TRELLIS = {
-    "karnix_ecp5":     ("25k", "CABGA256", 6),
-    "orangecrab_ecp5": ("25k", "CSFBGA285", 6),
-    "colorlight75b":   ("25k", "CABGA256", 6),
-}
-
-
-def _select_part(board, configuration):
-    bid = board.get("Id") or ""
-    info = _BOARD_TO_TRELLIS.get(bid)
-    if info is not None:
-        return info
-    # Fallback: parse `LFE5U[M]-<size>F[-<speed>][BG<pkg>]` style strings.
+def _select_part(board, pinmap):
+    """nextpnr-ecp5 (DEVICE, PACKAGE, SPEED): the pinmap's
+    `toolchain_options.yosys` device_part / device_pack / speed when it
+    gives them, else from the board's part."""
+    yo = codegen.yosys_loader_settings(pinmap)
+    if yo.get("device_part") and yo.get("device_pack"):
+        return str(yo["device_part"]), str(yo["device_pack"]), int(yo.get("speed") or 6)
+    # else parse `LFE5U[M]-<size>F[-<speed>][BG<pkg>]` style strings.
     part = board.get("Part") or ""
     m = re.match(r"^LFE5UM?-(\d+)F(?:-(\d+))?(?:([CB]G\d+))?$", part)
     if m:
@@ -94,9 +88,10 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    info = _select_part(board, configuration)
+    info = _select_part(board, board_pinmap)
     if info is None:
-        log.error("Unrecognized ECP5 board %r — extend _BOARD_TO_TRELLIS.", board.get("Id"))
+        log.error("Board %r: neither its pinmap (toolchain_options.yosys device_part / device_pack) nor its "
+                  "part %r names the ECP5 device and package", board.get("Id"), board.get("Part"))
         return 1
     device, package, speed = info
     yo = codegen.yosys_loader_settings(board_pinmap)
@@ -195,7 +190,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         return 1
     # openFPGALoader takes `--cable` (colorlight, set per board) and
     # `--ftdi-channel` (karnix 0, orangecrab 1)
-    args = codegen.openfpgaloader_args(board_pinmap, board.get("Id")) if os.path.basename(pgm).startswith("openFPGALoader") else []
+    args = codegen.openfpgaloader_args(board_pinmap) if os.path.basename(pgm).startswith("openFPGALoader") else []
     cmd = [pgm] + args + [bit]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode

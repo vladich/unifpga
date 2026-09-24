@@ -54,14 +54,6 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
 # Map our boards.yml board id to (nextpnr-gowin --device, gowin_pack -d).
 # nextpnr-gowin takes the part-line `GW1NR-LV9QN88PC6/I5` form;
 # gowin_pack uses the family-only form `GW1N-9C` / `GW2A-18C`.
-# openFPGALoader board names (`openFPGALoader --list-boards`).
-_OPENFPGALOADER_BOARD = codegen.OPENFPGALOADER_BOARDS      # shared with the Gowin EDA driver
-
-_BOARD_TO_APICULA = {
-    "tang_nano_9k":         ("GW1NR-LV9QN88PC6/I5", "GW1N-9C"),
-    "tang_primer_20k_dock": ("GW2A-LV18PG256C8/I7", "GW2A-18C"),
-    # Tang Nano 4K, 1K, 20K could be added when needed.
-}
 
 
 def _himbaechel_has_gowin(binary):
@@ -74,9 +66,13 @@ def _himbaechel_has_gowin(binary):
     return "gowin" in out.lower()
 
 
-def _select_part(board, configuration):
-    bid = board.get("Id") or ""
-    return _BOARD_TO_APICULA.get(bid)
+def _select_part(board, pinmap):
+    """(nextpnr device, apicula family): the pinmap's
+    `toolchain_options.yosys.device_part` (else the board's part) and
+    `device_family`; None without a family."""
+    yo = codegen.yosys_loader_settings(pinmap)
+    family = yo.get("device_family")
+    return (yo.get("device_part") or board.get("Part"), family) if family else None
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
@@ -95,9 +91,10 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    info = _select_part(board, configuration)
+    info = _select_part(board, board_pinmap)
     if info is None:
-        log.error("Unrecognized Gowin board %r — extend _BOARD_TO_APICULA.", board.get("Id"))
+        log.error("Board %r: its pinmap gives no toolchain_options.yosys.device_family (the apicula "
+                  "family, GW1N-9C ...)", board.get("Id"))
         return 1
     nextpnr_device, gowin_pack_device = info
 
@@ -208,7 +205,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if pgm is None:
         log.error("Could not find openFPGALoader on $PATH.")
         return 1
-    cmd = [pgm] + (codegen.openfpgaloader_args(board_pinmap, board.get("Id")) or ["-b", "tangnano9k"]) + [fs]
+    cmd = [pgm] + (codegen.openfpgaloader_args(board_pinmap)) + [fs]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

@@ -54,16 +54,6 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
         include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=True)
 
 
-_PART_TO_NEXTPNR = {
-    # iCE40 LP/HX/UP family identifiers used by nextpnr-ice40's --<chip> flag.
-    "iCE40UP5K-SG48": ("up5k", "sg48"),
-    "iCE40HX8K-CT256": ("hx8k", "ct256"),
-    "iCE40HX8K-CB132": ("hx8k", "cb132"),
-    "iCE40HX1K-VQ100": ("hx1k", "vq100"),
-    "iCE40LP1K-QN84":  ("lp1k", "qn84"),
-}
-
-
 def _select_part(board, configuration):
     part = board.get("Part") or ""
     if not part and isinstance(board.get("Parts"), list):
@@ -80,19 +70,12 @@ def _select_part(board, configuration):
 
 
 def _nextpnr_chip_args(part):
-    """Map our boards.yml part string to nextpnr-ice40's command-line flags.
-    Returns a list like ['--up5k', '--package', 'sg48']."""
-    info = _PART_TO_NEXTPNR.get(part)
-    if info is None:
-        # Best-effort: try to parse iCE40<family>-<package> from the part name.
-        m = re.match(r"^iCE40(LP|HX|UP)(\d+K)-(\w+)$", part)
-        if m:
-            family = (m.group(1) + m.group(2)).lower()
-            pkg = m.group(3).lower()
-            return ["--{}".format(family), "--package", pkg]
+    """nextpnr-ice40's flags for an iCE40 part (iCE40<LP|HX|UP><size>-<package>):
+    ['--up5k', '--package', 'sg48'] for iCE40UP5K-SG48; None for anything else."""
+    m = re.match(r"^iCE40(LP|HX|UP)(\d+K)-(\w+)$", part)
+    if not m:
         return None
-    family, pkg = info
-    return ["--{}".format(family), "--package", pkg]
+    return ["--{}".format((m.group(1) + m.group(2)).lower()), "--package", m.group(3).lower()]
 
 
 def _yosys_synth_family(part):
@@ -216,7 +199,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     # openFPGALoader -b <the board's loader name>;
     # iceprog stays the fallback for a machine without openFPGALoader
     loader = _resolve_bin("openFPGALoader")
-    args = codegen.openfpgaloader_args(board_pinmap, board.get("Id"))
+    args = codegen.openfpgaloader_args(board_pinmap)
     if loader is not None:
         cmd = [loader] + args + [bit]
     else:

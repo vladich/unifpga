@@ -257,7 +257,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     # programmer_cli otherwise (macOS / Windows, or no loader)
     loader = shutil.which("openFPGALoader") if sys.platform.startswith("linux") else None
     if loader is not None:
-        cmd = [loader] + (codegen.openfpgaloader_args(board_pinmap, board.get("Id")) or ["-b", "tangnano9k"]) + [bit]
+        cmd = [loader] + (codegen.openfpgaloader_args(board_pinmap)) + [bit]
         log.info("Programming via: %s", " ".join(cmd))
         rc = subprocess.run(cmd, cwd=output).returncode
         if rc != 0:

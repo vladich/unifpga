@@ -122,7 +122,7 @@ def test_reset_from_keys_reads_the_board_buttons():
     text = codegen.emit_top_sv(r)
     assert _lines(text, r"assign rst = ") == ["assign rst = rst_on_power_up | ((~ onboard_buttons[0]) | (~ onboard_buttons[1]));"]
     plans = codegen.build_capability_plans(r)
-    assert codegen._board_key_terms(r, plans) == ["(~ onboard_buttons[0])", "(~ onboard_buttons[1])"]
+    assert codegen._board_provider_terms(r, plans, "buttons", "btn") == ["(~ onboard_buttons[0])", "(~ onboard_buttons[1])"]
 
 
 def test_header_bits_reach_the_design_even_when_a_peripheral_drives_them():

@@ -852,12 +852,13 @@ def resolve_configuration(configuration_id, configuration=None):
     # `tie:` — pins the top drives with a constant or the reset (e.g.
     # `assign M_CLK = 1'b0`, `assign ARDUINO_RESET_N = ~ rst`), one pin_tie
     # attach each so they are declared, driven and constrained.
+    tie = next((pid for pid, p in peripherals.items() if p.get("role") == "tie"), None)
     for ref, value in (cfg.get("tie") or {}).items():
-        if "pin_tie" not in peripherals:
-            raise ConfigError("Configuration '{c}': tie: needs the pin_tie peripheral".format(c=configuration_id))
+        if tie is None:
+            raise ConfigError("Configuration '{c}': tie: needs a peripheral with role: tie".format(c=configuration_id))
         attached.append({
-            "peripheral_id": "pin_tie",
-            "peripheral":    peripherals["pin_tie"],
+            "peripheral_id": tie,
+            "peripheral":    peripherals[tie],
             "params":        {"value": _tie_value(configuration_id, ref, value)},
             "bind":          {"pin": str(ref)},
         })

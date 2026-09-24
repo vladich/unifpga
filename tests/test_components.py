@@ -175,10 +175,11 @@ def test_openfpgaloader_args_follow_the_board():
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_ftdi_channel": "1"}}}) == ["--ftdi-channel", "1"]
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_cable": "ft2232"}}}) == ["--cable", "ft2232"]
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_board": "ice40_generic"}}}) == ["-b", "ice40_generic"]
-    assert codegen.openfpgaloader_args({}, "tang_nano_20k") == ["-b", "tangnano20k"]
-    assert codegen.openfpgaloader_args({}, "de10_lite") == []
+    assert codegen.openfpgaloader_args(config_init.read_board_pinmap("tang_nano_20k")) == ["-b", "tangnano20k"]
+    assert codegen.openfpgaloader_args({}) == []
+    assert codegen.openfpgaloader_args(config_init.read_board_pinmap("de10_lite")) == []
     r = config_init.resolve_configuration("orangecrab_ecp5_yosys")
-    assert codegen.openfpgaloader_args(r["board_pinmap"], "orangecrab_ecp5") == ["--ftdi-channel", "1"]
+    assert codegen.openfpgaloader_args(r["board_pinmap"]) == ["--ftdi-channel", "1"]
 
 
 def test_qsf_has_project_template_lines():

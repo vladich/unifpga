@@ -40,32 +40,13 @@ DIGILENT_DIR = os.environ.get(
 )
 
 
-# Map our board id → Digilent XDC filename. The XDC repo names files
-# inconsistently (Master / 100T-Master / DDR-Master / DDR-Master), so we
-# spell each one out.
-DIGILENT_BOARDS = {
-    "arty_a7":      "Arty-A7-100-Master.xdc",
-    "arty_a7_35":   "Arty-A7-35-Master.xdc",
-    "arty_s7_25":   "Arty-S7-25-Master.xdc",
-    "arty_s7_50":   "Arty-S7-50-Master.xdc",
-    "arty_z7_10":   "Arty-Z7-10-Master.xdc",
-    "arty_z7_20":   "Arty-Z7-20-Master.xdc",
-    "basys3":       "Basys-3-Master.xdc",
-    "cmod_a7":      "Cmod-A7-Master.xdc",
-    "cmod_s7":      "Cmod-S7-25-Master.xdc",
-    "cora_z7_07s":  "Cora-Z7-07S-Master.xdc",
-    "cora_z7_10":   "Cora-Z7-10-Master.xdc",
-    "eclypse_z7":   "Eclypse-Z7-Master.xdc",
-    "genesys_2":    "Genesys-2-Master.xdc",
-    "nexys4":       "Nexys-4-Master.xdc",
-    "nexys4_ddr":   "Nexys-4-DDR-Master.xdc",
-    "nexys_a7":     "Nexys-A7-100T-Master.xdc",
-    "nexys_a7_50":  "Nexys-A7-50T-Master.xdc",
-    "nexys_a7_100": "Nexys-A7-100T-Master.xdc",
-    "nexys_video":  "Nexys-Video-Master.xdc",
-    "usb104_a7_100t": "USB104-A7-100T-Master.xdc",
-    "zedboard":     "Zedboard-Master.xdc",
-}
+# our board id -> Digilent XDC filename: config/vendor_constraints.yml
+def _digilent_boards():
+    with open(os.path.join(REPO, "config", "vendor_constraints.yml"), encoding="utf-8") as f:
+        return (yaml.safe_load(f)["VendorConstraints"] or {}).get("digilent") or {}
+
+
+DIGILENT_BOARDS = _digilent_boards()
 
 # Map Digilent canonical port names → our pinBank names. Our convention
 # prefixes most things with "onboard_"; Digilent uses uppercase abbreviations.

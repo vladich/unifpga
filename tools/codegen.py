@@ -518,27 +518,17 @@ def _gw5_primitive(board):
     return "PLLA" if part.startswith("GW5A-") else "PLL"
 
 
-# openFPGALoader board names (`openFPGALoader --list-boards`) for the Gowin
-# boards.
-OPENFPGALOADER_BOARDS = {
-    "runber": "runber", "tang_nano_1k": "tangnano1k", "tang_nano_4k": "tangnano4k", "tang_nano_9k": "tangnano9k",
-    "tang_nano_20k": "tangnano20k", "tang_primer_20k_dock": "tangprimer20k", "tang_primer_20k_lite": "tangprimer20k",
-    "tang_primer_25k": "tangprimer25k", "tang_mega_138k": "tangmega138k", "tang_mega_138k_pro": "tangmega138k",
-}
-
-
-def openfpgaloader_args(pinmap, board_id=None):
+def openfpgaloader_args(pinmap):
     """openFPGALoader options for this board, in this
     order: `--cable` (colorlight), `--ftdi-channel` (ECP5 boards), `-b
-    <board>` from the pinmap's `toolchain_options.yosys.loader_*` or the
-    Gowin board table. [] when
+    <board>`, from the pinmap's `toolchain_options.yosys.loader_*`. [] when
     nothing is known (openFPGALoader then autodetects)."""
     opts = ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
     if opts.get("loader_cable"):
         return ["--cable", str(opts["loader_cable"])]
     if opts.get("loader_ftdi_channel") not in (None, ""):
         return ["--ftdi-channel", str(opts["loader_ftdi_channel"])]
-    board = opts.get("loader_board") or OPENFPGALOADER_BOARDS.get(board_id or "")
+    board = opts.get("loader_board")
     return ["-b", str(board)] if board else []
 
 
@@ -1115,9 +1105,27 @@ def _describe_missing(pinmap, ref, port_bit):
     return "{}: no pin".format(port_bit)
 
 
+def gpio_capability():
+    """The capability whose pins reach the design unbuffered (the one that
+    names a `passthrough` peripheral: gpio)."""
+    return next((cid for cid, c in config_init.read_capabilities().items() if c.get("passthrough")), None)
+
+
 def _is_gpio_passthrough(perif):
+    cap = gpio_capability()
     return perif.get("driver") is None and any(
-        p.get("capability") == "gpio" for p in perif.get("provides") or [])
+        p.get("capability") == cap for p in perif.get("provides") or [])
+
+
+def _axis_extent(ref, plans):
+    """For `capability.<cap>.<signal>` naming a raster axis (a signal with an
+    `extent`: screen x counts to width), the axis length on this rig; else None."""
+    m = re.match(r"^\s*capability\.(\w+)\.(\w+)\s*$", str(ref))
+    plan = plans.get(m.group(1)) if m else None
+    sig = next((s for s in (plan.cap.get("signals") or []) if s["name"] == m.group(2)), None) if plan else None
+    if not sig or not sig.get("extent"):
+        return None
+    return int(plan.params.get(sig["extent"], 0))
 
 
 def validate_configuration(resolved, plans=None):
@@ -1394,7 +1402,17 @@ def _clk_mhz_int(clock):
 # `reset_button` attachments count as `pin` sources too. With nothing declared
 # the policy is `power_up`, never a constant 0.
 
-_RESET_KINDS = ("pin", "switch_msb", "switch", "any_key", "key", "tm_key", "power_up", "pll_lock", "bank")
+# reset sources the engine itself provides; the ones read from other
+# capabilities (switch, key, tm_key ...) are the reset capability's `sources`
+_RESET_ENGINE_KINDS = ("pin", "power_up", "pll_lock", "bank")
+
+
+def reset_source_kinds():
+    """{kind: {capability, signal, parts, index?}}: config/capabilities/reset.yml `sources`."""
+    for cap in config_init.read_capabilities().values():
+        if cap.get("sources") and any(s.get("name") == "rst" for s in cap.get("signals") or []):
+            return dict(cap["sources"])
+    return {}
 
 
 def reset_sources(resolved, plans=None):
@@ -1416,26 +1434,23 @@ def reset_sources(resolved, plans=None):
             src = {src: True}
         if not isinstance(src, dict):
             raise CodegenError("reset.sources entries must be mappings, got {!r}".format(src))
-        unknown = set(src) - set(_RESET_KINDS) - {"active"}
+        kinds = reset_source_kinds()
+        unknown = set(src) - set(_RESET_ENGINE_KINDS) - set(kinds) - {"active"}
         if unknown:
             raise CodegenError("reset.sources: unknown keys {}".format(sorted(unknown)))
         if src.get("pin"):
             sources.append(("pin", {"ref": src["pin"], "active": src.get("active", "low")}))
-        if src.get("switch_msb"):
-            sources.append(("switch", {"index": "msb"}))
-        if "switch" in src and src["switch"] is not None and src["switch"] is not False:
-            sources.append(("switch", {"index": src["switch"]}))
-        # `bank: onboard_buttons` narrows a key source to that bank's buttons
-        # (marsohod3gw2: KEY0 / KEY1 reset, the shield's keys are the lab's)
-        if src.get("any_key"):
-            sources.append(("key", {"index": "any", "bank": src.get("bank")}))
-        if "key" in src and src["key"] is not None and src["key"] is not False:
-            sources.append(("key", {"index": src["key"], "bank": src.get("bank")}))
+        # a bit of another capability: `switch: 3`, `switch_msb: true`, `key: 0`,
+        # `any_key: true`; `bank: onboard_buttons` narrows it to that bank's
+        # pins (marsohod3gw2: KEY0 / KEY1 reset, the shield's keys are the lab's)
+        for kind, spec in kinds.items():
+            v = src.get(kind)
+            if v is None or v is False:
+                continue
+            sources.append((spec.get("kind", kind), dict(spec, kind=kind, index=spec.get("index", v), bank=src.get("bank"))))
         if src.get("pll_lock"):
             # marsohod3gw2: `rst = ~ (key_rst_n & pll_lock)` — held until the PLL locks
             sources.append(("pll_lock", {"clock": src["pll_lock"]}))
-        if "tm_key" in src and src["tm_key"] is not None and src["tm_key"] is not False:
-            sources.append(("tm_key", {"index": src["tm_key"]}))
         if src.get("power_up"):
             sources.append(("power_up", {}))
     if not sources:
@@ -1467,26 +1482,20 @@ def _index_expr(bus, width, index, what, cfg_id):
     return "{}[{}]".format(bus, i)
 
 
-def _board_key_terms(resolved, plans, bank=None):
-    """Active-high expressions of the board's own push-buttons, LSB first:
-    the pins of every buttons provider without a driver, in attach order
-    (only those bound to `bank` when given)."""
-    return _board_provider_terms(resolved, plans, "buttons", "btn", bank)
-
-
-def _tm_key_terms(resolved, plans):
-    """The TM1638's key bits (active-high), LSB first, from its own wire when
-    the buttons bus is merged, else from its slice of the bus."""
-    plan = plans["buttons"]
+def _driver_provider_terms(plans, cap_id, sig):
+    """The bits (active-high, LSB first) of the first provider of `cap_id`
+    that has a driver (a TM1638's keys), from its own wire when the bus is
+    merged, else from its slice of the bus."""
+    plan = plans[cap_id]
     for pidx, perif, _params in plan.providers:
-        if perif.get("id") != "tm1638_led_key":
+        if perif.get("driver") is None:
             continue
-        w = plan.widths.get(pidx, 8)
+        w = plan.widths.get(pidx, 1)
         if plan.merged and pidx in plan.bits:
-            wire = _provider_wire(plan, "btn", pidx)
+            wire = _provider_wire(plan, sig, pidx)
             return ["{}[{}]".format(wire, i) for i in range(w)]
         off = plan.offsets.get(pidx, 0)
-        return ["cap_buttons_btn[{}]".format(off + i) for i in range(w)]
+        return ["cap_{}_{}[{}]".format(cap_id, sig, off + i) for i in range(w)]
     return []
 
 
@@ -1538,6 +1547,36 @@ def _reset_pin_banks(resolved):
     return banks
 
 
+def _capability_reset_term(resolved, plans, d):
+    """[the term] for a reset source read from a capability (reset.yml
+    `sources`), or [] when the rig lacks it (a warning).
+      parts: pins    the board's own parts' pins (driver-less providers):
+                     `rst = SW [w_sw - 1]` / `| (~ KEY)` read the physical
+                     switch or keys whether or not they reach the design's
+                     bus, never a TM1638's; else the design's bus
+      parts: driver  the first provider with a driver: `tm_key [w_tm_key - 1]`"""
+    cfg_id = resolved["configuration"]["id"]
+    cap, sig, what = d["capability"], d["signal"], d["kind"]
+    if d.get("parts") == "driver":
+        bits = _driver_provider_terms(plans, cap, sig)
+        if not bits:
+            raise CodegenError("Configuration {}: reset from {} but no part with a driver provides {}"
+                               .format(cfg_id, what, cap))
+        return [_index_expr_list(bits, d["index"], what, cfg_id)]
+    bits = _board_provider_terms(resolved, plans, cap, sig, d.get("bank"))
+    if d.get("bank") and not bits:
+        raise CodegenError("Configuration {}: reset {} bank {!r} has no {} part without a driver"
+                           .format(cfg_id, what, d["bank"], cap))
+    if bits:
+        return [_index_expr_list(bits, d["index"], what, cfg_id)]
+    plan = plans[cap]
+    w = plan.params.get(capability_primary(cap, plan.cap)) if plan.providers else None
+    if not w:
+        log.warning("Configuration %s: reset from %s but no %s capability", cfg_id, what, cap)
+        return []
+    return [_index_expr("cap_{}_{}".format(cap, sig), w, d["index"], what, cfg_id)]
+
+
 def _emit_reset(resolved, plans):
     lines = ["    // ---- Reset: OR of the configured sources, active-high ----"]
     terms = []
@@ -1557,45 +1596,8 @@ def _emit_reset(resolved, plans):
                 terms.append("(~ {} [{}])".format(net, k - 1))
                 continue
             terms.append("(~ {})".format(ref) if d["active"] == "low" else "({})".format(ref))
-        elif kind == "switch":
-            # `rst = SW [w_sw - 1]` is the physical switch, whether or
-            # not that switch also reaches the lab's sw bus
-            sws = _board_provider_terms(resolved, plans, "switches", "sw")
-            if sws:
-                terms.append(_index_expr_list(sws, d["index"], "switch", resolved["configuration"]["id"]))
-                continue
-            w = plans["switches"].params.get("width") if plans["switches"].providers else None
-            if not w:
-                log.warning("Configuration %s: reset from a switch but no switches capability",
-                            resolved["configuration"]["id"])
-                continue
-            terms.append(_index_expr("cap_switches_sw", w, d["index"], "switch",
-                                     resolved["configuration"]["id"]))
-        elif kind == "key":
-            # `rst = | (~ KEY)` / `~ KEY [0]` reads the board's own keys,
-            # never a TM1638's, so the key sources are the pins of the
-            # driver-less button providers (button_array), active-high here
-            keys = _board_key_terms(resolved, plans, d.get("bank"))
-            if d.get("bank") and not keys:
-                raise CodegenError("Configuration {}: reset key bank {!r} has no button_array"
-                                   .format(resolved["configuration"]["id"], d["bank"]))
-            if keys:
-                terms.append(_index_expr_list(keys, d["index"], "key", resolved["configuration"]["id"]))
-                continue
-            w = plans["buttons"].params.get("width") if plans["buttons"].providers else None
-            if not w:
-                log.warning("Configuration %s: reset from a key but no buttons capability",
-                            resolved["configuration"]["id"])
-                continue
-            terms.append(_index_expr("cap_buttons_btn", w, d["index"], "key",
-                                     resolved["configuration"]["id"]))
-        elif kind == "tm_key":
-            # `rst = rst_on_power_up | tm_key [w_tm_key - 1]`: the TM1638's own key
-            keys = _tm_key_terms(resolved, plans)
-            if not keys:
-                raise CodegenError("Configuration {}: reset from a TM1638 key but no tm1638_led_key provides buttons"
-                                   .format(resolved["configuration"]["id"]))
-            terms.append(_index_expr_list(keys, d["index"], "tm_key", resolved["configuration"]["id"]))
+        elif "capability" in d:
+            terms.extend(_capability_reset_term(resolved, plans, d))
         elif kind == "pll_lock":
             if d["clock"] not in collect_clock_requirements(resolved):
                 raise CodegenError("Configuration {}: reset.pll_lock names clock {!r}, which no peripheral declares"
@@ -1967,11 +1969,11 @@ def _emit_driver_instance(resolved, idx, attach, plans):
             post.extend(_format_conversion(net, w, fmt.get("encoding", "signed"),
                                            _resolve_ref(ref, attach, plans, bind, slice_for_idx=idx),
                                            _capability_ref_width(ref, plans, attach)))
-        elif mirror_screen and re.match(r"^\s*capability\.screen\.[xy]\s*$", str(ref)):
-            axis = str(ref).strip()[-1]
+        elif mirror_screen and _axis_extent(ref, plans) is not None:
+            # a raster axis (a capability signal with an `extent`, screen x / y)
             net = "{}_{}".format(inst_name, port)
             w = _capability_ref_width(ref, plans, attach)
-            extent = int(plans["screen"].params.get("width" if axis == "x" else "height", 0))
+            extent = _axis_extent(ref, plans)
             pre.append("    wire [{}:0] {};".format(w - 1, net))
             port_lines.append("        .{}({})".format(port, net))
             post.append("    assign {} = {}'({} - 1 - {});   // mirrored (mirror_screen)".format(
@@ -2254,7 +2256,7 @@ def _uart_rx_idle(resolved):
 def _gpio_connection(resolved, plans):
     """Return (expression, declaration_lines) for design_top's `gpio` port, or
     (None, []) when no provider exists."""
-    plan = plans["gpio"]
+    plan = plans[gpio_capability()]
     sig = next((s for s in plan.cap.get("signals", []) if s.get("direction") == "inout"), None)
     if sig is None:
         return None, []

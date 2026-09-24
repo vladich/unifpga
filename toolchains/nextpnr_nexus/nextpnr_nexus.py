@@ -55,18 +55,8 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
         include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=False)
 
 
-# Map our boards.yml board id to nextpnr-nexus --device.
-_BOARD_TO_NEXUS = {
-    "lattice_crosslink_nx_evn": "LIFCL-40-9BG400C",
-    "lattice_crosslink_nx_vip": "LIFCL-40-9BG400C",
-}
-
-
 def _select_part(board, configuration):
-    bid = board.get("Id") or ""
-    if bid in _BOARD_TO_NEXUS:
-        return _BOARD_TO_NEXUS[bid]
-    # Fallback: use the board's Part field as-is if it looks like a Nexus part.
+    """nextpnr-nexus --device: the board's part, when it is a Nexus part."""
     part = board.get("Part") or ""
     if part.startswith(("LIFCL-", "LFD2NX-")):
         return part
@@ -98,7 +88,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     device = _select_part(board, configuration)
     if device is None:
-        log.error("Unrecognized Nexus board %r — extend _BOARD_TO_NEXUS.", board.get("Id"))
+        log.error("Board %r: its part %r is not a Nexus part (LIFCL-..., LFD2NX-...)", board.get("Id"), board.get("Part"))
         return 1
 
     family = _yosys_synth_family(device)

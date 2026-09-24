@@ -26,6 +26,7 @@ Set $UNIFPGA_DRY_RUN=1 to generate every artifact without running tools.
 
 import logging
 import os
+import re
 import shutil
 import subprocess
 
@@ -61,18 +62,11 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
         include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=False)
 
 
-# Map our boards.yml board id to (nextpnr-himbaechel --device).
-# CCGM1A1 = single-die  CCGM1 (40k ALU eq.)
-# CCGM1A2 = dual-die    CCGM1 (80k ALU eq.)
-_BOARD_TO_GATEMATE = {
-    "gatemate_evb_a1":    "CCGM1A1",
-    "olimex_gatemateevb": "CCGM1A1",
-}
-
-
 def _select_part(board, configuration):
-    bid = board.get("Id") or ""
-    return _BOARD_TO_GATEMATE.get(bid)
+    """nextpnr-himbaechel --device: the board's part, when it is a GateMate
+    die (CCGM1A1 single-die, CCGM1A2 dual-die ...)."""
+    part = str(board.get("Part") or "")
+    return part if re.match(r"^CCGM\d+A\d+$", part) else None
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
@@ -93,7 +87,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     device = _select_part(board, configuration)
     if device is None:
-        log.error("Unrecognized GateMate board %r — extend _BOARD_TO_GATEMATE.", board.get("Id"))
+        log.error("Board %r: its part %r is not a GateMate die (CCGM1A1 ...)", board.get("Id"), board.get("Part"))
         return 1
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)

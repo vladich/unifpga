@@ -88,34 +88,12 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
         include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=False)
 
 
-# Map our boards.yml board id → Libero target spec.
-_BOARD_TO_LIBERO = {
-    "m2s025_starter": {
-        # SmartFusion2 Starter Kit (Future Electronics). M2S025T is the
-        # largest SmartFusion2 die covered by Libero Silver — handy for
-        # smoke-testing the toolchain without paying for Gold.
-        # Package names embed a space and must match Libero's exact form.
-        "family":     "SmartFusion2",
-        "die":        "M2S025T",
-        "package":    "325 FCSBGA",
-        "speed":      "STD",
-        "part_range": "COM",
-        "iostd":      "LVCMOS25",
-    },
-    "polarfire_soc_icicle": {
-        "family":     "PolarFireSoC",
-        "die":        "MPFS250T_ES",
-        "package":    "FCVG484",
-        "speed":      "STD",
-        "part_range": "EXT",
-        "iostd":      "LVCMOS33",
-    },
-}
-
-
-def _select_target(board, configuration):
-    bid = board.get("Id") or ""
-    return _BOARD_TO_LIBERO.get(bid)
+def _select_target(board_pinmap):
+    """The Libero target (family, die, package, speed, part_range, iostd):
+    the pinmap's `toolchain_options.libero`, None without it."""
+    target = ((board_pinmap or {}).get("toolchain_options") or {}).get("libero")
+    need = ("family", "die", "package", "speed", "part_range", "iostd")
+    return dict(target) if target and all(k in target for k in need) else None
 
 
 def _emit_tcl(target, project_dir, sv_files, top_module, pdc_path, sdc_path):
@@ -186,10 +164,10 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    target = _select_target(board, configuration)
+    target = _select_target(board_pinmap)
     if target is None:
-        log.error("Unrecognized Microchip board %r — extend _BOARD_TO_LIBERO.",
-                  board.get("Id"))
+        log.error("Board %r: its pinmap gives no complete toolchain_options.libero (family, die, package, "
+                  "speed, part_range, iostd)", board.get("Id"))
         return 1
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
