@@ -1,10 +1,11 @@
-# Setup tang_primer_20k_dock_lcd_800_480_tm1638_alt: the rig config/configurations/tang_primer_20k_dock_lcd_800_480_tm1638_alt.yml describes.
+# Setup tang_primer_20k_dock_lcd_800_480_tm1638_gpio: the rig config/configurations/tang_primer_20k_dock_lcd_800_480_tm1638_gpio.yml describes.
 # tools/setup.py generates that configuration from it (./unifpga setup check).
 
 Setup:
-  id: tang_primer_20k_dock_lcd_800_480_tm1638_alt
+  id: tang_primer_20k_dock_lcd_800_480_tm1638_gpio
   board: tang_primer_20k_dock
   toolchain: gowin_eda
+  aliases: {tang_primer_20k_dock_lcd_800_480_tm1638_alt: {}}
   use:
     - onboard: clock
     - onboard: leds

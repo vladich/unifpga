@@ -1,10 +1,14 @@
-# Configuration 'tang_primer_20k_dock_lcd_800_480_tm1638_alt'.
-# Generated from config/setups/tang_primer_20k_dock_lcd_800_480_tm1638_alt.yml (./unifpga setup generate); edit the setup.
+# Configuration 'tang_primer_20k_dock_lcd_800_480_tm1638_gpio'.
+# Generated from config/setups/tang_primer_20k_dock_lcd_800_480_tm1638_gpio.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
-  id: tang_primer_20k_dock_lcd_800_480_tm1638_alt
+  id: tang_primer_20k_dock_lcd_800_480_tm1638_gpio
   board: tang_primer_20k_dock
   toolchain: gowin_eda
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    tang_primer_20k_dock_lcd_800_480_tm1638_alt: {}
 
   attach:
     - peripheral: clock_input

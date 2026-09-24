@@ -1,10 +1,11 @@
-# Setup tang_nano_20k_lcd_800_480_tm1638_alt: the rig config/configurations/tang_nano_20k_lcd_800_480_tm1638_alt.yml describes.
+# Setup tang_nano_20k_lcd_800_480_49mhz_tm1638: the rig config/configurations/tang_nano_20k_lcd_800_480_49mhz_tm1638.yml describes.
 # tools/setup.py generates that configuration from it (./unifpga setup check).
 
 Setup:
-  id: tang_nano_20k_lcd_800_480_tm1638_alt
+  id: tang_nano_20k_lcd_800_480_49mhz_tm1638
   board: tang_nano_20k
   toolchain: gowin_eda
+  aliases: {tang_nano_20k_lcd_800_480_tm1638_alt: {}}
   use:
     - onboard: clk
     - onboard: buttons

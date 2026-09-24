@@ -1,8 +1,8 @@
-# Design-wiring profile for tang_nano_20k_lcd_800_480_tm1638_alt: how the example designs use the hardware
-# described in config/configurations/tang_nano_20k_lcd_800_480_tm1638_alt.yml (reset, buses, clock). Applied on
+# Design-wiring profile for tang_nano_20k_lcd_800_480_49mhz_tm1638: how the example designs use the hardware
+# described in config/configurations/tang_nano_20k_lcd_800_480_49mhz_tm1638.yml (reset, buses, clock). Applied on
 # top of it by config/init.py; synthesize.py --no-profile turns it off.
 Profile:
-  configuration: tang_nano_20k_lcd_800_480_tm1638_alt
+  configuration: tang_nano_20k_lcd_800_480_49mhz_tm1638
   reset:
     sources:
     - tm_key: msb

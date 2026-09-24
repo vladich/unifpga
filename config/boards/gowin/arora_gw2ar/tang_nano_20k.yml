@@ -40,7 +40,7 @@ Board:
         vs: "26"
         bl: "49"
         # 5-6-5 bus
-        # (LCD_R[7:3], LCD_G[7:2], LCD_B[7:3]); the `_lcd_800_480_tm1638_alt`
+        # (LCD_R[7:3], LCD_G[7:2], LCD_B[7:3]); the `tang_nano_20k_lcd_800_480_49mhz_tm1638`
         # variant's different adapter is expressed with pin_overrides in its
         # configuration, not merged into this bank.
         r: ["42", "41", "40", "39", "38"]

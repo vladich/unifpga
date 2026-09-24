@@ -1,10 +1,14 @@
-# Configuration 'tang_nano_20k_lcd_800_480_tm1638_alt'.
-# Generated from config/setups/tang_nano_20k_lcd_800_480_tm1638_alt.yml (./unifpga setup generate); edit the setup.
+# Configuration 'tang_nano_20k_lcd_800_480_49mhz_tm1638'.
+# Generated from config/setups/tang_nano_20k_lcd_800_480_49mhz_tm1638.yml (./unifpga setup generate); edit the setup.
 
 Configuration:
-  id: tang_nano_20k_lcd_800_480_tm1638_alt
+  id: tang_nano_20k_lcd_800_480_49mhz_tm1638
   board: tang_nano_20k
   toolchain: gowin_eda
+
+  # The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)
+  aliases:
+    tang_nano_20k_lcd_800_480_tm1638_alt: {}
 
   pin_overrides:
     onboard_lcd.r: ["42", "41", "49", "39", "38"]
