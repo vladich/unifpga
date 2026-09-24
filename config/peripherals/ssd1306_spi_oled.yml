@@ -1,0 +1,55 @@
+# SSD1306 OLED panel on 4-wire SPI: Digilent PmodOLED (128x32), the on-board
+# OLEDs of Genesys 2, Nexys Video and ZedBoard (Univision UG-2832HSWEG04,
+# 128x32), 128x64 SPI breakouts. The panel's VDD / VBAT switches and chip
+# select are optional: boards and breakouts without them leave them unwired.
+
+Peripheral:
+  id: ssd1306_spi_oled
+  description: SSD1306 OLED panel on 4-wire SPI (monochrome, 128x32 or 128x64)
+  parameters:
+    width:   { type: int, default: 128 }
+    height:  { type: int, default: 32, description: "32 or 64 rows (a multiple of 8)" }
+    spi_khz: { type: int, default: 4000, description: "SCLK, at most 10000 (SSD1306)" }
+    com_pins: { type: int, default: 32, description: "COM pins configuration (command DA): 32 = 0x20 on Digilent's UG-2832 panels, 18 = 0x12 on most 128x64 breakouts" }
+  signals:
+    - { name: sclk, type: scalar, direction: output }
+    - { name: sdin, type: scalar, direction: output }
+    - { name: dc,   type: scalar, direction: output, comment: "0 = command, 1 = display data" }
+    - { name: res,  type: scalar, direction: output, comment: "Reset, active low" }
+    - { name: cs,   type: scalar, direction: output, optional: true, comment: "Chip select, active low" }
+    - { name: vbat, type: scalar, direction: output, optional: true, comment: "VBAT switch (PmodOLED VBATC), 0 = on" }
+    - { name: vdd,  type: scalar, direction: output, optional: true, comment: "VDD switch (PmodOLED VDDC), 0 = on" }
+  provides:
+    - capability: small_display
+      params:
+        width: $width
+        height: $height
+        bits: 1
+  # which design ports each pin carries through the driver (tools/trace.py)
+  serves:
+    sdin: [small_display.pixel]
+    sclk: [small_display.x, small_display.y, small_display.pixel]
+    dc:   [small_display.x, small_display.y]
+  driver:
+    module: ssd1306_spi_oled
+    file: rtl/peripherals/ssd1306_spi_oled.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+      WIDTH:   $width
+      HEIGHT:  $height
+      W_PIXEL: 1
+      SPI_KHZ: $spi_khz
+      COM_PINS: $com_pins
+    port_map:
+      clk:    context.clk
+      rst:    context.rst
+      x:      capability.small_display.x
+      y:      capability.small_display.y
+      pixel:  capability.small_display.pixel
+      cs_n:   pin.cs
+      sclk:   pin.sclk
+      sdin:   pin.sdin
+      dc:     pin.dc
+      res_n:  pin.res
+      vbat_n: pin.vbat
+      vdd_n:  pin.vdd

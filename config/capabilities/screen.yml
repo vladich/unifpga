@@ -33,3 +33,27 @@ Capability:
   # Only one screen at a time. Boards with both LCD and HDMI list each as a
   # separate configuration, never both attached.
   aggregation: exclusive
+  size: [width, height]           # what `screen >= WxH` compares
+  depth: [w_red, w_green, w_blue]  # what `screen >= WxH@444` compares, digit by digit
+
+  # a summary line the editor shows for the rig's screen (design_top parameters)
+  summary: "{screen_width}×{screen_height}, rgb{w_red + w_green + w_blue} ({w_red}-{w_green}-{w_blue})"
+  design:
+    parameters:
+      # without a screen the lab_top defaults stand (640x480, 4-bit colours),
+      # so the design's x / y stay 10 / 9 bits wide
+      screen_width: {value: width, absent: 640}
+      screen_height: {value: height, absent: 480}
+      # a channel is bits_r/g/b when given, else that digit of color_depth
+      w_red: {value: [bits_r, {param: color_depth, default: 444, digit: 0, otherwise: 4}], absent: 4}
+      w_green: {value: [bits_g, {param: color_depth, default: 444, digit: 1, otherwise: 4}], absent: 4}
+      w_blue: {value: [bits_b, {param: color_depth, default: 444, digit: 2, otherwise: 4}], absent: 4}
+    derived:               # the interface's own derived widths
+      w_x: {clog2: screen_width}
+      w_y: {clog2: screen_height}
+    ports:
+      x: {signal: x, width: w_x}
+      y: {signal: y, width: w_y}
+      red: {signal: red, width: w_red}
+      green: {signal: green, width: w_green}
+      blue: {signal: blue, width: w_blue}

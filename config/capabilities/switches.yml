@@ -14,3 +14,10 @@ Capability:
   signals:
     - { name: sw, type: bus, width: $width, direction: hw_to_user }
   aggregation: concat
+
+  primary: width           # summed across providers; what `switches >= N` constrains
+  design:
+    parameters:
+      w_sw: {value: width, absent: 0}
+    ports:
+      sw: {signal: sw, width: w_sw}

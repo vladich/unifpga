@@ -16,3 +16,12 @@ Capability:
   signals:
     - { name: clk, type: scalar, direction: hw_to_user }
   aggregation: exclusive
+
+  # what design_top gets from this capability (tools/codegen.py reads it; the
+  # order of parameters and ports is design_top_interface.sv's)
+  required: true           # every rig needs one (a new setup starts with the board's)
+  design:
+    parameters:
+      clk_mhz: {value: {source: lab_clock_mhz}}
+    ports:
+      clk: {signal: clk, width: 1, net: {source: lab_clock_net}}

@@ -1,0 +1,41 @@
+# HD44780-compatible character LCD (1602, 2004 modules) on its 4-bit bus,
+# write-only: R/W, when wired, is held low. D4..D7 are d[0]..d[3].
+
+Peripheral:
+  id: hd44780_lcd
+  description: HD44780-compatible character LCD on a 4-bit bus (16x2, 20x4 ...)
+  parameters:
+    columns: { type: int, default: 16 }
+    rows:    { type: int, default: 2 }
+  signals:
+    - { name: rs, type: scalar, direction: output, comment: "Register select: 0 = instruction, 1 = data" }
+    - { name: e,  type: scalar, direction: output, comment: "Enable (falling edge latches)" }
+    - { name: d,  type: bus, width: 4, direction: output, comment: "D4..D7" }
+    - { name: rw, type: scalar, direction: output, optional: true, comment: "Read/write, held at 0 (write)" }
+  provides:
+    - capability: text_display
+      params:
+        columns: $columns
+        rows: $rows
+  serves:
+    d:  [text_display.char, text_display.column, text_display.row]
+    rs: [text_display.char]
+    e:  [text_display.char, text_display.column, text_display.row]
+  driver:
+    module: hd44780_lcd
+    file: rtl/peripherals/hd44780_lcd.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+      COLUMNS: $columns
+      ROWS:    $rows
+    port_map:
+      clk:    context.clk
+      rst:    context.rst
+      column: capability.text_display.column
+      row:    capability.text_display.row
+      char:   capability.text_display.char
+      rs:     pin.rs
+      e:      pin.e
+      d:      pin.d
+  pin_assigns:
+    pin.rw: const.0

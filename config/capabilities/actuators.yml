@@ -1,0 +1,27 @@
+# Things the design moves or switches: relays, solenoids, MOSFET outputs,
+# servos, motor drivers. Each actuator has an on/off bit and an 8-bit level
+# (0..255); a provider uses what its hardware takes: a relay the bit, a servo
+# the level as its position (1 ms .. 2 ms pulse), a PWM output as its duty.
+# Providers concatenate like LEDs: a board's relays then a Pmod's servos.
+
+Capability:
+  id: actuators
+  description: Actuators, each with an on/off bit and an 8-bit level (position / duty).
+  parameters:
+    count: { type: int, description: "Actuators exposed (sum across providers)" }
+  signals:
+    - { name: enable, type: bus, width: $count, direction: user_to_hw }
+    - { name: level, type: bus, width: $count, unit: 8, direction: user_to_hw,
+        comment: "8 bits per actuator: actuator i at [8*i + 7 : 8*i]" }
+  aggregation: concat
+
+  primary: count
+  optional: true
+  design:
+    parameters:
+      w_act: {value: count, absent: 0}
+    derived:
+      w_act_level: {multiply: [w_act, 8]}
+    ports:
+      act_on: {signal: enable, width: w_act}
+      act_level: {signal: level, width: w_act_level}

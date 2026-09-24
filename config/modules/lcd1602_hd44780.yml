@@ -1,0 +1,22 @@
+# The common 1602 character LCD module (HD44780-compatible, 16x2) wired on its
+# 4-bit bus; V0 (contrast) and the backlight A / K go to a potentiometer and
+# the supply, not to the FPGA. Most are 5 V modules: their inputs take 3.3 V
+# logic, and R/W is held low so the module never drives the bus.
+Module:
+  id: lcd1602_hd44780
+  name: 1602 character LCD (HD44780, 4-bit bus)
+  peripheral: hd44780_lcd
+  params: {columns: 16, rows: 2}
+  voltage: [3.3, 5.0]
+  pins:
+    VSS: ground
+    VDD: power
+    RS: rs
+    RW: rw
+    E: e
+    D4: d[0]
+    D5: d[1]
+    D6: d[2]
+    D7: d[3]
+  source: module silkscreen (VSS VDD V0 RS RW E D0-D7 A K); HD44780U datasheet 4-bit interface (D4-D7)
+  verified: false

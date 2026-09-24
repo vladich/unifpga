@@ -9,3 +9,8 @@ Capability:
     - { name: sample, type: bus,    width: 24, direction: hw_to_user }
     - { name: valid,  type: scalar,            direction: hw_to_user, comment: "Pulses high for one cycle when `sample` is fresh" }
   aggregation: exclusive
+
+  design:
+    ports:
+      mic_sample: {signal: sample, width: 24}
+      mic_valid: {signal: valid, width: 1}

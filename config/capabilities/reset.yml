@@ -10,3 +10,7 @@ Capability:
   # On boards without a dedicated reset button, a power-on-reset module can
   # provide this capability without any explicit pin.
   aggregation: or
+
+  design:
+    ports:
+      rst: {signal: rst, width: 1, net: {source: reset_net}}

@@ -1,0 +1,17 @@
+# On/off actuator outputs: relay modules, MOSFET switches (Digilent PmodOD1),
+# solenoid and lamp drivers. Each pin is one actuator's enable bit.
+
+Peripheral:
+  id: relay_bank
+  description: On/off actuator outputs (relays, MOSFET / open-drain switches)
+  parameters:
+    count:  { type: int, required: true }
+    active: { type: enum, values: [high, low], default: high, description: "Many relay boards switch on a low input" }
+  signals:
+    - { name: ctl, type: bus, width: $count, direction: output }
+  provides:
+    - capability: actuators
+      params:
+        count: $count
+      signal_map: { enable: ctl }
+  driver: null   # codegen inverts the slice when active=low

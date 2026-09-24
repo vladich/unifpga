@@ -15,3 +15,9 @@ Capability:
     - { name: tx, type: scalar, direction: user_to_hw }
     - { name: rx, type: scalar, direction: hw_to_user }
   aggregation: exclusive
+
+  design:
+    ports:
+      # no console: the idle line, or the configuration's `uart_rx: 0`
+      uart_rx: {signal: rx, width: 1, absent: {source: uart_rx_idle}}
+      uart_tx: {signal: tx, width: 1}

@@ -1,0 +1,34 @@
+# Small pixel panel: an OLED or TFT behind a serial controller (SSD1306 over
+# SPI or I²C, 128x32 / 128x64). The provider's driver keeps the panel's
+# memory up to date by scanning it: it presents a pixel position (x, y) and
+# reads the design's pixel value for it one clock later, so the design answers
+# combinationally (or from a registered memory), as it does for a screen.
+
+Capability:
+  id: small_display
+  description: Small serial pixel panel (OLED / TFT) scanned by (x, y); the design returns the pixel.
+  parameters:
+    width:  { type: int, required: true, description: "Pixels across" }
+    height: { type: int, required: true, description: "Pixels down" }
+    bits:   { type: int, default: 1, description: "Bits per pixel (1 = monochrome; the driver reads bit 0 of each)" }
+  signals:
+    - { name: x,     type: bus, direction: hw_to_user, comment: "Pixel column being fetched; width = $clog2(width)" }
+    - { name: y,     type: bus, direction: hw_to_user, comment: "Pixel row being fetched; width = $clog2(height)" }
+    - { name: pixel, type: bus, direction: user_to_hw, comment: "The design's pixel at (x, y)" }
+  aggregation: exclusive
+  size: [width, height]    # what `small_display >= WxH` compares
+
+  optional: true           # reaches design_top only when the design declares its ports
+  summary: "{sd_width}×{sd_height}, {w_sd_pixel} bit"
+  design:
+    parameters:
+      sd_width: {value: width, absent: 0}
+      sd_height: {value: height, absent: 0}
+      w_sd_pixel: {value: bits, absent: 1}
+    derived:
+      w_sd_x: {clog2: sd_width}
+      w_sd_y: {clog2: sd_height}
+    ports:
+      sd_x: {signal: x, width: w_sd_x}
+      sd_y: {signal: y, width: w_sd_y}
+      sd_pixel: {signal: pixel, width: w_sd_pixel}

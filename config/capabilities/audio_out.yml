@@ -11,3 +11,7 @@ Capability:
   # Every provider hears the same samples (e.g. a PWM amplifier plus I2S DACs
   # on two Pmods at once); the user drives one bus.
   aggregation: broadcast
+
+  design:
+    ports:
+      sound: {signal: sample, width: 16}

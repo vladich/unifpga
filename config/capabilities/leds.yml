@@ -13,3 +13,10 @@ Capability:
   signals:
     - { name: led, type: bus, width: $width, direction: user_to_hw }
   aggregation: concat
+
+  primary: width
+  design:
+    parameters:
+      w_led: {value: width, absent: 0}
+    ports:
+      led: {signal: led, width: w_led}

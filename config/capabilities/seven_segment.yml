@@ -21,3 +21,11 @@ Capability:
     - { name: abcdefgh, type: bus, width: 8,        direction: user_to_hw }
     - { name: digit,    type: bus, width: $digits,  direction: user_to_hw }
   aggregation: concat   # multi-source concatenates digit positions
+
+  primary: digits
+  design:
+    parameters:
+      w_digit: {value: digits, absent: 0}
+    ports:
+      abcdefgh: {signal: abcdefgh, width: 8}
+      digit: {signal: digit, width: w_digit}

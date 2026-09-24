@@ -1,0 +1,27 @@
+# Digilent PmodOLED: 128x32 monochrome OLED (Univision UG-2832HSWEG04, SSD1306
+# controller) on a 2x6 Pmod; SPI on the top row, D/C, reset and the VBAT /
+# VDD switches on the bottom one.
+Module:
+  id: digilent_pmod_oled
+  name: Digilent PmodOLED
+  peripheral: ssd1306_spi_oled
+  voltage: 3.3
+  pins:
+    "1": cs
+    "2": sdin
+    "4": sclk
+    "5": ground
+    "6": power
+    "7": dc
+    "8": res
+    "9": vbat
+    "10": vdd
+    "11": ground
+    "12": power
+  source: >-
+    Digilent vivado-library ip/Pmods/PmodOLED_v1_0 (PmodOLED.v: SPI on Pmod pins
+    1-4, GPIO on 7-10; drivers/.../OledDriver.c: GPIO bit 0 DataCmd, 1 Reset,
+    2 VbatCtrl, 3 VddCtrl) and the Pmod interface's SPI pinout (1 CS, 2 MOSI,
+    3 MISO, 4 SCK); the reference manual itself is not fetchable (digilent.com
+    refuses automated access)
+  verified: false

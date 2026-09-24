@@ -13,3 +13,13 @@ Capability:
   signals:
     - { name: io, type: bus, width: $width, direction: inout }
   aggregation: concat
+
+  primary: width
+  passthrough: gpio_header # the peripheral a setup's `gpio: <connector>` attaches
+  design:
+    parameters:
+      # without a provider: the configuration's lab_width.gpio (BGM's w_gpio)
+      w_gpio: {value: width, absent: {source: lab_width}}
+    ports:
+      # straight to the pin nets (inout), also without a provider (lab_width)
+      gpio: {signal: io, width: w_gpio, net: {source: gpio_connection}}
