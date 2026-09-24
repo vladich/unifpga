@@ -60,6 +60,13 @@ Peripheral:
     vs:      [screen.y]
     blank_n: [screen.x, screen.y]
     clk:     [screen.x, screen.y]
+  # how the driver fits a colour channel onto its pins (tools/trace.py):
+  # msb = as many pins as bits: bit for bit; one pin: the OR of the channel;
+  # fewer pins: the most significant bits
+  pin_fit:
+    r: msb
+    g: msb
+    b: msb
   driver:
     module: vga
     file: rtl/peripherals/vga.sv
