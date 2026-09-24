@@ -1,9 +1,9 @@
 # Xilinx (AMD) / Artix 7 — chip registry
-# 28 nm mainstream 7-series. Vivado, openXC7 also covers most parts.
+# 28 nm mainstream 7-series. Vivado, openXC7.
 
 Producer: Xilinx (AMD)
 Family: Artix 7
-Description: 28 nm mainstream 7-series. Vivado, openXC7 also covers most parts.
+Description: 28 nm mainstream 7-series. Vivado, openXC7.
 DefaultToolchains:
   - vivado[*]
   - nextpnr_openxc7[*]

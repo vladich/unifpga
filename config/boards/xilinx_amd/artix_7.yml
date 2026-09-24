@@ -1,9 +1,9 @@
 # Xilinx (AMD) / Artix 7
-# 28 nm mainstream 7-series. Vivado, openXC7 also covers most parts.
+# 28 nm mainstream 7-series. Vivado, openXC7.
 
 Producer: Xilinx (AMD)
 Family: Artix 7
-Description: 28 nm mainstream 7-series. Vivado, openXC7 also covers most parts.
+Description: 28 nm mainstream 7-series. Vivado, openXC7.
 Boards:
   - Id: a7_lite_35t
     BoardName: A7-Lite 35T

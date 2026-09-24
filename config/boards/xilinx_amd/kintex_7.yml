@@ -1,9 +1,9 @@
 # Xilinx (AMD) / Kintex 7
-# 28 nm mid-range 7-series. Vivado + partial openXC7.
+# 28 nm mid-range 7-series. Vivado, openXC7 (partial).
 
 Producer: Xilinx (AMD)
 Family: Kintex 7
-Description: 28 nm mid-range 7-series. Vivado + partial openXC7.
+Description: 28 nm mid-range 7-series. Vivado, openXC7 (partial).
 Boards:
   - Id: edge_kintex_7
     BoardName: EDGE Kintex 7 (160T)

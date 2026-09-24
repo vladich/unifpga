@@ -1,9 +1,9 @@
 # Xilinx (AMD) / Spartan 6
-# 45 nm low-cost FPGA (2009). Vivado dropped it; ISE 14.7 last.
+# 45 nm low-cost FPGA (2009). ISE 14.7 last (not in Vivado).
 
 Producer: Xilinx (AMD)
 Family: Spartan 6
-Description: 45 nm low-cost FPGA (2009). Vivado dropped it; ISE 14.7 last.
+Description: 45 nm low-cost FPGA (2009). ISE 14.7 last (not in Vivado).
 Boards:
   - Id: alinx_ax309
     BoardName: AX309

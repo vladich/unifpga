@@ -2,7 +2,7 @@
 
 Producer: Xilinx (AMD)
 Family: Artix Ultrascale+
-Description: Artix Ultrascale+ (added during Phase 4 catalog expansion).
+Description: 16 nm cost-optimized Artix UltraScale+. Vivado.
 DefaultToolchains:
   - vivado[*]
 Chips:
