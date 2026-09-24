@@ -19,3 +19,5 @@ Setup:
     - module: digilent_pmod_vga
       wires: {R0: 'pmod_jc.[0]', R1: 'pmod_jc.[1]', R2: 'pmod_jc.[2]', R3: 'pmod_jc.[3]', G0: 'pmod_jc.[4]', G1: 'pmod_jc.[5]', G2: 'pmod_jc.[6]', G3: 'pmod_jc.[7]', B0: 'pmod_jd.[0]', B1: 'pmod_jd.[1]', B2: 'pmod_jd.[2]', B3: 'pmod_jd.[3]', HS: 'pmod_jd.[4]', VS: 'pmod_jd.[5]'}
       params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}
+    - onboard: rgb_led_5
+    - onboard: rgb_led_6

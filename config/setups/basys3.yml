@@ -19,8 +19,8 @@ Setup:
       wires: {L/R: 'pmod_ja.[6]', WS: 'pmod_ja.[5]', SCK: 'pmod_ja.[4]', SD: 'pmod_ja.[0]'}
     - module: i2s_dac_breakout
       wires: {SCK: 'pmod_jc.[4]', BCK: 'pmod_jc.[5]', DIN: 'pmod_jc.[6]', LCK: 'pmod_jc.[7]'}
-    - module: i2s_dac_breakout
-      wires: {SCK: 'pmod_jb.[6]', BCK: 'pmod_jb.[3]', DIN: 'pmod_jb.[1]', LCK: 'pmod_jb.[0]'}
+    - module: digilent_pmod_amp3
+      wires: {'9': 'pmod_jb.[6]', '4': 'pmod_jb.[3]', '2': 'pmod_jb.[1]', '1': 'pmod_jb.[0]'}
   extra:
     tie:
       pmod_ja[2]: 0

@@ -54,6 +54,11 @@ module design_top
     inout        [w_gpio   - 1 : 0]  gpio
 );
 
+    // no RGB LEDs used
+    assign rgb_r = '0;
+    assign rgb_g = '0;
+    assign rgb_b = '0;
+
 
     assign abcdefgh = 8'd0;
     assign digit = 8'd0;

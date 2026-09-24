@@ -45,3 +45,8 @@ Configuration:
         bclk: "pmod_p1b[1]"
         sdata: "pmod_p1b[2]"
         lrclk: "pmod_p1b[3]"
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_0.r
+        g: onboard_rgb_led_0.g
+        b: onboard_rgb_led_0.b

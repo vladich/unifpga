@@ -1,0 +1,21 @@
+# Digilent PmodAMP3: SSM2518 stereo I2S class-D amplifier with two speaker outputs
+# and a headphone jack (2x6 Pmod).
+Module:
+  id: digilent_pmod_amp3
+  name: Digilent PmodAMP3
+  peripheral: i2s_audio_out
+  voltage: 3.3
+  pins:
+    "1": lrclk
+    "2": sdata
+    "4": bclk
+    "5": ground
+    "6": power
+    "9": mclk
+    "11": ground
+    "12": power
+  source: >-
+    Analog Devices' PmodAMP3 reference design for the ZedBoard (no-OS, legacy/Pmods/PmodAMP3,
+    system.ucf: LRCLK JD1, SDATA JD2, BCLK JD4, MCLK JD9, the pins' LOCs confirming the
+    numbering); BGM's nexys4 tops wire it the same way. Registry: modules/digilent_pmod_amp3.yml
+  verified: true

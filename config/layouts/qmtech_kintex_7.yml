@@ -12,27 +12,32 @@ Layout:
   connectors:
     - id: header_j2
       type: pin_row
-      label: HEADER_J2 (pin order from the pinmap)
+      label: HEADER_J2
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: header_j2
       pins: {'[0]': 'header_j2[0]', '[1]': 'header_j2[1]', '[2]': 'header_j2[2]', '[3]': 'header_j2[3]', '[4]': 'header_j2[4]', '[5]': 'header_j2[5]', '[6]': 'header_j2[6]', '[7]': 'header_j2[7]', '[8]': 'header_j2[8]', '[9]': 'header_j2[9]', '[10]': 'header_j2[10]', '[11]': 'header_j2[11]', '[12]': 'header_j2[12]', '[13]': 'header_j2[13]', '[14]': 'header_j2[14]', '[15]': 'header_j2[15]', '[16]': 'header_j2[16]', '[17]': 'header_j2[17]', '[18]': 'header_j2[18]', '[19]': 'header_j2[19]', '[20]': 'header_j2[20]', '[21]': 'header_j2[21]', '[22]': 'header_j2[22]', '[23]': 'header_j2[23]', '[24]': 'header_j2[24]', '[25]': 'header_j2[25]', '[26]': 'header_j2[26]', '[27]': 'header_j2[27]', '[28]': 'header_j2[28]', '[29]': 'header_j2[29]', '[30]': 'header_j2[30]', '[31]': 'header_j2[31]', '[32]': 'header_j2[32]', '[33]': 'header_j2[33]', '[34]': 'header_j2[34]', '[35]': 'header_j2[35]', '[36]': 'header_j2[36]', '[37]': 'header_j2[37]', '[38]': 'header_j2[38]', '[39]': 'header_j2[39]', '[40]': 'header_j2[40]', '[41]': 'header_j2[41]', '[42]': 'header_j2[42]', '[43]': 'header_j2[43]', '[44]': 'header_j2[44]', '[45]': 'header_j2[45]', '[46]': 'header_j2[46]', '[47]': 'header_j2[47]', '[48]': 'header_j2[48]', '[49]': 'header_j2[49]', '[50]': 'header_j2[50]', '[51]': 'header_j2[51]', '[52]': 'header_j2[52]', '[53]': 'header_j2[53]'}
     - id: header_j3
       type: pin_row
-      label: HEADER_J3 (pin order from the pinmap)
+      label: HEADER_J3
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: header_j3
       pins: {'[0]': 'header_j3[0]', '[1]': 'header_j3[1]', '[2]': 'header_j3[2]', '[3]': 'header_j3[3]', '[4]': 'header_j3[4]', '[5]': 'header_j3[5]', '[6]': 'header_j3[6]', '[7]': 'header_j3[7]', '[8]': 'header_j3[8]', '[9]': 'header_j3[9]', '[10]': 'header_j3[10]', '[11]': 'header_j3[11]', '[12]': 'header_j3[12]', '[13]': 'header_j3[13]', '[14]': 'header_j3[14]', '[15]': 'header_j3[15]', '[16]': 'header_j3[16]', '[17]': 'header_j3[17]', '[18]': 'header_j3[18]', '[19]': 'header_j3[19]', '[20]': 'header_j3[20]', '[21]': 'header_j3[21]', '[22]': 'header_j3[22]', '[23]': 'header_j3[23]', '[24]': 'header_j3[24]', '[25]': 'header_j3[25]', '[26]': 'header_j3[26]', '[27]': 'header_j3[27]', '[28]': 'header_j3[28]', '[29]': 'header_j3[29]', '[30]': 'header_j3[30]', '[31]': 'header_j3[31]', '[32]': 'header_j3[32]', '[33]': 'header_j3[33]', '[34]': 'header_j3[34]', '[35]': 'header_j3[35]', '[36]': 'header_j3[36]', '[37]': 'header_j3[37]', '[38]': 'header_j3[38]', '[39]': 'header_j3[39]', '[40]': 'header_j3[40]', '[41]': 'header_j3[41]', '[42]': 'header_j3[42]', '[43]': 'header_j3[43]', '[44]': 'header_j3[44]', '[45]': 'header_j3[45]', '[46]': 'header_j3[46]', '[47]': 'header_j3[47]', '[48]': 'header_j3[48]', '[49]': 'header_j3[49]', '[50]': 'header_j3[50]', '[51]': 'header_j3[51]', '[52]': 'header_j3[52]', '[53]': 'header_j3[53]'}
     - id: db_pmod_j10
       type: pin_row
-      label: DB_PMOD_J10 (pin order from the pinmap)
+      label: DB_PMOD_J10
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: db_pmod_j10
       pins: {'[0]': 'db_pmod_j10[0]', '[1]': 'db_pmod_j10[1]', '[2]': 'db_pmod_j10[2]', '[3]': 'db_pmod_j10[3]', '[4]': 'db_pmod_j10[4]', '[5]': 'db_pmod_j10[5]', '[6]': 'db_pmod_j10[6]', '[7]': 'db_pmod_j10[7]'}
     - id: db_pmod_j11
       type: pin_row
-      label: DB_PMOD_J11 (pin order from the pinmap)
+      label: DB_PMOD_J11
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: db_pmod_j11
       pins: {'[0]': 'db_pmod_j11[0]', '[1]': 'db_pmod_j11[1]', '[2]': 'db_pmod_j11[2]', '[3]': 'db_pmod_j11[3]', '[4]': 'db_pmod_j11[4]', '[5]': 'db_pmod_j11[5]', '[6]': 'db_pmod_j11[6]', '[7]': 'db_pmod_j11[7]'}
     - id: db_header_j1
       type: pin_row
-      label: DB_HEADER_J1 (pin order from the pinmap)
+      label: DB_HEADER_J1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: db_header_j1
       pins: {'[0]': 'db_header_j1[0]', '[1]': 'db_header_j1[1]', '[2]': 'db_header_j1[2]', '[3]': 'db_header_j1[3]', '[4]': 'db_header_j1[4]', '[5]': 'db_header_j1[5]', '[6]': 'db_header_j1[6]', '[7]': 'db_header_j1[7]', '[8]': 'db_header_j1[8]', '[9]': 'db_header_j1[9]', '[10]': 'db_header_j1[10]', '[11]': 'db_header_j1[11]', '[12]': 'db_header_j1[12]', '[13]': 'db_header_j1[13]', '[14]': 'db_header_j1[14]', '[15]': 'db_header_j1[15]'}
 
@@ -63,7 +68,7 @@ Layout:
       device: {kind: buttons, bank: onboard_core_keys}   # no peripheral model yet
     - id: core_leds
       label: Core-board user LEDs D2 (LED2), D3 (LED3)
-      device: {kind: leds, bank: onboard_core_leds}   # no peripheral model yet
+      attach: {peripheral: led_bank, params: {width: 2, active: low}, bind: {led: onboard_core_leds.led}}
     - id: spi_flash
       label: SPI flash S25FL256L (32 MB, quad)
       device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet

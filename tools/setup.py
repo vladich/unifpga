@@ -401,10 +401,13 @@ def _params(a):
     return a.get("params") or {}
 
 
-def _derive_module(a, layout, modules, connectors, refs):
+def _derive_module(a, layout, modules, connectors, refs, prefer=None):
     """A module use for attach `a` when some module of its peripheral covers
-    every bound signal and every reference is a connector pin; else None."""
-    for module in modules.values():
+    every bound signal and every reference is a connector pin; else None.
+    Several modules can make the same attach (an I2S DAC breakout and a
+    PmodAMP3): `prefer`, the module the setup already names, wins."""
+    ordered = sorted(modules.values(), key=lambda m: m["id"] != prefer)
+    for module in ordered:
         if module["peripheral"] != a["peripheral"]:
             continue
         by_signal = {sig: pin for pin, sig in module["pins"].items() if sig not in _PASSIVE}
@@ -452,17 +455,22 @@ def _as_plug(connectors, layout, module, wires):
     return None
 
 
-def derive(configuration):
+def derive(configuration, previous=None):
     """The setup that generates `configuration` (a `Configuration:` dict).
-    Attaches the physical model does not cover are kept as `raw` uses."""
+    Attaches the physical model does not cover are kept as `raw` uses. A
+    configuration does not say which module made an attach several could
+    make: the one `previous` (default: the setup of that id) names is kept."""
+    if previous is None:
+        previous = read_setups().get(configuration.get("id")) or {}
+    before = [u.get("module") for u in previous.get("use") or []]
     tcs = _patched_toolchains(configuration, "attach")
-    setup = _derive(overlay.select(configuration, None, "attach"))
+    setup = _derive(overlay.select(configuration, None, "attach"), before)
     if not tcs:
         return setup
-    return overlay.split(setup, {tc: _derive(overlay.select(configuration, tc, "attach")) for tc in tcs}, "use")
+    return overlay.split(setup, {tc: _derive(overlay.select(configuration, tc, "attach"), before) for tc in tcs}, "use")
 
 
-def _derive(configuration):
+def _derive(configuration, before=()):
     layout = read_layout(configuration["board"])
     modules = read_modules()
     connectors = read_connectors()
@@ -507,7 +515,8 @@ def _derive(configuration):
                         use["params"] = copy.deepcopy(a["params"])
                     break
         if use is None:
-            use = _derive_module(a, layout, modules, connectors, refs)
+            use = _derive_module(a, layout, modules, connectors, refs,
+                                 prefer=before[len(uses)] if len(before) == len(configuration.get("attach") or []) else None)
         if use is None:
             use = {"raw": copy.deepcopy(a)}
         uses.append(use)

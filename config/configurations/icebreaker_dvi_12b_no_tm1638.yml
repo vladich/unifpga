@@ -42,3 +42,8 @@ Configuration:
         vs: "pmod_p1b[7]"
         de: "pmod_p1b[6]"
         ck: "pmod_p1b[1]"
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_0.r
+        g: onboard_rgb_led_0.g
+        b: onboard_rgb_led_0.b

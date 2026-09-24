@@ -244,5 +244,7 @@ def edges(ports, attaches):
                     out.append({"design_port": port["design_port"], "bit": bit,
                                 "bits": [bit] if bit is not None else bits, "use": a["attach_index"],
                                 "signal": sig, "ref": pin["ref"], "pin": pin["pin"], "via": link["via"],
+                                # the driver's own ports: the one the pin meets, the one the design port meets
+                                "driver_port": link.get("driver_port"), "driver_design_port": link.get("port_at"),
                                 "relation": relation})
     return out

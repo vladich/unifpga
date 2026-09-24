@@ -12,22 +12,26 @@ Layout:
   connectors:
     - id: rpi_header
       type: pin_row
-      label: RPI_HEADER (pin order from the pinmap)
+      label: RPI_HEADER
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: rpi_header
       pins: {'[0]': 'rpi_header[0]', '[1]': 'rpi_header[1]', '[2]': 'rpi_header[2]', '[3]': 'rpi_header[3]', '[4]': 'rpi_header[4]', '[5]': 'rpi_header[5]', '[6]': 'rpi_header[6]', '[7]': 'rpi_header[7]', '[8]': 'rpi_header[8]', '[9]': 'rpi_header[9]', '[10]': 'rpi_header[10]', '[11]': 'rpi_header[11]', '[12]': 'rpi_header[12]', '[13]': 'rpi_header[13]', '[14]': 'rpi_header[14]', '[15]': 'rpi_header[15]', '[16]': 'rpi_header[16]', '[17]': 'rpi_header[17]', '[18]': 'rpi_header[18]', '[19]': 'rpi_header[19]', '[20]': 'rpi_header[20]', '[21]': 'rpi_header[21]', '[22]': 'rpi_header[22]', '[23]': 'rpi_header[23]', '[24]': 'rpi_header[24]', '[25]': 'rpi_header[25]', '[26]': 'rpi_header[26]', '[27]': 'rpi_header[27]'}
     - id: pmod0
       type: pin_row
-      label: PMOD0 (pin order from the pinmap)
+      label: PMOD0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod0
       pins: {'[0]': 'pmod0[0]', '[1]': 'pmod0[1]', '[2]': 'pmod0[2]', '[3]': 'pmod0[3]', '[4]': 'pmod0[4]', '[5]': 'pmod0[5]', '[6]': 'pmod0[6]', '[7]': 'pmod0[7]'}
     - id: pmod1
       type: pin_row
-      label: PMOD1 (pin order from the pinmap)
+      label: PMOD1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod1
       pins: {'[0]': 'pmod1[0]', '[1]': 'pmod1[1]', '[2]': 'pmod1[2]', '[3]': 'pmod1[3]', '[4]': 'pmod1[4]', '[5]': 'pmod1[5]', '[6]': 'pmod1[6]', '[7]': 'pmod1[7]'}
     - id: pmod2
       type: pin_row
-      label: PMOD2 (pin order from the pinmap)
+      label: PMOD2
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod2
       pins: {'[0]': 'pmod2[0]', '[1]': 'pmod2[1]', '[2]': 'pmod2[2]', '[3]': 'pmod2[3]', '[4]': 'pmod2[4]', '[5]': 'pmod2[5]', '[6]': 'pmod2[6]', '[7]': 'pmod2[7]'}
 

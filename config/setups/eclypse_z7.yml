@@ -13,14 +13,14 @@ Setup:
     - module: tm1638_led_key
       wires: {DIO: 'pmod_jb.[5]', CLK: 'pmod_jb.[6]', STB: 'pmod_jb.[7]'}
     - onboard: rgb_led_1
-      variant: led_bank
+      variant: led_bank_3
     - onboard: rgb_led_1
       variant: led_bank_2
     - onboard: rgb_led_1
-      variant: led_bank_3
-    - onboard: rgb_led_0
       variant: led_bank
+    - onboard: rgb_led_0
+      variant: led_bank_3
     - onboard: rgb_led_0
       variant: led_bank_2
     - onboard: rgb_led_0
-      variant: led_bank_3
+      variant: led_bank

@@ -12,42 +12,50 @@ Layout:
   connectors:
     - id: pmod_a
       type: pin_row
-      label: PMOD_A (pin order from the pinmap)
+      label: PMOD_A
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_a
       pins: {'[0]': 'pmod_a[0]', '[1]': 'pmod_a[1]', '[2]': 'pmod_a[2]', '[3]': 'pmod_a[3]', '[4]': 'pmod_a[4]', '[5]': 'pmod_a[5]', '[6]': 'pmod_a[6]', '[7]': 'pmod_a[7]'}
     - id: pmod_b
       type: pin_row
-      label: PMOD_B (pin order from the pinmap)
+      label: PMOD_B
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_b
       pins: {'[0]': 'pmod_b[0]', '[1]': 'pmod_b[1]', '[2]': 'pmod_b[2]', '[3]': 'pmod_b[3]', '[4]': 'pmod_b[4]', '[5]': 'pmod_b[5]', '[6]': 'pmod_b[6]', '[7]': 'pmod_b[7]'}
     - id: io_ea
       type: pin_row
-      label: IO_EA (pin order from the pinmap)
+      label: IO_EA
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: io_ea
       pins: {'[0]': 'io_ea[0]', '[1]': 'io_ea[1]', '[2]': 'io_ea[2]', '[3]': 'io_ea[3]', '[4]': 'io_ea[4]', '[5]': 'io_ea[5]', '[6]': 'io_ea[6]', '[7]': 'io_ea[7]', '[8]': 'io_ea[8]', '[9]': 'io_ea[9]', '[10]': 'io_ea[10]', '[11]': 'io_ea[11]', '[12]': 'io_ea[12]', '[13]': 'io_ea[13]', '[14]': 'io_ea[14]', '[15]': 'io_ea[15]', '[16]': 'io_ea[16]', '[17]': 'io_ea[17]', '[18]': 'io_ea[18]', '[19]': 'io_ea[19]', '[20]': 'io_ea[20]', '[21]': 'io_ea[21]', '[22]': 'io_ea[22]', '[23]': 'io_ea[23]'}
     - id: io_eb
       type: pin_row
-      label: IO_EB (pin order from the pinmap)
+      label: IO_EB
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: io_eb
       pins: {'[0]': 'io_eb[0]', '[1]': 'io_eb[1]', '[2]': 'io_eb[2]', '[3]': 'io_eb[3]', '[4]': 'io_eb[4]', '[5]': 'io_eb[5]', '[6]': 'io_eb[6]', '[7]': 'io_eb[7]', '[8]': 'io_eb[8]', '[9]': 'io_eb[9]', '[10]': 'io_eb[10]', '[11]': 'io_eb[11]', '[12]': 'io_eb[12]', '[13]': 'io_eb[13]', '[14]': 'io_eb[14]', '[15]': 'io_eb[15]', '[16]': 'io_eb[16]', '[17]': 'io_eb[17]', '[18]': 'io_eb[18]', '[19]': 'io_eb[19]', '[20]': 'io_eb[20]', '[21]': 'io_eb[21]', '[22]': 'io_eb[22]', '[23]': 'io_eb[23]'}
     - id: io_sa
       type: pin_row
-      label: IO_SA (pin order from the pinmap)
+      label: IO_SA
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: io_sa
       pins: {'[0]': 'io_sa[0]', '[1]': 'io_sa[1]', '[2]': 'io_sa[2]', '[3]': 'io_sa[3]', '[4]': 'io_sa[4]', '[5]': 'io_sa[5]', '[6]': 'io_sa[6]', '[7]': 'io_sa[7]', '[8]': 'io_sa[8]', '[9]': 'io_sa[9]', '[10]': 'io_sa[10]', '[11]': 'io_sa[11]', '[12]': 'io_sa[12]', '[13]': 'io_sa[13]', '[14]': 'io_sa[14]', '[15]': 'io_sa[15]', '[16]': 'io_sa[16]', '[17]': 'io_sa[17]', '[18]': 'io_sa[18]', '[19]': 'io_sa[19]', '[20]': 'io_sa[20]', '[21]': 'io_sa[21]', '[22]': 'io_sa[22]', '[23]': 'io_sa[23]'}
     - id: io_sb
       type: pin_row
-      label: IO_SB (pin order from the pinmap)
+      label: IO_SB
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: io_sb
       pins: {'[0]': 'io_sb[0]', '[1]': 'io_sb[1]', '[2]': 'io_sb[2]', '[3]': 'io_sb[3]', '[4]': 'io_sb[4]', '[5]': 'io_sb[5]', '[6]': 'io_sb[6]', '[7]': 'io_sb[7]', '[8]': 'io_sb[8]', '[9]': 'io_sb[9]', '[10]': 'io_sb[10]', '[11]': 'io_sb[11]', '[12]': 'io_sb[12]', '[13]': 'io_sb[13]', '[14]': 'io_sb[14]', '[15]': 'io_sb[15]', '[16]': 'io_sb[16]', '[17]': 'io_sb[17]', '[18]': 'io_sb[18]', '[19]': 'io_sb[19]', '[20]': 'io_sb[20]', '[21]': 'io_sb[21]', '[22]': 'io_sb[22]', '[23]': 'io_sb[23]'}
     - id: io_wc
       type: pin_row
-      label: IO_WC (pin order from the pinmap)
+      label: IO_WC
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: io_wc
       pins: {'[0]': 'io_wc[0]', '[1]': 'io_wc[1]', '[2]': 'io_wc[2]', '[3]': 'io_wc[3]', '[4]': 'io_wc[4]', '[5]': 'io_wc[5]', '[6]': 'io_wc[6]', '[7]': 'io_wc[7]', '[8]': 'io_wc[8]', '[9]': 'io_wc[9]', '[10]': 'io_wc[10]', '[11]': 'io_wc[11]', '[12]': 'io_wc[12]', '[13]': 'io_wc[13]', '[14]': 'io_wc[14]', '[15]': 'io_wc[15]', '[16]': 'io_wc[16]', '[17]': 'io_wc[17]', '[18]': 'io_wc[18]', '[19]': 'io_wc[19]', '[20]': 'io_wc[20]', '[21]': 'io_wc[21]', '[22]': 'io_wc[22]', '[23]': 'io_wc[23]'}
     - id: io_na
       type: pin_row
-      label: IO_NA (pin order from the pinmap)
+      label: IO_NA
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: io_na
       pins: {'[0]': 'io_na[0]', '[1]': 'io_na[1]', '[2]': 'io_na[2]', '[3]': 'io_na[3]', '[4]': 'io_na[4]', '[5]': 'io_na[5]', '[6]': 'io_na[6]', '[7]': 'io_na[7]', '[8]': 'io_na[8]', '[9]': 'io_na[9]', '[10]': 'io_na[10]', '[11]': 'io_na[11]', '[12]': 'io_na[12]', '[13]': 'io_na[13]', '[14]': 'io_na[14]', '[15]': 'io_na[15]', '[16]': 'io_na[16]', '[17]': 'io_na[17]', '[18]': 'io_na[18]', '[19]': 'io_na[19]', '[20]': 'io_na[20]', '[21]': 'io_na[21]', '[22]': 'io_na[22]', '[23]': 'io_na[23]'}
 

@@ -206,13 +206,31 @@ function drivers() {
     if (!out.has(key)) out.set(key, {key, use: ed.use, via: ed.via, pin: new Map(), design: new Map(), edges: []});
     const d = out.get(key);
     const add = (m, k, label, extra) => { if (!m.has(k)) m.set(k, Object.assign({key: k, label, edges: []}, extra)); m.get(k).edges.push(n); };
-    add(d.pin, pinKey(ed), pinLabel(ed), {ref: ed.ref});
-    add(d.design, designKey(ed), designLabel(ed), {ed});
+    // `own`: the driver's port names (tm1638_board_controller's sio_data, i2s_audio_out's data_in)
+    const pl = pinLabel(ed), dl = designLabel(ed);
+    add(d.pin, pinKey(ed), pl, {ref: ed.ref, own: ed.driver_port ? ed.driver_port + pl.slice(ed.signal.length) : pl});
+    add(d.design, designKey(ed), dl, {ed, own: ed.driver_design_port ? ed.driver_design_port + (dl.match(/\[[^\]]*\]$/) || [""])[0] : dl});
     d.edges.push(n);
   });
   return [...out.values()];
 }
 function driverOf(sel) { return drivers().find((d) => d.use === sel.use && d.via === sel.via); }
+
+// how a driver box names its connections: "connected" (what it connects to: the
+// design's ports and the part's pins) or "own" (the driver module's port names);
+// one choice per driver, remembered in this browser
+function driverNamings() {
+  if (!S.driverNames) { try { S.driverNames = JSON.parse(localStorage.getItem("unifpga.driverNames") || "{}"); } catch (e) { S.driverNames = {}; } }
+  return S.driverNames;
+}
+function driverNaming(d) { return driverNamings()[d.via] || driverNamings()["*"] || "connected"; }
+function setDriverNaming(via, mode) {
+  const m = driverNamings();
+  if (via === "*") { for (const k of Object.keys(m)) delete m[k]; }
+  m[via] = mode;
+  try { localStorage.setItem("unifpga.driverNames", JSON.stringify(m)); } catch (e) { /* a private window: this page only */ }
+  render();
+}
 
 // why a part does not reach the design (server evaluate `parts`): {connected, reasons: [[kind, text]]}
 function partStatus(i) { return ((S.ev && S.ev.parts) || []).find((x) => x.use === i); }
@@ -504,6 +522,7 @@ function draw() {
     const g = el("g");
     const lbl = el("text", {x: GX - 6, y: cy - 8, "font-size": 12, class: "clickable", fill: csel ? "var(--sel)" : "#343a40"},
                    c.label + (gi !== null ? "  — design gpio" + (S.setup.use[gi].pins ? " (" + S.setup.use[gi].pins.length + " pins)" : "") : ""));
+    if (c.note) lbl.append(el("title", {}, c.label + ": " + c.note));   // hover: how far the model is verified
     target(lbl, {kind: "conn", id: c.id});
     g.append(lbl);
     const boxY = cy + lab + 6;
@@ -651,7 +670,12 @@ function draw() {
     for (const [m, x, anchor, side] of [[d.design, DX + 5, "start", "design"], [d.pin, DX + DW - 5, "end", "pin"]])
       for (const an of m.values()) {
         const on = lit(an.edges);
-        svg.append(el("text", {x, y: an.y + 3, "font-size": 9, "text-anchor": anchor, fill: on ? "var(--sel)" : "#495057"}, an.label));
+        // names: what the driver connects to (the default), or its own ports; the other on hover
+        const own = driverNaming(d) === "own", t = el("text", {x, y: an.y + 3, "font-size": 9, "text-anchor": anchor,
+                                                               fill: on ? "var(--sel)" : "#495057"}, own ? an.own : an.label);
+        t.append(el("title", {}, own ? d.via + " port " + an.own + " — connected to " + (side === "design" ? "design " : "") + an.label
+                                     : (side === "design" ? "design " : "") + an.label + " — " + d.via + " port " + an.own));
+        svg.append(t);
         svg.append(el("circle", {cx: side === "design" ? DX : DX + DW, cy: an.y, r: 2.5, fill: on ? "var(--sel)" : "#7048e8"}));
         if (side === "design") {
           const from = srcOf(an.ed);
@@ -777,6 +801,52 @@ function onSvgClick(e) {
 
 function closePicker() { const p = $("picker"); if (p) p.remove(); }
 
+// ---------------------------------------------------------------- context menu
+// A right click selects what is under the pointer (as a click would) and offers
+// what can be done with it: its Verilog, and for a driver how its box names
+// its connections.
+function menuItems(sel) {
+  const items = [];
+  const drv = sel.kind === "driver" || sel.kind === "dseg" ? sel : null;
+  if (drv) {
+    const d = {via: drv.via}, mode = driverNaming(d);
+    items.push({head: "Names in the " + drv.via + " box"});
+    items.push({label: "what it connects to (design ports, part pins)", checked: mode === "connected",
+                run: () => setDriverNaming(drv.via, "connected")});
+    items.push({label: "its own port names", checked: mode === "own", run: () => setDriverNaming(drv.via, "own")});
+    items.push({label: mode === "own" ? "…what it connects to, in every driver" : "…its own port names, in every driver",
+                run: () => setDriverNaming("*", mode === "own" ? "connected" : "own")});
+    items.push({sep: true});
+  }
+  items.push({label: "Show Verilog source", run: () => openVerilog(sel).catch((x) => status(x.message, true))});
+  return items;
+}
+
+function openMenu(x, y, sel) {
+  closePicker();
+  const items = menuItems(sel);
+  const box = h("div", {id: "picker", class: "menu", role: "menu"},
+    h("div", {class: "picker-head"}, selLabel(sel)),
+    ...items.map((it) => it.sep ? h("div", {class: "menu-sep"})
+      : it.head ? h("div", {class: "picker-tip"}, it.head)
+      : h("button", {class: "picker-item", role: "menuitem",
+                     onclick: () => { closePicker(); it.run(); }}, (it.checked === undefined ? "" : it.checked ? "● " : "○ ") + it.label)));
+  box.style.left = Math.min(x + 4, window.innerWidth - 420) + "px";
+  box.style.top = Math.min(y + 4, window.innerHeight - 40 - 30 * items.length) + "px";
+  document.body.append(box);
+}
+
+function onSvgContextMenu(e) {
+  e.preventDefault();
+  const all = candidatesAt(e.clientX, e.clientY);
+  if (!all.length) { closePicker(); return; }
+  // a driver under the pointer is what a right click on its box means
+  const pick = all.find((s) => s.kind === "driver") || all.find((s) => POINTS.has(s.kind)) ||
+               all.find((s) => CONNECTIONS.has(s.kind)) || all[0];
+  select(pick);
+  openMenu(e.clientX, e.clientY, pick);
+}
+
 function openPicker(x, y, options) {
   closePicker();
   const box = h("div", {id: "picker"},
@@ -858,6 +928,7 @@ function wireZoomPan() {
   svg.addEventListener("pointerup", end);
   svg.addEventListener("pointercancel", end);
   svg.addEventListener("click", onSvgClick);
+  svg.addEventListener("contextmenu", onSvgContextMenu);
   document.addEventListener("pointerdown", (e) => { const p = $("picker"); if (p && !p.contains(e.target)) closePicker(); });
   $("zoom-in").addEventListener("click", () => zoomCenter(1 / 1.25));
   $("zoom-out").addEventListener("click", () => zoomCenter(1.25));
@@ -2397,6 +2468,23 @@ async function selftest() {
       select({kind: "driver", use: bd.use, via: bd.via});
       ok("a driver's panel lists its pins and design bits", $("details").textContent.includes("Its pins") && $("details").textContent.includes(bd.via));
       ok("the legend names the drivers present", $("svg").textContent.includes(bd.via + ")") || $("svg").textContent.includes(bd.via + ","));
+      // names: what the driver connects to by default, its own ports on hover; the context menu switches
+      const an0 = [...bd.design.values()][0];
+      const texts = () => [...$("svg").querySelectorAll("text")].map((t) => t.firstChild && t.firstChild.textContent);
+      ok("a driver names what it connects to, its own port on hover",
+         texts().includes(an0.label) && [...$("svg").querySelectorAll("text title")].some((t) => t.textContent.includes(bd.via + " port " + an0.own)));
+      const box = document.querySelector("[data-sel='" + JSON.stringify({kind: "driver", use: bd.use, via: bd.via}) + "']").getBoundingClientRect();
+      $("svg").dispatchEvent(new MouseEvent("contextmenu", {bubbles: true, cancelable: true, clientX: box.left + 5, clientY: box.top + 5}));
+      const items = [...document.querySelectorAll("#picker.menu .picker-item")].map((b) => b.textContent);
+      ok("right-clicking a driver offers its naming and its Verilog",
+         items.some((t) => t.includes("its own port names")) && items.includes("Show Verilog source"));
+      const saved = JSON.stringify(driverNamings());
+      [...document.querySelectorAll("#picker.menu .picker-item")].find((b) => b.textContent.includes("its own port names")).click();
+      const own = drivers().find((x) => x.via === bd.via);
+      ok("…and switching shows the driver's own port names", !$("picker") && texts().includes([...own.design.values()][0].own));
+      S.driverNames = JSON.parse(saved);
+      try { localStorage.setItem("unifpga.driverNames", saved); } catch (e) { /* private window */ }
+      render();
     }
     // the splitter resizes the side panel
     {

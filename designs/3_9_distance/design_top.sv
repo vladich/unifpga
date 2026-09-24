@@ -47,6 +47,11 @@ module design_top
     inout        [w_gpio   - 1 : 0]  gpio
 );
 
+    // no RGB LEDs used
+    assign rgb_r = '0;
+    assign rgb_g = '0;
+    assign rgb_b = '0;
+
 
     wire [7:0] distance;
 

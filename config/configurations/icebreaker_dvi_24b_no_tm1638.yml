@@ -37,3 +37,8 @@ Configuration:
       bind:
         pmod_a: pmod_p1a
         pmod_b: pmod_p1b
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_0.r
+        g: onboard_rgb_led_0.g
+        b: onboard_rgb_led_0.b

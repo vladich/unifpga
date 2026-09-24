@@ -12,12 +12,14 @@ Layout:
   connectors:
     - id: pmod_jb
       type: pin_row
-      label: PMOD_JB (pin order from the pinmap)
+      label: PMOD_JB
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_jb
       pins: {'[0]': 'pmod_jb[0]', '[1]': 'pmod_jb[1]', '[2]': 'pmod_jb[2]', '[3]': 'pmod_jb[3]', '[4]': 'pmod_jb[4]', '[5]': 'pmod_jb[5]', '[6]': 'pmod_jb[6]', '[7]': 'pmod_jb[7]'}
     - id: pmod_ja
       type: pin_row
-      label: PMOD_JA (pin order from the pinmap)
+      label: PMOD_JA
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_ja
       pins: {'[0]': 'pmod_ja[0]', '[1]': 'pmod_ja[1]', '[2]': 'pmod_ja[2]', '[3]': 'pmod_ja[3]', '[4]': 'pmod_ja[4]', '[5]': 'pmod_ja[5]', '[6]': 'pmod_ja[6]', '[7]': 'pmod_ja[7]'}
 
@@ -33,25 +35,25 @@ Layout:
       variants:
         - id: led_bank
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.r}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.b}}
         - id: led_bank_2
           label: led_bank (other pins)
           attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.g}}
         - id: led_bank_3
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.b}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.r}}
     - id: rgb_led_0
       label: rgb led 0
       variants:
         - id: led_bank
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.r}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.b}}
         - id: led_bank_2
           label: led_bank (other pins)
           attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.g}}
         - id: led_bank_3
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.b}}
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.r}}
     - id: syzygy_a
       label: SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)
       device: {kind: header, bank: syzygy_a}   # no peripheral model yet

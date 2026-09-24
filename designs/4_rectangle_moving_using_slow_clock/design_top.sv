@@ -71,6 +71,9 @@ module design_top
     // assign blue       = '0;
        assign sound      = '0;
        assign uart_tx    = '1;
+       assign rgb_r      = '0;
+       assign rgb_g      = '0;
+       assign rgb_b      = '0;
 
     //------------------------------------------------------------------------
     //

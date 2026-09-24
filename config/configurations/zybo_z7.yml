@@ -59,3 +59,13 @@ Configuration:
         b: ["pmod_jd[0]", "pmod_jd[1]", "pmod_jd[2]", "pmod_jd[3]"]
         hs: "pmod_jd[4]"
         vs: "pmod_jd[5]"
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_5.r
+        g: onboard_rgb_led_5.g
+        b: onboard_rgb_led_5.b
+    - peripheral: rgb_led
+      bind:
+        r: onboard_rgb_led_6.r
+        g: onboard_rgb_led_6.g
+        b: onboard_rgb_led_6.b

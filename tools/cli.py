@@ -710,9 +710,16 @@ def cmd_setup(args):
             raise CliError("unknown setup '{}'".format(sid))
         problems = su.validate(setups[sid])
         cfg = configurations.get(sid)
+        try:
+            generated = su.generate(setups[sid])
+        except su.SetupError as exc:
+            generated = None
+            problems.append(("error", str(exc)))
         if cfg is None:
             problems.append(("error", "no configuration {} to compare with".format(sid)))
-        elif not su.same_configuration(su.generate(setups[sid]), cfg):
+        elif generated is None:
+            pass
+        elif not su.same_configuration(generated, cfg):
             problems.append(("error", "does not generate config/configurations/{}.yml".format(sid)))
         elif open(su.configuration_path(sid), encoding="utf-8").read() != su.generated_text(setups[sid]):
             problems.append(("error", "config/configurations/{}.yml differs from its setup's text "
