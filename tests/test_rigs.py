@@ -147,7 +147,7 @@ def test_setup_and_configuration_carry_patches_both_ways():
 
 # raw uses left, a ratchet down to none: every part of a rig is an on-board part,
 # a module or the design's gpio (lower it with each conversion, never raise it)
-RAW_USES_LEFT = 26
+RAW_USES_LEFT = 18
 
 
 def test_raw_uses_only_go_down():
@@ -175,3 +175,29 @@ def test_an_on_board_device_handed_to_the_designs_gpio_is_a_part():
     assert {"onboard": "small_lcd"} in setup["use"]
     part = next(o for o in su.read_layout("tang_nano_9k")["onboard"] if o["id"] == "small_lcd")
     assert part["attach"]["bind"]["io"] == ["onboard_small_lcd." + p for p in ("data", "clk", "cs", "rs")]
+
+
+def test_a_use_can_leave_a_part_parameter_out():
+    """The Tang Nano 9K LCD with nextpnr_apicula: the part's Gowin PLL settings
+    left out (`clock_pixel_pll: null`), not a raw copy of the attach."""
+    setup = su.read_setup("tang_nano_9k_lcd_480_272_tm1638")
+    lcd = next(u for u in setup["use"] if u.get("onboard") == "lcd")
+    assert lcd["for_toolchain"] == {"nextpnr_apicula": {"params": {"clock_pixel_pll": None}}}
+    built = config_init.resolve_configuration("tang_nano_9k_lcd_480_272_tm1638", toolchain="nextpnr_apicula")
+    attach = next(a for a in built["configuration"]["attach"] if a["peripheral"] == "lcd_480_272")
+    assert "clock_pixel_pll" not in attach["params"] and attach["params"]["bl"] == "const.0"
+
+
+def test_the_12bit_dvi_pmod_is_wired_as_its_vendor_wires_it():
+    """1BitSquared's board files: Pmod-B pin 3 is B0, pin 8 is B1 (BGM swaps them)."""
+    r = config_init.resolve_configuration("icebreaker_dvi_12b_tm1638")
+    dvi = next(a for a in r["peripherals"] if a["peripheral_id"] == "dvi_12bit")
+    assert dvi["bind"]["b"][:2] == ["pmod_p1b[2]", "pmod_p1b[5]"]           # pins 3 and 8
+    use = next(u for u in su.read_setup("icebreaker_dvi_12b_tm1638")["use"] if u.get("module"))
+    assert use["module"] == "1bitsquared_dvi_pmod_12b" and use["wires"]["B3"] == "pmod_p1b.3"
+
+
+def test_a_module_on_every_pin_of_a_header_binds_the_bank():
+    r = config_init.resolve_configuration("icebreaker_dvi_24b_tm1638")
+    dvi = next(a for a in r["peripherals"] if a["peripheral_id"] == "dvi_pmod_ddr_24b")
+    assert dvi["bind"] == {"pmod_a": "pmod_p1a", "pmod_b": "pmod_p1b"}
