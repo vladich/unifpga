@@ -44,9 +44,11 @@ test above still uses Migen's simulator. Set `IVERILOG` and
 `VVP` to the corresponding binaries (or put them on `PATH`) and run unittest
 discovery over `experiments/litex`. The test also invokes `unifpga prepare`
 with the export manifest for a Gowin virtual-device target and checks that its
-generated project reads the staged FIFO RTL before the design. It skips clearly
-when either Icarus binary is unavailable. The first independent run used Icarus 13.0 built from the
-official `v13_0` tag at `dfeee909ed9f20b4870dd93423156c0170c0e1ff` in
+generated project reads the staged FIFO RTL before the design. The target is
+selected through the public setup-derived build ID; the export manifest has
+no board or rig configuration fields. The test skips clearly when either
+Icarus binary is unavailable. The first independent run used Icarus 13.0 built
+from the official `v13_0` tag at `dfeee909ed9f20b4870dd93423156c0170c0e1ff` in
 task-local scratch; this repository does not install a simulator.
 
 `design/design_top.sv` contains a virtual-device-facing `design_top` and a

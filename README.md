@@ -36,8 +36,8 @@ bitstream again), `unifpga clean` (`--all`: every design).
 generated `.v`/`.sv` sources with byte counts and SHA-256 digests. All four
 commands check and snapshot the exact RTL bytes before invoking Icarus or a
 toolchain driver. The snapshots and manifests live in a content-addressed
-directory under each run output. The
-exporter generates RTL; unifpga owns source selection, project generation,
+directory under each run output. The exporter generates RTL; unifpga owns
+source selection, project generation,
 and build orchestration. `--tb-top <module>` selects another simulation top;
 `--output-dir <empty-directory>` isolates simulation outputs. A nextpnr `gui`
 rerun also accepts the exports; if the run contains an export snapshot, supply
