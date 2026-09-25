@@ -286,8 +286,12 @@ def _model(kind, bank, spec):
                     else:
                         bind[sig["name"]] = "{}.{}".format(bank, key)
                     break
-            if any(not sg.get("optional") and sg["name"] not in bind for sg in signals):
+            if not bind or any(not sg.get("optional") and sg["name"] not in bind for sg in signals):
                 continue
+            # buses of one length (an XADC's p and n pins): the part's width
+            lens = {len(v) if isinstance(v, list) else len(pins[v.split(".", 1)[1]])
+                    for v in bind.values() if isinstance(v, list) or isinstance(pins.get(v.split(".", 1)[1]), list)}
+            width = lens.pop() if len(lens) == 1 else None
         elif isinstance(pins, dict) and set(pins) == {sg["name"] for sg in signals}:
             bind = {sg["name"]: "{}.{}".format(bank, sg["name"]) for sg in signals}
             buses = [v for v in pins.values() if isinstance(v, list)]

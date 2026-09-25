@@ -31,6 +31,14 @@ def _attach(pid, bind, params=None):
 
 # ---------------------------------------------------------------- codegen
 
+def test_a_list_parameter_is_a_table_of_bytes():
+    """A YAML list reaches the driver as a concatenation of 8-bit entries,
+    entry i at [8 i +: 8] (the XADC's VAUX table)."""
+    assert codegen._sv_literal([6, 14, 7, 15]) == "{8'd15, 8'd7, 8'd14, 8'd6}"
+    assert codegen._sv_literal([3]) == "{8'd3}"
+    assert codegen._sv_literal(True) == "1'b1" and codegen._sv_literal("x") == '"x"'
+
+
 def test_tie_values_and_expansion():
     assert config_init._tie_value("x", "a.b", 0) == "const.0"
     assert config_init._tie_value("x", "a.b", "1") == "const.1"

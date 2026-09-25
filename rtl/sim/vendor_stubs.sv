@@ -310,6 +310,134 @@ module PLLA
     assign CLKOUT3 = 0; assign CLKOUT4 = 0; assign CLKOUT5 = 0; assign CLKOUT6 = 0;
 endmodule
 
+
+// ---- Xilinx 7-series XADC ----------------------------------------------------
+// The sequencer converts the calibration channel (8, when INIT_48[0]) and the
+// auxiliary channels INIT_49 enables, in ascending order, one every 26 ADCCLK
+// cycles (ADCCLK = DCLK / INIT_42[15:8]); a digital simulation has no analog
+// values, so a channel's code is 0xFFF while its VAUXP pin is 1, 0x800 while
+// only its VAUXN pin is 1, else 0. A DRP read (DEN, DWE low) of a result
+// register answers on the next DCLK.
+
+module XADC
+# (
+    parameter [15:0] INIT_40 = 16'h0000, parameter [15:0] INIT_41 = 16'h0000,
+    parameter [15:0] INIT_42 = 16'h0800, parameter [15:0] INIT_43 = 16'h0000,
+    parameter [15:0] INIT_44 = 16'h0000, parameter [15:0] INIT_45 = 16'h0000,
+    parameter [15:0] INIT_46 = 16'h0000, parameter [15:0] INIT_47 = 16'h0000,
+    parameter [15:0] INIT_48 = 16'h0000, parameter [15:0] INIT_49 = 16'h0000,
+    parameter [15:0] INIT_4A = 16'h0000, parameter [15:0] INIT_4B = 16'h0000,
+    parameter [15:0] INIT_4C = 16'h0000, parameter [15:0] INIT_4D = 16'h0000,
+    parameter [15:0] INIT_4E = 16'h0000, parameter [15:0] INIT_4F = 16'h0000,
+    parameter [15:0] INIT_50 = 16'h0000, parameter [15:0] INIT_51 = 16'h0000,
+    parameter [15:0] INIT_52 = 16'h0000, parameter [15:0] INIT_53 = 16'h0000,
+    parameter [15:0] INIT_54 = 16'h0000, parameter [15:0] INIT_55 = 16'h0000,
+    parameter [15:0] INIT_56 = 16'h0000, parameter [15:0] INIT_57 = 16'h0000,
+    parameter [15:0] INIT_58 = 16'h0000, parameter [15:0] INIT_59 = 16'h0000,
+    parameter [15:0] INIT_5A = 16'h0000, parameter [15:0] INIT_5B = 16'h0000,
+    parameter [15:0] INIT_5C = 16'h0000, parameter [15:0] INIT_5D = 16'h0000,
+    parameter [15:0] INIT_5E = 16'h0000, parameter [15:0] INIT_5F = 16'h0000,
+    parameter IS_CONVSTCLK_INVERTED = 1'b0, parameter IS_DCLK_INVERTED = 1'b0,
+    parameter SIM_DEVICE = "7SERIES", parameter SIM_MONITOR_FILE = "design.txt"
+)
+(
+    output reg  [7:0]  ALM,
+    output reg         BUSY,
+    output reg  [4:0]  CHANNEL,
+    output reg  [15:0] DO,
+    output reg         DRDY,
+    output reg         EOC,
+    output reg         EOS,
+    output             JTAGBUSY,
+    output             JTAGLOCKED,
+    output             JTAGMODIFIED,
+    output reg  [4:0]  MUXADDR,
+    output             OT,
+    input              CONVST,
+    input              CONVSTCLK,
+    input       [6:0]  DADDR,
+    input              DCLK,
+    input              DEN,
+    input       [15:0] DI,
+    input              DWE,
+    input              RESET,
+    input       [15:0] VAUXN,
+    input       [15:0] VAUXP,
+    input              VN,
+    input              VP
+);
+    assign JTAGBUSY = 1'b0, JTAGLOCKED = 1'b0, JTAGMODIFIED = 1'b0, OT = 1'b0;
+
+    localparam integer DIV = (INIT_42 [15:8] < 2) ? 2 : INIT_42 [15:8];
+
+    reg [15:0] result [0:31];
+    reg [7:0]  div;
+    reg [4:0]  phase;
+    integer    ch;                                   // 8: calibration, 16 + n: VAUX n
+
+    function automatic integer next_channel (input integer cur);
+        integer k;
+        begin
+            next_channel = -1;
+            for (k = 31; k >= 0; k = k - 1)
+                if ((k == 8 && INIT_48 [0]) || (k >= 16 && INIT_49 [k - 16]))
+                    if (k > cur && (next_channel < 0 || k < next_channel))
+                        next_channel = k;
+            if (next_channel < 0)                    // wrap to the first
+                for (k = 31; k >= 0; k = k - 1)
+                    if ((k == 8 && INIT_48 [0]) || (k >= 16 && INIT_49 [k - 16]))
+                        next_channel = k;
+        end
+    endfunction
+
+    integer i;
+    initial
+    begin
+        for (i = 0; i < 32; i = i + 1) result [i] = 16'h0000;
+        ALM = 8'h00; BUSY = 1'b0; CHANNEL = 5'd0; DO = 16'h0000; DRDY = 1'b0; EOC = 1'b0; EOS = 1'b0;
+        MUXADDR = 5'd0; div = 8'd0; phase = 5'd0; ch = next_channel (-1);
+    end
+
+    always @ (posedge DCLK)
+    begin
+        EOC  <= 1'b0;
+        EOS  <= 1'b0;
+        DRDY <= 1'b0;
+        if (RESET)
+        begin
+            div <= 8'd0; phase <= 5'd0; ch = next_channel (-1); BUSY <= 1'b0;
+        end
+        else if (ch >= 0)
+        begin
+            BUSY <= 1'b1;
+            if (div == DIV - 1)
+            begin
+                div <= 8'd0;
+                if (phase == 5'd25)
+                begin                                // end of this conversion
+                    phase <= 5'd0;
+                    if (ch >= 16)
+                        result [ch] <= VAUXP [ch - 16] ? 16'hFFF0 : VAUXN [ch - 16] ? 16'h8000 : 16'h0000;
+                    CHANNEL <= ch [4:0];
+                    EOC     <= 1'b1;
+                    EOS     <= (next_channel (ch) <= ch);
+                    ch = next_channel (ch);
+                end
+                else
+                    phase <= phase + 5'd1;
+            end
+            else
+                div <= div + 8'd1;
+        end
+        if (DEN && ! DWE)
+        begin
+            DO   <= (DADDR < 7'd32) ? result [DADDR [4:0]] : 16'h0000;
+            DRDY <= 1'b1;
+        end
+    end
+
+endmodule
+
 `endif
 
 

@@ -75,15 +75,15 @@ Layout:
     - id: temp_sensor
       label: Temperature sensor (I2C)
       attach: {peripheral: i2c_temperature_sensor, params: {shift: 3}, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
-    - id: pmod_jxadc
-      label: Pmod header JXADC (XADC analog pairs; usable as digital IO)
-      device: {kind: xadc, bank: onboard_pmod_jxadc}   # no peripheral model yet
-    - id: sdcard
-      label: microSD card slot
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
     - id: accelerometer
       label: 3-axis accelerometer (SPI)
       attach: {peripheral: spi_accelerometer, bind: {miso: onboard_accelerometer.miso, mosi: onboard_accelerometer.mosi, sclk: onboard_accelerometer.sclk, csn: onboard_accelerometer.csn}}
+    - id: pmod_jxadc
+      label: 'Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 3, 10, 2, 11; usable as digital IO)'
+      attach: {peripheral: xadc_aux, params: {width: 4, channels: [3, 10, 2, 11]}, bind: {p: onboard_pmod_jxadc.xa_p, n: onboard_pmod_jxadc.xa_n}}
+    - id: sdcard
+      label: microSD card slot
+      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
     - id: ethernet
       label: 10/100 Ethernet PHY (SMSC, RMII)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet

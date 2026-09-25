@@ -2459,10 +2459,15 @@ def _looks_like_ref(v):
 
 
 def _sv_literal(v):
+    """A parameter value as an SV literal: ints / floats verbatim, booleans as
+    bits, strings quoted, a list as a table of 8-bit entries, entry i at
+    `[8 * i +: 8]` (the last element on top; `$bits(P) / 8` entries)."""
     if isinstance(v, bool):
         return "1'b1" if v else "1'b0"
     if isinstance(v, (int, float)):
         return str(v)
+    if isinstance(v, (list, tuple)):
+        return "{" + ", ".join("8'd{}".format(int(x)) for x in reversed(v)) + "}"
     return '"{}"'.format(str(v).replace('"', '\\"'))
 
 

@@ -114,7 +114,7 @@ Board:
       shares: ["onboard_sdram1", "sdram1_header"]   # the board multiplexes these pins
       pins: {"a16": "AA20", "a17": "AA19", "a18": "AB20", "a19": "Y18", "a20": "Y19", "a21": "N15", "a22": "T20", "a23": "U17", "ad0": "R18", "ad1": "T18", "ad2": "V17", "ad3": "W17", "ad4": "W22", "ad5": "W21", "ad6": "P17", "ad7": "N17", "ad8": "N14", "ad9": "N13", "ad10": "U20", "ad11": "V20", "ad12": "Y21", "ad13": "Y22", "ad14": "AB21", "ad15": "AB22", "clk": "T21", "cs1_n": "R17", "cs2_n": "U18", "irq": "P15", "rd_n": "P16", "wr_n": "U21"}
     onboard_fan:   # Fan connector J24 (5 V, 1 W)
-      device: {"name": "Fan connector J24 (5 V, 1 W)", "kind": "other"}
+      device: {"name": "Fan connector J24 (5 V, 1 W)", "kind": "fan"}
       active: "high"
       pins: {"fan_en": "AB12"}
     onboard_adc:   # ADC inputs (GW5AT ADC): VBUS and battery voltage

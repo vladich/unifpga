@@ -162,7 +162,7 @@ def test_trace_follows_the_generated_top():
     assert [(b["design_bit"], b["ref"], b["pin"]) for b in board["bits"]] == \
         [(0, "onboard_leds[0]", "H5"), (1, "onboard_leds[1]", "J5"), (2, "onboard_leds[2]", "T9"), (3, "onboard_leds[3]", "T10")]
     tm = [pr for pr in leds if pr["peripheral"] == "tm1638_led_key"][0]
-    assert tm["via"] == "tm1638_board_controller" and tm["attach_index"] == 11
+    assert tm["via"] == "tm1638_board_controller" and tm["attach_index"] == 12
     assert tm["pins"]["stb"] == [{"ref": "arduino_io[29]", "pin": "N17"}]
     top = codegen.emit_top_sv(r)
     assert "assign onboard_leds = cap_leds_led[3:0];" in top

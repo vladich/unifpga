@@ -20,6 +20,7 @@ Setup:
     - onboard: buttons
     - onboard: uart
     - onboard: reset
+    - onboard: xadc_shield
     - module: digilent_pmod_mic3
       plug: {connector: jd, row: 2}
     - module: tm1638_led_key

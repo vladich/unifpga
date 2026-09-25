@@ -13,6 +13,7 @@ Setup:
     - onboard: buttons
     - onboard: uart
     - onboard: reset
+    - onboard: xadc_shield
     - module: digilent_pmod_oled
       plug: {connector: ja, row: all}
     - module: digilent_pmod_con3

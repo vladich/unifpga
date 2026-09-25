@@ -70,6 +70,14 @@ Configuration:
     - peripheral: reset_button
       bind:
         rst: cpu_resetn
+    - peripheral: xadc_aux
+      params:
+        width: 6
+        channels: [4, 5, 6, 7, 15, 0]
+        full_scale_mv: 3300
+      bind:
+        p: onboard_xadc_shield.vaux_p
+        n: onboard_xadc_shield.vaux_n
     - peripheral: pmod_mic3
       bind:
         cs: "pmod_jd[4]"

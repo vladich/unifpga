@@ -81,6 +81,10 @@ Configuration:
     - peripheral: ws2812
       bind:
         din: onboard_ws2812.din
+    - peripheral: fan_pwm
+      bind:
+        pwm: onboard_fan.pwm
+        tach: onboard_fan.tach
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

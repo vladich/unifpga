@@ -76,3 +76,15 @@ Layout:
     - id: reset
       label: RESET button
       attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: xadc_shield
+      label: XADC analog inputs A0-A5 of the shield header (0-3.3 V, single-ended)
+      attach: {peripheral: xadc_aux, params: {width: 6, channels: [4, 5, 6, 7, 15, 0], full_scale_mv: 3300},
+               bind: {p: onboard_xadc_shield.vaux_p, n: onboard_xadc_shield.vaux_n}}
+    - id: xadc_shield_diff
+      label: XADC analog pairs A6/A7, A8/A9, A10/A11 of the shield header (0-1 V)
+      attach: {peripheral: xadc_aux, params: {width: 3, channels: [12, 13, 14]},
+               bind: {p: onboard_xadc_shield_diff.vaux_p, n: onboard_xadc_shield_diff.vaux_n}}
+    - id: power_sense
+      label: Power monitor on XADC pairs (VU / 16, 5V0 / 5.99, 250 mV per A, 500 mV per A)
+      attach: {peripheral: xadc_aux, params: {width: 4, channels: [2, 1, 9, 10]},
+               bind: {p: onboard_power_sense.sense_p, n: onboard_power_sense.sense_n}}
