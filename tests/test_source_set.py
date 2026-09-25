@@ -91,6 +91,18 @@ def test_default_order_tops_design_walk_then_gated_common(repo, design, gen_top)
         _p(repo, "rtl", "peripherals", "designs_common", "shift_reg.sv")]
 
 
+def test_common_module_used_by_another_common_module_is_collected(repo, tmp_path, gen_top):
+    """pulse_extender instantiates shift_reg, which sorts before it: shift_reg
+    is still collected (5_4_yrv on the yosys flows needed both)."""
+    _write(_p(repo, "rtl", "peripherals", "designs_common", "pulse_extender.sv"),
+           "module pulse_extender; shift_reg u(); endmodule\n")
+    top = _write(str(tmp_path / "designs" / "pe" / "design_top.sv"),
+                 "module design_top; pulse_extender u(); endmodule\n")
+    files = source_set.collect_sources(repo, [], top, gen_top())
+    common = [os.path.basename(f) for f in files if "designs_common" in f]
+    assert common == ["pulse_extender.sv", "shift_reg.sv"]
+
+
 def test_generated_top_first_user_top_second_even_when_named_oddly(repo, tmp_path, gen_top):
     d = str(tmp_path / "designs" / "odd")
     user_top = _write(os.path.join(d, "blink.sv"), "module blink; endmodule\n")

@@ -1310,6 +1310,19 @@ def emit_top_sv(resolved, strict=True, design=None):
         out.extend(_emit_attachment(resolved, idx, attach, plans, emit))
         out.append("")
 
+    # ---- output pins no part drives (a 4-bit character LCD on an 8-bit data
+    # bank): held at 0, not left floating ----
+    driven = set()
+    for attach in resolved["peripherals"]:
+        for ref in (attach.get("bind") or {}).values():
+            driven.update(_bind_bit_ports(resolved, ref))
+    idle = ["    assign {}[{}] = 1'b0;".format(pname, i) for pname, w, d in _ports
+            if d == "output" and w > 1 for i in range(w) if "{}[{}]".format(pname, i) not in driven]
+    if idle:
+        out.append("    // ---- output pins no part drives: held at 0 ----")
+        out.extend(idle)
+        out.append("")
+
     # ---- design_top instantiation ----
     merge = _emit_lab_bits_merge(plans, resolved)
     if merge:
@@ -1655,6 +1668,10 @@ def _emit_lab_bits_merge(plans, resolved=None):
                 width = _signal_width(plan, sig)
                 if not lines:
                     lines.append("    // ---- lab_bits: design bits merged from the providers (OR where shared) ----")
+                if width < 1:
+                    # the profile hands the design none of these bits: its
+                    # zero-width port ([-1:0]) still reads 0, not a floating net
+                    lines.append("    assign {} = '0;   // the design gets no bits of it".format(cap))
                 for b in range(width):
                     srcs = ["{}[{}]".format(_provider_wire(plan, sig["name"], pidx), i)
                             for pidx, bits in plan.bits.items() for i, bb in enumerate(bits) if bb == b]
@@ -1848,7 +1865,16 @@ def _emit_passthrough(resolved, idx, attach, plans, emit):
                     if i >= len(pin_bits):
                         break
                     if b is None:
-                        lines.append("    // {} reaches no design bit".format(pin_bits[i]))
+                        if cap_sig.get("direction") == "user_to_hw" and \
+                                pin_bits[i] not in _claimed_port_bits(resolved, plans, {idx}):
+                            # an output no design bit drives (an LED the profile gives
+                            # none): held at its off level, not left floating; unless
+                            # another part drives the pin (DE2: the 7-segment decimal
+                            # points on the red LEDs)
+                            lines.append("    assign {} = 1'b{};   // reaches no design bit: held off"
+                                         .format(pin_bits[i], 1 if inv else 0))
+                        else:
+                            lines.append("    // {} reaches no design bit".format(pin_bits[i]))
                         continue
                     if cap_sig.get("direction") == "user_to_hw":
                         lines.append("    assign {} = {}{}[{}];".format(pin_bits[i], inv, cap_base, b))
@@ -2660,6 +2686,17 @@ def _emit_lab_top(resolved, plans, design=None):
         port_lines.append("        .{}({})".format(p.name, net))
     lines.append(",\n".join(port_lines))
     lines.append("    );")
+    # an optional capability the rig provides but the design does not take: what
+    # its driver reads from the design is the port's idle value (a character LCD
+    # shows spaces), not a floating net
+    for p in design_contract()[2]:
+        plan = plans[p.capability]
+        if not p.optional or p in ports or not plan.providers:
+            continue
+        sig = next(s for s in plan.cap.get("signals", []) if s["name"] == p.signal)
+        if sig.get("direction") == "user_to_hw":
+            lines.append("    assign cap_{}_{} = {};   // the design does not take {}".format(
+                p.capability, p.signal, p.spec.get("idle", "'0"), p.name))
     return lines
 
 

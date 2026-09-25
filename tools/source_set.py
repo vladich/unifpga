@@ -241,9 +241,20 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
 
     common = _sv_files_in(os.path.join(repo, DESIGNS_COMMON_DIR))
     if gate_common:
-        sibling_text = top_text + "".join("\n" + _read_text(f) for f in list(files))
-        common = [p for p in common
-                  if os.path.basename(p)[:-len(".sv")] in sibling_text]
+        # to a fixed point: a common module another one instantiates
+        # (pulse_extender -> shift_reg) is needed as soon as that one is
+        text = top_text + "".join("\n" + _read_text(f) for f in list(files))
+        chosen, pending = [], list(common)
+        grew = True
+        while grew:
+            grew = False
+            for p in list(pending):
+                if os.path.basename(p)[:-len(".sv")] in text:
+                    chosen.append(p)
+                    pending.remove(p)
+                    text += "\n" + _read_text(p)
+                    grew = True
+        common = [p for p in common if p in chosen]
     for full in common:
         add(full)
 
