@@ -70,6 +70,12 @@ Configuration:
         width: 16
       bind:
         io: arduino_io
+    - peripheral: adxl345_spi
+      bind:
+        mosi: onboard_accelerometer.GSENSOR_SDI
+        miso: onboard_accelerometer.GSENSOR_SDO
+        sclk: onboard_accelerometer.GSENSOR_SCLK
+        cs_n: onboard_accelerometer.GSENSOR_CS_n
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

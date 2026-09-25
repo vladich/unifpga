@@ -58,6 +58,6 @@ Board:
       iostandard: "3.3-V LVTTL"
       pins: {"DRAM_ADDR": ["U17", "W19", "V18", "U18", "U19", "T18", "T19", "R18", "P18", "P19", "T20", "P20", "R20"], "DRAM_DQ": ["Y21", "Y20", "AA22", "AA21", "Y22", "W22", "W20", "V21", "P21", "J22", "H21", "H22", "G22", "G20", "G19", "F22"], "DRAM_BA": ["T21", "T22"], "DRAM_LDQM": "V22", "DRAM_UDQM": "J21", "DRAM_RAS_N": "U22", "DRAM_CAS_N": "U21", "DRAM_CKE": "N22", "DRAM_CLK": "L14", "DRAM_WE_N": "V20", "DRAM_CS_N": "U20"}
     onboard_accelerometer:   # Accelerometer (ADXL345, SPI/I2C)
-      device: {"name": "Accelerometer (ADXL345, SPI/I2C)", "kind": "other"}
+      device: {"name": "Accelerometer (ADXL345, SPI/I2C)", "kind": "accelerometer"}
       iostandard: "3.3-V LVTTL"
       pins: {"GSENSOR_SDI": "V11", "GSENSOR_SDO": "V12", "GSENSOR_CS_n": "AB16", "GSENSOR_SCLK": "AB15", "GSENSOR_INT1": "Y14", "GSENSOR_INT2": "Y13"}

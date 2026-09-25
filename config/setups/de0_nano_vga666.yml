@@ -22,6 +22,7 @@ Setup:
     - gpio: gpio_0
       params: {width: 34}
     - onboard: adc
+    - onboard: accelerometer
   extra:
     tie:
       gpio_0[3]: 0

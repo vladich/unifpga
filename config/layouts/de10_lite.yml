@@ -65,4 +65,4 @@ Layout:
       device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
     - id: accelerometer
       label: Accelerometer (ADXL345, SPI/I2C)
-      device: {kind: other, bank: onboard_accelerometer}   # no peripheral model yet
+      attach: {peripheral: adxl345_spi, bind: {mosi: onboard_accelerometer.GSENSOR_SDI, miso: onboard_accelerometer.GSENSOR_SDO, sclk: onboard_accelerometer.GSENSOR_SCLK, cs_n: onboard_accelerometer.GSENSOR_CS_n}}

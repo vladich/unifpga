@@ -45,10 +45,11 @@ Board:
       device: {"name": "A/D converter (ADC128S022, SPI)", "kind": "adc"}
       iostandard: "3.3V"
       pins: {"ADC_CS_N": "A10", "ADC_SADDR": "B10", "ADC_SDAT": "A9", "ADC_SCLK": "B14"}
-    onboard_accelerometer:   # Accelerometer (ADXL345)
-      device: {"name": "Accelerometer (ADXL345)", "kind": "other"}
+    onboard_accelerometer:   # Accelerometer (ADXL345): on the I2C bus it shares with the EEPROM
+      device: {"name": "Accelerometer (ADXL345)", "kind": "accelerometer"}
       iostandard: "3.3V"
-      pins: {"G_SENSOR_INT": "M2", "G_SENSOR_CS_N": "G5"}
+      shares: ["onboard_i2c"]   # the board multiplexes these pins
+      pins: {"G_SENSOR_INT": "M2", "G_SENSOR_CS_N": "G5", "I2C_SCLK": "F2", "I2C_SDAT": "F1"}
     onboard_epcs:   # Serial configuration flash (EPCS64)
       device: {"name": "Serial configuration flash (EPCS64)", "kind": "flash"}
       iostandard: "3.3-V LVTTL"
