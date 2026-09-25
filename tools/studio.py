@@ -201,8 +201,8 @@ _TABLE_LOCK = threading.Lock()
 
 
 def _table_key():
-    """Changes whenever a configuration, profile, peripheral, capability,
-    board or design file does."""
+    """Changes whenever a setup, layout, peripheral, capability, board or
+    design file does, or the set of rigs (a test standing in other rigs)."""
     newest, count = 0, 0
     for root in (os.path.join(REPO, "config"), DESIGNS_DIR):
         for dirpath, _dirs, files in os.walk(root):
@@ -210,7 +210,7 @@ def _table_key():
                 if name.endswith((".yml", ".yaml", ".sv")):
                     count += 1
                     newest = max(newest, os.stat(os.path.join(dirpath, name)).st_mtime_ns)
-    return count, newest
+    return count, newest, tuple(sorted(config_init.read_configurations()))
 
 
 def design_table():
@@ -301,16 +301,10 @@ def evaluate(setup):
     configuration text, the virtual device traced to pins (for as much of the
     setup as can be traced: uses that break it are listed in `excluded`), and
     which designs fit."""
-    out = {"problems": [], "configuration_text": None, "trace": None, "profile": None, "designs": None, "parts": [],
+    out = {"problems": [], "configuration_text": None, "trace": None, "designs": None, "parts": [],
            "excluded": [], "server_stale": _code_fingerprint() != _STARTED_WITH}
-    from config import profile
-    prof = profile.load(setup.get("id")) if profile.enabled() else None
-    if prof:
-        out["profile"] = os.path.relpath(profile.path_for(setup["id"]), REPO)
-    out["profile_drops"] = []
     try:
         cfg = su.generate(setup)
-        out["profile_drops"] = profile_drops(cfg, prof)
         out["configuration_text"] = su.emit_configuration(cfg, setup.get("notes"))
         clashes = []
         out["problems"] = [{"level": level, "message": msg} for level, msg in su.validate(setup, clashes)]
@@ -343,7 +337,7 @@ def evaluate(setup):
                 break
     out["excluded"] = sorted(excluded, key=lambda x: x["use"])
     out["parts"] = part_status(setup, kept, out["excluded"], resolved if out["trace"] is not None else None,
-                               out["trace"], out["profile"], out["profile_drops"])
+                               out["trace"])
     fixes = _Fixes(setup)
     out["problems"].extend(shared_pin_warnings(setup, out["trace"], fixes))
     # what the build itself refuses (a pin constrained for two top ports: the
@@ -438,17 +432,17 @@ def shared_pin_warnings(setup, trace, fixes=None):
     return out
 
 
-def part_status(setup, kept, excluded, resolved, trace, profile_path, drops):
+def part_status(setup, kept, excluded, resolved, trace):
     """[{use, label, connected, reasons: [(kind, text)]}] for every part that
     does not reach the design, or reaches it only in part:
-      untraced   the build cannot place it (a design-wiring profile without
+      untraced   the build cannot place it (design_bits on other parts without
                  an entry for it, or another error), so it is not traced
       exclusive  design_top has one of a capability (audio_in, screen, ...)
                  and an earlier part already provides it: codegen keeps the
                  first provider, this one's gets no design port
       unwired    a module with none of its signal pins wired
       nothing    it provides nothing design_top has
-    Profile drops are reported by profile_drops()."""
+    """
     uses = setup.get("use") or []
     names = [su.use_label(u, u.get("raw") or {}) for u in uses]
 
@@ -458,11 +452,10 @@ def part_status(setup, kept, excluded, resolved, trace, profile_path, drops):
         return names[k] + (" #{}".format(same.index(k) + 1) if len(same) > 1 else "")
     reasons = {}
     for x in excluded:
-        m = re.search(r"lab_bits\.(\w+) is set on one provider", x["reason"])
-        if m and profile_path:
-            text = ("the rig's design-wiring profile {} says which design bits of {} each part takes, and this part "
-                    "has no entry there, so the build cannot place it. Save the rig under a new id (no profile "
-                    "applies to it) or add the part to the profile.").format(profile_path, m.group(1))
+        m = re.search(r"design_bits\.(\w+) is set on one provider", x["reason"])
+        if m:
+            text = ("the rig gives some parts their design bits of {0} (design_bits on their uses) and this part "
+                    "has none, so the build cannot place it: give it design_bits too.").format(m.group(1))
         else:
             text = "the build cannot place it: " + x["reason"]
         reasons.setdefault(x["use"], []).append(("untraced", text))
@@ -485,13 +478,10 @@ def part_status(setup, kept, excluded, resolved, trace, profile_path, drops):
                         "design_top has one {} ({}) and {} already provides it; the build keeps the first "
                         "provider, so this part's {} does not reach the design. Keep one of them.").format(
                             cid, ", ".join(ports), label(first[cid]), cid), {"with": first[cid], "capability": cid}))
-    dropped = {d["use"] for d in drops or []}
     edges = {e["use"] for e in (trace or {}).get("edges") or []}
     provides = {pr["attach_index"] for p in (trace or {}).get("ports") or [] for pr in p["providers"]}
     out = []
     for k, u in enumerate(uses):
-        if k in dropped:
-            continue
         rs = reasons.get(k, [])
         connected = k in edges or k in provides
         if u.get("module") and not u.get("wires") and not u.get("plug"):
@@ -501,28 +491,6 @@ def part_status(setup, kept, excluded, resolved, trace, profile_path, drops):
             rs = [("nothing", "it provides nothing design_top has a port for")]
         if rs:
             out.append({"use": k, "label": label(k), "connected": connected, "reasons": rs})
-    return out
-
-
-def profile_drops(cfg, prof):
-    """[{use, peripheral, ties}]: the uses a design-wiring profile leaves out of
-    the design (drop: true, matched as config/profile.py applies it: the n-th
-    attach of that peripheral; the generated configuration has one attach per
-    use, in order) and the constants the profile ties their pins to."""
-    if not prof:
-        return []
-    ties = prof.get("tie") or {}
-    occ, out = {}, []
-    for k, att in enumerate(cfg.get("attach") or []):
-        pid = att["peripheral"]
-        i = occ.get(pid, 0)
-        occ[pid] = i + 1
-        if any(e.get("drop") and e.get("peripheral") == pid and int(e.get("index", 0)) == i
-               for e in prof.get("attach") or []):
-            binds = [str(v) for v in (att.get("bind") or {}).values()]
-            mine = {key: val for key, val in ties.items()
-                    if any(key == b or key.startswith(b + "[") for b in binds)}
-            out.append({"use": k, "peripheral": pid, "ties": mine})
     return out
 
 
@@ -614,7 +582,7 @@ def _ref_names(ref):
 
 def verilog_view(setup, target):
     """The rig's generated top.sv with the lines that define `target`:
-      use          its part's section (its pins' lines when the profile left it out)
+      use          its part's section
       refs         lines using these pinmap entries (within the use's section when given)
       design_port  the design_top instance's port line, and the lines of the
                    use's section that drive its capability bus
@@ -643,8 +611,8 @@ def verilog_view(setup, target):
                 sections[kept[a["attach_index"]]] = (k, end)
     header_end = next((k for k, l in enumerate(lines) if l.strip() == ");"), 0)
     top_start = next((k for k, l in enumerate(lines) if l.startswith("module top")), 0)
-    lab_start = next((k for k, l in enumerate(lines) if "i_design_top (" in l), len(lines))
-    lab_params = next((k for k, l in enumerate(lines) if l.strip().startswith("design_top #")), lab_start)
+    design_start = next((k for k, l in enumerate(lines) if "i_design_top (" in l), len(lines))
+    design_params = next((k for k, l in enumerate(lines) if l.strip().startswith("design_top #")), design_start)
     hi = set()
 
     use = target.get("use")
@@ -668,13 +636,13 @@ def verilog_view(setup, target):
     port = target.get("design_port")
     if port:
         entry = next((e for e in codegen.design_ports() if e[0] == port), None)
-        hi.update(k for k in range(lab_start, len(lines)) if re.match(r"^\s*\." + re.escape(port) + r"\(", lines[k]))
+        hi.update(k for k in range(design_start, len(lines)) if re.match(r"^\s*\." + re.escape(port) + r"\(", lines[k]))
         if entry and span:
             bus = "cap_{}_{}".format(entry[1], entry[2])
             hi.update(k for k in range(*span) if re.search(r"\b" + re.escape(bus) + r"(\b|__)", lines[k]))
     param = target.get("parameter")
     if param:
-        hi.update(k for k in range(lab_params, lab_start + 1) if re.match(r"^\s*\." + re.escape(param) + r"\(", lines[k]))
+        hi.update(k for k in range(design_params, design_start + 1) if re.match(r"^\s*\." + re.escape(param) + r"\(", lines[k]))
     if target.get("board"):
         hi.update(range(top_start, header_end + 1))
 
@@ -712,10 +680,6 @@ def _check_setup(setup):
         raise ApiError(400, "a setup id is 1-80 characters of a-z, 0-9 and _")
     if setup.get("board") not in su.read_layouts():
         raise ApiError(400, "unknown board '{}'".format(setup.get("board")))
-    # an existing configuration without a setup belongs to the hand-written /
-    # synced data: do not overwrite it from here
-    if setup["id"] in config_init.read_configurations() and setup["id"] not in su.read_setups():
-        raise ApiError(409, "configuration '{}' exists and has no setup; choose another id".format(setup["id"]))
 
 
 def save(setup):
@@ -725,11 +689,8 @@ def save(setup):
     if errors:
         raise ApiError(400, "not saved: " + "; ".join(errors))
     setup_path = su.write_setup(setup)
-    cfg_path = su.configuration_path(setup["id"])
-    with open(cfg_path, "w", encoding="utf-8") as f:
-        f.write(result["configuration_text"])
     config_init.clear_cache()
-    return {"setup": os.path.relpath(setup_path, REPO), "configuration": os.path.relpath(cfg_path, REPO)}
+    return {"setup": os.path.relpath(setup_path, REPO)}
 
 
 def project(setup_id, design):

@@ -1,6 +1,6 @@
 """
 P3.1: peripheral-declared clocks (`clocks:` + `clock.<name>`), the vendor PLL
-wrappers codegen instantiates for them, the `lab_clock:` switch and the
+wrappers codegen instantiates for them, the `design_clock:` switch and the
 constraints for pads driven straight from a PLL clock.
 """
 
@@ -47,7 +47,7 @@ def test_gowin_rpll_clock_tree_for_lcd():
     assert ".clkin(clk), .clkout(clk_pixel)" in top
     assert ".PixelClk(clk_pixel)" in top
     assert "assign onboard_lcd_ck = clk_pixel;" in top
-    # the lab stays on the board clock
+    # the design stays on the board clock
     assert "localparam int clk_mhz = 27;" in top
     assert "        .clk(clk)," in top
 
@@ -89,32 +89,32 @@ def test_conflicting_clock_requests_are_an_error():
 
 
 # ---------------------------------------------------------------------------
-# iCE40 SB_PLL40 + lab_clock (iCEBreaker DVI: the lab runs on the 25.125 MHz PLL)
+# iCE40 SB_PLL40 + design_clock (iCEBreaker DVI: the design runs on the 25.125 MHz PLL)
 # ---------------------------------------------------------------------------
 
-def test_ice40_pll_and_lab_clock():
+def test_ice40_pll_and_design_clock():
     r = _resolve("icebreaker_dvi_12b_no_tm1638_yosys")
-    r["configuration"].pop("lab_clock", None)
+    r["configuration"].pop("design_clock", None)
     top = codegen.emit_top_sv(r, strict=True)
     assert "pll_ice40 # (.DIVR(4'd0), .DIVF(7'd66), .DIVQ(3'd5), .FILTER_RANGE(3'd1), .USE_PAD(1'b0))" in top
     assert "localparam int clk_mhz = 12;" in top
     assert "        .clk(clk)," in top
 
-    r["configuration"]["lab_clock"] = "pixel"
+    r["configuration"]["design_clock"] = "pixel"
     top = codegen.emit_top_sv(r, strict=True)
     # SB_PLL40_PAD once nothing else needs the clock pad
     assert ".USE_PAD(1'b1)" in top
-    assert "localparam int clk_mhz = 25;" in top          # lab_mhz = pixel_mhz = 25
+    assert "localparam int clk_mhz = 25;" in top          # design_mhz = pixel_mhz = 25
     assert "        .clk(clk_pixel)," in top               # design_top
     assert "(.clk (clk), .rst (rst_on_power_up))" not in top    # nothing left on the board clock
-    lab = codegen.lab_clock(r)
-    assert lab == {"net": "clk_pixel", "mhz": 25.125, "name": "pixel"}
+    dclk = codegen.design_clock(r)
+    assert dclk == {"net": "clk_pixel", "mhz": 25.125, "name": "pixel"}
     assert codegen.pll_source_files(top) == [os.path.join("rtl", "pll", "pll_ice40.sv")]
 
 
-def test_power_up_reset_follows_the_lab_clock():
+def test_power_up_reset_follows_the_design_clock():
     r = _resolve("icebreaker_dvi_12b_tm1638_yosys")     # imitate_reset_on_power_up on clk = pixel_clk
-    r["configuration"]["lab_clock"] = "pixel"
+    r["configuration"]["design_clock"] = "pixel"
     top = codegen.emit_top_sv(r, strict=True)
     assert "imitate_reset_on_power_up" in top
     assert "(.clk (clk_pixel), .rst (rst_on_power_up))" in top
@@ -123,7 +123,7 @@ def test_power_up_reset_follows_the_lab_clock():
 def test_concurrent_top_emission_keeps_each_configuration_context(monkeypatch):
     configs = [_resolve("icebreaker_dvi_12b_tm1638_yosys"),
                _resolve("tang_nano_9k_hdmi_tm1638")]
-    configs[0]["configuration"]["lab_clock"] = "pixel"
+    configs[0]["configuration"]["design_clock"] = "pixel"
     expected = [codegen.emit_top_sv(config) for config in configs]
     assert expected[0] != expected[1]
 
@@ -143,11 +143,11 @@ def test_concurrent_top_emission_keeps_each_configuration_context(monkeypatch):
     assert actual == expected
 
 
-def test_unknown_lab_clock_is_rejected_by_validation():
+def test_unknown_design_clock_is_rejected_by_validation():
     r = _resolve("icebreaker_dvi_12b_no_tm1638_yosys")
-    r["configuration"]["lab_clock"] = "serial"
+    r["configuration"]["design_clock"] = "serial"
     problems = codegen.validate_configuration(r)
-    assert any("lab_clock 'serial'" in p for p in problems)
+    assert any("design_clock 'serial'" in p for p in problems)
 
 
 # ---------------------------------------------------------------------------

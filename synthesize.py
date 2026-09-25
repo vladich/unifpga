@@ -2,7 +2,7 @@
 """
 UniFPGA top-level entry point.
 
-Resolve a configuration (config/configurations/<id>.yml), import the matching
+Resolve a rig's configuration (its setup, config/setups/<id>.yml), import the matching
 toolchain module (toolchains/<toolchain_id>/<toolchain_id>.py), and dispatch
 synthesis to it.
 
@@ -55,12 +55,12 @@ def driver_exit_code(result, operation):
 def _build_parser():
     p = argparse.ArgumentParser(description="UniFPGA Compile")
     p.add_argument("-c", "--configuration",
-                   help="Configuration id (from config/configurations/<id>.yml). "
+                   help="Rig id (a setup, config/setups/<id>.yml). "
                         "If omitted, settings.yml is consulted; if that's also absent, "
                         "the user is prompted interactively.")
     p.add_argument("-t", "--toolchain",
                    help="build the configuration with this of its toolchains instead of its default "
-                        "(config/configurations/<id>.yml toolchains:)")
+                        "(the setup's toolchains:)")
     p.add_argument("--part",
                    help="build for this of the board's chips instead of the configuration's default part:")
     p.add_argument("-s", "--step", choices=["elaborate", "pnr", "full"], default="full",
@@ -74,7 +74,7 @@ def _build_parser():
                         "If omitted, a temp dir is created and deleted on exit unless "
                         "--keep-temp-dir is set.")
     p.add_argument("--no-profile", action="store_true",
-                   help="ignore config/profiles/<configuration>.yml (the design-wiring profile): generate the "
+                   help="ignore the rig's design section and design_bits (config/setups/<id>.yml): generate the "
                         "generic composition, buses concatenated in attach order, power-up reset")
     p.add_argument("--keep-temp-dir", action="store_true",
                    help="Keep the auto-created temp output dir instead of deleting it")

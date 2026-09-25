@@ -276,4 +276,4 @@ module design_top
         end
     end
 endmodule
- // lab_top
+ // design_top

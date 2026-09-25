@@ -445,10 +445,10 @@ def test_peripheral_pin_assigns_well_formed():
 # ---------------------------------------------------------------------------
 
 def test_every_configuration_resolves():
-    """Every config/configurations/*.yml must resolve cleanly: board exists,
+    """Every rig (config/setups/*.yml, expanded) must resolve cleanly: board exists,
     toolchain exists and is compatible, every attached peripheral exists."""
     configurations = _configurations()
-    assert configurations, "No configurations under config/configurations/"
+    assert configurations, "No rigs under config/setups/"
     for cfg_id in sorted(configurations):
         # resolve_configuration raises ConfigError on any inconsistency.
         config_init.resolve_configuration(cfg_id)

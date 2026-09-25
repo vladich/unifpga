@@ -15,7 +15,7 @@ Peripheral:
     direction:
       type: enum
       values: [inout, out]
-      default: inout        # out: the design only drives the pins (emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio`)
+      default: inout        # out: the design only drives the pins (emooc_cc: `assign GPIO_P2 [14:6] = gpio`)
   signals:
     - { name: io, type: bus, width: $width, direction: inout }
   provides:

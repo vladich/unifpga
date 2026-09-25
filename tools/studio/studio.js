@@ -238,9 +238,9 @@ function partText(i) { const x = partStatus(i); return x ? x.reasons.map((r) => 
 function partShort(i) {
   const x = partStatus(i);
   if (!x) return "";
-  const kinds = {untraced: "no profile entry / not placed", exclusive: "capability already provided", unwired: "not wired", nothing: "nothing design_top uses"};
+  const kinds = {untraced: "cannot be placed", exclusive: "capability already provided", unwired: "not wired", nothing: "nothing design_top uses"};
   const k = x.reasons[0][0];
-  return (x.connected ? "partly in the design: " : "not in the design: ") + (k === "untraced" && !/profile/.test(x.reasons[0][1]) ? "cannot be placed" : kinds[k] || k);
+  return (x.connected ? "partly in the design: " : "not in the design: ") + (kinds[k] || k);
 }
 // the peripheral a use attaches, and the capabilities it provides
 function usePeripheral(u) {
@@ -278,16 +278,6 @@ function sharedBitText(p, bit) {
   if (!l) return "";
   return p.direction === "hw_to_user" ? portName(p) + "[" + bit + "] = " + l.join(" OR ")
                                       : portName(p) + "[" + bit + "] drives all of: " + l.join(", ");
-}
-
-// a use the rig's design-wiring profile leaves out of the design: {peripheral, ties}
-function profileDrop(i) { return ((S.ev && S.ev.profile_drops) || []).find((x) => x.use === i); }
-function dropText(i) {
-  const x = profileDrop(i);
-  if (!x) return "";
-  const ties = Object.entries(x.ties || {}).map(([k, v]) => k + " = " + v);
-  return "left out of the design by the design-wiring profile " + (S.ev.profile || "") +
-         (ties.length ? "; its pins are tied to constants: " + ties.join(", ") : "");
 }
 
 // design ports a use provides
@@ -468,7 +458,7 @@ function draw() {
   const boardItems = [];
   for (const o of S.board.onboard) {
     const i = used.has(o.id) ? used.get(o.id) : null;
-    const dropped = i !== null && !!profileDrop(i);
+    const dropped = false;
     const on = i !== null && hi.uses.has(i), selected = S.sel && S.sel.kind === "onboard" && S.sel.id === o.id;
     const g = el("g", {class: "clickable"});
     const obpins = i === null ? [] : Object.entries(onboardPins(o, S.setup.use[i])).flatMap(([s, ps]) => ps.map((pp) => Object.assign({s}, pp)));
@@ -482,14 +472,14 @@ function draw() {
       S.pos.obpins[pp.ref] = {x: px, y: py};
       const lit = hi.refs.has(pp.ref);
       const dot = el("circle", {cx: px, cy: py, r: 4, fill: lit ? "var(--sel)" : "#ffffff", stroke: lit ? "var(--sel)" : dropped ? "#adb5bd" : "#2b8a3e"});
-      dot.append(el("title", {}, o.label + ": " + pp.s + " = " + pp.ref + " = FPGA " + (pp.pin || "?") + (dropped ? " — not connected to the design (profile tie)" : "")));
+      dot.append(el("title", {}, o.label + ": " + pp.s + " = " + pp.ref + " = FPGA " + (pp.pin || "?") + ""));
       target(dot, {kind: "ref", ref: pp.ref});
       g.append(dot);
       if (SHARED.has(pp.ref)) g.append(el("circle", {cx: px, cy: py, r: 6.5, fill: "none", stroke: "#f76707", "stroke-width": 2, "pointer-events": "none"}));
     });
     // the label cut to the box (about 6.3 px a character at 12 px), the whole of it on hover
     const full = o.label + (o.device ? "  — no model yet" : "") + (i !== null && variantsOf(o).length > 1 ? ": " + variantOf(o, S.setup.use[i]).label : variantsOf(o).length > 1 ? " (" + variantsOf(o).length + " ways)" : "") +
-                 (dropped ? "  — not in the design (profile)" : i !== null && partStatus(i) ? "  — " + partShort(i) : "");
+                 (i !== null && partStatus(i) ? "  — " + partShort(i) : "");
     const room = Math.floor((OW - 14) / 6.3), tail = full.slice(o.label.length);
     const name = o.label.length + tail.length > room ? o.label.slice(0, Math.max(8, room - tail.length - 1)) + "…" : o.label;
     const lt = el("text", {x: BX + 18, y: oy + 14, "font-size": 12, fill: i === null || dropped ? "#868e96" : "#212529",
@@ -706,7 +696,6 @@ function draw() {
   if (wires.length) legend.push(["#d9480f", "", "wire from a header pin to a module (one colour per module)"]);
   if (SHARED.size) legend.push(["#f76707", "", "orange ring / outlined bit: an FPGA pin several parts reach, and the design bits on it (conflicted: only one may drive it)"]);
   if (ports().some((p) => sharedBits(p).size)) legend.push(["#f76707", "", "orange corner: a design bit several parts feed (inputs ORed, outputs drive all)"]);
-  if (((S.ev && S.ev.profile_drops) || []).length) legend.push(["#adb5bd", "4 2", "part in the rig the design-wiring profile leaves out of the design (pins tied to constants)"]);
   legend.push(["var(--sel)", "", "the selection and everything it connects to (dashed when through a driver)"]);
   legend.forEach(([col, dash, text], k) => {
     const ly = LY + k * 16;
@@ -1214,7 +1203,7 @@ function verilogTarget(sel) {
     const o = u.onboard && onboardDef(u.onboard);
     return o ? Object.values(onboardPins(o, u)).flatMap((ps) => ps.map((p) => p.ref)) : [];
   };
-  const withDrop = (i) => Object.assign({use: i}, profileDrop(i) ? {refs: usePins(i)} : {});
+  const withDrop = (i) => ({use: i});
   if (sel.kind === "vbit" || sel.kind === "vport") {
     const p = ports().find((q) => q.capability === sel.cap && q.signal === sel.signal);
     return p && {design_port: portName(p), parameter: p.width_parameter, module: "design_top", design: S.design};
@@ -1687,7 +1676,7 @@ function details() {
                                                         sharedRefs().has(e.ref)).map((e) => e.ref));
     for (const ref of pinsHere) d.append(h("p", {class: "note"}, "Conflicted: pin " + ref + " is " + sharedRefText(ref) + "."));
     for (const b of sharedHere) if (sharedBitText(p, b)) d.append(h("p", {class: "note"}, sharedBitText(p, b) +
-      (p.direction === "hw_to_user" ? " — the build ORs the parts' bits (the rig's design-wiring profile or lab_bits give them the same design bit)" : "")));
+      (p.direction === "hw_to_user" ? " — the build ORs the parts' bits (the rig's design_bits give them the same design bit)" : "")));
     const facts = [["Width", p.width_parameter
       ? widthText(p) + " — a design_top parameter (" + portName(p) + "[" + p.width_parameter + " - 1 : 0]): this rig sets it, other rigs give other widths, and a design reads " + p.width_parameter
       : (p.width || 0) + " bit" + (p.width === 1 ? "" : "s") + ", fixed by the design_top interface"]];
@@ -1784,7 +1773,6 @@ function details() {
       d.append(h("div", {}, "Used as: ", pick, h("span", {class: "muted"}, "  (" + vs.length + " ways this part can be used)")));
       S.onboardPick = pick;
     }
-    if (i >= 0 && profileDrop(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + dropText(i) + "."));
     if (i >= 0 && partStatus(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + partText(i)));
     for (const [s, ps] of Object.entries(cur.pins)) d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ")));
     if (i >= 0) { for (const x of portsOfUse(i)) d.append(chain(["design " + x.port.signal + (x.bits.length ? "[" + x.bits.join(",") + "]" : ""), o.label + (x.via ? " via " + x.via : "")])); }
@@ -1924,7 +1912,6 @@ function edgeList(d, ref) {
 function useDetails(d, i) {
   const use = S.setup.use[i];
   d.append(h("h4", {}, useLabel(use) + (use.module ? " (" + moduleDef(use.module).peripheral + ")" : "")));
-  if (profileDrop(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + dropText(i) + "."));
   if (partStatus(i)) d.append(h("p", {class: "note"}, (partStatus(i).connected ? "Only partly connected to the design: " : "Not connected to the design: ") + partText(i)));
   for (const p of problemsOfUse(i)) d.append(h("div", {class: "conflict"}, h("p", {class: "note"}, "Conflict: " + p.message), fixButtons(p)));
   if (use.module) {
@@ -2046,9 +2033,6 @@ function tables() {
   const pl = $("problems");
   pl.replaceChildren();
   const probs = (S.ev && S.ev.problems) || [];
-  if (S.ev && S.ev.profile)
-    pl.append(h("li", {}, "The design-wiring profile " + S.ev.profile + " applies to this id: it fixes which design bits " +
-                          "each part takes for the example designs. A part added here needs an entry there, or save under a new id."));
   for (const x of (S.ev && S.ev.excluded) || [])
     pl.append(h("li", {class: "warning"}, "not traced (the drawing leaves it out): " + useLabel(S.setup.use[x.use] || {}) + " — " + x.reason));
   if (!probs.length) pl.append(h("li", {}, "no problems"));
@@ -2123,7 +2107,7 @@ function headerActions() {
   const add = $("add-module"), uses = S.setup.use || [];
   // exclusive capabilities already provided, and by which part
   const taken = new Map();
-  uses.forEach((u, i) => { for (const c of providedCaps(usePeripheral(u))) if (capAggregation(c) === "exclusive" && !taken.has(c) && !profileDrop(i)) taken.set(c, useLabel(u)); });
+  uses.forEach((u, i) => { for (const c of providedCaps(usePeripheral(u))) if (capAggregation(c) === "exclusive" && !taken.has(c)) taken.set(c, useLabel(u)); });
   const text = (m) => {
     const n = uses.filter((u) => u.module === m.id).length;
     const clash = providedCaps(m.peripheral).filter((c) => taken.has(c)).map((c) => c + " already provided by " + taken.get(c));
@@ -2563,7 +2547,7 @@ async function selftest() {
     // selector, and Auto-wire says it will not reach the design
     {
       const taken = new Set();
-      S.setup.use.forEach((u, i) => { for (const c of providedCaps(usePeripheral(u))) if (capAggregation(c) === "exclusive" && !profileDrop(i)) taken.add(c); });
+      S.setup.use.forEach((u, i) => { for (const c of providedCaps(usePeripheral(u))) if (capAggregation(c) === "exclusive") taken.add(c); });
       const inRig = S.board.modules.find((m) => S.setup.use.some((u) => u.module === m.id));
       if (inRig) ok("the module selector marks a module already in the rig",
                     [...$("add-module").options].some((o) => o.value === inRig.id && o.textContent.includes("in the rig")));
@@ -2693,11 +2677,6 @@ async function selftest() {
     }
     for (const q of ports().filter((q) => capDef(q.capability).summary && q.providers.length).slice(0, 1))
       ok("a parameterized capability's variant is named", $("svg").textContent.includes(capSummary(q.capability)));
-    // parts the design-wiring profile leaves out are marked and explained
-    for (const x of (S.ev.profile_drops || []).slice(0, 1)) {
-      select({kind: "use", use: x.use});
-      ok("a part the profile leaves out says so", $("details").textContent.includes("Not connected to the design"));
-    }
     // overlapping targets: a design bit whose line starts at it
     S.sel = null; render();
     // a line leaves its bit to the right, over the next bit's cell
@@ -2719,7 +2698,7 @@ async function selftest() {
       $("svg").dispatchEvent(new MouseEvent("click", Object.assign({[MODS.connsKey]: true}, pt)));
       ok(MODS.conns + "-click picks the connection", S.sel && CONNECTIONS.has(S.sel.kind));
     }
-    S.setup.id = "selftest_rig"; delete S.setup.notes; delete S.setup.aliases;  // a fresh rig: no profile, no old ids
+    S.setup.id = "selftest_rig"; delete S.setup.notes; delete S.setup.aliases;  // a fresh rig: no old ids
     await changed("fresh id"); await settle();
     // a module this rig can take: the first the server can wire, whose capabilities are not taken
     const taken = new Set();

@@ -6,7 +6,7 @@ Peripheral:
   id: adc_8bit_mic
   description: 8-bit parallel ADC read as the microphone (sampled every 1024 clocks)
   parameters:
-    # The clock the sampler runs on (the ADC runs at a quarter of it): the lab
+    # The clock the sampler runs on (the ADC runs at a quarter of it): the design
     # clock, or another (marsohod3gw2: the HDMI pixel clock, profile)
     clock: { type: string, default: context.clk }
   signals:

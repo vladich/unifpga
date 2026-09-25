@@ -118,7 +118,7 @@ def write_settings(cfg_id, path=None):
 
 def configurations():
     """{build-target id: Configuration dict as that target builds it}: every rig
-    in config/configurations/ with each toolchain and chip it is checked with
+    (config/setups/) with each toolchain and chip it is checked with
     (config/init.py build_targets())."""
     try:
         rigs = config.init.read_configurations()
@@ -145,7 +145,7 @@ def _unknown_configuration(cfg_id, origin, ids):
 
 def chosen_configuration(override=None):
     """The configuration id to build for: -b/--board, else $UNIFPGA_BOARD,
-    else settings.yml. Validated against config/configurations/."""
+    else settings.yml. Validated against the rigs (config/setups/)."""
     if override:
         cfg_id, origin = override, "-b/--board"
     elif os.environ.get(ENV_BOARD):
@@ -693,58 +693,30 @@ def cmd_designs(args):
 
 
 def cmd_setup(args):
-    """setup check: every setup generates its configuration (data and text) and
-    has no rig errors. setup generate [id...]: write config/configurations/<id>.yml
-    from the setup. setup derive <id>...: write config/setups/<id>.yml from the
-    configuration (its board needs a layout)."""
+    """setup check [id...]: every setup is a sound rig — no rig errors, it
+    expands to its configuration and that resolves. setup show <id>: print the
+    configuration a setup expands to (what the build reads; not a file)."""
     from tools import setup as su
-    if args.action == "generate":
-        setups = su.read_setups()
-        for sid in args.ids or sorted(setups):
+    setups = su.read_setups()
+    if args.action == "show":
+        if not args.ids:
+            raise CliError("setup show <id>")
+        for sid in args.ids:
             if sid not in setups:
                 raise CliError("unknown setup '{}'".format(sid))
-            path = su.configuration_path(sid)
-            text = su.generated_text(setups[sid])
-            old = open(path, encoding="utf-8").read() if os.path.exists(path) else None
-            if old != text:
-                with open(path, "w", encoding="utf-8") as f:
-                    f.write(text)
-                print("wrote {}".format(_shown(path)))
+            sys.stdout.write(su.generated_text(setups[sid]))
         return 0
-    if args.action == "derive":
-        configurations = config.init.read_configurations()
-        for cid in args.ids:
-            if cid not in configurations:
-                raise CliError("unknown configuration '{}'".format(cid))
-            cfg = configurations[cid]
-            diffs = su.check_roundtrip(cfg)
-            if diffs:
-                raise CliError("{} does not round-trip:\n  {}".format(cid, "\n  ".join(diffs)))
-            print("wrote {}".format(_shown(su.write_setup(su.derive(cfg)))))
-        return 0
-    setups = su.read_setups()
     ids = args.ids or sorted(setups)
-    configurations = config.init.read_configurations()
     failed = 0
     for sid in ids:
         if sid not in setups:
             raise CliError("unknown setup '{}'".format(sid))
         problems = su.validate(setups[sid])
-        cfg = configurations.get(sid)
         try:
-            generated = su.generate(setups[sid])
-        except su.SetupError as exc:
-            generated = None
+            su.generate(setups[sid])
+            config.init.resolve_configuration(sid)
+        except (su.SetupError, config.init.ConfigError) as exc:
             problems.append(("error", str(exc)))
-        if cfg is None:
-            problems.append(("error", "no configuration {} to compare with".format(sid)))
-        elif generated is None:
-            pass
-        elif not su.same_configuration(generated, cfg):
-            problems.append(("error", "does not generate config/configurations/{}.yml".format(sid)))
-        elif open(su.configuration_path(sid), encoding="utf-8").read() != su.generated_text(setups[sid]):
-            problems.append(("error", "config/configurations/{}.yml differs from its setup's text "
-                                      "(./unifpga setup generate {})".format(sid, sid)))
         errors = [m for level, m in problems if level == "error"]
         failed += bool(errors)
         print("{:<48} {}".format(sid, "FAIL" if errors else "ok"))
@@ -913,7 +885,7 @@ def build_parser():
     sub = p.add_subparsers(dest="command", title="commands", metavar="<command>")
 
     b = sub.add_parser("board", help="choose the board configuration (menu, `board <id>`, or -l to list)")
-    b.add_argument("id", nargs="?", help="configuration id (config/configurations/<id>.yml)")
+    b.add_argument("id", nargs="?", help="rig id (config/setups/<id>.yml)")
     b.add_argument("-l", "--list", action="store_true", help="list the configurations without prompting")
 
     def design_arg(sp):
@@ -961,12 +933,11 @@ def build_parser():
     sub.add_parser("tools", help="report where each toolchain was found (or why not)")
     sub.add_parser("designs", help="list the designs under designs/")
 
-    st = sub.add_parser("setup", help="check setups (config/setups/), generate their configurations, "
-                                      "or derive a setup from a configuration")
-    st.add_argument("action", choices=["check", "generate", "derive"])
-    st.add_argument("ids", nargs="*", help="setup / configuration ids (check: default all)")
+    st = sub.add_parser("setup", help="check the rigs (config/setups/), or show the configuration one expands to")
+    st.add_argument("action", choices=["check", "show"])
+    st.add_argument("ids", nargs="*", help="setup ids (check: default all)")
 
-    ly = sub.add_parser("layout", help="generate board layouts (config/layouts/) from pinmaps, configurations "
+    ly = sub.add_parser("layout", help="generate board layouts (config/layouts/) from pinmaps, rigs "
                                         "and the board-sources registry")
     ly.add_argument("action", choices=["draft"])
     ly.add_argument("boards", nargs="*")

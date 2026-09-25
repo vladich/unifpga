@@ -10,7 +10,7 @@ import pytest
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
 
-from config import init as config_init, overlay, profile  # noqa: E402
+from config import init as config_init, overlay  # noqa: E402
 from tools import setup as su  # noqa: E402
 
 
@@ -89,9 +89,9 @@ def test_a_toolchain_builds_the_rig_with_its_patches():
     assert hdmi and hdmi[0]["params"] == {"timing": "dvi"}
     assert "clk" in gowin["configuration"]["io_overrides"] and "clk" not in apicula["configuration"]["io_overrides"]
     old = config_init.resolve_configuration("tang_primer_20k_dock_hdmi_no_tm1638_yosys")
-    assert old["configuration"]["lab_width"].get("switches") == 5          # its profile's patch
+    assert old["configuration"]["design_width"].get("switches") == 5          # its design section's patch
     assert "switches" not in config_init.resolve_configuration(
-        "tang_primer_20k_dock_hdmi_no_tm1638")["configuration"]["lab_width"]
+        "tang_primer_20k_dock_hdmi_no_tm1638")["configuration"]["design_width"]
 
 
 def _body(cfg):
@@ -104,8 +104,7 @@ def test_no_two_rigs_are_the_same_hardware():
     seen = {}
     rigs = config_init.read_configurations()
     for t in config_init.build_targets(rigs):
-        key = (_body(config_init.for_target(rigs[t["rig"]], t["toolchain"], t["part"])),
-               json.dumps(profile.for_toolchain(profile.load(t["rig"]) or {}, t["toolchain"]), sort_keys=True))
+        key = _body(config_init.for_target(rigs[t["rig"]], t["toolchain"], t["part"]))
         assert key not in seen or seen[key] == t["rig"], "{} and {} are the same rig".format(seen.get(key), t["rig"])
         seen[key] = t["rig"]
 

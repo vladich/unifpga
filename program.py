@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 def _build_parser():
     p = argparse.ArgumentParser(description="UniFPGA Program")
     p.add_argument("-c", "--configuration",
-                   help="Configuration id (from config/configurations/<id>.yml). "
+                   help="Rig id (a setup, config/setups/<id>.yml). "
                         "If omitted, settings.yml is consulted.")
     p.add_argument("-o", "--output", required=True,
                    help="The build's output folder (synthesize.py -o), holding the bitstream")

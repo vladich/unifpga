@@ -2,7 +2,7 @@
 """
 Configuration loader.
 
-A *configuration* (config/configurations/<id>.yml) is the unit of selection.
+A *rig* (its setup, config/setups/<id>.yml; the configuration is its expansion) is the unit of selection.
 Each configuration declares a board + toolchain + a list of attached
 peripherals. Picking a configuration resolves to a fully-loaded object that
 synthesize.py and toolchain modules consume.
@@ -105,6 +105,7 @@ def _read_yaml_file(path):
 def clear_cache():
     """Drop every cached document (tests that rewrite config files call this)."""
     _yaml_cache.clear()
+    _CONFIGURATIONS.clear()
 
 
 def _load_yaml(path, root_key):
@@ -813,19 +814,50 @@ def read_capabilities():
 
 
 def _read_configuration(configuration_id):
-    """One configuration: its own file when it is named after its id (all
-    are), else a search of them all; None when there is none."""
-    path = os.path.join(dir_path, "configurations", str(configuration_id) + ".yml")
-    if os.path.isfile(path):
-        item = (_read_yaml_file(path) or {}).get("Configuration") or {}
-        if item.get("id") == configuration_id:
-            return item
+    """One rig's configuration, or None when there is no such rig."""
     return read_configurations().get(configuration_id)
 
 
-def read_configurations():
-    """Read every configuration under config/configurations/."""
-    return _load_yaml_dir("configurations", "Configuration", "id")
+_CONFIGURATIONS = {}          # conventions flag -> (source key, {id: configuration})
+
+
+def _rig_sources_key(setup_dir):
+    """What the rigs' configurations depend on: the setups (`setup_dir`: a
+    test may stand in another directory), the layouts, the modules and the
+    connectors, by path and modification time."""
+    key = []
+    for base in (setup_dir, os.path.join(dir_path, "layouts"), os.path.join(dir_path, "modules")):
+        for name in sorted(os.listdir(base)) if os.path.isdir(base) else ():
+            path = os.path.join(base, name)
+            key.append((path, os.stat(path).st_mtime_ns))
+    path = os.path.join(dir_path, "connectors.yml")
+    if os.path.exists(path):
+        key.append((path, os.stat(path).st_mtime_ns))
+    return tuple(key)
+
+
+def read_configurations(conventions=None):
+    """Every rig's configuration, {id: dict}: the expansion of its setup
+    (config/setups/<id>.yml, tools/setup.py) with the board's layout. Nothing
+    is read from a configurations directory: the rig is its setup. `conventions`
+    False leaves the setup's design section and design_bits out (default: the
+    UNIFPGA_PROFILE switch)."""
+    from tools import setup as su                  # tools/setup.py imports this module
+    if conventions is None:
+        conventions = su.conventions_enabled()
+    key = _rig_sources_key(su.SETUP_DIR)
+    hit = _CONFIGURATIONS.get(conventions)
+    if hit is not None and hit[0] == key:
+        return copy.deepcopy(hit[1])
+    setups = su.read_setups()
+    out = {}
+    for sid in sorted(setups):
+        try:
+            out[sid] = su.generate(setups[sid], conventions)
+        except su.SetupError as exc:
+            raise ConfigError("Configuration '{}': {}".format(sid, exc))
+    _CONFIGURATIONS[conventions] = (key, out)
+    return copy.deepcopy(out)
 
 
 # ---------------------------------------------------------------------------
@@ -855,14 +887,14 @@ _ALIAS_INDEX = {}
 
 def _alias_index():
     """{alias id: (rig id, toolchain or None, part or None)}, rebuilt when a
-    configuration file changes (the files are parsed once, not copied)."""
-    base = os.path.join(dir_path, "configurations")
+    setup file changes (the files are parsed once, not copied)."""
+    base = os.path.join(dir_path, "setups")
     paths = [os.path.join(base, n) for n in sorted(os.listdir(base)) if n.endswith(".yml") and not n.startswith("_")]
     key = tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p in paths)
     if _ALIAS_INDEX.get("key") != key:
         out = {}
         for p in paths:
-            cfg = (_parsed(p) or {}).get("Configuration") or {}
+            cfg = (_parsed(p) or {}).get("Setup") or {}
             for alias, target in (cfg.get("aliases") or {}).items():
                 target = target or {}
                 out[alias] = (cfg.get("id"), target.get("toolchain"), target.get("part"))
@@ -1059,8 +1091,7 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
     the rig. The bundle's "target" is {id, rig, toolchain, part}.
 
     `configuration`: resolve this Configuration dict instead of the file of
-    that id (an unsaved setup in the board editor); its profile, if any,
-    still applies.
+    that id (an unsaved setup in the board editor).
 
     Raises ConfigError on any inconsistency.
     """
@@ -1185,27 +1216,19 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
             "peripheral":    peripherals[perip_id],
             "params":        entry.get("params", {}) or {},
             "bind":          entry.get("bind", {}) or {},
-            # `lab_bits: {leds: [0, 1, ...]}` — which bits of the design's bus
-            # this provider occupies (a TM1638 can share the lab's led/key
-            # buses with the board's own LEDs and keys instead of extending
+            # `design_bits: {leds: [0, 1, ...]}` — which bits of the design's
+            # bus this provider occupies (a TM1638 can share the design's led /
+            # key buses with the board's own LEDs and keys instead of extending
             # them); absent = the next free bits, in attach order
-            "lab_bits":      entry.get("lab_bits", {}) or {},
-            # position in the configuration's attach list (a profile may drop
-            # attaches; tools/trace.py relates providers back to it)
+            "design_bits":   entry.get("design_bits", {}) or {},
+            # position in the configuration's attach list (tools/trace.py
+            # relates providers back to it)
             "attach_index":  attach_index,
         })
 
-    # design-wiring profile (config/profiles/<id>.yml, config/profile.py): how
-    # the example designs use this hardware — reset policy, bus composition,
-    # design clock, bit order, pins that follow the reset — applied on top of
-    # the configuration unless UNIFPGA_PROFILE=0.
-    try:
-        from config import profile
-    except ImportError:              # config/ imported without the repo root on sys.path
-        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        from config import profile
-    if profile.enabled():
-        cfg = profile.apply(cfg, attached, profile.for_toolchain(profile.load(rig_id), toolchain_id))
+    # (how the design sees the rig — its reset, design clock, bus widths, ties
+    # and each part's design bits — is in the configuration already: the
+    # setup's design section, tools/setup.py)
 
     # `tie:` — pins the top drives with a constant or the reset (e.g.
     # `assign M_CLK = 1'b0`, `assign ARDUINO_RESET_N = ~ rst`), one pin_tie
@@ -1422,7 +1445,7 @@ def init():
     """
     rigs = read_configurations()
     if not rigs:
-        raise ConfigError("No configurations found in config/configurations/")
+        raise ConfigError("No rigs found in config/setups/")
     boards = read_boards_catalog()
 
     # Group the build targets (every rig with each toolchain / chip it is checked with) by board.
