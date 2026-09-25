@@ -13,7 +13,7 @@ delegate here and express their frontend quirks as flags:
                   get declared twice.
     gate_helpers  yosys 0.36 rejects SV-2009 multi-dim packed array ports
                   (tm1638_registers.sv), so the open flows add the
-                  rtl/peripherals helpers only when the generated top names
+                  rtl/peripherals helpers only when selected sources name
                   the module. Vendor tools take them unconditionally.
     gate_common   Same idea for rtl/peripherals/designs_common/*.sv: include a
                   file only when its module name (the file stem) appears in the
@@ -390,8 +390,8 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
 
     # Design modules can instantiate reusable helpers directly; inspecting only
     # the generated wrapper misses those dependencies in prepared projects.
-    source_text = (_read_text(generated_top) +
-                   "".join("\n" + _read_text(f) for f in files)) if (gate_helpers or gate_common) else ""
+    source_text = ("".join("\n" + _read_text(f) for f in files)
+                   if (gate_helpers or gate_common) else "")
     before_helpers = set(files)
 
     for helper, modules in HELPER_MODULES.items():
