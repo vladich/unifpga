@@ -103,6 +103,12 @@ Configuration:
       bind:
         scl: onboard_temp_sensor.scl
         sda: onboard_temp_sensor.sda
+    - peripheral: spi_accelerometer
+      bind:
+        miso: onboard_accelerometer.miso
+        mosi: onboard_accelerometer.mosi
+        sclk: onboard_accelerometer.sclk
+        csn: onboard_accelerometer.csn
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:
