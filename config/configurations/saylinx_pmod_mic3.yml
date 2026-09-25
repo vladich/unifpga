@@ -91,3 +91,9 @@ Configuration:
         a: onboard_sdram.a
         dq: onboard_sdram.dq
         dqm: onboard_sdram.dqm
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.mosi
+        dat0: onboard_sdcard.miso
+        dat3: onboard_sdcard.cs_n

@@ -22,3 +22,4 @@ Setup:
       wires: {SCK: 'gpio.[9]', BCK: 'gpio.[10]', LCK: 'gpio.[11]', DIN: 'gpio.[12]'}
     - gpio: gpio
       params: {width: 13}
+    - onboard: sdcard

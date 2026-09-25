@@ -29,6 +29,7 @@ Setup:
       params: {width: 8}
     - gpio: j5
       params: {width: 8}
+    - onboard: sdcard
   extra:
     io_overrides:
       clk: LVCMOS33

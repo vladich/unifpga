@@ -99,6 +99,12 @@ Configuration:
         we_n: onboard_sram.SRAM_WE_n
         lb_n: onboard_sram.SRAM_LB_n
         ub_n: onboard_sram.SRAM_UB_n
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.SD_CLK
+        cmd: onboard_sdcard.SD_CMD
+        dat0: "onboard_sdcard.SD_DAT[0]"
+        dat3: "onboard_sdcard.SD_DAT[3]"
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

@@ -23,6 +23,7 @@ Setup:
       params: {width: 34}
     - onboard: buzzer
     - onboard: sdram
+    - onboard: sdcard
   extra:
     tie:
       gpio_0[1]: 0

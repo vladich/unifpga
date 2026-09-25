@@ -22,6 +22,7 @@ Setup:
       params: {width: 36}
     - onboard: ps2
     - onboard: sdram
+    - onboard: sdcard
   extra:
     tie:
       gpio_1[1]: 0

@@ -85,6 +85,12 @@ Configuration:
       bind:
         pwm: onboard_fan.pwm
         tach: onboard_fan.tach
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.cmd
+        dat0: onboard_sdcard.d0
+        dat3: onboard_sdcard.d3
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

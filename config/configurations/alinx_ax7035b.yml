@@ -47,3 +47,9 @@ Configuration:
       bind:
         scl: onboard_temp_sensor.scl
         sda: onboard_temp_sensor.sda
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.cmd
+        dat0: "onboard_sdcard.data[0]"
+        dat3: "onboard_sdcard.data[3]"

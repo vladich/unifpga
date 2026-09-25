@@ -18,3 +18,4 @@ Setup:
       variant: button_array_2
     - onboard: db_leds
     - onboard: db_buttons
+    - onboard: db_sdcard

@@ -54,18 +54,18 @@ Layout:
     - id: buzzer
       label: 蜂鸣器 LS1 (S8550 Q7)
       attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
+    - id: sdram
+      label: SDRAM HY57V2562GTR U9 (256 Mbit, 16M x16)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 9}, bind: {clk: onboard_sdram.clk, cke: onboard_sdram.cke, cs_n: onboard_sdram.cs_n, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq, dqm: onboard_sdram.dqm}}
     - id: sdcard
       label: SD卡座 U14 (SPI mode)
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.mosi, dat0: onboard_sdcard.miso, dat3: onboard_sdcard.cs_n}}
     - id: eeprom
       label: EEPROM 24LC04 U12
       device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
     - id: rtc
       label: 实时时钟 DS1302 U11 (32.768 kHz, battery)
       device: {kind: other, bank: onboard_rtc}   # no peripheral model yet
-    - id: sdram
-      label: SDRAM HY57V2562GTR U9 (256 Mbit, 16M x16)
-      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 9}, bind: {clk: onboard_sdram.clk, cke: onboard_sdram.cke, cs_n: onboard_sdram.cs_n, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq, dqm: onboard_sdram.dqm}}
     - id: flash
       label: M25P16 (EPCS16) serial configuration flash U8
       device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

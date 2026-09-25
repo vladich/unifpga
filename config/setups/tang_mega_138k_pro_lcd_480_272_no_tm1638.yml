@@ -24,6 +24,7 @@ Setup:
     - onboard: audio_dac
     - onboard: ws2812
     - onboard: fan
+    - onboard: sdcard
   extra:
     pin_overrides:
       pmod_0:

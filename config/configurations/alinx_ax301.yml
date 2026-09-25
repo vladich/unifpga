@@ -88,6 +88,12 @@ Configuration:
         a: onboard_sdram.a
         dq: onboard_sdram.dq
         dqm: onboard_sdram.dqm
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.sclk
+        cmd: onboard_sdcard.mosi
+        dat0: onboard_sdcard.miso
+        dat3: onboard_sdcard.cs_n
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

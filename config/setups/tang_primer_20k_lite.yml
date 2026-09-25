@@ -18,6 +18,7 @@ Setup:
     - module: digilent_pmod_vga
       wires: {R0: 'gpio_0.[4]', R1: 'gpio_0.[5]', R2: 'gpio_0.[6]', R3: 'gpio_0.[7]', G0: 'gpio_1.[4]', G1: 'gpio_1.[5]', G2: 'gpio_1.[6]', G3: 'gpio_1.[7]', B0: 'gpio_0.[0]', B1: 'gpio_0.[1]', B2: 'gpio_0.[2]', B3: 'gpio_0.[3]', HS: 'gpio_1.[0]', VS: 'gpio_1.[1]'}
       params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4}
+    - onboard: sdcard
   extra:
     tie:
       gpio_1[3]: 0

@@ -127,6 +127,13 @@ Configuration:
       bind:
         p: onboard_pmod_jxadc.xa_p
         n: onboard_pmod_jxadc.xa_n
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.sck
+        cmd: onboard_sdcard.cmd
+        dat0: "onboard_sdcard.dat[0]"
+        dat3: "onboard_sdcard.dat[3]"
+        reset: onboard_sdcard.reset
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

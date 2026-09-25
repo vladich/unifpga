@@ -81,15 +81,15 @@ Layout:
     - id: pmod_jxadc
       label: 'Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 3, 10, 2, 11; usable as digital IO)'
       attach: {peripheral: xadc_aux, params: {width: 4, channels: [3, 10, 2, 11]}, bind: {p: onboard_pmod_jxadc.xa_p, n: onboard_pmod_jxadc.xa_n}}
+    - id: cellular_ram
+      label: Cellular RAM (PSRAM, 16-bit data, 23-bit address)
+      attach: {peripheral: async_sram, params: {addr_bits: 23, access_ns: 70}, bind: {a: onboard_cellular_ram.adr, d: onboard_cellular_ram.db, ce_n: onboard_cellular_ram.cen, oe_n: onboard_cellular_ram.oen, we_n: onboard_cellular_ram.wen, lb_n: onboard_cellular_ram.lbn, ub_n: onboard_cellular_ram.ubn, adv_n: onboard_cellular_ram.advn, cre: onboard_cellular_ram.cre, clk: onboard_cellular_ram.clk, wait: onboard_cellular_ram.wait}}
     - id: sdcard
       label: microSD card slot
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.sck, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.dat[0]', dat3: 'onboard_sdcard.dat[3]', reset: onboard_sdcard.reset}}
     - id: ethernet
       label: 10/100 Ethernet PHY (SMSC, RMII)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
     - id: qspi_flash
       label: Quad-SPI flash
       device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
-    - id: cellular_ram
-      label: Cellular RAM (PSRAM, 16-bit data, 23-bit address)
-      attach: {peripheral: async_sram, params: {addr_bits: 23, access_ns: 70}, bind: {a: onboard_cellular_ram.adr, d: onboard_cellular_ram.db, ce_n: onboard_cellular_ram.cen, oe_n: onboard_cellular_ram.oen, we_n: onboard_cellular_ram.wen, lb_n: onboard_cellular_ram.lbn, ub_n: onboard_cellular_ram.ubn, adv_n: onboard_cellular_ram.advn, cre: onboard_cellular_ram.cre, clk: onboard_cellular_ram.clk, wait: onboard_cellular_ram.wait}}

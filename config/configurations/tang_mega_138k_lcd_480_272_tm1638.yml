@@ -77,3 +77,9 @@ Configuration:
         pwm: onboard_fan.pwm
         en: onboard_fan.en
         tach: onboard_fan.tacho
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.cmd_mosi
+        dat0: onboard_sdcard.d0_miso
+        dat3: onboard_sdcard.d3_cs

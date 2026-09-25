@@ -35,7 +35,7 @@ Layout:
       attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
     - id: leds_green
       label: leds green
-      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: ['onboard_leds_green[0]', 'onboard_leds_green[1]', 'onboard_leds_green[2]', 'onboard_leds_green[3]', 'onboard_leds_green[4]', 'onboard_leds_green[5]', 'onboard_leds_green[6]', 'onboard_leds_green[7]']}}
+      attach: {peripheral: led_bank, params: {width: 9}, bind: {led: onboard_leds_green}}
     - id: leds
       label: leds
       attach: {peripheral: led_bank, params: {width: 18}, bind: {led: onboard_leds}}
@@ -57,6 +57,9 @@ Layout:
     - id: ps2
       label: PS/2 port
       attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
+    - id: sdram
+      label: SDRAM (8 MB, 16-bit)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA_, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
     - id: clk27mhz
       label: CLOCK_27 (27 MHz)
       device: {kind: clock, bank: onboard_clk27mhz}   # no peripheral model yet
@@ -75,9 +78,6 @@ Layout:
     - id: irda
       label: IrDA transceiver
       device: {kind: irda, bank: onboard_irda}   # no peripheral model yet
-    - id: sdram
-      label: SDRAM (8 MB, 16-bit)
-      attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA_, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
     - id: sram
       label: SRAM (512 KB, 16-bit)
       attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.SRAM_ADDR, d: onboard_sram.SRAM_DQ, ce_n: onboard_sram.SRAM_CE_N, oe_n: onboard_sram.SRAM_OE_N, we_n: onboard_sram.SRAM_WE_N, lb_n: onboard_sram.SRAM_LB_N, ub_n: onboard_sram.SRAM_UB_N}}
@@ -89,4 +89,4 @@ Layout:
       device: {kind: other, bank: onboard_usb_blaster_jtag}   # no peripheral model yet
     - id: sdcard
       label: SD card socket
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: onboard_sdcard.SD_DAT, dat3: onboard_sdcard.SD_DAT3}}

@@ -98,4 +98,4 @@ Layout:
       device: {kind: vga, bank: onboard_db_vga}   # no peripheral model yet
     - id: db_sdcard
       label: Daughterboard microSD slot
-      device: {kind: sdcard, bank: onboard_db_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_db_sdcard.clk, cmd: onboard_db_sdcard.cmd, dat0: 'onboard_db_sdcard.data[0]', dat3: 'onboard_db_sdcard.data[3]'}}

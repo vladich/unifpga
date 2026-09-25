@@ -23,9 +23,9 @@ Configuration:
         btn: onboard_buttons
     - peripheral: led_bank
       params:
-        width: 8
+        width: 9
       bind:
-        led: ["onboard_leds_green[0]", "onboard_leds_green[1]", "onboard_leds_green[2]", "onboard_leds_green[3]", "onboard_leds_green[4]", "onboard_leds_green[5]", "onboard_leds_green[6]", "onboard_leds_green[7]"]
+        led: onboard_leds_green
     - peripheral: led_bank
       params:
         width: 18
@@ -110,6 +110,12 @@ Configuration:
         a: onboard_sdram.DRAM_ADDR
         dq: onboard_sdram.DRAM_DQ
         dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.SD_CLK
+        cmd: onboard_sdcard.SD_CMD
+        dat0: onboard_sdcard.SD_DAT
+        dat3: onboard_sdcard.SD_DAT3
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

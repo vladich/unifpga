@@ -24,6 +24,7 @@ Setup:
     - onboard: lcd
     - onboard: ps2
     - onboard: sdram
+    - onboard: sdcard
   extra:
     tie:
       onboard_vga.sync: 0

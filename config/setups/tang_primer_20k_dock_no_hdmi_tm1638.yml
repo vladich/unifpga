@@ -20,3 +20,4 @@ Setup:
     - module: i2s_dac_breakout
       wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
       params: {align_right: 0, offset_by_one_cycle: 1}
+    - onboard: sdcard

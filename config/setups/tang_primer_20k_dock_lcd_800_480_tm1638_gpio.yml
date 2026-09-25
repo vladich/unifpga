@@ -24,3 +24,4 @@ Setup:
       params: {width: 8}
     - gpio: j12
       params: {width: 8}
+    - onboard: sdcard

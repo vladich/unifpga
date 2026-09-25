@@ -51,6 +51,12 @@ Configuration:
         b: ["gpio_0[0]", "gpio_0[1]", "gpio_0[2]", "gpio_0[3]"]
         hs: "gpio_1[0]"
         vs: "gpio_1[1]"
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.cmd
+        dat0: "onboard_sdcard.d[0]"
+        dat3: "onboard_sdcard.d[3]"
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

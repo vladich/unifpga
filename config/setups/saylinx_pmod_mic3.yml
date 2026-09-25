@@ -23,3 +23,4 @@ Setup:
     - onboard: uart
     - onboard: buzzer
     - onboard: sdram
+    - onboard: sdcard

@@ -44,7 +44,7 @@ Layout:
       device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
     - id: sdcard
       label: microSD card slot
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.data0, dat3: onboard_sdcard.data3}}
     - id: ddr3
       label: DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
       device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet

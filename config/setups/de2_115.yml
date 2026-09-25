@@ -23,6 +23,7 @@ Setup:
     - onboard: ps2
     - onboard: irda
     - onboard: sdram
+    - onboard: sdcard
   extra:
     tie:
       onboard_vga.sync_n: 0

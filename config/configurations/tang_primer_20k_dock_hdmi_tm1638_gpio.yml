@@ -105,6 +105,12 @@ Configuration:
         width: 8
       bind:
         io: gpio_3
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.cmd
+        dat0: "onboard_sdcard.d[0]"
+        dat3: "onboard_sdcard.d[3]"
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

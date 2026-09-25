@@ -30,6 +30,7 @@ Setup:
     - onboard: accelerometer
     - onboard: pmod_jxadc
     - onboard: cellular_ram
+    - onboard: sdcard
   extra:
     tie:
       onboard_mic.clk: 0

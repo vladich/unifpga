@@ -66,3 +66,9 @@ Configuration:
         width: 13
       bind:
         io: gpio
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.cmd
+        dat0: onboard_sdcard.data0
+        dat3: onboard_sdcard.data3

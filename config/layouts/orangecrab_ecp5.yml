@@ -44,7 +44,7 @@ Layout:
       device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet
     - id: sdcard
       label: MicroSD socket
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.dat[0]', dat3: 'onboard_sdcard.dat[3]'}}
     - id: usb
       label: USB-C full-speed device (direct FPGA USB)
       device: {kind: usb, bank: onboard_usb}   # no peripheral model yet

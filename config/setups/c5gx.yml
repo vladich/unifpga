@@ -24,6 +24,7 @@ Setup:
       params: {width: 22}
     - onboard: adc
     - onboard: sram
+    - onboard: sdcard
   extra:
     tie:
       gpio[1]: 0

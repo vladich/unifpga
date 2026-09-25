@@ -59,3 +59,9 @@ Configuration:
         bclk: "gpio_1[5]"
         lrclk: "gpio_1[7]"
         sdata: "gpio_1[6]"
+    - peripheral: sdcard_spi
+      bind:
+        clk: onboard_sdcard.clk
+        cmd: onboard_sdcard.cmd
+        dat0: "onboard_sdcard.d[0]"
+        dat3: "onboard_sdcard.d[3]"
