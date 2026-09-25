@@ -25,6 +25,8 @@ Peripheral:
   driver:
     module: i2c_temperature_reader
     file: rtl/peripherals/i2c_temperature_reader.sv
+    files:
+      - rtl/peripherals/i2c_reg_master.sv
     parameters:
       CLK_MHZ: context.clk_mhz
       SHIFT:   $shift

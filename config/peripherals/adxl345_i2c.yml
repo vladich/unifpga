@@ -1,0 +1,39 @@
+# An Analog Devices ADXL345 three-axis accelerometer on I2C (the DE0-Nano's, on
+# the bus it shares with the EEPROM; its CS pin held high selects I2C mode):
+# rtl/peripherals/adxl345_i2c_reader.sv sets it measuring and reads the three
+# axes 100 times a second, in milli-g at its power-on +-2 g range. Its interrupt
+# output is not used.
+
+Peripheral:
+  id: adxl345_i2c
+  description: ADXL345 accelerometer on I2C, readings in milli-g
+  # the on-board devices it models: an ADXL345 whose bank has the I2C pins and
+  # the chip select (the DE0-Nano's)
+  models: {kind: accelerometer, device: [ADXL345],
+           pins: {scl: [I2C_SCLK, scl], sda: [I2C_SDAT, sda], cs_n: [G_SENSOR_CS_N, cs_n]}}
+  signals:
+    - { name: scl,  type: scalar, direction: output }
+    - { name: sda,  type: scalar, direction: inout }
+    - { name: cs_n, type: scalar, direction: output, comment: "Held high: I2C mode" }
+    - { name: int,  type: scalar, direction: input, optional: true, comment: "Interrupt, not used" }
+  provides:
+    - capability: accelerometer
+  driver:
+    module: adxl345_i2c_reader
+    file: rtl/peripherals/adxl345_i2c_reader.sv
+    files:
+      - rtl/peripherals/i2c_reg_master.sv
+      - rtl/peripherals/adxl345_axes.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+    port_map:
+      clk:   context.clk
+      rst:   context.rst
+      scl:   pin.scl
+      sda:   pin.sda
+      valid: capability.accelerometer.valid
+      x:     capability.accelerometer.x
+      y:     capability.accelerometer.y
+      z:     capability.accelerometer.z
+  pin_assigns:
+    pin.cs_n: const.1

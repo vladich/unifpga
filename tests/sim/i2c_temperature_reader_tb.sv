@@ -124,9 +124,9 @@ module i2c_temperature_reader_tb;
         rst = 1'b0;
 
         expect_reading (16'sd400, "+25.0 C");
-        if (dut.addr !== ADDR)
+        if (dut.i_master.addr !== ADDR)
         begin
-            $display ("FAIL the reader settled on 0x%h, not 0x%h", dut.addr, ADDR);
+            $display ("FAIL the reader settled on 0x%h, not 0x%h", dut.i_master.addr, ADDR);
             fails++;
         end
 
@@ -135,7 +135,7 @@ module i2c_temperature_reader_tb;
 
         present = 1'b0;                          // gone: the reader looks for it again
         repeat (40000) @ (posedge clk);
-        if (dut.found)
+        if (dut.i_master.found)
         begin
             $display ("FAIL the reader still thinks the device is there");
             fails++;

@@ -22,6 +22,8 @@ Peripheral:
   driver:
     module: adxl362_reader
     file: rtl/peripherals/adxl362_reader.sv
+    files:
+      - rtl/peripherals/spi_reg_master.sv
     parameters:
       CLK_MHZ: context.clk_mhz
     port_map:

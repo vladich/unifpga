@@ -247,6 +247,10 @@ def _model(kind, bank, spec):
         kinds = m.get("kind") if isinstance(m.get("kind"), list) else [m.get("kind")]
         if kind not in kinds:
             continue
+        # `device:` narrows a kind to named chips (an ADXL345, not any accelerometer)
+        name = str((spec.get("device") or {}).get("name") or "").lower()
+        if m.get("device") and not any(str(d).lower() in name for d in m["device"]):
+            continue
         params_def = p.get("parameters") or {}
         signals = p.get("signals") or []
         bind, width = {}, None

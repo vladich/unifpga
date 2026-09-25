@@ -1,0 +1,39 @@
+# An Analog Devices ADXL345 three-axis accelerometer on 4-wire SPI (the
+# DE10-Lite's): rtl/peripherals/adxl345_spi_reader.sv sets it measuring and
+# reads the three axes 100 times a second, in milli-g at its power-on +-2 g
+# range. Its two interrupt outputs are not used.
+
+Peripheral:
+  id: adxl345_spi
+  description: ADXL345 accelerometer on SPI, readings in milli-g
+  # the on-board devices it models: an ADXL345 on a 4-wire SPI bank (the DE10-Lite's)
+  models: {kind: accelerometer, device: [ADXL345],
+           pins: {mosi: [GSENSOR_SDI, sdi], miso: [GSENSOR_SDO, sdo], cs_n: [GSENSOR_CS_n, GSENSOR_CS_N], sclk: [GSENSOR_SCLK]}}
+  signals:
+    - { name: mosi, type: scalar, direction: output, comment: "Data to the device (SDI)" }
+    - { name: miso, type: scalar, direction: input,  comment: "Data from the device (SDO)" }
+    - { name: sclk, type: scalar, direction: output }
+    - { name: cs_n, type: scalar, direction: output, comment: "Chip select, active low" }
+    - { name: int1, type: scalar, direction: input, optional: true, comment: "Interrupt 1, not used" }
+    - { name: int2, type: scalar, direction: input, optional: true, comment: "Interrupt 2, not used" }
+  provides:
+    - capability: accelerometer
+  driver:
+    module: adxl345_spi_reader
+    file: rtl/peripherals/adxl345_spi_reader.sv
+    files:
+      - rtl/peripherals/spi_reg_master.sv
+      - rtl/peripherals/adxl345_axes.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+    port_map:
+      clk:   context.clk
+      rst:   context.rst
+      sclk:  pin.sclk
+      mosi:  pin.mosi
+      miso:  pin.miso
+      cs_n:  pin.cs_n
+      valid: capability.accelerometer.valid
+      x:     capability.accelerometer.x
+      y:     capability.accelerometer.y
+      z:     capability.accelerometer.z
