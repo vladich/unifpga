@@ -36,7 +36,7 @@ Board:
         g: [F1, H6, F2, H3]
         b: [F3, G3, E2, H5]
     onboard_sram:   # SRAM U5 K6R4016V1D (256K x 16, 10 ns)
-      device: {"name": "SRAM U5 K6R4016V1D (256K x 16, 10 ns)", "kind": "sdram"}
+      device: {"name": "SRAM U5 K6R4016V1D (256K x 16, 10 ns)", "kind": "sram"}
       pins: {"a": ["N6", "T1", "P4", "R2", "N5", "T2", "P5", "R3", "R5", "T3", "R4", "M7", "N7", "P6", "M8", "T5", "R6", "P8"], "d": ["T8", "P7", "N9", "T9", "M9", "R9", "K9", "P9", "R10", "L10", "P10", "N10", "T10", "T11", "T15", "T14"], "cs_n": "T6", "oe_n": "L9", "we_n": "T7"}
     onboard_serial_flash:   # SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)
       device: {"name": "SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)", "kind": "flash"}

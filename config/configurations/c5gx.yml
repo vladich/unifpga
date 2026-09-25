@@ -88,6 +88,17 @@ Configuration:
         sck: onboard_adc.ADC_SCK
         sdi: onboard_adc.ADC_SDI
         sdo: onboard_adc.ADC_SDO
+    - peripheral: async_sram
+      params:
+        addr_bits: 18
+      bind:
+        a: onboard_sram.SRAM_A
+        d: onboard_sram.SRAM_D
+        ce_n: onboard_sram.SRAM_CE_n
+        oe_n: onboard_sram.SRAM_OE_n
+        we_n: onboard_sram.SRAM_WE_n
+        lb_n: onboard_sram.SRAM_LB_n
+        ub_n: onboard_sram.SRAM_UB_n
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

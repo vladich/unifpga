@@ -94,6 +94,7 @@ Board:
       iostandard: "LVCMOS33"
       pins: {"sck": "E9", "dq": ["K17", "K18", "L14", "M14"], "csn": "L13"}
     onboard_cellular_ram:   # Cellular RAM (PSRAM, 16-bit data, 23-bit address)
-      device: {"name": "Cellular RAM (PSRAM, 16-bit data, 23-bit address)", "kind": "sdram"}
+      device: {"name": "Cellular RAM (PSRAM, 16-bit data, 23-bit address)", "kind": "sram"}
       iostandard: "LVCMOS33"
+      model_params: {access_ns: 70}
       pins: {"clk": "T15", "advn": "T13", "cen": "L18", "cre": "J14", "oen": "H14", "wen": "R11", "lbn": "J15", "ubn": "J13", "wait": "T14", "db": ["R12", "T11", "U12", "R13", "U18", "R17", "T18", "R18", "F18", "G18", "G17", "M18", "M17", "P18", "N17", "P17"], "adr": ["J18", "H17", "H15", "J17", "H16", "K15", "K13", "N15", "V16", "U14", "V14", "V12", "P14", "U16", "R15", "N14", "N16", "M13", "V17", "U17", "T10", "M16", "U13"]}

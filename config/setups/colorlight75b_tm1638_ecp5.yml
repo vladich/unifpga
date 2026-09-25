@@ -12,3 +12,4 @@ Setup:
     - module: tm1638_led_key
       wires: {CLK: 'gpio.[0]', STB: 'gpio.[1]', DIO: 'onboard_buttons_pads.[0]'}
     - onboard: hdmi
+    - onboard: sdram

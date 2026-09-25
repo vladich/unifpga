@@ -45,6 +45,9 @@ Layout:
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: ps2
+      label: PS/2 port (primary)
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: clk2_50mhz
       label: CLOCK2_50 (50 MHz)
       device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
@@ -54,9 +57,6 @@ Layout:
     - id: clk4_50mhz
       label: CLOCK4_50 (50 MHz)
       device: {kind: clock, bank: onboard_clk4_50mhz}   # no peripheral model yet
-    - id: ps2
-      label: PS/2 port (primary)
-      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: ps2_secondary
       label: PS/2 port (secondary, via Y-cable)
       device: {kind: ps2, bank: onboard_ps2_secondary}   # no peripheral model yet
@@ -65,4 +65,4 @@ Layout:
       device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
     - id: sdram
       label: SDRAM (64 MB, 16-bit)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 10}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}

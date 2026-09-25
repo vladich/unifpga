@@ -22,3 +22,4 @@ Setup:
       params: {width: 34}
     - onboard: uart
     - onboard: buzzer
+    - onboard: sdram

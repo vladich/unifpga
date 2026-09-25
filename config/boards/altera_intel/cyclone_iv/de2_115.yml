@@ -191,12 +191,13 @@ Board:
       iostandard: "3.3V"
       pins: {"IRDA_RXD": "Y15"}
     onboard_sram:   # SRAM (2 MB, 16-bit)
-      device: {"name": "SRAM (2 MB, 16-bit)", "kind": "other"}
+      device: {"name": "SRAM (2 MB, 16-bit)", "kind": "sram"}
       iostandard: "3.3V"
       pins: {"SRAM_ADDR": ["AB7", "AD7", "AE7", "AC7", "AB6", "AE6", "AB5", "AC5", "AF5", "T7", "AF2", "AD3", "AB4", "AC3", "AA4", "AB11", "AC11", "AB9", "AB8", "T8"], "SRAM_DQ": ["AH3", "AF4", "AG4", "AH4", "AF6", "AG6", "AH6", "AF7", "AD1", "AD2", "AE2", "AE1", "AE3", "AE4", "AF3", "AG3"], "SRAM_OE_N": "AD5", "SRAM_WE_N": "AE8", "SRAM_CE_N": "AF8", "SRAM_LB_N": "AD4", "SRAM_UB_N": "AC4"}
     onboard_sdram:   # SDRAM (128 MB, 32-bit)
       device: {"name": "SDRAM (128 MB, 32-bit)", "kind": "sdram"}
       iostandard: "3.3V"
+      model_params: {col_bits: 10}
       pins: {"DRAM_ADDR": ["R6", "V8", "U8", "P1", "V5", "W8", "W7", "AA7", "Y5", "Y6", "R5", "AA5", "Y7"], "DRAM_DQ": ["W3", "W2", "V4", "W1", "V3", "V2", "V1", "U3", "Y3", "Y4", "AB1", "AA3", "AB2", "AC1", "AB3", "AC2", "M8", "L8", "P2", "N3", "N4", "M4", "M7", "L7", "U5", "R7", "R1", "R2", "R3", "T3", "U4", "U1"], "DRAM_BA": ["U7", "R4"], "DRAM_DQM": ["U2", "W4", "K8", "N8"], "DRAM_RAS_N": "U6", "DRAM_CAS_N": "V7", "DRAM_CKE": "AA6", "DRAM_CLK": "AE5", "DRAM_WE_N": "V6", "DRAM_CS_N": "T4"}
     onboard_flash:   # Flash memory (8 MB, 8-bit)
       device: {"name": "Flash memory (8 MB, 8-bit)", "kind": "flash"}

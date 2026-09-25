@@ -22,6 +22,7 @@ Setup:
     - onboard: lcd
     - onboard: ps2
     - onboard: irda
+    - onboard: sdram
   extra:
     tie:
       onboard_vga.sync_n: 0

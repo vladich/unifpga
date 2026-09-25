@@ -91,9 +91,10 @@ Board:
       pins: {"IRDA_TXD": "AE24", "IRDA_RXD": "AE25"}
     onboard_sdram:   # SDRAM (8 MB, 16-bit)
       device: {"name": "SDRAM (8 MB, 16-bit)", "kind": "sdram"}
+      model_params: {col_bits: 8}
       pins: {"DRAM_ADDR": ["T6", "V4", "V3", "W2", "W1", "U6", "U7", "U5", "W4", "W3", "Y1", "V5"], "DRAM_DQ": ["V6", "AA2", "AA1", "Y3", "Y4", "R8", "T8", "V7", "W6", "AB2", "AB1", "AA4", "AA3", "AC2", "AC1", "AA5"], "DRAM_BA_": ["AE2", "AE3"], "DRAM_LDQM": "AD2", "DRAM_UDQM": "Y5", "DRAM_RAS_N": "AB4", "DRAM_CAS_N": "AB3", "DRAM_CKE": "AA6", "DRAM_CLK": "AA7", "DRAM_WE_N": "AD3", "DRAM_CS_N": "AC3"}
     onboard_sram:   # SRAM (512 KB, 16-bit)
-      device: {"name": "SRAM (512 KB, 16-bit)", "kind": "other"}
+      device: {"name": "SRAM (512 KB, 16-bit)", "kind": "sram"}
       pins: {"SRAM_ADDR": ["AE4", "AF4", "AC5", "AC6", "AD4", "AD5", "AE5", "AF5", "AD6", "AD7", "V10", "V9", "AC7", "W8", "W10", "Y10", "AB8", "AC8"], "SRAM_DQ": ["AD8", "AE6", "AF6", "AA9", "AA10", "AB10", "AA11", "Y11", "AE7", "AF7", "AE8", "AF8", "W11", "W12", "AC9", "AC10"], "SRAM_WE_N": "AE10", "SRAM_OE_N": "AD10", "SRAM_UB_N": "AF9", "SRAM_LB_N": "AE9", "SRAM_CE_N": "AC11"}
     onboard_flash:   # Flash memory (4 MB, 8-bit)
       device: {"name": "Flash memory (4 MB, 8-bit)", "kind": "flash"}

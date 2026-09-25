@@ -34,6 +34,7 @@ Board:
     onboard_sdram:   # ESMT M12L64322A SDRAM (2M x 32, 8 MB)
       device: {"name": "ESMT M12L64322A SDRAM (2M x 32, 8 MB)", "kind": "sdram"}
       iostandard: "LVCMOS33"
+      model_params: {col_bits: 8}
       pins: {"clk": "C8", "a": ["A9", "B9", "B10", "C10", "D9", "C9", "E9", "D8", "E8", "C7", "B8"], "ba": ["B7", "A8"], "we_n": "B5", "cas_n": "A6", "ras_n": "B6", "dq": ["B2", "A2", "C3", "A3", "B3", "A4", "B4", "A5", "E7", "C6", "D7", "D6", "E6", "D5", "C5", "E5", "A11", "B11", "B12", "A13", "B13", "A14", "B14", "D14", "D13", "E11", "C13", "D11", "C12", "E10", "C11", "D10"]}
     onboard_eth0:   # Ethernet PHY U11 (RTL8211FD, RGMII, port 0)
       device: {"name": "Ethernet PHY U11 (RTL8211FD, RGMII, port 0)", "kind": "ethernet"}

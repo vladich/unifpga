@@ -62,6 +62,7 @@ Board:
       pins: {"SD_CLK": "Y21", "SD_CMD": "Y22", "SD_DAT0": "AA22", "SD_DAT3": "W21", "SD_WP_N": "W20"}
     onboard_sdram:   # SDRAM (8 MB, 16-bit)
       device: {"name": "SDRAM (8 MB, 16-bit)", "kind": "sdram"}
+      model_params: {row_bits: 12, col_bits: 8}
       pins: {"DRAM_ADDR": ["C4", "A3", "B3", "C3", "A5", "C6", "B6", "A6", "C7", "B7", "B4", "A7", "C8"], "DRAM_DQ": ["D10", "G10", "H10", "E9", "F9", "G9", "H9", "F8", "A8", "B9", "A9", "C10", "B10", "A10", "E10", "F10"], "DRAM_BA_": ["B5", "A4"], "DRAM_LDQM": "E7", "DRAM_UDQM": "B8", "DRAM_RAS_N": "F7", "DRAM_CAS_N": "G8", "DRAM_CKE": "E6", "DRAM_CLK": "E5", "DRAM_WE_N": "D6", "DRAM_CS_N": "G7"}
     onboard_flash:   # Flash memory (4 MB)
       device: {"name": "Flash memory (4 MB)", "kind": "flash"}

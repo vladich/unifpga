@@ -82,6 +82,22 @@ Configuration:
     - peripheral: ir_receiver
       bind:
         ir: onboard_ir.ir
+    - peripheral: sdram_sdr
+      params:
+        row_bits: 12
+        data_bits: 16
+        col_bits: 8
+      bind:
+        clk: onboard_sdram.clk
+        cke: onboard_sdram.cke
+        cs_n: onboard_sdram.cs_n
+        ras_n: onboard_sdram.ras_n
+        cas_n: onboard_sdram.cas_n
+        we_n: onboard_sdram.we_n
+        ba: onboard_sdram.ba
+        a: onboard_sdram.a
+        dq: onboard_sdram.dq
+        dqm: onboard_sdram.dqm
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

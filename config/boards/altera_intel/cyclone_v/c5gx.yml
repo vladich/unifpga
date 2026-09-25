@@ -144,7 +144,7 @@ Board:
       iostandard: "1.5-V PCML"
       pins: {"REFCLK_p": ["V6", "N7"], "REFCLK_n": ["W6", "P6"]}
     onboard_sram:   # SRAM (512 KB, 16-bit)
-      device: {"name": "SRAM (512 KB, 16-bit)", "kind": "other"}
+      device: {"name": "SRAM (512 KB, 16-bit)", "kind": "sram"}
       iostandard: "3.3-V"
       pins: {"SRAM_A": ["B25", "B26", "H19", "H20", "D25", "C25", "J20", "J21", "D22", "E23", "G20", "F21", "E21", "F22", "J25", "J26", "N24", "M24"], "SRAM_D": ["E24", "E25", "K24", "K23", "F24", "G24", "L23", "L24", "H23", "H24", "H22", "J23", "F23", "G22", "L22", "K21"], "SRAM_CE_n": "N23", "SRAM_OE_n": "M22", "SRAM_WE_n": "G25", "SRAM_LB_n": "H25", "SRAM_UB_n": "M25"}
     onboard_lpddr2:   # LPDDR2 SDRAM (512 MB, 32-bit)

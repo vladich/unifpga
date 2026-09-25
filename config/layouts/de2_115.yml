@@ -51,6 +51,9 @@ Layout:
     - id: ps2
       label: PS/2 port (primary)
       attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
+    - id: irda
+      label: IR receiver
+      attach: {peripheral: ir_receiver, bind: {ir: onboard_irda.IRDA_RXD}}
     - id: clk2_50mhz
       label: CLOCK2_50 (50 MHz)
       device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
@@ -87,15 +90,12 @@ Layout:
     - id: usb
       label: USB host/device (CY7C67200)
       device: {kind: usb, bank: onboard_usb}   # no peripheral model yet
-    - id: irda
-      label: IR receiver
-      attach: {peripheral: ir_receiver, bind: {ir: onboard_irda.IRDA_RXD}}
     - id: sram
       label: SRAM (2 MB, 16-bit)
-      device: {kind: other, bank: onboard_sram}   # no peripheral model yet
+      attach: {peripheral: async_sram, params: {addr_bits: 20}, bind: {a: onboard_sram.SRAM_ADDR, d: onboard_sram.SRAM_DQ, ce_n: onboard_sram.SRAM_CE_N, oe_n: onboard_sram.SRAM_OE_N, we_n: onboard_sram.SRAM_WE_N, lb_n: onboard_sram.SRAM_LB_N, ub_n: onboard_sram.SRAM_UB_N}}
     - id: sdram
       label: SDRAM (128 MB, 32-bit)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 32, col_bits: 10}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: onboard_sdram.DRAM_DQM}}
     - id: flash
       label: Flash memory (8 MB, 8-bit)
       device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

@@ -22,6 +22,7 @@ Setup:
     - gpio: gpio_0
       params: {width: 34}
     - onboard: buzzer
+    - onboard: sdram
   extra:
     tie:
       gpio_0[1]: 0

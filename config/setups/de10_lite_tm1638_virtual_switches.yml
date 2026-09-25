@@ -22,6 +22,7 @@ Setup:
     - gpio: arduino
       params: {width: 16}
     - onboard: accelerometer
+    - onboard: sdram
   extra:
     tie:
       gpio[1]: 0

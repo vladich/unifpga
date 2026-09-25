@@ -111,11 +111,13 @@ Board:
     onboard_sdram_0:   # 2x20 header J13 (SDRAM0 connector, MiSTer-style SDRAM module)
       device: {"name": "2x20 header J13 (SDRAM0 connector, MiSTer-style SDRAM module)", "kind": "sdram"}
       iostandard: "LVCMOS33"
+      model_params: {col_bits: 9}
       pins: {"dq": ["E14", "E13", "C15", "C14", "B13", "C13", "A14", "A13", "B21", "A21", "B20", "A20", "A15", "A16", "B15", "B16"], "a": ["D19", "E19", "C19", "C18", "E16", "D15", "D14", "A19", "A18", "C17", "D20", "D17", "B18"], "ba": ["F15", "C20"], "clk": "B17", "cs_n": "F19", "ras_n": "F16", "cas_n": "E17", "we_n": "D16", "dqm": ["F14", "F13"]}
     onboard_sdram_1:   # 2x20 header J14 (SDRAM1 connector)
       device: {"name": "2x20 header J14 (SDRAM1 connector)", "kind": "sdram"}
       iostandard: "LVCMOS33"
       shares: ["onboard_camera", "onboard_leds", "pmod_0", "pmod_1"]   # the board multiplexes these pins
+      model_params: {col_bits: 9}
       pins: {"dq": ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "N13", "N14", "N17", "P17", "W21", "W22", "V17", "W17"], "a": ["R16", "P15", "R14", "P14", "AA19", "AA21", "AA20", "AB22", "AB21", "Y22", "U17", "Y21", "V20"], "ba": ["N15", "U18"], "clk": "U20", "cs_n": "T20", "ras_n": "Y18", "cas_n": "Y19", "we_n": "AB20", "dqm": ["AA18", "AB18"]}
     onboard_lcd:   # RGB LCD FPC J5 (40-pin 0.5 mm, RGB666 on R2-R7/G2-G7/B2-B7)
       device: {"name": "RGB LCD FPC J5 (40-pin 0.5 mm, RGB666 on R2-R7/G2-G7/B2-B7)", "kind": "lcd_rgb"}

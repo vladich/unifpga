@@ -92,4 +92,4 @@ Layout:
       device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
     - id: cellular_ram
       label: Cellular RAM (PSRAM, 16-bit data, 23-bit address)
-      device: {kind: sdram, bank: onboard_cellular_ram}   # no peripheral model yet
+      attach: {peripheral: async_sram, params: {addr_bits: 23, access_ns: 70}, bind: {a: onboard_cellular_ram.adr, d: onboard_cellular_ram.db, ce_n: onboard_cellular_ram.cen, oe_n: onboard_cellular_ram.oen, we_n: onboard_cellular_ram.wen, lb_n: onboard_cellular_ram.lbn, ub_n: onboard_cellular_ram.ubn, adv_n: onboard_cellular_ram.advn, cre: onboard_cellular_ram.cre, clk: onboard_cellular_ram.clk, wait: onboard_cellular_ram.wait}}

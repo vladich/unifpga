@@ -71,6 +71,7 @@ Board:
     onboard_sdram:   # HY57V641620 SDRAM (x16)
       device: {"name": "HY57V641620 SDRAM (x16)", "kind": "sdram"}
       shares: ["gpio_p2", "gpio_pseudo_sdram"]   # the board multiplexes these pins
+      model_params: {col_bits: 8}
       pins: {"clk": "43", "cke": "58", "cs_n": "72", "ras_n": "71", "cas_n": "70", "we_n": "69", "ba": ["73", "74"], "a": ["76", "77", "80", "83", "68", "67", "66", "65", "64", "60", "75", "59"], "dq": ["28", "30", "31", "32", "33", "34", "38", "39", "54", "53", "52", "51", "50", "49", "46", "44"], "dqm": ["42", "55"]}
     onboard_config_flash:   # EPCS serial configuration flash (AS)
       device: {"name": "EPCS serial configuration flash (AS)", "kind": "flash"}

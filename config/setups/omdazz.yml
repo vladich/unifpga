@@ -24,6 +24,7 @@ Setup:
     - onboard: temp_sensor
     - onboard: ps2
     - onboard: ir
+    - onboard: sdram
   extra:
     tie:
       onboard_char_lcd.d[6]: 0

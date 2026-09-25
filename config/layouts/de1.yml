@@ -48,6 +48,9 @@ Layout:
     - id: audio_codec
       label: audio codec
       attach: {peripheral: wm8731_i2s_out, bind: {xck: onboard_audio_codec.xck, bclk: onboard_audio_codec.bclk, dac_lrck: onboard_audio_codec.dac_lrck, dac_dat: onboard_audio_codec.dac_dat, i2c_sclk: onboard_i2c.sclk, i2c_sdat: onboard_i2c.sdat}}
+    - id: ps2
+      label: PS/2 port
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: clk27mhz
       label: CLOCK_27 (27 MHz)
       device: {kind: clock, bank: onboard_clk27mhz}   # no peripheral model yet
@@ -57,15 +60,12 @@ Layout:
     - id: ext_clock
       label: External clock input (SMA)
       device: {kind: clock, bank: onboard_ext_clock}   # no peripheral model yet
-    - id: ps2
-      label: PS/2 port
-      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: sdram
       label: SDRAM (8 MB, 16-bit)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+      attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA_, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
     - id: sram
       label: SRAM (512 KB, 16-bit)
-      device: {kind: other, bank: onboard_sram}   # no peripheral model yet
+      attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.SRAM_ADDR, d: onboard_sram.SRAM_DQ, ce_n: onboard_sram.SRAM_CE_N, oe_n: onboard_sram.SRAM_OE_N, we_n: onboard_sram.SRAM_WE_N, lb_n: onboard_sram.SRAM_LB_N, ub_n: onboard_sram.SRAM_UB_N}}
     - id: flash
       label: Flash memory (4 MB, 8-bit)
       device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

@@ -39,18 +39,18 @@ Layout:
     - id: adc
       label: A/D converter (ADC128S022, SPI)
       attach: {peripheral: adc128s022, bind: {cs_n: onboard_adc.ADC_CS_N, sclk: onboard_adc.ADC_SCLK, din: onboard_adc.ADC_SADDR, dout: onboard_adc.ADC_SDAT}}
+    - id: accelerometer
+      label: Accelerometer (ADXL345)
+      attach: {peripheral: adxl345_i2c, bind: {scl: onboard_accelerometer.I2C_SCLK, sda: onboard_accelerometer.I2C_SDAT, cs_n: onboard_accelerometer.G_SENSOR_CS_N}}
     - id: sdram
       label: SDRAM (32 MB, 16-bit)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 9}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: onboard_sdram.DRAM_DQM}}
     - id: i2c
       label: I2C bus (EEPROM, ADXL345)
       device: {kind: other, bank: onboard_i2c}   # no peripheral model yet
     - id: gpio_2
       label: '2x13 header (JP3: GPIO_2, analog inputs)'
       device: {kind: header, bank: gpio_2}   # no peripheral model yet
-    - id: accelerometer
-      label: Accelerometer (ADXL345)
-      attach: {peripheral: adxl345_i2c, bind: {scl: onboard_accelerometer.I2C_SCLK, sda: onboard_accelerometer.I2C_SDAT, cs_n: onboard_accelerometer.G_SENSOR_CS_N}}
     - id: epcs
       label: Serial configuration flash (EPCS64)
       device: {kind: flash, bank: onboard_epcs}   # no peripheral model yet

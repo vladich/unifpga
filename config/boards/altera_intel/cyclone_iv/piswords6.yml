@@ -57,6 +57,7 @@ Board:
     onboard_sdram:   # SDRAM HY57V641620 U2 (4M x16)
       device: {"name": "SDRAM HY57V641620 U2 (4M x16)", "kind": "sdram"}
       shares: ["onboard_7seg", "onboard_lcd", "onboard_switches", "onboard_uart"]   # the board multiplexes these pins
+      model_params: {col_bits: 8}
       pins: {"a": ["76", "75", "74", "73", "34", "33", "32", "31", "30", "28", "77", "58"], "ba": ["83", "80"], "dq": ["110", "106", "105", "104", "103", "101", "100", "99", "65", "66", "67", "68", "69", "70", "71", "72"], "clk": "60", "cke": "59", "cs_n": "84", "ras_n": "85", "cas_n": "86", "we_n": "87", "dqm": ["98", "64"]}
     onboard_lcd:   # LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets
       device: {"name": "LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets", "kind": "lcd"}

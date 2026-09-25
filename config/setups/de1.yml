@@ -21,6 +21,7 @@ Setup:
     - gpio: gpio_0
       params: {width: 36}
     - onboard: ps2
+    - onboard: sdram
   extra:
     tie:
       gpio_1[1]: 0

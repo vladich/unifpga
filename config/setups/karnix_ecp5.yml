@@ -18,3 +18,4 @@ Setup:
     - module: i2s_dac_breakout
       wires: {SCK: 'gpio.[7]', BCK: 'gpio.[8]', LCK: 'gpio.[10]', DIN: 'gpio.[9]'}
     - onboard: adc
+    - onboard: sram

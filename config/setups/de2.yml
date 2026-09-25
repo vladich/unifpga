@@ -23,6 +23,7 @@ Setup:
       params: {width: 36}
     - onboard: lcd
     - onboard: ps2
+    - onboard: sdram
   extra:
     tie:
       onboard_vga.sync: 0

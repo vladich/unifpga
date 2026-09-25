@@ -65,4 +65,5 @@ Board:
       pins: {"SD_CLK": "H11", "SD_CMD": "B11", "SD_DATA": ["K9", "D12", "E12", "C11"]}
     onboard_sdram:   # SDRAM (64 MB, 16-bit)
       device: {"name": "SDRAM (64 MB, 16-bit)", "kind": "sdram"}
+      model_params: {col_bits: 10}
       pins: {"DRAM_ADDR": ["W8", "T8", "U11", "Y10", "N6", "AB10", "P12", "P7", "P8", "R5", "U8", "P6", "R7"], "DRAM_DQ": ["Y9", "T10", "R9", "Y11", "R10", "R11", "R12", "AA12", "AA9", "AB8", "AA8", "AA7", "V10", "V9", "U10", "T9"], "DRAM_BA": ["T7", "AB7"], "DRAM_LDQM": "U12", "DRAM_UDQM": "N8", "DRAM_RAS_N": "AB6", "DRAM_CAS_N": "V6", "DRAM_CKE": "R6", "DRAM_CLK": "AB11", "DRAM_WE_N": "AB5", "DRAM_CS_N": "U6"}

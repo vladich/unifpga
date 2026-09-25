@@ -23,6 +23,7 @@ Setup:
     - gpio: gpio
       params: {width: 22}
     - onboard: adc
+    - onboard: sram
   extra:
     tie:
       gpio[1]: 0

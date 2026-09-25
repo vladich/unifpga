@@ -66,3 +66,12 @@ Configuration:
         bclk: "gpio[8]"
         lrclk: "gpio[10]"
         sdata: "gpio[9]"
+    - peripheral: async_sram
+      params:
+        addr_bits: 18
+      bind:
+        a: onboard_sram.a
+        d: onboard_sram.d
+        ce_n: onboard_sram.cs_n
+        oe_n: onboard_sram.oe_n
+        we_n: onboard_sram.we_n

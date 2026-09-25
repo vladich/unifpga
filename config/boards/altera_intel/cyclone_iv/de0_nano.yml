@@ -32,6 +32,7 @@ Board:
     onboard_sdram:   # SDRAM (32 MB, 16-bit)
       device: {"name": "SDRAM (32 MB, 16-bit)", "kind": "sdram"}
       iostandard: "3.3V"
+      model_params: {col_bits: 9}
       pins: {"DRAM_ADDR": ["P2", "N5", "N6", "M8", "P8", "T7", "N8", "T6", "R1", "P1", "N2", "N1", "L4"], "DRAM_DQ": ["G2", "G1", "L8", "K5", "K2", "J2", "J1", "R7", "T4", "T2", "T3", "R3", "R5", "P3", "N3", "K1"], "DRAM_BA": ["M7", "M6"], "DRAM_DQM": ["R6", "T5"], "DRAM_RAS_N": "L2", "DRAM_CAS_N": "L1", "DRAM_CKE": "L7", "DRAM_CLK": "R4", "DRAM_WE_N": "C2", "DRAM_CS_N": "P6"}
     onboard_i2c:   # I2C bus (EEPROM, ADXL345)
       device: {"name": "I2C bus (EEPROM, ADXL345)", "kind": "other"}

@@ -23,6 +23,7 @@ Setup:
       params: {width: 32}
     - onboard: lcd
     - onboard: ps2
+    - onboard: sdram
   extra:
     tie:
       gpio_0[3]: 0

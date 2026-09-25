@@ -36,12 +36,15 @@ Layout:
     - id: uart
       label: uart
       attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: adc
+      label: U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
+      attach: {peripheral: adc128s022, bind: {cs_n: onboard_adc.cs_n, sclk: onboard_adc.sclk, din: onboard_adc.mosi, dout: onboard_adc.miso}}
     - id: reset_button_sw5_fpga_reset
       label: RESET button SW5 (FPGA_RESET)
       device: {kind: reset, bank: onboard_reset_button_sw5_fpga_reset}   # no peripheral model yet
     - id: sram
       label: U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)
-      device: {kind: other, bank: onboard_sram}   # no peripheral model yet
+      attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.a, d: onboard_sram.d, ce_n: onboard_sram.cs_n, oe_n: onboard_sram.oe_n, we_n: onboard_sram.we_n, lb_n: onboard_sram.ble_n, ub_n: onboard_sram.bhe_n}}
     - id: ethernet
       label: U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
@@ -51,9 +54,6 @@ Layout:
     - id: hdmi
       label: J3 HDMI connector (direct from FPGA, series capacitors)
       device: {kind: hdmi_tx, bank: onboard_hdmi}   # no peripheral model yet
-    - id: adc
-      label: U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
-      attach: {peripheral: adc128s022, bind: {cs_n: onboard_adc.cs_n, sclk: onboard_adc.sclk, din: onboard_adc.mosi, dout: onboard_adc.miso}}
     - id: dac
       label: U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
       device: {kind: audio, bank: onboard_dac}   # no peripheral model yet

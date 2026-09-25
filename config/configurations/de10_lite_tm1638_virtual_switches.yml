@@ -77,6 +77,22 @@ Configuration:
         miso: onboard_accelerometer.GSENSOR_SDO
         sclk: onboard_accelerometer.GSENSOR_SCLK
         cs_n: onboard_accelerometer.GSENSOR_CS_n
+    - peripheral: sdram_sdr
+      params:
+        row_bits: 13
+        data_bits: 16
+        col_bits: 10
+      bind:
+        clk: onboard_sdram.DRAM_CLK
+        cke: onboard_sdram.DRAM_CKE
+        cs_n: onboard_sdram.DRAM_CS_N
+        ras_n: onboard_sdram.DRAM_RAS_N
+        cas_n: onboard_sdram.DRAM_CAS_N
+        we_n: onboard_sdram.DRAM_WE_N
+        ba: onboard_sdram.DRAM_BA
+        a: onboard_sdram.DRAM_ADDR
+        dq: onboard_sdram.DRAM_DQ
+        dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:
