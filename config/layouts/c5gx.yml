@@ -77,4 +77,4 @@ Layout:
       device: {kind: header, bank: hsmc}   # no peripheral model yet
     - id: adc
       label: A/D converter (LTC2308, SPI)
-      device: {kind: adc, bank: onboard_adc}   # no peripheral model yet
+      attach: {peripheral: ltc2308, bind: {convst: onboard_adc.ADC_CONVST, sck: onboard_adc.ADC_SCK, sdi: onboard_adc.ADC_SDI, sdo: onboard_adc.ADC_SDO}}

@@ -64,6 +64,12 @@ Configuration:
         width: 34
       bind:
         io: gpio_0
+    - peripheral: adc128s022
+      bind:
+        cs_n: onboard_adc.ADC_CS_N
+        sclk: onboard_adc.ADC_SCLK
+        din: onboard_adc.ADC_SADDR
+        dout: onboard_adc.ADC_SDAT
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

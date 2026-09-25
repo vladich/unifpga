@@ -56,7 +56,7 @@ Layout:
       device: {kind: header, bank: arduino_io}   # no peripheral model yet
     - id: adc
       label: A/D converter (LTC2308, SPI, 2x5 analog header)
-      device: {kind: adc, bank: onboard_adc}   # no peripheral model yet
+      attach: {peripheral: ltc2308, bind: {convst: onboard_adc.ADC_CONVST, sck: onboard_adc.ADC_SCK, sdi: onboard_adc.ADC_SDI, sdo: onboard_adc.ADC_SDO}}
     - id: hps_key
       label: HPS user push-button (HPS_KEY)
       device: {kind: buttons, bank: onboard_hps_key}   # no peripheral model yet

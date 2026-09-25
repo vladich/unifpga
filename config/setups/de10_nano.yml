@@ -21,6 +21,7 @@ Setup:
     - onboard: hdmi_tx
     - gpio: gpio_0
       params: {width: 36}
+    - onboard: adc
   extra:
     tie:
       onboard_hdmi_tx.i2s: 0

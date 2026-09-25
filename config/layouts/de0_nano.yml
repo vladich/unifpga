@@ -47,7 +47,7 @@ Layout:
       device: {kind: header, bank: gpio_2}   # no peripheral model yet
     - id: adc
       label: A/D converter (ADC128S022, SPI)
-      device: {kind: adc, bank: onboard_adc}   # no peripheral model yet
+      attach: {peripheral: adc128s022, bind: {cs_n: onboard_adc.ADC_CS_N, sclk: onboard_adc.ADC_SCLK, din: onboard_adc.ADC_SADDR, dout: onboard_adc.ADC_SDAT}}
     - id: accelerometer
       label: Accelerometer (ADXL345)
       device: {kind: other, bank: onboard_accelerometer}   # no peripheral model yet
