@@ -26,7 +26,8 @@ locations, and elaborated top names. Errors return nonzero. The request has
 basic path and size bounds, but the parser still runs in-process and can read
 an include before the harness validates it. External imports require an
 isolated worker, admission of all referenced files, timeout/cancellation, and
-the full language and performance corpus from `ECOSYSTEM_PLAN.md`.
+a representative language and performance corpus before this can serve as an
+import frontend.
 
 Accepted results now include `elaboration` with schema
 `unifpga.slang-elaboration/v1`. It projects each elaborated module and
