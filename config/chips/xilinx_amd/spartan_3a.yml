@@ -1,0 +1,16 @@
+# Xilinx (AMD) / Spartan 3A — chip registry
+# 90 nm Spartan 3 derivative for low-cost I/O-heavy designs (2007). ISE.
+# Parts from the Spartan-3A family data sheet (DS529); no board of the
+# catalogue carries one yet, so the parts are listed without a package.
+
+Producer: Xilinx (AMD)
+Family: Spartan 3A
+Description: 90 nm Spartan 3 derivative for low-cost I/O-heavy designs (2007). ISE.
+DefaultToolchains:
+  - ise[*]
+Chips:
+  - Id: XC3S50A
+  - Id: XC3S200A
+  - Id: XC3S400A
+  - Id: XC3S700A
+  - Id: XC3S1400A
