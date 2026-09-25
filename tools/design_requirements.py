@@ -23,13 +23,16 @@ Constraint grammar:
     <capability> >= <W>x<H>            # screen
     <capability> >= <W>x<H>@<depth>    # screen with required color depth (444/565/888)
     <any of the above> if <condition>  # only when the condition holds
+    where <condition>                  # the condition must hold (no capability)
 
 A condition is an expression over design_top's parameters (w_sw, w_btn, w_led,
 w_digit, w_rgb_led, screen_width, ..., w_gpio: the values the generated top
 passes, codegen.design_top_parameters) with integers, + - *, comparisons,
 &&, || and !. It is how a design that adapts to the board says what it needs:
 `if (w_btn >= 3) ... btn [2] ... else ... sw [2]` needs 3 switches only on a
-board with fewer than 3 buttons.
+board with fewer than 3 buttons. `where` states what a design needs of its
+parameters alone: `where clk_mhz % 50 == 0` for a design that divides its clock
+into exact 10 and 25 MHz ones.
 
 Validation against a resolved bundle:
     check(resolved, requirements) -> list[str]    # errors; [] if all OK
@@ -77,6 +80,11 @@ def parse(sv_path):
         # Stop at first line that isn't a `//` comment.
         if not re.match(r"^\s*//", line):
             break
+        w = re.match(r"^\s*//\s*where\s+(?P<cond>.+?)\s*$", line, re.IGNORECASE)
+        if w:
+            _condition_python(w.group("cond"))     # reject a malformed condition when parsing
+            out.setdefault(WHERE, []).append(w.group("cond").strip())
+            continue
         # Skip blank-comment lines like `// `
         m = _REQ_LINE.match(line)
         if not m:
@@ -94,7 +102,10 @@ def parse(sv_path):
     return out
 
 
-_COND_TOKEN = re.compile(r"\s*(?:(\d+)|([A-Za-z_]\w*)|(&&|\|\||==|!=|>=|<=|[!<>+\-*()]))")
+_COND_TOKEN = re.compile(r"\s*(?:(\d+)|([A-Za-z_]\w*)|(&&|\|\||==|!=|>=|<=|[!<>+\-*%()]))")
+
+# the key of `where` conditions in a parsed block (not a capability id)
+WHERE = "where"
 
 
 def _condition_python(cond):
@@ -154,7 +165,14 @@ def check(resolved, requirements, capabilities=None, parameters=None):
     config_id = resolved["configuration"]["id"]
 
     errors = []
+    for cond in requirements.get(WHERE) or []:
+        if not condition_holds(cond, parameters):
+            shown = ", ".join("{} = {}".format(n, parameters[n])
+                              for n in sorted(set(re.findall(r"[A-Za-z_]\w*", cond))))
+            errors.append("Configuration '{c}': the design needs {w} ({s})".format(c=config_id, w=cond, s=shown))
     for cap_id, req in requirements.items():
+        if cap_id == WHERE:
+            continue
         if cap_id not in capabilities:
             errors.append("design_top requires unknown capability '{}'".format(cap_id))
             continue

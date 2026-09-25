@@ -162,10 +162,10 @@ module design_top
     function [7:0] valid_ready_to_abcdefgh (logic valid, ready);
 
         case ({ valid, ready })
-        2'b00: return sign_nothing;
-        2'b10: return sign_valid;
-        2'b01: return sign_ready;
-        2'b11: return sign_valid | sign_ready;
+        2'b00: valid_ready_to_abcdefgh = sign_nothing;
+        2'b10: valid_ready_to_abcdefgh = sign_valid;
+        2'b01: valid_ready_to_abcdefgh = sign_ready;
+        2'b11: valid_ready_to_abcdefgh = sign_valid | sign_ready;
         endcase
 
     endfunction

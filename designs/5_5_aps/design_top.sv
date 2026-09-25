@@ -5,6 +5,7 @@
 // requires:
 //   seven_segment >= 1
 //   screen >= 320x240
+//   where clk_mhz % 50 == 0
 
 module design_top
 # (
@@ -116,14 +117,7 @@ endgenerate
     =====================================================
     */
     logic [15:0] aps_sw;
-generate
-    if(w_sw > 16) begin
-        assign aps_sw=sw[15:0];
-    end
-    else begin
-        assign aps_sw[0+:w_sw] = sw;
-    end
-endgenerate
+    assign aps_sw = sw;   // extended or cut to 16 switches
     //===================================================
 
 

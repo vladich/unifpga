@@ -17,7 +17,7 @@ module shift_register_with_valid_and_debug
 );
 
     logic [depth - 1:0] valid;
-    logic [width - 1:0] data [0: depth - 1];
+    logic [depth - 1:0][width - 1:0] data;       // data [0] the newest
 
     always_ff @ (posedge clk or posedge rst)
         if (rst)
@@ -26,12 +26,7 @@ module shift_register_with_valid_and_debug
             valid <= { valid [$left (valid) - 1:0], in_valid };
 
     always_ff @ (posedge clk)
-    begin
-        data [0] <= in_data;
-
-        for (int i = 1; i < depth; i ++)
-            data [i] <= data [i - 1];
-    end
+        data <= { data [depth - 2:0], in_data };
 
     assign out_valid = valid [depth - 1];
     assign out_data  = data  [depth - 1];

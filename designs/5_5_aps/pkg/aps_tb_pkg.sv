@@ -11,6 +11,9 @@ package aps_tb_pkg;
   import peripheral_pkg::*;
   import jtag_pkg::*;
 
+  localparam int STATUS_WIDTH  = $bits(status_t);
+  localparam int CONTROL_WIDTH = $bits(control_t);
+
   //============================================================
   // Bluster: programming over the UART
   //============================================================

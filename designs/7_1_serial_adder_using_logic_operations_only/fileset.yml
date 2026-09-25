@@ -1,0 +1,9 @@
+# testbench.sv is the adder's testbench (tb.sv wraps it): simulation only.
+version: 1
+sources:
+  - design_top.sv
+  - 02_03_serial_adder_using_logic_operations_only.sv
+simulation:
+  - tb.sv
+  - testbench.sv
+assets: []

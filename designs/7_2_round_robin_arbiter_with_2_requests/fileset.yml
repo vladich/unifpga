@@ -1,0 +1,9 @@
+# testbench.sv is the arbiter's testbench (tb.sv wraps it): simulation only.
+version: 1
+sources:
+  - design_top.sv
+  - 02_06_round_robin_arbiter_with_2_requests.sv
+simulation:
+  - tb.sv
+  - testbench.sv
+assets: []

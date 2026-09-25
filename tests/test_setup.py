@@ -585,7 +585,8 @@ def test_design_table_covers_every_design_and_configuration():
     assert all(c["layout"] and c["setup"] for c in t["configurations"])
     k = [c["id"] for c in t["configurations"]].index("arty_a7_pmod_mic3")
     aps = next(d for d in t["designs"] if d["id"] == "5_5_aps")
-    assert aps["requires"] == ["seven_segment >= 1", "screen >= 320x240"] and k in aps["fits"]
+    assert aps["requires"] == ["seven_segment >= 1", "screen >= 320x240", "where clk_mhz % 50 == 0"]
+    assert k in aps["fits"]                          # its 100 MHz clock divides into 10 and 25
     fifo = next(d for d in t["designs"] if d["id"] == "4_2_12_multi_push_multi_pop_fifo")
     assert k not in fifo["fits"] and "w_led=8" in fifo["unmet"][str(k)][0]
     for d in t["designs"]:          # every configuration is either a fit or has its reasons

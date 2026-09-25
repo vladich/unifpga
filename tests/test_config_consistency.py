@@ -621,8 +621,9 @@ def test_every_design_requirement_parses_and_names_design_parameters():
     import glob
     for p in sorted(glob.glob(os.path.join(REPO_ROOT, "designs", "*", "design_top.sv"))):
         for cap, req in design_requirements.parse(p).items():
-            for w in req.get("when") or []:
-                design_requirements.condition_holds(w["condition"], params)   # raises on a bad name
+            conditions = req if cap == design_requirements.WHERE else [w["condition"] for w in req.get("when") or []]
+            for cond in conditions:
+                design_requirements.condition_holds(cond, params)   # raises on a bad name
 
 
 def test_design_requirements_colour_depth_is_the_design_widths():
@@ -669,3 +670,22 @@ def test_unwired_pin_notes_name_module_pins_and_a_level():
             sig = next(s for s in peripherals[m["peripheral"]]["signals"] if s["name"] == m["pins"][pin])
             assert sig.get("optional"), (mid, pin, "a pin left unwired must be an optional signal")
     assert seen
+
+
+def test_design_requirements_where(tmp_path):
+    """`where <condition>`: a condition on design_top's parameters alone must
+    hold (5_5_aps divides its clock into exact 10 and 25 MHz ones)."""
+    from tools import design_requirements
+    p = tmp_path / "design_top.sv"
+    p.write_text("// requires:\n//   leds >= 1\n//   where clk_mhz % 50 == 0\n\nmodule design_top;\nendmodule\n")
+    reqs = design_requirements.parse(str(p))
+    assert reqs[design_requirements.WHERE] == ["clk_mhz % 50 == 0"] and reqs["leds"] == {"min_width": 1}
+    resolved = config_init.resolve_configuration("nexys4_ddr_default")
+    params = design_requirements.design_parameters(resolved)
+    assert design_requirements.check(resolved, reqs, parameters=dict(params, clk_mhz=100)) == []
+    errs = design_requirements.check(resolved, reqs, parameters=dict(params, clk_mhz=27))
+    assert errs == ["Configuration '{}': the design needs clk_mhz % 50 == 0 (clk_mhz = 27)"
+                    .format(resolved["configuration"]["id"])], errs
+    p.write_text("// requires:\n//   where clk_mhz ^ 2\n\nmodule design_top;\nendmodule\n")
+    with pytest.raises(ValueError):
+        design_requirements.parse(str(p))

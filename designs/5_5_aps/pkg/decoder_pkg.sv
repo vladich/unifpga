@@ -12,9 +12,6 @@ See https://github.com/MPSU/APS/blob/master/LICENSE file for licensing details.
 
 package decoder_pkg;
 
-  import alu_opcodes_pkg::*;
-  import csr_pkg::*;
-
   // opcodes
   localparam OP_OPCODE       = 5'b01_100;
   localparam OP_IMM_OPCODE   = 5'b00_100;
