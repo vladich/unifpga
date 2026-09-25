@@ -2,7 +2,7 @@
 // model (a CONVST rising edge converts with the configuration latched in the
 // previous frame; after 1.6 us with CONVST low SDO shows the MSB, SCK falling
 // edges shift out the rest; SDI's 6-bit word latched on the first 6 rising
-// edges). Single-ended unipolar channel c = { S1, S0, O/S } reads
+// edges; the CONVST pulse 20 - 40 ns, as datasheet 2308fc asks). Single-ended unipolar channel c = { S1, S0, O/S } reads
 // 12'h100 * c + 12'h05A + c; two full scans are checked.
 
 `timescale 1ns / 1ps
@@ -35,6 +35,10 @@ module ltc2308_scan_tb;
     logic        ready = 1'b0;
     int          k, bad = 0;
     realtime     started;
+    logic        pulsed = 1'b0;                  // (convst going x -> 0 at reset is no pulse)
+
+    always @ (negedge convst)                    // 20 ns high at least, low again within 40 ns
+        if (pulsed && ($realtime - started < 20 || $realtime - started > 40)) bad++;
 
     always @ (posedge convst)
     begin
@@ -43,7 +47,7 @@ module ltc2308_scan_tb;
             result = sample ({ latched [3], latched [2], latched [4] });
         else
             result = 12'hFFF;                    // an unexpected configuration
-        ready = 1'b0; k = 0; started = $realtime;
+        ready = 1'b0; k = 0; started = $realtime; pulsed = 1'b1;
         #1600;
         if (convst) bad++;                       // CONVST must be low to read
         ready = 1'b1;

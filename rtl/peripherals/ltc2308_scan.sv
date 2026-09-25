@@ -4,9 +4,11 @@
 // DE0-Nano-SoC, DE10-Nano and Cyclone V GX Starter Kit) in turn, single-ended
 // and unipolar: one conversion per frame, a code of 1 mV.
 //
-// A frame: a CONVST pulse starts the conversion (at most 1.6 us); with CONVST
-// low again, SDO then shows the result's MSB and SCK's falling edges shift out
-// the rest, 12 bits. SDI is latched on SCK's rising edges: the 6-bit word
+// Datasheet (LTC2308 2308fc, "Timing and Control"): a CONVST rising edge
+// starts the conversion (at most 1.6 us); CONVST is high at least 20 ns and,
+// for best performance, low again within 40 ns: a pulse of ceil(20 ns * clock)
+// clock cycles. With CONVST low, SDO shows the result's MSB and SCK's falling
+// edges shift out the rest, 12 bits. SDI is latched on SCK's rising edges: the 6-bit word
 // { S/D, O/S, S1, S0, UNI, SLP } configures the NEXT conversion. Single-ended
 // channel c is S/D = 1, O/S = c[0], S1 = c[2], S0 = c[1]; UNI = 1, SLP = 0.
 // The first frame's result (its configuration unknown) is not given out.
@@ -36,6 +38,8 @@ module ltc2308_scan
     localparam int TICK_NS = 1000000 / (SCK_KHZ * 2);
     localparam int CONV    = CONV_NS / TICK_NS + 2;           // ticks from CONVST to the data, with margin
     localparam int W_WAIT  = $clog2(CONV + 1);
+    localparam int PULSE   = (20 * CLK_MHZ + 999) / 1000 > 1 ? (20 * CLK_MHZ + 999) / 1000 : 1;
+    localparam int W_PULSE = $clog2(PULSE + 1);
 
     localparam [31:0]         DIV_LAST_32 = HALF - 1;
     localparam [W_DIV - 1:0]  DIV_LAST    = DIV_LAST_32 [W_DIV - 1:0];
@@ -43,6 +47,8 @@ module ltc2308_scan
     localparam [W_WAIT - 1:0] CONV_TICKS  = CONV_32 [W_WAIT - 1:0];
     localparam [31:0]         LAST_CH_32  = CHANNELS - 1;
     localparam [2:0]          LAST_CH     = LAST_CH_32 [2:0];
+    localparam [31:0]         PULSE_32    = PULSE - 1;
+    localparam [W_PULSE-1:0]  PULSE_LAST  = PULSE_32 [W_PULSE - 1:0];
 
     logic [W_DIV - 1:0] div;
     wire                tick = (div == DIV_LAST);
@@ -70,6 +76,7 @@ module ltc2308_scan
     logic [2:0]          conv_ch;     // the channel this frame converts
     logic [2:0]          next_ch;     // the channel this frame configures
     logic [W_WAIT - 1:0] wait_n;
+    logic [W_PULSE-1:0]  pulse_n;     // clock cycles of CONVST high left
 
     wire [5:0] config_word = { 1'b1, next_ch [0], next_ch [2], next_ch [1], 1'b1, 1'b0 };
 
@@ -84,6 +91,7 @@ module ltc2308_scan
             conv_ch <= '0;
             next_ch <= '0;
             wait_n  <= '0;
+            pulse_n <= '0;
             convst  <= 1'b0;
             sck     <= 1'b0;
             sdi     <= 1'b0;
@@ -95,19 +103,27 @@ module ltc2308_scan
         begin
             valid <= 1'b0;
 
+            if (convst)                             // the pulse ends after PULSE clock cycles
+            begin
+                if (pulse_n == '0)
+                    convst <= 1'b0;
+                else
+                    pulse_n <= pulse_n - 1'b1;
+            end
+
             if (tick)
             case (state)
 
-            S_START:                                // CONVST high for a tick: the conversion starts
+            S_START:                                // the CONVST pulse: the conversion starts
             begin
-                convst <= 1'b1;
-                wait_n <= CONV_TICKS;
-                state  <= S_CONV;
+                convst  <= 1'b1;
+                pulse_n <= PULSE_LAST;
+                wait_n  <= CONV_TICKS;
+                state   <= S_CONV;
             end
 
-            S_CONV:                                 // CONVST low while it converts
+            S_CONV:                                 // it converts
             begin
-                convst <= 1'b0;
                 if (wait_n == '0)
                 begin
                     k     <= '0;
