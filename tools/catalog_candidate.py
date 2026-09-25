@@ -1,7 +1,8 @@
 """Review source-level catalog changes between two exact Git revisions.
 
-This is a staging report for the planned importer. It does not validate domain
-references, create database revisions, or authorize catalog publication.
+This is a staging report for the planned importer. Its optional domain pass
+covers only identities and direct references; it does not create database
+revisions or authorize catalog publication.
 """
 
 import argparse
@@ -9,6 +10,7 @@ import json
 import sys
 
 from tools.catalog_snapshot import CatalogSnapshotError, capture_catalog_revision
+from tools.catalog_domain import validate_catalog_documents
 
 
 CANDIDATE_SCHEMA = "unifpga.catalog-source-candidate/v1"
@@ -29,7 +31,8 @@ def _digests(item):
             "semantic_sha256": item["semantic_sha256"]}
 
 
-def compare_catalog_revisions(repo, base_commit, candidate_commit, source_root="config"):
+def compare_catalog_revisions(repo, base_commit, candidate_commit, source_root="config",
+                              *, validate_domain=False):
     """Return a deterministic, nonpublishing source-diff candidate report.
 
     Removed source files are review findings, never inferred withdrawals.
@@ -41,9 +44,12 @@ def compare_catalog_revisions(repo, base_commit, candidate_commit, source_root="
               "base": _source(base), "candidate_commit": candidate_commit,
               "state": "candidate", "validation": {"source": "passed",
                                                    "domain": "not_run"},
-              "candidate": None, "summary": None, "changes": [], "findings": []}
+              "candidate": None, "summary": None, "changes": [], "findings": [],
+              "domain_report": None}
     try:
-        candidate = capture_catalog_revision(repo, candidate_commit, source_root)
+        captured = capture_catalog_revision(repo, candidate_commit, source_root,
+                                            with_documents=validate_domain)
+        candidate, documents = captured if validate_domain else (captured, None)
     except CatalogSnapshotError as exc:
         report["state"] = "invalid_source"
         report["validation"]["source"] = "failed"
@@ -79,9 +85,16 @@ def compare_catalog_revisions(repo, base_commit, candidate_commit, source_root="
                                        "severity": "review", "path": path,
                                        "detail": "Removal is not an accepted withdrawal or rename"})
     report["summary"] = counts
-    report["findings"].append({"code": "domain_validation_pending",
-                               "severity": "review",
-                               "detail": "Source comparison does not validate catalog references or publish revisions"})
+    if validate_domain:
+        domain = validate_catalog_documents(documents)
+        report["domain_report"] = domain
+        report["validation"]["domain"] = domain["status"]
+        if domain["status"] == "failed":
+            report["state"] = "domain_invalid"
+    else:
+        report["findings"].append({"code": "domain_validation_pending",
+                                   "severity": "review",
+                                   "detail": "Source comparison does not validate catalog references or publish revisions"})
     return report
 
 
@@ -92,14 +105,17 @@ def main(argv=None):
     parser.add_argument("--repo", default=".", help="Git checkout (default: current directory)")
     parser.add_argument("--base", required=True, help="exact base commit ID")
     parser.add_argument("--candidate", required=True, help="exact candidate commit ID")
+    parser.add_argument("--validate-domain", action="store_true",
+                        help="run scoped identity and direct-reference checks")
     args = parser.parse_args(argv)
     try:
-        report = compare_catalog_revisions(args.repo, args.base, args.candidate, args.root)
+        report = compare_catalog_revisions(args.repo, args.base, args.candidate, args.root,
+                                           validate_domain=args.validate_domain)
     except CatalogSnapshotError as exc:
         parser.error(str(exc))
     json.dump(report, sys.stdout, sort_keys=True, separators=(",", ":"))
     sys.stdout.write("\n")
-    return 2 if report["state"] == "invalid_source" else 0
+    return 2 if report["state"] in ("invalid_source", "domain_invalid") else 0
 
 
 if __name__ == "__main__":

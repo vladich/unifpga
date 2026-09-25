@@ -28,6 +28,7 @@ MAX_TOTAL_BYTES = 256 * 1024 * 1024
 MAX_SEMANTIC_NODES = 500000
 MAX_TOTAL_SEMANTIC_NODES = 10000000
 MAX_TREE_LISTING_BYTES = 64 * 1024 * 1024
+MAX_PATH_BYTES = 1024
 
 
 class CatalogSnapshotError(ValueError):
@@ -86,7 +87,8 @@ def _digest(value):
 def _safe_path(path):
     if (not path or path.startswith("/") or "\\" in path or ":" in path or
             any(part in ("", ".", "..") for part in path.split("/")) or
-            any(ord(character) < 32 or ord(character) == 127 for character in path)):
+            any(ord(character) < 32 or ord(character) == 127 for character in path) or
+            len(path.encode("utf-8")) > MAX_PATH_BYTES):
         raise CatalogSnapshotError("unsafe catalog source path: {!r}".format(path))
     return path
 
@@ -133,7 +135,7 @@ def _read_file(path):
     return raw
 
 
-def _manifest(records):
+def _manifest(records, documents=None):
     """Build one source manifest from (root-relative path, exact bytes) pairs."""
     files = []
     total_bytes = 0
@@ -160,6 +162,8 @@ def _manifest(records):
             semantic_digest = hashlib.sha256(canonical).hexdigest()
         except (yaml.YAMLError, CatalogSnapshotError, UnicodeError, RecursionError) as exc:
             raise CatalogSnapshotError("{}: {}".format(rel, exc)) from exc
+        if documents is not None:
+            documents[rel] = document
         files.append({"path": rel, "size": len(raw),
                       "raw_sha256": hashlib.sha256(raw).hexdigest(),
                       "semantic_sha256": semantic_digest})
@@ -266,7 +270,7 @@ def _git_blobs(repo, entries):
             raise CatalogSnapshotError("Git cat-file failed")
 
 
-def capture_catalog_revision(repo, commit, source_root="config"):
+def capture_catalog_revision(repo, commit, source_root="config", *, with_documents=False):
     """Capture YAML from one exact Git commit, independent of worktree edits."""
     if not isinstance(commit, str) or not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", commit):
         raise CatalogSnapshotError("revision must be an exact Git commit ID")
@@ -282,9 +286,10 @@ def capture_catalog_revision(repo, commit, source_root="config"):
     if _git(repo, "cat-file", "-t", tree).strip() != b"tree":
         raise CatalogSnapshotError("source root is not a Git tree")
     entries = _git_entries(repo, tree)
-    manifest = _manifest(_git_blobs(repo, entries))
+    documents = {} if with_documents else None
+    manifest = _manifest(_git_blobs(repo, entries), documents)
     manifest["git"] = {"commit": commit, "source_root": source_root, "tree": tree}
-    return manifest
+    return (manifest, documents) if with_documents else manifest
 
 
 def main(argv=None):

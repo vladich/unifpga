@@ -192,6 +192,15 @@ def test_git_snapshot_rejects_unsafe_source_path(tmp_path):
         capture_catalog_revision(repo, _git(repo, "rev-parse", "HEAD"))
 
 
+def test_catalog_path_byte_limit_applies_to_git_and_worktree(tmp_path, monkeypatch):
+    repo, commit = _committed_catalog(tmp_path)
+    monkeypatch.setattr("tools.catalog_snapshot.MAX_PATH_BYTES", 7)
+    with pytest.raises(CatalogSnapshotError, match="unsafe catalog source path"):
+        capture_catalog(repo / "config")
+    with pytest.raises(CatalogSnapshotError, match="unsafe catalog source path"):
+        capture_catalog_revision(repo, commit)
+
+
 def test_semantic_alias_expansion_has_a_budget(tmp_path, monkeypatch):
     _write(tmp_path, "alias.yml", "a: &a [1, 2]\nb: [*a, *a, *a]\n")
     monkeypatch.setattr("tools.catalog_snapshot.MAX_SEMANTIC_NODES", 8)
@@ -283,3 +292,46 @@ def test_unchanged_candidate_still_requires_domain_validation(tmp_path):
     assert report["summary"]["unchanged"] == 1
     assert report["changes"] == []
     assert report["findings"][0]["code"] == "domain_validation_pending"
+
+
+def test_opt_in_domain_validation_reports_scope_and_fails_invalid_candidate(tmp_path):
+    repo, commit = _committed_catalog(tmp_path)
+    report = compare_catalog_revisions(repo, commit, commit, validate_domain=True)
+    assert report["state"] == "domain_invalid"
+    assert report["validation"] == {"source": "passed", "domain": "failed"}
+    assert report["domain_report"]["scope"] == "identity-and-direct-references/v1"
+    assert any(row["code"] == "missing_kind" for row in report["domain_report"]["findings"])
+    assert report["findings"] == []
+    result = subprocess.run(
+        [sys.executable, "-m", "tools.catalog_candidate", "config", "--repo",
+         str(repo), "--base", commit, "--candidate", commit,
+         "--validate-domain"], cwd=Path(__file__).resolve().parents[1],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 2
+    assert json.loads(result.stdout) == report
+
+
+def test_domain_pass_uses_exact_committed_documents(tmp_path):
+    repo, _ = _committed_catalog(tmp_path)
+    (repo / "config" / "item.yml").unlink()
+    _write(repo, "config/toolchains.yml", "Toolchains: [{Id: tool}]\n")
+    _write(repo, "config/chips/vendor/family.yml", "Chips: [{Id: chip}]\n")
+    _write(repo, "config/boards/vendor/family.yml",
+           "Boards: [{Id: board, Chip: chip}]\n")
+    _write(repo, "config/capabilities/leds.yml", "Capability: {id: leds}\n")
+    _write(repo, "config/peripherals/led.yml",
+           "Peripheral: {id: led, provides: [{capability: leds}]}\n")
+    _write(repo, "config/configurations/rig.yml",
+           "Configuration: {id: rig, board: board, toolchain: tool, "
+           "attach: [{peripheral: led}]}\n")
+    _git(repo, "add", "-A", "config")
+    _git(repo, "commit", "-qm", "valid domain subset")
+    commit = _git(repo, "rev-parse", "HEAD")
+    report = compare_catalog_revisions(repo, commit, commit, validate_domain=True)
+    assert report["state"] == "candidate"
+    assert report["validation"]["domain"] == "partial_passed"
+    assert report["domain_report"]["findings"] == []
+    assert report["domain_report"]["unexamined"] == []
+    _write(repo, "config/configurations/rig.yml",
+           "Configuration: {id: rig, board: wrong, toolchain: tool}\n")
+    assert compare_catalog_revisions(repo, commit, commit, validate_domain=True) == report
