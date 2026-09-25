@@ -1,15 +1,36 @@
 """Scoped domain checks consume parsed documents from an exact source tree."""
 
 from copy import deepcopy
+from pathlib import Path
+import runpy
 
+import pytest
+
+from config import init as config_init
+from config.references import parse_versioned_ref
 from tools.catalog_domain import validate_catalog_documents
 
 
 def _catalog():
     return {
         "toolchains.yml": {"Toolchains": [{"Id": "tool"}]},
-        "chips/vendor/family.yml": {"Chips": [{"Id": "chip"}]},
-        "boards/vendor/family.yml": {"Boards": [{"Id": "board", "Chip": "chip"}]},
+        "programmers.yml": {"Programmers": [{"Id": "prog", "Bundled": "tool"}]},
+        "features.yml": {"Features": [{"Id": "led_feature",
+                                          "Capabilities": ["leds"]}]},
+        "peripheral_devices.yml": {"Devices": [{"Id": "led_device",
+                                                  "Feature": "led_feature",
+                                                  "PeripheralDrivers": ["led"]}]},
+        "board_producers.yml": {"Producers": [{"Id": "maker"}]},
+        "chips/vendor/family.yml": {"DefaultToolchains": ["tool[*]"],
+                                    "Chips": [{"Id": "chip"}]},
+        "boards/vendor/family.yml": {"Boards": [{
+            "Id": "board", "Chip": "chip", "BoardProducer": "maker",
+            "Programmer": "prog", "ExtraProgrammers": ["prog[*]"],
+            "Features": ["led_feature"], "Devices": [{"Id": "led_device"}]}]},
+        "mezzanines/vendor/family.yml": {"Mezzanines": [{
+            "Id": "addon", "Producer": "maker", "Chip": "chip",
+            "Features": ["led_feature"], "Devices": ["led_device"],
+            "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
         "boards/vendor/family/board.yml": {"Board": {"id": "board"}},
         "capabilities/leds.yml": {"Capability": {"id": "leds"}},
         "peripherals/led.yml": {"Peripheral": {
@@ -50,6 +71,48 @@ def test_unknown_references_and_duplicate_id_are_precise():
         "duplicate_identity", "unknown_reference"}
     assert any("boards/vendor/family.yml" in row["detail"]
                for row in report["findings"] if row["code"] == "duplicate_identity")
+
+
+def test_extended_metadata_links_fail_with_field_specific_findings():
+    documents = _catalog()
+    board = documents["boards/vendor/family.yml"]["Boards"][0]
+    board["Chips"] = [{"Id": "absent_chip"}]
+    board["ExtraProgrammers"] = ["prog[]"]
+    board["Features"] = ["missing_feature"]
+    board["Devices"] = [{"Id": "missing_device"}]
+    mezzanine = documents["mezzanines/vendor/family.yml"]["Mezzanines"][0]
+    mezzanine["Producer"] = "missing_maker"
+    mezzanine["CompatibleBoards"] = ["missing_board"]
+    documents["features.yml"]["Features"][0]["Capabilities"] = ["missing_capability"]
+    documents["peripheral_devices.yml"]["Devices"][0]["PeripheralDrivers"] = [
+        "missing_driver"]
+    documents["chips/vendor/family.yml"]["DefaultToolchains"] = ["tool[bad"]
+    report = validate_catalog_documents(documents)
+    assert report["status"] == "failed"
+    assert sum(row["code"] == "invalid_reference" for row in report["findings"]) == 2
+    assert sum(row["code"] == "unknown_reference" for row in report["findings"]) == 7
+    for field in ("Chips", "ExtraProgrammers", "Features", "Devices", "Producer",
+                  "CompatibleBoards", "Capabilities", "PeripheralDrivers",
+                  "DefaultToolchains"):
+        assert any(field in row["detail"] for row in report["findings"])
+
+
+def test_shared_versioned_reference_parser_preserves_legacy_error_type():
+    assert parse_versioned_ref("tool[*]") == ("tool", "*")
+    assert config_init.parse_versioned_ref("tool") == ("tool", None)
+    for invalid in ("tool[]", "tool[*]extra", "tool[bad\n]", "tool[nested[x]]",
+                    None, ["tool"]):
+        with pytest.raises(ValueError, match="Malformed versioned reference"):
+            parse_versioned_ref(invalid)
+        with pytest.raises(config_init.ConfigError, match="Malformed versioned reference"):
+            config_init.parse_versioned_ref(invalid)
+
+
+def test_direct_config_script_can_import_shared_reference_parser(monkeypatch):
+    config_dir = Path(__file__).resolve().parents[1] / "config"
+    monkeypatch.syspath_prepend(str(config_dir))
+    namespace = runpy.run_path(str(config_dir / "init.py"), run_name="config_direct_probe")
+    assert namespace["parse_versioned_ref"]("tool[*]") == ("tool", "*")
 
 
 def test_identity_and_root_shape_errors_do_not_hide_other_records():

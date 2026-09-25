@@ -5,6 +5,9 @@ configuration resolver, pin/electrical review, setup roundtrip, or HDL checks.
 """
 
 from collections import defaultdict
+import reprlib
+
+from config.references import parse_versioned_ref
 
 
 DIRECTORY_RECORDS = {
@@ -33,7 +36,19 @@ MAX_DETAIL_LENGTH = 512
 CHECKS = ["root_shape", "identity", "duplicate_identity", "filename_identity",
           "board_chip", "configuration_board_toolchain_peripheral",
           "setup_board_toolchain_module", "profile_configuration_peripheral",
-          "module_peripheral", "peripheral_capability", "layout_board"]
+          "module_peripheral", "peripheral_capability", "layout_board",
+          "board_producer_feature_device_programmer",
+          "mezzanine_producer_chip_feature_device_carrier",
+          "device_feature_peripheral", "feature_capability",
+          "chip_family_toolchain", "programmer_bundled_toolchain"]
+
+
+def _record_id(value):
+    return value.get("Id") if isinstance(value, dict) else value
+
+
+def _versioned_id(value):
+    return parse_versioned_ref(value)[0]
 
 
 def validate_catalog_documents(documents):
@@ -105,6 +120,8 @@ def validate_catalog_documents(documents):
             if not isinstance(items, list):
                 finding("invalid_root", path, "{} must be a list".format(key))
                 continue
+            if kind == "chip":
+                register("chip_family", path, path, data)
             for ordinal, item in enumerate(items, 1):
                 if not isinstance(item, dict):
                     finding("invalid_record", path, "{} item {} must be a mapping".format(key, ordinal))
@@ -125,7 +142,8 @@ def validate_catalog_documents(documents):
         if not records[kind]:
             finding("missing_kind", "", "catalog has no {} records".format(kind))
 
-    def reference(source_kind, field, target_kind, *, collection=False):
+    def reference(source_kind, field, target_kind, *, collection=False,
+                  extract=None):
         for identity, (path, item) in records[source_kind].items():
             values = item.get(field)
             if values is None:
@@ -135,18 +153,44 @@ def validate_catalog_documents(documents):
                     finding("invalid_reference", path, "{} {} must be a list"
                             .format(source_kind, field))
                     continue
-                values = values
             else:
                 values = [values]
             for value in values:
-                if not isinstance(value, str) or not value.strip():
-                    finding("invalid_reference", path, "{} {} has a non-string reference"
-                            .format(source_kind, field))
-                elif value not in records[target_kind]:
+                try:
+                    target = extract(value) if extract else value
+                except ValueError:
+                    target = None
+                if not isinstance(target, str) or not target.strip():
+                    finding("invalid_reference", path, "{} {} has an invalid reference {}"
+                            .format(source_kind, field, reprlib.repr(value)))
+                elif target not in records[target_kind]:
                     finding("unknown_reference", path, "{} {!r} {} refers to absent {} {!r}"
-                            .format(source_kind, identity, field, target_kind, value))
+                            .format(source_kind, identity, field, target_kind, target))
 
     reference("board", "Chip", "chip")
+    reference("board", "Chips", "chip", collection=True, extract=_record_id)
+    reference("board", "BoardProducer", "board_producer")
+    reference("board", "Programmer", "programmer")
+    reference("board", "ExtraProgrammers", "programmer", collection=True,
+              extract=_versioned_id)
+    reference("board", "Features", "feature", collection=True)
+    reference("board", "Devices", "peripheral_device", collection=True,
+              extract=_record_id)
+    reference("mezzanine", "Producer", "board_producer")
+    reference("mezzanine", "Chip", "chip")
+    reference("mezzanine", "Features", "feature", collection=True)
+    reference("mezzanine", "Devices", "peripheral_device", collection=True,
+              extract=_record_id)
+    reference("mezzanine", "CompatibleBoards", "board", collection=True)
+    reference("mezzanine", "DefaultCarrier", "board")
+    reference("peripheral_device", "Feature", "feature")
+    reference("peripheral_device", "PeripheralDrivers", "peripheral", collection=True)
+    reference("feature", "Capabilities", "capability", collection=True)
+    reference("programmer", "Bundled", "toolchain")
+    reference("chip_family", "DefaultToolchains", "toolchain", collection=True,
+              extract=_versioned_id)
+    reference("chip", "Toolchains", "toolchain", collection=True,
+              extract=_versioned_id)
     reference("configuration", "board", "board")
     reference("configuration", "toolchain", "toolchain")
     reference("configuration", "toolchains", "toolchain", collection=True)

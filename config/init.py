@@ -18,6 +18,11 @@ import logging
 
 import yaml
 
+if __package__:
+    from .references import parse_versioned_ref as _parse_versioned_ref
+else:  # direct execution of config/init.py
+    from references import parse_versioned_ref as _parse_versioned_ref
+
 
 log = logging.getLogger(__name__)
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -687,11 +692,10 @@ def parse_versioned_ref(ref):
     The version constraint is returned verbatim — the caller decides how
     to interpret it (matching, ordering, etc.).
     """
-    import re as _re
-    m = _re.match(r"^([A-Za-z_][A-Za-z0-9_]*)(?:\[([^\]]+)\])?$", str(ref))
-    if not m:
-        raise ConfigError("Malformed versioned reference: {r!r}".format(r=ref))
-    return m.group(1), m.group(2)
+    try:
+        return _parse_versioned_ref(ref)
+    except ValueError as exc:
+        raise ConfigError(str(exc)) from exc
 
 
 def programmers_for_board(board_id, *, catalog=None, chips=None, programmers=None):
