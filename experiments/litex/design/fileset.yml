@@ -1,0 +1,6 @@
+version: 1
+sources:
+  - design_top.sv
+simulation:
+  - tb.sv
+assets: []

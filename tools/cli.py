@@ -472,17 +472,22 @@ def _iverilog_language_option(version_text):
     return "-g2012"
 
 
-def sim_sources(design_dir):
+def sim_sources(design_dir, component_exports=()):
     """Simulation view of the same design fileset used by synthesis."""
     rtl = os.path.join(REPO, "rtl")
     files = [os.path.join(rtl, "sim", "timescale.sv")]          # `timescale 1 ns / 1 ps first
+    generated = source_set.component_export_sources(component_exports)
     sources, simulation, _ = source_set.design_inputs(design_dir)
-    files += [p for p in sources if p.endswith((".sv", ".v"))]
-    files += simulation
+    selected = [p for p in sources if p.endswith((".sv", ".v"))] + simulation
+    if {os.path.realpath(path) for path in generated} & {os.path.realpath(path) for path in selected}:
+        raise source_set.SourceSetError("component export duplicates a design source")
+    files += generated + selected
     # peripherals/*.sv too (LCD testbenches instantiate the panel timing
     # modules); only tb's hierarchy is elaborated (-s tb), so
     # unreferenced models cost nothing
-    local = {os.path.basename(f) for f in files}
+    # A generated file must not silently hide a repository peripheral merely
+    # because it has the same basename. Let the HDL compiler diagnose modules.
+    local = {os.path.basename(files[0])} | {os.path.basename(f) for f in selected}
     for sub, pattern in (("peripherals/designs_common", "*.sv"), ("peripherals", "*.sv"), ("peripherals", "*.v"),
                          ("io", "*.sv"), ("pll", "*.sv"), ("sim", "*.sv")):
         files += sorted(f for f in glob.glob(os.path.join(rtl, sub, pattern))
@@ -490,10 +495,12 @@ def sim_sources(design_dir):
     return files
 
 
-def sim_command(design_dir, out_dir, lang="-g2012"):
+def sim_command(design_dir, out_dir, lang="-g2012", *, component_exports=(), tb_top="tb"):
     # SIMULATION enables the simulation-only modules (fifo_monitor and
     # others sit behind `ifdef SIMULATION)
-    files = sim_sources(design_dir)
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_$]*", tb_top):
+        raise CliError("simulation top must be a SystemVerilog module name")
+    files = sim_sources(design_dir, component_exports)
     includes = [design_dir, os.path.join(design_dir, "cpu"),
                 os.path.join(REPO, "rtl", "peripherals"),
                 os.path.join(REPO, "rtl", "peripherals", "designs_common")]
@@ -507,7 +514,7 @@ def sim_command(design_dir, out_dir, lang="-g2012"):
                 os.path.abspath(parent) not in seen_includes):
             includes.append(parent)
             seen_includes.add(os.path.abspath(parent))
-    return (["iverilog", lang, "-D", "SIMULATION", "-s", "tb", "-o", os.path.join(out_dir, "a.out")]
+    return (["iverilog", lang, "-D", "SIMULATION", "-s", tb_top, "-o", os.path.join(out_dir, "a.out")]
             + [arg for directory in includes for arg in ("-I", directory)] + files)
 
 
@@ -529,15 +536,29 @@ def cmd_sim(args):
                        "(module tb, instantiating design_top) and run again.".format(d=_shown(design_dir), tb=TB_NAME))
     if not shutil.which("iverilog"):
         raise CliError("iverilog is not on PATH. Install Icarus Verilog (apt/yum/brew install iverilog).")
-    out = os.path.join(run_dir(design_dir), SIM_DIR_NAME)
+    if not shutil.which("vvp"):
+        raise CliError("vvp is not on PATH. Install Icarus Verilog (apt/yum/brew install iverilog).")
+    out = args.output_dir or os.path.join(run_dir(design_dir), SIM_DIR_NAME)
+    if args.output_dir:
+        out = os.path.abspath(out)
+        resolved = os.path.realpath(out)
+        design_root = os.path.realpath(design_dir)
+        if (os.path.commonpath((resolved, design_root)) in (resolved, design_root) or
+                (os.path.lexists(out) and
+                 (os.path.islink(out) or not os.path.isdir(out) or os.listdir(out)))):
+            raise CliError("explicit simulation output directory must be empty and separate from the design")
+    version = subprocess.run(["iverilog", "-V"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True).stdout
+    try:
+        cmd = sim_command(design_dir, out, _iverilog_language_option(version),
+                          component_exports=args.component_export, tb_top=args.tb_top)
+    except source_set.SourceSetError as exc:
+        raise CliError(str(exc)) from exc
     os.makedirs(out, exist_ok=True)
     try:
         source_set.stage_assets(design_dir, out)
     except source_set.SourceSetError as exc:
         raise CliError(str(exc)) from exc
-    version = subprocess.run(["iverilog", "-V"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                             universal_newlines=True).stdout
-    cmd = sim_command(design_dir, out, _iverilog_language_option(version))
     print("Simulating {} ...  output: {}".format(os.path.basename(design_dir), _shown(out)))
     log_path = os.path.join(out, LOG_NAME)
     with open(log_path, "w", encoding="utf-8") as log:
@@ -913,6 +934,12 @@ def build_parser():
     sm = sub.add_parser("sim", help="simulate <design>/tb.sv with Icarus Verilog, open the waveform")
     design_arg(sm)
     sm.add_argument("-n", "--no-wave", action="store_true", help="do not open gtkwave / surfer")
+    sm.add_argument("--component-export", action="append", default=[], metavar="MANIFEST",
+                    help="include digest-checked generated RTL from a component export")
+    sm.add_argument("--tb-top", default="tb", metavar="MODULE",
+                    help="testbench module to elaborate (default: tb)")
+    sm.add_argument("--output-dir", metavar="DIR",
+                    help="write simulation outputs to an empty directory")
 
     gu = sub.add_parser("gui", help="open the vendor GUI on the last build")
     design_arg(gu)

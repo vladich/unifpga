@@ -24,6 +24,8 @@ The clock-tree wrappers and drivers' extra `files:` from
 top instantiates, independent of the frontend.
 """
 
+import hashlib
+import json
 import os
 import shutil
 import tempfile
@@ -44,12 +46,110 @@ HELPER_MODULES = {
 # where package dependencies require it; legacy scans keep it first.
 SKIP_DESIGN_DIRS = frozenset(("run", "build", "__pycache__", ".ater-tmp", ".git"))
 DESIGN_FILESET = "fileset.yml"
+COMPONENT_EXPORT_SCHEMA = "unifpga-component-export/v1"
+MAX_COMPONENT_MANIFEST_BYTES = 1024 * 1024
+MAX_COMPONENT_SOURCE_BYTES = 16 * 1024 * 1024
 
 DESIGNS_COMMON_DIR = os.path.join("rtl", "peripherals", "designs_common")
 
 
 class SourceSetError(ValueError):
     """A design's explicit source or asset list cannot be resolved safely."""
+
+
+def _unique_json_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON key {!r}".format(key))
+        result[key] = value
+    return result
+
+
+def component_export_sources(manifests):
+    """Resolve digest-checked generated RTL without executing its generator.
+
+    A component exporter owns generation and provenance. This source-set owner
+    accepts only bounded, digest-checked RTL files. The simulation CLI uses
+    this now; synthesis admission is a later step. The manifest is never a
+    command or a trust grant.
+    """
+    files = []
+    seen = set()
+    seen_components = set()
+    total_bytes = 0
+    for ordinal, manifest in enumerate(manifests):
+        if ordinal >= 32:
+            raise SourceSetError("too many component export manifests")
+        manifest = os.path.abspath(os.fspath(manifest))
+        if os.path.islink(manifest) or not os.path.isfile(manifest):
+            raise SourceSetError("component export manifest is missing or a symlink: {!r}".format(manifest))
+        try:
+            with open(manifest, "rb") as fh:
+                encoded = fh.read(MAX_COMPONENT_MANIFEST_BYTES + 1)
+            if len(encoded) > MAX_COMPONENT_MANIFEST_BYTES:
+                raise SourceSetError("component export manifest exceeds size limit: {!r}".format(manifest))
+            report = json.loads(encoded.decode("utf-8"), object_pairs_hook=_unique_json_pairs)
+        except (OSError, UnicodeError, ValueError, RecursionError) as exc:
+            raise SourceSetError("invalid component export manifest {!r}: {}".format(manifest, exc)) from exc
+        if not isinstance(report, dict) or report.get("schema") != COMPONENT_EXPORT_SCHEMA:
+            raise SourceSetError("unsupported component export schema: {!r}".format(manifest))
+        component = report.get("component")
+        if not isinstance(component, str) or not component.strip() or component in seen_components:
+            raise SourceSetError("invalid or duplicate component export identity: {!r}".format(manifest))
+        seen_components.add(component)
+        entries = report.get("files")
+        if not isinstance(entries, list) or not 1 <= len(entries) <= 32:
+            raise SourceSetError("component export needs 1..32 RTL files: {!r}".format(manifest))
+        root = os.path.realpath(os.path.dirname(manifest))
+        for entry in entries:
+            if not isinstance(entry, dict):
+                raise SourceSetError("invalid component export file record: {!r}".format(manifest))
+            rel, size, digest = entry.get("path"), entry.get("size"), entry.get("sha256")
+            parts = rel.split("/") if isinstance(rel, str) else []
+            if (not isinstance(rel, str) or len(rel) > 1024 or
+                    len(parts) > 32 or not rel.endswith((".sv", ".v")) or
+                    "\\" in rel or ":" in rel or "\x00" in rel or os.path.isabs(rel) or
+                    any(part in ("", ".", "..") for part in parts)):
+                raise SourceSetError("invalid component export RTL path: {!r}".format(rel))
+            if type(size) is not int or not 0 < size <= MAX_COMPONENT_SOURCE_BYTES:
+                raise SourceSetError("invalid component export RTL size: {!r}".format(rel))
+            if (not isinstance(digest, str) or len(digest) != 64 or
+                    any(char not in "0123456789abcdef" for char in digest)):
+                raise SourceSetError("invalid component export RTL digest: {!r}".format(rel))
+            path = os.path.join(root, *parts)
+            real = os.path.realpath(path)
+            prefix = root
+            symlinked = False
+            for part in parts:
+                prefix = os.path.join(prefix, part)
+                if os.path.islink(prefix):
+                    symlinked = True
+                    break
+            if (os.path.commonpath((root, real)) != root or
+                    not os.path.isfile(path) or symlinked):
+                raise SourceSetError("component export RTL is missing or escapes its root: {!r}".format(rel))
+            if real in seen:
+                raise SourceSetError("duplicate component export RTL file: {!r}".format(rel))
+            seen.add(real)
+            total_bytes += size
+            if total_bytes > MAX_COMPONENT_SOURCE_BYTES:
+                raise SourceSetError("component export RTL exceeds total size limit")
+            actual = hashlib.sha256()
+            actual_size = 0
+            try:
+                with open(path, "rb") as fh:
+                    for chunk in iter(lambda: fh.read(65536), b""):
+                        actual_size += len(chunk)
+                        if actual_size > size:
+                            break
+                        actual.update(chunk)
+            except OSError as exc:
+                raise SourceSetError("cannot read component export RTL {!r}: {}".format(rel, exc)) from exc
+            if actual_size != size or actual.hexdigest() != digest:
+                raise SourceSetError("component export RTL checksum mismatch: {!r}".format(rel))
+            files.append(path)
+    return files
 
 
 def _checked_files(design_dir, entries, field, extensions):

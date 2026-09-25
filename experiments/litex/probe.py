@@ -157,7 +157,7 @@ def run_probe(litex_root, output_root, width=8, depth=4):
     rtl = source_text.encode("utf-8")
     (output_root / (MODULE + ".v")).write_bytes(rtl)
     report = {
-        "schema": "unifpga-litex-export-probe/v1",
+        "schema": "unifpga-component-export/v1",
         "component": "litex:stream:sync_fifo",
         "implementation": "migen-generated-verilog",
         "source": {"repository": "https://github.com/enjoy-digital/litex.git",

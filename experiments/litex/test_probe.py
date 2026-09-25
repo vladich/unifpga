@@ -40,6 +40,7 @@ class LiteXProbeTests(unittest.TestCase):
             self.assertEqual((first / name).read_bytes(), (second / name).read_bytes())
         report = json.loads((first / "manifest.json").read_text(encoding="utf-8"))
         rtl = (first / "litex_sync_fifo.v").read_bytes()
+        self.assertEqual(report["schema"], "unifpga-component-export/v1")
         self.assertEqual(report["source"]["revision"],
                          "b6ae9e0b227354aecffef5339d3e946f2395ac09")
         self.assertEqual(report["generator"]["recipe_sha256"],

@@ -1,7 +1,7 @@
 // Mixed-source pilot: a unifpga PDM decoder feeding a generated LiteX FIFO.
 // The microphone cannot be backpressured. Samples arriving while the FIFO is
 // full are dropped and counted; consumers can backpressure the FIFO output.
-module pdm_fifo_capture (
+module design_top (
     input  wire        clk,
     input  wire        rst,
     output wire        pdm_clk,

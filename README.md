@@ -31,6 +31,15 @@ build in the vendor GUI), `unifpga prepare --all` (the run directories of every
 design, no tools run), `unifpga program --no-build` (load the last build's
 bitstream again), `unifpga clean` (`--all`: every design).
 
+`unifpga sim <design> --component-export <manifest.json>` adds generated
+component RTL to the normal design fileset after checking each source path,
+size, and SHA-256 from the versioned export manifest. Repeat the option for
+multiple components. `--tb-top <module>` selects a testbench module other than
+`tb`; `--output-dir <empty-directory>` isolates simulation outputs. The
+exporter produces RTL, while unifpga selects sources and invokes Icarus. This
+experimental input currently belongs to `sim`; synthesis admission for
+generated components is still under development.
+
 `build` writes everything (generated `top.sv`, constraints, the toolchain
 project and bitstream) to `run/<configuration>/` inside the design directory;
 `../../unifpga clean` removes `run/`. `./unifpga -h` lists the other commands

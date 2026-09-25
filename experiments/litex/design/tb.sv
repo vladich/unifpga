@@ -52,7 +52,7 @@ module tb_fifo;
     end
 endmodule
 
-module tb_pdm_capture;
+module tb;
     reg clk = 0;
     always #5 clk = ~clk;
     reg rst = 1;
@@ -64,7 +64,7 @@ module tb_pdm_capture;
     integer accepted = 0;
     integer i;
 
-    pdm_fifo_capture dut (
+    design_top dut (
         .clk(clk), .rst(rst), .pdm_clk(pdm_clk), .pdm_data(pdm_data),
         .pdm_lrsel(pdm_lrsel), .sample_valid(sample_valid),
         .sample_ready(sample_ready), .sample_data(sample_data),

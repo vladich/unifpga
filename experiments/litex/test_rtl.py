@@ -29,21 +29,20 @@ class GeneratedRTLTests(unittest.TestCase):
                  "--width", "16", "--depth", "4"],
                 text=True, capture_output=True, timeout=30, check=False)
             self.assertEqual(run.returncode, 0, run.stderr)
-            for top in ("tb_fifo", "tb_pdm_capture"):
-                binary = scratch / top
-                compile_run = subprocess.run(
-                    [IVERILOG, "-g2012", "-Wall", "-s", top, "-o", str(binary),
-                     str(export / "litex_sync_fifo.v"),
-                     str(ROOT / "rtl/peripherals/pdm_mic_decoder.sv"),
-                     str(EXPERIMENT / "pdm_fifo_capture.sv"),
-                     str(EXPERIMENT / "tb_pdm_fifo.sv")],
-                    text=True, capture_output=True, timeout=30, check=False)
-                self.assertEqual(compile_run.returncode, 0, compile_run.stderr)
+            env = os.environ.copy()
+            env["PATH"] = os.pathsep.join((str(Path(IVERILOG).parent),
+                                           str(Path(VVP).parent), env.get("PATH", "")))
+            for top, expected in (("tb_fifo", "PASS standalone generated LiteX FIFO"),
+                                  ("tb", "PASS unifpga PDM decoder + generated LiteX FIFO")):
                 simulation = subprocess.run(
-                    [VVP, str(binary)], text=True, capture_output=True,
-                    timeout=30, check=False)
-                self.assertEqual(simulation.returncode, 0, simulation.stderr)
-                self.assertIn("PASS ", simulation.stdout)
+                    [sys.executable, str(ROOT / "unifpga"), "sim",
+                     str(EXPERIMENT / "design"), "--component-export",
+                     str(export / "manifest.json"), "--tb-top", top,
+                     "--output-dir", str(scratch / top), "--no-wave"],
+                    text=True, capture_output=True, timeout=60, check=False,
+                    env=env)
+                self.assertEqual(simulation.returncode, 0, simulation.stdout + simulation.stderr)
+                self.assertIn(expected, simulation.stdout)
 
 
 if __name__ == "__main__":
