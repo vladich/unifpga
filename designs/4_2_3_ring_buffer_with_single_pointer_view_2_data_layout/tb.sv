@@ -18,6 +18,7 @@ module tb;
     logic               out_valid;
     logic [width - 1:0] out_data;
 
+    logic [       31:0]              debug_ptr;
     logic [depth - 1:0]              debug_valid;
     logic [depth - 1:0][width - 1:0] debug_data;
 

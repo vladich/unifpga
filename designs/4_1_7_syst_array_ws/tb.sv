@@ -1,6 +1,6 @@
 // =============================================================================
 // 4_1_7_syst_array_ws testbench
-//   (slow_clk is derived inside design_top)
+//   drives the systolic array (syst_array_ws) alone
 // =============================================================================
 
 module tb;
@@ -20,7 +20,7 @@ module tb;
 
     //------------------------------------------------------------------------
 
-    top uut
+    syst_array_ws uut
     (
     .clk (clk),
     .rst (rst),

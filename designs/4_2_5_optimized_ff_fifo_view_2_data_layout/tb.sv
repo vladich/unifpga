@@ -20,6 +20,7 @@ module tb;
     wire                     empty;
     wire                     full;
 
+    logic [              31:0]                 debug_ptrs;
     logic [fifo_depth - 1:0]                   debug_valid;
     logic [fifo_depth - 1:0][fifo_width - 1:0] debug_data;
 
