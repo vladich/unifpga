@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:toolchain",
+  "title": "Toolchains",
+  "description": "config/toolchains.yml: the synthesis toolchains. One with SupportedOperations has a driver module toolchains/<Id>.py; one without is catalogue-only.",
+  "type": "object",
+  "required": ["Toolchains"],
+  "additionalProperties": false,
+  "properties": {
+    "Toolchains": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/toolchain" } }
+  },
+  "$defs": {
+    "toolchain": {
+      "type": "object",
+      "required": ["Id", "Name", "SupportedOperations", "KnownVersions", "Version", "InstallDir"],
+      "additionalProperties": false,
+      "properties": {
+        "Id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "Name": { "type": "string", "minLength": 1 },
+        "SupportedOperations": {
+          "description": "The driver methods that exist; [] marks a catalogue-only toolchain",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["synthesize", "program"] }
+        },
+        "KnownVersions": { "description": "Versions seen in the wild, so a chip's constraint can name a range", "type": "array", "items": { "type": ["string", "number"] } },
+        "Version": { "description": "The configured version pin, or null", "type": ["string", "null"] },
+        "InstallDir": { "description": "Where the toolchain lives locally (~ and $VAR expand), or null to detect it", "type": ["string", "null"] }
+      }
+    }
+  }
+}

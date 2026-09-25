@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:connector_type",
+  "title": "Connector types",
+  "description": "config/connectors.yml: the physical connector types — pin numbering row by row, power pins and I/O voltage. A board's header is of one of these types; a module plugs in by these numbers.",
+  "type": "object",
+  "required": ["Connectors"],
+  "additionalProperties": false,
+  "properties": {
+    "Connectors": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/$defs/connector_type" }
+    }
+  },
+  "$defs": {
+    "pin": { "type": ["integer", "string"] },
+    "connector_type": {
+      "type": "object",
+      "required": ["name", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "voltage": { "description": "I/O voltage; absent when the numbering is not verified", "type": "number", "exclusiveMinimum": 0 },
+        "rows": {
+          "description": "The pins row by row in physical order",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/pin" } }
+        },
+        "power": {
+          "description": "Pin -> the rail on it (GND, VCC, VCC5, AREF, ...)",
+          "type": "object",
+          "additionalProperties": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" }
+        },
+        "source": { "type": "string" }
+      }
+    }
+  }
+}

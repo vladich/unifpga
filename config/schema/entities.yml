@@ -1,0 +1,296 @@
+# The entities of the configuration: where each one's records are stored, the
+# schema its files satisfy (config/schema/<entity>.schema.json) and its
+# relationships to the other entities. ./unifpga check (tools/check.py) reads
+# this file: every file against its schema, every `from` reference resolved to
+# an id of `to`, every `rule` run. An entity with `schema: null` is one whose
+# files are still being reshaped (the board catalogue); its identities and
+# references are checked, its shape is not yet.
+#
+# Paths in `from`: dotted, `*` every item of a list or value of a mapping,
+# `*keys` every key of a mapping. `format`: how a value names its target
+# (plain id, versioned `<id>[<constraint>]`, record_id `x` or `{Id: x}`,
+# producer_name a producer's Id / Name / AKA).
+
+Entities:
+
+  rig:
+    why: >-
+      One system, config/setups/<id>.yml: a board, what is on it and how the
+      design sees it. The build expands it into the rig's configuration
+      (tools/setup.py generate), codegen makes the top from that, the editor
+      edits it; ./unifpga setup check expands and resolves every rig.
+    files: config/setups/*.yml
+    root: Setup
+    id: id
+    file_named_after_id: true
+    schema: rig.schema.json
+    relations:
+      - {from: board, to: board, why: "the board it is built on"}
+      - {from: toolchain, to: toolchain, why: "the default build"}
+      - {from: toolchains.*, to: toolchain, why: "every build the rig is checked with"}
+      - {from: aliases.*.toolchain, to: toolchain, why: "an alias is a toolchain / chip choice"}
+      - {from: for_toolchain.*keys, to: toolchain, why: "a per-toolchain patch"}
+      - {from: use.*.for_toolchain.*keys, to: toolchain, why: "a per-toolchain patch of one use"}
+      - {from: use.*.module, to: module, why: "a module plugged in or wired"}
+      - {from: use.*.raw.peripheral, to: peripheral, why: "a raw attach names its driver"}
+      - {from: design.width.*keys, to: capability, why: "the bus width the design declares"}
+      - {from: use.*.design_bits.*keys, to: capability, why: "which design bit each pin is"}
+      - {rule: rig_expands, why: "on-board parts, connectors, plugs, wires, variants and pins resolve on the board's layout and the rig expands to a configuration (tools/setup.py validate + generate)"}
+      - {rule: rig_chip_variant, why: "part / parts / alias parts are chips of the board"}
+      - {rule: rig_reset_sources, why: "reset sources are the reset capability's (plus power_up, pll_lock, bank, pin)"}
+
+  peripheral:
+    why: >-
+      A driver contract, config/peripherals/<id>.yml: pins, parameters, the
+      capabilities provided, clocks needed, RTL. Codegen instantiates it and
+      aggregates its capability signals; requirements check what a rig provides.
+    files: config/peripherals/*.yml
+    root: Peripheral
+    id: id
+    file_named_after_id: true
+    schema: peripheral.schema.json
+    relations:
+      - {from: provides.*.capability, to: capability, why: "the design-facing contract each provider fills"}
+      - {rule: peripheral_refs, why: "port map, pin assigns, provides, signal widths, serves and pin_fit name this peripheral's signals, parameters and clocks and the provided capabilities' signals and parameters"}
+      - {rule: peripheral_driver_files, why: "the driver's RTL files exist"}
+
+  capability:
+    why: >-
+      The design-facing contract, config/capabilities/<id>.yml: signals,
+      aggregation, the parameters and ports on the design top. Codegen builds
+      a plan per capability; rtl/peripherals/design_top_interface.sv mirrors
+      the design block; the editor shows the summary.
+    files: config/capabilities/*.yml
+    root: Capability
+    id: id
+    file_named_after_id: true
+    schema: capability.schema.json
+    relations:
+      - {from: passthrough, to: peripheral, why: "the peripheral a gpio use attaches"}
+      - {from: sources.*.capability, to: capability, why: "a reset source reads another capability's signal"}
+      - {rule: capability_refs, why: "ports name its signals; primary / size / depth / extent / design values name its parameters; port widths and derived operands name design parameters; a reset source names a signal of its capability"}
+
+  module:
+    why: >-
+      A pluggable board, config/modules/<id>.yml: its pins by label, the
+      peripheral that drives it, parameters it fixes. Setup expansion wires it
+      through a connector (plug) or pin by pin (wires); the editor lists modules
+      by connector type.
+    files: config/modules/*.yml
+    root: Module
+    id: id
+    file_named_after_id: true
+    schema: module.schema.json
+    relations:
+      - {from: peripheral, to: peripheral, why: "the driver of the module"}
+      - {rule: module_pins, why: "pins carry the peripheral's signals, params are its parameters, unwired notes name the module's pins"}
+
+  connector_type:
+    why: >-
+      A physical connector type, config/connectors.yml: numbering, power pins,
+      voltage. A board's header is of one type, a module plugs in by its numbers,
+      gpio wires name its pins, the editor draws it.
+    files: config/connectors.yml
+    root: Connectors
+    records: map
+    schema: connector_type.schema.json
+
+  family:
+    why: >-
+      A chip family of a producer, config/chips/<producer>/<family>.yml: its
+      chips and the toolchains that build for them. Toolchain compatibility of a
+      rig (config.init toolchain_constraints), programmer resolution, build
+      targets.
+    files: config/chips/*/*.yml
+    schema: family.schema.json
+    relations:
+      - {from: Producer, to: producer, format: producer_name, why: "whose family"}
+      - {from: DefaultToolchains.*, to: toolchain, format: versioned, why: "the builds every chip of the family accepts"}
+
+  chip:
+    why: >-
+      One chip of a family (the Chips list of the family file): the part a
+      board carries and a rig's `part` selects; its toolchains gate the builds.
+    files: config/chips/*/*.yml
+    root: Chips
+    records: list
+    id: Id
+    schema: null
+    no_schema_because: family.schema.json covers the whole family file, chips included
+    relations:
+      - {from: Toolchains.*, to: toolchain, format: versioned, why: "a chip's own builds"}
+
+  producer:
+    why: >-
+      Who makes boards, chips and modules, config/board_producers.yml.
+      Grouping, file placement, catalogue browsing.
+    files: config/board_producers.yml
+    root: Producers
+    records: list
+    id: Id
+    schema: producer.schema.json
+
+  toolchain:
+    why: >-
+      A synthesis toolchain, config/toolchains.yml: its driver
+      (toolchains/<Id>.py), versions, install. Builds, target ids, the vendor
+      layer codegen emits.
+    files: config/toolchains.yml
+    root: Toolchains
+    records: list
+    id: Id
+    schema: toolchain.schema.json
+    relations:
+      - {rule: toolchain_driver, why: "a toolchain with operations has its driver module"}
+
+  programmer:
+    why: >-
+      A tool that loads a bitstream, config/programmers.yml. ./unifpga program
+      picks one through the board's toolchain, chip family and bridge, or
+      bootloader (config.init programmers_for_board).
+    files: config/programmers.yml
+    root: Programmers
+    records: list
+    id: Id
+    schema: programmer.schema.json
+    relations:
+      - {from: Bundled, to: toolchain, why: "applies wherever the toolchain does"}
+      - {rule: programmer_families, why: "the families a third-party tool supports exist"}
+
+  design:
+    why: >-
+      A design's file set, designs/<design>/fileset.yml, when it keeps
+      alternative implementations side by side; the build's source set
+      (tools/source_set.py) reads it.
+    files: designs/*/fileset.yml
+    schema: design.schema.json
+    relations:
+      - {rule: design_fileset, why: "the files exist, design_top.sv once among the sources, tb.sv in simulation"}
+
+  entity_registry:
+    why: This file.
+    files: config/schema/entities.yml
+    root: Entities
+    records: map
+    schema: entities.schema.json
+
+  # ---- the board catalogue: reshaped next (one file per board); identities
+  # ---- and references are checked already, shapes not yet
+
+  board:
+    why: >-
+      A board's catalogue entry (config/boards/<producer>/<family>.yml, the
+      Boards list): identity, chip or chip variants, programmer, bridges,
+      features, devices. Programmer resolution, toolchain compatibility, the
+      catalogue.
+    files: config/boards/*/*.yml
+    root: Boards
+    records: list
+    id: Id
+    schema: null
+    no_schema_because: the entry, the pinmap and the layout become one board file
+    relations:
+      - {from: Chip, to: chip, why: "the part"}
+      - {from: Chips.*, to: chip, format: record_id, why: "the part variants"}
+      - {from: BoardProducer, to: producer, why: "whose board"}
+      - {from: Programmer, to: programmer, why: "the default programmer"}
+      - {from: ExtraProgrammers.*, to: programmer, format: versioned, why: "programmers the board explicitly accepts"}
+      - {from: Features.*, to: feature, why: "catalogue browsing"}
+      - {from: Devices.*, to: device, format: record_id, why: "catalogue browsing"}
+
+  pinmap:
+    why: >-
+      A board's pins (config/boards/<producer>/<family>/<board>.yml): banks of
+      package pins with kinds, IO standards, levels. Codegen's constraints, the
+      layout drafter, the hardware-readiness gate.
+    files: config/boards/*/*/*.yml
+    root: Board
+    id: id
+    file_named_after_id: true
+    schema: null
+    no_schema_because: becomes the banks of the board file
+    relations:
+      - {from: id, to: board, why: "the catalogue entry it belongs to"}
+
+  layout:
+    why: >-
+      A board's parts and connectors (config/layouts/<board>.yml), generated
+      from the pinmap and the rigs. Setup expansion resolves on-board parts and
+      connectors on it; the editor draws it.
+    files: config/layouts/*.yml
+    root: Layout
+    id: board
+    file_named_after_id: true
+    schema: null
+    no_schema_because: becomes the parts and headers of the board file
+    relations:
+      - {from: board, to: board, why: "the board it lays out"}
+      - {from: onboard.*.attach.peripheral, to: peripheral, why: "the driver of a part"}
+      - {from: onboard.*.variants.*.attach.peripheral, to: peripheral, why: "the driver of a part variant"}
+      - {rule: layout_connector_types, why: "how a header is numbered: a type of config/connectors.yml or one the layout carries from the board-sources registry"}
+
+  feature:
+    why: >-
+      A browsable class of hardware (config/features.yml) and the capabilities
+      it can provide. Catalogue browsing and filters only.
+    files: config/features.yml
+    root: Features
+    records: list
+    id: Id
+    schema: null
+    no_schema_because: one feature vocabulary replaces features.yml and board_features.yml
+    relations:
+      - {from: Capabilities.*, to: capability, why: "what a device of this class can provide"}
+
+  legacy_feature:
+    why: The older feature vocabulary, config/board_features.yml (read by the catalogue only).
+    files: config/board_features.yml
+    root: Features
+    records: list
+    id: Id
+    schema: null
+    no_schema_because: replaced together with features.yml
+
+  device:
+    why: >-
+      A named chip on a board (config/peripheral_devices.yml): its feature and
+      the peripheral that drives it. Catalogue and drafter suggestions.
+    files: config/peripheral_devices.yml
+    root: Devices
+    records: list
+    id: Id
+    schema: null
+    no_schema_because: becomes config/devices.yml with the device kinds
+    relations:
+      - {from: Feature, to: feature, why: "its class"}
+      - {from: PeripheralDrivers.*, to: peripheral, why: "the drivers that run it"}
+
+  mezzanine:
+    why: >-
+      A SoM or daughtercard (config/mezzanines/<producer>/<family>.yml):
+      connector, chip, default carrier. Catalogue only today.
+    files: config/mezzanines/*/*.yml
+    root: Mezzanines
+    records: list
+    id: Id
+    schema: null
+    no_schema_because: reshaped with the board files
+    relations:
+      - {from: Producer, to: producer, why: "whose module"}
+      - {from: Chip, to: chip, why: "the part on a SoM"}
+      - {from: Features.*, to: feature, why: "catalogue browsing"}
+      - {from: Devices.*, to: device, format: record_id, why: "catalogue browsing"}
+      - {from: CompatibleBoards.*, to: board, why: "carriers it fits"}
+      - {from: DefaultCarrier, to: board, why: "the carrier it is sold with"}
+
+  vendor_constraints:
+    why: >-
+      Which vendor constraint file checks a board's pinmap
+      (config/vendor_constraints.yml, tools/verify_pinmap_against_vendor.py).
+    files: config/vendor_constraints.yml
+    root: VendorConstraints
+    records: map
+    schema: null
+    no_schema_because: becomes a document of the board file
+    relations:
+      - {from: '*.*keys', to: board, why: "the board each file checks"}

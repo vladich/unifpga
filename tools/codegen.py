@@ -1636,7 +1636,7 @@ def _emit_context(resolved, plans):
     # With `design_clock:` this is the PLL clock's frequency (design_mhz).
     dclk = design_clock(resolved, plans)
     if dclk["name"]:
-        lines.append("    // Lab clock: context.clk is {} ({:g} MHz), see the clock tree below."
+        lines.append("    // Design clock: context.clk is {} ({:g} MHz), see the clock tree below."
                      .format(dclk["net"], dclk["mhz"]))
     lines.append("    localparam int clk_mhz = {};".format(_design_mhz_int(dclk, clock)))
     return lines

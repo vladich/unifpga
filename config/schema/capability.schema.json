@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:capability",
+  "title": "Capability",
+  "description": "config/capabilities/<id>.yml: the contract between a design and the hardware — the signals of one kind of thing (LEDs, a screen, storage), how several providers aggregate, and the parameters and ports it puts on the design top.",
+  "type": "object",
+  "required": ["Capability"],
+  "additionalProperties": false,
+  "properties": {
+    "Capability": { "$ref": "#/$defs/capability" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+    "name": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
+    "param_ref": { "type": "string", "pattern": "^\\$[a-z_][a-z0-9_]*$" },
+    "source": {
+      "description": "A value the generated top computes (tools/codegen.py _SOURCES)",
+      "type": "object",
+      "required": ["source"],
+      "additionalProperties": false,
+      "properties": { "source": { "$ref": "#/$defs/name" } }
+    },
+    "signal": {
+      "type": "object",
+      "required": ["name", "type", "direction"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "type": { "enum": ["scalar", "bus"] },
+        "direction": { "enum": ["hw_to_user", "user_to_hw", "inout"] },
+        "width": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "$ref": "#/$defs/param_ref" }] },
+        "extent": { "description": "The parameter this bus counts up to (its width is the clog2)", "$ref": "#/$defs/name" },
+        "unit": { "description": "Bits per element when the bus is one element per provider pin", "type": "integer", "minimum": 1 },
+        "comment": { "type": "string" }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["int", "float", "enum", "string", "bool"] },
+        "description": { "type": "string" },
+        "required": { "type": "boolean" },
+        "default": { "type": ["integer", "number", "string", "boolean", "null"] },
+        "values": { "type": "array", "minItems": 1 }
+      }
+    },
+    "value_alternative": {
+      "description": "A parameter name, or a digit of another parameter (color_depth 444 -> 4) with the value when it is absent",
+      "oneOf": [
+        { "$ref": "#/$defs/name" },
+        {
+          "type": "object",
+          "required": ["param"],
+          "additionalProperties": false,
+          "properties": {
+            "param": { "$ref": "#/$defs/name" },
+            "default": { "type": ["integer", "number", "string"] },
+            "digit": { "type": "integer", "minimum": 0 },
+            "otherwise": { "type": ["integer", "number", "string"] }
+          }
+        }
+      ]
+    },
+    "design_parameter": {
+      "description": "A design top parameter: its value from the capability's parameters (or a computed source) and its value on a rig without a provider",
+      "type": "object",
+      "required": ["value"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "oneOf": [
+            { "$ref": "#/$defs/name" },
+            { "$ref": "#/$defs/source" },
+            { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/value_alternative" } }
+          ]
+        },
+        "absent": { "oneOf": [{ "type": ["integer", "number"] }, { "$ref": "#/$defs/source" }] }
+      }
+    },
+    "derived_parameter": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "clog2": { "$ref": "#/$defs/name" },
+        "multiply": { "type": "array", "minItems": 2, "items": { "type": ["string", "integer"] } }
+      }
+    },
+    "port": {
+      "type": "object",
+      "required": ["signal", "width"],
+      "additionalProperties": false,
+      "properties": {
+        "signal": { "$ref": "#/$defs/name" },
+        "width": { "description": "A number or a design parameter", "oneOf": [{ "type": "integer", "minimum": 1 }, { "$ref": "#/$defs/name" }] },
+        "net": { "description": "Driven by a computed net instead of a provider", "$ref": "#/$defs/source" },
+        "absent": { "description": "What drives it on a rig without a provider", "$ref": "#/$defs/source" },
+        "idle": { "description": "SystemVerilog literal a design that does not drive it gets", "type": "string" }
+      }
+    },
+    "reset_source": {
+      "type": "object",
+      "required": ["capability", "signal", "parts"],
+      "additionalProperties": false,
+      "properties": {
+        "capability": { "$ref": "#/$defs/id" },
+        "signal": { "$ref": "#/$defs/name" },
+        "parts": { "enum": ["pins", "driver"] },
+        "index": { "enum": ["msb", "any"] },
+        "kind": { "$ref": "#/$defs/name" }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "required": ["id", "description", "signals", "aggregation", "design"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "description": { "type": "string" },
+        "summary": { "description": "How the editor and the ledger name it", "type": "string" },
+        "parameters": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "$ref": "#/$defs/parameter" }
+        },
+        "signals": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/signal" } },
+        "aggregation": {
+          "description": "Several providers: concat their buses, exclusive (one at a time), broadcast to all, or their outputs together, mux by select",
+          "enum": ["concat", "exclusive", "broadcast", "or", "mux"]
+        },
+        "primary": { "description": "The parameter a design requirement's number compares to", "$ref": "#/$defs/name" },
+        "size": { "description": "The two parameters WxH compares to", "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/$defs/name" } },
+        "depth": { "description": "The three parameters @RGB compares to, digit by digit", "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/name" } },
+        "optional": { "description": "Reaches the design top only when the design declares its ports", "type": "boolean" },
+        "required": { "description": "Every rig must provide it", "type": "boolean" },
+        "passthrough": { "description": "The peripheral a rig's gpio use attaches", "$ref": "#/$defs/id" },
+        "sources": {
+          "description": "Reset only: the names a rig's design.reset.sources may use and the capability signal each reads",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "$ref": "#/$defs/reset_source" }
+        },
+        "design": {
+          "description": "What the capability puts on the design top: parameters, parameters derived from them, ports",
+          "type": "object",
+          "required": ["ports"],
+          "additionalProperties": false,
+          "properties": {
+            "parameters": {
+              "type": "object",
+              "propertyNames": { "$ref": "#/$defs/name" },
+              "additionalProperties": { "$ref": "#/$defs/design_parameter" }
+            },
+            "derived": {
+              "type": "object",
+              "propertyNames": { "$ref": "#/$defs/name" },
+              "additionalProperties": { "$ref": "#/$defs/derived_parameter" }
+            },
+            "ports": {
+              "type": "object",
+              "minProperties": 1,
+              "propertyNames": { "$ref": "#/$defs/name" },
+              "additionalProperties": { "$ref": "#/$defs/port" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -10,6 +10,7 @@ import pytest
 
 from tools.catalog_snapshot import (CatalogSnapshotError, capture_catalog,
                                     capture_catalog_revision)
+from tools import check
 from tools.catalog_candidate import compare_catalog_revisions
 
 
@@ -299,8 +300,10 @@ def test_opt_in_domain_validation_reports_scope_and_fails_invalid_candidate(tmp_
     report = compare_catalog_revisions(repo, commit, commit, validate_domain=True)
     assert report["state"] == "domain_invalid"
     assert report["validation"] == {"source": "passed", "domain": "failed"}
-    assert report["domain_report"]["scope"] == "identity-and-direct-references/v1"
-    assert any(row["code"] == "missing_kind" for row in report["domain_report"]["findings"])
+    assert report["domain_report"]["scope"] == check.SCOPE
+    codes = {row["code"] for row in report["domain_report"]["findings"]}
+    assert codes >= {"unsupported_path", "missing_entity"}      # item.yml is no entity; no rig, no toolchain, ...
+    assert report["domain_report"]["unexamined"] == ["config/item.yml"]
     assert report["findings"] == []
     result = subprocess.run(
         [sys.executable, "-m", "tools.catalog_candidate", "config", "--repo",
@@ -312,26 +315,24 @@ def test_opt_in_domain_validation_reports_scope_and_fails_invalid_candidate(tmp_
 
 
 def test_domain_pass_uses_exact_committed_documents(tmp_path):
+    """The domain pass checks the committed documents, not the working tree,
+    and the rules that need the tree are listed as skipped."""
     repo, _ = _committed_catalog(tmp_path)
     (repo / "config" / "item.yml").unlink()
-    _write(repo, "config/toolchains.yml", "Toolchains: [{Id: tool}]\n")
-    _write(repo, "config/chips/vendor/family.yml", "Chips: [{Id: chip}]\n")
-    _write(repo, "config/boards/vendor/family.yml",
-           "Boards: [{Id: board, Chip: chip}]\n")
-    _write(repo, "config/capabilities/leds.yml", "Capability: {id: leds}\n")
-    _write(repo, "config/peripherals/led.yml",
-           "Peripheral: {id: led, provides: [{capability: leds}]}\n")
-    _write(repo, "config/configurations/rig.yml",
-           "Configuration: {id: rig, board: board, toolchain: tool, "
-           "attach: [{peripheral: led}]}\n")
+    _write(repo, "config/setups/rig.yml",
+           "Setup: {id: rig, board: board, toolchain: tool, use: [{onboard: leds}]}\n")
     _git(repo, "add", "-A", "config")
-    _git(repo, "commit", "-qm", "valid domain subset")
+    _git(repo, "commit", "-qm", "a rig")
     commit = _git(repo, "rev-parse", "HEAD")
     report = compare_catalog_revisions(repo, commit, commit, validate_domain=True)
-    assert report["state"] == "candidate"
-    assert report["validation"]["domain"] == "partial_passed"
-    assert report["domain_report"]["findings"] == []
-    assert report["domain_report"]["unexamined"] == []
-    _write(repo, "config/configurations/rig.yml",
-           "Configuration: {id: rig, board: wrong, toolchain: tool}\n")
-    assert compare_catalog_revisions(repo, commit, commit, validate_domain=True) == report
+    domain = report["domain_report"]
+    assert report["state"] == "domain_invalid"
+    assert domain["counts"]["rig"] == 1 and domain["unexamined"] == []
+    assert "rig.rig_expands" in domain["rules_skipped"]
+    assert any(row["code"] == "unknown_reference" and "absent board 'board'" in row["detail"]
+               for row in domain["findings"])
+    _write(repo, "config/setups/rig.yml",
+           "Setup: {id: rig, board: wrong, toolchain: tool, use: [{onboard: leds}]}\n")
+    again = compare_catalog_revisions(repo, commit, commit, validate_domain=True)
+    assert again == report
+    assert not any("wrong" in row["detail"] for row in again["domain_report"]["findings"])

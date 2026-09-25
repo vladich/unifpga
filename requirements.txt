@@ -1,1 +1,2 @@
 PyYAML>=6.0
+jsonschema>=4.0      # ./unifpga check and tests/test_check.py (the schemas under config/schema/)

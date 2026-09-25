@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:programmer",
+  "title": "Programmers",
+  "description": "config/programmers.yml: the tools that load a bitstream onto a board. A programmer applies to a board through the toolchain it is bundled with, the chip families it supports (with the bridge the board must have), or the bootloader the board runs.",
+  "type": "object",
+  "required": ["Programmers"],
+  "additionalProperties": false,
+  "properties": {
+    "Programmers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/programmer" } }
+  },
+  "$defs": {
+    "bridge": { "description": "A physical interface: jtag, ft2232h-jtag, usb-dfu, ...", "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "programmer": {
+      "type": "object",
+      "required": ["Id", "Name", "KnownVersions", "Version", "Bundled", "Binary", "Bridge"],
+      "additionalProperties": false,
+      "properties": {
+        "Id": { "description": "Lower case, except a tool whose own name is not (openFPGALoader)", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_]*$" },
+        "Name": { "type": "string", "minLength": 1 },
+        "KnownVersions": { "type": "array", "items": { "type": ["string", "number"] } },
+        "Version": { "type": ["string", "null"] },
+        "Bundled": { "description": "The toolchain it ships with, or null for a third-party tool", "type": ["string", "null"], "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "Binary": { "description": "The executable expected on PATH", "type": "string", "minLength": 1 },
+        "Bridge": { "$ref": "#/$defs/bridge" },
+        "RequiresBridge": { "description": "The bridge a board must have for this programmer", "$ref": "#/$defs/bridge" },
+        "SupportedFamilies": {
+          "description": "For a third-party tool: the chip families it targets, by producer and family name",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["Producer", "Family"],
+            "additionalProperties": false,
+            "properties": {
+              "Producer": { "type": "string", "minLength": 1 },
+              "Family": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "RequiresBootloader": { "description": "The bootloader a board must run for this programmer", "type": "string", "minLength": 1 },
+        "InstallDir": { "type": ["string", "null"] },
+        "URL": { "type": "string", "pattern": "^https?://" }
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:producer",
+  "title": "Producers",
+  "description": "config/board_producers.yml: who makes boards, chips and modules. Boards, families and mezzanines name a producer by Id (or, in family files, by Name or an AKA).",
+  "type": "object",
+  "required": ["Producers"],
+  "additionalProperties": false,
+  "properties": {
+    "Producers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/producer" } }
+  },
+  "$defs": {
+    "producer": {
+      "type": "object",
+      "required": ["Id", "Name", "AKA", "URL", "Country", "FoundedYear", "Categories", "Description", "DefunctSince", "Notes"],
+      "additionalProperties": false,
+      "properties": {
+        "Id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "Name": { "type": "string", "minLength": 1 },
+        "AKA": { "description": "Other names the producer goes by", "type": ["array", "null"], "items": { "type": "string", "minLength": 1 } },
+        "URL": { "type": ["string", "null"], "pattern": "^https?://" },
+        "Country": { "type": ["string", "null"] },
+        "FoundedYear": { "type": ["integer", "null"], "minimum": 1800 },
+        "Categories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["hobby", "industrial", "edu", "academic", "foss_friendly", "chip_vendor", "som_vendor", "defunct"] }
+        },
+        "Description": { "type": "string" },
+        "DefunctSince": { "type": ["integer", "null"], "minimum": 1800 },
+        "Notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

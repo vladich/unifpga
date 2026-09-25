@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:entities",
+  "title": "Entity registry",
+  "description": "config/schema/entities.yml: every entity of the configuration — where its records are stored, the schema its files satisfy and its relationships to other entities. tools/check.py reads it.",
+  "type": "object",
+  "required": ["Entities"],
+  "additionalProperties": false,
+  "properties": {
+    "Entities": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/$defs/entity" }
+    }
+  },
+  "$defs": {
+    "path": { "type": "string", "pattern": "^[A-Za-z0-9_*.-]+(/[A-Za-z0-9_*.-]+)*\\.yml$" },
+    "relation": {
+      "description": "A reference from a field of this entity's records (from: a dotted path, * every item or value, *keys every key) to the ids of another entity, or a named rule tools/check.py implements",
+      "type": "object",
+      "additionalProperties": false,
+      "oneOf": [{ "required": ["from", "to"] }, { "required": ["rule"] }],
+      "properties": {
+        "from": { "type": "string", "pattern": "^(\\*keys|\\*|[A-Za-z_][A-Za-z0-9_]*)(\\.(\\*keys|\\*|[A-Za-z_][A-Za-z0-9_]*))*$" },
+        "to": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "format": {
+          "description": "How the value names its target: plain (the id), versioned (<id>[<constraint>]), record_id (an Id or {Id: ...}), producer_name (a producer's Id, Name or AKA)",
+          "enum": ["plain", "versioned", "record_id", "producer_name"]
+        },
+        "rule": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "why": { "description": "What the relationship is used for", "type": "string" }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "required": ["files", "why"],
+      "additionalProperties": false,
+      "properties": {
+        "why": { "description": "What the entity is and what uses it", "type": "string" },
+        "files": { "description": "Repository-relative glob of its files (* within one path segment)", "$ref": "#/$defs/path" },
+        "root": { "description": "The key under which a file's record or records sit; absent: the whole document is the record", "type": "string" },
+        "records": { "description": "How records sit under the root: one, a list, or a mapping keyed by id", "enum": ["one", "list", "map"], "default": "one" },
+        "id": { "description": "The field that identifies a record (absent for a map: the key; for one record without an id field: the file name)", "type": "string" },
+        "file_named_after_id": { "description": "One record per file, the file named <id>.yml", "type": "boolean", "default": false },
+        "schema": { "description": "The JSON Schema (config/schema/) every file satisfies; null while the entity's files are still being reshaped", "type": ["string", "null"], "pattern": "^[a-z_]+\\.schema\\.json$" },
+        "no_schema_because": { "description": "Why there is no schema yet", "type": "string" },
+        "relations": { "type": "array", "items": { "$ref": "#/$defs/relation" } }
+      },
+      "if": { "properties": { "schema": { "type": "null" } }, "required": ["schema"] },
+      "then": { "required": ["no_schema_because"] }
+    }
+  }
+}

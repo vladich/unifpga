@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:module",
+  "title": "Module",
+  "description": "config/modules/<id>.yml: a board that plugs into a connector or is wired to header pins — its pins by label, the peripheral that drives it and the parameters the module fixes.",
+  "type": "object",
+  "required": ["Module"],
+  "additionalProperties": false,
+  "properties": {
+    "Module": { "$ref": "#/$defs/module" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+    "label": { "description": "A pin as the module's silkscreen or its connector numbers it", "type": "string", "pattern": "^[A-Za-z0-9_/+-]+$" },
+    "pin_role": {
+      "description": "power, ground, or the peripheral signal (bit) on the pin",
+      "type": "string",
+      "pattern": "^(power|ground|[a-z_][a-z0-9_]*(\\[[0-9]+\\])?)$"
+    },
+    "module": {
+      "type": "object",
+      "required": ["id", "name", "peripheral", "voltage", "pins", "source", "verified"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "peripheral": { "$ref": "#/$defs/id" },
+        "voltage": {
+          "description": "Supply voltage, or the range it runs from",
+          "oneOf": [
+            { "type": "number", "exclusiveMinimum": 0 },
+            { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "exclusiveMinimum": 0 } }
+          ]
+        },
+        "pins": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/$defs/label" },
+          "additionalProperties": { "$ref": "#/$defs/pin_role" }
+        },
+        "params": {
+          "description": "Peripheral parameters the module fixes (its LED count, its display size)",
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z_][a-z0-9_]*$" },
+          "additionalProperties": { "type": ["string", "integer", "number", "boolean"] }
+        },
+        "unwired": {
+          "description": "Pin label -> what the pin must be tied to when a rig leaves it unwired, and why",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/label" },
+          "additionalProperties": {
+            "type": "object",
+            "required": ["tie", "why"],
+            "additionalProperties": false,
+            "properties": {
+              "tie": { "enum": ["power", "ground"] },
+              "why": { "type": "string" }
+            }
+          }
+        },
+        "source": { "description": "Where the pinout comes from", "type": "string" },
+        "verified": { "description": "The pinout was checked against the module's documentation", "type": "boolean" }
+      }
+    }
+  }
+}

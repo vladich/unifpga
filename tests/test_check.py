@@ -1,0 +1,267 @@
+"""
+tools/check.py: every configuration file against its schema
+(config/schema/<entity>.schema.json), every reference between entities
+resolved, the rules a reference table cannot express — driven by
+config/schema/entities.yml. The repository passes; a synthetic catalogue in
+documents mode shows each kind of finding is precise and bounded.
+"""
+
+import copy
+import os
+import sys
+
+import pytest
+
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO)
+
+from tools import check, cli                      # noqa: E402
+
+REPO_RULES = {"rig.rig_expands", "peripheral.peripheral_driver_files",
+              "toolchain.toolchain_driver", "design.design_fileset"}
+
+
+def _catalogue():
+    """A minimal catalogue that satisfies every schema and relation (paths
+    relative to config/, as tools/catalog_snapshot.py captures them)."""
+    return {
+        "schema/entities.yml": {"Entities": check.read_entities()},
+        "toolchains.yml": {"Toolchains": [{"Id": "tool", "Name": "Tool", "SupportedOperations": [],
+                                           "KnownVersions": ["1.0"], "Version": None, "InstallDir": None}]},
+        "programmers.yml": {"Programmers": [{"Id": "prog", "Name": "Prog", "KnownVersions": [], "Version": None,
+                                             "Bundled": "tool", "Binary": "prog", "Bridge": "jtag",
+                                             "SupportedFamilies": [{"Producer": "Maker Inc", "Family": "Family"}]}]},
+        "board_producers.yml": {"Producers": [{"Id": "maker", "Name": "Maker", "AKA": ["Maker Inc"], "URL": None,
+                                               "Country": None, "FoundedYear": None, "Categories": ["hobby"],
+                                               "Description": "", "DefunctSince": None, "Notes": None}]},
+        "chips/maker/family.yml": {"Producer": "Maker Inc", "Family": "Family", "Description": "",
+                                   "DefaultToolchains": ["tool[*]"], "Chips": [{"Id": "CHIP-1"}]},
+        "boards/maker/family.yml": {"Boards": [{"Id": "board", "Chip": "CHIP-1", "BoardProducer": "maker",
+                                                "Programmer": "prog", "Features": ["led_feature"],
+                                                "Devices": [{"Id": "led_device"}]}]},
+        "boards/maker/family/board.yml": {"Board": {"id": "board", "pinBanks": {}}},
+        "layouts/board.yml": {"Layout": {"board": "board",
+                                         "connectors": [{"id": "j1", "type": "pmod_2x6"}],
+                                         "onboard": [{"id": "leds", "attach": {"peripheral": "led"}}]}},
+        "connectors.yml": {"Connectors": {"pmod_2x6": {"name": "Pmod", "source": "spec", "voltage": 3.3,
+                                                       "rows": [[1, 2]], "power": {2: "GND"}}}},
+        "capabilities/leds.yml": {"Capability": {
+            "id": "leds", "description": "LEDs", "aggregation": "concat", "primary": "width",
+            "parameters": {"width": {"type": "int", "required": True}},
+            "signals": [{"name": "led", "type": "bus", "width": "$width", "direction": "user_to_hw"}],
+            "design": {"parameters": {"w_led": {"value": "width", "absent": 1}},
+                       "ports": {"led": {"signal": "led", "width": "w_led"}}}}},
+        "capabilities/reset.yml": {"Capability": {
+            "id": "reset", "description": "Reset", "aggregation": "or",
+            "signals": [{"name": "rst", "type": "scalar", "direction": "hw_to_user"}],
+            "design": {"ports": {"rst": {"signal": "rst", "width": 1, "net": {"source": "reset_net"}}}}}},
+        "peripherals/led.yml": {"Peripheral": {
+            "id": "led", "description": "LED bank", "driver": None,
+            "parameters": {"width": {"type": "int", "required": True}},
+            "signals": [{"name": "led", "type": "bus", "width": "$width", "direction": "output"}],
+            "provides": [{"capability": "leds", "params": {"width": "$width"}}]}},
+        "peripherals/blink.yml": {"Peripheral": {
+            "id": "blink", "description": "A driven LED", "parameters": {"hz": {"type": "int", "default": 2}},
+            "signals": [{"name": "led", "type": "scalar", "direction": "output"}],
+            "provides": [{"capability": "leds", "params": {"width": 1}}],
+            "clocks": [{"name": "slow", "mhz": 1}],
+            "driver": {"module": "blink", "file": "rtl/peripherals/blink.sv",
+                       "parameters": {"HZ": "$hz", "CLK_MHZ": "context.clk_mhz"},
+                       "port_map": {"clk": "clock.slow", "rst": "context.rst",
+                                    "value": "capability.leds.led[0]", "led": "pin.led"}}}},
+        "modules/addon.yml": {"Module": {"id": "addon", "name": "Addon", "peripheral": "led", "voltage": 3.3,
+                                         "pins": {"1": "led[0]", "2": "ground"}, "params": {"width": 1},
+                                         "source": "spec", "verified": False}},
+        "setups/rig.yml": {"Setup": {"id": "rig", "board": "board", "toolchain": "tool",
+                                     "use": [{"onboard": "leds"},
+                                             {"module": "addon", "plug": {"connector": "j1"}}],
+                                     "design": {"reset": {"sources": [{"power_up": True}]}}}},
+        "features.yml": {"Features": [{"Id": "led_feature", "Capabilities": ["leds"]}]},
+        "peripheral_devices.yml": {"Devices": [{"Id": "led_device", "Feature": "led_feature",
+                                                "PeripheralDrivers": ["led"]}]},
+        "board_features.yml": {"Features": []},
+        "mezzanines/maker/family.yml": {"Mezzanines": [{"Id": "som", "Producer": "maker", "Chip": "CHIP-1",
+                                                        "Features": ["led_feature"], "Devices": ["led_device"],
+                                                        "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
+        "vendor_constraints.yml": {"VendorConstraints": {"maker": {"board": "Board-Master.xdc"}}},
+    }
+
+
+def _run(documents):
+    return check.check(documents=documents, root="config")
+
+
+def _codes(report):
+    return {row["code"] for row in report["findings"]}
+
+
+def _details(report, code):
+    return [row["detail"] for row in report["findings"] if row["code"] == code]
+
+
+# ---------------------------------------------------------------------------
+# the repository
+# ---------------------------------------------------------------------------
+
+def test_the_repository_passes():
+    report = check.check()
+    assert report["findings"] == [], check.render(report)
+    assert report["status"] == "ok" and report["unexamined"] == [] and report["rules_skipped"] == []
+    for name, s in report["entities"].items():
+        assert s["records"] > 0, name
+    assert report["entities"]["rig"]["files"] == report["entities"]["rig"]["records"]
+
+
+def test_the_registry_names_real_entities_and_rules():
+    entities = check.read_entities()
+    for name, spec in entities.items():
+        assert spec.get("schema") or spec.get("no_schema_because"), name
+        for rel in spec.get("relations") or []:
+            if "rule" in rel:
+                assert rel["rule"] in check.RULES, (name, rel["rule"])
+            else:
+                assert rel["to"] in entities, (name, rel)
+    assert set(check.RULES) == {r["rule"] for e in entities.values() for r in e.get("relations") or [] if "rule" in r}
+
+
+def test_the_command_prints_the_summary_and_exits_zero(capsys):
+    assert cli.main(["check", "rig", "capability"]) == 0
+    out = capsys.readouterr().out
+    assert out.splitlines()[0].startswith("entity") and "rig.schema.json" in out
+    assert "0 findings" in out and "without a schema yet" in out
+    assert cli.main(["check", "nonsense"]) == 1
+    assert "unknown entity nonsense" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------------------
+# documents mode: each finding is precise
+# ---------------------------------------------------------------------------
+
+def test_a_valid_catalogue_passes_and_lists_the_rules_that_need_the_tree():
+    report = _run(_catalogue())
+    assert report["findings"] == [], report["findings"]
+    assert report["status"] == "ok" and report["unexamined"] == []
+    assert set(report["rules_skipped"]) == REPO_RULES
+    assert report["counts"]["rig"] == 1 and report["counts"]["peripheral"] == 2 and report["counts"]["chip"] == 1
+
+
+def test_schema_violations_name_the_place():
+    documents = _catalogue()
+    documents["setups/rig.yml"]["Setup"]["use"][0]["lab_bits"] = {"leds": [0]}
+    documents["capabilities/leds.yml"]["Capability"]["aggregation"] = "sum"
+    del documents["modules/addon.yml"]["Module"]["source"]
+    report = _run(documents)
+    assert _codes(report) == {"schema"}
+    details = _details(report, "schema")
+    assert any(d.startswith("Setup/use/0") and "lab_bits" in d for d in details)
+    assert any(d.startswith("Capability/aggregation") for d in details)
+    assert any(d.startswith("Module") and "source" in d for d in details)
+
+
+def test_unknown_and_invalid_references_are_precise():
+    documents = _catalogue()
+    documents["setups/rig.yml"]["Setup"]["board"] = "absent"
+    documents["setups/rig.yml"]["Setup"]["use"][1]["module"] = "missing"
+    documents["peripherals/led.yml"]["Peripheral"]["provides"][0]["capability"] = "unknown"
+    documents["chips/maker/family.yml"]["DefaultToolchains"] = ["tool[bad"]
+    documents["boards/maker/family.yml"]["Boards"][0]["Chips"] = [{"Id": "absent_chip"}]
+    documents["mezzanines/maker/family.yml"]["Mezzanines"][0]["Producer"] = "nobody"
+    report = _run(documents)
+    unknown = _details(report, "unknown_reference")
+    assert len(unknown) == 5, unknown
+    for text in ("rig 'rig' board refers to absent board 'absent'",
+                 "use.*.module/use/1/module refers to absent module 'missing'",
+                 "provides.*.capability/provides/0/capability refers to absent capability 'unknown'",
+                 "Chips.*/Chips/0 refers to absent chip 'absent_chip'",
+                 "mezzanine 'som' Producer refers to absent producer 'nobody'"):
+        assert any(text in d for d in unknown), text
+    assert _details(report, "invalid_reference") == ["family 'maker/family' DefaultToolchains.*: 'tool[bad' is not a toolchain reference"]
+
+
+def test_identities_and_files():
+    documents = _catalogue()
+    documents["setups/other.yml"] = copy.deepcopy(documents["setups/rig.yml"])        # the same id twice
+    documents["modules/elsewhere.yml"] = copy.deepcopy(documents["modules/addon.yml"])  # id addon in elsewhere.yml
+    documents["modules/elsewhere.yml"]["Module"]["id"] = "addon2"
+    documents["peripherals/bad.yml"] = {"Peripheral": None}
+    documents["mezzanines/maker/empty.yml"] = {"Mezzanines": None}
+    documents["future.yml"] = {"Future": {"id": "new"}}
+    del documents["toolchains.yml"]
+    report = _run(documents)
+    assert {"duplicate_identity", "filename_identity", "invalid_root", "unsupported_path", "missing_entity"} <= _codes(report)
+    assert "rig 'rig' is also in config/setups/other.yml" in _details(report, "duplicate_identity")
+    assert "module 'addon2' is in a file named 'elsewhere'" in _details(report, "filename_identity")
+    assert report["unexamined"] == ["config/future.yml"]
+    assert report["counts"]["peripheral"] == 2 and report["counts"]["module"] == 2
+    assert any("toolchain" in d for d in _details(report, "missing_entity"))
+
+
+def test_rules_catch_what_a_reference_cannot():
+    documents = _catalogue()
+    blink = documents["peripherals/blink.yml"]["Peripheral"]
+    blink["driver"]["port_map"]["led"] = "pin.lamp"
+    blink["driver"]["port_map"]["clk"] = "clock.fast"
+    blink["driver"]["parameters"]["HZ"] = "$rate"
+    blink["driver"]["port_map"]["value"] = "capability.leds.glow"
+    documents["modules/addon.yml"]["Module"]["pins"]["1"] = "lamp[0]"
+    documents["modules/addon.yml"]["Module"]["params"] = {"count": 1}
+    documents["capabilities/leds.yml"]["Capability"]["design"]["ports"]["led"]["signal"] = "lamp"
+    documents["setups/rig.yml"]["Setup"]["design"]["reset"]["sources"].append({"magic": True})
+    documents["setups/rig.yml"]["Setup"]["part"] = "chip-9"
+    documents["layouts/board.yml"]["Layout"]["connectors"][0]["type"] = "mystery"
+    documents["programmers.yml"]["Programmers"][0]["SupportedFamilies"] = [{"Producer": "Maker Inc", "Family": "Other"}]
+    report = _run(documents)
+    assert _codes(report) == {"peripheral_refs", "module_pins", "capability_refs", "rig_reset_sources",
+                              "rig_chip_variant", "layout_connector_types", "programmer_families"}
+    refs = _details(report, "peripheral_refs")
+    assert len(refs) == 4 and all("blink" in d for d in refs)
+    assert any("pin.lamp" in d for d in refs) and any("clock.fast" in d for d in refs)
+    assert any("$rate" in d for d in refs) and any("no signal glow" in d for d in refs)
+    assert len(_details(report, "module_pins")) == 2
+    assert _details(report, "capability_refs") == ["capability 'leds' port led: signal lamp is not one of its signals"]
+    assert "rig 'rig': reset source 'magic' is not one of bank, pin, pll_lock, power_up" in _details(report, "rig_reset_sources")[0]
+    assert "part 'chip-9' is not one of the board's chips (CHIP-1)" in _details(report, "rig_chip_variant")[0]
+    assert "'mystery'" in _details(report, "layout_connector_types")[0]
+    assert "Maker Inc / Other" in _details(report, "programmer_families")[0]
+
+
+def test_a_chip_variant_matches_by_id_or_name():
+    documents = _catalogue()
+    documents["setups/rig.yml"]["Setup"]["part"] = "chip-1"
+    assert _run(documents)["findings"] == []
+    documents["boards/maker/family.yml"]["Boards"][0] = {"Id": "board", "Chips": [{"Id": "CHIP-1", "Name": "small"}],
+                                                          "BoardProducer": "maker"}
+    documents["setups/rig.yml"]["Setup"]["part"] = "small"
+    documents["setups/rig.yml"]["Setup"]["parts"] = ["small"]
+    assert _run(documents)["findings"] == []
+
+
+def test_a_yaml_file_that_does_not_parse_is_a_finding(tmp_path, monkeypatch):
+    report = check.check()
+    assert report["status"] == "ok"
+    monkeypatch.setattr(check, "repository_documents",
+                        lambda entities, repo: ({}, [("config/setups/broken.yml", "YAML parse error")]))
+    report = check.check()
+    assert any(row["code"] == "yaml" and row["path"] == "config/setups/broken.yml" for row in report["findings"])
+
+
+def test_the_report_is_bounded(monkeypatch):
+    documents = _catalogue()
+    documents["setups/rig.yml"]["Setup"]["use"] = [{"module": "missing"}] * 20
+    monkeypatch.setattr(check, "MAX_FINDINGS", 2)
+    report = _run(documents)
+    assert len(report["findings"]) == 3
+    assert any(row["code"] == "finding_limit" for row in report["findings"])
+
+
+def test_a_missing_library_is_one_clear_error(monkeypatch):
+    import builtins
+    real_import = builtins.__import__
+
+    def no_jsonschema(name, *args, **kwargs):
+        if name == "jsonschema":
+            raise ImportError("gone")
+        return real_import(name, *args, **kwargs)
+    monkeypatch.setattr(builtins, "__import__", no_jsonschema)
+    with pytest.raises(check.CheckError, match="jsonschema is not installed"):
+        check.check()

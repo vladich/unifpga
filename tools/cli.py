@@ -25,6 +25,7 @@ repo root is a five-line launcher.
 import argparse
 import difflib
 import glob
+import json
 import logging
 import os
 import platform
@@ -71,6 +72,7 @@ Other commands:
   unifpga sim                      simulate tb.sv with Icarus Verilog, open a waveform viewer
   unifpga gui                      open the last build in the vendor GUI
   unifpga prepare [--all]          write the run directories without running the tools
+  unifpga check [entity...]        every configuration file against its schema, every reference resolved
 """
 
 
@@ -746,6 +748,26 @@ def cmd_setup(args):
     return 1 if failed else 0
 
 
+def cmd_check(args):
+    """check [entity...]: every configuration file against its schema
+    (config/schema/), every reference between entities resolved, the rules
+    a reference cannot express (tools/check.py)."""
+    from tools import check
+    try:
+        report = check.check()
+    except check.CheckError as exc:
+        raise CliError(str(exc))
+    unknown = [e for e in args.entities if e not in report["entities"]]
+    if unknown:
+        raise CliError("unknown entity {} (one of {})".format(", ".join(unknown), ", ".join(report["entities"])))
+    if args.json:
+        json.dump(report, sys.stdout, indent=1, sort_keys=True)
+        print()
+    else:
+        sys.stdout.write(check.render(report, set(args.entities) or None))
+    return 1 if report["status"] == "failed" else 0
+
+
 def cmd_view(args):
     """Write the board editor's page for a setup (or, with --board, a board)
     with its data inlined, read-only."""
@@ -887,6 +909,7 @@ COMMANDS = {
     "tools": cmd_tools,
     "designs": cmd_designs,
     "setup": cmd_setup,
+    "check": cmd_check,
     "layout": cmd_layout,
     "sources": cmd_sources,
     "inventory": cmd_inventory,
@@ -965,6 +988,11 @@ def build_parser():
     st = sub.add_parser("setup", help="check the rigs (config/setups/), or show the configuration one expands to")
     st.add_argument("action", choices=["check", "show"])
     st.add_argument("ids", nargs="*", help="setup ids (check: default all)")
+
+    ck = sub.add_parser("check", help="every configuration file against its schema (config/schema/) and every "
+                                      "reference between entities resolved")
+    ck.add_argument("entities", nargs="*", help="only these entities (default: all; see config/schema/entities.yml)")
+    ck.add_argument("--json", action="store_true", help="print the report as JSON")
 
     ly = sub.add_parser("layout", help="generate board layouts (config/layouts/) from pinmaps, rigs "
                                         "and the board-sources registry")
