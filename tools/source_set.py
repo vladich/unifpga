@@ -196,6 +196,12 @@ def stage_component_exports(manifests, output):
                 raise SourceSetError("component export snapshot path is not a directory")
             prior = [os.path.join(published, str(i), "manifest.json")
                      for i in range(len(manifests))]
+            for ordinal, prior_manifest in enumerate(prior):
+                with open(os.path.join(staging, str(ordinal), "manifest.json"), "rb") as fh:
+                    expected = fh.read()
+                with open(prior_manifest, "rb") as fh:
+                    if fh.read(MAX_COMPONENT_MANIFEST_BYTES + 1) != expected:
+                        raise SourceSetError("component export snapshot manifest mismatch")
             existing = component_export_sources(prior)
             return existing
         os.rename(staging, published)

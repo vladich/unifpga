@@ -157,7 +157,7 @@ def test_rejected_component_export_leaves_no_snapshot(tmp_path):
 
 
 def test_repeated_snapshot_is_reused_and_corruption_fails_closed(tmp_path):
-    manifest, _ = _export(tmp_path)
+    manifest, rtl = _export(tmp_path)
     output = tmp_path / "output"
     output.mkdir()
     first = source_set.stage_component_exports([manifest], str(output))
@@ -165,6 +165,13 @@ def test_repeated_snapshot_is_reused_and_corruption_fails_closed(tmp_path):
     assert len(list(output.iterdir())) == 1
     Path(first[0]).write_bytes(b"module changed; endmodule\n")
     with pytest.raises(source_set.SourceSetError, match="checksum mismatch"):
+        source_set.stage_component_exports([manifest], str(output))
+    Path(first[0]).write_bytes(rtl.read_bytes())
+    snapshot_manifest = Path(first[0]).parent / "manifest.json"
+    report = json.loads(snapshot_manifest.read_text())
+    report["note"] = "valid JSON, wrong snapshot identity"
+    snapshot_manifest.write_text(json.dumps(report))
+    with pytest.raises(source_set.SourceSetError, match="snapshot manifest mismatch"):
         source_set.stage_component_exports([manifest], str(output))
     assert len(list(output.iterdir())) == 1
 
