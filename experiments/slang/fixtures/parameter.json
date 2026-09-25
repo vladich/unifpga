@@ -1,0 +1,9 @@
+{
+  "schema": "unifpga.slang-probe/v2",
+  "sources": ["parameter.sv"],
+  "include_dirs": [],
+  "defines": [],
+  "top": "parameter_top",
+  "compilation_unit": "separate",
+  "top_parameter_overrides": ["WIDTH=4"]
+}

@@ -14,6 +14,7 @@ import sys
 
 
 SCHEMA = "unifpga.slang-probe/v1"
+SCHEMA_V2 = "unifpga.slang-probe/v2"
 ELABORATION_SCHEMA = "unifpga.slang-elaboration/v1"
 SLANG_VERSION = "11.0.0"
 MAX_FILES = 256
@@ -26,6 +27,7 @@ MAX_GRAPH_ITEMS = 8192
 MAX_GRAPH_BYTES = 8 * 1024 * 1024
 MAX_FACT_TEXT_BYTES = 4096
 _DEFINE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]*(?:=[^\r\n]*)?$")
+_OVERRIDE = re.compile(r"^([A-Za-z_][A-Za-z0-9_$]*)=(.+)$")
 
 
 class ProbeError(ValueError):
@@ -74,10 +76,14 @@ def load_request(root, request_path):
         request = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_fields)
     except (UnicodeError, json.JSONDecodeError) as exc:
         raise ProbeError("invalid UTF-8 JSON request: {}".format(exc)) from exc
-    if not isinstance(request, dict) or set(request) != {
-            "schema", "sources", "include_dirs", "defines", "top", "compilation_unit"}:
-        raise ProbeError("request fields do not match {}".format(SCHEMA))
-    if request["schema"] != SCHEMA or request["compilation_unit"] not in ("separate", "single"):
+    common_fields = {"schema", "sources", "include_dirs", "defines", "top", "compilation_unit"}
+    if not isinstance(request, dict) or request.get("schema") not in (SCHEMA, SCHEMA_V2):
+        raise ProbeError("unsupported schema or compilation-unit policy")
+    expected_fields = common_fields if request["schema"] == SCHEMA else \
+        common_fields | {"top_parameter_overrides"}
+    if set(request) != expected_fields:
+        raise ProbeError("request fields do not match a supported schema")
+    if request["compilation_unit"] not in ("separate", "single"):
         raise ProbeError("unsupported schema or compilation-unit policy")
     sources = request["sources"]
     includes = request["include_dirs"]
@@ -95,6 +101,17 @@ def load_request(root, request_path):
     if any(not isinstance(item, str) or len(item) > 1024 or not _DEFINE.fullmatch(item)
            for item in defines) or len(set(item.split("=", 1)[0] for item in defines)) != len(defines):
         raise ProbeError("invalid or duplicate macro definition")
+    overrides = request.get("top_parameter_overrides", [])
+    if not isinstance(overrides, list) or len(overrides) > MAX_FILES:
+        raise ProbeError("invalid top parameter overrides")
+    names = []
+    for item in overrides:
+        match = _OVERRIDE.fullmatch(item) if isinstance(item, str) and len(item) <= 1024 else None
+        if not match or any(ord(ch) < 32 for ch in item):
+            raise ProbeError("invalid top parameter override")
+        names.append(match.group(1))
+    if len(set(names)) != len(names):
+        raise ProbeError("duplicate top parameter override")
     return request, source_paths, include_paths, hashlib.sha256(raw).hexdigest()
 
 
@@ -156,7 +173,7 @@ def _range(root, manager, source_range):
             "end": {"line": end["line"], "column": end["column"]}}
 
 
-def _elaboration(root, manager, top, ast):
+def _elaboration(root, manager, top, ast, top_overrides):
     """Project bounded elaborated facts, without serializing Slang's AST.
 
     Widths and values are facts for this exact macro/parameter selection. A
@@ -201,15 +218,17 @@ def _elaboration(root, manager, top, ast):
             add_finding("unprojected_port_kind", port)
         return row
 
-    def parameter_fact(parameter):
+    def parameter_fact(parameter, requested_override):
         is_type = isinstance(parameter, ast.TypeParameterSymbol)
         value = None if is_type else parameter.value
+        origin = "request" if requested_override else (
+            "instantiation" if parameter.isOverridden else "default")
         return {"name": fact_text(parameter.name), "kind": "type" if is_type else "value",
                 "type": fact_text(parameter.targetType.type if is_type else parameter.type),
                 "evaluated_value": None if is_type else fact_text(value),
                 "has_unknown_bits": None if is_type else bool(value.hasUnknown()),
                 "is_local": bool(parameter.isLocalParam),
-                "is_overridden": bool(parameter.isOverridden),
+                "is_overridden": origin != "default", "override_origin": origin,
                 "location": _location(root, manager, parameter.location)}
 
     def connection_fact(connection):
@@ -251,7 +270,9 @@ def _elaboration(root, manager, top, ast):
                                       "module" if symbol.isModule else "other",
                               "location": _location(root, manager, symbol.location),
                               "ports": [port_fact(port) for port in ports],
-                              "parameters": [parameter_fact(p) for p in parameters],
+                              "parameters": [parameter_fact(p, parent_path is None and
+                                                             str(p.name) in top_overrides)
+                                             for p in parameters],
                               "connections": [connection_fact(c) for c in connections]})
             for child in body:
                 visit(child, path, depth + 1)
@@ -303,6 +324,7 @@ def run(root, request_path):
         trees = [syntax.SyntaxTree.fromFile(str(path), manager, options) for path in sources]
     compilation_options = ast.CompilationOptions()
     compilation_options.topModules = {request["top"]}
+    compilation_options.paramOverrides = request.get("top_parameter_overrides", [])
     compilation_options.maxInstanceDepth = 64
     compilation_options.maxGenerateSteps = 100000
     compilation_options.maxConstexprSteps = 100000
@@ -331,8 +353,16 @@ def run(root, request_path):
     if accepted:
         top_symbol = next(instance for instance in root_symbol.topInstances
                           if str(instance.name) == request["top"])
-        elaboration = _elaboration(root, manager, top_symbol, ast)
-    return {"schema": SCHEMA, "pyslang_version": version,
+        allowed = {str(parameter.name) for parameter in top_symbol.body.parameters
+                   if not parameter.isLocalParam}
+        top_overrides = [item.split("=", 1)[0]
+                         for item in request.get("top_parameter_overrides", [])]
+        unknown = next((name for name in top_overrides if name not in allowed), None)
+        if unknown is not None:
+            raise ProbeError("top parameter override is not a parameter of {}: {}".format(
+                request["top"], unknown))
+        elaboration = _elaboration(root, manager, top_symbol, ast, set(top_overrides))
+    return {"schema": request["schema"], "pyslang_version": version,
             "request_sha256": request_digest, "compilation_unit": request["compilation_unit"],
             "top": request["top"], "elaborated_tops": tops,
             "sources": source_before, "read_files": files,

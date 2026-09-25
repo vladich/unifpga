@@ -18,10 +18,14 @@ python experiments/slang/probe.py \
   --request experiments/slang/fixtures/good.json
 ```
 
-The versioned JSON request names ordered source files, ordered include
-directories, macro definitions, an exact top, and either separate or single
-compilation-unit policy. The result records input digests, every source or
-include file Slang read, parse and semantic diagnostic codes with source
+The v1 JSON request names ordered source files, ordered include directories,
+macro definitions, an exact top, and either separate or single
+compilation-unit policy. A v2 request adds the required
+`top_parameter_overrides` list of `NAME=SystemVerilog-expression` strings;
+Slang applies these only to the selected top module. Unknown or local-parameter
+names are rejected because Slang otherwise silently ignores some overrides.
+The result records input
+digests, every source or include file Slang read, parse and semantic diagnostic codes with source
 locations, and elaborated top names. Errors return nonzero. The request has
 basic path and size bounds, but the parser still runs in-process and can read
 an include before the harness validates it. External imports require an
@@ -34,9 +38,10 @@ Accepted results now include `elaboration` with schema
 interface instance, its parent instance, definition, source location, ports,
 evaluated widths and parameters, and port connection facts. Generate-array
 and instance-array paths retain their indices. A direct symbol reference is
-reported only for simple named-value or assignment expressions; other expressions remain
-unresolved. Interface connections identify the interface instance and
-modport when Slang provides them. A null connection expression means an
+reported only for simple named-value or assignment expressions; other
+expressions remain unresolved. Interface connections identify the interface instance and
+modport when Slang provides them. Parameter facts distinguish request,
+instantiation, and default values. A null connection expression means an
 unconnected port. Failed frontend results have `elaboration: null`.
 
 `projection_status: complete` means this narrow fact projection found no

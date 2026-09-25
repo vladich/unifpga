@@ -84,6 +84,46 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(graph["findings"][0]["code"], "unprojected_instance_kind")
         self.assertEqual(graph["findings"][0]["symbol_kind"], "PrimitiveInstance")
 
+    def test_v2_top_override_changes_elaborated_width(self):
+        result = probe.run(FIXTURES, FIXTURES / "parameter.json")
+        self.assertTrue(result["accepted"], result)
+        self.assertEqual(result["schema"], probe.SCHEMA_V2)
+        top = result["elaboration"]["instances"][0]
+        self.assertEqual(top["ports"][0]["evaluated_bit_width"], 4)
+        self.assertEqual(top["parameters"][0]["evaluated_value"], "4")
+        self.assertTrue(top["parameters"][0]["is_overridden"])
+        self.assertEqual(top["parameters"][0]["override_origin"], "request")
+
+    def test_v2_rejects_duplicate_and_malformed_overrides(self):
+        with tempfile.TemporaryDirectory() as name:
+            path = pathlib.Path(name) / "request.json"
+            request = json.loads((FIXTURES / "parameter.json").read_text())
+            request["top_parameter_overrides"] = ["WIDTH=4", "WIDTH=8"]
+            path.write_text(json.dumps(request))
+            with self.assertRaisesRegex(probe.ProbeError, "duplicate top parameter"):
+                probe.load_request(FIXTURES, path)
+            request["top_parameter_overrides"] = ["WIDTH="]
+            path.write_text(json.dumps(request))
+            with self.assertRaisesRegex(probe.ProbeError, "invalid top parameter"):
+                probe.load_request(FIXTURES, path)
+            request["schema"] = probe.SCHEMA
+            path.write_text(json.dumps(request))
+            with self.assertRaisesRegex(probe.ProbeError, "request fields"):
+                probe.load_request(FIXTURES, path)
+
+    def test_v2_rejects_unknown_override_ignored_by_slang(self):
+        with tempfile.TemporaryDirectory() as name:
+            path = pathlib.Path(name) / "request.json"
+            request = json.loads((FIXTURES / "parameter.json").read_text())
+            request["top_parameter_overrides"] = ["MISSING=4"]
+            path.write_text(json.dumps(request))
+            with self.assertRaisesRegex(probe.ProbeError, "not a parameter"):
+                probe.run(FIXTURES, path)
+            request["top_parameter_overrides"] = ["INTERNAL=4"]
+            path.write_text(json.dumps(request))
+            with self.assertRaisesRegex(probe.ProbeError, "not a parameter"):
+                probe.run(FIXTURES, path)
+
     def test_single_compilation_unit_is_explicit(self):
         with tempfile.TemporaryDirectory() as name:
             path = pathlib.Path(name) / "request.json"
