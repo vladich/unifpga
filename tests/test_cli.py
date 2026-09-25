@@ -238,6 +238,21 @@ def test_build_from_design_directory_uses_remembered_board(design, captured, mon
     assert "--program" not in argv
 
 
+def test_component_exports_reach_build_program_and_prepare(design, captured, tmp_path):
+    calls, _ = captured
+    manifest = tmp_path / "export" / "manifest.json"
+    export_arg = ["--component-export", str(manifest)]
+    expected = ["--component-export", str(manifest)]
+    assert cli.main(["build", str(design), "-b", CFG] + export_arg) == 0
+    assert calls[-1][-2:] == expected
+    assert cli.main(["program", str(design), "-b", CFG] + export_arg) == 0
+    assert calls[-1][-3:] == expected + ["--program"]
+    assert cli.main(["prepare", str(design), "-b", CFG] + export_arg) == 0
+    assert calls[-1][-2:] == expected
+    assert cli.main(["program", str(design), "-b", CFG, "--no-build"] + export_arg) == 1
+    assert cli.main(["prepare", "-b", CFG, "--all"] + export_arg) == 1
+
+
 def test_program_adds_program_flag(captured, monkeypatch, capsys):
     calls, _ = captured
     monkeypatch.setenv(cli.ENV_BOARD, CFG)
@@ -411,6 +426,21 @@ def test_gui_for_a_nextpnr_flow_reruns_place_and_route_with_gui(captured, monkey
                       "-o", os.path.join(DESIGN_DIR, "run", "icebreaker_no_dvi_tm1638_yosys")]]
     assert seen == ["1"] and "UNIFPGA_NEXTPNR_GUI" not in os.environ
     assert "nextpnr --gui" in capsys.readouterr().out
+
+
+def test_nextpnr_gui_requires_reselecting_generated_components(design, captured, monkeypatch,
+                                                                 tmp_path, capsys):
+    calls, _ = captured
+    monkeypatch.setattr(cli, "target_configuration", lambda _cfg: {"toolchain": "nextpnr_icestorm"})
+    output = design / "run" / CFG
+    (output / "component-exports-old").mkdir(parents=True)
+    assert cli.main(["gui", str(design), "-b", CFG]) == 1
+    assert not calls
+    assert "pass --component-export" in capsys.readouterr().err
+    manifest = tmp_path / "export" / "manifest.json"
+    assert cli.main(["gui", str(design), "-b", CFG,
+                     "--component-export", str(manifest)]) == 0
+    assert calls[-1][-2:] == ["--component-export", str(manifest)]
 
 
 def test_prepare_is_the_dry_run_of_synthesize(design, captured, monkeypatch, capsys):

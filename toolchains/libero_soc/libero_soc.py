@@ -81,11 +81,11 @@ def _libero_env(install_dir):
     return env
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """Libero/SynplifyPro: gate helpers and designs_common by module-name match; no Xilinx-primitive stubs."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=True, gate_common=True)
+        include_svh=False, gate_helpers=True, gate_common=True, component_sources=component_sources)
 
 
 def _select_target(board_pinmap):
@@ -149,7 +149,7 @@ def _emit_tcl(target, project_dir, sv_files, top_module, pdc_path, sdc_path):
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Libero SoC. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -170,7 +170,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
                   "speed, part_range, iostd)", board.get("Id"))
         return 1
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
     pdc_path = os.path.join(output, PROJECT_NAME + ".pdc")
     sdc_path = os.path.join(output, PROJECT_NAME + ".sdc")
     tcl_path = os.path.join(output, "build.tcl")

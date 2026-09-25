@@ -69,6 +69,8 @@ def _build_parser():
                    help="Path to the top module")
     p.add_argument("-i", "--include", action="append", default=[],
                    help="Include directory (repeatable)")
+    p.add_argument("--component-export", action="append", default=[], metavar="MANIFEST",
+                   help="include digest-checked generated RTL from a component export")
     p.add_argument("-o", "--output",
                    help="Output folder for board-specific and toolchain-specific artifacts. "
                         "If omitted, a temp dir is created and deleted on exit unless "
@@ -158,9 +160,10 @@ def main(argv=None):
         # directory before any frontend or dry-run project generation starts.
         from tools import source_set
         try:
+            component_sources = source_set.stage_component_exports(args.component_export, output_folder)
             source_set.stage_assets(os.path.dirname(os.path.abspath(args.top)), output_folder)
         except source_set.SourceSetError as exc:
-            log.error("Invalid design fileset: %s", exc)
+            log.error("Invalid design fileset or component export: %s", exc)
             return 2
         # Generate the top-level Verilog wrapper from the configuration.
         # Strict mode: a configuration whose binds do not resolve, whose pins
@@ -189,6 +192,7 @@ def main(argv=None):
             top=args.top,
             generated_top=top_path,
             include=args.include,
+            component_sources=component_sources,
             output=output_folder,
             step=args.step,
         )

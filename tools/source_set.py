@@ -40,6 +40,7 @@ HELPER_MODULES = {
     "tm1638_registers.sv":          ("tm1638_registers", "tm1638_board_controller"),
     "slow_clk_gen.sv":              ("slow_clk_gen",),
     "imitate_reset_on_power_up.sv": ("imitate_reset_on_power_up",),
+    "pdm_mic_decoder.sv":          ("pdm_mic_decoder",),
 }
 
 # The testbench is simulation-only. Explicit manifests place design_top.sv
@@ -66,13 +67,14 @@ def _unique_json_pairs(pairs):
     return result
 
 
-def component_export_sources(manifests):
+def component_export_sources(manifests, *, stage_dir=None):
     """Resolve digest-checked generated RTL without executing its generator.
 
     A component exporter owns generation and provenance. This source-set owner
-    accepts only bounded, digest-checked RTL files. The simulation CLI uses
-    this now; synthesis admission is a later step. The manifest is never a
-    command or a trust grant.
+    accepts only bounded, digest-checked RTL files. When stage_dir is set,
+    checked bytes are copied into that private directory during hashing, so
+    later compilation cannot reopen the mutable export. The manifest is never
+    a command or a trust grant.
     """
     files = []
     seen = set()
@@ -101,6 +103,14 @@ def component_export_sources(manifests):
         entries = report.get("files")
         if not isinstance(entries, list) or not 1 <= len(entries) <= 32:
             raise SourceSetError("component export needs 1..32 RTL files: {!r}".format(manifest))
+        if stage_dir:
+            try:
+                manifest_copy = os.path.join(stage_dir, str(ordinal), "manifest.json")
+                os.makedirs(os.path.dirname(manifest_copy), exist_ok=True)
+                with open(manifest_copy, "xb") as fh:
+                    fh.write(encoded)
+            except OSError as exc:
+                raise SourceSetError("cannot stage component export manifest: {}".format(exc)) from exc
         root = os.path.realpath(os.path.dirname(manifest))
         for entry in entries:
             if not isinstance(entry, dict):
@@ -137,19 +147,67 @@ def component_export_sources(manifests):
                 raise SourceSetError("component export RTL exceeds total size limit")
             actual = hashlib.sha256()
             actual_size = 0
+            staged = os.path.join(stage_dir, str(ordinal), *parts) if stage_dir else None
             try:
+                if staged:
+                    os.makedirs(os.path.dirname(staged), exist_ok=True)
                 with open(path, "rb") as fh:
-                    for chunk in iter(lambda: fh.read(65536), b""):
-                        actual_size += len(chunk)
-                        if actual_size > size:
-                            break
-                        actual.update(chunk)
+                    target = open(staged, "xb") if staged else None
+                    try:
+                        for chunk in iter(lambda: fh.read(65536), b""):
+                            actual_size += len(chunk)
+                            if actual_size > size:
+                                break
+                            actual.update(chunk)
+                            if target:
+                                target.write(chunk)
+                    finally:
+                        if target:
+                            target.close()
             except OSError as exc:
                 raise SourceSetError("cannot read component export RTL {!r}: {}".format(rel, exc)) from exc
             if actual_size != size or actual.hexdigest() != digest:
                 raise SourceSetError("component export RTL checksum mismatch: {!r}".format(rel))
-            files.append(path)
+            files.append(staged or path)
     return files
+
+
+def stage_component_exports(manifests, output):
+    """Publish one complete verified source snapshot inside a build output."""
+    manifests = tuple(manifests)
+    if not manifests:
+        return []
+    try:
+        staging = tempfile.mkdtemp(prefix=".component-exports-", dir=output)
+    except OSError as exc:
+        raise SourceSetError("cannot stage component exports: {}".format(exc)) from exc
+    try:
+        sources = component_export_sources(manifests, stage_dir=staging)
+        relative_sources = [os.path.relpath(source, staging) for source in sources]
+        bundle_digest = hashlib.sha256()
+        for ordinal in range(len(manifests)):
+            with open(os.path.join(staging, str(ordinal), "manifest.json"), "rb") as fh:
+                encoded = fh.read()
+            bundle_digest.update(len(encoded).to_bytes(8, "big"))
+            bundle_digest.update(encoded)
+        published = os.path.join(output, "component-exports-" + bundle_digest.hexdigest())
+        if os.path.lexists(published):
+            if os.path.islink(published) or not os.path.isdir(published):
+                raise SourceSetError("component export snapshot path is not a directory")
+            prior = [os.path.join(published, str(i), "manifest.json")
+                     for i in range(len(manifests))]
+            existing = component_export_sources(prior)
+            return existing
+        os.rename(staging, published)
+        staging = None
+    except (OSError, SourceSetError) as exc:
+        if isinstance(exc, SourceSetError):
+            raise
+        raise SourceSetError("cannot publish component exports: {}".format(exc)) from exc
+    finally:
+        if staging is not None:
+            shutil.rmtree(staging)
+    return [os.path.join(published, rel) for rel in relative_sources]
 
 
 def _checked_files(design_dir, entries, field, extensions):
@@ -282,10 +340,12 @@ def _sv_files_in(directory):
 
 
 def collect_sources(repo, peripherals, user_design_top, generated_top, *,
-                    include_svh=False, gate_helpers=True, gate_common=True):
+                    include_svh=False, gate_helpers=True, gate_common=True,
+                    component_sources=()):
     """Ordered, de-duplicated absolute source list for one synthesis run.
 
-    Order: generated top, the design's resolved sources (`.sv`/`.v`, plus
+    Order: generated top, verified component snapshots, the design's resolved
+    sources (`.sv`/`.v`, plus
     `.svh` with include_svh), each attached peripheral's `driver.file`, the
     rtl/peripherals helpers, designs_common, and finally the
     clock-tree / `driver.files` sources from `codegen.pll_source_paths()`.
@@ -299,8 +359,10 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
             raise SourceSetError("{}: selected top is not in sources: {!r}"
                                  .format(manifest, user_top))
         files = [generated_top]
+        legacy_top = None
     else:
-        files = [generated_top, user_top]
+        files = [generated_top]
+        legacy_top = user_top
         sources = [p for p in sources if p != os.path.join(design_dir, "design_top.sv")]
     seen = {os.path.abspath(p) for p in files}
 
@@ -310,6 +372,10 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
             seen.add(path)
 
     exts = (".sv", ".svh", ".v") if include_svh else (".sv", ".v")
+    for path in component_sources:
+        add(path)
+    if legacy_top:
+        add(legacy_top)
     for path in sources:
         if path.endswith(exts):
             add(path)
@@ -322,13 +388,17 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
             if os.path.exists(full):
                 add(full)
 
-    top_text = _read_text(generated_top) if (gate_helpers or gate_common) else ""
+    # Design modules can instantiate reusable helpers directly; inspecting only
+    # the generated wrapper misses those dependencies in prepared projects.
+    source_text = (_read_text(generated_top) +
+                   "".join("\n" + _read_text(f) for f in files)) if (gate_helpers or gate_common) else ""
+    before_helpers = set(files)
 
     for helper, modules in HELPER_MODULES.items():
         full = os.path.join(repo, "rtl", "peripherals", helper)
         if not os.path.exists(full):
             continue
-        if gate_helpers and not any(m in top_text for m in modules):
+        if gate_helpers and not any(m in source_text for m in modules):
             continue
         add(full)
 
@@ -336,7 +406,7 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
     if gate_common:
         # to a fixed point: a common module another one instantiates
         # (pulse_extender -> shift_reg) is needed as soon as that one is
-        text = top_text + "".join("\n" + _read_text(f) for f in list(files))
+        text = source_text + "".join("\n" + _read_text(f) for f in files if f not in before_helpers)
         chosen, pending = [], list(common)
         grew = True
         while grew:

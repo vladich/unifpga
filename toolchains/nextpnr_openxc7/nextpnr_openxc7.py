@@ -146,11 +146,11 @@ def _ensure_chipdb(part):
     return bin_path
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """yosys frontend: gate helpers/common by module-name match; synth_xilinx has BUFG natively, no stubs."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=True, gate_common=True)
+        include_svh=False, gate_helpers=True, gate_common=True, component_sources=component_sources)
 
 
 def _select_part(board, configuration):
@@ -169,7 +169,7 @@ def _select_part(board, configuration):
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-xilinx. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -190,7 +190,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
     part = _normalize_part(raw_part)
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
     xdc_path = os.path.join(output, PROJECT_NAME + ".xdc")
     json_path = os.path.join(output, PROJECT_NAME + ".json")
     fasm_path = os.path.join(output, PROJECT_NAME + ".fasm")

@@ -164,15 +164,22 @@ def test_gate_helpers_recognises_tm1638_alias(repo, design, gen_top):
     assert _helpers_in(files, repo) == ["tm1638_registers.sv"]
 
 
-def test_gate_helpers_off_takes_all_three_in_fixed_order(repo, design, gen_top):
+def test_gate_helpers_recognises_design_source_dependency(repo, design, gen_top):
+    _write(design, "module design_top; pdm_mic_decoder decoder(); endmodule\n")
+    files = source_set.collect_sources(repo, [], design, gen_top(),
+                                       gate_helpers=True, gate_common=False)
+    assert _helpers_in(files, repo) == ["pdm_mic_decoder.sv"]
+
+
+def test_gate_helpers_off_takes_all_in_fixed_order(repo, design, gen_top):
     top = gen_top()   # mentions none of them
     files = source_set.collect_sources(repo, [], design, top, gate_helpers=False, gate_common=False)
     assert _helpers_in(files, repo) == ["tm1638_registers.sv", "slow_clk_gen.sv",
-                                        "imitate_reset_on_power_up.sv"]
+                                        "imitate_reset_on_power_up.sv", "pdm_mic_decoder.sv"]
     # helpers come right after the design directory and before designs_common
     first_helper = files.index(_p(repo, "rtl", "peripherals", "tm1638_registers.sv"))
     assert files[first_helper - 1] == _design_files(design)[-1]
-    assert files[first_helper + 3].endswith(os.path.join("designs_common", "seven_segment_display.sv"))
+    assert files[first_helper + 4].endswith(os.path.join("designs_common", "seven_segment_display.sv"))
 
 
 # ---------------------------------------------------------------- gate_common

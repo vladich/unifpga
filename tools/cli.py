@@ -228,13 +228,15 @@ def run_dir(design_dir, cfg_id=None):
     return os.path.join(d, cfg_id) if cfg_id else d
 
 
-def synthesize_argv(design_dir, cfg_id, step="full", program=False):
+def synthesize_argv(design_dir, cfg_id, step="full", program=False, component_exports=()):
     """The synthesize.py arguments `build` and `program` run. Absolute paths:
     the toolchain drivers run their tools with cwd set to the output dir."""
     argv = ["-c", cfg_id,
             "--top", os.path.join(design_dir, TOP_NAME),
             "-s", step,
             "-o", run_dir(design_dir, cfg_id)]
+    for manifest in component_exports:
+        argv.extend(("--component-export", os.path.abspath(manifest)))
     if program:
         argv.append("--program")
     return argv
@@ -422,12 +424,15 @@ def cmd_build(args, program=False):
         verb="Building and programming" if program else "Building",
         d=os.path.basename(design_dir), c=cfg_id, o=_shown(out)))
     sys.stdout.flush()
-    return _run_synthesize(synthesize_argv(design_dir, cfg_id, step, program), out)
+    return _run_synthesize(synthesize_argv(design_dir, cfg_id, step, program,
+                                           getattr(args, "component_export", ())), out)
 
 
 def cmd_program(args):
     if not getattr(args, "no_build", False):
         return cmd_build(args, program=True)
+    if args.component_export:
+        raise CliError("--component-export requires a new build; omit --no-build")
     design_dir = resolve_design(args.design)
     cfg_id = chosen_configuration(args.board)
     out = run_dir(design_dir, cfg_id)
@@ -629,12 +634,17 @@ def cmd_gui(args):
     if cmd is None:
         raise CliError(why)
     if cmd == ["nextpnr", "--gui"]:
+        exports = getattr(args, "component_export", ())
+        if not exports and glob.glob(os.path.join(out, "component-exports-*")):
+            raise CliError("this run contains component exports; pass --component-export "
+                           "for each generated component when rerunning nextpnr")
         # the synthesis script runs again with nextpnr --gui; nextpnr opens its window in place-and-route
         print("Rerunning synthesis for {} with nextpnr --gui (the window opens at place-and-route) ...".format(cfg_id))
         sys.stdout.flush()
         os.environ["UNIFPGA_NEXTPNR_GUI"] = "1"
         try:
-            return _run_synthesize(synthesize_argv(design_dir, cfg_id, "pnr"), out)
+            return _run_synthesize(synthesize_argv(design_dir, cfg_id, "pnr",
+                                                   component_exports=exports), out)
         finally:
             os.environ.pop("UNIFPGA_NEXTPNR_GUI", None)
     tc = config.init.resolve_toolchain_install(config.init.read_toolchains().get(tc_id) or {"Id": tc_id})
@@ -647,21 +657,25 @@ def cmd_gui(args):
     return 0
 
 
-def prepare_design(design_dir, cfg_id):
+def prepare_design(design_dir, cfg_id, component_exports=()):
     """Write <design>/run/<configuration>/ without running the tools: the
     generated top, constraints and the vendor project files (synthesize's
     dry run)."""
     out = run_dir(design_dir, cfg_id)
     os.environ["UNIFPGA_DRY_RUN"] = "1"
     try:
-        return _run_synthesize(synthesize_argv(design_dir, cfg_id, "full"), out)
+        return _run_synthesize(synthesize_argv(design_dir, cfg_id, "full",
+                                               component_exports=component_exports), out)
     finally:
         os.environ.pop("UNIFPGA_DRY_RUN", None)
 
 
 def cmd_prepare(args):
     cfg_id = chosen_configuration(args.board)
+    exports = getattr(args, "component_export", ())
     if getattr(args, "all", False):
+        if exports:
+            raise CliError("--component-export selects one design; omit --all")
         failed = []
         names = list_designs()
         for name in names:
@@ -674,7 +688,7 @@ def cmd_prepare(args):
     design_dir = resolve_design(args.design)
     print("Preparing {d} for {c} ...  output: {o}".format(
         d=os.path.basename(design_dir), c=cfg_id, o=_shown(run_dir(design_dir, cfg_id))))
-    return prepare_design(design_dir, cfg_id)
+    return prepare_design(design_dir, cfg_id, exports)
 
 
 def cmd_tools(args):
@@ -924,12 +938,16 @@ def build_parser():
     board_arg(bd)
     bd.add_argument("-s", "--step", choices=["elaborate", "pnr", "full"], default="full",
                     help="stop after this step (default: full)")
+    bd.add_argument("--component-export", action="append", default=[], metavar="MANIFEST",
+                    help="include digest-checked generated RTL from a component export")
 
     pr = sub.add_parser("program", help="synthesize (full) and program the connected board")
     design_arg(pr)
     board_arg(pr)
     pr.add_argument("--no-build", action="store_true",
                     help="load the bitstream of the last build in run/<configuration>/ without rebuilding")
+    pr.add_argument("--component-export", action="append", default=[], metavar="MANIFEST",
+                    help="include generated RTL when building before programming")
 
     sm = sub.add_parser("sim", help="simulate <design>/tb.sv with Icarus Verilog, open the waveform")
     design_arg(sm)
@@ -944,10 +962,14 @@ def build_parser():
     gu = sub.add_parser("gui", help="open the vendor GUI on the last build")
     design_arg(gu)
     board_arg(gu)
+    gu.add_argument("--component-export", action="append", default=[], metavar="MANIFEST",
+                    help="include generated RTL when nextpnr reruns synthesis for its GUI")
 
     pp = sub.add_parser("prepare", help="write run/<configuration>/ (top, constraints, project) without running the tools")
     design_arg(pp)
     board_arg(pp)
+    pp.add_argument("--component-export", action="append", default=[], metavar="MANIFEST",
+                    help="include generated RTL in this design's prepared project")
     pp.add_argument("--all", action="store_true", help="every design under designs/")
 
     cl = sub.add_parser("clean", help="remove <design>/run/ (--all: every design)")

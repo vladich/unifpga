@@ -4,7 +4,7 @@ This is the first executable ECO-07A intake experiment. It exports one LiteX
 `SyncFIFO` through an explicit, named ready/valid stream boundary. It proves
 that a unifpga-side wrapper can give a generated module stable port names
 without changing LiteX. It does **not** admit the FIFO to the catalog or prove
-its behavior, synthesis quality, board compatibility, or the two mixed-source
+synthesis quality, board compatibility, or the two complex mixed-source
 systems in [the plan](../../ECOSYSTEM_PLAN.md).
 
 The probe uses the clean `deps/litex` Git submodule pinned at
@@ -35,19 +35,24 @@ The seven focused probe tests pass, including a Migen-level packet and
 backpressure scenario, parameter width checks, and invalid-input/source guards.
 The Migen simulator test checks upstream FHDL behavior, not emitted RTL. A
 separate `test_rtl.py` exports width 16/depth 4 RTL and uses Icarus Verilog to
-simulate it standalone and in a mixed-source PDM capture. Both runs invoke
+simulate it standalone, in a mixed-source PDM capture, and through a
+virtual-device GPIO/button wrapper. All three runs invoke
 `unifpga sim` with the generic `--component-export` manifest input; unifpga
 selects sources, compiles, and launches the RTL simulation. These RTL tests do
 not use LiteX's builder or simulation runner; the separate Migen-level unit
 test above still uses Migen's simulator. Set `IVERILOG` and
 `VVP` to the corresponding binaries (or put them on `PATH`) and run unittest
-discovery over `experiments/litex`. The test skips clearly when either binary
-is unavailable. The first independent run used Icarus 13.0 built from the
+discovery over `experiments/litex`. The test also invokes `unifpga prepare`
+with the export manifest for a Gowin virtual-device target and checks that its
+generated project reads the staged FIFO RTL before the design. It skips clearly
+when either Icarus binary is unavailable. The first independent run used Icarus 13.0 built from the
 official `v13_0` tag at `dfeee909ed9f20b4870dd93423156c0170c0e1ff` in
 task-local scratch; this repository does not install a simulator.
 
-`design/design_top.sv` is an explicit adapter around the unifpga
-`pdm_mic_decoder` and generated LiteX FIFO. The microphone cannot be stalled,
+`design/design_top.sv` contains a virtual-device-facing `design_top` and a
+`pdm_fifo_capture` subsystem around the unifpga `pdm_mic_decoder` and
+generated LiteX FIFO. The wrapper maps PDM data/clock/LR select to three GPIO
+bits and FIFO consumer readiness to one button. The microphone cannot be stalled,
 so samples arriving at a full FIFO are discarded and counted (saturating at
 65535). Consumers can stall the FIFO output. The composed test checks the first
 positive and negative sample, a full queue, stable backpressured data, packet
@@ -55,9 +60,11 @@ boundaries, loss accounting, drain, and reset. It also caught and fixes the
 decoder's first-window off-by-one sum. This is one mixed-source *subsystem*, not
 one of the two required complex P2a systems. Its generated RTL is admitted to
 the ordinary unifpga simulation path by a bounded `unifpga-component-export/v1`
-manifest, but it has no catalog registration or synthesis path,
-visual authoring, SoC firmware, synthesis/area/timing comparison, or hardware
-evidence. The probe manifest still says `export-only` because export alone does
+manifest. The ordinary `prepare` path now snapshots the export and generates a
+toolchain project, but no vendor synthesis or hardware run has passed. It has
+no catalog registration, visual authoring, SoC firmware, synthesis/area/timing
+comparison, or board electrical and microphone clock validation. The probe
+manifest still says `export-only` because export alone does
 not guarantee that a downstream caller ran the separate RTL test. No LiteX
 source was modified; any LiteX-side patch needs a demonstrated export
 limitation and its own tests.

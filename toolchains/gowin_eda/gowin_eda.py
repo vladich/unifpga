@@ -67,11 +67,11 @@ def _gowin_env(install_dir):
     return env
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """Gowin auto-discovers modules like Quartus: no .svh; helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=False, gate_common=False)
+        include_svh=False, gate_helpers=False, gate_common=False, component_sources=component_sources)
 
 
 def _gowin_options(board_pinmap):
@@ -143,7 +143,7 @@ def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step, optio
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Gowin EDA. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -167,7 +167,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     # raw part-name is needed (e.g. for emit_cst / pin lookup).
     part_name = device_args.split()[0]
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
 
     cst_path = os.path.join(output, PROJECT_NAME + ".cst")
     sdc_path = os.path.join(output, PROJECT_NAME + ".sdc")

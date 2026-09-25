@@ -72,11 +72,11 @@ def _resolve_sv2v():
     return shutil.which("sv2v")
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """ISE, same shape as Vivado: .svh headers included, helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=True, gate_helpers=False, gate_common=False)
+        include_svh=True, gate_helpers=False, gate_common=False, component_sources=component_sources)
 
 
 def _emit_xst_prj(merged_v_path):
@@ -215,7 +215,7 @@ def _merge_sv_files_via_sv2v(sv_files, merged_v_path, dry_run=False):
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize a configuration through ISE 14.7. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -235,7 +235,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         f.write(codegen.emit_ucf(resolved))
     log.info("Wrote %s", ucf_path)
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
     log.info("Source files (%d):", len(sv_files))
     for sv in sv_files:
         log.info("  - %s", os.path.relpath(sv, REPO) if sv.startswith(REPO) else sv)

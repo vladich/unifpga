@@ -1,6 +1,7 @@
 """Independently simulate generated LiteX RTL alone and with unifpga RTL."""
 
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -19,7 +20,7 @@ VVP = os.environ.get("VVP") or shutil.which("vvp")
 @unittest.skipUnless(LITEX_ROOT and IVERILOG and VVP,
                      "set LITEX_ROOT and install Icarus Verilog (or set IVERILOG/VVP)")
 class GeneratedRTLTests(unittest.TestCase):
-    def test_standalone_and_mixed_source_simulation(self):
+    def test_standalone_composed_and_virtual_device_flows(self):
         with tempfile.TemporaryDirectory() as scratch:
             scratch = Path(scratch)
             export = scratch / "export"
@@ -33,7 +34,8 @@ class GeneratedRTLTests(unittest.TestCase):
             env["PATH"] = os.pathsep.join((str(Path(IVERILOG).parent),
                                            str(Path(VVP).parent), env.get("PATH", "")))
             for top, expected in (("tb_fifo", "PASS standalone generated LiteX FIFO"),
-                                  ("tb", "PASS unifpga PDM decoder + generated LiteX FIFO")):
+                                  ("tb", "PASS unifpga PDM decoder + generated LiteX FIFO"),
+                                  ("tb_virtual", "PASS virtual-device PDM/FIFO adapter")):
                 simulation = subprocess.run(
                     [sys.executable, str(ROOT / "unifpga"), "sim",
                      str(EXPERIMENT / "design"), "--component-export",
@@ -43,6 +45,38 @@ class GeneratedRTLTests(unittest.TestCase):
                     env=env)
                 self.assertEqual(simulation.returncode, 0, simulation.stdout + simulation.stderr)
                 self.assertIn(expected, simulation.stdout)
+
+            design = scratch / "design"
+            design.mkdir()
+            for name in ("design_top.sv", "tb.sv", "fileset.yml"):
+                shutil.copy2(EXPERIMENT / "design" / name, design / name)
+            cfg = "tang_nano_9k_hdmi_no_tm1638"
+            prepared = subprocess.run(
+                [sys.executable, str(ROOT / "unifpga"), "prepare", str(design),
+                 "-b", cfg, "--component-export", str(export / "manifest.json")],
+                text=True, capture_output=True, timeout=60, check=False, env=env)
+            self.assertEqual(prepared.returncode, 0, prepared.stdout + prepared.stderr)
+            output = design / "run" / cfg
+            script = (output / "build.tcl").read_text()
+            self.assertIn("litex_sync_fifo.v", script)
+            self.assertLess(script.index("litex_sync_fifo.v"), script.index("design_top.sv"))
+            self.assertIn("pdm_mic_decoder.sv", script)
+            snapshots = list(output.glob("component-exports-*/0/manifest.json"))
+            self.assertEqual(len(snapshots), 1)
+            self.assertEqual(snapshots[0].read_bytes(), (export / "manifest.json").read_bytes())
+
+            # Elaborate the exact sources our Gowin project lists. The vendor
+            # primitives are simulation-only stand-ins; LiteX is not the builder.
+            sources = re.findall(r"^add_file \{([^}]+)\}$", script, re.MULTILINE)
+            self.assertTrue(sources)
+            stubs = ROOT / "rtl" / "sim" / "vendor_stubs.sv"
+            source_dirs = sorted({str(Path(path).parent) for path in sources + [str(stubs)]})
+            compile_cmd = [IVERILOG, "-g2012", "-s", "top", "-o", str(scratch / "top.vvp")]
+            compile_cmd += [arg for directory in source_dirs for arg in ("-I", directory)]
+            compile_cmd += sources + [str(stubs)]
+            compiled = subprocess.run(compile_cmd, text=True, capture_output=True,
+                                      timeout=60, check=False, env=env)
+            self.assertEqual(compiled.returncode, 0, compiled.stdout + compiled.stderr)
 
 
 if __name__ == "__main__":

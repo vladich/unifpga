@@ -44,11 +44,11 @@ def _resolve_bin(name):
     return shutil.which(name)
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """yosys frontend: gate helpers/common by module-name match; synth_gowin has BUFG natively (stubs would redefine it)."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=True, gate_common=True)
+        include_svh=False, gate_helpers=True, gate_common=True, component_sources=component_sources)
 
 
 # Map our boards.yml board id to (nextpnr-gowin --device, gowin_pack -d).
@@ -76,7 +76,7 @@ def _select_part(board, pinmap):
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-gowin + gowin_pack. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -98,7 +98,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         return 1
     nextpnr_device, gowin_pack_device = info
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
     cst_path = os.path.join(output, PROJECT_NAME + ".cst")
     json_path = os.path.join(output, PROJECT_NAME + ".json")
     pack_path = os.path.join(output, PROJECT_NAME + "_pack.json")

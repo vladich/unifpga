@@ -64,7 +64,7 @@ module tb;
     integer accepted = 0;
     integer i;
 
-    design_top dut (
+    pdm_fifo_capture dut (
         .clk(clk), .rst(rst), .pdm_clk(pdm_clk), .pdm_data(pdm_data),
         .pdm_lrsel(pdm_lrsel), .sample_valid(sample_valid),
         .sample_ready(sample_ready), .sample_data(sample_data),
@@ -109,6 +109,38 @@ module tb;
         if (!sample_valid || sample_data !== 16'he000)
             $fatal(1, "zero-bit PDM window has wrong signed result");
         $display("PASS unifpga PDM decoder + generated LiteX FIFO");
+        $finish;
+    end
+endmodule
+
+module tb_virtual;
+    reg clk = 0;
+    always #5 clk = ~clk;
+    reg rst = 1;
+    reg pdm_data = 1;
+    reg [0:0] btn = 0;
+    wire [7:0] led;
+    tri [9:0] gpio;
+    integer pdm_edges = 0;
+    assign gpio[0] = pdm_data;
+    always @(posedge gpio[1]) pdm_edges = pdm_edges + 1;
+
+    design_top #(.clk_mhz(24), .w_btn(1), .w_led(8), .w_gpio(10)) dut (
+        .clk(clk), .rst(rst), .btn(btn), .led(led), .gpio(gpio)
+    );
+
+    initial begin
+        repeat (3) @(negedge clk);
+        rst = 0;
+        repeat (350) @(negedge clk);
+        if (pdm_edges == 0 || gpio[2] !== 1'b0 ||
+            dut.capture.level !== 3'd4 || dut.capture.dropped_samples == 0)
+            $fatal(1, "virtual GPIO/button adapter did not capture and account for PDM data");
+        btn[0] = 1;
+        repeat (10) @(negedge clk);
+        if (dut.capture.level !== 3'd0)
+            $fatal(1, "virtual button did not drain the FIFO");
+        $display("PASS virtual-device PDM/FIFO adapter");
         $finish;
     end
 endmodule

@@ -87,15 +87,15 @@ def _efx_run_script(toolchain):
     return None
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """Efinity: no .svh; helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=False, gate_common=False)
+        include_svh=False, gate_helpers=False, gate_common=False, component_sources=component_sources)
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Efinity's efx_run.py. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -116,7 +116,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         log.error("Board %s has no 'Part' field — cannot drive Efinity.", board["Id"])
         return 1
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
     sdc_path = os.path.join(output, PROJECT_NAME + ".sdc")
     peri_path = os.path.join(output, PROJECT_NAME + ".peri.xml")
     project_path = os.path.join(output, PROJECT_NAME + ".xml")

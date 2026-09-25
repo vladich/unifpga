@@ -47,11 +47,11 @@ def _resolve_bin(name):
     return shutil.which(name)
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """yosys 0.36 frontend: gate helpers/common by module-name match; Xilinx-primitive stubs for BUFG users."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=True, gate_common=True)
+        include_svh=False, gate_helpers=True, gate_common=True, component_sources=component_sources)
 
 
 def _select_part(board, pinmap):
@@ -73,7 +73,7 @@ def _select_part(board, pinmap):
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-ecp5 + ecppack. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -97,7 +97,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     yo = codegen.yosys_loader_settings(board_pinmap)
     speed = yo.get("speed") or speed                 # the board's speed grade (nextpnr-ecp5 --speed)
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
     lpf_path = os.path.join(output, PROJECT_NAME + ".lpf")
     json_path = os.path.join(output, PROJECT_NAME + ".json")
     config_path = os.path.join(output, PROJECT_NAME + ".config")

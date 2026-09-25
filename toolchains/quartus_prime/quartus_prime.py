@@ -40,11 +40,11 @@ def _resolve_quartus_bin(toolchain, name):
     return shutil.which(name)
 
 
-def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
+def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, component_sources=()):
     """Quartus compiles every listed file standalone: no .svh; helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=False, gate_common=False)
+        include_svh=False, gate_helpers=False, gate_common=False, component_sources=component_sources)
 
 
 def _emit_qpf(version):
@@ -131,7 +131,7 @@ def _select_part(board, configuration):
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
-               top, generated_top=None, include=None, output, step="full", **_):
+               top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Quartus. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
@@ -151,7 +151,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         log.error("Board %s has no 'Part' field — cannot drive Quartus.", board["Id"])
         return 1
 
-    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top)
+    sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
 
     qsf_path = os.path.join(output, PROJECT_NAME + ".qsf")
     sdc_path = os.path.join(output, PROJECT_NAME + ".sdc")
