@@ -20,6 +20,7 @@ Setup:
     - onboard: buttons
     - onboard: uart
     - onboard: reset
+    - onboard: xadc_shield
     - module: tm1638_led_key
       wires: {STB: ck.IO41, CLK: ck.IO40, DIO: ck.IO39}
     - module: inmp441_breakout

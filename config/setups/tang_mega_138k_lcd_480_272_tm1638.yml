@@ -22,3 +22,4 @@ Setup:
     - onboard: uart
     - onboard: audio
     - onboard: ws2812
+    - onboard: fan

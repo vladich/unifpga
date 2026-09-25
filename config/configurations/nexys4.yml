@@ -109,6 +109,13 @@ Configuration:
         mosi: onboard_accelerometer.mosi
         sclk: onboard_accelerometer.sclk
         csn: onboard_accelerometer.csn
+    - peripheral: xadc_aux
+      params:
+        width: 4
+        channels: [3, 10, 2, 11]
+      bind:
+        p: onboard_pmod_jxadc.xa_p
+        n: onboard_pmod_jxadc.xa_n
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

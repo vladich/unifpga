@@ -28,6 +28,7 @@ Setup:
     - onboard: usb_hid
     - onboard: temp_sensor
     - onboard: accelerometer
+    - onboard: pmod_jxadc
   extra:
     tie:
       onboard_mic.clk: 0

@@ -81,6 +81,13 @@ Configuration:
       bind:
         clk: onboard_usb_hid.clk
         data: onboard_usb_hid.data
+    - peripheral: xadc_aux
+      params:
+        width: 4
+        channels: [6, 14, 7, 15]
+      bind:
+        p: onboard_pmod_jxadc.xa_p
+        n: onboard_pmod_jxadc.xa_n
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

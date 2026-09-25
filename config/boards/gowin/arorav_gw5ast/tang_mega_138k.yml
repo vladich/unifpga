@@ -175,6 +175,6 @@ Board:
       iostandard: "LVCMOS33"
       pins: {"sk9822_ck": "W12", "sk9822_da": "AA9", "mic_d0": "AA10", "mic_d1": "AB10", "mic_d2": "AA11", "mic_d3": "AB11", "mic_ws": "W10", "mic_bck": "Y11"}
     onboard_fan:   # PWM fan connector J23 (4-pin)
-      device: {"name": "PWM fan connector J23 (4-pin)", "kind": "other"}
+      device: {"name": "PWM fan connector J23 (4-pin)", "kind": "fan"}
       iostandard: "LVCMOS33"
       pins: {"en": "V10", "pwm": "W19", "tacho": "T14"}

@@ -26,6 +26,7 @@ Setup:
     - onboard: uart
     - onboard: audio_dac
     - onboard: ws2812
+    - onboard: fan
   extra:
     tie:
       pmod_0[4]: 0

@@ -79,8 +79,8 @@ Layout:
       label: 3-axis accelerometer (SPI)
       attach: {peripheral: spi_accelerometer, bind: {miso: onboard_accelerometer.miso, mosi: onboard_accelerometer.mosi, sclk: onboard_accelerometer.sclk, csn: onboard_accelerometer.csn}}
     - id: pmod_jxadc
-      label: Pmod header JXADC (XADC analog pairs; usable as digital IO)
-      device: {kind: xadc, bank: onboard_pmod_jxadc}   # no peripheral model yet
+      label: 'Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 3, 10, 2, 11; usable as digital IO)'
+      attach: {peripheral: xadc_aux, params: {width: 4, channels: [3, 10, 2, 11]}, bind: {p: onboard_pmod_jxadc.xa_p, n: onboard_pmod_jxadc.xa_n}}
     - id: sdcard
       label: microSD card slot
       device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet

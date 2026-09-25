@@ -142,7 +142,7 @@ Board:
       device: {"name": "EEPROM ZD24C08A (on TWI mux ch.2)", "kind": "other"}
       pins: {"wp": "V14"}
     onboard_fan:   # 4-pin PWM fan connector
-      device: {"name": "4-pin PWM fan connector", "kind": "other"}
+      device: {"name": "4-pin PWM fan connector", "kind": "fan"}
       pins: {"pwm": "T17", "tach": "T18"}
     header_40p:   # 40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)
       device: {"name": "40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)", "kind": "header"}

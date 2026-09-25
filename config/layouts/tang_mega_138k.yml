@@ -146,4 +146,4 @@ Layout:
       device: {kind: mic, bank: onboard_mic_array}   # no peripheral model yet
     - id: fan
       label: PWM fan connector J23 (4-pin)
-      device: {kind: other, bank: onboard_fan}   # no peripheral model yet
+      attach: {peripheral: fan_pwm, bind: {pwm: onboard_fan.pwm, en: onboard_fan.en, tach: onboard_fan.tacho}}

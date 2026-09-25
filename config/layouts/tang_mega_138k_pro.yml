@@ -60,6 +60,9 @@ Layout:
     - id: audio_dac
       label: PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30
       attach: {peripheral: i2s_audio_out, params: {align_right: 1, offset_by_one_cycle: 0}, bind: {bclk: onboard_audio_dac.bck, lrclk: onboard_audio_dac.ws, sdata: onboard_audio_dac.din, pa_en: onboard_audio_dac.pa_en}}
+    - id: ws2812
+      label: WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: hdmi_rx
       label: DVI/HDMI B (RX) connector J12
       device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet
@@ -87,9 +90,6 @@ Layout:
     - id: config
       label: Configuration mode / CFGBVS pins (dock mode resistors)
       device: {kind: other, bank: onboard_config}   # no peripheral model yet
-    - id: ws2812
-      label: WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
-      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
     - id: sfp_0
       label: SFP+ cage 0 (SerDes Q1 lane 0)
       device: {kind: serdes, bank: onboard_sfp_0}   # no peripheral model yet
@@ -134,4 +134,4 @@ Layout:
       device: {kind: other, bank: onboard_twi_2}   # no peripheral model yet
     - id: fan
       label: 4-pin PWM fan connector
-      device: {kind: other, bank: onboard_fan}   # no peripheral model yet
+      attach: {peripheral: fan_pwm, bind: {pwm: onboard_fan.pwm, tach: onboard_fan.tach}}

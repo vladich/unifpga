@@ -55,13 +55,19 @@ Board:
     arduino_analog:   # chipKIT shield analog header A0-A11 used as digital IO
       device: {"name": "chipKIT shield analog header A0-A11 used as digital IO", "kind": "header"}
       iostandard: "LVCMOS33"
-      shares: ["onboard_xadc_vaux"]   # the board multiplexes these pins
+      shares: ["onboard_xadc_shield_diff"]   # the board multiplexes these pins (A6-A11)
       pins: {"a0": "F5", "a1": "D8", "a2": "C7", "a3": "E7", "a4": "D7", "a5": "D5", "a6": "B7", "a7": "B6", "a8": "E6", "a9": "E5", "a10": "A4", "a11": "A3"}
-    onboard_xadc_vaux:   # XADC auxiliary analog inputs on the shield analog header (A0-A5 single-ended, A6-A11 as 3 differential pairs)
-      device: {"name": "XADC auxiliary analog inputs on the shield analog header (A0-A5 single-ended, A6-A11 as 3 differential pairs)", "kind": "xadc"}
+    onboard_xadc_shield:   # XADC analog inputs A0-A5 of the shield header, single-ended: 0-3.3 V at the pin, divided 2.32k / 1k to the XADC's 0-1 V (VAUX 4, 5, 6, 7, 15, 0)
+      device: {"name": "XADC analog inputs A0-A5 of the shield header, single-ended: 0-3.3 V at the pin, divided 2.32k / 1k to the XADC's 0-1 V (VAUX 4, 5, 6, 7, 15, 0)", "kind": "xadc"}
+      iostandard: "LVCMOS33"
+      model_params: {channels: [4, 5, 6, 7, 15, 0], full_scale_mv: 3300}
+      pins: {"vaux_p": ["C6", "A6", "C4", "B1", "B3", "D14"], "vaux_n": ["C5", "A5", "B4", "A1", "B2", "C14"]}
+    onboard_xadc_shield_diff:   # XADC analog inputs A6/A7, A8/A9, A10/A11 of the shield header as differential pairs, 0-1 V (VAUX 12, 13, 14); the same pins as the header's digital A6-A11
+      device: {"name": "XADC analog inputs A6/A7, A8/A9, A10/A11 of the shield header as differential pairs, 0-1 V (VAUX 12, 13, 14); the same pins as the header's digital A6-A11", "kind": "xadc"}
       iostandard: "LVCMOS33"
       shares: ["arduino_analog"]   # the board multiplexes these pins
-      pins: {"vaux4_n": "C5", "vaux4_p": "C6", "vaux5_n": "A5", "vaux5_p": "A6", "vaux6_n": "B4", "vaux6_p": "C4", "vaux7_n": "A1", "vaux7_p": "B1", "vaux15_n": "B2", "vaux15_p": "B3", "vaux0_n": "C14", "vaux0_p": "D14", "vaux12_p": "B7", "vaux12_n": "B6", "vaux13_p": "E6", "vaux13_n": "E5", "vaux14_p": "A4", "vaux14_n": "A3"}
+      model_params: {channels: [12, 13, 14]}
+      pins: {"vaux_p": ["B7", "E6", "A4"], "vaux_n": ["B6", "E5", "A3"]}
     arduino_spi:   # chipKIT shield SPI header (J6)
       device: {"name": "chipKIT shield SPI header (J6)", "kind": "header"}
       iostandard: "LVCMOS33"
@@ -82,10 +88,11 @@ Board:
       device: {"name": "Quad-SPI flash", "kind": "flash"}
       iostandard: "LVCMOS33"
       pins: {"cs": "L13", "dq": ["K17", "K18", "L14", "M14"], "sck": "L16"}
-    onboard_power_sense:   # Power measurement (XADC channels: VU voltage, 5V0 voltage/current, 0V95 current)
-      device: {"name": "Power measurement (XADC channels: VU voltage, 5V0 voltage/current, 0V95 current)", "kind": "xadc"}
+    onboard_power_sense:   # Power measurement on XADC pairs: VU voltage, 5V0 voltage, 5V0 current, 0V95 current (VAUX 2, 1, 9, 10)
+      device: {"name": "Power measurement on XADC pairs: VU voltage, 5V0 voltage, 5V0 current, 0V95 current (VAUX 2, 1, 9, 10)", "kind": "xadc"}
       iostandard: "LVCMOS33"
-      pins: {"vsnsvu_n": "B17", "vsnsvu_p": "B16", "vsns5v0_n": "B12", "vsns5v0_p": "C12", "isns5v0_n": "F14", "isns5v0_p": "F13", "isns0v95_n": "A16", "isns0v95_p": "A15"}
+      model_params: {channels: [2, 1, 9, 10]}
+      pins: {"sense_p": ["B16", "C12", "F13", "A15"], "sense_n": ["B17", "B12", "F14", "A16"]}
     onboard_ddr3:   # DDR3L SDRAM 256 MB (MT41K128M16XX-15E)
       device: {"name": "DDR3L SDRAM 256 MB (MT41K128M16XX-15E)", "kind": "ddr"}
       iostandard: ["DIFF_SSTL135", "SSTL135"]

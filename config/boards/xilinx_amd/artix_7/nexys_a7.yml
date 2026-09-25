@@ -69,10 +69,11 @@ Board:
       pins:
         rx: C4
         tx: D4
-    onboard_pmod_jxadc:   # Pmod header JXADC (XADC analog pairs; usable as digital IO)
-      device: {"name": "Pmod header JXADC (XADC analog pairs; usable as digital IO)", "kind": "xadc"}
+    onboard_pmod_jxadc:   # Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 3, 10, 2, 11; usable as digital IO)
+      device: {"name": "Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 3, 10, 2, 11; usable as digital IO)", "kind": "xadc"}
       iostandard: "LVCMOS33"
-      pins: {"xa1_n": "A14", "xa1_p": "A13", "xa2_n": "A16", "xa2_p": "A15", "xa3_n": "B17", "xa3_p": "B16", "xa4_n": "A18", "xa4_p": "B18"}
+      model_params: {channels: [3, 10, 2, 11]}
+      pins: {"xa_p": ["A13", "A15", "B16", "B18"], "xa_n": ["A14", "A16", "B17", "A18"]}
     onboard_sdcard:   # microSD card slot
       device: {"name": "microSD card slot", "kind": "sdcard"}
       iostandard: "LVCMOS33"
