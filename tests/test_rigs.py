@@ -319,6 +319,22 @@ def test_an_accelerometer_reaches_a_design_that_asks_for_it():
     assert "adxl362_reader" in top and ".acc_x(cap_accelerometer_x)" in top
 
 
+def test_an_adc_reaches_a_design_that_asks_for_it():
+    """The DE0-Nano's ADC128S022 (3.3 V full scale) and the DE10-Nano's LTC2308
+    (4.096 V) scan 8 analog inputs; designs/adc_leds requires them: it fits
+    both, not the Basys3, and learns each full scale."""
+    from tools import codegen, studio
+    fit = {rig: studio.design_fit(config_init.resolve_configuration(rig))["adc_leds"]
+           for rig in ("de0_nano_vga666", "de10_nano", "basys3")}
+    assert fit["de0_nano_vga666"] == [] and fit["de10_nano"] == []
+    assert any("adc" in m for m in fit["basys3"])
+    design = os.path.join(REPO, "designs", "adc_leds", "design_top.sv")
+    tops = {rig: codegen.emit_top_sv(config_init.resolve_configuration(rig), design=design)
+            for rig in ("de0_nano_vga666", "de10_nano")}
+    assert "adc128s022_scan" in tops["de0_nano_vga666"] and ".adc_mv(3300)" in tops["de0_nano_vga666"]
+    assert "ltc2308_scan" in tops["de10_nano"] and ".adc_mv(4096)" in tops["de10_nano"]
+
+
 def test_no_pin_is_both_a_gpio_bit_and_another_parts():
     """In every rig, a pin the design reaches through its gpio port is no other
     part's (a microphone, a TM1638, a tie): one master per pad."""
