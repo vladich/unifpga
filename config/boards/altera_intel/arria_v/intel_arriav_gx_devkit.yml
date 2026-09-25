@@ -1,0 +1,28 @@
+# intel_arriav_gx_devkit: Arria V GX Starter Kit.
+
+Board:
+  id: intel_arriav_gx_devkit
+  name: Arria V GX Starter Kit
+  status: eol
+  producer: intel_altera
+  chip: 5AGXFB3H4F35C4N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - ddr3_sodimm_socket
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - marvell_88e1116r
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

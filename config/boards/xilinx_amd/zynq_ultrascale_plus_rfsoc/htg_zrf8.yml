@@ -1,0 +1,29 @@
+# htg_zrf8: HTG-ZRF8 Zynq UltraScale+ RFSoC PCIe Development Platform.
+
+Board:
+  id: htg_zrf8
+  name: HTG-ZRF8 Zynq UltraScale+ RFSoC PCIe Development Platform
+  url: https://www.hitechglobal.com/Boards/Zynq_RFSoc.htm
+  status: active
+  producer: hitech_global
+  chip: XCZU48DR-2FFVG1517E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - jtag_header
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sfp_cage
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - marvell_88e1512
+  - microsd_socket_generic

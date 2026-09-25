@@ -1,0 +1,22 @@
+# avnet_microzed_iocc: MicroZed IOCC Carrier Card (standalone).
+
+Board:
+  id: avnet_microzed_iocc
+  name: MicroZed IOCC Carrier Card (standalone)
+  status: eol
+  producer: avnet
+  chip: XC7Z020-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - microsd_socket
+  - pmod_connector
+  - arduino_shield_header
+  - barrel_jack_input
+  - user_buttons
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - led_discrete_generic

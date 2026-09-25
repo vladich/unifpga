@@ -1,0 +1,31 @@
+# intel_stratixiv_gx_devkit: Stratix IV GX FPGA Development Kit.
+
+Board:
+  id: intel_stratixiv_gx_devkit
+  name: Stratix IV GX FPGA Development Kit
+  status: eol
+  producer: intel_altera
+  chip: EP4SGX230KF40C2
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - pcie_endpoint
+  - sfp_cage
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - ddr3_sodimm_socket
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - marvell_88e1116r
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

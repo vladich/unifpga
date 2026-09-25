@@ -1,0 +1,15 @@
+# pangomicro_eink_tcon_board: E-ink Display TCON Control Board (SA_S0B4KLS_C006).
+
+Board:
+  id: pangomicro_eink_tcon_board
+  name: E-ink Display TCON Control Board (SA_S0B4KLS_C006)
+  url: https://www.pangomicro.com/open/4253.html
+  status: active
+  notes: Smartseason board; MIPI-DPHY to e-ink/LCD TCON application-specific.
+  producer: pangomicro
+  chip: PGC4KLS-6CSBG81
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - jtag_header

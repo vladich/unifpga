@@ -1,0 +1,38 @@
+# avnet_microzed_fmc_cc: MicroZed FMC Carrier Card Kit.
+
+Board:
+  id: avnet_microzed_fmc_cc
+  name: MicroZed FMC Carrier Card Kit
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/microzed/
+  status: active
+  producer: avnet
+  chip: XC7Z020-1CLG400C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - barrel_jack_input
+  - ddr3_memory
+  - ethernet_phy_10_100
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pmod_connector
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - cypress_s25fl128s
+  - microchip_lan8710a
+  - silabs_cp2104
+  - adi_adv7611
+  - adi_adv7511
+  - marvell_88e1512
+  - nsc_lm4550_ac97
+  - microsd_socket_generic

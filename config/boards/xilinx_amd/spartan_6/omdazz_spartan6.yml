@@ -1,0 +1,10 @@
+# omdazz_spartan6: Omdazz Spartan 6.
+
+Board:
+  id: omdazz_spartan6
+  name: Omdazz Spartan 6
+  producer: omdazz
+  chip: XC6SLX9-TQG144
+  bridges:
+  - jtag
+  programmer: ise_impact

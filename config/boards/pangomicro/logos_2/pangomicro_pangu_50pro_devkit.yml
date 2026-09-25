@@ -1,0 +1,32 @@
+# pangomicro_pangu_50pro_devkit: PG2L50H Development Board (Pangu 50Pro).
+
+Board:
+  id: pangomicro_pangu_50pro_devkit
+  name: PG2L50H Development Board (Pangu 50Pro)
+  url: https://www.pangomicro.com/open/4289.html
+  status: active
+  notes: 4x 6.6 Gbps HSST; PCIe x2; 2x SFP.
+  producer: pangomicro
+  chip: PG2L50H-6IFBG484
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - sfp_cage
+  - hdmi_input
+  - hdmi_output
+  - pcie_endpoint
+  - microsd_socket
+  - eeprom_chip
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - user_leds
+  - user_buttons
+  - gpio_header_generic
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

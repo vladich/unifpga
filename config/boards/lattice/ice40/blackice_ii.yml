@@ -1,0 +1,11 @@
+# blackice_ii: BlackIce II.
+
+Board:
+  id: blackice_ii
+  name: BlackIce II
+  url: https://github.com/mystorm-org/BlackIce-II
+  producer: folknology
+  chip: iCE40HX4K-TQ144
+  bridges:
+  - stm32-bridge
+  programmer: iceprog

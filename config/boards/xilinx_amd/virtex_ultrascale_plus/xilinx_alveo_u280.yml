@@ -2,9 +2,22 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_alveo_u280.py
 
+
 Board:
   id: xilinx_alveo_u280
-  pinBanks:
+  name: Alveo U280
+  url: https://www.xilinx.com/products/boards-and-kits/alveo/u280.html
+  producer: xilinx_amd
+  chip: XCU280-L2FSVH2892E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_edge_connector
+  devices:
+  - ddr4_sodimm_socket
+  banks:
     cpu_resetn:
       pins: L30
     onboard_uart:

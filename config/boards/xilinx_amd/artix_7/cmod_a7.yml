@@ -3,16 +3,38 @@
 # Source: Digilent Cmod-A7-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: cmod_a7
-  fpga:
-    producer: Xilinx
-    family: Artix 7
-    part: XC7A35TCPG236-1
+  name: CMOD A7
+  url: https://digilent.com/reference/programmable-logic/cmod-a7/start
+  producer: digilent
+  chips:
+  - id: XC7A15T-CPG236I
+    name: 15t
+  - id: XC7A35T-CPG236I
+    name: 35t
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - qspi_flash
+  - rgb_leds
+  - sram
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - pushbutton_smd_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - micron_n25q032a
+  - issi_is61wv5128bll
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk: { pins: "L17" }
     onboard_buttons:
       pins: ["A18", "B18"]

@@ -2,9 +2,34 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AXSU35/ (aggregated XDC files; 317 unique signals)
 
+
 Board:
   id: alinx_axsu35
-  pinBanks:
+  name: Alinx AXSU35
+  url: https://www.en.alinx.com/Product/SoC-development-Boards/Spartan-UltraScale-/AXSU35.html
+  status: active
+  producer: alinx
+  chip: XCSU35P-2SBVB625I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - eeprom_chip
+  - ethernet_phy_gigabit
+  - hyperram
+  - jtag_header
+  - microsd_socket
+  - parallel_lcd
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: F23
     sys_clk_n:

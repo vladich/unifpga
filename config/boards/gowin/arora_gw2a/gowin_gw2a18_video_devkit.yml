@@ -1,0 +1,31 @@
+# gowin_gw2a18_video_devkit: GW2A-18 Video Dev Kit.
+
+Board:
+  id: gowin_gw2a18_video_devkit
+  name: GW2A-18 Video Dev Kit
+  aliases:
+  - gowin_dk_video_gw2a18
+  url: https://www.gowinsemi.com/en/support/devkits_detail/21/
+  status: active
+  producer: gowin_semi
+  chip: GW2A-LV18PG484C8/I7
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - hdmi_output
+  - mipi_csi2_input
+  - mipi_dsi_output
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - jtag_header
+  devices:
+  - micron_mt41k128m16
+  - tmds_direct
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

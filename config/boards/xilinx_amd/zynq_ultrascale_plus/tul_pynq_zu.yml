@@ -1,0 +1,23 @@
+# tul_pynq_zu: TUL PYNQ-ZU.
+
+Board:
+  id: tul_pynq_zu
+  name: TUL PYNQ-ZU
+  url: https://www.tulembedded.com/FPGA/ProductsPYNQ-ZU.html
+  status: active
+  producer: tul
+  chip: XCZU5EG-1SFVC784
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - microsd_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - hdmi_output
+  - displayport_output
+  - fmc_lpc
+  - pmod_connector
+  - raspi_hat_header

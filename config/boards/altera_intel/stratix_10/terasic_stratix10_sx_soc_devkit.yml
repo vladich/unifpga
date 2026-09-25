@@ -1,0 +1,32 @@
+# terasic_stratix10_sx_soc_devkit: Stratix 10 SX SoC Development Kit.
+
+Board:
+  id: terasic_stratix10_sx_soc_devkit
+  name: Stratix 10 SX SoC Development Kit
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=248&No=1199
+  status: active
+  producer: terasic
+  chip: 1SX280HU2F50E1VG
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

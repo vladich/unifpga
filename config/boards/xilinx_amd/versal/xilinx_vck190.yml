@@ -1,0 +1,28 @@
+# xilinx_vck190: VCK190.
+
+Board:
+  id: xilinx_vck190
+  name: VCK190
+  url: https://www.xilinx.com/products/boards-and-kits/vck190.html
+  producer: xilinx_amd
+  chip: XCVC1902-2MSEVSVA2197
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - ddr4_sodimm_socket
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1512

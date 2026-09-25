@@ -1,0 +1,15 @@
+# digilent_arty_z7: Arty Z7.
+
+Board:
+  id: digilent_arty_z7
+  name: Arty Z7
+  url: https://digilent.com/reference/programmable-logic/arty-z7/start
+  producer: digilent
+  chips:
+  - id: xc7z010-1clg400c
+    name: '10'
+  - id: xc7z020-1clg400c
+    name: '20'
+  bridges:
+  - jtag
+  programmer: vivado_hw

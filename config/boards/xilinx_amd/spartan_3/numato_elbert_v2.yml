@@ -1,0 +1,25 @@
+# numato_elbert_v2: Numato Elbert V2 Spartan-3A FPGA Development Board.
+
+Board:
+  id: numato_elbert_v2
+  name: Numato Elbert V2 Spartan-3A FPGA Development Board
+  url: https://numato.com/product/elbert-v2-spartan-3a-fpga-development-board/
+  status: active
+  producer: numato_lab
+  chip: XC3S50A-4TQG144C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  - seven_segment_display
+  - dip_switches
+  - vga_output
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

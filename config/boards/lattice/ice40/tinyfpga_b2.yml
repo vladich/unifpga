@@ -1,0 +1,11 @@
+# tinyfpga_b2: TinyFPGA B2.
+
+Board:
+  id: tinyfpga_b2
+  name: TinyFPGA B2
+  url: https://tinyfpga.com/b-series-guide.html
+  producer: tinyfpga
+  chip: iCE40LP8K-CM81
+  bridges:
+  - jtag
+  programmer: iceprog

@@ -1,0 +1,17 @@
+# qmtech_max10_core: MAX 10 Core Board.
+
+Board:
+  id: qmtech_max10_core
+  name: MAX 10 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  producer: qmtech
+  chip: 10M16SAU169C8G
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - user_buttons
+  - user_leds
+  devices:
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,33 @@
+# pangomicro_pg2l200h_devkit: PG2L200H Development Board (Pangu 200K).
+
+Board:
+  id: pangomicro_pg2l200h_devkit
+  name: PG2L200H Development Board (Pangu 200K)
+  url: https://www.pangomicro.com/open/4304.html
+  status: active
+  notes: 4x 6.6 Gb/s HSST; PCIe x2; 2x GbE; 2x SFP.
+  producer: pangomicro
+  chip: PG2L200H-6IFBB484
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - sfp_cage
+  - hdmi_input
+  - hdmi_output
+  - pcie_endpoint
+  - microsd_socket
+  - eeprom_chip
+  - pmod_connector
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - user_leds
+  - user_buttons
+  - gpio_header_generic
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

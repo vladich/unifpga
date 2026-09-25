@@ -1,0 +1,29 @@
+# terasic_stratix10_dx_devkit: Altera Stratix 10 DX FPGA Development Kit.
+
+Board:
+  id: terasic_stratix10_dx_devkit
+  name: Altera Stratix 10 DX FPGA Development Kit
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=248&No=1258
+  status: active
+  producer: terasic
+  chip: 1SD280PT2F55E1VG
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - usb_blaster_ii_built_in
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

@@ -2,9 +2,38 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7015B/ (aggregated XDC files; 363 unique signals)
 
+
 Board:
   id: alinx_ax7015
-  pinBanks:
+  name: Alinx AX7015
+  aliases:
+  - alinx_ax7z015
+  url: https://coderobin.com/products/alinx-ax7015-xilinx-zynq-7000-xc7z015-fpga-development-board
+  status: active
+  notes: Variant alongside AX7Z015 (already in catalog) — pairs SoM+carrier.
+  producer: alinx
+  chip: XC7Z015-2CLG485I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - sd_card_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - realtek_rtl8211e
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: Y14
     onboard_leds:

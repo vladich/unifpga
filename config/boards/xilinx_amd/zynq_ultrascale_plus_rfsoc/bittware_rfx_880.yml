@@ -1,0 +1,25 @@
+# bittware_rfx_880: BittWare RFX 880.
+
+Board:
+  id: bittware_rfx_880
+  name: BittWare RFX 880
+  url: https://www.bittware-molex.com/products/rfx-880/
+  status: active
+  notes: BittWare publishes ZU43DR, G1517 package, speed grade -2; FFVG vs FSVG (same ball map) and the temperature
+    grade are not published.
+  producer: bittware
+  chip: XCZU43DR-2FFVG1517E
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

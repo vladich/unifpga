@@ -1,0 +1,23 @@
+# enclustra_mars_pe1: Enclustra Mars PE1 PCIe Base Board (Mars SoDIMM).
+
+Board:
+  id: enclustra_mars_pe1
+  name: Enclustra Mars PE1 PCIe Base Board (Mars SoDIMM)
+  url: https://www.enclustra.com/en/products/base-boards/mars-eb1/
+  status: active
+  producer: enclustra
+  chip: XC7Z020-2CLG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - pcie_edge_connector
+  - sata_host
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - sfp_cage
+  devices:
+  - marvell_88e1512
+  - ftdi_ft4232h
+  - microsd_socket_generic

@@ -1,12 +1,18 @@
 # marsohod_mcy316 pin map.
 
+
 Board:
   id: marsohod_mcy316
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone III"
-    part: EP3C16Q240C8
-
+  name: Marsohod MCY316
+  product: MCY316 (Марсоход MCY316, Cyclone III)
+  summary: Altera Cyclone III EP3C16Q240C8 (15408 LE, 516 kbit RAM), 100 MHz osc, 32-bit SDR SDRAM MT48LC4M32B2 (16
+    MB), PCM1801 stereo audio ADC, 2 delta-sigma audio outs, SPI flash W25Q32 (user) + EPCS4 (config), 8 LEDs, 4-digit
+    7-seg, 2 keys, 3x Raspberry-Pi-style 40-pin headers, serial header
+  producer: marsohod
+  chip: EP3C16Q240C8
+  bridges:
+  - jtag
+  programmer: quartus2_pgm
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   toolchain_options:
@@ -21,7 +27,7 @@ Board:
         - "RESERVE_DCLK_AFTER_CONFIGURATION \"USE AS PROGRAMMING PIN\""
         - "CYCLONE_CONFIGURATION_DEVICE EPCS4"
         - "RESERVE_ALL_UNUSED_PINS_NO_OUTPUT_GND \"AS INPUT TRI-STATED\""
-  pinBanks:
+  banks:
     onboard_mem:
       pins:
         dq: ["120", "119", "118", "117", "114", "113", "112", "111", "189", "188", "187", "185", "184", "183", "182", "181", "94", "93", "88", "87", "86", "85", "84", "83", "220", "219", "218", "217", "216", "214", "207", "203"]
@@ -88,3 +94,61 @@ Board:
     onboard_other:   # JTAG1 header (2x5, USB-Blaster pinout)
       device: {"name": "JTAG1 header (2x5, USB-Blaster pinout)", "kind": "other"}
       pins: {"tdi": "26", "tck": "27", "tms": "28", "tdo": "29"}
+  # ---- drawn: headers and parts; ./unifpga layout draft marsohod_mcy316 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio_a
+      type: pin_row
+      label: GPIO_A
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_a
+      pins: {'[0]': 'gpio_a[0]', '[1]': 'gpio_a[1]', '[2]': 'gpio_a[2]', '[3]': 'gpio_a[3]', '[4]': 'gpio_a[4]', '[5]': 'gpio_a[5]', '[6]': 'gpio_a[6]', '[7]': 'gpio_a[7]', '[8]': 'gpio_a[8]', '[9]': 'gpio_a[9]', '[10]': 'gpio_a[10]', '[11]': 'gpio_a[11]', '[12]': 'gpio_a[12]', '[13]': 'gpio_a[13]', '[14]': 'gpio_a[14]', '[15]': 'gpio_a[15]', '[16]': 'gpio_a[16]', '[17]': 'gpio_a[17]', '[18]': 'gpio_a[18]', '[19]': 'gpio_a[19]', '[20]': 'gpio_a[20]', '[21]': 'gpio_a[21]', '[22]': 'gpio_a[22]', '[23]': 'gpio_a[23]'}
+    - id: gpio_a_i
+      type: pin_row
+      label: GPIO_A_I
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_a_i
+      pins: {'[0]': 'gpio_a_i[0]', '[1]': 'gpio_a_i[1]', '[2]': 'gpio_a_i[2]', '[3]': 'gpio_a_i[3]'}
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]'}
+    - id: gpio_i
+      type: pin_row
+      label: GPIO_I
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_i
+      pins: {'[0]': 'gpio_i[0]', '[1]': 'gpio_i[1]', '[2]': 'gpio_i[2]', '[3]': 'gpio_i[3]'}
+    - id: gpio_b
+      type: pin_row
+      label: GPIO_B
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_b
+      pins: {'[0]': 'gpio_b[0]', '[1]': 'gpio_b[1]', '[2]': 'gpio_b[2]', '[3]': 'gpio_b[3]', '[4]': 'gpio_b[4]', '[5]': 'gpio_b[5]', '[6]': 'gpio_b[6]', '[7]': 'gpio_b[7]', '[8]': 'gpio_b[8]', '[9]': 'gpio_b[9]', '[10]': 'gpio_b[10]'}
+    - id: gpio_b_i
+      type: pin_row
+      label: GPIO_B_I
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_b_i
+      pins: {'[0]': 'gpio_b_i[0]', '[1]': 'gpio_b_i[1]', '[2]': 'gpio_b_i[2]'}
+  parts:
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 4, active: low, digits_active: high}, bind: {segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg], dp: onboard_7seg.dp, digits: ['onboard_7seg.anodes[3]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[0]']}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: u7_epcs4_configuration_flash
+      label: U7 EPCS4 configuration flash
+      device: {kind: flash, bank: onboard_u7_epcs4_configuration_flash}   # no peripheral model yet
+    - id: other
+      label: JTAG1 header (2x5, USB-Blaster pinout)
+      device: {kind: other, bank: onboard_other}   # no peripheral model yet

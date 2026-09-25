@@ -1,0 +1,16 @@
+# pangomicro_pangu_200k_som: Pangu 200K Core Board (盘古200K核心板).
+
+Board:
+  id: pangomicro_pangu_200k_som
+  name: Pangu 200K Core Board (盘古200K核心板)
+  url: https://www.pangomicro.com/open/4305.html
+  status: active
+  notes: Industrial -40..100 C; 4x HSSTLP; 2x 32-bit DDR3.
+  producer: pangomicro
+  chip: PG2L200H-FBB484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - adc_chip

@@ -1,0 +1,15 @@
+# pangomicro_som4kls_a004: SA_SOM4KLS_A004 Core Module.
+
+Board:
+  id: pangomicro_som4kls_a004
+  name: SA_SOM4KLS_A004 Core Module
+  url: https://www.pangomicro.com/open/4578.html
+  status: active
+  notes: Smartseason SoM; integrated PSRAM; display-control oriented.
+  producer: pangomicro
+  chip: PGC4KLS-6CUWG81
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - jtag_header

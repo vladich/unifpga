@@ -1,0 +1,30 @@
+# pangomicro_pangu_22k_devkit: PGL22G Development Board (Pangu 22K / 盘古22K).
+
+Board:
+  id: pangomicro_pangu_22k_devkit
+  name: PGL22G Development Board (Pangu 22K / 盘古22K)
+  url: https://www.pangomicro.com/open/4257.html
+  status: active
+  notes: Pango-branded board sold via 小眼睛半导体 Taobao.
+  producer: pangomicro
+  chip: PGL22G-MBG324
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_input
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - pmod_connector
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

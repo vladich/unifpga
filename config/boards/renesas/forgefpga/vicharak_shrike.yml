@@ -1,0 +1,17 @@
+# vicharak_shrike: Vicharak Shrike.
+
+Board:
+  id: vicharak_shrike
+  name: Vicharak Shrike
+  url: https://www.crowdsupply.com/vicharak/shrike
+  status: active
+  producer: vicharak
+  chip: SLG47910V
+  bridges:
+  - usb-jtag
+  programmer: openFPGALoader
+  features:
+  - pmod_connector
+  - user_leds
+  - usb_powered
+  - usb_uart_bridge

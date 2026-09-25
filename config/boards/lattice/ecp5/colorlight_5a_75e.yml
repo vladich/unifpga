@@ -1,0 +1,11 @@
+# colorlight_5a_75e: ColorLight 5A-75E.
+
+Board:
+  id: colorlight_5a_75e
+  name: ColorLight 5A-75E
+  status: eol
+  producer: colorlight
+  chip: LFE5U-25F-6BG256C
+  bridges:
+  - ft2232h-jtag
+  programmer: ecpprog

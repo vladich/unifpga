@@ -1,0 +1,15 @@
+# pangomicro_pangu_22k_som: Pangu 22K Core Board (盘古22K核心板).
+
+Board:
+  id: pangomicro_pangu_22k_som
+  name: Pangu 22K Core Board (盘古22K核心板)
+  url: https://www.pangomicro.com/open/4263.html
+  status: active
+  notes: Bare core/SoM; 16-bit DDR3 800 Mbps; commercial 0-85 C.
+  producer: pangomicro
+  chip: PGL22G-6CMBG324
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory

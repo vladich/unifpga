@@ -1,0 +1,25 @@
+# numato_mimas_v2: Mimas V2.
+
+Board:
+  id: numato_mimas_v2
+  name: Mimas V2
+  url: https://numato.com/product/mimas-v2-spartan-6-fpga-development-board-with-ddr-sdram/
+  producer: numato_lab
+  chip: XC6SLX9-2CSG324
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - qspi_flash
+  - seven_segment_display
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - micron_n25q032a
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

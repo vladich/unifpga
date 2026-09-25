@@ -2,9 +2,29 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/FX200/FX200.zip → FX200/2 FX200-管脚约束/FX200_Board.xdc
 
+
 Board:
   id: alinx_fx200
-  pinBanks:
+  name: Alinx FX200 Accelerator Card
+  url: https://www.en.alinx.com
+  status: active
+  producer: alinx
+  chip: XCKU15P-2FFVE1517I-CIV
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - clock_generator
+  - ddr4_memory
+  - jtag_header
+  - pcie_edge_connector
+  - qsfp_cage
+  - qspi_flash
+  - rgb_leds
+  - user_leds
+  devices:
+  - led_discrete_generic
+  banks:
     sys_clk:
       pins: C4
       frequency_mhz: 50

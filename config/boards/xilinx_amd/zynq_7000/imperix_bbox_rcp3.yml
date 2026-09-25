@@ -1,0 +1,17 @@
+# imperix_bbox_rcp3: B-Box RCP 3.0.
+
+Board:
+  id: imperix_bbox_rcp3
+  name: B-Box RCP 3.0
+  url: https://imperix.com/products/control/rapid-prototyping-controller/
+  status: active
+  producer: imperix
+  chip: XC7Z030-3FBG676E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - jtag_header
+  - barrel_jack_input

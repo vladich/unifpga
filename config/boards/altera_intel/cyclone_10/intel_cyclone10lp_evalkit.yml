@@ -1,0 +1,27 @@
+# intel_cyclone10lp_evalkit: Cyclone 10 LP Evaluation Kit.
+
+Board:
+  id: intel_cyclone10lp_evalkit
+  name: Cyclone 10 LP Evaluation Kit
+  status: eol
+  producer: intel_altera
+  chip: 10CL025YU256I7G
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_10_100
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microchip_lan8742a
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

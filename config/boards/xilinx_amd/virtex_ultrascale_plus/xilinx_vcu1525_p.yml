@@ -1,0 +1,20 @@
+# xilinx_vcu1525_p: AMD Virtex UltraScale+ FPGA VCU1525 Acceleration Development Kit (Passive).
+
+Board:
+  id: xilinx_vcu1525_p
+  name: AMD Virtex UltraScale+ FPGA VCU1525 Acceleration Development Kit (Passive)
+  url: https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/vcu1525-p.html
+  status: eol
+  producer: xilinx_amd
+  chip: XCVU9P-L2FSGD2104E
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qsfp_cage
+  - pcie_endpoint
+  - usb_uart_bridge
+  - jtag_header
+  devices:
+  - ddr4_sodimm_socket

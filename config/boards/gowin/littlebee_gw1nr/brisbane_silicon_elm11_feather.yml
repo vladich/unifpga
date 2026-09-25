@@ -1,0 +1,21 @@
+# brisbane_silicon_elm11_feather: ELM11-Feather.
+
+Board:
+  id: brisbane_silicon_elm11_feather
+  name: ELM11-Feather
+  url: https://www.crowdsupply.com/brisbanesilicon/elm11-feather
+  status: preview
+  producer: brisbane_silicon
+  chip: GW1NR-LV9QN88PC6/I5
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - hyperram
+  - qspi_flash
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - usb_powered

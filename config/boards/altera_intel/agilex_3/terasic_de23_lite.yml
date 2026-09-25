@@ -2,9 +2,35 @@
 # Source: Terasic user manual PDF
 #   ~/Terasic/DE23_Lite_User_manual_revB.pdf
 
+
 Board:
   id: terasic_de23_lite
-  pinBanks:
+  name: DE23-Lite Development Kit
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1383
+  status: active
+  producer: terasic
+  chip: A3CZ135BB18AE7S
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - adc_chip
+  - dip_switches
+  - hdmi_output
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - winbond_w9825g6kh
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - ti_adc128s022
+  banks:
     sys_clk:
       pins: PIN_BK32
     onboard_buttons:

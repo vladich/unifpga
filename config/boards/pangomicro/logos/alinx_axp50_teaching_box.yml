@@ -1,0 +1,34 @@
+# alinx_axp50_teaching_box: ALINX AXP50 Teaching Experimental Kit (教学实验箱).
+
+Board:
+  id: alinx_axp50_teaching_box
+  name: ALINX AXP50 Teaching Experimental Kit (教学实验箱)
+  url: https://www.pangomicro.com/open/4267.html
+  status: active
+  notes: ALINX education/competition kit; 1 GB DDR3.
+  producer: alinx
+  chip: PGL50H-6IFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_output
+  - microsd_socket
+  - parallel_camera_input
+  - qspi_flash
+  - sfp_cage
+  - sma_io_pair
+  - usb_2_device
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

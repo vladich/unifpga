@@ -1,11 +1,18 @@
 # colorlight75b pin map.
 
+
 Board:
   id: colorlight75b
-  fpga:
-    producer: Lattice
-    family: ECP5
-    part: LFE5U-25F-6BG256C   # 5A-75B V8.0 (BG256); V6.1 had the BG381
+  name: Colorlight 5A-75B
+  product: Colorlight 5A-75B V8.0
+  summary: Lattice ECP5 LFE5U-25F-6BG256C (24k LUT), 8 MB SDR SDRAM (M12L64322A, 32-bit), 4 MB SPI flash, 2x RTL8211FD
+    Gigabit RGMII PHY, 8 HUB75 output connectors via 74HC245 buffers, 1 LED, 1 button, 25 MHz
+  status: eol
+  producer: colorlight
+  chip: LFE5U-25F-6BG256C
+  bridges:
+  - ft2232h-jtag
+  programmer: ecpprog
   defaults:
     iostandard: LVCMOS33
 
@@ -16,7 +23,7 @@ Board:
       device_part: "25k"
       device_pack: "CABGA256"
       speed: "6"
-  pinBanks:
+  banks:
     clk: { pins: P6, frequency_mhz: 25 }
     onboard_leds:
       active: low
@@ -82,3 +89,66 @@ Board:
       device: {"name": "HUB75 connector J8 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j1", "hub75_j2", "hub75_j3", "hub75_j4", "hub75_j5", "hub75_j6", "hub75_j7"]   # the board multiplexes these pins
       pins: {"r0": "D16", "g0": "E15", "b0": "C16", "r1": "B16", "g1": "C15", "b1": "B15", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
+  # ---- drawn: headers and parts; ./unifpga layout draft colorlight75b regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]'}
+    - id: onboard_buttons_pads
+      type: pin_row
+      label: BUTTONS PADS
+      note: pins of the on-board buttons, reached by a wire soldered to them
+      pins: {'[0]': 'onboard_buttons[0]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 1, active: low, open_drain: true}, bind: {led: onboard_leds}}
+    - id: hdmi
+      label: hdmi
+      attach: {peripheral: hdmi_tmds, params: {timing: design, clock_serial_mhz: 250}, bind: {d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n, clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n}}
+    - id: sdram
+      label: ESMT M12L64322A SDRAM (2M x 32, 8 MB)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 11, data_bits: 32, col_bits: 8}, bind: {clk: onboard_sdram.clk, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq}}
+    - id: eth0
+      label: Ethernet PHY U11 (RTL8211FD, RGMII, port 0)
+      device: {kind: ethernet, bank: onboard_eth0}   # no peripheral model yet
+    - id: eth1
+      label: Ethernet PHY U13 (RTL8211FD, RGMII, port 1)
+      device: {kind: ethernet, bank: onboard_eth1}   # no peripheral model yet
+    - id: config
+      label: sysCONFIG resistor pads (PROGRAMN R9, CFG_1 P10, INITN T9, DONE P9)
+      device: {kind: other, bank: onboard_config}   # no peripheral model yet
+    - id: spare_pads
+      label: Spare pads R26 (N16), R107 (D12), R109 (A12)
+      device: {kind: other, bank: onboard_spare_pads}   # no peripheral model yet
+    - id: hub75_j1
+      label: HUB75 connector J1 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j1}   # no peripheral model yet
+    - id: hub75_j2
+      label: HUB75 connector J2 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j2}   # no peripheral model yet
+    - id: hub75_j3
+      label: HUB75 connector J3 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j3}   # no peripheral model yet
+    - id: hub75_j4
+      label: HUB75 connector J4 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j4}   # no peripheral model yet
+    - id: hub75_j5
+      label: HUB75 connector J5 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j5}   # no peripheral model yet
+    - id: hub75_j6
+      label: HUB75 connector J6 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j6}   # no peripheral model yet
+    - id: hub75_j7
+      label: HUB75 connector J7 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j7}   # no peripheral model yet
+    - id: hub75_j8
+      label: HUB75 connector J8 (outputs through 74HC245T 5 V buffers)
+      device: {kind: header, bank: hub75_j8}   # no peripheral model yet

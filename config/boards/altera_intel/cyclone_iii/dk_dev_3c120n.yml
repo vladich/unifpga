@@ -1,11 +1,34 @@
 # dk_dev_3c120n pin map.
 
+
 Board:
   id: dk_dev_3c120n
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone III"
-    part: EP3C120F780C6
+  name: Altera Cyclone III FPGA Development Kit
+  product: Cyclone III FPGA Development Kit (DK-DEV-3C120N)
+  summary: Cyclone III EP3C120F780C6 (119,088 LEs); 256 MB dual-channel DDR2 (72-bit), 8 MB SRAM, 64 MB flash; Gigabit
+    Ethernet (88E1111), FTDI FT245BL USB, graphics/character LCD, 2x HSMC, user 7-seg display, speaker header, 8 DIP
+    SW, 4 PB, 8 LEDs
+  producer: terasic
+  chip: EP3C120F780C6
+  bridges:
+  - jtag
+  programmer: quartus2_pgm
+  features:
+  - ddr2_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - nor_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - micron_mt47h64m16
+  - marvell_88e1111
+  - intel_strataflash_p30
   defaults:
     iostandard: 2.5 V
 
@@ -23,7 +46,7 @@ Board:
         - "RESERVE_DATA0_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
         - "RESERVE_DATA0_AFTER_CONFIGURATION \"AS INPUT TRI-STATED\""
-  pinBanks:
+  banks:
     clk50mhz: { pins: AH15, frequency_mhz: 50, iostandard: 1.8 V }
     clk125mhz: { pins: A14, frequency_mhz: 125, iostandard: 1.8 V }
     clkin_sma: { pins: AH14, iostandard: 1.8 V }
@@ -307,3 +330,28 @@ Board:
       device: {"name": "FPGA JTAG (routed to HSMC ports)", "kind": "other"}
       iostandard: "2.5 V"
       pins: {"FPGA_JTAG_TCK": "P5", "FPGA_JTAG_TMS": "P8"}
+  # ---- drawn: headers and parts; ./unifpga layout draft dk_dev_3c120n regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers: []
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8, active: low}, bind: {led: onboard_leds}}
+    - id: cpu_resetn
+      label: cpu resetn
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 4, active: low, digits_active: high}, bind: {segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg], dp: onboard_7seg.dp, digits: ['onboard_7seg.anodes[3]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[0]']}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 8}, bind: {sw: onboard_switches}}
+    - id: fpga_jtag
+      label: FPGA JTAG (routed to HSMC ports)
+      device: {kind: other, bank: onboard_fpga_jtag}   # no peripheral model yet

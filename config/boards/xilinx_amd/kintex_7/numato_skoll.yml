@@ -1,0 +1,23 @@
+# numato_skoll: Skoll.
+
+Board:
+  id: numato_skoll
+  name: Skoll
+  status: eol
+  producer: numato_lab
+  chip: XC7K70T-1FBG484
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - led_discrete_generic
+  - pushbutton_smd_generic

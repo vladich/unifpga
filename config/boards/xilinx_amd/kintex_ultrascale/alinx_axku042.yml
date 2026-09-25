@@ -1,0 +1,31 @@
+# alinx_axku042: Alinx AXKU042.
+
+Board:
+  id: alinx_axku042
+  name: Alinx AXKU042
+  url: https://coderobin.com/products/alinx-axku042-xilinx-kintex-ultrascale-xcku040-fpga-development-board
+  status: active
+  notes: 2nd-gen successor to AXKU040 with same chip; modular carrier.
+  producer: alinx
+  chip: XCKU040-2FFVA1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_10gbe_sfp
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - fmc_lpc
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

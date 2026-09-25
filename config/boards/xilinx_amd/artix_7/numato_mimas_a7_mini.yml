@@ -1,0 +1,23 @@
+# numato_mimas_a7_mini: Numato Mimas A7 Mini Artix-7 FPGA Development Board.
+
+Board:
+  id: numato_mimas_a7_mini
+  name: Numato Mimas A7 Mini Artix-7 FPGA Development Board
+  status: eol
+  producer: numato_lab
+  chip: XC7A35T-1FTG256C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - qspi_flash
+  - user_leds
+  - user_buttons
+  - usb_powered
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q128a
+  - led_discrete_generic
+  - pushbutton_smd_generic

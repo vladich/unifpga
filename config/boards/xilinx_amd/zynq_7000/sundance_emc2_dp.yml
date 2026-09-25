@@ -1,0 +1,11 @@
+# sundance_emc2_dp: EMC2-DP.
+
+Board:
+  id: sundance_emc2_dp
+  name: EMC2-DP
+  status: eol
+  producer: sundance
+  chip: XC7Z030-1FBG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw

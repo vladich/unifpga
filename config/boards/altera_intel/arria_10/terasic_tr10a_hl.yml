@@ -1,0 +1,26 @@
+# terasic_tr10a_hl: TR10a-HL Arria 10 FPGA Development Kit.
+
+Board:
+  id: terasic_tr10a_hl
+  name: TR10a-HL Arria 10 FPGA Development Kit
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=228&No=1074
+  status: active
+  producer: terasic
+  chip: 10AX115N2F45E1SG
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - pcie_endpoint
+  - qsfp_cage
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

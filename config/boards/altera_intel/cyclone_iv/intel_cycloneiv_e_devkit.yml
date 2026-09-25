@@ -1,0 +1,25 @@
+# intel_cycloneiv_e_devkit: Cyclone IV E FPGA Development Kit.
+
+Board:
+  id: intel_cycloneiv_e_devkit
+  name: Cyclone IV E FPGA Development Kit
+  status: eol
+  producer: intel_altera
+  chip: EP4CE115F29C7N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - marvell_88e1116r
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

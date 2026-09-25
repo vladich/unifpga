@@ -1,0 +1,16 @@
+# xilinx_alveo_sn1022: AMD Alveo SN1000 SmartNIC (SN1022).
+
+Board:
+  id: xilinx_alveo_sn1022
+  name: AMD Alveo SN1000 SmartNIC (SN1022)
+  url: https://www.amd.com/en/products/accelerators/alveo/sn1000/a-sn1022-p4.html
+  status: active
+  producer: xilinx_amd
+  chip: XCU26-L2FSVH2892E
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qsfp_cage
+  - pcie_endpoint

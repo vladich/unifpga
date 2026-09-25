@@ -1,0 +1,30 @@
+# alinx_axw23: Alinx AXW23.
+
+Board:
+  id: alinx_axw23
+  name: Alinx AXW23
+  url: https://www.en.alinx.com
+  status: active
+  producer: alinx
+  chip: XCZU47DR-2FFVE1156I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - clock_generator
+  - ddr4_memory
+  - eeprom_chip
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - jtag_header
+  - microsd_socket
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

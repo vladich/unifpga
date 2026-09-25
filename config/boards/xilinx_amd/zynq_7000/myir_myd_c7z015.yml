@@ -1,0 +1,31 @@
+# myir_myd_c7z015: MYIR MYD-C7Z015 Zynq-7015 Dev Board.
+
+Board:
+  id: myir_myd_c7z015
+  name: MYIR MYD-C7Z015 Zynq-7015 Dev Board
+  url: https://www.myirtech.com/list.asp?id=553
+  status: active
+  producer: myir
+  chip: XC7Z015-2CLG485I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - usb_uart_bridge
+  - hdmi_output
+  - microsd_socket
+  - user_leds
+  - user_buttons
+  devices:
+  - silabs_cp2102
+  - micron_mt41k256m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211e
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,34 @@
+# avnet_picozed_fmc_cc_v2: PicoZed FMC Carrier Card V2.
+
+Board:
+  id: avnet_picozed_fmc_cc_v2
+  name: PicoZed FMC Carrier Card V2
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/picozed/
+  status: active
+  producer: avnet
+  chip: XC7Z030-1FBG484C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - barrel_jack_input
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - pmod_connector
+  - qspi_flash
+  - sfp_cage
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a
+  - marvell_88e1512
+  - emmc_chip_generic
+  - adi_adv7511
+  - silabs_cp2104
+  - microsd_socket_generic

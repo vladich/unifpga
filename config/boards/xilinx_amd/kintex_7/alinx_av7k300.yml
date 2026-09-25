@@ -2,9 +2,38 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AV7K300/ (aggregated XDC files; 315 unique signals)
 
+
 Board:
   id: alinx_av7k300
-  pinBanks:
+  name: Alinx AV7K300
+  url: https://coderobin.com/products/alinx-av7k300-xilinx-kintex-7-xc7k325-fpga-development-board
+  status: active
+  notes: AV-series carrier; older PCIe ref-design board.
+  producer: alinx
+  chip: XC7K325T-2FFG900I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: AE10
     cpu_resetn:

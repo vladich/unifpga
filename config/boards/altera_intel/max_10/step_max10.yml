@@ -1,0 +1,10 @@
+# step_max10: STEP-MAX10.
+
+Board:
+  id: step_max10
+  name: STEP-MAX10
+  producer: stepfpga
+  chip: 10M08SCM153C8G
+  bridges:
+  - jtag
+  programmer: quartus_pgm

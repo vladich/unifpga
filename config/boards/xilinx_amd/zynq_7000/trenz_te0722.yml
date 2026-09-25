@@ -1,0 +1,17 @@
+# trenz_te0722: TE0722 DIPFORTy1 Soft Propeller Zynq-7010.
+
+Board:
+  id: trenz_te0722
+  name: TE0722 DIPFORTy1 Soft Propeller Zynq-7010
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE07XX-Zynq-SoC/TE0722-Zynq-SoC
+  status: active
+  producer: trenz_electronic
+  chip: XC7Z010-1CLG225I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - qspi_flash
+  - jtag_header
+  devices:
+  - micron_n25q128a

@@ -1,0 +1,19 @@
+# xilinx_zcu100: ZCU100 (UltraZed-EG).
+
+Board:
+  id: xilinx_zcu100
+  name: ZCU100 (UltraZed-EG)
+  url: https://www.xilinx.com/products/boards-and-kits/zcu100.html
+  producer: xilinx_amd
+  chip: XCZU3EG-1SFVA625I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - microsd_socket
+  - user_buttons
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,24 @@
+# bittware_ia_440i: IA-440i.
+
+Board:
+  id: bittware_ia_440i
+  name: IA-440i
+  url: https://www.bittware-molex.com/products/ia-440i/
+  status: active
+  notes: CESNET NDK also builds for a board variant with AGIB023R18A1E1VC.
+  producer: bittware
+  chip: AGIB023R18A1E1V
+  bridges:
+  - pcie-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

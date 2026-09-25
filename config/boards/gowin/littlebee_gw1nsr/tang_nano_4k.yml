@@ -1,12 +1,19 @@
 # tang_nano_4k pin map.
 
+
 Board:
   id: tang_nano_4k
-  fpga:
-    producer: Gowin
-    family: LittleBee/GW1NSR
-    part: GW1NSR-LV4C
-
+  name: Tang Nano 4k
+  product: Tang Nano 4K
+  summary: Gowin GW1NSR-LV4CQN48PC6/I5 SiP (GW1NS-4C, 4608 LUT4, 180 kbit BSRAM, Cortex-M3 hard core, 64 Mbit x8 HyperRAM
+    in package) on board 3603; 27 MHz oscillator, 32 Mbit P25Q32 SPI flash, HDMI TX, 24-pin DVP camera FPC, 1 LED,
+    2 buttons, BL702 USB-JTAG, two 22-pin headers
+  url: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-4K/Nano-4K.html
+  producer: sipeed
+  chip: GW1NSR-LV4CQN48PC6/I5
+  bridges:
+  - jtag
+  programmer: openFPGALoader
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -17,7 +24,7 @@ Board:
       set_device: "GW1NSR-LV4CQN48PC6/I5 -name GW1NSR-4 -device_version \"\""
       options: [use_done_as_gpio, use_mspi_as_gpio]
       gprj_device: '<Device id="GW1NSR-4C" package="QFN48P" speed="6" partNumber="GW1NSR-LV4CQN48PC6/I5"/>'
-  pinBanks:
+  banks:
     clk: { pins: "45", frequency_mhz: 27 }
     onboard_buttons:
       active: low
@@ -58,3 +65,49 @@ Board:
       device: {"name": "Header P7 (1x22)", "kind": "header"}
       shares: ["onboard_buttons", "onboard_camera", "onboard_hdmi", "onboard_jtag", "onboard_led", "onboard_serial_flash"]   # the board multiplexes these pins
       pins: ["31", "32", "34", "35", "10", "39", "40", "41", "42", "43", "47", "48", "1", "46", "44", "6", "3", "4", "7", "14"]
+  # ---- drawn: headers and parts; ./unifpga layout draft tang_nano_4k regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: header_p6
+      type: pin_row
+      label: HEADER_P6
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: header_p6
+      pins: {'[0]': 'header_p6[0]', '[1]': 'header_p6[1]', '[2]': 'header_p6[2]', '[3]': 'header_p6[3]', '[4]': 'header_p6[4]', '[5]': 'header_p6[5]', '[6]': 'header_p6[6]', '[7]': 'header_p6[7]', '[8]': 'header_p6[8]', '[9]': 'header_p6[9]', '[10]': 'header_p6[10]', '[11]': 'header_p6[11]', '[12]': 'header_p6[12]', '[13]': 'header_p6[13]', '[14]': 'header_p6[14]', '[15]': 'header_p6[15]', '[16]': 'header_p6[16]', '[17]': 'header_p6[17]'}
+    - id: header_p7
+      type: pin_row
+      label: HEADER_P7
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: header_p7
+      pins: {'[0]': 'header_p7[0]', '[1]': 'header_p7[1]', '[2]': 'header_p7[2]', '[3]': 'header_p7[3]', '[4]': 'header_p7[4]', '[5]': 'header_p7[5]', '[6]': 'header_p7[6]', '[7]': 'header_p7[7]', '[8]': 'header_p7[8]', '[9]': 'header_p7[9]', '[10]': 'header_p7[10]', '[11]': 'header_p7[11]', '[12]': 'header_p7[12]', '[13]': 'header_p7[13]', '[14]': 'header_p7[14]', '[15]': 'header_p7[15]', '[16]': 'header_p7[16]', '[17]': 'header_p7[17]', '[18]': 'header_p7[18]', '[19]': 'header_p7[19]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: hdmi
+      label: hdmi
+      attach: {peripheral: hdmi_tmds, params: {timing: design, clock_serial_mhz: 270}, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: camera
+      label: camera
+      variants:
+        - id: gpio
+          label: its pins as the design's gpio
+          attach: {peripheral: gpio_header, params: {width: 2}, bind: {io: [onboard_camera.scl, onboard_camera.sda]}}
+        - id: i2s_audio_out
+          label: i2s_audio_out
+          attach: {peripheral: i2s_audio_out, bind: {mclk: 'onboard_camera.data[1]', bclk: onboard_camera.pclk, sdata: onboard_camera.hsync, lrclk: onboard_camera.vsync}}
+        - id: inmp441_i2s_mic
+          label: inmp441_i2s_mic
+          attach: {peripheral: inmp441_i2s_mic, bind: {lr: onboard_serial_flash.hold, ws: onboard_serial_flash.wp, sck: onboard_serial_flash.cs, sd: 'onboard_camera.data[0]'}}
+    - id: led
+      label: led
+      attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_led}}
+    - id: serial_flash
+      label: serial flash
+      attach: {peripheral: tm1638_led_key, bind: {dio: onboard_serial_flash.do, clk: onboard_serial_flash.di, stb: onboard_serial_flash.clk}}
+    - id: jtag
+      label: JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)
+      device: {kind: other, bank: onboard_jtag}   # no peripheral model yet

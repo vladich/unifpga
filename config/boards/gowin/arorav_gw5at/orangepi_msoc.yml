@@ -1,12 +1,18 @@
 # orangepi_msoc pin map.
 
+
 Board:
   id: orangepi_msoc
-  fpga:
-    producer: Gowin
-    family: AroraV/GW5AST
-    part: GW5AT-LV138PG484AC1/I0
-
+  name: Orange Pi MSOC
+  product: OrangePi MSOC
+  summary: Gowin Arora V GW5AT-138PG484A (138K LUT), LPDDR3 2 Gbit, SPI flash 128 Mbit, micro-USB programming, 16
+    LEDs, 2x 4-digit 7-seg, 4 keys + recovery key, 2x 8-way DIP switches, 30-pin GPIO FPC connector, 3.3 V/3 A supply
+    from an M.2 socket; 43 x 84.5 mm
+  producer: orange_pi
+  chip: GW5AT-LV138PG484AC1/I0
+  bridges:
+  - jtag
+  programmer: openFPGALoader
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -15,7 +21,7 @@ Board:
       set_device: "GW5AT-LV138PG484AC1/I0 -name GW5AT-138B -device_version B"
       options: [use_cpu_as_gpio, use_sspi_as_gpio]
       gprj_device: '<Device name="GW5AT-138B" pn="GW5AT-LV138PG484AC1/I0">gw5at138b-012</Device>'
-  pinBanks:
+  banks:
     clk: { pins: V18, frequency_mhz: 25 }
     onboard_leds:
       pins: [N13, P14, R14, N14, P15, P16, R16, P17, T18, R18, R17, W22, Y22, AA21, AB22, AB21]
@@ -41,3 +47,31 @@ Board:
         anodes: [K17, J17, L14, L15, L16, M16, H20, G20]
     gpio:
       pins: [B22, B21, A21, B20, A20, A19, B18, A18, B17, A16, B16, A15, B15, A14, B13, A13, E21, G21, D21, G22]
+  # ---- drawn: headers and parts; ./unifpga layout draft orangepi_msoc regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 16}, bind: {led: onboard_leds}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 16}, bind: {sw: onboard_switches}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 8, active: low, digits_active: high}, bind: {segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg], dp: onboard_7seg.dp, digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}

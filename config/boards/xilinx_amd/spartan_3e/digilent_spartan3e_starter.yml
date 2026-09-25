@@ -1,0 +1,25 @@
+# digilent_spartan3e_starter: Spartan-3E Starter Kit.
+
+Board:
+  id: digilent_spartan3e_starter
+  name: Spartan-3E Starter Kit
+  url: https://digilent.com/reference/programmable-logic/spartan-3e/start
+  producer: digilent
+  chip: XC3S500E-FG320
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - ethernet_phy_10_100
+  - nor_flash
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - vga666_resistor_dac
+  - smsc_lan83c185
+  - intel_strataflash_p30

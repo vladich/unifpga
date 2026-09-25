@@ -1,0 +1,23 @@
+# bittware_vp815: BittWare VectorPath VP815 Achronix Speedster7t.
+
+Board:
+  id: bittware_vp815
+  name: BittWare VectorPath VP815 Achronix Speedster7t
+  url: https://achronix.com/vectorpath-815-accelerator
+  status: active
+  producer: bittware
+  chip: AC7t1500ES0
+  bridges:
+  - pcie-jtag
+  programmer: ace_pgm
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

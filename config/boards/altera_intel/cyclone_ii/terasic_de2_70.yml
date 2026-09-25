@@ -1,0 +1,31 @@
+# terasic_de2_70: DE2-70.
+
+Board:
+  id: terasic_de2_70
+  name: DE2-70
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=53&No=226
+  producer: terasic
+  chip: EP2C70F896C6N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - audio_codec
+  - dip_switches
+  - hdmi_input
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - hynix_hy57v641620
+  - wolfson_wm8731
+  - adi_adv7123
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - adi_adv7180

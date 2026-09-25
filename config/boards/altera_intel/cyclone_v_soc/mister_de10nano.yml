@@ -1,0 +1,11 @@
+# mister_de10nano: MiSTer (DE10-Nano based).
+
+Board:
+  id: mister_de10nano
+  name: MiSTer (DE10-Nano based)
+  url: https://github.com/MiSTer-devel/Wiki_MiSTer
+  producer: mister
+  chip: 5CSEBA6U23I7
+  bridges:
+  - jtag
+  programmer: quartus_pgm

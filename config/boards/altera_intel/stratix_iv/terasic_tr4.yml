@@ -1,0 +1,23 @@
+# terasic_tr4: TR4.
+
+Board:
+  id: terasic_tr4
+  name: TR4
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=683
+  producer: terasic
+  chip: EP4SGX230KF40C2N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr3_sodimm_socket
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

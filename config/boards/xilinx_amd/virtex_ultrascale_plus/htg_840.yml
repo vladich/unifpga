@@ -1,0 +1,26 @@
+# htg_840: HTG-840 Virtex UltraScale+ VU13P PCIe Dev Platform.
+
+Board:
+  id: htg_840
+  name: HTG-840 Virtex UltraScale+ VU13P PCIe Dev Platform
+  status: eol
+  producer: hitech_global
+  chip: XCVU13P-2FHGB2104E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - fmc_plus
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - silabs_si570
+  - micron_n25q256a
+  - ddr4_sodimm_socket

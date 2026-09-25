@@ -1,0 +1,25 @@
+# zuboard_1cg: ZUBoard 1CG.
+
+Board:
+  id: zuboard_1cg
+  name: ZUBoard 1CG
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/zuboard-1cg/
+  producer: avnet
+  chip: xczu1cgsbva484-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_dac
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - usb_uart_bridge
+  - wifi_radio
+  devices:
+  - marvell_88e1512
+  - murata_lbee5kl1dx
+  - cirrus_cs4344
+  - ftdi_ft4232h
+  - emmc_chip_generic
+  - microsd_socket_generic

@@ -1,0 +1,33 @@
+# enclustra_mercury_plus_st1: Enclustra Mercury+ ST1 Base Board.
+
+Board:
+  id: enclustra_mercury_plus_st1
+  name: Enclustra Mercury+ ST1 Base Board
+  url: https://www.enclustra.com/en/products/base-boards/mercury-st1/
+  status: active
+  producer: enclustra
+  chip: XC7Z030-2FBG676I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - usb_2_host
+  - displayport_output
+  - hdmi_output
+  - audio_codec
+  - rs232_transceiver
+  - can_transceiver
+  - pmod_connector
+  - fmc_lpc
+  - user_buttons
+  - user_leds
+  devices:
+  - marvell_88e1512
+  - adi_adv7511
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

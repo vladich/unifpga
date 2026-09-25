@@ -1,0 +1,11 @@
+# achronix_speedster22i_hd1000: Speedster22i HD1000 Dev Kit.
+
+Board:
+  id: achronix_speedster22i_hd1000
+  name: Speedster22i HD1000 Dev Kit
+  status: eol
+  producer: achronix
+  chip: AC22iHD1000
+  bridges:
+  - jtag
+  programmer: ace_pgm

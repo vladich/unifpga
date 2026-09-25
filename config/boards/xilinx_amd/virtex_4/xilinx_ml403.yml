@@ -1,0 +1,28 @@
+# xilinx_ml403: Xilinx ML403 FX Embedded PowerPC Platform.
+
+Board:
+  id: xilinx_ml403
+  name: Xilinx ML403 FX Embedded PowerPC Platform
+  url: https://docs.amd.com/v/u/en-US/ug080
+  status: eol
+  producer: xilinx_amd
+  chip: XC4VFX12-FF668-10
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - jtag_header
+  - parallel_lcd
+  - sdr_sdram
+  - seven_segment_display
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1111
+  - lcd_char_16x2

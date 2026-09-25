@@ -1,0 +1,32 @@
+# alinx_axu2cg_e: Alinx AXU2CG-E.
+
+Board:
+  id: alinx_axu2cg_e
+  name: Alinx AXU2CG-E
+  url: https://coderobin.com/products/alinx-axu2cg-e-xilinx-zynq-ultrascale-mpsoc-zu2cg-fpga-development-board
+  status: active
+  notes: -E suffix denotes economical / E-grade carrier variant.
+  producer: alinx
+  chip: XCZU2CG-1SFVC784E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - sd_card_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic

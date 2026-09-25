@@ -1,0 +1,23 @@
+# terasic_de5a_net: DE5a-Net.
+
+Board:
+  id: terasic_de5a_net
+  name: DE5a-Net
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=970
+  producer: terasic
+  chip: 10AX115N4F45E3SG
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr3_sodimm_socket
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

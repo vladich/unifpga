@@ -1,0 +1,18 @@
+# lattice_sentry_machxo5nx_demo: Lattice Sentry 4.0 Demo Board for MachXO5-NX.
+
+Board:
+  id: lattice_sentry_machxo5nx_demo
+  name: Lattice Sentry 4.0 Demo Board for MachXO5-NX
+  url: https://www.latticesemi.com/products/developmentboardsandkits/lattice-sentry-4-0-demo-board-for-machxo5-nx
+  status: active
+  producer: lattice
+  chip: LFMXO5-100T-9MG400I
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  features:
+  - jtag_header
+  - usb_jtag_bridge
+  - user_leds
+  devices:
+  - ftdi_ft2232h

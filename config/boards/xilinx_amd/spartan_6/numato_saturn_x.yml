@@ -1,0 +1,21 @@
+# numato_saturn_x: Saturn-X.
+
+Board:
+  id: numato_saturn_x
+  name: Saturn-X
+  url: https://numato.com/product/saturn-spartan-6-fpga-development-board-with-ddr-sdram/
+  producer: numato_lab
+  chip: XC6SLX25-2FTG256C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q032a
+  - led_discrete_generic
+  - pushbutton_smd_generic

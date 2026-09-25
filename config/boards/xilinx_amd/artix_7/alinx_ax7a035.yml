@@ -1,0 +1,23 @@
+# alinx_ax7a035: AX7A035.
+
+Board:
+  id: alinx_ax7a035
+  name: AX7A035
+  url: https://alinx.com/en/detail/9
+  producer: alinx
+  chip: XC7A35T-2FGG484I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - microsd_socket
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

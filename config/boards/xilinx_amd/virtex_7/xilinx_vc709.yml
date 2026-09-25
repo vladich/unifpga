@@ -1,0 +1,31 @@
+# xilinx_vc709: VC709.
+
+Board:
+  id: xilinx_vc709
+  name: VC709
+  url: https://www.xilinx.com/products/boards-and-kits/dk-v7-vc709-g.html
+  producer: xilinx_amd
+  chip: XC7VX690T-2FFG1761C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q256a
+  - silabs_cp2103
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr3_sodimm_socket
+  - silabs_si5324
+  - silabs_si570

@@ -1,12 +1,23 @@
 # tang_nano_9k pin map.
 
+
 Board:
   id: tang_nano_9k
-  fpga:
-    producer: Gowin
-    family: LittleBee/GW1NR
-    part: GW1NR-LV9QN88PC6/I5
-
+  name: Tang Nano 9k
+  product: Sipeed Tang Nano 9K
+  summary: Gowin GW1NR-LV9QN88PC6/I5 (8640 LUT4, 64 Mbit PSRAM in package, 608 Kbit user flash), 32 Mbit P25Q32U SPI
+    flash, BL702 USB-JTAG + UART, HDMI (TMDS from LVCMOS pins, shared with RGB LCD), 40-pin RGB LCD FPC, 8-pin 1.14"
+    SPI LCD FPC, microSD (SPI wiring), 6 LEDs, 2 buttons, 27 MHz, 2x24 2.54 mm pads
+  url: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-9K/Nano-9K.html
+  producer: sipeed
+  chip: GW1NR-LV9QN88PC6/I5
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - microsd_socket
+  devices:
+  - microsd_socket_generic
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -23,7 +34,7 @@ Board:
       gprj_device: '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>'
     apicula:
       rpll_device: GW1NR-9      # nextpnr-gowin: "wrong PLL device: GW1N-9C instead of GW1NR-9" (mercury 2026-09-22)
-  pinBanks:
+  banks:
     clk: { pins: "52", frequency_mhz: 27 }
     onboard_buttons:
       active: low
@@ -90,3 +101,73 @@ Board:
     onboard_fpga_unrouted:   # Unconnected-by-name FPGA IO (balls 19, 20)
       device: {"name": "Unconnected-by-name FPGA IO (balls 19, 20)", "kind": "other"}
       pins: {"iob4a": "19", "iob4b": "20"}
+  # ---- drawn: headers and parts; ./unifpga layout draft tang_nano_9k regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]'}
+    - id: header_j5
+      type: pin_row
+      label: HEADER_J5
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: header_j5
+      pins: {'[0]': 'header_j5[0]', '[1]': 'header_j5[1]', '[2]': 'header_j5[2]', '[3]': 'header_j5[3]', '[4]': 'header_j5[4]', '[5]': 'header_j5[5]', '[6]': 'header_j5[6]', '[7]': 'header_j5[7]', '[8]': 'header_j5[8]', '[9]': 'header_j5[9]', '[10]': 'header_j5[10]', '[11]': 'header_j5[11]', '[12]': 'header_j5[12]', '[13]': 'header_j5[13]', '[14]': 'header_j5[14]', '[15]': 'header_j5[15]', '[16]': 'header_j5[16]', '[17]': 'header_j5[17]', '[18]': 'header_j5[18]', '[19]': 'header_j5[19]', '[20]': 'header_j5[20]', '[21]': 'header_j5[21]', '[22]': 'header_j5[22]', '[23]': 'header_j5[23]'}
+    - id: header_j6
+      type: pin_row
+      label: HEADER_J6
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: header_j6
+      pins: {'[0]': 'header_j6[0]', '[1]': 'header_j6[1]', '[2]': 'header_j6[2]', '[3]': 'header_j6[3]', '[4]': 'header_j6[4]', '[5]': 'header_j6[5]', '[6]': 'header_j6[6]', '[7]': 'header_j6[7]', '[8]': 'header_j6[8]', '[9]': 'header_j6[9]', '[10]': 'header_j6[10]', '[11]': 'header_j6[11]', '[12]': 'header_j6[12]', '[13]': 'header_j6[13]', '[14]': 'header_j6[14]', '[15]': 'header_j6[15]', '[16]': 'header_j6[16]', '[17]': 'header_j6[17]', '[18]': 'header_j6[18]', '[19]': 'header_j6[19]', '[20]': 'header_j6[20]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 6}, bind: {led: onboard_leds}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: hdmi
+      label: hdmi
+      variants:
+        - id: hdmi_tmds
+          label: hdmi_tmds (pins listed in the order clk_p, clk_n, d_p, d_n)
+          attach: {peripheral: hdmi_tmds, bind: {clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n, d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n}}
+        - id: hdmi_tmds_2
+          label: hdmi_tmds (pins listed in the order clk_p, d_p, clk_n, d_n)
+          attach: {peripheral: hdmi_tmds, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: microsd
+      label: microsd
+      attach: {peripheral: inmp441_i2s_mic, bind: {lr: onboard_microsd.cs, ws: onboard_microsd.mosi, sck: onboard_microsd.sclk, sd: onboard_microsd.miso}}
+    - id: lcd
+      label: lcd
+      variants:
+        - id: i2s_audio_out
+          label: i2s_audio_out
+          attach: {peripheral: i2s_audio_out, bind: {bclk: onboard_lcd.vs, lrclk: onboard_lcd.hs, sdata: onboard_lcd.ck}}
+        - id: lcd_480_272
+          label: lcd_480_272
+          attach: {peripheral: lcd_480_272, params: {clock_pixel_pll: {idiv: 2, fbdiv: 0, odiv: 48, sdiv: 2, clkoutd: false}, bl: const.0}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+        - id: lcd_800_480
+          label: lcd_800_480
+          attach: {peripheral: lcd_800_480, params: {clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}, bl: const.0, clock_pixel_mhz: 32.4}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+        - id: lcd_ml6485
+          label: lcd_ml6485
+          attach: {peripheral: lcd_ml6485, params: {clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}, bl: const.0}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+    - id: small_lcd
+      label: small lcd
+      attach: {peripheral: gpio_header, params: {width: 4}, bind: {io: [onboard_small_lcd.data, onboard_small_lcd.clk, onboard_small_lcd.cs, onboard_small_lcd.rs]}}
+    - id: fpga_jtag
+      label: BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)
+      device: {kind: other, bank: onboard_fpga_jtag}   # no peripheral model yet
+    - id: fpga_unrouted
+      label: Unconnected-by-name FPGA IO (balls 19, 20)
+      device: {kind: other, bank: onboard_fpga_unrouted}   # no peripheral model yet

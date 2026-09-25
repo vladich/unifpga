@@ -1,0 +1,38 @@
+# intel_agilex7_soc_devkit: Agilex 7 SoC FPGA Development Kit.
+
+Board:
+  id: intel_agilex7_soc_devkit
+  name: Agilex 7 SoC FPGA Development Kit
+  aliases:
+  - terasic_agilex7_f_series_soc_devkit
+  url: https://www.altera.com/products/devkit/po-3003/agilex-7-fpga-f-series-transceiver-soc-development-kit-p-tile-and-e-tile
+  producer: intel_altera
+  chip: AGFB014R24B2E2V
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_2_host
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - micron_mt40a256m16
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microsd_socket_generic
+  - emmc_chip_generic
+  - microchip_usb2514b
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

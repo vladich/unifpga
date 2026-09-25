@@ -1,0 +1,33 @@
+# htg_703: HTG-703 Virtex-7 PCIe Gen3 X690T.
+
+Board:
+  id: htg_703
+  name: HTG-703 Virtex-7 PCIe Gen3 X690T
+  url: https://www.hitechglobal.com/Boards/Virtex7_PCIE_Gen3.htm
+  status: active
+  producer: hitech_global
+  chip: XC7VX690T-2FFG1761C
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - silabs_si570
+  - micron_n25q256a
+  - ddr3_sodimm_socket
+  - marvell_88e1512
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

@@ -1,0 +1,22 @@
+# krtkl_snickerdoodle_black: Snickerdoodle black.
+
+Board:
+  id: krtkl_snickerdoodle_black
+  name: Snickerdoodle black
+  url: https://krtkl.com/snickerdoodle/
+  status: active
+  producer: krtkl
+  chip: XC7Z020-3CLG400
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - microsd_socket
+  - wifi_radio
+  - bluetooth_le_radio
+  - usb_uart_bridge
+  - jtag_header

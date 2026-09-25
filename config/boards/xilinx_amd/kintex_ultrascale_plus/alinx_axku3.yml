@@ -1,0 +1,27 @@
+# alinx_axku3: Alinx AXKU3.
+
+Board:
+  id: alinx_axku3
+  name: Alinx AXKU3
+  url: https://coderobin.com/products/alinx-axku3-xilinx-kintex-ultrascale-xcku3p-fpga-development-board
+  status: active
+  notes: ACKU3 SOM + carrier. Chip needs to be added to registry.
+  producer: alinx
+  chip: XCKU3P-2FFVB676I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - sd_card_socket
+  - pcie_endpoint
+  - fmc_hpc
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

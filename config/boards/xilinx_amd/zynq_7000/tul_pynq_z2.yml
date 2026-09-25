@@ -2,9 +2,37 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/tul_pynq_z2.py
 
+
 Board:
   id: tul_pynq_z2
-  pinBanks:
+  name: TUL PYNQ-Z2
+  aliases:
+  - digilent_pynq_z2
+  url: https://www.tulembedded.com/fpga/ProductsPYNQ-Z2.html
+  status: active
+  producer: tul
+  chip: XC7Z020-1CLG400C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - hdmi_output
+  - audio_codec
+  - pmod_connector
+  - arduino_shield_header
+  - raspi_hat_header
+  - user_leds
+  - rgb_leds
+  - user_buttons
+  - dip_switches
+  banks:
     onboard_buttons:
       pins: [D19, D20, L20, L19]
     onboard_switches:

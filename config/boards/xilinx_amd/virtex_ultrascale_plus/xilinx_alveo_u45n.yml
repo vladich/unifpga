@@ -1,0 +1,16 @@
+# xilinx_alveo_u45n: AMD Alveo U45N Network Accelerator Card.
+
+Board:
+  id: xilinx_alveo_u45n
+  name: AMD Alveo U45N Network Accelerator Card
+  url: https://www.amd.com/en/products/accelerators/alveo/u45n/a-u45n-p08g-pq-g.html
+  status: active
+  producer: xilinx_amd
+  chip: XCU26-L2FSVH2892E
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qsfp_cage
+  - pcie_endpoint

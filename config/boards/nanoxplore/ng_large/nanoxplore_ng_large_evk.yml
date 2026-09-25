@@ -1,0 +1,11 @@
+# nanoxplore_ng_large_evk: NG-LARGE Evaluation Kit.
+
+Board:
+  id: nanoxplore_ng_large_evk
+  name: NG-LARGE Evaluation Kit
+  url: https://www.nanoxplore.com
+  producer: nanoxplore
+  chip: NG-LARGE-CG484
+  bridges:
+  - jtag
+  programmer: nanoxmap_impulse

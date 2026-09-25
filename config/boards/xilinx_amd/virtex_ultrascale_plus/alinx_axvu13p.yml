@@ -2,9 +2,30 @@
 # Source (local Alinx docs):
 #   ~/Alinx/AXVU13P/01_demo_document.rar -> 01_demo_document/demo/led_test/led_test.srcs/constrs_1/new/led_test.xdc
 
+
 Board:
   id: alinx_axvu13p
-  pinBanks:
+  name: Alinx AXVU13P
+  url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Virtex-UltraScale-plus/AXVU13P.html
+  status: active
+  producer: alinx
+  chip: XCVU13P-2FHGB2104E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - fmc_hpc
+  - pcie_endpoint
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: AV18
       frequency_mhz: 200

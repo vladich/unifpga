@@ -1,0 +1,22 @@
+# numato_narvi: Numato Narvi Spartan 7 FPGA Module.
+
+Board:
+  id: numato_narvi
+  name: Numato Narvi Spartan 7 FPGA Module
+  url: https://numato.com/product/narvi-spartan-7-fpga-module/
+  status: active
+  producer: numato_lab
+  chip: XC7S50-1CSGA324
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - nor_flash
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q032a
+  - led_discrete_generic

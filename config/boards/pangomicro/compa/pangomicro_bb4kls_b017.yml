@@ -1,0 +1,21 @@
+# pangomicro_bb4kls_b017: SA_BB4KLS_B017 Display Evaluation Baseboard.
+
+Board:
+  id: pangomicro_bb4kls_b017
+  name: SA_BB4KLS_B017 Display Evaluation Baseboard
+  url: https://www.pangomicro.com/open/4572.html
+  status: active
+  notes: Baseboard for SA_SOM4KLS_A004; MIPI-DPHY-to-SPI display bridge demo.
+  producer: pangomicro
+  chip: PGC4KLS-6CUWG81
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - jtag_header
+  - mipi_dsi_output
+  - user_buttons
+  - user_leds
+  devices:
+  - led_discrete_generic
+  - pushbutton_smd_generic

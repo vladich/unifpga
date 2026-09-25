@@ -1,0 +1,21 @@
+# numato_picoevb: Numato PicoEVB Artix-7 M.2 PCIe Module.
+
+Board:
+  id: numato_picoevb
+  name: Numato PicoEVB Artix-7 M.2 PCIe Module
+  status: eol
+  producer: numato_lab
+  chip: XC7A50T-2CSG325C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - jtag_header
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q032a
+  - led_discrete_generic

@@ -1,0 +1,11 @@
+# efinix_t35_bga324_devkit: Trion T35 BGA324 Development Kit.
+
+Board:
+  id: efinix_t35_bga324_devkit
+  name: Trion T35 BGA324 Development Kit
+  status: eol
+  producer: efinix
+  chip: T35F324C3
+  bridges:
+  - jtag
+  programmer: efinity_pgm

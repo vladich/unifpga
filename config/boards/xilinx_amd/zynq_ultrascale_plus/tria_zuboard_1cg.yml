@@ -1,0 +1,24 @@
+# tria_zuboard_1cg: Tria ZUBoard 1CG.
+
+Board:
+  id: tria_zuboard_1cg
+  name: Tria ZUBoard 1CG
+  url: https://www.tria-technologies.com/product/zuboard-1cg/
+  status: active
+  producer: tria_technologies
+  chip: XCZU1CG-1SBVA484
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - lpddr4_memory
+  - qspi_flash
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - usb_powered
+  - user_leds
+  - user_buttons
+  - dip_switches

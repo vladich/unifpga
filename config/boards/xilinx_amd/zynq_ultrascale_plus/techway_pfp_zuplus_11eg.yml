@@ -1,0 +1,19 @@
+# techway_pfp_zuplus_11eg: Techway PFP-ZU+_11 (ZU11EG).
+
+Board:
+  id: techway_pfp_zuplus_11eg
+  name: Techway PFP-ZU+_11 (ZU11EG)
+  url: https://www.techway.com/p/zynq-board-pcie-with-fmc/
+  status: active
+  producer: techway
+  chip: XCZU11EG-2FFVC1156E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - fmc_plus
+  - usb_uart_bridge
+  - usb_jtag_bridge

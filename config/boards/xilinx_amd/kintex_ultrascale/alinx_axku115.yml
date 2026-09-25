@@ -1,0 +1,25 @@
+# alinx_axku115: Alinx AXKU115.
+
+Board:
+  id: alinx_axku115
+  name: Alinx AXKU115
+  url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Kintex-UltraScale.html
+  status: active
+  producer: alinx
+  chip: XCKU115-2FLVA1517I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - fmc_hpc
+  - fmc_lpc
+  - pcie_endpoint
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

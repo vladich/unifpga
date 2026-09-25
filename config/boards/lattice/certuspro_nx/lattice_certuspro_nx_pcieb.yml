@@ -1,0 +1,22 @@
+# lattice_certuspro_nx_pcieb: CertusPro-NX PCIe Bridge Board.
+
+Board:
+  id: lattice_certuspro_nx_pcieb
+  name: CertusPro-NX PCIe Bridge Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/certuspro-nx-pcie-bridge-board
+  status: active
+  producer: lattice
+  chip: LFCPNX-100-9LFG672I
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  features:
+  - qspi_flash
+  - fmc_lpc
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h

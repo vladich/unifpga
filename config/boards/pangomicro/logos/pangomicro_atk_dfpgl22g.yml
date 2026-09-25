@@ -1,0 +1,29 @@
+# pangomicro_atk_dfpgl22g: ATK-DFPGL22G (紫光PGL22) Development Board.
+
+Board:
+  id: pangomicro_atk_dfpgl22g
+  name: ATK-DFPGL22G (紫光PGL22) Development Board
+  url: https://www.pangomicro.com/open/4262.html
+  status: active
+  notes: ALIENTEK 'ATK' brand; all-domestic chip BOM.
+  producer: pangomicro
+  chip: PGL22G-6MBG324
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_output
+  - microsd_socket
+  - mipi_dsi_output
+  - parallel_camera_input
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

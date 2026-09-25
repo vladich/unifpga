@@ -1,0 +1,30 @@
+# pangomicro_alinx_pgl12g: ALINX PGL12G Development Board.
+
+Board:
+  id: pangomicro_alinx_pgl12g
+  name: ALINX PGL12G Development Board
+  url: https://www.pangomicro.com/open/4254.html
+  status: active
+  notes: ALINX third-party board listed on Pango's official catalog page.
+  producer: alinx
+  chip: PGL12G-6MBG324
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - gpio_header_generic
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - parallel_camera_input
+  - qspi_flash
+  - sdr_sdram
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - winbond_w9825g6kh
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,33 @@
+# xilinx_zc702: ZC702.
+
+Board:
+  id: xilinx_zc702
+  name: ZC702
+  url: https://www.xilinx.com/products/boards-and-kits/ek-z7-zc702-g.html
+  producer: xilinx_amd
+  chip: XC7Z020-1CLG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - micron_n25q128a
+  - marvell_88e1116r
+  - adi_adv7511
+  - silabs_cp2103
+  - ftdi_ft232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

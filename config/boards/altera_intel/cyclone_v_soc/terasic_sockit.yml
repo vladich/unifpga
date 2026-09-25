@@ -1,12 +1,45 @@
 # terasic_sockit pin map.
 
+
 Board:
   id: terasic_sockit
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone V SoC"
-    part: 5CSXFC6D6F31C6
-
+  name: Terasic SoCKit
+  product: SoCKit (Cyclone V SoC Development Kit)
+  summary: Cyclone V SX SoC 5CSXFC6D6F31C6 (110K LEs, dual Cortex-A9 HPS, transceivers); 1 GB DDR3 FPGA + 1 GB DDR3
+    HPS; VGA (ADV7123), SSM2603 audio, HSMC, IR, temperature sensor; HPS Ethernet, USB OTG, micro SD, QSPI flash,
+    128x64 LCD, G-sensor; 4 SW, 4 KEY, 4 LEDs
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=816
+  producer: terasic
+  chip: 5CSXFC6D6F31C6
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - accelerometer
+  - adc_chip
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - micron_mt41k256m16
+  - adi_ssm2603
+  - adi_adv7123
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - adi_adxl345
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - lt_ltc2308
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   toolchain_options:
@@ -14,7 +47,7 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
-  pinBanks:
+  banks:
     osc_50_b3b: { pins: AF14, frequency_mhz: 50, iostandard: 1.5 V }   # system clock
     onboard_buttons:
       iostandard: 3.3-V LVTTL
@@ -353,3 +386,61 @@ Board:
     onboard_osc_50_b5b:   # OSC_50_B5B (50 MHz)
       device: {"name": "OSC_50_B5B (50 MHz)", "kind": "clock"}
       pins: {"OSC_50_B5B": "Y26"}
+  # ---- drawn: headers and parts; ./unifpga layout draft terasic_sockit regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers: []
+  parts:
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 4}, bind: {led: onboard_leds}}
+    - id: osc_50_b3b
+      label: osc 50 b3b
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: osc_50_b3b}}
+    - id: cpu_resetn
+      label: cpu resetn
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 8, bits_g: 8, bits_b: 8, pin_bits_r: 8, pin_bits_g: 8, pin_bits_b: 8, color_depth: 888, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs, clk: onboard_vga.clk, blank_n: onboard_vga.blank_n}}
+    - id: hps_ethernet
+      label: HPS Gigabit Ethernet PHY (KSZ9021RN)
+      device: {kind: ethernet, bank: onboard_hps_ethernet}   # no peripheral model yet
+    - id: hps_uart
+      label: HPS UART to USB (FT232R)
+      device: {kind: uart, bank: onboard_hps_uart}   # no peripheral model yet
+    - id: hps_ddr3
+      label: HPS DDR3 SDRAM (1 GB, 32-bit)
+      device: {kind: ddr3, bank: onboard_hps_ddr3}   # no peripheral model yet
+    - id: hps_qspi_flash
+      label: HPS QSPI flash (1 Gb)
+      device: {kind: flash, bank: onboard_hps_qspi_flash}   # no peripheral model yet
+    - id: hps_sdcard
+      label: HPS micro SD card socket
+      device: {kind: sdcard, bank: onboard_hps_sdcard}   # no peripheral model yet
+    - id: hps_usb_otg
+      label: HPS USB 2.0 OTG PHY (USB3300)
+      device: {kind: usb, bank: onboard_hps_usb_otg}   # no peripheral model yet
+    - id: hps_gsensor
+      label: HPS accelerometer (ADXL345 G-sensor)
+      device: {kind: other, bank: onboard_hps_gsensor}   # no peripheral model yet
+    - id: hps_i2c
+      label: HPS I2C bus (G-sensor, LTC connector)
+      device: {kind: other, bank: onboard_hps_i2c}   # no peripheral model yet
+    - id: hps_lcm
+      label: HPS 128x64 graphic LCD module (SPI)
+      device: {kind: other, bank: onboard_hps_lcm}   # no peripheral model yet
+    - id: hps_ltc_header
+      label: HPS LTC connector (2x7, SPI/I2C/GPIO)
+      device: {kind: header, bank: hps_ltc_header}   # no peripheral model yet
+    - id: osc_50_b4a
+      label: OSC_50_B4A (50 MHz)
+      device: {kind: clock, bank: onboard_osc_50_b4a}   # no peripheral model yet
+    - id: osc_50_b5b
+      label: OSC_50_B5B (50 MHz)
+      device: {kind: clock, bank: onboard_osc_50_b5b}   # no peripheral model yet

@@ -1,0 +1,25 @@
+# edge_artix_7_200t: EDGE Artix 7 200T.
+
+Board:
+  id: edge_artix_7_200t
+  name: EDGE Artix 7 200T
+  url: https://allaboutfpga.com/product/edge-artix-7-200t-fpga-motor-inverter-pwm-controller/
+  status: active
+  producer: invent_logics
+  chip: XC7A200T-1FBG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - hdmi_output
+  - vga_output
+  - microsd_socket
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - audio_codec
+  - seven_segment_display
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_powered

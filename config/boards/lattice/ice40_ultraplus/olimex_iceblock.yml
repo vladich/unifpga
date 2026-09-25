@@ -1,0 +1,11 @@
+# olimex_iceblock: iCEblock.
+
+Board:
+  id: olimex_iceblock
+  name: iCEblock
+  url: https://www.olimex.com/Products/FPGA/iCE40/iCEblock/
+  producer: olimex
+  chip: iCE40UP5K-SG48
+  bridges:
+  - jtag
+  programmer: iceprog

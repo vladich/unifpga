@@ -1,0 +1,22 @@
+# avnet_picozed_7010: Avnet PicoZed 7010 SoM (SoM + breakout).
+
+Board:
+  id: avnet_picozed_7010
+  name: Avnet PicoZed 7010 SoM (SoM + breakout)
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/picozed/
+  status: active
+  producer: avnet
+  chip: XC7Z010-1CLG485C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a
+  - marvell_88e1512
+  - emmc_chip_generic

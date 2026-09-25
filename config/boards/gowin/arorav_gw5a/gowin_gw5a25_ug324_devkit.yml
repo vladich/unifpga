@@ -1,0 +1,28 @@
+# gowin_gw5a25_ug324_devkit: GW5A-25 UG324 Dev Kit.
+
+Board:
+  id: gowin_gw5a25_ug324_devkit
+  name: GW5A-25 UG324 Dev Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/57/
+  status: active
+  producer: gowin_semi
+  chip: GW5A-LV25UG324C1/I0
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm_standard
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - hdmi_output
+  - mipi_csi2_input
+  - usb_2_otg
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - jtag_header
+  devices:
+  - micron_mt41k128m16
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

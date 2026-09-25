@@ -1,0 +1,25 @@
+# gowin_gw5ar25_devkit: GW5AR-25 Starter Kit (DK_START_GW5AR-LV25UG256PC2I1).
+
+Board:
+  id: gowin_gw5ar25_devkit
+  name: GW5AR-25 Starter Kit (DK_START_GW5AR-LV25UG256PC2I1)
+  url: https://www.gowinsemi.com/en/support/devkits_detail/62/
+  status: active
+  producer: gowin_semi
+  chip: GW5AR-LV25UG256PC2/I1
+  bridges:
+  - jtag
+  programmer: gowin_pgm
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - jtag_header
+  - mipi_dsi_output
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

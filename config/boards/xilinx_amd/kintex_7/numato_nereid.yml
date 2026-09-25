@@ -2,9 +2,33 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/numato_nereid.py
 
+
 Board:
   id: numato_nereid
-  pinBanks:
+  name: Numato Nereid Kintex-7 PCIe Development Board
+  url: https://numato.com/product/nereid-kintex-7-pci-express-fpga-development-board/
+  status: active
+  producer: numato_lab
+  chip: XC7K160T-2FFG676C
+  bridges:
+  - jtag
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q128a
+  - micron_mt41k256m16
+  - microsd_socket_generic
+  - led_discrete_generic
+  banks:
     sys_clk:
       pins: F22
     cpu_resetn:

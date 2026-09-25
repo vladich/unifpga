@@ -2,9 +2,30 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/qmtech_ep4ce15_starter_kit.py
 
+
 Board:
   id: qmtech_c4_starter
-  pinBanks:
+  name: Cyclone IV Starter Kit (EP4CE15)
+  producer: qmtech
+  chip: EP4CE15F23C8
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - sdr_sdram
+  - seven_segment_display
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - winbond_w9825g6kh
+  - seven_seg_module_shared
+  - vga666_resistor_dac
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  banks:
     sys_clk:
       pins: T2
     onboard_leds:

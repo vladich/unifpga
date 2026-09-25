@@ -1,0 +1,11 @@
+# xilinx_alveo_u55c: Alveo U55C.
+
+Board:
+  id: xilinx_alveo_u55c
+  name: Alveo U55C
+  url: https://www.xilinx.com/products/boards-and-kits/alveo/u55c.html
+  producer: xilinx_amd
+  chip: XCU55C-FSVH2892E
+  bridges:
+  - jtag
+  programmer: vivado_hw

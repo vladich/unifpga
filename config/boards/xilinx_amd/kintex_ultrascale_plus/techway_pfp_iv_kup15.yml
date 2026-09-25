@@ -1,0 +1,21 @@
+# techway_pfp_iv_kup15: PFP-IV KUP15.
+
+Board:
+  id: techway_pfp_iv_kup15
+  name: PFP-IV KUP15
+  url: https://www.techway.com/p/carte-pcie-kintex-ultrascale/
+  status: active
+  producer: techway
+  chip: XCKU15P-2FFVE1760E
+  bridges:
+  - jtag
+  - pcie-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - pcie_endpoint
+  - fmc_plus
+  - jtag_header

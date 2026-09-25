@@ -1,0 +1,33 @@
+# alinx_axu4ev_e: Alinx AXU4EV-E.
+
+Board:
+  id: alinx_axu4ev_e
+  name: Alinx AXU4EV-E
+  url: https://coderobin.com/products/alinx-axu4ev-e-xilinx-zynq-ultrascale-mpsoc-zu4ev-fpga-development-board
+  status: active
+  notes: -E (economy) sibling of AXU4EV-P.
+  producer: alinx
+  chip: XCZU4EV-1SFVC784I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - sd_card_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,35 @@
+# xilinx_zcu111: ZCU111.
+
+Board:
+  id: xilinx_zcu111
+  name: ZCU111
+  url: https://www.xilinx.com/products/boards-and-kits/zcu111.html
+  producer: xilinx_amd
+  chip: XCZU28DR-2FFVG1517E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_2_otg
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - ddr4_sodimm_socket
+  - microchip_usb3343
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - emmc_chip_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1512
+  - spansion_s25fl256s

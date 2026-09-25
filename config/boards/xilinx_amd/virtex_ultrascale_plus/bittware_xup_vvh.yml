@@ -1,0 +1,26 @@
+# bittware_xup_vvh: BittWare XUP-VVH Virtex UltraScale+ HBM (VU37P/VU35P).
+
+Board:
+  id: bittware_xup_vvh
+  name: BittWare XUP-VVH Virtex UltraScale+ HBM (VU37P/VU35P)
+  url: https://www.bittware-molex.com/products/xup-vvh/
+  status: active
+  notes: 'BittWare lists it as a legacy product: still sold, not recommended for new designs.'
+  producer: bittware
+  chip: XCVU37P-2FSVH2892E
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - hbm2e_in_package
+  - pcie_endpoint
+  - qsfp_dd_cage
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

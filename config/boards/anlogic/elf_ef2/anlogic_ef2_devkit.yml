@@ -1,0 +1,11 @@
+# anlogic_ef2_devkit: Elf EF2 Dev Kit.
+
+Board:
+  id: anlogic_ef2_devkit
+  name: Elf EF2 Dev Kit
+  status: eol
+  producer: anlogic
+  chip: EF2L45LG144C
+  bridges:
+  - jtag
+  programmer: td_pgm

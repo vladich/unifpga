@@ -2,9 +2,37 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7Z035B/ (aggregated XDC files; 565 unique signals)
 
+
 Board:
   id: alinx_ax7z035
-  pinBanks:
+  name: Alinx AX7Z035
+  url: https://www.en.alinx.com/Product/SoC-development-Boards/Zynq-7000-SoC/AX7Z035B.html
+  status: active
+  producer: alinx
+  chip: XC7Z035-2FFG676I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sata_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: C8
     sys_clk_n:

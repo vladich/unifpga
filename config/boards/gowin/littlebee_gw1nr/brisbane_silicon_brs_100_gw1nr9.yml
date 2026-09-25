@@ -1,0 +1,21 @@
+# brisbane_silicon_brs_100_gw1nr9: BRS-100-GW1NR9.
+
+Board:
+  id: brisbane_silicon_brs_100_gw1nr9
+  name: BRS-100-GW1NR9
+  url: https://brisbanesilicon.com.au/brs-100-gw1nr9/
+  status: active
+  producer: brisbane_silicon
+  chip: GW1NR-LV9QN88PC7/I6
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - hyperram
+  - qspi_flash
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - usb_powered

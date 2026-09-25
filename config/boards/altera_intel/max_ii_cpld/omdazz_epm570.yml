@@ -1,19 +1,25 @@
 # omdazz_epm570 pin map.
 
+
 Board:
   id: omdazz_epm570
-  fpga:
-    producer: "Altera (Intel)"
-    family: "MAX II CPLD"
-    part: EPM570T100C5
-
+  name: Omdazz EPM570
+  product: unresolved - EPM570T100C5 CPLD teaching board ("Derived from www.OurFPGA.com" per the BGM qsf); OMDAZZ
+    brand per catalogue
+  summary: Altera MAX II EPM570T100C5 (570 LE CPLD, TQFP100); 8 LEDs, 6 keys + 4 more keys, 8-digit 7-seg, buzzer,
+    RS232, character LCD, VGA (BGM)
+  producer: omdazz
+  chip: EPM570T100C5
+  bridges:
+  - jtag
+  programmer: quartus2_pgm
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   toolchain_options:
     quartus:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS \"AS INPUT TRI-STATED\""
-  pinBanks:
+  banks:
     clk: { pins: "12", frequency_mhz: 50 }
     cpu_resetn: { pins: "41", active: low }
     onboard_leds:
@@ -50,3 +56,37 @@ Board:
     onboard_buzzer:   # Buzzer
       device: {"name": "Buzzer", "kind": "buzzer"}
       pins: {"beep": "73"}
+  # ---- drawn: headers and parts; ./unifpga layout draft omdazz_epm570 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers: []
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: cpu_resetn
+      label: cpu resetn
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 6}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 8, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 1, pin_bits_g: 1, pin_bits_b: 1, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: char_lcd
+      label: char lcd
+      attach: {peripheral: gpio_header, params: {width: 11}, bind: {io: onboard_char_lcd.d}}
+    - id: buzzer
+      label: Buzzer
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.beep}}

@@ -1,0 +1,11 @@
+# quicklogic_quickfeather: QuickFeather.
+
+Board:
+  id: quicklogic_quickfeather
+  name: QuickFeather
+  status: eol
+  producer: quicklogic
+  chip: QLES3CSDC1
+  bridges: []
+  programmer: openocd
+  bootloader: usb-cdc-bootloader

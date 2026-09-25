@@ -2,9 +2,39 @@
 # Source: official Digilent XDC
 #   https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Genesys-ZU-5EV-D-Master.xdc
 
+
 Board:
   id: digilent_genesys_zu_5ev
-  pinBanks:
+  name: Genesys ZU-5EV
+  url: https://digilent.com/reference/programmable-logic/genesys-zu/start
+  producer: digilent
+  chip: xczu5ev-2sfvc784i
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - emmc_chip_generic
+  - tmds_direct
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - adi_adau1761
+  - ddr4_sodimm_socket
+  - silabs_si5342
+  banks:
     onboard_buttons:
       pins: [B10, H12, J12, F12, A12]
     onboard_switches:

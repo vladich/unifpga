@@ -2,9 +2,28 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/enclustra_mercury_xu5.py
 
+
 Board:
   id: enclustra_mercury_xu5
-  pinBanks:
+  name: Enclustra Mercury XU5 SoM (legacy, pre-Mercury+)
+  url: https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu5/
+  status: eol
+  producer: enclustra
+  chip: XCZU5EV-2SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - emmc_chip_generic
+  banks:
     cpu_resetn:
       pins: N19
     onboard_leds:

@@ -1,0 +1,19 @@
+# trenz_te0741_k70t: TE0741 Kintex-7 70T SoM.
+
+Board:
+  id: trenz_te0741_k70t
+  name: TE0741 Kintex-7 70T SoM
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE0741-Kintex-7/
+  status: active
+  producer: trenz_electronic
+  chip: XC7K70T-2FBG676C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - jtag_header
+  - qspi_flash
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a

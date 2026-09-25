@@ -1,0 +1,15 @@
+# lattice_machxo3lf_9400: MachXO3LF Starter Kit.
+
+Board:
+  id: lattice_machxo3lf_9400
+  name: MachXO3LF Starter Kit
+  url: https://www.latticesemi.com/products/developmentboardsandkits/machxo3lfstarterkit
+  producer: lattice
+  chip: LCMXO3LF-6900C-5BG256C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h

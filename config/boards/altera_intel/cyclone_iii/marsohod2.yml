@@ -1,0 +1,11 @@
+# marsohod2: Marsohod2.
+
+Board:
+  id: marsohod2
+  name: Marsohod2
+  status: eol
+  producer: marsohod
+  chip: EP3C10E144C8N
+  bridges:
+  - jtag
+  programmer: quartus_pgm

@@ -3,9 +3,40 @@
 #   https://github.com/alinxalinx/AXU2CGA_AXU2CGB/blob/master/vivado/auto_create_project/src/constraints/gpio.xdc
 #   https://github.com/alinxalinx/AXU2CGA_AXU2CGB/blob/master/vivado/auto_create_project/src/constraints/system.xdc
 
+
 Board:
   id: alinx_axu2cgb
-  pinBanks:
+  name: Alinx AXU2CGB
+  url: https://coderobin.com/products/alinx-axu2cgb-xilinx-zynq-ultrascale-mpsoc-xczu2cg-fpga-development-board
+  status: active
+  notes: AXU2CGA in catalog; AXU2CGB is the rev-B / industrial variant.
+  producer: alinx
+  chip: XCZU2CG-1SFVC784E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - mipi_csi2_input
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: AB11
       frequency_mhz: 25

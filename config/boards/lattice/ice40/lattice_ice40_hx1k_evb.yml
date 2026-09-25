@@ -1,0 +1,15 @@
+# lattice_ice40_hx1k_evb: iCE40-HX1K Evaluation Kit.
+
+Board:
+  id: lattice_ice40_hx1k_evb
+  name: iCE40-HX1K Evaluation Kit
+  url: https://www.latticesemi.com/iCEblink40-HX1K
+  producer: lattice
+  chip: iCE40HX1K-VQ100
+  bridges:
+  - jtag
+  programmer: iceprog
+  features:
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h

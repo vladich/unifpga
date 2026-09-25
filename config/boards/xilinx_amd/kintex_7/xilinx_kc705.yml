@@ -2,9 +2,37 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_kc705.py
 
+
 Board:
   id: xilinx_kc705
-  pinBanks:
+  name: KC705
+  url: https://www.xilinx.com/products/boards-and-kits/ek-k7-kc705-g.html
+  producer: xilinx_amd
+  chip: XC7K325T-2FFG900C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - marvell_88e1111
+  - silabs_cp2103
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - silabs_si5324
+  - micron_n25q128a
+  banks:
     cpu_resetn:
       pins: AB7
     onboard_leds:

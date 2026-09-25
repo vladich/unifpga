@@ -1,0 +1,36 @@
+# alinx_axu7ev: Alinx AXU7EV.
+
+Board:
+  id: alinx_axu7ev
+  name: Alinx AXU7EV
+  status: eol
+  notes: ZU7EV with H.264/H.265 VCU.
+  producer: alinx
+  chip: XCZU7EV-2FFVC1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_10gbe_sfp
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - nvme_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,11 @@
+# xilinx_alveo_u50: Alveo U50.
+
+Board:
+  id: xilinx_alveo_u50
+  name: Alveo U50
+  url: https://www.xilinx.com/products/boards-and-kits/alveo/u50.html
+  producer: xilinx_amd
+  chip: XCU50-FSVH2104-2-E
+  bridges:
+  - jtag
+  programmer: vivado_hw

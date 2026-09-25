@@ -1,0 +1,23 @@
+# lattice_ecp5_versa_5g: ECP5 Versa-5G.
+
+Board:
+  id: lattice_ecp5_versa_5g
+  name: ECP5 Versa-5G
+  url: https://www.latticesemi.com/products/developmentboardsandkits/ecp5versadevelopmentkit
+  producer: lattice
+  chip: LFE5UM-45F-8BG381C
+  bridges:
+  - jtag
+  programmer: ecpprog
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h
+  - micron_mt41k128m16
+  - marvell_88e1512
+  - spansion_s25fl256s
+  - microsd_socket_generic

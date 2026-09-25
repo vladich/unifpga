@@ -1,0 +1,20 @@
+# sipeed_tang_primer_15k: Sipeed Tang Primer 15K.
+
+Board:
+  id: sipeed_tang_primer_15k
+  name: Sipeed Tang Primer 15K
+  url: https://wiki.sipeed.com/hardware/en/tang/tang-primer-15k/primer-15k.html
+  status: active
+  producer: sipeed
+  chip: GW5AR-LV15MG132PC1/I0
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm_standard
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - hyperram
+  - qspi_flash
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - usb_powered

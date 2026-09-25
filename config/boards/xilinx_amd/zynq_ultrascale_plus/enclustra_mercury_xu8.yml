@@ -1,0 +1,22 @@
+# enclustra_mercury_xu8: Enclustra Mercury XU8 SoM (legacy, pre-Mercury+).
+
+Board:
+  id: enclustra_mercury_xu8
+  name: Enclustra Mercury XU8 SoM (legacy, pre-Mercury+)
+  url: https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu8/
+  status: eol
+  producer: enclustra
+  chip: XCZU15EG-2FFVC900I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - emmc_chip_generic

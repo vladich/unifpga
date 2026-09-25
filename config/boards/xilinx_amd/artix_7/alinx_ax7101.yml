@@ -4,9 +4,34 @@
 #   https://github.com/alinxalinx/AX7101/blob/master/SRC/02_key_test/key_test/constrs_1/new/key.xdc
 #   https://github.com/alinxalinx/AX7101/blob/master/SRC/04_uart_test/uart_test/uart_test.srcs/constrs_1/new/uart_test.xdc
 
+
 Board:
   id: alinx_ax7101
-  pinBanks:
+  name: Alinx AX7101
+  url: https://coderobin.com/products/alinx-ax7101-xilinx-artix-7-xc7a100t-fpga-development-board
+  status: active
+  notes: Companion of AX7102/AX7103 — minimum-feature variant. XDC for LED/KEY/UART from vendor GitHub.
+  producer: alinx
+  chip: XC7A100T-2FGG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - microsd_socket
+  - qspi_flash
+  - sd_card_socket
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: R4
       frequency_mhz: 200

@@ -1,0 +1,29 @@
+# intel_agilex9_directrf: Agilex 9 Direct RF-Series Development Kit.
+
+Board:
+  id: intel_agilex9_directrf
+  name: Agilex 9 Direct RF-Series Development Kit
+  url: https://www.altera.com/products/devkit/po-3217/agilex-9-direct-rf-series-agrw014-development-kit
+  producer: intel_altera
+  chip: AGRF039R47A1E2V
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

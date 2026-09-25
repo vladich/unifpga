@@ -1,0 +1,23 @@
+# bittware_ia_860m: IA-860m.
+
+Board:
+  id: bittware_ia_860m
+  name: IA-860m
+  url: https://www.bittware-molex.com/products/ia-860m/
+  status: active
+  notes: Board revisions 0-3 carry AGMF039R47A2E2VR0 (CESNET NDK); revision 4 AGMF039R47A1E2VC.
+  producer: bittware
+  chip: AGMF039R47A1E2VC
+  bridges:
+  - pcie-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a

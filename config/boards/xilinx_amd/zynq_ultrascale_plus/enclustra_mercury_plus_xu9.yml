@@ -1,0 +1,26 @@
+# enclustra_mercury_plus_xu9: Mercury+ XU9.
+
+Board:
+  id: enclustra_mercury_plus_xu9
+  name: Mercury+ XU9
+  url: https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu9/
+  status: active
+  producer: enclustra
+  chip: XCZU7EV-2FBVB900I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - jtag_header
+  - qspi_flash
+  - usb_2_otg
+  - usb_3_host
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - microchip_usb3343
+  - emmc_chip_generic

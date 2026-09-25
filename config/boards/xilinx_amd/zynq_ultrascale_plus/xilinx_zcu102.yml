@@ -2,9 +2,46 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_zcu102.py
 
+
 Board:
   id: xilinx_zcu102
-  pinBanks:
+  name: ZCU102
+  url: https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html
+  producer: xilinx_amd
+  chip: XCZU9EG-2FFVB1156E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_2_host
+  - usb_2_otg
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - ddr4_sodimm_socket
+  - adi_adv7511
+  - microchip_usb3343
+  - microchip_usb2514b
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - emmc_chip_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1512
+  - silabs_si570
+  - spansion_s25fl256s
+  banks:
     cpu_resetn:
       pins: AM13
     onboard_buttons:

@@ -2,9 +2,36 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/.../CD.zip (streamed 454 constraint files; 485 signals)
 
+
 Board:
   id: alinx_av7k325
-  pinBanks:
+  name: Alinx AV7K325
+  url: https://coderobin.com/products/alinx-av7k325-xilinx-kintex-7-xc7k325-fpga-development-board
+  status: active
+  notes: AV-series carrier; revision of AV7K300.
+  producer: alinx
+  chip: XC7K325T-2FFG900I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: AE10
     cpu_resetn:

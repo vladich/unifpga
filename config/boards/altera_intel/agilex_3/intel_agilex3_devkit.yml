@@ -1,0 +1,31 @@
+# intel_agilex3_devkit: Agilex 3 FPGA Development Kit.
+
+Board:
+  id: intel_agilex3_devkit
+  name: Agilex 3 FPGA Development Kit
+  url: https://www.altera.com/products/devkit/po-3000/agilex-3-fpga-and-soc-c-series-development-kit
+  producer: intel_altera
+  chip: A3CW135BM16AE6S
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

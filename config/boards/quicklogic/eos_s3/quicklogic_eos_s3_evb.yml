@@ -1,0 +1,11 @@
+# quicklogic_eos_s3_evb: EOS S3 Evaluation Board.
+
+Board:
+  id: quicklogic_eos_s3_evb
+  name: EOS S3 Evaluation Board
+  status: eol
+  producer: quicklogic
+  chip: QLES3SDC1
+  bridges: []
+  programmer: qorc_flash
+  bootloader: usb-cdc-bootloader

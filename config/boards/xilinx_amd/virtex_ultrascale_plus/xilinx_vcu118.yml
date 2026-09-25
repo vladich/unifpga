@@ -2,9 +2,36 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_vcu118.py
 
+
 Board:
   id: xilinx_vcu118
-  pinBanks:
+  name: VCU118
+  url: https://www.xilinx.com/products/boards-and-kits/vcu118.html
+  producer: xilinx_amd
+  chip: XCVU9P-L2FLGA2104E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - microsd_socket
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - micron_n25q256a
+  - silabs_cp2105
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr4_sodimm_socket
+  - silabs_si570
+  banks:
     cpu_resetn:
       pins: L19
     onboard_leds:

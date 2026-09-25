@@ -5,9 +5,33 @@
 #   https://github.com/alinxalinx/AX7102/blob/master/SRC/06_pll_test/pll_test/constrs_1/new/pll.xdc
 #   (+16 more constraint files)
 
+
 Board:
   id: alinx_ax7102
-  pinBanks:
+  name: Alinx AX7102
+  url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Artix-7/AX7102.html
+  status: active
+  producer: alinx
+  chip: XC7A100T-2FGG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - ftdi_ft2232h
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: R4
     sys_clk_n:

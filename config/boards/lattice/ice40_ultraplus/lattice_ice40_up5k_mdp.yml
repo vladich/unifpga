@@ -1,0 +1,15 @@
+# lattice_ice40_up5k_mdp: iCE40 UltraPlus MDP.
+
+Board:
+  id: lattice_ice40_up5k_mdp
+  name: iCE40 UltraPlus MDP
+  url: https://www.latticesemi.com/products/developmentboardsandkits/ice40ultraplusmobiledevplatform
+  producer: lattice
+  chip: iCE40UP5K-SG48
+  bridges:
+  - jtag
+  programmer: iceprog
+  features:
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h

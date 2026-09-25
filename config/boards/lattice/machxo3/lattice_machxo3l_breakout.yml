@@ -1,0 +1,19 @@
+# lattice_machxo3l_breakout: MachXO3L Breakout Board.
+
+Board:
+  id: lattice_machxo3l_breakout
+  name: MachXO3L Breakout Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/machxo3lbreakoutboard
+  status: active
+  producer: lattice
+  chip: LCMXO3LF-6900C-5BG256C
+  bridges:
+  - jtag
+  programmer: diamond_pgm
+  features:
+  - qspi_flash
+  - user_leds
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h

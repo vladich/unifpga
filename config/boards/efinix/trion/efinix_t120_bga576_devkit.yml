@@ -2,9 +2,25 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/efinix_trion_t120_bga576_dev_kit.py
 
+
 Board:
   id: efinix_t120_bga576_devkit
-  pinBanks:
+  name: Trion T120 BGA576 Development Kit
+  url: https://www.efinixinc.com/products-devkits-triont120bga576.html
+  producer: efinix
+  chip: T120F576C4
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: AA8
     onboard_switches:

@@ -1,0 +1,26 @@
+# htg_960: HTG-960 Virtex UltraScale+ VU19P 6x FMC+.
+
+Board:
+  id: htg_960
+  name: HTG-960 Virtex UltraScale+ VU19P 6x FMC+
+  url: https://www.hitechglobal.com/Boards/VirtexUltraScale+_VU19P_Board.htm
+  status: active
+  producer: hitech_global
+  chip: XCVU19P-2FSVB3824E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - silabs_si570
+  - micron_n25q256a
+  - ddr4_sodimm_socket

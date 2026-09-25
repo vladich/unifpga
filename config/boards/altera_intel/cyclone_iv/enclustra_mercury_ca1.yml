@@ -1,0 +1,18 @@
+# enclustra_mercury_ca1: Enclustra Mercury CA1 Cyclone IV SoM.
+
+Board:
+  id: enclustra_mercury_ca1
+  name: Enclustra Mercury CA1 Cyclone IV SoM
+  status: eol
+  producer: enclustra
+  chip: EP4CGX150DF27I7N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr2_memory
+  - qspi_flash
+  - ethernet_phy_gigabit
+  devices:
+  - macronix_mx25l25645g
+  - marvell_88e1512

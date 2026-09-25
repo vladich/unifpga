@@ -1,0 +1,17 @@
+# qmtech_spartan6_lx9_core: Spartan-6 LX9 Core Board.
+
+Board:
+  id: qmtech_spartan6_lx9_core
+  name: Spartan-6 LX9 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  producer: qmtech
+  chip: XC6SLX9-2TQG144C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - user_buttons
+  - user_leds
+  devices:
+  - led_discrete_generic
+  - pushbutton_smd_generic

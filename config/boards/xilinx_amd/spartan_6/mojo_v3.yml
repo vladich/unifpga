@@ -7,17 +7,26 @@
 #
 # Pin map source: Embedded Micro Mojo v3 schematic + user manual.
 
+
 Board:
   id: mojo_v3
-  fpga:
-    producer: Xilinx (AMD)
-    family: Spartan 6
-    part: XC6SLX9-2TQG144C
-
+  name: Mojo v3
+  product: Mojo V3
+  summary: Xilinx Spartan-6 XC6SLX9-2TQG144C (9,152 logic cells); 50 MHz oscillator; ATmega32U4 USB microcontroller
+    that configures the FPGA from an SST25VF040B flash and bridges USB serial + 8 ADC channels to the FPGA over SPI/UART;
+    8 LEDs, reset button; 76 FPGA I/O on two 2x25 headers.
+  url: https://alchitry.com/boards/au/
+  producer: embedded_micro
+  chip: XC6SLX9-2TQG144C
+  bridges:
+  - avr-mojo
+  programmer: mojoload
+  extra_programmers:
+  - mojoload[*]
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk50mhz: { pins: P56 }
     # The reset button S1 (10K pull-up), active low.
     onboard_reset: { pins: P38, active: low }
@@ -41,3 +50,25 @@ Board:
     onboard_jtag_header_jp2_2x5:   # JTAG header JP2 (2x5)
       device: {"name": "JTAG header JP2 (2x5)", "kind": "other"}
       pins: {"tck": "P109", "tdi": "P110", "tdo": "P106", "tms": "P107"}
+  # ---- drawn: headers and parts; ./unifpga layout draft mojo_v3 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers: []
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: reset
+      label: reset
+      attach: {peripheral: reset_button, bind: {rst: onboard_reset}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: avr_spi
+      label: AVR SPI link (ADC samples) and cclk
+      device: {kind: other, bank: onboard_avr_spi}   # no peripheral model yet
+    - id: header_io
+      label: SV1 / SV2 2x25 I/O headers (76 FPGA I/O total)
+      device: {kind: header, bank: header_io}   # no peripheral model yet
+    - id: jtag_header_jp2_2x5
+      label: JTAG header JP2 (2x5)
+      device: {kind: other, bank: onboard_jtag_header_jp2_2x5}   # no peripheral model yet

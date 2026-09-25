@@ -1,0 +1,39 @@
+# intel_cyclonev_soc_devkit: Cyclone V SoC Development Kit.
+
+Board:
+  id: intel_cyclonev_soc_devkit
+  name: Cyclone V SoC Development Kit
+  status: eol
+  producer: intel_altera
+  chip: 5CSXFC6D6F31C6N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - parallel_lcd
+  - qspi_flash
+  - usb_2_host
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q128a
+  - adi_ssm2603
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microsd_socket_generic
+  - emmc_chip_generic
+  - microchip_usb2514b
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - lcd_char_16x2

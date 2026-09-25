@@ -2,9 +2,35 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/.../01_demo.zip (streamed 424 constraint files; 750 signals)
 
+
 Board:
   id: alinx_axau25
-  pinBanks:
+  name: Alinx AXAU25
+  url: https://coderobin.com/products/alinx-axau25-xilinx-artix-ultrascale-xcau25p-fpga-development-board
+  status: active
+  notes: ACAU25 SOM + carrier. Industrial XCAU25P-2FFVB676I per product page; mapped to registry XCAU25P-2E.
+  producer: alinx
+  chip: XCAU25P-2E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: T24
     sys_clk_n:

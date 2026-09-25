@@ -1,0 +1,34 @@
+# alinx_axp390: ALINX AXP390 Development Board.
+
+Board:
+  id: alinx_axp390
+  name: ALINX AXP390 Development Board
+  url: https://www.pangomicro.com/open/4308.html
+  status: active
+  notes: 4x 10G SFP+; 8 GB DDR4 + 2 GB DDR3; PCIe x8.
+  producer: alinx
+  chip: PG2T390H-6IFFBG900
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - sfp_cage
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - microchip_ksz9031rnx
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

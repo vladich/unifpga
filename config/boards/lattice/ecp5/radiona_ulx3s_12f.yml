@@ -1,0 +1,13 @@
+# radiona_ulx3s_12f: ULX3S 12F.
+
+Board:
+  id: radiona_ulx3s_12f
+  name: ULX3S 12F
+  aliases:
+  - ulx3s_12f
+  url: https://radiona.org/ulx3s/
+  producer: radiona
+  chip: LFE5U-12F-6BG381C
+  bridges:
+  - jtag
+  programmer: openFPGALoader

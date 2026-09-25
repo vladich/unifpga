@@ -2,9 +2,38 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7Z100B/ (aggregated XDC files; 532 unique signals)
 
+
 Board:
   id: alinx_ax7z100b
-  pinBanks:
+  name: Alinx AX7Z100B
+  url: https://www.en.alinx.com/Product/SoC-development-Boards/Zynq-7000-SoC/AX7Z100B.html
+  status: active
+  producer: alinx
+  chip: XC7Z100-2FFG900
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - usb_2_host
+  - hdmi_output
+  - hdmi_input
+  - sfp_cage
+  - pcie_edge_connector
+  - microsd_socket
+  - user_leds
+  - user_buttons
+  - usb_uart_bridge
+  - fmc_lpc
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: F9
     sys_clk_n:

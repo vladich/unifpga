@@ -1,0 +1,28 @@
+# alinx_axw22: Alinx AXW22.
+
+Board:
+  id: alinx_axw22
+  name: Alinx AXW22
+  url: https://docs.alinx.com/wiki/AMD-Dev-Board/RFSoC/AXW22/AXW22-User-Manual.html
+  status: active
+  notes: SDR card variant; ZU47DR with 1x QSFP+ / 1x SFP+.
+  producer: alinx
+  chip: XCZU47DR-2FFVE1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - qsfp_cage
+  - ethernet_10gbe_sfp
+  - rf_adc_dac_high_speed
+  - sma_io_pair
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

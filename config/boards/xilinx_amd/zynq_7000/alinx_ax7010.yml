@@ -4,9 +4,31 @@
 #   https://github.com/alinxalinx/AX7010_2023.1/blob/master/course_s1_fpga/06_key/auto_create_project/src/constraints/key.xdc
 #   https://github.com/alinxalinx/AX7010_2023.1/blob/master/course_s1_fpga/10_rs232/auto_create_project/src/constraints/rs232.xdc
 
+
 Board:
   id: alinx_ax7010
-  pinBanks:
+  name: AX7010
+  url: https://alinx.com/en/detail/3
+  producer: alinx
+  chip: XC7Z010-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - realtek_rtl8211e
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: U18
       frequency_mhz: 50

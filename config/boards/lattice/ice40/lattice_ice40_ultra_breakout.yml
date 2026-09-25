@@ -1,0 +1,19 @@
+# lattice_ice40_ultra_breakout: iCE40 Ultra Breakout Board.
+
+Board:
+  id: lattice_ice40_ultra_breakout
+  name: iCE40 Ultra Breakout Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/ice40ultrabreakoutboard
+  status: active
+  producer: lattice
+  chip: iCE5LP4K-SWG36
+  bridges:
+  - jtag
+  programmer: icecube2_pgm
+  features:
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h

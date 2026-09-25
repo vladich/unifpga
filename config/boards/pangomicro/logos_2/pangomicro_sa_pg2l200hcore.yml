@@ -1,0 +1,16 @@
+# pangomicro_sa_pg2l200hcore: SA_PG2L200HCORE Core Board.
+
+Board:
+  id: pangomicro_sa_pg2l200hcore
+  name: SA_PG2L200HCORE Core Board
+  url: https://www.pangomicro.com/open/4569.html
+  status: active
+  notes: Smartseason SoM compatible with PG2L100H baseboards.
+  producer: pangomicro
+  chip: PG2L200H-6IFBB676
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - adc_chip

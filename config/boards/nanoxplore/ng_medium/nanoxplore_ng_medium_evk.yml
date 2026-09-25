@@ -1,0 +1,11 @@
+# nanoxplore_ng_medium_evk: NG-MEDIUM Development Kit.
+
+Board:
+  id: nanoxplore_ng_medium_evk
+  name: NG-MEDIUM Development Kit
+  url: https://www.nanoxplore.com
+  producer: nanoxplore
+  chip: NG-MEDIUM-CG289
+  bridges:
+  - jtag
+  programmer: nanoxmap_impulse

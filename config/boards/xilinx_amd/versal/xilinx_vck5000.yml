@@ -1,0 +1,20 @@
+# xilinx_vck5000: AMD Versal AI Core Series VCK5000 Development Card.
+
+Board:
+  id: xilinx_vck5000
+  name: AMD Versal AI Core Series VCK5000 Development Card
+  url: https://www.xilinx.com/products/boards-and-kits/vck5000.html
+  status: eol
+  producer: xilinx_amd
+  chip: XCVC1902-2MSEVSVD1760
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qsfp_cage
+  - pcie_endpoint
+  - usb_uart_bridge
+  - jtag_header
+  devices:
+  - ddr4_sodimm_socket

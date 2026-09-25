@@ -1,0 +1,28 @@
+# alinx_axw49: Alinx AXW49.
+
+Board:
+  id: alinx_axw49
+  name: Alinx AXW49
+  url: https://docs.alinx.com/wiki/AMD-Dev-Board/RFSoC/AXW49/AXW49-User-Manual.html
+  status: active
+  notes: ZU49DR SDR; -E extended-grade speed -2 part.
+  producer: alinx
+  chip: XCZU49DR-2FFVF1760E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - qsfp_cage
+  - ethernet_10gbe_sfp
+  - rf_adc_dac_high_speed
+  - sma_io_pair
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,38 @@
+# myir_myd_czu5ev_v2: MYIR MYD-CZU5EV-V2 Dev Board (MYC-CZU5EV SoM).
+
+Board:
+  id: myir_myd_czu5ev_v2
+  name: MYIR MYD-CZU5EV-V2 Dev Board (MYC-CZU5EV SoM)
+  url: https://www.myirtech.com/list.asp?id=713
+  status: active
+  producer: myir
+  chip: XCZU5EV-2SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - mipi_csi2_input
+  - pcie_endpoint
+  - qspi_flash
+  - sata_host
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211fd
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

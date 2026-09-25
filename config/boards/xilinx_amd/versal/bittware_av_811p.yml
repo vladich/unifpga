@@ -1,0 +1,24 @@
+# bittware_av_811p: BittWare AV-811p Versal Premium.
+
+Board:
+  id: bittware_av_811p
+  name: BittWare AV-811p Versal Premium
+  url: https://www.bittware-molex.com/adding-av-811p-amd-versal-card/
+  status: active
+  notes: BittWare publishes VP1802 (VP2802 option) only; package and speed grade are not published (VSVA5601 is assumed).
+  producer: bittware
+  chip: XCVP1802-2MSEVSVA5601
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

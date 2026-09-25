@@ -1,0 +1,25 @@
+# microchip_sf2_advkit: SmartFusion2 Advanced Development Kit.
+
+Board:
+  id: microchip_sf2_advkit
+  name: SmartFusion2 Advanced Development Kit
+  url: https://www.microchip.com/en-us/development-tool/M2S150-ADV-DEV-KIT
+  producer: microchip
+  chip: M2S150-FCG1152I
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - ethernet_phy_10_100
+  - spi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - winbond_w25q128
+  - microchip_lan8710a

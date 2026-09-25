@@ -2,9 +2,36 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7021B/ (aggregated XDC files; 256 unique signals)
 
+
 Board:
   id: alinx_ax7021
-  pinBanks:
+  name: Alinx AX7021
+  url: https://coderobin.com/products/alinx-ax7021-xilinx-zynq-7000-xc7z020-fpga-development-board
+  status: active
+  notes: 484-pin variant of AX7020 (which uses CLG400 package).
+  producer: alinx
+  chip: XC7Z020-2CLG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - sd_card_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - realtek_rtl8211e
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: Y9
     onboard_leds:

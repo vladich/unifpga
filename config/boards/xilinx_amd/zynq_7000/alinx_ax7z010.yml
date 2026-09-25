@@ -2,9 +2,38 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/.../course_s1_fpga.zip (streamed 21 constraint files; 44 signals)
 
+
 Board:
   id: alinx_ax7z010
-  pinBanks:
+  name: Alinx AX7Z010
+  url: https://coderobin.com/products/alinx-ax7z010-xilinx-zynq-7000-xc7z010-fpga-development-board
+  status: active
+  notes: B revision; pairs with AC7Z010 SOM (also new). 5V input.
+  producer: alinx
+  chip: XC7Z010-1CLG400I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - can_transceiver
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - rs485_transceiver
+  - sd_card_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: U18
     cpu_resetn:

@@ -1,0 +1,17 @@
+# lattice_machxo3d_9400: MachXO3D-9400 Evaluation Kit.
+
+Board:
+  id: lattice_machxo3d_9400
+  name: MachXO3D-9400 Evaluation Kit
+  url: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/MachXO39400DevBoard
+  producer: lattice
+  chip: LCMXO3D-9400HC-5BG400I
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - microsd_socket
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h
+  - microsd_socket_generic

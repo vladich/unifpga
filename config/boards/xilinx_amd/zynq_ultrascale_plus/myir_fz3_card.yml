@@ -1,0 +1,32 @@
+# myir_fz3_card: MYIR FZ3 Card Deep-Learning Accelerator (ZU3EG).
+
+Board:
+  id: myir_fz3_card
+  name: MYIR FZ3 Card Deep-Learning Accelerator (ZU3EG)
+  url: https://www.myirtech.com/list.asp?id=630
+  status: active
+  producer: myir
+  chip: XCZU3EG-1SFVC784E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - mipi_csi2_input
+  - pcie_endpoint
+  - qspi_flash
+  - usb_2_otg
+  - usb_3_host
+  - usb_jtag_bridge
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211e
+  - microsd_socket_generic
+  - led_discrete_generic

@@ -1,0 +1,25 @@
+# terasic_max10_nanoboard: MAX 10 NanoBoard.
+
+Board:
+  id: terasic_max10_nanoboard
+  name: MAX 10 NanoBoard
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1018
+  producer: terasic
+  chip: 10M02SCU169C8G
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - winbond_w9825g6kh
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

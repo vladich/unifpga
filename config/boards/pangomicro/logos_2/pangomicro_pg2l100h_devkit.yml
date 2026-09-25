@@ -1,0 +1,25 @@
+# pangomicro_pg2l100h_devkit: PG2L100H Development Kit.
+
+Board:
+  id: pangomicro_pg2l100h_devkit
+  name: PG2L100H Development Kit
+  url: https://www.pangomicro.com/product/logos_family/
+  producer: pangomicro
+  chip: PG2L100HFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - micron_mt41j256m16
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

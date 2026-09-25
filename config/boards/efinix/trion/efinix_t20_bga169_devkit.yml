@@ -4,16 +4,28 @@
 # Pins are GPIO def names, as Efinity references them (see fireant.yml). Only
 # the pins that example uses are listed; the kit has more LEDs and buttons.
 
+
 Board:
   id: efinix_t20_bga169_devkit
-  fpga:
-    producer: Efinix
-    family: Trion
-    part: T20F169
+  name: Trion T20 BGA169 Development Kit
+  url: https://www.efinixinc.com/products-devkits-triont20.html
+  producer: efinix
+  chip: T20F169C3
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
   defaults:
     iostandard: "3.3 V LVTTL / LVCMOS"
 
-  pinBanks:
+  banks:
     # ext_clkin: the 50 MHz reference of PLL_TR1 (conn_type alternate); it
     # reaches the fabric only through that PLL.
     clk:              { pins: "GPIOR_76", frequency_mhz: 50 }

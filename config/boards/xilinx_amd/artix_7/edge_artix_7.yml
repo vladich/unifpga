@@ -1,0 +1,25 @@
+# edge_artix_7: EDGE Artix 7 (35T).
+
+Board:
+  id: edge_artix_7
+  name: EDGE Artix 7 (35T)
+  url: https://allaboutfpga.com/product/edge-artix-7-fpga-development-board/
+  status: active
+  producer: invent_logics
+  chip: XC7A35T-1FTG256C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - hdmi_output
+  - vga_output
+  - microsd_socket
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - audio_codec
+  - seven_segment_display
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_powered

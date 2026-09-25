@@ -1,0 +1,30 @@
+# htg_950: HTG-950 Virtex UltraScale+ VU19P PCIe Gen4.
+
+Board:
+  id: htg_950
+  name: HTG-950 Virtex UltraScale+ VU19P PCIe Gen4
+  url: https://www.hitechglobal.com/Boards/VirtexUltraScale+_VU19P_PCIe.htm
+  status: active
+  producer: hitech_global
+  chip: XCVU19P-2FSVB3824E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - fmc_plus
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - silabs_si570
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - led_discrete_generic
+  - pushbutton_smd_generic

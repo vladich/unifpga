@@ -1,0 +1,31 @@
+# digilent_nexys3: Nexys 3.
+
+Board:
+  id: digilent_nexys3
+  name: Nexys 3
+  url: https://digilent.com/reference/programmable-logic/nexys-3/start
+  producer: digilent
+  chip: XC6SLX16-CSG324
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - ethernet_phy_10_100
+  - nor_flash
+  - qspi_flash
+  - sdr_sdram
+  - seven_segment_display
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - seven_seg_module_shared
+  - vga666_resistor_dac
+  - microchip_lan8710a
+  - cypress_cy7c1061dv33
+  - micron_n25q128a
+  - intel_strataflash_p30

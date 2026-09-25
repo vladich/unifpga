@@ -1,0 +1,31 @@
+# alinx_axp12: ALINX AXP12 Development Board.
+
+Board:
+  id: alinx_axp12
+  name: ALINX AXP12 Development Board
+  url: https://www.pangomicro.com/open/4256.html
+  status: active
+  producer: alinx
+  chip: PGL12G-6CFBG256
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - parallel_camera_input
+  - qspi_flash
+  - sdr_sdram
+  - usb_2_device
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - winbond_w9825g6kh
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
