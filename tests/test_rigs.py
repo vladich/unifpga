@@ -290,6 +290,22 @@ def test_a_pull_up_the_toolchain_cannot_emit_is_refused():
     assert any("pull 'down' is not known" in p for p in codegen.validate_configuration(r))
 
 
+def test_a_temperature_sensor_reaches_a_design_that_asks_for_it():
+    """The Nexys 4 DDR's ADT7420 and the OMDAZZ's LM75 are temperature sensors
+    (readings in 1/16 C: the ADT7420's at bit 3, the LM75's at bit 4);
+    designs/temperature_leds requires one: it fits them, not the Arty."""
+    from tools import codegen, studio
+    fit = {rig: studio.design_fit(config_init.resolve_configuration(rig))["temperature_leds"]
+           for rig in ("nexys4_ddr", "omdazz", "arty_a7")}
+    assert fit["nexys4_ddr"] == [] and fit["omdazz"] == []
+    assert any("temperature" in m for m in fit["arty_a7"])
+    design = os.path.join(REPO, "designs", "temperature_leds", "design_top.sv")
+    tops = {rig: codegen.emit_top_sv(config_init.resolve_configuration(rig), design=design)
+            for rig in ("nexys4_ddr", "omdazz")}
+    assert ".SHIFT(3)" in tops["nexys4_ddr"] and ".SHIFT(4)" in tops["omdazz"]
+    assert all(".temp(cap_temperature_value)" in t for t in tops.values())
+
+
 def test_no_pin_is_both_a_gpio_bit_and_another_parts():
     """In every rig, a pin the design reaches through its gpio port is no other
     part's (a microphone, a TM1638, a tie): one master per pad."""

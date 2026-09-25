@@ -1,0 +1,19 @@
+# A temperature reading: two's complement in 1/16 degrees Celsius (400 = 25.0 C,
+# -168 = -10.5 C), with a one-clock pulse each time a new reading arrives. The
+# same unit comes from every sensor: an LM75-family I2C sensor (LM75, LM75A,
+# ADT7420 ...) or a 1-Wire DS18B20, whose readings are exact in it.
+
+Capability:
+  id: temperature
+  description: Temperature readings in 1/16 degrees Celsius, one clock pulse per new reading.
+  signals:
+    - { name: valid, type: scalar, direction: hw_to_user, comment: "One-clock pulse: a new reading" }
+    - { name: value, type: bus, width: 16, direction: hw_to_user, comment: "Two's complement, 1/16 degrees Celsius" }
+  aggregation: exclusive
+
+  optional: true           # reaches design_top only when the design declares its ports
+  summary: "temperature readings"
+  design:
+    ports:
+      temp_valid: {signal: valid, width: 1}
+      temp: {signal: value, width: 16}
