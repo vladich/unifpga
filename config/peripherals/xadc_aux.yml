@@ -1,0 +1,46 @@
+# The XADC of a Xilinx 7-series FPGA converting a board's auxiliary analog
+# inputs (the Basys 3's and Nexys A7's JXADC pairs, the Arty A7's shield analog
+# pins): rtl/io/xadc_aux_scan.sv runs the sequencer over the listed VAUX
+# channels and reads each result over the DRP. A code is 12 bits for 0 .. 1 V
+# between a pair's pins (`full_scale_mv: 1000`); a board that divides its
+# inputs says what a full-scale code means at its connector. `channels` is the
+# VAUX number of each pair in pin order — board data (`model_params`), the
+# design's channel i is the connector's pair i.
+
+Peripheral:
+  id: xadc_aux
+  description: Xilinx 7-series XADC auxiliary analog inputs (differential pairs), converted in turn
+  parameters:
+    channels:
+      type: list
+      description: "XADC auxiliary channel (VAUX number) of each pair, in pin order"
+    width:
+      type: int
+      description: "Pairs: the design's channels 0 .. width - 1, in pin order"
+    full_scale_mv:
+      type: int
+      default: 1000
+  # the on-board devices it models: a board inventory's XADC pairs as two buses
+  models: {kind: xadc, pins: {p: [xa_p, vaux_p, sense_p, p], n: [xa_n, vaux_n, sense_n, n]}}
+  signals:
+    - { name: p, type: bus, direction: input, comment: "The pairs' positive pins" }
+    - { name: n, type: bus, direction: input, comment: "Their negative pins (ground for a single-ended input)" }
+  provides:
+    - capability: adc
+      params:
+        channels: $width
+        full_scale_mv: $full_scale_mv
+  driver:
+    module: xadc_aux_scan
+    file: rtl/io/xadc_aux_scan.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+      CHANNELS: $channels
+    port_map:
+      clk:     context.clk
+      rst:     context.rst
+      vaux_p:  pin.p
+      vaux_n:  pin.n
+      valid:   capability.adc.valid
+      channel: capability.adc.channel
+      value:   capability.adc.value

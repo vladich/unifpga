@@ -1,0 +1,40 @@
+# A fan header: a PWM speed input (25 kHz, what 4-pin PC fans expect) and / or
+# an enable that switches its supply — the Tang Mega 138K's and 60K's J23 have
+# both and a tachometer, the Tang Mega 138K Pro's PWM and tachometer, the Tang
+# Console's J24 an enable alone. One actuator: its on/off bit is the enable
+# (and gates the PWM), its level the duty.
+
+Peripheral:
+  id: fan_pwm
+  description: Fan header — PWM speed and / or supply enable, one actuator
+  parameters:
+    pwm_khz: { type: int, default: 25 }
+  # the on-board devices it models: a board inventory's fan header
+  models: {kind: fan, pins: {pwm: [pwm, fan_pwm], en: [en, fan_en, enable], tach: [tach, tacho, fb]}}
+  signals:
+    - { name: pwm,  type: scalar, direction: output, optional: true, comment: "Speed: PWM duty from the level" }
+    - { name: en,   type: scalar, direction: output, optional: true, comment: "Supply enable: the on/off bit" }
+    - { name: tach, type: scalar, direction: input,  optional: true, comment: "Tachometer (not read yet)" }
+  provides:
+    - capability: actuators
+      params:
+        count: 1
+  serves:
+    pwm: [actuators.level, actuators.enable]
+    en:  [actuators.enable]
+  driver:
+    module: fan_pwm
+    file: rtl/peripherals/fan_pwm.sv
+    files:
+      - rtl/peripherals/servo_pwm.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+      PWM_KHZ: $pwm_khz
+    port_map:
+      clk:    context.clk
+      rst:    context.rst
+      enable: capability.actuators.enable
+      level:  capability.actuators.level
+      pwm:    pin.pwm
+      en:     pin.en
+      tach:   pin.tach

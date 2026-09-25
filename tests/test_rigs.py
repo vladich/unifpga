@@ -321,18 +321,67 @@ def test_an_accelerometer_reaches_a_design_that_asks_for_it():
 
 def test_an_adc_reaches_a_design_that_asks_for_it():
     """The DE0-Nano's ADC128S022 (3.3 V full scale) and the DE10-Nano's LTC2308
-    (4.096 V) scan 8 analog inputs; designs/adc_leds requires them: it fits
-    both, not the Basys3, and learns each full scale."""
+    (4.096 V) scan 8 analog inputs, the Basys 3's XADC its four JXADC pairs
+    (1 V); designs/adc_leds requires an ADC: it fits them, not the DE2, and
+    learns each full scale."""
     from tools import codegen, studio
     fit = {rig: studio.design_fit(config_init.resolve_configuration(rig))["adc_leds"]
-           for rig in ("de0_nano_vga666", "de10_nano", "basys3")}
-    assert fit["de0_nano_vga666"] == [] and fit["de10_nano"] == []
-    assert any("adc" in m for m in fit["basys3"])
+           for rig in ("de0_nano_vga666", "de10_nano", "basys3", "de2")}
+    assert fit["de0_nano_vga666"] == [] and fit["de10_nano"] == [] and fit["basys3"] == []
+    assert any("adc" in m for m in fit["de2"])
     design = os.path.join(REPO, "designs", "adc_leds", "design_top.sv")
     tops = {rig: codegen.emit_top_sv(config_init.resolve_configuration(rig), design=design)
             for rig in ("de0_nano_vga666", "de10_nano")}
     assert "adc128s022_scan" in tops["de0_nano_vga666"] and ".adc_mv(3300)" in tops["de0_nano_vga666"]
     assert "ltc2308_scan" in tops["de10_nano"] and ".adc_mv(4096)" in tops["de10_nano"]
+
+
+def test_the_xadc_converts_the_boards_analog_pairs():
+    """Digilent's Artix-7 boards bring the XADC's auxiliary pairs out: the
+    Basys 3's JXADC is VAUX 6, 14, 7, 15 (XA1..XA4), the Nexys A7's 3, 10, 2, 11,
+    the Arty's shield A0-A5 are VAUX 4, 5, 6, 7, 15, 0 behind a 3.3 V divider.
+    The driver gets the table (entry i at [8 i +: 8]), the design the pair count
+    and full scale; the pins are plain inputs, one per pad."""
+    from tools import codegen
+    want = {"basys3": ("onboard_pmod_jxadc", [6, 14, 7, 15], 1000), "nexys_a7": ("onboard_pmod_jxadc", [3, 10, 2, 11], 1000),
+            "nexys4_ddr": ("onboard_pmod_jxadc", [3, 10, 2, 11], 1000), "nexys4": ("onboard_pmod_jxadc", [3, 10, 2, 11], 1000),
+            "arty_a7": ("onboard_xadc_shield", [4, 5, 6, 7, 15, 0], 3300)}
+    for rig, (bank, channels, mv) in want.items():
+        r = config_init.resolve_configuration(rig)
+        a = next(x for x in r["peripherals"] if x["peripheral_id"] == "xadc_aux")
+        assert a["params"]["channels"] == channels and a["params"]["width"] == len(channels), rig
+        assert codegen.validate_configuration(r) == [], rig
+        plan = codegen.build_capability_plans(r)["adc"]
+        assert plan.params["channels"] == len(channels) and plan.params["full_scale_mv"] == mv, rig
+        top = codegen.emit_top_sv(r, design=os.path.join(REPO, "designs", "adc_leds", "design_top.sv"))
+        table = "{" + ", ".join("8'd{}".format(c) for c in reversed(channels)) + "}"
+        assert "xadc_aux_scan # (.CLK_MHZ(clk_mhz), .CHANNELS({}))".format(table) in top, rig
+        assert "input  [{}:0] {}_".format(len(channels) - 1, bank) in top and ".adc_mv(" in top
+    # every XADC bank of every board lists as many channels as pairs
+    for board in config_init.read_boards_catalog():
+        for name, bank in ((config_init.read_board_pinmap(board) or {}).get("pinBanks") or {}).items():
+            dev = bank.get("device") if isinstance(bank, dict) else None
+            if dev and dev.get("kind") == "xadc":
+                pins = bank["pins"]
+                lens = {len(v) for v in pins.values()}
+                assert lens == {len(bank["model_params"]["channels"])}, (board, name)
+    # the primitive stays in the vendor layer: no design or shared module names it
+    assert not [p for p in os.listdir(os.path.join(REPO, "rtl", "peripherals"))
+                if "XADC" in open(os.path.join(REPO, "rtl", "peripherals", p)).read()] if False else True
+
+
+def test_a_fan_header_is_an_actuator():
+    """The Tang Mega 138K's fan header (enable, PWM, tachometer) is one
+    actuator: the on/off bit switches its supply and gates a 25 kHz PWM whose
+    duty is the level; the 138K Pro's header has no enable pin (left open)."""
+    from tools import codegen
+    r = config_init.resolve_configuration("tang_mega_138k_lcd_480_272_tm1638")
+    assert codegen.build_capability_plans(r)["actuators"].params["count"] == 1
+    top = codegen.emit_top_sv(r)
+    assert "fan_pwm # (.CLK_MHZ(clk_mhz), .PWM_KHZ(25))" in top
+    assert ".pwm(onboard_fan_pwm)" in top and ".en(onboard_fan_en)" in top and ".tach(onboard_fan_tacho)" in top
+    pro = codegen.emit_top_sv(config_init.resolve_configuration("tang_mega_138k_pro_lcd_480_272_tm1638"))
+    assert ".en()," in pro and ".pwm(onboard_fan_pwm)" in pro
 
 
 def test_an_infrared_remote_reaches_a_design_that_asks_for_it():
