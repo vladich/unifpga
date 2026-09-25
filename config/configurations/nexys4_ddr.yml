@@ -104,6 +104,10 @@ Configuration:
         bclk: "pmod_jb[3]"
         lrclk: "pmod_jb[0]"
         sdata: "pmod_jb[1]"
+    - peripheral: ps2_keyboard
+      bind:
+        clk: onboard_usb_hid.clk
+        data: onboard_usb_hid.data
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

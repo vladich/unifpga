@@ -25,6 +25,7 @@ Setup:
       wires: {SCK: 'pmod_jc.[4]', BCK: 'pmod_jc.[5]', LCK: 'pmod_jc.[7]', DIN: 'pmod_jc.[6]'}
     - module: digilent_pmod_amp3
       wires: {'9': 'pmod_jb.[6]', '4': 'pmod_jb.[3]', '1': 'pmod_jb.[0]', '2': 'pmod_jb.[1]'}
+    - onboard: usb_hid
   extra:
     tie:
       onboard_mic.clk: 0

@@ -83,7 +83,7 @@ Layout:
       device: {kind: temperature, bank: onboard_temp_sensor}   # no peripheral model yet
     - id: usb_hid
       label: USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
-      device: {kind: usb_hid, bank: onboard_usb_hid}   # no peripheral model yet
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_usb_hid.clk, data: onboard_usb_hid.data}}
     - id: ethernet
       label: 10/100 Ethernet PHY (SMSC, RMII)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
