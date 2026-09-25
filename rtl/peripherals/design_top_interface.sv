@@ -66,6 +66,8 @@ module design_top
     parameter int w_act         = 0,     // Actuators (relays, servos, PWM outputs)
     parameter int adc_channels  = 0,     // Analog inputs (A/D converter channels)
     parameter int adc_mv        = 0,     // Their full scale in millivolts (code 4096)
+    parameter int w_mem_addr    = 0,     // Memory (the board's RAM): word address bits
+    parameter int mem_bytes     = 0,     // Bytes per memory word
 
     // ---- Derived widths (do not override) -----------------------------------
     parameter int w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
@@ -74,7 +76,8 @@ module design_top
     parameter int w_sd_y = (sd_height > 1) ? $clog2(sd_height) : 1,
     parameter int w_txt_col = (txt_columns > 1) ? $clog2(txt_columns) : 1,
     parameter int w_txt_row = (txt_rows    > 1) ? $clog2(txt_rows   ) : 1,
-    parameter int w_act_level = w_act * 8
+    parameter int w_act_level = w_act * 8,
+    parameter int w_mem_data = mem_bytes * 8
 )
 (
     // ---- Clock & reset ------------------------------------------------------
@@ -166,7 +169,19 @@ module design_top
     input                            ir_valid,
     input        [         15 : 0]   ir_address,
     input        [          7 : 0]   ir_command,
-    input                            ir_repeat
+    input                            ir_repeat,
+
+    // ---- Memory (optional): the board's RAM, 2^w_mem_addr words of mem_bytes
+    // bytes; a request (mem_req; mem_we and mem_be for a write) while mem_ready,
+    // one clock of mem_ack when it is done, mem_rdata a read's word ------------
+    output logic                     mem_req,
+    output logic                     mem_we,
+    output logic [w_mem_addr - 1 : 0] mem_addr,
+    output logic [w_mem_data - 1 : 0] mem_wdata,
+    output logic [mem_bytes  - 1 : 0] mem_be,
+    input                            mem_ready,
+    input                            mem_ack,
+    input        [w_mem_data - 1 : 0] mem_rdata
 );
 
     // -------------------------------------------------------------------------
@@ -187,6 +202,11 @@ module design_top
     assign txt_char  = 8'h20;    // a space
     assign act_on    = '0;
     assign act_level = '0;
+    assign mem_req   = 1'b0;
+    assign mem_we    = 1'b0;
+    assign mem_addr  = '0;
+    assign mem_wdata = '0;
+    assign mem_be    = '0;
 
     // -------------------------------------------------------------------------
     // User logic goes here.

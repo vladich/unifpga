@@ -124,17 +124,43 @@ class CapabilityPlan:
 def _eval_param(spec, peripheral_params, peripheral_def=None):
     """Resolve a peripheral param spec — either a literal or `$<name>`
     referring to a peripheral-instance parameter (or its default from the
-    peripheral YAML when the configuration doesn't override it)."""
+    peripheral YAML when the configuration doesn't override it), or to a value
+    the peripheral derives from its parameters (`derive: {addr_bits: {sum:
+    [bank_bits, row_bits, col_bits]}}`; `sum`, `multiply`, `divide`)."""
     if isinstance(spec, str) and spec.startswith("$"):
         key = spec[1:]
         v = peripheral_params.get(key)
         if v is not None:
             return v
         if peripheral_def is not None:
-            param_def = (peripheral_def.get("parameters") or {}).get(key) or {}
-            return param_def.get("default")
+            param_def = (peripheral_def.get("parameters") or {}).get(key)
+            if param_def is not None:
+                return param_def.get("default")
+            rule = (peripheral_def.get("derive") or {}).get(key)
+            if rule:
+                return _derived_param(rule, peripheral_params, peripheral_def)
         return None
     return spec
+
+
+def _derived_param(rule, peripheral_params, peripheral_def):
+    """`{sum | multiply | divide: [operands]}`, an operand a parameter name or
+    a number; None when an operand has no value."""
+    op, operands = next(iter(rule.items()))
+    values = [_eval_param("$" + x, peripheral_params, peripheral_def) if isinstance(x, str) else x for x in operands]
+    if any(v is None for v in values):
+        return None
+    values = [int(v) for v in values]
+    if op == "sum":
+        return sum(values)
+    if op == "multiply":
+        out = 1
+        for v in values:
+            out *= v
+        return out
+    if op == "divide":
+        return values[0] // values[1]
+    raise CodegenError("{}: derive rule {!r} is not sum, multiply or divide".format(peripheral_def.get("id"), op))
 
 
 def clock_active(clock_def, attach):

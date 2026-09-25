@@ -1,0 +1,96 @@
+# A single-data-rate SDRAM on a board (four banks, x16 or x32): the HY57V641620
+# of the RZRD / OMDAZZ / PiSwords6, the IS42S16400 of the DE0 / DE1 / DE2, the
+# IS42S16320D of the DE10-Lite and DE0-CV, the DE2-115's pair, the Alinx
+# boards' HY57V2562GTR, the Colorlight 5A-75B's M12L64322A. rtl/peripherals/
+# sdram_sdr.sv runs it at the design clock (its clock pin gets the design
+# clock inverted; up to about 66 MHz), one word per request, the address
+# {bank, row, column}. `row_bits` and `data_bits` are the buses' widths (the
+# board's pins), `col_bits` the chip's column address (model_params: 8 for a
+# 64 Mbit x16 chip, 9 for 128 / 256 Mbit, 10 for 512 Mbit); a board with more
+# address pins than its chip has row bits says `row_bits` too.
+
+Peripheral:
+  id: sdram_sdr
+  description: SDR SDRAM (four banks, x16 / x32) at the design clock, one word per request
+  parameters:
+    row_bits:
+      type: int
+      from_width: a
+      description: "Row address bits (the address pins, unless the chip has fewer rows)"
+    col_bits:
+      type: int
+      default: 8
+      description: "Column address bits of the chip"
+    bank_bits:
+      type: int
+      default: 2
+    data_bits:
+      type: int
+      from_width: dq
+      description: "Data pins: 16 or 32"
+    cas_latency:
+      type: int
+      default: 2
+  # the on-board devices it models: a board inventory's SDRAM, its pins under
+  # Terasic's DRAM_* names or the plain ones (two DQM pins make the dqm bus)
+  models: {kind: sdram, pins: {clk: [DRAM_CLK, clk, sdram_clk],
+                               cke: [DRAM_CKE, cke],
+                               cs_n: [DRAM_CS_N, cs_n],
+                               ras_n: [DRAM_RAS_N, ras_n],
+                               cas_n: [DRAM_CAS_N, cas_n],
+                               we_n: [DRAM_WE_N, we_n],
+                               ba: [DRAM_BA, DRAM_BA_, ba, [ba0, ba1]],
+                               a: [DRAM_ADDR, a, addr],
+                               dq: [DRAM_DQ, dq, d],
+                               dqm: [DRAM_DQM, dqm, dm, [DRAM_LDQM, DRAM_UDQM]]}}
+  signals:
+    - { name: clk,   type: scalar, direction: output, comment: "The chip's clock (the design clock inverted)" }
+    - { name: cke,   type: scalar, direction: output, optional: true, comment: "Clock enable (a board without the pin ties it high)" }
+    - { name: cs_n,  type: scalar, direction: output, optional: true, comment: "Chip select (a board without the pin ties it low)" }
+    - { name: ras_n, type: scalar, direction: output }
+    - { name: cas_n, type: scalar, direction: output }
+    - { name: we_n,  type: scalar, direction: output }
+    - { name: ba,    type: bus,    direction: output, comment: "Bank address" }
+    - { name: a,     type: bus,    direction: output, comment: "Address: the row, then the column with A10 for auto precharge" }
+    - { name: dq,    type: bus,    direction: inout,  comment: "Data" }
+    - { name: dqm,   type: bus,    direction: output, optional: true, comment: "Data masks, one per byte (a board without them writes whole words)" }
+  provides:
+    - capability: memory
+      params:
+        addr_bits: $addr_bits
+        data_bytes: $data_bytes
+  # derived from the buses: the design's word address is {bank, row, column}
+  derive:
+    addr_bits: {sum: [bank_bits, row_bits, col_bits]}
+    data_bytes: {divide: [data_bits, 8]}
+  driver:
+    module: sdram_sdr
+    file: rtl/peripherals/sdram_sdr.sv
+    parameters:
+      CLK_MHZ:   context.clk_mhz
+      ROW_BITS:  $row_bits
+      COL_BITS:  $col_bits
+      BANK_BITS: $bank_bits
+      DATA_BITS: $data_bits
+      CAS:       $cas_latency
+    port_map:
+      clk:         context.clk
+      rst:         context.rst
+      req:         capability.memory.req
+      we:          capability.memory.we
+      addr:        capability.memory.addr
+      wdata:       capability.memory.wdata
+      be:          capability.memory.be
+      ready:       capability.memory.ready
+      ack:         capability.memory.ack
+      rdata:       capability.memory.rdata
+      sdram_clk:   pin.clk
+      sdram_cke:   pin.cke
+      sdram_cs_n:  pin.cs_n
+      sdram_ras_n: pin.ras_n
+      sdram_cas_n: pin.cas_n
+      sdram_we_n:  pin.we_n
+      sdram_ba:    pin.ba
+      sdram_a:     pin.a
+      sdram_dq:    pin.dq
+      sdram_dqm:   pin.dqm

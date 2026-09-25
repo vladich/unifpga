@@ -1,0 +1,75 @@
+# An asynchronous SRAM on a board: the DE1's / DE2's IS61LV25616 (256K x 16),
+# the DE2-115's IS61WV102416 (1M x 16), the Karnix's and the iCE40-HX8K EVB's
+# K6R4016V1D (256K x 16), the Nexys 4's cellular RAM in its asynchronous mode
+# (8M x 16, 70 ns). rtl/peripherals/async_sram.sv makes one access per request,
+# each `access_ns` long. `addr_bits` is the address bus's width (the board's
+# pins); a board whose chip is slower than 10 ns says so in model_params.
+
+Peripheral:
+  id: async_sram
+  description: Asynchronous SRAM (16-bit), one access per request
+  parameters:
+    addr_bits:
+      type: int
+      from_width: a
+      description: "Address pins: 2^addr_bits words"
+    access_ns:
+      type: int
+      default: 10
+      description: "The chip's access time"
+  # the on-board devices it models: a board inventory's SRAM, its pins under
+  # Terasic's, Karnix's or Digilent's names
+  models: {kind: sram, pins: {a: [SRAM_ADDR, SRAM_A, a, addr, adr],
+                              d: [SRAM_DQ, SRAM_D, d, dq, db],
+                              ce_n: [SRAM_CE_N, SRAM_CE_n, ce_n, cs_n, cen],
+                              oe_n: [SRAM_OE_N, SRAM_OE_n, oe_n, oen],
+                              we_n: [SRAM_WE_N, SRAM_WE_n, we_n, wen],
+                              lb_n: [SRAM_LB_N, SRAM_LB_n, lb_n, ble_n, lbn],
+                              ub_n: [SRAM_UB_N, SRAM_UB_n, ub_n, bhe_n, ubn],
+                              adv_n: [advn, adv_n], cre: [cre], clk: [clk], wait: [wait]}}
+  signals:
+    - { name: a,     type: bus,    direction: output, comment: "Address" }
+    - { name: d,     type: bus,    direction: inout,  comment: "Data, 16 bits" }
+    - { name: ce_n,  type: scalar, direction: output, optional: true, comment: "Chip enable, active low" }
+    - { name: oe_n,  type: scalar, direction: output, comment: "Output enable, active low" }
+    - { name: we_n,  type: scalar, direction: output, comment: "Write enable, active low" }
+    - { name: lb_n,  type: scalar, direction: output, optional: true, comment: "Low byte enable" }
+    - { name: ub_n,  type: scalar, direction: output, optional: true, comment: "High byte enable" }
+    - { name: adv_n, type: scalar, direction: output, optional: true, comment: "Cellular RAM: address valid, held low" }
+    - { name: cre,   type: scalar, direction: output, optional: true, comment: "Cellular RAM: configuration register enable, held low (asynchronous mode)" }
+    - { name: clk,   type: scalar, direction: output, optional: true, comment: "Cellular RAM: clock, held low (asynchronous mode)" }
+    - { name: wait,  type: scalar, direction: input,  optional: true, comment: "Cellular RAM: wait (not read in asynchronous mode)" }
+  provides:
+    - capability: memory
+      params:
+        addr_bits: $addr_bits
+        data_bytes: 2
+  driver:
+    module: async_sram
+    file: rtl/peripherals/async_sram.sv
+    parameters:
+      CLK_MHZ:   context.clk_mhz
+      ADDR_BITS: $addr_bits
+      ACCESS_NS: $access_ns
+    port_map:
+      clk:       context.clk
+      rst:       context.rst
+      req:       capability.memory.req
+      we:        capability.memory.we
+      addr:      capability.memory.addr
+      wdata:     capability.memory.wdata
+      be:        capability.memory.be
+      ready:     capability.memory.ready
+      ack:       capability.memory.ack
+      rdata:     capability.memory.rdata
+      sram_a:    pin.a
+      sram_d:    pin.d
+      sram_ce_n: pin.ce_n
+      sram_oe_n: pin.oe_n
+      sram_we_n: pin.we_n
+      sram_lb_n: pin.lb_n
+      sram_ub_n: pin.ub_n
+  pin_assigns:
+    pin.adv_n: const.0
+    pin.cre:   const.0
+    pin.clk:   const.0

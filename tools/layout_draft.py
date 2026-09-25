@@ -155,7 +155,7 @@ def draft(board_id):
             attach = {"peripheral": a["peripheral"]}
             if a.get("params") is not None:
                 attach["params"] = a["params"]
-            attach["bind"] = a.get("bind") or {}
+            attach["bind"] = _whole_bank(a.get("bind") or {}, attach.get("params"), pinmap)
             if main not in parts:
                 parts[main] = []
                 order.append(main)
@@ -233,8 +233,10 @@ def _model(kind, bank, spec):
       * `signal: s` — s is a bus: a bank that is one list of pins, or every pin of
         a bank of named pins in order (led_bank for leds, button_array for buttons);
       * `pins: {s: [names]}` — each signal to the first of its names the bank has,
-        a name may take a slice of a bus (`LCD_DATA[4:8]`); a signal that is not
-        optional must be found;
+        a name may take a slice of a bus (`LCD_DATA[4:8]`), or be a list of
+        scalar pins that make up the bus (`[DRAM_LDQM, DRAM_UDQM]`); a signal
+        that is not optional must be found; a parameter declared
+        `from_width: s` is the width of the bus bound to s (an SRAM's address bits);
       * neither — the bank's pins named as the signals (rgb_led's r / g / b).
 
     A bank of hard-processor pins (`fabric: false`) is never modelled."""
@@ -274,6 +276,12 @@ def _model(kind, bank, spec):
             by_name = {str(k).lower(): k for k in pins}
             for sig in signals:
                 for name in m["pins"].get(sig["name"]) or []:
+                    if isinstance(name, list):                 # scalar pins that make up the bus
+                        keys = [by_name.get(str(n).lower()) for n in name]
+                        if all(k is not None and not isinstance(pins[k], list) for k in keys):
+                            bind[sig["name"]] = ["{}.{}".format(bank, k) for k in keys]
+                            break
+                        continue
                     base, _, rest = str(name).partition("[")
                     key = by_name.get(base.lower())
                     if key is None:
@@ -301,6 +309,13 @@ def _model(kind, bank, spec):
         params = {}
         if "width" in params_def and width is not None:
             params["width"] = width
+        for key, pdef in params_def.items():        # `from_width: s`: the width of the bus on s
+            src = (pdef or {}).get("from_width")
+            ref = bind.get(src) if src else None
+            if isinstance(ref, list):
+                params[key] = len(ref)
+            elif isinstance(ref, str) and "." in ref and isinstance(pins.get(ref.split(".", 1)[1]), list):
+                params[key] = len(pins[ref.split(".", 1)[1]])
         if low and "active" in params_def:
             params["active"] = "low"
         # what the board data knows of the chip (a PT8211 DAC: LSB-justified)
@@ -311,6 +326,31 @@ def _model(kind, bank, spec):
         attach["bind"] = bind
         return attach
     return None
+
+
+def _whole_bank(bind, params, pinmap):
+    """A rig's `pins:` choice undone: a bind of some of one list bank's pins in
+    their order (`led: [onboard_leds[0], .., onboard_leds[7]]` without LED 4,
+    the DS18B20's pin) is the part's whole bank in the layout — the part is the
+    board's, the choice the rig's (`setup derive` finds it again). `params`
+    (mutated) gets the bank's width back."""
+    if len(bind) != 1:
+        return bind
+    sig, refs = next(iter(bind.items()))
+    if not isinstance(refs, list) or len(refs) < 2:
+        return bind
+    parsed = [codegen._parse_bank_ref(str(r)) for r in refs]
+    if any(p is None or p[1] is not None or p[2] is None for p in parsed):
+        return bind
+    bank = parsed[0][0]
+    pins = ((pinmap.get("pinBanks") or {}).get(bank) or {}).get("pins")
+    idx = [p[2] for p in parsed]
+    if not isinstance(pins, list) or any(p[0] != bank for p in parsed) or len(idx) >= len(pins) \
+            or idx != sorted(idx) or len(set(idx)) != len(idx):
+        return bind
+    if params is not None and "width" in params:
+        params["width"] = len(pins)
+    return {sig: bank}
 
 
 def _variant_label(x, others):

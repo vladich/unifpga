@@ -607,7 +607,7 @@ def test_design_requirements_widths_are_design_top_parameters():
     params = design_requirements.design_parameters(resolved)
     caps = config_init.read_capabilities()
     widths = {c: codegen.capability_width_parameter(c) for c in caps}
-    assert {w for w in widths.values() if w} == {"w_sw", "w_btn", "w_led", "w_digit", "w_rgb_led", "w_gpio", "w_act"}
+    assert {w for w in widths.values() if w} == {"w_sw", "w_btn", "w_led", "w_digit", "w_rgb_led", "w_gpio", "w_act", "w_mem_addr"}
     # an optional capability's parameter reaches design_top only with a provider (or the design declaring it)
     assert {w for c, w in widths.items() if w and not caps[c].get("optional")} <= set(params) and "w_act" not in params
     assert design_requirements.check(resolved, {"leds": {"min_width": params["w_led"]}}) == []
