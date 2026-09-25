@@ -20,23 +20,4 @@ package peripheral_pkg;
   localparam VGA_ADDR_HIGH    = 8'h07;
   localparam TIMER_ADDR_HIGH  = 8'h08;
 
-  task automatic ps2_send_scan_code(input logic [7:0] code, ref logic ps2_clk, ref logic ps2_dat);
-    logic [11:0] data = {2'b11, !(^code), code, 1'b0};
-    for(int i = 0; i < 11; i++) begin
-      ps2_dat = data[i];
-      #15us;
-      ps2_clk = 1'b0;
-      #15us;
-      ps2_clk = 1'b1;
-    end
-  endtask
-
-  task automatic uart_rx_send_char(input logic [7:0] character, input logic [31:0] baudrate, ref logic tx);
-    logic [11:0] data = {2'b11, (^character), character, 1'b0};
-    for(int i = 0; i < 12; i++) begin
-      tx = data[i];
-      #(1s/baudrate);
-    end
-  endtask
-
 endpackage

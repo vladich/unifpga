@@ -1,11 +1,12 @@
 // =============================================================================
 // 5_5_aps testbench
-//   (slow_clk is derived inside design_top)
+//   a 50 MHz clock: the design divides it to 10 MHz (the CPU) and 25 MHz (VGA),
+//   so it must be a multiple of both
 // =============================================================================
 
 module tb;
 
-    localparam clk_mhz = 1,
+    localparam clk_mhz = 50,
                w_btn   = 4,
                w_sw    = 8,
                w_led   = 8,
@@ -49,7 +50,7 @@ module tb;
     initial begin
         clk = 1'b0;
         forever begin
-            #5;
+            #10;                                 // 20 ns: 50 MHz
             clk = ~clk;
         end
     end

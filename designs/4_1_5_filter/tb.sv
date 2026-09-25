@@ -74,7 +74,7 @@ module tb;
         $dumpvars;
         btn[3:1] = '0;
         sine_ptr = '0;
-        $readmemh("../sine_table.txt", sine_table);
+        $readmemh("sine_table.mem", sine_table);
 
         repeat (512)
         begin
