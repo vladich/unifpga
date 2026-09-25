@@ -43,3 +43,7 @@ Configuration:
       bind:
         tx: onboard_uart.tx
         rx: onboard_uart.rx
+    - peripheral: i2c_temperature_sensor
+      bind:
+        scl: onboard_temp_sensor.scl
+        sda: onboard_temp_sensor.sda

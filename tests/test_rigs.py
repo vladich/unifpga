@@ -267,6 +267,74 @@ def test_a_keyboard_reaches_a_design_that_asks_for_it():
     assert "ps2_keyboard # (.clk_mhz(clk_mhz))" in top and ".kbd_key(cap_keyboard_key)" in top
 
 
+def test_a_usb_keyboard_bridged_as_ps2_is_the_designs_keyboard():
+    """Basys3 / Nexys: the PIC24 bridge presents a USB keyboard as PS/2, and the
+    ps2_keyboard peripheral models it; where Digilent's XDC pulls the pair up,
+    both the Vivado and the openxc7 constraints do."""
+    from tools import codegen, studio
+    for rig in ("basys3", "nexys4", "nexys4_ddr", "nexys_a7"):
+        assert studio.design_fit(config_init.resolve_configuration(rig))["keyboard_keys"] == [], rig
+    for tc, emit in (("vivado", codegen.emit_xdc), ("nextpnr_openxc7", codegen.emit_xdc_simple)):
+        xdc = emit(config_init.resolve_configuration("basys3", toolchain=tc))
+        pulled = [l for l in xdc.splitlines() if "PULLUP true" in l and "onboard_usb_hid_" in l]
+        assert len(pulled) == 2, tc
+    assert "PULLUP" not in codegen.emit_xdc(config_init.resolve_configuration("nexys_a7"))
+
+
+def test_a_pull_up_the_toolchain_cannot_emit_is_refused():
+    from tools import codegen
+    r = copy.deepcopy(config_init.resolve_configuration("basys3"))
+    r["toolchain"] = dict(r["toolchain"], Id="quartus_prime_lite")
+    assert any("pulled up" in p for p in codegen.validate_configuration(r))
+    r["board_pinmap"]["pinBanks"]["onboard_usb_hid"]["pull"] = "down"
+    assert any("pull 'down' is not known" in p for p in codegen.validate_configuration(r))
+
+
+def test_a_temperature_sensor_reaches_a_design_that_asks_for_it():
+    """The Nexys 4 DDR's ADT7420 and the OMDAZZ's LM75 are temperature sensors
+    (readings in 1/16 C: the ADT7420's at bit 3, the LM75's at bit 4);
+    designs/temperature_leds requires one: it fits them, not the Arty."""
+    from tools import codegen, studio
+    fit = {rig: studio.design_fit(config_init.resolve_configuration(rig))["temperature_leds"]
+           for rig in ("nexys4_ddr", "omdazz", "arty_a7")}
+    assert fit["nexys4_ddr"] == [] and fit["omdazz"] == []
+    assert any("temperature" in m for m in fit["arty_a7"])
+    design = os.path.join(REPO, "designs", "temperature_leds", "design_top.sv")
+    tops = {rig: codegen.emit_top_sv(config_init.resolve_configuration(rig), design=design)
+            for rig in ("nexys4_ddr", "omdazz")}
+    assert ".SHIFT(3)" in tops["nexys4_ddr"] and ".SHIFT(4)" in tops["omdazz"]
+    assert all(".temp(cap_temperature_value)" in t for t in tops.values())
+
+
+def test_an_accelerometer_reaches_a_design_that_asks_for_it():
+    """The Nexys 4 boards' ADXL362 is an accelerometer (milli-g per axis);
+    designs/tilt_level requires one: it fits them, not the Basys3."""
+    from tools import codegen, studio
+    for rig in ("nexys4", "nexys4_ddr", "nexys_a7"):
+        assert studio.design_fit(config_init.resolve_configuration(rig))["tilt_level"] == [], rig
+    assert any("accelerometer" in m for m in
+               studio.design_fit(config_init.resolve_configuration("basys3"))["tilt_level"])
+    design = os.path.join(REPO, "designs", "tilt_level", "design_top.sv")
+    top = codegen.emit_top_sv(config_init.resolve_configuration("nexys_a7"), design=design)
+    assert "adxl362_reader" in top and ".acc_x(cap_accelerometer_x)" in top
+
+
+def test_an_adc_reaches_a_design_that_asks_for_it():
+    """The DE0-Nano's ADC128S022 (3.3 V full scale) and the DE10-Nano's LTC2308
+    (4.096 V) scan 8 analog inputs; designs/adc_leds requires them: it fits
+    both, not the Basys3, and learns each full scale."""
+    from tools import codegen, studio
+    fit = {rig: studio.design_fit(config_init.resolve_configuration(rig))["adc_leds"]
+           for rig in ("de0_nano_vga666", "de10_nano", "basys3")}
+    assert fit["de0_nano_vga666"] == [] and fit["de10_nano"] == []
+    assert any("adc" in m for m in fit["basys3"])
+    design = os.path.join(REPO, "designs", "adc_leds", "design_top.sv")
+    tops = {rig: codegen.emit_top_sv(config_init.resolve_configuration(rig), design=design)
+            for rig in ("de0_nano_vga666", "de10_nano")}
+    assert "adc128s022_scan" in tops["de0_nano_vga666"] and ".adc_mv(3300)" in tops["de0_nano_vga666"]
+    assert "ltc2308_scan" in tops["de10_nano"] and ".adc_mv(4096)" in tops["de10_nano"]
+
+
 def test_no_pin_is_both_a_gpio_bit_and_another_parts():
     """In every rig, a pin the design reaches through its gpio port is no other
     part's (a microphone, a TM1638, a tie): one master per pad."""

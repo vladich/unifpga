@@ -6,11 +6,7 @@
 //   leds >= 1
 //   seven_segment >= 1
 
-//`ifdef ALTERA_RESERVED_QIS
-//    `define BOOT_FROM_AUX_UART
-//`endif
 `define BOOT_FROM_AUX_UART
-//`define INTEL_VERSION
 `define NO_READMEMH_FOR_8_BIT_WIDE_MEM
 `define USE_MEM_BANKS_FOR_BYTE_LINES
 `define INSTANTIATE_TM1638_BOARD_CONTROLLER_MODULE
@@ -103,15 +99,9 @@ module design_top
 
     wire muxed_clk;
 
-    `ifdef SIMULATION
-        assign muxed_clk = muxed_clk_raw;
-    `else
-         `ifdef INTEL_VERSION
-             global i_global (.in (muxed_clk_raw), .out (muxed_clk));
-        `else
-             BUFG i_global (.I (muxed_clk_raw), .O (muxed_clk));
-         `endif
-    `endif
+    // onto the clock network (the generated top defines global_clock_buffer
+    // for the board; in simulation it is a wire)
+    global_clock_buffer i_muxed_clk (.in (muxed_clk_raw), .out (muxed_clk));
 
     //--------------------------------------------------------------------------
     // MCU inputs

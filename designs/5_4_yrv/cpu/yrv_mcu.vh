@@ -139,24 +139,12 @@ module yrv_mcu
   reg    [15:0] mem_addr_reg;                              /* reg'd memory address         */
 
   /*****************************************************************************************/
-  /* This option allows to create examples with read-only memory                           */
-  /* when booting from UART is not available.                                              */
-  /*                                                                                       */
-  /* Note that Intel FPGA Quartus Prime does not support 8-bit readmemh for synthesis.     */
-  /* It means that the user has to either use booting from UART                            */
-  /* or rely on read-only 32-bit wide memory inside inst_mem.v undef ifdef INSTANCE_MEM.   */
+  /* On a board the memory is four byte-wide banks, loaded by booting from the UART: some  */
+  /* tools (Quartus) cannot initialise 8-bit-wide memory from $readmemh in synthesis, so   */
+  /* one layout serves every FPGA (USE_MEM_BANKS_FOR_BYTE_LINES above).                    */
   /*****************************************************************************************/
 
-`ifdef INTEL_VERSION
-  `ifndef SIMULATION
-    `define USE_MEM_BANKS_FOR_BYTE_LINES
-    `define NO_READMEMH_FOR_8_BIT_WIDE_MEM
-  `endif
-`endif
 
-`ifdef INSTANCE_MEM
-  wire   [31:0] mem_rdata;                                 /* raw read data                */
-`else
   wire    [3:0] mem_wr_byte;                               /* system ram byte enables      */
 
   `ifdef USE_MEM_BANKS_FOR_BYTE_LINES
@@ -169,7 +157,6 @@ module yrv_mcu
   `endif
 
   reg    [31:0] mem_rdata;                                 /* raw read data                */
-`endif
 
   /*****************************************************************************************/
   /* 32-bit bus, no wait states, internal local interrupts                                 */
@@ -289,12 +276,6 @@ module yrv_mcu
   /*****************************************************************************************/
   /* 32-bit memory (currently 1k x 32)                                                     */
   /*****************************************************************************************/
-`ifdef INSTANCE_MEM
-  inst_mem MEM    ( .mem_rdata(mem_rdata), .clk(clk), .mem_addr(mem_addr[15:0]),
-                    .mem_addr_reg(mem_addr_reg),.mem_ble_reg(mem_ble_reg),
-                    .mem_ready(mem_ready), .mem_trans(mem_trans), .mem_wdata(mem_wdata),
-                    .mem_wr_reg(mem_wr_reg) );
-`else
   assign mem_wr_byte = {4{mem_wr_reg}} & mem_ble_reg & {4{mem_ready}};
 
   `ifdef USE_MEM_BANKS_FOR_BYTE_LINES
@@ -352,7 +333,6 @@ end
 
 `endif
 
-`endif
 
   /*****************************************************************************************/
   /* bus interface                                                                         */

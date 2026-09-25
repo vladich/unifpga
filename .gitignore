@@ -75,3 +75,4 @@ output_files/
 .claude/
 PLAN.md
 docs/
+rtl/sim/.vendor_blackboxes.v

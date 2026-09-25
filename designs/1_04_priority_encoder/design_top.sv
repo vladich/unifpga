@@ -107,26 +107,20 @@ module design_top
 
     localparam w = 3;
 
-    `ifdef YOSYS
 
-        wire [w - 1:0] c;
+    wire [w - 1:0] c;
 
-        genvar i;
+    genvar i;
 
-        generate
-            for (i = 0; i < w; i = i + 1) begin
-                if (i == 0)
-                    assign c [0] = 1'b1;
-                else
-                    assign c [i] = ~ in [i - 1] & c [i - 1];
-            end
-        endgenerate
+    generate
+        for (i = 0; i < w; i = i + 1) begin
+            if (i == 0)
+                assign c [0] = 1'b1;
+            else
+                assign c [i] = ~ in [i - 1] & c [i - 1];
+        end
+    endgenerate
 
-    `else
-
-        wire [w - 1:0] c = { ~ in [w - 2:0] & c [w - 2:0], 1'b1 };
-
-    `endif
 
     wire [w - 1:0] g = in & c;
 
@@ -175,15 +169,7 @@ module design_top
                 // Since both Icarus and Yosys do not support break statement
                 // we simply imitate it by setting i to final value
 
-                `ifdef __ICARUS__
-                     i = $bits (in);
-                `else
-                    `ifdef YOSYS
-                        i = $bits (in);
-                    `else
-                        break;
-                    `endif
-                `endif
+                i = $bits (in);
             end
         end
     end

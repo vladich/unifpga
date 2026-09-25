@@ -56,7 +56,7 @@ Layout:
       device: {kind: xadc, bank: onboard_pmod_jxadc}   # no peripheral model yet
     - id: usb_hid
       label: USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
-      device: {kind: usb_hid, bank: onboard_usb_hid}   # no peripheral model yet
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_usb_hid.clk, data: onboard_usb_hid.data}}
     - id: qspi_flash
       label: Quad-SPI flash (configuration + user)
       device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet

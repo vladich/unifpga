@@ -71,9 +71,7 @@ module tb;
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
         btn <= '0;
         sw  <= '0;

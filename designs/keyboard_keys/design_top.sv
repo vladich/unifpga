@@ -114,6 +114,6 @@ module design_top
         else if (kbd_valid)
             held <= kbd_down ? kbd_key : (kbd_key == held ? 8'h00 : held);
 
-    assign led = w_led'(held);
+    assign led = held;   // extended or cut to the rig's LEDs
 
 endmodule

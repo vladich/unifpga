@@ -19,62 +19,10 @@
 /**                                                                                       **/
 /*******************************************************************************************/
 
-// `define SIM_VERSION                                        /* Simulation                   */
-// `define ICE40_VERSION                                      /* Lattice iCE40                */
-// `define SERIES7_VERSION                                    /* Xilinx 7-series              */
-// `define INTEL_VERSION                                      /* Intel FPGA (former Altera)   */
-
-`ifdef ICE40_VERSION
-`elsif SERIES7_VERSION
-`elsif INTEL_VERSION
-  /* Intel FPGA version also uses generic version settings */
-  `define GENERIC_VERSION
-`else
-  `define GENERIC_VERSION
-`endif
-
-`ifndef GENERIC_VERSION
-  `define INSTANCE_REG                                     /* instantiated registers       */
-// `define INSTANCE_ADD                                       /* instantiated adder           */
-// `define INSTANCE_SUB                                       /* instantiated subtractor      */
-// `define INSTANCE_INC                                       /* instantiated incrementer     */
-// `define INSTANCE_CNT                                       /* instantiated count increment */
-  `define INSTANCE_MEM                                     /* instantiated memories        */
-`endif
-
-`ifdef INTEL_VERSION
-  `define BOOT_FROM_AUX_UART
-  `define EXPOSE_MEM_BUS
-  // `define RESET_BASE_AND_INT_VECTORS_FOR_RARS
-`endif
-
-/*******************************************************************************************/
-/* simulators                                                                              */
-/*******************************************************************************************/
-
-`ifdef VCS
-  // Synopsys VCS
-`elsif INCA
-  // Cadence NC-Verilog, IUS and Xcelium
-`elsif MODEL_TECH
-  // Mentor Graphics / Siemens EDA - ModelSim / Questa
-`elsif __ICARUS__
-  // Icarus Verilog http://iverilog.icarus.com
-`elsif VERILATOR
-  // Verilator https://www.veripool.org/wiki/verilator
-`elsif XILINX_ISIM
-  // Xilinx ISE Simulator
-`elsif XILINX_SIMULATOR
-  // Xilinx Vivado Simulator
-`elsif Veritak
-  // Veritak http://www.sugawara-systems.com
-`else
-  `define NO_SIMULATION
-`endif
-
-`ifndef NO_SIMULATION
-  `define SIMULATION
-`endif
+// One implementation for every FPGA: no vendor variants (the original's
+// iCE40 / 7-series instantiated primitives are not kept). SIMULATION is defined
+// by the simulation flow (./unifpga sim passes -D SIMULATION), never guessed
+// from a simulator's own macros.
 
 /*******************************************************************************************/
 /* read-only csr defaults                                                                  */

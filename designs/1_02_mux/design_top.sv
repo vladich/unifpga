@@ -163,18 +163,12 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    `ifdef __ICARUS__
+    // The same table, one bit per { sel, a, b }, first entry on the left: an
+    // ascending range [0:7] numbers the bits from the left. (A multidimensional
+    // packed array, wire [0:1][0:1][0:1], would read table8 [sel][a][b], but
+    // Icarus Verilog and Yosys cannot index one by signals.)
 
-    // The syntax below does not work with Icarus Verilog
-    wire mux8 = mux0;
-
-    `elsif YOSYS
-
-    wire mux8 = mux0;
-
-    `else
-
-    wire [0:1][0:1][0:1] table8 =
+    wire [0:7] table8 =
     {
         1'b0, // sel = 0, a = 0, b = 0
         1'b1, // sel = 0, a = 0, b = 1
@@ -186,24 +180,14 @@ module design_top
         1'b1  // sel = 1, a = 1, b = 1
     };
 
-    wire mux8 = table8 [sel][a][b];
-
-    `endif
+    wire mux8 = table8 [{ sel, a, b }];
 
     //------------------------------------------------------------------------
 
-    `ifdef __ICARUS__
+    // A descending range [7:0]: the leftmost entry is bit 7, so the table is
+    // written from { sel, a, b } = 3'b111 down.
 
-    // The syntax below does not work with Icarus Verilog
-    wire mux9 = mux0;
-
-    `elsif YOSYS
-
-    wire mux9 = mux0;
-
-    `else
-
-    wire [1:0][1:0][1:0] table9 =
+    wire [7:0] table9 =
     {
         1'b1, // sel = 1, a = 1, b = 1
         1'b1, // sel = 1, a = 1, b = 0
@@ -215,68 +199,41 @@ module design_top
         1'b0  // sel = 0, a = 0, b = 0
     };
 
-    wire mux9 = table9 [sel][a][b];
-
-    `endif
+    wire mux9 = table9 [{ sel, a, b }];
 
     //------------------------------------------------------------------------
 
-    `ifdef SYNOPSYS_CADENCE_MENTOR
+    // The index in another order, { a, b, sel }: the table rearranged to match.
 
-    // This syntax probably works only with Synopsys VCS, Cadence Xselium
-    // and QuestaSim from Siemens EDA (former Mentor Graphics)
-
-    wire [0:1][0:1][0:1] table10 =
-    '{
-        '{
-            '{ 1'b0, 1'b0 },  // a = 0, b = 0, sel = 0/1
-            '{ 1'b1, 1'b0 }   // a = 0, b = 1, sel = 0/1
-        },
-
-        '{
-            '{ 1'b0, 1'b1 },  // a = 1, b = 0, sel = 0/1
-            '{ 1'b1, 1'b1 }   // a = 1, b = 1, sel = 0/1
-        }
+    wire [0:7] table10 =
+    {
+        1'b0, 1'b0,  // a = 0, b = 0, sel = 0/1
+        1'b1, 1'b0,  // a = 0, b = 1, sel = 0/1
+        1'b0, 1'b1,  // a = 1, b = 0, sel = 0/1
+        1'b1, 1'b1   // a = 1, b = 1, sel = 0/1
     };
 
-    wire mux10 = table10 [a][b][sel];
-
-    `else
-
-    wire mux10 = mux0;
-
-    `endif
+    wire mux10 = table10 [{ a, b, sel }];
 
     //------------------------------------------------------------------------
 
-    `ifdef SYNOPSYS_CADENCE_MENTOR
+    // An unpacked array: one element per entry, each assigned by its index.
 
-    // This syntax probably works only with Synopsys VCS, Cadence Xselium
-    // and QuestaSim from Siemens EDA (former Mentor Graphics)
+    logic table11 [0:7];
 
-    logic table11 [0:1][0:1][0:1] =
-    '{
-        '{
-            '{ 1'b0, 1'b0 },  // a = 0, b = 0, sel = 0/1
-            '{ 1'b1, 1'b0 }   // a = 0, b = 1, sel = 0/1
-        },
+    assign table11 [0] = 1'b0;  // a = 0, b = 0, sel = 0
+    assign table11 [1] = 1'b0;  // a = 0, b = 0, sel = 1
+    assign table11 [2] = 1'b1;  // a = 0, b = 1, sel = 0
+    assign table11 [3] = 1'b0;  // a = 0, b = 1, sel = 1
+    assign table11 [4] = 1'b0;  // a = 1, b = 0, sel = 0
+    assign table11 [5] = 1'b1;  // a = 1, b = 0, sel = 1
+    assign table11 [6] = 1'b1;  // a = 1, b = 1, sel = 0
+    assign table11 [7] = 1'b1;  // a = 1, b = 1, sel = 1
 
-        '{
-            '{ 1'b0, 1'b1 },  // a = 1, b = 0, sel = 0/1
-            '{ 1'b1, 1'b1 }   // a = 1, b = 1, sel = 0/1
-        }
-    };
-
-    wire mux11 = table11 [a][b][sel];
+    wire mux11 = table11 [{ a, b, sel }];
 
     // Exercise 3: Change the table to get the correct result by doing
-    // wire mux11_2 = table11_2 [sel][b][a];
-
-    `else
-
-    wire mux11 = mux0;
-
-    `endif
+    // wire mux11_2 = table11_2 [{ sel, b, a }];
 
     //------------------------------------------------------------------------
 

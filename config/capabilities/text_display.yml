@@ -28,4 +28,4 @@ Capability:
     ports:
       txt_col: {signal: column, width: w_txt_col}
       txt_row: {signal: row, width: w_txt_row}
-      txt_char: {signal: char, width: 8}
+      txt_char: {signal: char, width: 8, idle: "8'h20"}   # a design without it: spaces

@@ -21,6 +21,7 @@ Setup:
     - onboard: char_lcd
       variant: gpio
     - onboard: buzzer
+    - onboard: temp_sensor
   extra:
     tie:
       onboard_char_lcd.d[6]: 0

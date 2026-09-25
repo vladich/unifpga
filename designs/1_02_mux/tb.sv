@@ -101,9 +101,7 @@ module tb;
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
         // Exhaustive direct testing aka brute force testing
 

@@ -64,6 +64,8 @@ module design_top
     parameter int txt_columns   = 0,     // Character display (HD44780 LCD ...)
     parameter int txt_rows      = 0,
     parameter int w_act         = 0,     // Actuators (relays, servos, PWM outputs)
+    parameter int adc_channels  = 0,     // Analog inputs (A/D converter channels)
+    parameter int adc_mv        = 0,     // Their full scale in millivolts (code 4096)
 
     // ---- Derived widths (do not override) -----------------------------------
     parameter int w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
@@ -139,7 +141,25 @@ module design_top
     // the key's USB HID usage code (A = 8'h04, Enter = 8'h28), kbd_down 1 pressed --
     input                            kbd_valid,
     input        [          7 : 0]   kbd_key,
-    input                            kbd_down
+    input                            kbd_down,
+
+    // ---- Temperature (optional): one clock of temp_valid per new reading;
+    // temp is two's complement in 1/16 degrees Celsius (400 = 25.0 C) ---------
+    input                            temp_valid,
+    input        [         15 : 0]   temp,
+
+    // ---- Accelerometer (optional): one clock of acc_valid per new set of
+    // readings; each axis two's complement in milli-g ---------------------------
+    input                            acc_valid,
+    input        [         15 : 0]   acc_x,
+    input        [         15 : 0]   acc_y,
+    input        [         15 : 0]   acc_z,
+
+    // ---- Analog inputs (optional): one clock of adc_valid per conversion;
+    // adc_value is the 12-bit code of channel adc_channel (mV = value * adc_mv / 4096)
+    input                            adc_valid,
+    input        [          3 : 0]   adc_channel,
+    input        [         11 : 0]   adc_value
 );
 
     // -------------------------------------------------------------------------

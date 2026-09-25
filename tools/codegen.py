@@ -483,6 +483,48 @@ def diff_buf_kind(resolved):
     return "generic"
 
 
+# A clock made in logic (a divider, a mux) reaches the clock network through
+# the device's global buffer. Designs and helpers instantiate the one
+# vendor-neutral module, `global_clock_buffer (.in, .out)`; the generated top
+# defines it for the board. Intel's primitive is written `\\global ` (escaped:
+# `global` is a SystemVerilog keyword the other readers refuse, Quartus takes
+# the escaped name as the primitive).
+_CLOCK_BUFFERS = {
+    "intel":   "    \\global  i_buffer (.in (in), .out (out));   // Intel: the GLOBAL primitive",
+    "xilinx":  "    BUFG i_buffer (.I (in), .O (out));             // Xilinx 7-series: a global clock buffer",
+    "generic": "    assign out = in;                               // the tools route it themselves",
+}
+
+
+def clock_buffer_kind(resolved):
+    """Which global clock buffer `global_clock_buffer` is on this board: the
+    pinmap's `io.clock_buffer` when set, else by family (GLOBAL on Intel, BUFG on
+    Xilinx 7-series, a plain wire elsewhere)."""
+    io = resolved["board_pinmap"].get("io") or {}
+    if io.get("clock_buffer"):
+        kind = str(io["clock_buffer"])
+        if kind not in _CLOCK_BUFFERS:
+            raise CodegenError("{}: io.clock_buffer {!r} is not one of {}".format(
+                resolved["configuration"]["id"], kind, ", ".join(sorted(_CLOCK_BUFFERS))))
+        return kind
+    board = resolved["board"]
+    producer = (board.get("PartProducer") or "").lower()
+    if "intel" in producer or "altera" in producer:
+        return "intel"
+    if _pll_vendor(board) == "xilinx_mmcm":
+        return "xilinx"
+    return "generic"
+
+
+def _emit_clock_buffer(resolved):
+    kind = clock_buffer_kind(resolved)
+    return ["// ---- global_clock_buffer: a clock made in logic onto the clock network",
+            "// (instantiated by designs and helpers; this board: {}) ----".format(kind),
+            "module global_clock_buffer (input in, output out);",
+            _CLOCK_BUFFERS[kind],
+            "endmodule"]
+
+
 def _pinned_rpll(cfg_id, name, f_in, r):
     """A GowinRPLL solution from the configuration's exact dividers
     (`clock_<name>_pll`, a vendor-generated rPLL): the same frequency the
@@ -1141,6 +1183,7 @@ def validate_configuration(resolved, plans=None):
       * non-optional peripheral signals are bound
       * `params.width` equals the bound bank's pin count
       * a clock provider with a known frequency exists
+      * a bank marked `pull: up` is used only where its toolchain emits the pull-up
     """
     if plans is None:
         plans = build_capability_plans(resolved)
@@ -1235,6 +1278,16 @@ def validate_configuration(resolved, plans=None):
         except CodegenError as exc:
             problems.append(str(exc).split(": ", 1)[-1])
 
+    for name in collect_referenced_banks(resolved):
+        pull = (banks.get(name) or {}).get("pull")
+        if pull is None:
+            continue
+        if pull != "up":
+            problems.append("bank {!r}: pull {!r} is not known (only 'up')".format(name, pull))
+        elif (resolved.get("toolchain") or {}).get("Id") not in PULL_TOOLCHAINS:
+            problems.append("bank {!r} needs its pins pulled up, which the {} constraints do not emit yet"
+                            .format(name, (resolved.get("toolchain") or {}).get("Id")))
+
     return ["Configuration {}: {}".format(cfg_id, p) for p in problems]
 
 
@@ -1310,6 +1363,19 @@ def emit_top_sv(resolved, strict=True, design=None):
         out.extend(_emit_attachment(resolved, idx, attach, plans, emit))
         out.append("")
 
+    # ---- output pins no part drives (a 4-bit character LCD on an 8-bit data
+    # bank): held at 0, not left floating ----
+    driven = set()
+    for attach in resolved["peripherals"]:
+        for ref in (attach.get("bind") or {}).values():
+            driven.update(_bind_bit_ports(resolved, ref))
+    idle = ["    assign {}[{}] = 1'b0;".format(pname, i) for pname, w, d in _ports
+            if d == "output" and w > 1 for i in range(w) if "{}[{}]".format(pname, i) not in driven]
+    if idle:
+        out.append("    // ---- output pins no part drives: held at 0 ----")
+        out.extend(idle)
+        out.append("")
+
     # ---- design_top instantiation ----
     merge = _emit_lab_bits_merge(plans, resolved)
     if merge:
@@ -1318,6 +1384,8 @@ def emit_top_sv(resolved, strict=True, design=None):
     out.extend(_emit_lab_top(resolved, plans, design))
     out.append("")
     out.append("endmodule")
+    out.append("")
+    out.extend(_emit_clock_buffer(resolved))
     return "\n".join(out)
 
 
@@ -1655,6 +1723,10 @@ def _emit_lab_bits_merge(plans, resolved=None):
                 width = _signal_width(plan, sig)
                 if not lines:
                     lines.append("    // ---- lab_bits: design bits merged from the providers (OR where shared) ----")
+                if width < 1:
+                    # the profile hands the design none of these bits: its
+                    # zero-width port ([-1:0]) still reads 0, not a floating net
+                    lines.append("    assign {} = '0;   // the design gets no bits of it".format(cap))
                 for b in range(width):
                     srcs = ["{}[{}]".format(_provider_wire(plan, sig["name"], pidx), i)
                             for pidx, bits in plan.bits.items() for i, bb in enumerate(bits) if bb == b]
@@ -1848,7 +1920,16 @@ def _emit_passthrough(resolved, idx, attach, plans, emit):
                     if i >= len(pin_bits):
                         break
                     if b is None:
-                        lines.append("    // {} reaches no design bit".format(pin_bits[i]))
+                        if cap_sig.get("direction") == "user_to_hw" and \
+                                pin_bits[i] not in _claimed_port_bits(resolved, plans, {idx}):
+                            # an output no design bit drives (an LED the profile gives
+                            # none): held at its off level, not left floating; unless
+                            # another part drives the pin (DE2: the 7-segment decimal
+                            # points on the red LEDs)
+                            lines.append("    assign {} = 1'b{};   // reaches no design bit: held off"
+                                         .format(pin_bits[i], 1 if inv else 0))
+                        else:
+                            lines.append("    // {} reaches no design bit".format(pin_bits[i]))
                         continue
                     if cap_sig.get("direction") == "user_to_hw":
                         lines.append("    assign {} = {}{}[{}];".format(pin_bits[i], inv, cap_base, b))
@@ -2660,6 +2741,17 @@ def _emit_lab_top(resolved, plans, design=None):
         port_lines.append("        .{}({})".format(p.name, net))
     lines.append(",\n".join(port_lines))
     lines.append("    );")
+    # an optional capability the rig provides but the design does not take: what
+    # its driver reads from the design is the port's idle value (a character LCD
+    # shows spaces), not a floating net
+    for p in design_contract()[2]:
+        plan = plans[p.capability]
+        if not p.optional or p in ports or not plan.providers:
+            continue
+        sig = next(s for s in plan.cap.get("signals", []) if s["name"] == p.signal)
+        if sig.get("direction") == "user_to_hw":
+            lines.append("    assign cap_{}_{} = {};   // the design does not take {}".format(
+                p.capability, p.signal, p.spec.get("idle", "'0"), p.name))
     return lines
 
 
@@ -2724,6 +2816,9 @@ def emit_xdc(resolved):
                 elif isinstance(val, str):
                     out.append(_xdc_line(val, pname, _pin_iostd(val, overrides, bank_iostd)))
 
+    for port in _pulled_ports(resolved):
+        out.append("set_property PULLUP true [get_ports {{ {} }}];".format(port))
+
     # ---- Clock create_clock entries ----
     out.append("")
     out.append("# ---- Clock definitions ----")
@@ -2750,6 +2845,38 @@ def _xdc_line(pin, port_expr, iostd):
         "set_property -dict {{ PACKAGE_PIN {pin} IOSTANDARD {std} }} "
         "[get_ports {{ {port} }}];".format(pin=pin_str, std=iostd, port=port_expr)
     )
+
+
+# Toolchains whose constraint writers emit a bank's `pull: up` (a board fact:
+# pins the board leaves floating that its devices expect pulled up, such as
+# the Nexys USB-HID bridge's PS/2 pair). A rig on another toolchain that uses
+# such a bank is refused by validate_configuration rather than built without.
+PULL_TOOLCHAINS = ("vivado", "nextpnr_openxc7")
+
+
+def _pulled_ports(resolved):
+    """Top ports of the used banks the pinmap marks `pull: up`, in bank order."""
+    pinmap = resolved["board_pinmap"]
+    out = []
+    for bank_name in collect_referenced_banks(resolved):
+        bank = (pinmap.get("pinBanks") or {}).get(bank_name) or {}
+        if bank.get("pull") != "up":
+            continue
+        pins = bank.get("pins")
+        if isinstance(pins, str):
+            out.append(bank_name)
+        elif isinstance(pins, list):
+            out += ["{}[{}]".format(bank_name, i) for i, p in enumerate(pins) if p is not None]
+        elif isinstance(pins, dict):
+            for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
+                pname = "{}_{}".format(bank_name, sub)
+                if isinstance(val, list):
+                    out += ["{}[{}]".format(pname, i) for i, p in enumerate(val) if p is not None]
+                elif isinstance(val, str):
+                    out.append(pname)
+    return out
 
 
 def emit_xdc_simple(resolved):
@@ -2801,6 +2928,9 @@ def emit_xdc_simple(resolved):
                         emit(p, "{}[{}]".format(pname, i), _pin_iostd(p, overrides, bank_iostd))
                 elif isinstance(val, str):
                     emit(val, pname, _pin_iostd(val, overrides, bank_iostd))
+
+    for port in _pulled_ports(resolved):
+        out.append("set_property PULLUP true [get_ports {{{}}}]".format(port))
 
     # Clock create_clock entries
     out.append("")
@@ -3007,9 +3137,8 @@ def emit_qsf(resolved, part):
     # parses `.v` files (and `\\`include`d `.svh`/`.vh` headers) as Verilog 2001,
     # rejecting `'0`, `always_ff`, `logic`, etc.
     out.append("set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2005")
-    # Project template: four fitter threads and the INTEL_VERSION macro the labs test with `ifdef
+    # Project template: four fitter threads (no vendor macros: designs do not test the vendor)
     out.append("set_global_assignment -name NUM_PARALLEL_PROCESSORS 4")
-    out.append('set_global_assignment -name VERILOG_MACRO "INTEL_VERSION"')
     # Board-level project settings from the pinmap (dual-
     # purpose pin reservation such as nCEO used as regular I/O, unused-pin
     # state, device I/O default).

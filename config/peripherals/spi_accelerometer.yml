@@ -1,14 +1,37 @@
-# SPI-bus accelerometer with two interrupt lines (e.g. ADXL362 on Nexys 4 DDR).
+# An Analog Devices ADXL362 three-axis accelerometer on SPI (the Nexys 4
+# boards'): rtl/peripherals/adxl362_reader.sv sets it measuring and reads the
+# three axes 100 times a second, in milli-g at its power-on +-2 g range. Its
+# two interrupt outputs are not used.
 
 Peripheral:
   id: spi_accelerometer
-  description: SPI accelerometer with 2 interrupt lines (e.g. Analog Devices ADXL362)
+  description: SPI accelerometer (Analog Devices ADXL362), readings in milli-g
+  # the on-board devices it models: a board inventory's accelerometer
+  # (its INT lines are left unbound: the reader polls)
+  models: {kind: accelerometer, pins: {miso: [miso, MISO, ACL_MISO], mosi: [mosi, MOSI, ACL_MOSI],
+                                       sclk: [sclk, SCLK, ACL_SCLK], csn: [csn, cs_n, CSN, ACL_CSN]}}
   signals:
     - { name: miso, type: scalar, direction: input }
     - { name: mosi, type: scalar, direction: output }
     - { name: sclk, type: scalar, direction: output }
     - { name: csn,  type: scalar, direction: output, comment: "Chip-select, active low" }
-    - { name: int1, type: scalar, direction: input }
-    - { name: int2, type: scalar, direction: input }
-  provides: []
-  driver: null
+    - { name: int1, type: scalar, direction: input, optional: true, comment: "Interrupt 1, not used" }
+    - { name: int2, type: scalar, direction: input, optional: true, comment: "Interrupt 2, not used" }
+  provides:
+    - capability: accelerometer
+  driver:
+    module: adxl362_reader
+    file: rtl/peripherals/adxl362_reader.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+    port_map:
+      clk:   context.clk
+      rst:   context.rst
+      sclk:  pin.sclk
+      mosi:  pin.mosi
+      miso:  pin.miso
+      cs_n:  pin.csn
+      valid: capability.accelerometer.valid
+      x:     capability.accelerometer.x
+      y:     capability.accelerometer.y
+      z:     capability.accelerometer.z

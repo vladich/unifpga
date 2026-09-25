@@ -23,6 +23,7 @@ Setup:
       wires: {SCK: 'gpio_1.[32]', BCK: 'gpio_1.[30]', LCK: 'gpio_1.[26]', DIN: 'gpio_1.[28]'}
     - gpio: gpio_0
       params: {width: 36}
+    - onboard: adc
   extra:
     tie:
       gpio_0[1]: 0

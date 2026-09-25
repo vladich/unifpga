@@ -52,9 +52,7 @@ module tb;
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
         //--------------------------------------------------------------------
         // Initialization

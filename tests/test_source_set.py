@@ -1,7 +1,7 @@
 """
-tools/source_set.collect_sources() against fake repository trees: the four
-frontend flags (.svh inclusion, helper gating, designs_common gating, compat
-stubs), the always-appended clock-tree wrappers and driver `files:`, ordering
+tools/source_set.collect_sources() against fake repository trees: the three
+frontend flags (.svh inclusion, helper gating, designs_common gating), the
+always-appended clock-tree wrappers and driver `files:`, ordering
 and de-duplication. No toolchain is needed.
 """
 
@@ -43,7 +43,6 @@ def repo(tmp_path):
     for name in ("seven_segment_display.sv", "shift_reg.sv", "strobe_gen.sv"):
         _write(os.path.join(per, "designs_common", name), "module %s; endmodule\n" % name[:-3])
     _write(os.path.join(per, "designs_common", "README.md"), "not a source\n")
-    _write(os.path.join(per, "_quartus_compat", "xilinx_primitive_stubs.sv"), "module BUFG; endmodule\n")
     _write(os.path.join(per, "hdmi_tmds_out.sv"), "module hdmi_tmds_out; endmodule\n")
     _write(os.path.join(per, "dvi.sv"), "module dvi; endmodule\n")
     _write(os.path.join(root, "rtl", "pll", "pll_xilinx_mmcm.sv"), "module pll_xilinx_mmcm; endmodule\n")
@@ -89,6 +88,18 @@ def test_default_order_tops_design_walk_then_gated_common(repo, design, gen_top)
     # nested .v walked), then shift_reg — named by helper.sv, not by the top.
     assert files == [top, design] + _design_files(design) + [
         _p(repo, "rtl", "peripherals", "designs_common", "shift_reg.sv")]
+
+
+def test_common_module_used_by_another_common_module_is_collected(repo, tmp_path, gen_top):
+    """pulse_extender instantiates shift_reg, which sorts before it: shift_reg
+    is still collected (5_4_yrv on the yosys flows needed both)."""
+    _write(_p(repo, "rtl", "peripherals", "designs_common", "pulse_extender.sv"),
+           "module pulse_extender; shift_reg u(); endmodule\n")
+    top = _write(str(tmp_path / "designs" / "pe" / "design_top.sv"),
+                 "module design_top; pulse_extender u(); endmodule\n")
+    files = source_set.collect_sources(repo, [], top, gen_top())
+    common = [os.path.basename(f) for f in files if "designs_common" in f]
+    assert common == ["pulse_extender.sv", "shift_reg.sv"]
 
 
 def test_generated_top_first_user_top_second_even_when_named_oddly(repo, tmp_path, gen_top):
@@ -192,28 +203,12 @@ def test_gate_common_off_takes_every_sv_sorted(repo, design, gen_top):
     assert not any(f.endswith("README.md") for f in files)
 
 
-# ---------------------------------------------------------------- compat_stubs
-
-@pytest.mark.parametrize("compat_stubs", [False, True])
-def test_compat_stubs_flag(repo, design, gen_top, compat_stubs):
-    top = gen_top("module top; pll_xilinx_mmcm u_pll(); endmodule\n")
-    files = source_set.collect_sources(repo, [], design, top, gate_common=False,
-                                       compat_stubs=compat_stubs)
-    stub = _p(repo, "rtl", "peripherals", "_quartus_compat", "xilinx_primitive_stubs.sv")
-    assert (stub in files) is compat_stubs
-    if compat_stubs:
-        # after designs_common, before the clock-tree wrapper
-        assert files.index(stub) == files.index(
-            _p(repo, "rtl", "peripherals", "designs_common", "strobe_gen.sv")) + 1
-        assert files[-1] == _p(repo, "rtl", "pll", "pll_xilinx_mmcm.sv")
-
-
 # ---------------------------------------------------------------- pll / driver files
 
 @pytest.mark.parametrize("flags", [
     dict(),
-    dict(include_svh=True, gate_helpers=False, gate_common=False, compat_stubs=True),
-    dict(include_svh=False, gate_helpers=False, gate_common=False, compat_stubs=False),
+    dict(include_svh=True, gate_helpers=False, gate_common=False),
+    dict(include_svh=False, gate_helpers=False, gate_common=False),
 ])
 def test_pll_wrapper_appended_under_every_flag_combination(repo, design, gen_top, flags):
     top = gen_top("module top;\n  pll_xilinx_mmcm #(.MULT(10)) u_pll(.clk_in(clk));\nendmodule\n")
@@ -245,13 +240,13 @@ def test_dedup_across_stages(repo, design, gen_top):
     hdmi = "rtl/peripherals/hdmi_tmds_out.sv"
     peripherals = [_peripheral(hdmi, files=[hdmi, "rtl/peripherals/designs_common/shift_reg.sv"]),
                    _peripheral(hdmi)]
-    files = source_set.collect_sources(repo, peripherals, design, top, compat_stubs=True)
+    files = source_set.collect_sources(repo, peripherals, design, top)
     assert len(files) == len(set(files))
     assert files.count(_p(repo, hdmi)) == 1
     assert files.count(_p(repo, "rtl", "peripherals", "designs_common", "shift_reg.sv")) == 1
     # first occurrence wins: shift_reg stays in its designs_common slot, not
     # re-added at the end by pll_source_paths
-    assert files[-1] == _p(repo, "rtl", "peripherals", "_quartus_compat", "xilinx_primitive_stubs.sv")
+    assert files[-1] == _p(repo, "rtl", "peripherals", "designs_common", "shift_reg.sv")
 
 
 # ---------------------------------------------------------------- degenerate inputs
@@ -263,7 +258,7 @@ def test_bare_repo_yields_only_the_two_tops(tmp_path, gen_top):
     top = gen_top()
     assert source_set.collect_sources(repo, None, user_top, top) == [top, user_top]
     assert source_set.collect_sources(repo, [], user_top, top, include_svh=True, gate_helpers=False,
-                                      gate_common=False, compat_stubs=True) == [top, user_top]
+                                      gate_common=False) == [top, user_top]
 
 
 def test_unreadable_generated_top_gates_everything_out(repo, design, tmp_path):

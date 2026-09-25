@@ -69,12 +69,7 @@ module tb;
 
     initial
     begin
-        `ifdef __ICARUS__
-            // Uncomment the following `define
-            // to generate a VCD file and analyze it using GTKwave
-
-           $dumpvars;
-        `endif
+        $dumpvars;
 
         regAddr <= 5'd10;  // a0 register used for I/O
 

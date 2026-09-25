@@ -182,6 +182,14 @@ module CLKDIV # (parameter DIV_MODE = "2", parameter GSREN = "false")
 endmodule
 
 
+// ---- Intel GLOBAL (a clock made in logic onto the clock network) -----------
+// `global` is a SystemVerilog keyword: generated tops write the escaped name.
+
+module \global  (input in, output out);
+    assign out = in;
+endmodule
+
+
 // ---- Xilinx MMCM + BUFG -----------------------------------------------------
 
 module BUFG (input I, output O);

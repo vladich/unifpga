@@ -82,6 +82,12 @@ Configuration:
         width: 22
       bind:
         io: gpio
+    - peripheral: ltc2308
+      bind:
+        convst: onboard_adc.ADC_CONVST
+        sck: onboard_adc.ADC_SCK
+        sdi: onboard_adc.ADC_SDI
+        sdo: onboard_adc.ADC_SDO
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

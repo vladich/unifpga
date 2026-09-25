@@ -90,44 +90,45 @@ module ps2_keyboard
     // ---- set 2 codes to HID usages --------------------------------------------
 
     function automatic logic [7:0] usage (input logic ext, input logic [7:0] code);
+        usage = 8'h00;
         if (! ext)
             case (code)
-                8'h1C: return 8'h04;  8'h32: return 8'h05;  8'h21: return 8'h06;  8'h23: return 8'h07;  // A B C D
-                8'h24: return 8'h08;  8'h2B: return 8'h09;  8'h34: return 8'h0A;  8'h33: return 8'h0B;  // E F G H
-                8'h43: return 8'h0C;  8'h3B: return 8'h0D;  8'h42: return 8'h0E;  8'h4B: return 8'h0F;  // I J K L
-                8'h3A: return 8'h10;  8'h31: return 8'h11;  8'h44: return 8'h12;  8'h4D: return 8'h13;  // M N O P
-                8'h15: return 8'h14;  8'h2D: return 8'h15;  8'h1B: return 8'h16;  8'h2C: return 8'h17;  // Q R S T
-                8'h3C: return 8'h18;  8'h2A: return 8'h19;  8'h1D: return 8'h1A;  8'h22: return 8'h1B;  // U V W X
-                8'h35: return 8'h1C;  8'h1A: return 8'h1D;                                              // Y Z
-                8'h16: return 8'h1E;  8'h1E: return 8'h1F;  8'h26: return 8'h20;  8'h25: return 8'h21;  // 1 2 3 4
-                8'h2E: return 8'h22;  8'h36: return 8'h23;  8'h3D: return 8'h24;  8'h3E: return 8'h25;  // 5 6 7 8
-                8'h46: return 8'h26;  8'h45: return 8'h27;                                              // 9 0
-                8'h5A: return 8'h28;  8'h76: return 8'h29;  8'h66: return 8'h2A;  8'h0D: return 8'h2B;  // Enter Esc Backspace Tab
-                8'h29: return 8'h2C;  8'h4E: return 8'h2D;  8'h55: return 8'h2E;  8'h54: return 8'h2F;  // Space - = [
-                8'h5B: return 8'h30;  8'h5D: return 8'h31;  8'h4C: return 8'h33;  8'h52: return 8'h34;  // ] \ ; '
-                8'h0E: return 8'h35;  8'h41: return 8'h36;  8'h49: return 8'h37;  8'h4A: return 8'h38;  // ` , . /
-                8'h58: return 8'h39;                                                                    // Caps Lock
-                8'h05: return 8'h3A;  8'h06: return 8'h3B;  8'h04: return 8'h3C;  8'h0C: return 8'h3D;  // F1 - F4
-                8'h03: return 8'h3E;  8'h0B: return 8'h3F;  8'h83: return 8'h40;  8'h0A: return 8'h41;  // F5 - F8
-                8'h01: return 8'h42;  8'h09: return 8'h43;  8'h78: return 8'h44;  8'h07: return 8'h45;  // F9 - F12
-                8'h7E: return 8'h47;  8'h77: return 8'h53;                                              // Scroll Lock, Num Lock
-                8'h7C: return 8'h55;  8'h7B: return 8'h56;  8'h79: return 8'h57;                        // KP * - +
-                8'h69: return 8'h59;  8'h72: return 8'h5A;  8'h7A: return 8'h5B;  8'h6B: return 8'h5C;  // KP 1 2 3 4
-                8'h73: return 8'h5D;  8'h74: return 8'h5E;  8'h6C: return 8'h5F;  8'h75: return 8'h60;  // KP 5 6 7 8
-                8'h7D: return 8'h61;  8'h70: return 8'h62;  8'h71: return 8'h63;                        // KP 9 0 .
-                8'h14: return 8'hE0;  8'h12: return 8'hE1;  8'h11: return 8'hE2;  8'h59: return 8'hE5;  // LCtrl LShift LAlt RShift
-                default: return 8'h00;
+                8'h1C: usage = 8'h04;  8'h32: usage = 8'h05;  8'h21: usage = 8'h06;  8'h23: usage = 8'h07;  // A B C D
+                8'h24: usage = 8'h08;  8'h2B: usage = 8'h09;  8'h34: usage = 8'h0A;  8'h33: usage = 8'h0B;  // E F G H
+                8'h43: usage = 8'h0C;  8'h3B: usage = 8'h0D;  8'h42: usage = 8'h0E;  8'h4B: usage = 8'h0F;  // I J K L
+                8'h3A: usage = 8'h10;  8'h31: usage = 8'h11;  8'h44: usage = 8'h12;  8'h4D: usage = 8'h13;  // M N O P
+                8'h15: usage = 8'h14;  8'h2D: usage = 8'h15;  8'h1B: usage = 8'h16;  8'h2C: usage = 8'h17;  // Q R S T
+                8'h3C: usage = 8'h18;  8'h2A: usage = 8'h19;  8'h1D: usage = 8'h1A;  8'h22: usage = 8'h1B;  // U V W X
+                8'h35: usage = 8'h1C;  8'h1A: usage = 8'h1D;                                              // Y Z
+                8'h16: usage = 8'h1E;  8'h1E: usage = 8'h1F;  8'h26: usage = 8'h20;  8'h25: usage = 8'h21;  // 1 2 3 4
+                8'h2E: usage = 8'h22;  8'h36: usage = 8'h23;  8'h3D: usage = 8'h24;  8'h3E: usage = 8'h25;  // 5 6 7 8
+                8'h46: usage = 8'h26;  8'h45: usage = 8'h27;                                              // 9 0
+                8'h5A: usage = 8'h28;  8'h76: usage = 8'h29;  8'h66: usage = 8'h2A;  8'h0D: usage = 8'h2B;  // Enter Esc Backspace Tab
+                8'h29: usage = 8'h2C;  8'h4E: usage = 8'h2D;  8'h55: usage = 8'h2E;  8'h54: usage = 8'h2F;  // Space - = [
+                8'h5B: usage = 8'h30;  8'h5D: usage = 8'h31;  8'h4C: usage = 8'h33;  8'h52: usage = 8'h34;  // ] \ ; '
+                8'h0E: usage = 8'h35;  8'h41: usage = 8'h36;  8'h49: usage = 8'h37;  8'h4A: usage = 8'h38;  // ` , . /
+                8'h58: usage = 8'h39;                                                                    // Caps Lock
+                8'h05: usage = 8'h3A;  8'h06: usage = 8'h3B;  8'h04: usage = 8'h3C;  8'h0C: usage = 8'h3D;  // F1 - F4
+                8'h03: usage = 8'h3E;  8'h0B: usage = 8'h3F;  8'h83: usage = 8'h40;  8'h0A: usage = 8'h41;  // F5 - F8
+                8'h01: usage = 8'h42;  8'h09: usage = 8'h43;  8'h78: usage = 8'h44;  8'h07: usage = 8'h45;  // F9 - F12
+                8'h7E: usage = 8'h47;  8'h77: usage = 8'h53;                                              // Scroll Lock, Num Lock
+                8'h7C: usage = 8'h55;  8'h7B: usage = 8'h56;  8'h79: usage = 8'h57;                        // KP * - +
+                8'h69: usage = 8'h59;  8'h72: usage = 8'h5A;  8'h7A: usage = 8'h5B;  8'h6B: usage = 8'h5C;  // KP 1 2 3 4
+                8'h73: usage = 8'h5D;  8'h74: usage = 8'h5E;  8'h6C: usage = 8'h5F;  8'h75: usage = 8'h60;  // KP 5 6 7 8
+                8'h7D: usage = 8'h61;  8'h70: usage = 8'h62;  8'h71: usage = 8'h63;                        // KP 9 0 .
+                8'h14: usage = 8'hE0;  8'h12: usage = 8'hE1;  8'h11: usage = 8'hE2;  8'h59: usage = 8'hE5;  // LCtrl LShift LAlt RShift
+                default: usage = 8'h00;
             endcase
         else
             case (code)
-                8'h7C: return 8'h46;                                                                    // Print Screen
-                8'h70: return 8'h49;  8'h6C: return 8'h4A;  8'h7D: return 8'h4B;  8'h71: return 8'h4C;  // Insert Home PgUp Delete
-                8'h69: return 8'h4D;  8'h7A: return 8'h4E;                                              // End PgDn
-                8'h74: return 8'h4F;  8'h6B: return 8'h50;  8'h72: return 8'h51;  8'h75: return 8'h52;  // Right Left Down Up
-                8'h4A: return 8'h54;  8'h5A: return 8'h58;                                              // KP / KP Enter
-                8'h2F: return 8'h65;                                                                    // Application
-                8'h14: return 8'hE4;  8'h11: return 8'hE6;  8'h1F: return 8'hE3;  8'h27: return 8'hE7;  // RCtrl RAlt LGUI RGUI
-                default: return 8'h00;                                                                  // E0 12: fake shift
+                8'h7C: usage = 8'h46;                                                                    // Print Screen
+                8'h70: usage = 8'h49;  8'h6C: usage = 8'h4A;  8'h7D: usage = 8'h4B;  8'h71: usage = 8'h4C;  // Insert Home PgUp Delete
+                8'h69: usage = 8'h4D;  8'h7A: usage = 8'h4E;                                              // End PgDn
+                8'h74: usage = 8'h4F;  8'h6B: usage = 8'h50;  8'h72: usage = 8'h51;  8'h75: usage = 8'h52;  // Right Left Down Up
+                8'h4A: usage = 8'h54;  8'h5A: usage = 8'h58;                                              // KP / KP Enter
+                8'h2F: usage = 8'h65;                                                                    // Application
+                8'h14: usage = 8'hE4;  8'h11: usage = 8'hE6;  8'h1F: usage = 8'hE3;  8'h27: usage = 8'hE7;  // RCtrl RAlt LGUI RGUI
+                default: usage = 8'h00;                                                                  // E0 12: fake shift
             endcase
     endfunction
 

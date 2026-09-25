@@ -1,13 +1,37 @@
-# I²C temperature sensor with interrupt and critical-temp lines (e.g. ADT7420
-# on Nexys 4 DDR).
+# An LM75-family I2C temperature sensor (LM75, LM75A, ADT7420 on the Nexys 4
+# boards, TMP75 ...): rtl/peripherals/i2c_temperature_reader.sv polls its
+# temperature register and finds its address (0x48..0x4F) by itself. `shift`
+# is where the reading's 1/16 C bit sits: 4 for the LM75 / LM75A, 3 for the
+# ADT7420's 13-bit reading (a board's model_params set it). The INT and CT
+# threshold outputs are not used.
 
 Peripheral:
   id: i2c_temperature_sensor
-  description: I²C temperature sensor with INT and CT outputs (e.g. Analog Devices ADT7420)
+  description: LM75-family I2C temperature sensor (LM75, LM75A, ADT7420, TMP75), readings in 1/16 C
+  parameters:
+    shift:
+      type: int
+      default: 4
+  # the on-board devices it models: a board inventory's I2C temperature sensor
+  # (its INT / CT threshold outputs are left unbound: the reader polls)
+  models: {kind: temperature, pins: {scl: [scl, SCL, TMP_SCL], sda: [sda, SDA, TMP_SDA]}}
   signals:
     - { name: scl, type: scalar, direction: output }
     - { name: sda, type: scalar, direction: inout }
-    - { name: int, type: scalar, direction: input, comment: "Interrupt (over/under threshold)" }
-    - { name: ct,  type: scalar, direction: input, comment: "Critical-temperature output" }
-  provides: []
-  driver: null
+    - { name: int, type: scalar, direction: input, optional: true, comment: "Interrupt (over/under threshold), not used" }
+    - { name: ct,  type: scalar, direction: input, optional: true, comment: "Critical-temperature output, not used" }
+  provides:
+    - capability: temperature
+  driver:
+    module: i2c_temperature_reader
+    file: rtl/peripherals/i2c_temperature_reader.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+      SHIFT:   $shift
+    port_map:
+      clk:   context.clk
+      rst:   context.rst
+      scl:   pin.scl
+      sda:   pin.sda
+      valid: capability.temperature.valid
+      temp:  capability.temperature.value

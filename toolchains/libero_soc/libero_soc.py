@@ -85,7 +85,7 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
     """Libero/SynplifyPro: gate helpers and designs_common by module-name match; no Xilinx-primitive stubs."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=False)
+        include_svh=False, gate_helpers=True, gate_common=True)
 
 
 def _select_target(board_pinmap):

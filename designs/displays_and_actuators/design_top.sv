@@ -142,11 +142,13 @@ module design_top
         hex = v < 10 ? 8'h30 + v : 8'h41 + v - 10;
     endfunction
 
-    localparam string GREETING = "unifpga  hello! ";
+    // a string literal is packed MSB first: character c at bits [8 * (n-1-c) +: 8]
+    localparam           n_greeting = 16;
+    localparam [8 * n_greeting - 1:0] greeting = "unifpga  hello! ";
 
     always_comb
         if (txt_row == 0)
-            txt_char = txt_col < GREETING.len () ? GREETING [txt_col] : 8'h20;
+            txt_char = txt_col < n_greeting ? greeting [8 * (n_greeting - 1 - txt_col) +: 8] : 8'h20;
         else if (txt_col < 8)
             txt_char = hex (seconds [4 * (7 - txt_col) +: 4]);
         else
@@ -172,7 +174,7 @@ module design_top
     end
 
     // ---- the rest -----------------------------------------------------------
-    assign led      = w_led' (act_on);
+    assign led      = act_on;   // extended or cut to the rig's LEDs
     assign abcdefgh = '0;
     assign digit    = '0;
     assign rgb_r    = '0;

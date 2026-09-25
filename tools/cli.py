@@ -817,7 +817,11 @@ def cmd_sources(args):
         pages = tuple(int(x) for x in args.pages.split("-")) if args.pages else None
         if pages and len(pages) == 1:
             pages = (pages[0], pages[0])
-        for n, txt in bs.text(args.ids[0], doc, pages):
+        try:
+            texts = bs.text(args.ids[0], doc, pages)
+        except bs.SourcesError as e:
+            raise CliError(str(e))
+        for n, txt in texts:
             lines = txt.splitlines()
             if args.grep:
                 lines = [l for l in lines if re.search(args.grep, l, re.I)]

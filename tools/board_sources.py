@@ -189,7 +189,11 @@ def text(board_id, doc, pages=None):
     path = document_path(board_id, doc)
     if not os.path.exists(path):
         raise SourcesError("{} {}: not fetched (./unifpga sources fetch {})".format(board_id, doc["id"], board_id))
-    if _ext(path) != "pdf":
+    # a PDF by its content: a download script's URL (Terasic's archive_download.pl)
+    # names no extension
+    with open(path, "rb") as f:
+        is_pdf = f.read(5) == b"%PDF-"
+    if not is_pdf:
         with open(path, encoding="utf-8", errors="replace") as f:
             return [(1, f.read())]
     import pypdf

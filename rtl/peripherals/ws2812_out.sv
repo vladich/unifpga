@@ -44,7 +44,7 @@ module ws2812_out
         led = k / 24;
         pos = k % 24;
         on  = pos < 8 ? g [led] : pos < 16 ? r [led] : b [led];
-        return on & brightness [7 - pos % 8];
+        frame_bit = on & brightness [7 - pos % 8];
     endfunction
 
     wire cur = frame_bit (bit_idx);

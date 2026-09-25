@@ -1,0 +1,36 @@
+# A Linear / Analog Devices LTC2308 A/D converter (8 channels, 12 bits, internal
+# 4.096 V reference; the DE0-Nano-SoC's, DE10-Nano's and Cyclone V GX Starter
+# Kit's): rtl/peripherals/ltc2308_scan.sv converts its channels in turn,
+# single-ended and unipolar, so a code is 1 mV.
+
+Peripheral:
+  id: ltc2308
+  description: LTC2308 8-channel 12-bit A/D converter (SPI), channels scanned in turn, 1 mV a code
+  # the on-board devices it models: a board inventory's ADC with these pins
+  models: {kind: adc, pins: {convst: [ADC_CONVST, convst], sck: [ADC_SCK, sck],
+                             sdi: [ADC_SDI, sdi], sdo: [ADC_SDO, sdo]}}
+  signals:
+    - { name: convst, type: scalar, direction: output, comment: "Conversion start" }
+    - { name: sck,    type: scalar, direction: output }
+    - { name: sdi,    type: scalar, direction: output, comment: "The next conversion's configuration" }
+    - { name: sdo,    type: scalar, direction: input,  comment: "The conversion result" }
+  provides:
+    - capability: adc
+      params:
+        channels: 8
+        full_scale_mv: 4096
+  driver:
+    module: ltc2308_scan
+    file: rtl/peripherals/ltc2308_scan.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+    port_map:
+      clk:     context.clk
+      rst:     context.rst
+      convst:  pin.convst
+      sck:     pin.sck
+      sdi:     pin.sdi
+      sdo:     pin.sdo
+      valid:   capability.adc.valid
+      channel: capability.adc.channel
+      value:   capability.adc.value

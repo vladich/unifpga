@@ -73,10 +73,10 @@ def _resolve_sv2v():
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """ISE, same shape as Vivado: .svh headers included, no compat stubs, helpers/common ungated."""
+    """ISE, same shape as Vivado: .svh headers included, helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=True, gate_helpers=False, gate_common=False, compat_stubs=False)
+        include_svh=True, gate_helpers=False, gate_common=False)
 
 
 def _emit_xst_prj(merged_v_path):

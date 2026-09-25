@@ -47,9 +47,7 @@ module tb;
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
         x1 = '0;
         x2 = '0;
         x3 = '0;

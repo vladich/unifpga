@@ -54,9 +54,7 @@ module tb
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
         //--------------------------------------------------------------------
         // Initialization
@@ -194,13 +192,8 @@ module tb
                 end
                 else
                 begin
-                    `ifdef __ICARUS__
-                        // Some version of Icarus has a bug, and this is a workaround
-                        down_data_expected = queue [0];
-                        queue.delete (0);
-                    `else
-                        down_data_expected = queue.pop_front ();
-                    `endif
+                    down_data_expected = queue [0];
+                    queue.delete (0);
 
                     if (down_data_expected !== down_data)
                         $display ("ERROR: downstream data mismatch. Expected %h, actual %h",

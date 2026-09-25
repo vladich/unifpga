@@ -6,8 +6,9 @@ Peripheral:
   id: ps2_keyboard
   description: PS/2 keyboard (receive only), key events as USB HID usage codes
   # the on-board devices it models: a board inventory's PS/2 port (its first
-  # port where a Y-cable splits keyboard and mouse)
-  models: {kind: ps2, pins: {clk: [PS2_CLK, PS2_KBCLK, ps2_clk, kb_clk, clk],
+  # port where a Y-cable splits keyboard and mouse), and a USB HID host port
+  # whose bridge presents the keyboard as PS/2 (Digilent's PIC24: scan code set 2)
+  models: {kind: [ps2, usb_hid], pins: {clk: [PS2_CLK, PS2_KBCLK, ps2_clk, kb_clk, clk],
                              data: [PS2_DAT, PS2_KBDAT, ps2_dat, ps2_data, kb_dat, data, dat]}}
   signals:
     - { name: clk,  type: scalar, direction: input, comment: "PS/2 clock (from the keyboard)" }

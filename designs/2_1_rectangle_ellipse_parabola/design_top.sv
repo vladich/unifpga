@@ -89,11 +89,7 @@ module design_top
                 green = x11 [$left (x11) - 1 -: w_green];
         end
 
-        `ifdef YOSYS
         if (x * x  + 2 * y * y  < screen_width * screen_width / 4)  // Ellipse
-        `else
-        if (x ** 2 + 2 * y ** 2 < (screen_width / 2) ** 2)  // Ellipse
-        `endif
         begin
             red = x11 [$left (x11) - 1 -: w_red];
         end

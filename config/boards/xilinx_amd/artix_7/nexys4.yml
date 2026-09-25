@@ -77,10 +77,12 @@ Board:
     onboard_temp_sensor:   # Temperature sensor (I2C)
       device: {"name": "Temperature sensor (I2C)", "kind": "temperature"}
       iostandard: "LVCMOS33"
+      model_params: {shift: 3}   # an ADT7420 (Digilent reference manual): 13-bit reading, 1/16 C at bit 3
       pins: {"scl": "F16", "sda": "G16", "int": "D14", "ct": "C14"}
     onboard_usb_hid:   # USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
       device: {"name": "USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)", "kind": "usb_hid"}
       iostandard: "LVCMOS33"
+      pull: "up"   # the PIC24 bridge leaves the pair to the FPGA's pull-ups (Digilent master XDC: PULLUP true)
       pins: {"clk": "F4", "data": "B2"}
     onboard_ethernet:   # 10/100 Ethernet PHY (SMSC, RMII)
       device: {"name": "10/100 Ethernet PHY (SMSC, RMII)", "kind": "ethernet"}

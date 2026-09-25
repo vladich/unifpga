@@ -68,10 +68,10 @@ def _gowin_env(install_dir):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Gowin auto-discovers modules like Quartus: no .svh; BUFG/IBUFG compat stubs; helpers/common ungated."""
+    """Gowin auto-discovers modules like Quartus: no .svh; helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=False, gate_common=False, compat_stubs=True)
+        include_svh=False, gate_helpers=False, gate_common=False)
 
 
 def _gowin_options(board_pinmap):

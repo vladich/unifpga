@@ -57,12 +57,7 @@ module fifo_monitor
 
             if (pop & queue.size () > 0)
             begin
-                `ifdef __ICARUS__
-                    // Some version of Icarus has a bug, and this is a workaround
-                    queue.delete (0);
-                `else
-                    dummy = queue.pop_front ();
-                `endif
+                queue.delete (0);
             end
 
             // Logging
