@@ -140,20 +140,9 @@ module design_top
     wire muxed_clk_raw = slow_clk_mode ? slow_clk : clk;
     wire muxed_clk;
 
-    `ifdef SIMULATION
-        assign muxed_clk = muxed_clk_raw;
-    `else
-         // TODO: Proper support for Gowin and Lattice/Yosys
-         // TODO: Consider clock mux macro
-
-         `ifdef ALTERA_RESERVED_QIS
-             global i_global (.in (muxed_clk_raw), .out (muxed_clk));
-         `elsif XILINX_VIVADO
-             BUFG   i_bufg   (.I  (muxed_clk_raw), .O   (muxed_clk));
-         `else
-             assign muxed_clk = muxed_clk_raw;
-         `endif
-    `endif
+    // onto the clock network (the generated top defines global_clock_buffer
+    // for the board; in simulation it is a wire)
+    global_clock_buffer i_muxed_clk (.in (muxed_clk_raw), .out (muxed_clk));
 
     //------------------------------------------------------------------------
     // MCU inputs

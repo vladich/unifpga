@@ -52,9 +52,7 @@ module tb
 
   initial
   begin
-    `ifdef __ICARUS__
-      $dumpvars;
-    `endif
+    $dumpvars;
 
     //------------------------------------------------------------------------
     // Force overrides: you can use it for the initial debug
@@ -212,14 +210,9 @@ module tb
         end
         else
         begin
-          `ifdef __ICARUS__
-            // Some version of Icarus has a bug, and this is a workaround
-            down_data_expected = { queue [0], queue [1] };
-            queue.delete (0);
-            queue.delete (0);
-          `else
-            down_data_expected = { queue.pop_front (), queue.pop_front () };
-          `endif
+          down_data_expected = { queue [0], queue [1] };
+          queue.delete (0);
+          queue.delete (0);
 
           if (down_data !== down_data_expected)
             $display ("ERROR: downstream data mismatch. Expected %s, actual %s",

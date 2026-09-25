@@ -483,6 +483,48 @@ def diff_buf_kind(resolved):
     return "generic"
 
 
+# A clock made in logic (a divider, a mux) reaches the clock network through
+# the device's global buffer. Designs and helpers instantiate the one
+# vendor-neutral module, `global_clock_buffer (.in, .out)`; the generated top
+# defines it for the board. Intel's primitive is written `\\global ` (escaped:
+# `global` is a SystemVerilog keyword the other readers refuse, Quartus takes
+# the escaped name as the primitive).
+_CLOCK_BUFFERS = {
+    "intel":   "    \\global  i_buffer (.in (in), .out (out));   // Intel: the GLOBAL primitive",
+    "xilinx":  "    BUFG i_buffer (.I (in), .O (out));             // Xilinx 7-series: a global clock buffer",
+    "generic": "    assign out = in;                               // the tools route it themselves",
+}
+
+
+def clock_buffer_kind(resolved):
+    """Which global clock buffer `global_clock_buffer` is on this board: the
+    pinmap's `io.clock_buffer` when set, else by family (GLOBAL on Intel, BUFG on
+    Xilinx 7-series, a plain wire elsewhere)."""
+    io = resolved["board_pinmap"].get("io") or {}
+    if io.get("clock_buffer"):
+        kind = str(io["clock_buffer"])
+        if kind not in _CLOCK_BUFFERS:
+            raise CodegenError("{}: io.clock_buffer {!r} is not one of {}".format(
+                resolved["configuration"]["id"], kind, ", ".join(sorted(_CLOCK_BUFFERS))))
+        return kind
+    board = resolved["board"]
+    producer = (board.get("PartProducer") or "").lower()
+    if "intel" in producer or "altera" in producer:
+        return "intel"
+    if _pll_vendor(board) == "xilinx_mmcm":
+        return "xilinx"
+    return "generic"
+
+
+def _emit_clock_buffer(resolved):
+    kind = clock_buffer_kind(resolved)
+    return ["// ---- global_clock_buffer: a clock made in logic onto the clock network",
+            "// (instantiated by designs and helpers; this board: {}) ----".format(kind),
+            "module global_clock_buffer (input in, output out);",
+            _CLOCK_BUFFERS[kind],
+            "endmodule"]
+
+
 def _pinned_rpll(cfg_id, name, f_in, r):
     """A GowinRPLL solution from the configuration's exact dividers
     (`clock_<name>_pll`, a vendor-generated rPLL): the same frequency the
@@ -1342,6 +1384,8 @@ def emit_top_sv(resolved, strict=True, design=None):
     out.extend(_emit_lab_top(resolved, plans, design))
     out.append("")
     out.append("endmodule")
+    out.append("")
+    out.extend(_emit_clock_buffer(resolved))
     return "\n".join(out)
 
 
@@ -3093,9 +3137,8 @@ def emit_qsf(resolved, part):
     # parses `.v` files (and `\\`include`d `.svh`/`.vh` headers) as Verilog 2001,
     # rejecting `'0`, `always_ff`, `logic`, etc.
     out.append("set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2005")
-    # Project template: four fitter threads and the INTEL_VERSION macro the labs test with `ifdef
+    # Project template: four fitter threads (no vendor macros: designs do not test the vendor)
     out.append("set_global_assignment -name NUM_PARALLEL_PROCESSORS 4")
-    out.append('set_global_assignment -name VERILOG_MACRO "INTEL_VERSION"')
     # Board-level project settings from the pinmap (dual-
     # purpose pin reservation such as nCEO used as regular I/O, unused-pin
     # state, device I/O default).

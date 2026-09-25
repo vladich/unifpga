@@ -24,12 +24,10 @@ module testbench;
   end
 
   initial begin
-    `ifdef __ICARUS__
-      // Uncomment the following line
-      // to generate a VCD file and analyze it using GTKwave or Surfer
+    // Uncomment the following line
+    // to generate a VCD file and analyze it using GTKwave or Surfer
 
-      // $dumpvars;
-    `endif
+    // $dumpvars;
   end
 
   //--------------------------------------------------------------------------

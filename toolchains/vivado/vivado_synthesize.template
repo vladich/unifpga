@@ -26,8 +26,7 @@ read_verilog -sv $$top$$
 
 read_xdc $$xdc_file$$
 
-synth_design -verilog_define XILINX_VIVADO             \
-             -include_dirs $$include$$  \
+synth_design -include_dirs $$include$$  \
              -part $part_name                          \
              -top board_specific_top
 

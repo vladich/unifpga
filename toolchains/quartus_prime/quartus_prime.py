@@ -41,10 +41,10 @@ def _resolve_quartus_bin(toolchain, name):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Quartus compiles every listed file standalone: no .svh; Xilinx-primitive stubs; helpers/common ungated."""
+    """Quartus compiles every listed file standalone: no .svh; helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=False, gate_common=False, compat_stubs=True)
+        include_svh=False, gate_helpers=False, gate_common=False)
 
 
 def _emit_qpf(version):

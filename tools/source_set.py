@@ -18,11 +18,6 @@ delegate here and express their frontend quirks as flags:
     gate_common   Same idea for rtl/peripherals/designs_common/*.sv: include a
                   file only when its module name (the file stem) appears in the
                   generated top or any file collected so far.
-    compat_stubs  rtl/peripherals/_quartus_compat/*.sv — pass-through BUFG /
-                  IBUFG / BUFGCE stubs for designs that instantiate Xilinx
-                  primitives directly. Flows that provide those natively
-                  (Vivado unisim, synth_xilinx, synth_gowin, ...) must not get
-                  them or the module is redefined.
 
 The clock-tree wrappers and drivers' extra `files:` from
 `codegen.pll_source_paths()` are always appended: they are what the generated
@@ -51,7 +46,6 @@ SKIP_DESIGN_DIRS = frozenset(("run", "build", "__pycache__", ".ater-tmp", ".git"
 DESIGN_FILESET = "fileset.yml"
 
 DESIGNS_COMMON_DIR = os.path.join("rtl", "peripherals", "designs_common")
-COMPAT_STUBS_DIR = os.path.join("rtl", "peripherals", "_quartus_compat")
 
 
 class SourceSetError(ValueError):
@@ -188,13 +182,12 @@ def _sv_files_in(directory):
 
 
 def collect_sources(repo, peripherals, user_design_top, generated_top, *,
-                    include_svh=False, gate_helpers=True, gate_common=True,
-                    compat_stubs=False):
+                    include_svh=False, gate_helpers=True, gate_common=True):
     """Ordered, de-duplicated absolute source list for one synthesis run.
 
     Order: generated top, the design's resolved sources (`.sv`/`.v`, plus
     `.svh` with include_svh), each attached peripheral's `driver.file`, the
-    rtl/peripherals helpers, designs_common, the compat stubs, and finally the
+    rtl/peripherals helpers, designs_common, and finally the
     clock-tree / `driver.files` sources from `codegen.pll_source_paths()`.
     """
     design_dir = os.path.dirname(os.path.abspath(user_design_top))
@@ -257,10 +250,6 @@ def collect_sources(repo, peripherals, user_design_top, generated_top, *,
         common = [p for p in common if p in chosen]
     for full in common:
         add(full)
-
-    if compat_stubs:
-        for full in _sv_files_in(os.path.join(repo, COMPAT_STUBS_DIR)):
-            add(full)
 
     for full in codegen.pll_source_paths(repo, generated_top, peripherals):
         add(full)

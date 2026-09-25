@@ -121,15 +121,10 @@ module tb
                 end
                 else
                 begin
-                    `ifdef __ICARUS__
-                        // Some version of Icarus has a bug, and this is a workaround
-                        sum_data_expected = a_queue [0] + b_queue [0];
+                    sum_data_expected = a_queue [0] + b_queue [0];
 
-                        a_queue.delete (0);
-                        b_queue.delete (0);
-                    `else
-                        sum_data_expected = a_queue.pop_front () + b_queue.pop_front ();
-                    `endif
+                    a_queue.delete (0);
+                    b_queue.delete (0);
 
                     if (sum_data_expected !== sum_data)
                         $display ("\nERROR: downstream data mismatch. Expected %h, actual %h",
@@ -206,9 +201,7 @@ module tb
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
         //--------------------------------------------------------------------
         // Initialization

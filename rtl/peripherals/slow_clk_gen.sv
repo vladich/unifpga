@@ -49,31 +49,10 @@ module slow_clk_gen
 
             //----------------------------------------------------------------
 
-            `ifdef ALTERA_RESERVED_QIS
+            // onto the clock network: the generated top defines the
+            // buffer for the board (Intel GLOBAL, Xilinx BUFG, or a wire)
 
-                // "global" is Intel FPGA-specific primitive to route
-                // a signal coming from data into clock tree
-
-                global i_global (.in (slow_clk_raw), .out (slow_clk));
-
-            `elsif XILINX_VIVADO
-
-                // "BUFG" is Xilinx-specific primitive to route
-                // a signal coming from data into clock tree
-
-                BUFG i_BUFG (.I (slow_clk_raw), .O (slow_clk));
-
-            `elsif SIMULATION
-
-                assign slow_clk = slow_clk_raw;
-
-            `else
-
-                // `error_Unsupported_synthesis_tool
-
-                assign slow_clk = slow_clk_raw;
-
-            `endif
+            global_clock_buffer i_buffer (.in (slow_clk_raw), .out (slow_clk));
 
         end
     endgenerate

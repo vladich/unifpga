@@ -37,10 +37,10 @@ def _resolve_vivado_bin(toolchain):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Vivado reads .svh headers; unisim provides BUFG (no compat stubs); helpers/common ungated."""
+    """Vivado reads .svh headers; helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=True, gate_helpers=False, gate_common=False, compat_stubs=False)
+        include_svh=True, gate_helpers=False, gate_common=False)
 
 
 def _emit_tcl(part_name, sv_files, xdc_path, output_dir, top_module="top",

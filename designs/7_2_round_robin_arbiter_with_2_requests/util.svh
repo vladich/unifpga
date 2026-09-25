@@ -6,8 +6,4 @@
 `define PF_BITS(SYMBOL) $sformatf("SYMBOL:%f", $bitstoreal(SYMBOL))
 `define PG_BITS(SYMBOL) $sformatf("SYMBOL:%g", $bitstoreal(SYMBOL))
 
-`ifdef __ICARUS__
-    `define ISUNKNOWN(a) ((^ a) === 1'bx)
-`else
-    `define ISUNKNOWN(a) $isunknown(a)
-`endif
+`define ISUNKNOWN(a) ((^ a) === 1'bx)

@@ -73,17 +73,11 @@ module tb;
     initial
     begin
         #0
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
         #400000
 
-        `ifdef MODEL_TECH  // Mentor ModelSim and Questa
-            $stop;
-        `else
-            $finish;
-        `endif
+        $finish;
     end
 
 endmodule

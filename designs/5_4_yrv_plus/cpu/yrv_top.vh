@@ -39,27 +39,6 @@
 /* cpu                                                                                     */
 `include "yrv_cpu.vh"
 
-`ifdef INSTANCE_REG
-/* instantiated registers                                                                  */
-`include "inst_reg.vh"
-`endif
-`ifdef INSTANCE_ADD
-/* instantiated adder                                                                      */
-`include "inst_add.vh"
-`endif
-`ifdef INSTANCE_SUB
-/* instantiated subtractor                                                                 */
-`include "inst_sub.vh"
-`endif
-`ifdef INSTANCE_INC
-/* instantiated incrementer                                                                */
-`include "inst_inc.vh"
-`endif
-`ifdef INSTANCE_CNT
-/* instantiated count increment                                                            */
-`include "inst_cnt.vh"
-`endif
-
 module yrv_top  (csr_achk, csr_addr, csr_read, csr_wdata, csr_write, debug_mode, ebrk_inst,
                  mem_addr, mem_ble, mem_lock, mem_trans, mem_wdata, mem_write, timer_en,
                  wfi_state, brk_req, bus_32, clk, csr_ok_ext, csr_rdata, dbg_req, dresetb,

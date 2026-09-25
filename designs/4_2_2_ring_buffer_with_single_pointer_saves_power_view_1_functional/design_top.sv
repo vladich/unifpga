@@ -107,36 +107,26 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    `ifdef __ICARUS__
 
-        logic [width - 1:0] in_data_const_array [0:2 ** width - 1];
+    logic [width - 1:0] in_data_const_array [0:2 ** width - 1];
 
-        assign in_data_const_array [ 0] = 4'h2;
-        assign in_data_const_array [ 1] = 4'h6;
-        assign in_data_const_array [ 2] = 4'hd;
-        assign in_data_const_array [ 3] = 4'hb;
-        assign in_data_const_array [ 4] = 4'h7;
-        assign in_data_const_array [ 5] = 4'he;
-        assign in_data_const_array [ 6] = 4'hc;
-        assign in_data_const_array [ 7] = 4'h4;
-        assign in_data_const_array [ 8] = 4'h1;
-        assign in_data_const_array [ 9] = 4'h0;
-        assign in_data_const_array [10] = 4'h9;
-        assign in_data_const_array [11] = 4'ha;
-        assign in_data_const_array [12] = 4'hf;
-        assign in_data_const_array [13] = 4'h5;
-        assign in_data_const_array [14] = 4'h8;
-        assign in_data_const_array [15] = 4'h3;
+    assign in_data_const_array [ 0] = 4'h2;
+    assign in_data_const_array [ 1] = 4'h6;
+    assign in_data_const_array [ 2] = 4'hd;
+    assign in_data_const_array [ 3] = 4'hb;
+    assign in_data_const_array [ 4] = 4'h7;
+    assign in_data_const_array [ 5] = 4'he;
+    assign in_data_const_array [ 6] = 4'hc;
+    assign in_data_const_array [ 7] = 4'h4;
+    assign in_data_const_array [ 8] = 4'h1;
+    assign in_data_const_array [ 9] = 4'h0;
+    assign in_data_const_array [10] = 4'h9;
+    assign in_data_const_array [11] = 4'ha;
+    assign in_data_const_array [12] = 4'hf;
+    assign in_data_const_array [13] = 4'h5;
+    assign in_data_const_array [14] = 4'h8;
+    assign in_data_const_array [15] = 4'h3;
 
-    `else
-
-        // New SystemVerilog syntax for array assignment
-
-        wire [width - 1:0] in_data_const_array [0:2 ** width - 1]
-            = '{ 4'h2, 4'h6, 4'hd, 4'hb, 4'h7, 4'he, 4'hc, 4'h4,
-                 4'h1, 4'h0, 4'h9, 4'ha, 4'hf, 4'h5, 4'h8, 4'h3 };
-
-    `endif
 
     //------------------------------------------------------------------------
 

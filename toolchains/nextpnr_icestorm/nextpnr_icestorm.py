@@ -48,10 +48,10 @@ def _resolve_bin(name):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """yosys 0.36 frontend: gate helpers/common by module-name match; iCE40 has no BUFG, so compat stubs."""
+    """yosys 0.36 frontend: gate helpers/common by module-name match."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=True)
+        include_svh=False, gate_helpers=True, gate_common=True)
 
 
 def _select_part(board, configuration):

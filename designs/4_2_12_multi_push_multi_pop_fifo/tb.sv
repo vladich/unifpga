@@ -96,18 +96,10 @@ module tb;
   forever begin
     @(posedge clk);
     while (queue_out.size () > 0)begin
-      `ifdef __ICARUS__
-        res_exp <= queue_in [0];
-        queue_in.delete (0);
-        res <= queue_out [0];
-       queue_out.delete (0);
-       `else
-      for (int i = 0;  i < pop; i = i + 1) begin
-        res_exp <= queue_in.pop_front ();
-        res     <= queue_out.pop_front ();
-        $write(" res_exp = %h, res = %h \n", res_exp, res);
-      end
-      `endif
+       res_exp <= queue_in [0];
+       queue_in.delete (0);
+       res <= queue_out [0];
+      queue_out.delete (0);
 
       @(posedge clk);
       if (res !== res_exp) begin
@@ -125,9 +117,7 @@ end
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
 
     //--------------------------------------------------------------------

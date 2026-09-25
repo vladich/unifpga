@@ -88,10 +88,10 @@ def _efx_run_script(toolchain):
 
 
 def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
-    """Efinity's Verific frontend chokes on the BUFGCE stub: no compat stubs; no .svh; helpers/common ungated."""
+    """Efinity: no .svh; helpers/common ungated."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=False, gate_common=False, compat_stubs=False)
+        include_svh=False, gate_helpers=False, gate_common=False)
 
 
 def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,

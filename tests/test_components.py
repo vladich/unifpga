@@ -186,7 +186,7 @@ def test_qsf_has_project_template_lines():
     r = config_init.resolve_configuration("de10_nano")
     qsf = codegen.emit_qsf(r, "5CSEBA6U23I7")
     assert "set_global_assignment -name NUM_PARALLEL_PROCESSORS 4" in qsf
-    assert 'set_global_assignment -name VERILOG_MACRO "INTEL_VERSION"' in qsf
+    assert "VERILOG_MACRO" not in qsf          # designs do not test the vendor
     assert r["board_pinmap"]["toolchain_options"]["quartus"]["jtag_device_index"] == 2
 
 

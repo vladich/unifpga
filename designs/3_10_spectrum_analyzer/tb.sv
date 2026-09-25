@@ -129,19 +129,13 @@ module tb;
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
 
         // Based on timescale is 1 ns / 1 ps
 
         # 0.005s
 
-        `ifdef MODEL_TECH  // Mentor ModelSim and Questa
-            $stop;
-        `else
-            $finish;
-        `endif
+        $finish;
     end
 
 endmodule

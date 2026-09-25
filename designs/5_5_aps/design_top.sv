@@ -84,42 +84,10 @@ module design_top
         .clk_o(clk25MHz_raw),
         .rst_o()
     );
-    `ifdef SIMULATION
-        `define NO_CLOCK_ROUTING_FOR_SLOW_CLOCK
-    `endif
-
-    `ifndef CLOCK_ROUTING_FOR_SLOW_CLOCK
-        `define NO_CLOCK_ROUTING_FOR_SLOW_CLOCK
-    `endif
-
-    `ifdef NO_CLOCK_ROUTING_FOR_SLOW_CLOCK
-        assign clk10MHz = clk10MHz_raw;
-        assign clk25MHz = clk25MHz_raw;
-    `else
-        `ifdef ALTERA_RESERVED_QIS
-
-            // "global" is Intel FPGA-specific primitive to route
-            // a signal coming from data into clock tree
-
-            global i_global (.in (clk10MHz_raw), .out (clk10MHz));
-            global i_global (.in (clk25MHz_raw), .out (clk25MHz));
-
-        `elsif XILINX_VIVADO
-
-            // "BUFG" is Xilinx-specific primitive to route
-            // a signal coming from data into clock tree
-
-            BUFG i_BUFG10 (.I (clk10MHz_raw), .O (clk10MHz));
-            BUFG i_BUFG25 (.I (clk25MHz_raw), .O (clk25MHz));
-
-        `else
-
-            // `error_Unsupported_synthesis_tool
-
-            assign clk25MHz = clk25MHz_raw;
-
-        `endif
-    `endif
+    // the divided clocks onto the clock network (the generated top defines
+    // global_clock_buffer for the board; in simulation it is a wire)
+    global_clock_buffer i_clk10MHz (.in (clk10MHz_raw), .out (clk10MHz));
+    global_clock_buffer i_clk25MHz (.in (clk25MHz_raw), .out (clk25MHz));
     //===================================================
 
     /*

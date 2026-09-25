@@ -48,7 +48,7 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top):
     """yosys frontend: gate helpers/common by module-name match; synth_gowin has BUFG natively (stubs would redefine it)."""
     return source_set.collect_sources(
         repo, peripherals, user_design_top, generated_top,
-        include_svh=False, gate_helpers=True, gate_common=True, compat_stubs=False)
+        include_svh=False, gate_helpers=True, gate_common=True)
 
 
 # Map our boards.yml board id to (nextpnr-gowin --device, gowin_pack -d).

@@ -110,29 +110,21 @@ module design_top
         end
     end
 
-    `ifdef VERILATOR
 
-        assign red   = ( red_4   );
-        assign green = ( green_4 );
-        assign blue  = ( blue_4  );
+    generate
+        if (w_red > 4 & w_green > 4 & w_blue > 4)
+        begin : wide_rgb
+            assign red   = { red_4   , { w_red   - 4 { 1'b0 } } };
+            assign green = { green_4 , { w_green - 4 { 1'b0 } } };
+            assign blue  = { blue_4  , { w_blue  - 4 { 1'b0 } } };
+        end
+        else
+        begin : narrow_rgb
+            assign red   = ( red_4   );
+            assign green = ( green_4 );
+            assign blue  = ( blue_4  );
+        end
+    endgenerate
 
-    `else
-
-        generate
-            if (w_red > 4 & w_green > 4 & w_blue > 4)
-            begin : wide_rgb
-                assign red   = { red_4   , { w_red   - 4 { 1'b0 } } };
-                assign green = { green_4 , { w_green - 4 { 1'b0 } } };
-                assign blue  = { blue_4  , { w_blue  - 4 { 1'b0 } } };
-            end
-            else
-            begin : narrow_rgb
-                assign red   = ( red_4   );
-                assign green = ( green_4 );
-                assign blue  = ( blue_4  );
-            end
-        endgenerate
-
-    `endif
 endmodule
 

@@ -71,9 +71,7 @@ module tb;
 
     initial
     begin
-        `ifdef __ICARUS__
-            $dumpvars;
-        `endif
+        $dumpvars;
         btn[3:1] = '0;
         sine_ptr = '0;
         $readmemh("../sine_table.txt", sine_table);

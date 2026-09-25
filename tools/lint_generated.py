@@ -70,13 +70,9 @@ def _source_list(resolved, design_top, generated_top):
             continue
         f = os.path.abspath(f)
         out.append(os.path.relpath(f, REPO) if f.startswith(REPO + os.sep) else f)
-    # Vendor primitives (rPLL, SB_PLL40_*, BUFG) only exist in the vendor
-    # flows; the lint compiles the behavioural stand-ins instead, which also
-    # cover the Quartus pass-through stubs.
-    stubs = os.path.join("rtl", "sim", "vendor_stubs.sv")
-    compat = os.path.join("rtl", "peripherals", "_quartus_compat") + os.sep
-    out = [f for f in out if not f.startswith(compat)]
-    out.append(stubs)
+    # Vendor primitives (rPLL, SB_PLL40_*, BUFG, GLOBAL) only exist in the
+    # vendor flows; the lint compiles the behavioural stand-ins instead.
+    out.append(os.path.join("rtl", "sim", "vendor_stubs.sv"))
     return out
 
 
