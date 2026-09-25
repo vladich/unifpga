@@ -110,39 +110,25 @@ def test_every_toolchain_id_has_a_module():
 # ---------------------------------------------------------------------------
 
 def _walk_pinmap_files():
-    """Yield (path, board_id) for every per-board pinmap under the
-    hierarchical config/boards/<producer>/<family>/<board_id>.yml layout."""
-    boards_dir = os.path.join(REPO_ROOT, "config", "boards")
-    import glob
-    for path in glob.glob(os.path.join(boards_dir, "*", "*", "*.yml")):
-        if "/_raw/" in path:
-            continue
-        board_id = os.path.basename(path)[:-4]
-        yield path, board_id
+    """Yield (path, board_id) for every board file with banks of pins
+    (config/boards/<producer>/<family>/<board_id>.yml)."""
+    for board_id, board in sorted(config_init.read_boards().items()):
+        if board.get("banks"):
+            yield board["_path"], board_id
 
 
-def test_per_board_yamls_have_pinbanks():
-    """Every per-board pinmap YAML must parse and expose Board.pinBanks."""
+def test_boards_with_banks_exist():
     files = list(_walk_pinmap_files())
-    assert files, "No per-board pinmap files found under config/boards/<producer>/<family>/"
-
-    for path, board_id in files:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        assert data and "Board" in data, "{p} has no 'Board' root".format(p=path)
-        board = data["Board"]
-        assert "id" in board, "{p}: Board.id missing".format(p=path)
-        assert "pinBanks" in board, "{p}: Board.pinBanks missing".format(p=path)
+    assert len(files) > 100, "No board with banks under config/boards/<producer>/<family>/"
 
 
 def test_pin_bank_pins_well_formed():
     """Walk every pinBank's pin values and reject anything that's clearly malformed
     (embedded spaces, empty strings, etc.). Catches missing-comma YAML typos."""
-    for path, _bid in _walk_pinmap_files():
+    for path, board_id in _walk_pinmap_files():
         with open(path) as f:
             data = yaml.safe_load(f)
-        board_id = data["Board"]["id"]
-        pin_banks = data["Board"].get("pinBanks", {}) or {}
+        pin_banks = data["Board"].get("banks", {}) or {}
         for bank_name, bank in pin_banks.items():
             pins = (bank or {}).get("pins") if isinstance(bank, dict) else None
             if pins is None:

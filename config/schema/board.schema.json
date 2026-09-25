@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:board",
+  "title": "Board",
+  "description": "config/boards/<producer>/<family>/<id>.yml: one board. Its identity and catalogue fields, its chip or chip variants, how it is programmed; its banks of pins (what codegen constrains); its verification for hardware builds; and, as drawn, its own connector types, its headers and its parts (what a rig's uses name). The chip family is the file's directory, config/chips/<producer>/<family>.yml.",
+  "type": "object",
+  "required": ["Board"],
+  "additionalProperties": false,
+  "properties": {
+    "Board": { "$ref": "#/$defs/board" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+    "chip_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.+/-]*$" },
+    "versioned_ref": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\[[^\\[\\]]+\\])?$" },
+    "pin": { "description": "A package pin, ball or pad as the vendor names it (H5,J5: a differential pair)", "type": ["string", "integer"] },
+    "pin_set": {
+      "description": "The pins of a bank or of one of its signals: one, a list (bit 0 first), or a mapping signal -> pins",
+      "oneOf": [
+        { "$ref": "#/$defs/pin" },
+        { "type": "array", "items": { "$ref": "#/$defs/pin" } },
+        { "type": "object", "additionalProperties": { "oneOf": [{ "$ref": "#/$defs/pin" }, { "type": "array", "items": { "$ref": "#/$defs/pin" } }] } },
+        { "type": "null" }
+      ]
+    },
+    "iostandard": {
+      "description": "One standard, the alternatives, or a default with exceptions per pin",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        { "type": "object", "required": ["default"], "additionalProperties": { "type": "string" } }
+      ]
+    },
+    "bank": {
+      "description": "A group of pins with one role: a clock, the LEDs, a header, a device's bus; a fabric or virtual bank (an internal oscillator, a PLL) has no pins",
+      "type": "object",
+      "anyOf": [{ "required": ["pins"] }, { "required": ["fabric"] }, { "required": ["virtual"] }],
+      "additionalProperties": false,
+      "properties": {
+        "pins": { "$ref": "#/$defs/pin_set" },
+        "device": {
+          "description": "The on-board device on these pins and its kind (from the board inventory)",
+          "type": "object",
+          "required": ["name", "kind"],
+          "additionalProperties": false,
+          "properties": { "name": { "type": "string" }, "kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" } }
+        },
+        "iostandard": { "$ref": "#/$defs/iostandard" },
+        "active": { "description": "The level that means on / pressed; may say where that is known from", "type": "string", "pattern": "^(high|low)\\b" },
+        "frequency_mhz": { "type": "number", "exclusiveMinimum": 0 },
+        "shares": { "description": "Other banks on some of the same pins", "type": "array", "items": { "type": "string" } },
+        "fabric": { "description": "Not a package pin: a net of the fabric (a PLL, an internal oscillator)", "type": "boolean" },
+        "virtual": { "type": "boolean" },
+        "model_params": { "description": "Parameters the device's peripheral takes from the board (an ADC's channels, an SDRAM's column bits)", "type": "object", "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" } },
+        "index_origin": { "description": "The number the board's silkscreen gives the first pin", "oneOf": [{ "type": "integer" }, { "type": "object", "additionalProperties": { "type": "integer" } }] },
+        "overrides": { "description": "Constraint properties per pin the standards do not cover", "type": "object", "additionalProperties": { "type": "string" } },
+        "pull": { "enum": ["up", "down"] },
+        "source": { "type": "string" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["source", "revision"],
+      "additionalProperties": false,
+      "properties": { "source": { "type": "string", "minLength": 1 }, "revision": { "type": "string", "minLength": 1 } }
+    },
+    "verification": {
+      "description": "Review of the exact pins for hardware builds (config.init require_hardware_readiness): verified with the digest of the banks, the parts covered and the sources reviewed; placeholder otherwise",
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["verified", "placeholder"] },
+        "pinmap_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "parts": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "pinout": { "$ref": "#/$defs/evidence" },
+        "electrical": { "$ref": "#/$defs/evidence" }
+      },
+      "if": { "properties": { "status": { "const": "verified" } } },
+      "then": { "required": ["pinmap_sha256", "parts", "pinout", "electrical"] }
+    },
+    "connector_type": {
+      "type": "object",
+      "required": ["name", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "voltage": { "type": "number", "exclusiveMinimum": 0 },
+        "rows": { "type": "array", "minItems": 1, "items": { "type": "array", "minItems": 1, "items": { "type": ["integer", "string"] } } },
+        "power": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } },
+        "source": { "type": "string" }
+      }
+    },
+    "bank_ref": {
+      "description": "A bank, a signal of it, or one pin: bank, bank.signal, bank[i], bank.signal[i]",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*(\\[[0-9]+\\])?$"
+    },
+    "header": {
+      "description": "A connector as drawn: its type (the numbering), the bank it is, and which bank pin each physical pin is",
+      "type": "object",
+      "required": ["id", "type", "label", "pins"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "note": { "type": "string" },
+        "bank": { "type": "string" },
+        "pins": { "type": "object", "additionalProperties": { "$ref": "#/$defs/bank_ref" } }
+      }
+    },
+    "attach": {
+      "description": "How a part is driven: its peripheral, the peripheral's signals on the board's banks, parameters the board fixes",
+      "type": "object",
+      "required": ["peripheral", "bind"],
+      "additionalProperties": false,
+      "properties": {
+        "peripheral": { "$ref": "#/$defs/id" },
+        "bind": { "type": "object", "additionalProperties": { "oneOf": [{ "$ref": "#/$defs/bank_ref" }, { "type": "array", "items": { "$ref": "#/$defs/bank_ref" } }] } },
+        "params": { "type": "object", "propertyNames": { "pattern": "^[a-z_][a-z0-9_]*$" } }
+      }
+    },
+    "part": {
+      "description": "Something on the board a rig can use: driven by one peripheral (attach), by one of several (variants), or a device without a peripheral yet",
+      "type": "object",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "oneOf": [{ "required": ["attach"] }, { "required": ["variants"] }, { "required": ["device"] }],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "shares": { "description": "Headers whose pins this part also uses", "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "attach": { "$ref": "#/$defs/attach" },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "attach"],
+            "additionalProperties": false,
+            "properties": { "id": { "$ref": "#/$defs/id" }, "label": { "type": "string" }, "attach": { "$ref": "#/$defs/attach" } }
+          }
+        },
+        "device": {
+          "type": "object",
+          "required": ["kind", "bank"],
+          "additionalProperties": false,
+          "properties": { "kind": { "type": "string" }, "bank": { "type": "string" } }
+        }
+      }
+    },
+    "board": {
+      "type": "object",
+      "required": ["id", "name", "producer"],
+      "additionalProperties": false,
+      "oneOf": [{ "required": ["chip"] }, { "required": ["chips"] }],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "product": { "description": "The product name as the vendor writes it", "type": "string" },
+        "summary": { "type": "string" },
+        "aliases": { "type": "array", "items": { "type": "string" } },
+        "url": { "type": "string", "pattern": "^https?://" },
+        "status": { "enum": ["active", "eol", "preview"] },
+        "notes": { "type": "string" },
+        "producer": { "$ref": "#/$defs/id" },
+        "chip": { "$ref": "#/$defs/chip_id" },
+        "chips": {
+          "description": "The chip variants the board is sold with, each with the name a rig's `part` selects it by",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "additionalProperties": false,
+            "properties": { "id": { "$ref": "#/$defs/chip_id" }, "name": { "type": "string", "minLength": 1 } }
+          }
+        },
+        "bridges": { "description": "The programming interfaces on the board (jtag, usb-dfu, ...)", "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" } },
+        "programmer": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_]*$" },
+        "extra_programmers": { "type": "array", "items": { "$ref": "#/$defs/versioned_ref" } },
+        "bootloader": { "type": "string", "minLength": 1 },
+        "features": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "devices": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "iostandard": { "type": "string" }, "iostandard_reason": { "type": "string" } }
+        },
+        "toolchain_options": {
+          "description": "Settings a toolchain's project needs for this board (quartus global assignments, the gowin device, ...)",
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "type": "object" }
+        },
+        "banks": { "type": "object", "minProperties": 1, "propertyNames": { "pattern": "^[A-Za-z0-9_]+$" }, "additionalProperties": { "$ref": "#/$defs/bank" } },
+        "verification": { "$ref": "#/$defs/verification" },
+        "layout": {
+          "description": "Whether the drawn section was generated (./unifpga layout draft) and whether every header and part in it is backed by verified facts",
+          "type": "object",
+          "required": ["verified", "generated"],
+          "additionalProperties": false,
+          "properties": { "verified": { "type": "boolean" }, "generated": { "type": "boolean" } }
+        },
+        "connector_types": { "type": "object", "propertyNames": { "$ref": "#/$defs/id" }, "additionalProperties": { "$ref": "#/$defs/connector_type" } },
+        "headers": { "type": "array", "items": { "$ref": "#/$defs/header" } },
+        "parts": { "type": "array", "items": { "$ref": "#/$defs/part" } }
+      },
+      "dependentRequired": { "headers": ["layout"], "parts": ["layout"], "connector_types": ["layout"] }
+    }
+  }
+}

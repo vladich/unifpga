@@ -41,7 +41,7 @@ computed when a rig is loaded and never a file of the repository
 --no-profile) leaves the design section and the design_bits out: buses
 concatenated in attach order, a power-up reset.
 
-The board layout (config/layouts/<board>.yml) says which pinmap entry every
+The board as drawn (its headers and parts, in its file; read_layouts) says which bank pin every
 connector pin is and what the on-board devices attach as; connector types
 (config/connectors.yml) give pin numbering, power pins and voltage.
 
@@ -88,27 +88,45 @@ def gpio_passthrough():
 
 
 def read_connectors():
-    """Connector types: config/connectors.yml plus the ones generated layouts
-    carry for their boards (`connector_types:`, from the board-sources registry)."""
+    """Connector types: config/connectors.yml plus the ones boards carry for
+    their own headers (`connector_types:`, from the board-sources registry)."""
     out = dict(config_init._load_yaml(os.path.join(CONFIG_DIR, "connectors.yml"), "Connectors") or {})
-    for board, layout in sorted(read_layouts().items()):
-        for tid, ctype in (layout.get("connector_types") or {}).items():
+    for board_id, board in sorted(config_init._boards_index().items()):
+        for tid, ctype in (board.get("connector_types") or {}).items():
             if tid in out and out[tid] != ctype:
-                raise SetupError("connector type '{}' of config/layouts/{}.yml is defined differently "
-                                 "elsewhere".format(tid, board))
-            out[tid] = ctype
+                raise SetupError("connector type '{}' of board '{}' is defined differently elsewhere".format(tid, board_id))
+            out[tid] = copy.deepcopy(ctype)
     return out
 
 
+def _layout_of(board_id, board):
+    """A board's drawn section as the layout readers see it: {board, verified,
+    generated, connector_types, connectors (the headers), onboard (the parts)}."""
+    layout = {"board": board_id, "verified": bool((board["layout"] or {}).get("verified")),
+              "generated": bool((board["layout"] or {}).get("generated"))}
+    for key, name in config_init.LAYOUT_KEYS:
+        if key in board:
+            layout[name] = copy.deepcopy(board[key])
+    layout.setdefault("connectors", [])
+    layout.setdefault("onboard", [])
+    return layout
+
+
 def read_layouts():
-    return config_init._load_yaml_dir("layouts", "Layout", "board")
+    """{board id: layout} for every board drawn — its headers and parts, from
+    its file config/boards/<producer>/<family>/<id>.yml (the `layout:` line
+    and what follows); see _layout_of."""
+    return {board_id: _layout_of(board_id, board)
+            for board_id, board in config_init._boards_index().items() if "layout" in board}
 
 
 def read_layout(board_id):
-    layout = read_layouts().get(board_id)
-    if layout is None:
-        raise SetupError("no layout for board '{}' (config/layouts/{}.yml)".format(board_id, board_id))
-    return layout
+    """One board's layout (see _layout_of); SetupError when the board is not drawn."""
+    board = config_init._boards_index().get(board_id)
+    if board is None or "layout" not in board:
+        raise SetupError("board '{}' is not drawn yet (no headers and parts in its file; ./unifpga layout draft {})"
+                         .format(board_id, board_id))
+    return _layout_of(board_id, board)
 
 
 def read_modules():
@@ -408,17 +426,18 @@ def generate(setup, conventions=None):
     are restated on the configuration and its attaches. `conventions` False
     leaves the design section and the design_bits out (default: the
     UNIFPGA_PROFILE switch)."""
-    if conventions is None:
-        conventions = conventions_enabled()
-    tcs = _patched_toolchains(setup, "use")
-    cfg = _generate(overlay.select(setup, None, "use"), conventions)
-    if not tcs:
-        return cfg
-    try:
-        return overlay.split(cfg, {tc: _generate(overlay.select(setup, tc, "use"), conventions) for tc in tcs},
-                             "attach")
-    except ValueError as exc:
-        raise SetupError("setup '{}': for_toolchain: {}".format(setup.get("id"), exc))
+    with config_init.boards_frozen():
+        if conventions is None:
+            conventions = conventions_enabled()
+        tcs = _patched_toolchains(setup, "use")
+        cfg = _generate(overlay.select(setup, None, "use"), conventions)
+        if not tcs:
+            return cfg
+        try:
+            return overlay.split(cfg, {tc: _generate(overlay.select(setup, tc, "use"), conventions) for tc in tcs},
+                                 "attach")
+        except ValueError as exc:
+            raise SetupError("setup '{}': for_toolchain: {}".format(setup.get("id"), exc))
 
 
 def _patched_toolchains(doc, list_key):
@@ -810,79 +829,80 @@ def validate(setup, clashes=None):
     """[(level, message)]: level 'error' or 'warning'. `clashes`, a list,
     receives (use a, use b, [FPGA pins]) for every two uses wired to the same
     pins (the editor offers to re-wire or remove one of them)."""
-    problems = []
-    pair_pins = {}                       # (earlier use, later use) -> pins both use
-    try:
-        layout = read_layout(setup["board"])
-        cfg = generate(setup)
-    except SetupError as exc:
-        return [("error", str(exc))]
-    pinmap = config_init.read_board_pinmap(setup["board"]) or {}
-    peripherals = config_init.read_peripherals()
-    modules = read_modules()
-    connectors = read_connectors()
-    problems += _target_problems(setup)
+    with config_init.boards_frozen():
+        problems = []
+        pair_pins = {}                       # (earlier use, later use) -> pins both use
+        try:
+            layout = read_layout(setup["board"])
+            cfg = generate(setup)
+        except SetupError as exc:
+            return [("error", str(exc))]
+        pinmap = config_init.read_board_pinmap(setup["board"]) or {}
+        peripherals = config_init.read_peripherals()
+        modules = read_modules()
+        connectors = read_connectors()
+        problems += _target_problems(setup)
 
-    owner = {}
-    covered = plugged_row_refs(setup, layout, connectors)
-    for ref, k in covered.items():
-        for _bit, pin in codegen._bind_pins(pinmap, ref):
-            for p in str(pin or "").split(","):
-                if p:
-                    owner.setdefault(p, (k, use_label(setup["use"][k], {}), False))
-    for n, (use, a) in enumerate(zip(setup.get("use") or [], cfg["attach"])):
-        label = use_label(use, a)
-        contract = peripherals.get(a.get("peripheral"))
-        if contract is None:
-            problems.append(("error", "{}: unknown peripheral '{}'".format(label, a.get("peripheral"))))
-            continue
-        names = {s["name"]: s for s in contract.get("signals") or []}
-        for sig in a.get("bind") or {}:
-            if sig not in names:
-                problems.append(("error", "{}: peripheral {} has no signal '{}'".format(label, a["peripheral"], sig)))
-        if "module" in use:
-            for name, s in names.items():
-                if not s.get("optional") and name not in (a.get("bind") or {}) and \
-                        name not in (a.get("params") or {}):
-                    problems.append(("error", "{}: required signal '{}' is not wired".format(label, name)))
-            module = modules.get(use["module"]) or {}
-            conns = {w.partition(".")[0] for w in (use.get("wires") or {}).values()}
-            if "plug" in use:
-                conns = {use["plug"]["connector"]}
-            lo, hi = _voltage_range(module.get("voltage"))
-            for conn_id in conns:
-                v = (connectors.get(connector(layout, conn_id)["type"]) or {}).get("voltage")
-                if v and lo is not None and not lo <= v <= hi:
-                    problems.append(("error", "{}: a module for {} V on the {} V connector {}".format(
-                        label, lo if lo == hi else "{}-{}".format(lo, hi), v, conn_id)))
-        # the design's gpio may share a pin with a part (the generated top connects
-        # both; the editor warns): a gpio use, or a raw attach of a peripheral that
-        # hands its pins straight to the design
-        gpio = "gpio" in use or codegen._is_gpio_passthrough(contract)
-        # a driverless part's pins the design does not reach (design_bits: null
-        # there) are free for another part — the HEX decimal points on the
-        # top LEDs of a Terasic board (codegen's ledger applies the same rule)
-        bit_lists = [list(b or []) for b in (a.get("design_bits") or {}).values()] if contract.get("driver") is None else []
-        for sig, ref in (a.get("bind") or {}).items():
-            for k, (port_bit, pin) in enumerate(codegen._bind_pins(pinmap, ref)):
-                if bit_lists and any(k >= len(bl) or bl[k] is None for bl in bit_lists):
-                    continue
-                if pin is None:
-                    bank = (pinmap.get("pinBanks") or {}).get(re.split(r"[.\[]", str(ref))[0])
-                    if not (isinstance(bank, dict) and bank.get("virtual")):     # an on-chip source has no pin
-                        problems.append(("error", "{}: {} ({}) is not a pin of the board".format(label, sig, port_bit)))
-                    continue
-                for p in str(pin).split(","):
-                    prev = owner.get(p)          # (use index, label, is gpio)
-                    if prev and prev[0] != n and not (prev[2] or gpio):
-                        pair_pins.setdefault((prev[0], n, prev[1], label), []).append(p)
-                    owner.setdefault(p, (n, label, gpio))
-    for (a, b, la, lb), pins in pair_pins.items():
-        problems.append(("error", "{} {} used by both {} and {}".format(
-            "pin" if len(pins) == 1 else "pins", ", ".join(pins), la, lb)))
-        if clashes is not None:
-            clashes.append((a, b, pins))
-    return problems
+        owner = {}
+        covered = plugged_row_refs(setup, layout, connectors)
+        for ref, k in covered.items():
+            for _bit, pin in codegen._bind_pins(pinmap, ref):
+                for p in str(pin or "").split(","):
+                    if p:
+                        owner.setdefault(p, (k, use_label(setup["use"][k], {}), False))
+        for n, (use, a) in enumerate(zip(setup.get("use") or [], cfg["attach"])):
+            label = use_label(use, a)
+            contract = peripherals.get(a.get("peripheral"))
+            if contract is None:
+                problems.append(("error", "{}: unknown peripheral '{}'".format(label, a.get("peripheral"))))
+                continue
+            names = {s["name"]: s for s in contract.get("signals") or []}
+            for sig in a.get("bind") or {}:
+                if sig not in names:
+                    problems.append(("error", "{}: peripheral {} has no signal '{}'".format(label, a["peripheral"], sig)))
+            if "module" in use:
+                for name, s in names.items():
+                    if not s.get("optional") and name not in (a.get("bind") or {}) and \
+                            name not in (a.get("params") or {}):
+                        problems.append(("error", "{}: required signal '{}' is not wired".format(label, name)))
+                module = modules.get(use["module"]) or {}
+                conns = {w.partition(".")[0] for w in (use.get("wires") or {}).values()}
+                if "plug" in use:
+                    conns = {use["plug"]["connector"]}
+                lo, hi = _voltage_range(module.get("voltage"))
+                for conn_id in conns:
+                    v = (connectors.get(connector(layout, conn_id)["type"]) or {}).get("voltage")
+                    if v and lo is not None and not lo <= v <= hi:
+                        problems.append(("error", "{}: a module for {} V on the {} V connector {}".format(
+                            label, lo if lo == hi else "{}-{}".format(lo, hi), v, conn_id)))
+            # the design's gpio may share a pin with a part (the generated top connects
+            # both; the editor warns): a gpio use, or a raw attach of a peripheral that
+            # hands its pins straight to the design
+            gpio = "gpio" in use or codegen._is_gpio_passthrough(contract)
+            # a driverless part's pins the design does not reach (design_bits: null
+            # there) are free for another part — the HEX decimal points on the
+            # top LEDs of a Terasic board (codegen's ledger applies the same rule)
+            bit_lists = [list(b or []) for b in (a.get("design_bits") or {}).values()] if contract.get("driver") is None else []
+            for sig, ref in (a.get("bind") or {}).items():
+                for k, (port_bit, pin) in enumerate(codegen._bind_pins(pinmap, ref)):
+                    if bit_lists and any(k >= len(bl) or bl[k] is None for bl in bit_lists):
+                        continue
+                    if pin is None:
+                        bank = (pinmap.get("pinBanks") or {}).get(re.split(r"[.\[]", str(ref))[0])
+                        if not (isinstance(bank, dict) and bank.get("virtual")):     # an on-chip source has no pin
+                            problems.append(("error", "{}: {} ({}) is not a pin of the board".format(label, sig, port_bit)))
+                        continue
+                    for p in str(pin).split(","):
+                        prev = owner.get(p)          # (use index, label, is gpio)
+                        if prev and prev[0] != n and not (prev[2] or gpio):
+                            pair_pins.setdefault((prev[0], n, prev[1], label), []).append(p)
+                        owner.setdefault(p, (n, label, gpio))
+        for (a, b, la, lb), pins in pair_pins.items():
+            problems.append(("error", "{} {} used by both {} and {}".format(
+                "pin" if len(pins) == 1 else "pins", ", ".join(pins), la, lb)))
+            if clashes is not None:
+                clashes.append((a, b, pins))
+        return problems
 
 
 # ---------------------------------------------------------------------------
