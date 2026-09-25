@@ -1141,6 +1141,7 @@ def validate_configuration(resolved, plans=None):
       * non-optional peripheral signals are bound
       * `params.width` equals the bound bank's pin count
       * a clock provider with a known frequency exists
+      * a bank marked `pull: up` is used only where its toolchain emits the pull-up
     """
     if plans is None:
         plans = build_capability_plans(resolved)
@@ -1234,6 +1235,16 @@ def validate_configuration(resolved, plans=None):
             lab_clock(resolved, plans)
         except CodegenError as exc:
             problems.append(str(exc).split(": ", 1)[-1])
+
+    for name in collect_referenced_banks(resolved):
+        pull = (banks.get(name) or {}).get("pull")
+        if pull is None:
+            continue
+        if pull != "up":
+            problems.append("bank {!r}: pull {!r} is not known (only 'up')".format(name, pull))
+        elif (resolved.get("toolchain") or {}).get("Id") not in PULL_TOOLCHAINS:
+            problems.append("bank {!r} needs its pins pulled up, which the {} constraints do not emit yet"
+                            .format(name, (resolved.get("toolchain") or {}).get("Id")))
 
     return ["Configuration {}: {}".format(cfg_id, p) for p in problems]
 
@@ -2761,6 +2772,9 @@ def emit_xdc(resolved):
                 elif isinstance(val, str):
                     out.append(_xdc_line(val, pname, _pin_iostd(val, overrides, bank_iostd)))
 
+    for port in _pulled_ports(resolved):
+        out.append("set_property PULLUP true [get_ports {{ {} }}];".format(port))
+
     # ---- Clock create_clock entries ----
     out.append("")
     out.append("# ---- Clock definitions ----")
@@ -2787,6 +2801,38 @@ def _xdc_line(pin, port_expr, iostd):
         "set_property -dict {{ PACKAGE_PIN {pin} IOSTANDARD {std} }} "
         "[get_ports {{ {port} }}];".format(pin=pin_str, std=iostd, port=port_expr)
     )
+
+
+# Toolchains whose constraint writers emit a bank's `pull: up` (a board fact:
+# pins the board leaves floating that its devices expect pulled up, such as
+# the Nexys USB-HID bridge's PS/2 pair). A rig on another toolchain that uses
+# such a bank is refused by validate_configuration rather than built without.
+PULL_TOOLCHAINS = ("vivado", "nextpnr_openxc7")
+
+
+def _pulled_ports(resolved):
+    """Top ports of the used banks the pinmap marks `pull: up`, in bank order."""
+    pinmap = resolved["board_pinmap"]
+    out = []
+    for bank_name in collect_referenced_banks(resolved):
+        bank = (pinmap.get("pinBanks") or {}).get(bank_name) or {}
+        if bank.get("pull") != "up":
+            continue
+        pins = bank.get("pins")
+        if isinstance(pins, str):
+            out.append(bank_name)
+        elif isinstance(pins, list):
+            out += ["{}[{}]".format(bank_name, i) for i, p in enumerate(pins) if p is not None]
+        elif isinstance(pins, dict):
+            for sub, val in pins.items():
+                if not _sub_used(resolved, bank_name, sub):
+                    continue
+                pname = "{}_{}".format(bank_name, sub)
+                if isinstance(val, list):
+                    out += ["{}[{}]".format(pname, i) for i, p in enumerate(val) if p is not None]
+                elif isinstance(val, str):
+                    out.append(pname)
+    return out
 
 
 def emit_xdc_simple(resolved):
@@ -2838,6 +2884,9 @@ def emit_xdc_simple(resolved):
                         emit(p, "{}[{}]".format(pname, i), _pin_iostd(p, overrides, bank_iostd))
                 elif isinstance(val, str):
                     emit(val, pname, _pin_iostd(val, overrides, bank_iostd))
+
+    for port in _pulled_ports(resolved):
+        out.append("set_property PULLUP true [get_ports {{{}}}]".format(port))
 
     # Clock create_clock entries
     out.append("")

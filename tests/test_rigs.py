@@ -267,6 +267,29 @@ def test_a_keyboard_reaches_a_design_that_asks_for_it():
     assert "ps2_keyboard # (.clk_mhz(clk_mhz))" in top and ".kbd_key(cap_keyboard_key)" in top
 
 
+def test_a_usb_keyboard_bridged_as_ps2_is_the_designs_keyboard():
+    """Basys3 / Nexys: the PIC24 bridge presents a USB keyboard as PS/2, and the
+    ps2_keyboard peripheral models it; where Digilent's XDC pulls the pair up,
+    both the Vivado and the openxc7 constraints do."""
+    from tools import codegen, studio
+    for rig in ("basys3", "nexys4", "nexys4_ddr", "nexys_a7"):
+        assert studio.design_fit(config_init.resolve_configuration(rig))["keyboard_keys"] == [], rig
+    for tc, emit in (("vivado", codegen.emit_xdc), ("nextpnr_openxc7", codegen.emit_xdc_simple)):
+        xdc = emit(config_init.resolve_configuration("basys3", toolchain=tc))
+        pulled = [l for l in xdc.splitlines() if "PULLUP true" in l and "onboard_usb_hid_" in l]
+        assert len(pulled) == 2, tc
+    assert "PULLUP" not in codegen.emit_xdc(config_init.resolve_configuration("nexys_a7"))
+
+
+def test_a_pull_up_the_toolchain_cannot_emit_is_refused():
+    from tools import codegen
+    r = copy.deepcopy(config_init.resolve_configuration("basys3"))
+    r["toolchain"] = dict(r["toolchain"], Id="quartus_prime_lite")
+    assert any("pulled up" in p for p in codegen.validate_configuration(r))
+    r["board_pinmap"]["pinBanks"]["onboard_usb_hid"]["pull"] = "down"
+    assert any("pull 'down' is not known" in p for p in codegen.validate_configuration(r))
+
+
 def test_no_pin_is_both_a_gpio_bit_and_another_parts():
     """In every rig, a pin the design reaches through its gpio port is no other
     part's (a microphone, a TM1638, a tie): one master per pad."""
