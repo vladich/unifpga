@@ -37,6 +37,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -160,8 +161,9 @@ def _vendor_blackboxes(repo):
         text = re.sub(r"//[^\n]*", "", text)
         heads = re.findall(r"\bmodule\b.*?\);", text, re.S)
         path = os.path.join(repo, "rtl", "sim", ".vendor_blackboxes.v")
-        with open(path, "w") as f:
+        with open(path + ".tmp", "w") as f:
             f.write("".join("(* blackbox *)\n{}\nendmodule\n\n".format(h) for h in heads))
+        os.replace(path + ".tmp", path)          # never read half-written
         _BOXES[repo] = path
     return _BOXES[repo]
 
@@ -253,6 +255,13 @@ def _check_findings(text):
             or "driving constant bits" in f]
 
 
+def _open_flows(repo=REPO):
+    """The toolchains that build with yosys: tools/toolchain_detect's open flows."""
+    sys.path.insert(0, repo)
+    from tools import toolchain_detect
+    return set(toolchain_detect._OSS_TOOLS)
+
+
 def _classify_yosys(entry, repo, rc, text):
     """(status, wiring problems, design findings). A conflict anywhere is the
     wiring's: two masters on a net the top connects. An undriven net or a loop
@@ -265,7 +274,12 @@ def _classify_yosys(entry, repo, rc, text):
     parse = [l for l in text.splitlines() if "ERROR" in l and re.search(r"\.s?v\w*:\d+:", l)]
     if parse:
         path = parse[0].split(":")[0]
-        return ("UNCHECKED", [], parse[:1]) if _in_design(entry, repo, path) else ("FAIL", parse[:1], [])
+        if not _in_design(entry, repo, path):
+            return "FAIL", parse[:1], []
+        if entry.get("toolchain") in _open_flows(repo):
+            # this rig builds with this yosys: what it cannot read, the build cannot
+            return "FAIL", ["the build's yosys cannot read the design: " + parse[0]], []
+        return "UNCHECKED", [], parse[:1]
     wiring, design, allowed = [], [], []
     for f in _check_findings(text):
         if "conflicting driver" in f or "driving constant bits" in f:
@@ -319,7 +333,12 @@ def _compile_one(entry, repo, out, iverilog, yosys=None):
         first = next((l for l in located if re.search(r"error|Include file .* not found", l)),
                      next((l for l in located if ": sorry:" in l), ""))
         if first and _in_design(entry, repo, first.split(":")[0]):
-            status, findings, errors = "UNCHECKED", errors[:1], []
+            if ": error:" in first:
+                # the design does not elaborate with this rig's parameters (a
+                # zero width, a clock it cannot divide): it fits on paper only
+                status, findings, errors = "FAIL", [], ["the design does not build here: " + first]
+            else:
+                status, findings, errors = "UNCHECKED", errors[:1], []
     if yosys and rc == 0:
         yrc, ylog = _yosys_check(entry, repo, files, yosys)
         with open(log_path, "a") as f:
@@ -354,6 +373,22 @@ def _compile_one(entry, repo, out, iverilog, yosys=None):
     }
 
 
+def _build_yosys(repo):
+    """The yosys the open flows build with: what tools/toolchain_detect finds for
+    them (an OSS CAD Suite first), else the one on PATH. Checking with another
+    yosys than the builds use reports its parser's limits as the designs'."""
+    sys.path.insert(0, repo)
+    try:
+        from tools import toolchain_detect
+        for tid in sorted(toolchain_detect._OSS_TOOLS):
+            det = toolchain_detect.detect(tid)
+            if det.found and det.bins.get("yosys"):
+                return det.bins["yosys"]
+    except Exception:
+        pass
+    return shutil.which("yosys")
+
+
 def cmd_run(args):
     out = os.path.abspath(args.out)
     repo = os.path.abspath(args.repo or REPO)
@@ -364,10 +399,15 @@ def cmd_run(args):
         print("iverilog not found on PATH", file=sys.stderr)
         return 2
     entries = manifest["entries"]
-    yosys = shutil.which("yosys") if args.yosys else None
+    yosys = _build_yosys(repo) if args.yosys else None
     if args.yosys and yosys is None:
-        print("yosys not found on PATH", file=sys.stderr)
+        print("yosys not found (no open toolchain detected, none on PATH)", file=sys.stderr)
         return 2
+    if yosys:
+        version = subprocess.run([yosys, "-V"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True).stdout
+        print("yosys: {} ({})".format(yosys, version.strip()))
+    if yosys:
+        _vendor_blackboxes(repo)                 # once, before the workers read it
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
         results = list(pool.map(lambda e: _compile_one(e, repo, out, iverilog, yosys), entries))
     with open(os.path.join(out, "results.json"), "w") as f:
@@ -389,12 +429,19 @@ def cmd_remote(args):
     remote_repo = REMOTE_ROOT + "/repo/"
     remote_out = REMOTE_ROOT + "/out/"
     excludes = ["--exclude", ".git", "--exclude", "__pycache__", "--exclude", ".venv",
-                "--exclude", "build", "--exclude", "*.pyc"]
+                "--exclude", "build", "--exclude", "/run", "--exclude", "designs/*/run", "--exclude", "*.pyc"]
     subprocess.check_call(["ssh", host, "mkdir -p {} {}".format(remote_repo, remote_out)])
     subprocess.check_call(["rsync", "-a", "--delete"] + excludes + [REPO + "/", "{}:{}".format(host, remote_repo)])
     subprocess.check_call(["rsync", "-a", "--delete", out + "/", "{}:{}".format(host, remote_out)])
     remote_cmd = "cd {r} && python3 tools/lint_generated.py run --out {o} --repo {r} --jobs {j}{y}".format(
         r=remote_repo.rstrip("/"), o=remote_out.rstrip("/"), j=args.jobs, y=" --yosys" if args.yosys else "")
+    if args.remote_user:
+        # as the user the host builds as (its toolchains live in that home):
+        # the copies must be writable to it, its results readable back
+        # (files the user made last time are its own, already open to all)
+        subprocess.check_call(["ssh", host, "chmod -R a+rwX {} 2>/dev/null; true".format(REMOTE_ROOT)])
+        remote_cmd = "sudo -n -u {u} -H bash -lc {c}".format(
+            u=args.remote_user, c=shlex.quote(remote_cmd + "; rc=$?; chmod -R a+rwX {} 2>/dev/null; exit $rc".format(REMOTE_ROOT)))
     proc = subprocess.run(["ssh", host, remote_cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     subprocess.check_call(["rsync", "-a", "{}:{}".format(host, remote_out), out + "/"])
     sys.stdout.write(proc.stdout)
@@ -455,6 +502,7 @@ def main(argv=None):
     m.add_argument("--only", nargs="*")
     m.add_argument("--jobs", type=int, default=16)
     m.add_argument("--yosys", action="store_true")
+    m.add_argument("--remote-user", help="run as this user on the host (the one its builds run as)")
     s = sub.add_parser("summary")
     s.add_argument("--out", required=True)
     args = p.parse_args(argv)

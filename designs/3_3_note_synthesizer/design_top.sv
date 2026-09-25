@@ -87,7 +87,7 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    assign digit = { {(w_digit - 1){1'b0}}, 1'b1};
+    assign digit = 1'b1;   // the rightmost digit on (extended to the rig's digits)
 
     always_ff @ (posedge clk or posedge rst)
         if (rst)

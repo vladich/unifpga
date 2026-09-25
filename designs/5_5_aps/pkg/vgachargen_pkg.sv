@@ -61,28 +61,28 @@ package vgachargen_pkg;
   } rgb_t;
 
   function automatic logic [11:0] rgb2half(rgb_t rgb_i);
-    return {rgb_i[23:20], rgb_i[15:12], rgb_i[7:4]};
+    rgb2half = {rgb_i[23:20], rgb_i[15:12], rgb_i[7:4]};
   endfunction
 
   function automatic logic [11:0] color_decode(logic [3:0] color_encoded_i);
     unique case (color_encoded_i)
-      4'h0   : return rgb2half(COL_0 );
-      4'h1   : return rgb2half(COL_1 );
-      4'h2   : return rgb2half(COL_2 );
-      4'h3   : return rgb2half(COL_3 );
-      4'h4   : return rgb2half(COL_4 );
-      4'h5   : return rgb2half(COL_5 );
-      4'h6   : return rgb2half(COL_6 );
-      4'h7   : return rgb2half(COL_7 );
-      4'h8   : return rgb2half(COL_0 );
-      4'h9   : return rgb2half(COL_9 );
-      4'ha   : return rgb2half(COL_10);
-      4'hb   : return rgb2half(COL_11);
-      4'hc   : return rgb2half(COL_12);
-      4'hd   : return rgb2half(COL_13);
-      4'he   : return rgb2half(COL_14);
-      4'hf   : return rgb2half(COL_15);
-      default: return rgb2half(COL_0 );
+      4'h0   : color_decode = rgb2half(COL_0 );
+      4'h1   : color_decode = rgb2half(COL_1 );
+      4'h2   : color_decode = rgb2half(COL_2 );
+      4'h3   : color_decode = rgb2half(COL_3 );
+      4'h4   : color_decode = rgb2half(COL_4 );
+      4'h5   : color_decode = rgb2half(COL_5 );
+      4'h6   : color_decode = rgb2half(COL_6 );
+      4'h7   : color_decode = rgb2half(COL_7 );
+      4'h8   : color_decode = rgb2half(COL_0 );
+      4'h9   : color_decode = rgb2half(COL_9 );
+      4'ha   : color_decode = rgb2half(COL_10);
+      4'hb   : color_decode = rgb2half(COL_11);
+      4'hc   : color_decode = rgb2half(COL_12);
+      4'hd   : color_decode = rgb2half(COL_13);
+      4'he   : color_decode = rgb2half(COL_14);
+      4'hf   : color_decode = rgb2half(COL_15);
+      default: color_decode = rgb2half(COL_0 );
     endcase
   endfunction
 endpackage

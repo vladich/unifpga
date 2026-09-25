@@ -29,7 +29,6 @@ package jtag_pkg;
     logic        padding;
   } status_t;
 
-  localparam int STATUS_WIDTH = $bits(status_t);
 
   //============================================================
   // CONTROL struct
@@ -42,6 +41,5 @@ package jtag_pkg;
     logic step_request;
   } control_t;
 
-  localparam int CONTROL_WIDTH = $bits(control_t);
 
 endpackage
