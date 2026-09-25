@@ -32,7 +32,7 @@ def test_contract_follows_the_interface_and_the_capabilities():
     assert [p.name for p in params + derived] == [n for n in declared[0] if n in {p.name for p in params + derived}]
     assert [p.name for p in ports] == declared[1]
     optional = {p.capability for p in ports if p.optional}
-    assert optional == {"small_display", "text_display", "actuators", "keyboard", "temperature", "accelerometer", "adc", "ir_remote", "memory"}
+    assert optional == {"small_display", "text_display", "actuators", "keyboard", "temperature", "accelerometer", "adc", "ir_remote", "memory", "storage"}
 
 
 def test_design_declarations_reads_parameters_and_ports():

@@ -890,8 +890,12 @@ def make_server(port=8765, host="127.0.0.1"):
 
 
 def serve(port=8765, host="127.0.0.1"):
-    httpd = make_server(port, host)
-    print("Board editor on http://{}:{}/ (Ctrl-C stops)".format(host, port))
+    try:
+        httpd = make_server(port, host)
+    except OSError as exc:
+        raise su.SetupError("cannot listen on {}:{} ({}): an editor already running? "
+                            "Open http://{}:{}/ or use --port".format(host, port, exc.strerror, host, port))
+    print("Board editor on http://{}:{}/ (Ctrl-C stops)".format(host, port), flush=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

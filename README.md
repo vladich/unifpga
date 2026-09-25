@@ -193,7 +193,8 @@ still builds `arty_a7_pmod_mic3` with nextpnr_openxc7 for the 35T); any other
 build is `<rig>@<toolchain>[@<part>]`, or `synthesize.py -t <toolchain> --part <part>`.
 
 ```bash
-./unifpga serve                # the board editor: http://127.0.0.1:8765/
+./serve.sh                     # the board editor: http://127.0.0.1:8765/ (makes .venv with PyYAML on the first run)
+./unifpga serve                # the same, with a Python that has PyYAML (--port for another port)
 ./unifpga setup check          # each setup generates its configuration (data and text); rig errors
 ./unifpga setup generate [id]  # write config/configurations/<id>.yml from the setup
 ./unifpga setup derive <id>    # write a setup from an existing configuration

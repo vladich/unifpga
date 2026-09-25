@@ -68,6 +68,7 @@ module design_top
     parameter int adc_mv        = 0,     // Their full scale in millivolts (code 4096)
     parameter int w_mem_addr    = 0,     // Memory (the board's RAM): word address bits
     parameter int mem_bytes     = 0,     // Bytes per memory word
+    parameter int st_blocks     = 0,     // Storage (an SD card): 512-byte blocks, 0 = unknown
 
     // ---- Derived widths (do not override) -----------------------------------
     parameter int w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
@@ -181,7 +182,19 @@ module design_top
     output logic [mem_bytes  - 1 : 0] mem_be,
     input                            mem_ready,
     input                            mem_ack,
-    input        [w_mem_data - 1 : 0] mem_rdata
+    input        [w_mem_data - 1 : 0] mem_rdata,
+
+    // ---- Storage (optional): an SD card read block by block — st_req with
+    // st_block while st_ready; then 512 bytes, each one clock of st_valid with
+    // st_data, and st_done or st_error; st_present while a card answers -------
+    output logic                     st_req,
+    output logic [         31 : 0]   st_block,
+    input                            st_ready,
+    input        [          7 : 0]   st_data,
+    input                            st_valid,
+    input                            st_done,
+    input                            st_error,
+    input                            st_present
 );
 
     // -------------------------------------------------------------------------
@@ -207,6 +220,8 @@ module design_top
     assign mem_addr  = '0;
     assign mem_wdata = '0;
     assign mem_be    = '0;
+    assign st_req    = 1'b0;
+    assign st_block  = '0;
 
     // -------------------------------------------------------------------------
     // User logic goes here.

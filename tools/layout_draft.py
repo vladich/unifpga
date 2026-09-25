@@ -143,6 +143,13 @@ def draft(board_id):
     # attach it as its variants
     parts, order = {}, []
     for cfg in builds:
+        # a bank several attaches of one configuration share (the QMTech's
+        # buttons: four of them, then the fifth with its own polarity) is bound
+        # in parts on purpose; a lone attach of some of a bank's pins is a
+        # rig's `pins:` choice
+        bound_by = Counter(b for a in cfg.get("attach") or []
+                           for b in _banks_of(list((a.get("bind") or {}).values())))
+        shared = {b for b, n in bound_by.items() if n > 1}
         for a in cfg.get("attach") or []:
             # (a gpio passthrough on an on-board device's pins is that device handed
             # to the design's gpio: one of its variants, like any other attach)
@@ -155,7 +162,7 @@ def draft(board_id):
             attach = {"peripheral": a["peripheral"]}
             if a.get("params") is not None:
                 attach["params"] = a["params"]
-            attach["bind"] = _whole_bank(a.get("bind") or {}, attach.get("params"), pinmap)
+            attach["bind"] = _whole_bank(a.get("bind") or {}, attach.get("params"), pinmap, shared)
             if main not in parts:
                 parts[main] = []
                 order.append(main)
@@ -233,8 +240,9 @@ def _model(kind, bank, spec):
       * `signal: s` — s is a bus: a bank that is one list of pins, or every pin of
         a bank of named pins in order (led_bank for leds, button_array for buttons);
       * `pins: {s: [names]}` — each signal to the first of its names the bank has,
-        a name may take a slice of a bus (`LCD_DATA[4:8]`), or be a list of
-        scalar pins that make up the bus (`[DRAM_LDQM, DRAM_UDQM]`); a signal
+        a name may take a slice of a bus (`LCD_DATA[4:8]`) or one pin of it
+        (`SD_DAT[0]`), or be a list of scalar pins that make up the bus
+        (`[DRAM_LDQM, DRAM_UDQM]`); a signal
         that is not optional must be found; a parameter declared
         `from_width: s` is the width of the bus bound to s (an SRAM's address bits);
       * neither — the bank's pins named as the signals (rgb_led's r / g / b).
@@ -286,11 +294,16 @@ def _model(kind, bank, spec):
                     key = by_name.get(base.lower())
                     if key is None:
                         continue
-                    if rest:                               # a slice of a bus: name[a:b]
+                    if rest and ":" in rest:                # a slice of a bus: name[a:b]
                         a, b = (int(x) for x in rest.rstrip("]").split(":"))
                         if not isinstance(pins[key], list) or len(pins[key]) < b:
                             continue
                         bind[sig["name"]] = ["{}.{}[{}]".format(bank, key, i) for i in range(a, b)]
+                    elif rest:                              # one pin of a bus: name[i]
+                        i = int(rest.rstrip("]"))
+                        if not isinstance(pins[key], list) or len(pins[key]) <= i:
+                            continue
+                        bind[sig["name"]] = "{}.{}[{}]".format(bank, key, i)
                     else:
                         bind[sig["name"]] = "{}.{}".format(bank, key)
                     break
@@ -328,12 +341,13 @@ def _model(kind, bank, spec):
     return None
 
 
-def _whole_bank(bind, params, pinmap):
+def _whole_bank(bind, params, pinmap, shared=()):
     """A rig's `pins:` choice undone: a bind of some of one list bank's pins in
     their order (`led: [onboard_leds[0], .., onboard_leds[7]]` without LED 4,
     the DS18B20's pin) is the part's whole bank in the layout — the part is the
     board's, the choice the rig's (`setup derive` finds it again). `params`
-    (mutated) gets the bank's width back."""
+    (mutated) gets the bank's width back. A bank in `shared` (other attaches of
+    the configuration bind its other pins) stays as bound."""
     if len(bind) != 1:
         return bind
     sig, refs = next(iter(bind.items()))
@@ -343,6 +357,8 @@ def _whole_bank(bind, params, pinmap):
     if any(p is None or p[1] is not None or p[2] is None for p in parsed):
         return bind
     bank = parsed[0][0]
+    if bank in shared:
+        return bind
     pins = ((pinmap.get("pinBanks") or {}).get(bank) or {}).get("pins")
     idx = [p[2] for p in parsed]
     if not isinstance(pins, list) or any(p[0] != bank for p in parsed) or len(idx) >= len(pins) \

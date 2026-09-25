@@ -770,7 +770,11 @@ def cmd_view(args):
 
 def cmd_serve(args):
     from tools import studio
-    studio.serve(port=args.port)
+    from tools import setup as su
+    try:
+        studio.serve(port=args.port)
+    except su.SetupError as exc:
+        raise CliError(str(exc))
     return 0
 
 

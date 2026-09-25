@@ -1,0 +1,48 @@
+# An SD / microSD card slot driven in the card's SPI mode: clock, CMD as MOSI,
+# DAT0 as MISO, DAT3 as chip select (DAT1 / DAT2 stay unused). rtl/peripherals/
+# sd_spi_reader.sv brings the card up (CMD0, CMD8, ACMD41, CMD58; CMD16 for a
+# card of byte addresses) at 400 kHz, then reads 512-byte blocks (CMD17) at up
+# to 25 MHz for the `storage` capability. A slot with a power / reset pin
+# (Digilent's SD_RESET) gets it held low: card powered.
+
+Peripheral:
+  id: sdcard_spi
+  description: SD card slot in SPI mode, 512-byte blocks read on request
+  # the on-board devices it models: a board inventory's SD slot, its pins under
+  # Terasic's SD_* names, Digilent's or the plain ones (DAT0 / DAT3 may be bits
+  # of a data bus)
+  models: {kind: sdcard, pins: {clk: [SD_CLK, clk, sclk, sck],
+                                cmd: [SD_CMD, cmd, cmd_mosi, mosi],
+                                dat0: ["SD_DAT[0]", "SD_DATA[0]", "dat[0]", "data[0]", "d[0]", SD_DAT0, data0, d0, d0_miso, miso, SD_DAT],
+                                dat3: ["SD_DAT[3]", "SD_DATA[3]", "dat[3]", "data[3]", "d[3]", SD_DAT3, data3, d3, d3_cs, cs_n],
+                                reset: [reset]}}
+  signals:
+    - { name: clk,   type: scalar, direction: output, comment: "SCLK" }
+    - { name: cmd,   type: scalar, direction: output, comment: "CMD, the card's data in (MOSI)" }
+    - { name: dat0,  type: scalar, direction: input,  comment: "DAT0, the card's data out (MISO)" }
+    - { name: dat3,  type: scalar, direction: output, comment: "DAT3, chip select (active low)" }
+    - { name: reset, type: scalar, direction: output, optional: true, comment: "Slot power / reset (Digilent): held low, card powered" }
+  provides:
+    - capability: storage
+  driver:
+    module: sd_spi_reader
+    file: rtl/peripherals/sd_spi_reader.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+    port_map:
+      clk:     context.clk
+      rst:     context.rst
+      req:     capability.storage.req
+      block:   capability.storage.block
+      ready:   capability.storage.ready
+      data:    capability.storage.data
+      valid:   capability.storage.valid
+      done:    capability.storage.done
+      error:   capability.storage.error
+      present: capability.storage.present
+      sclk:    pin.clk
+      mosi:    pin.cmd
+      miso:    pin.dat0
+      cs_n:    pin.dat3
+  pin_assigns:
+    pin.reset: const.0

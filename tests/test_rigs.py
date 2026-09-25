@@ -420,6 +420,33 @@ def test_the_boards_ram_is_the_memory_capability():
                            "saylinx", "saylinx_pmod_mic3"]
 
 
+def test_an_sd_card_slot_is_block_storage():
+    """A board's SD slot, driven in SPI mode (DAT0 as MISO, DAT3 as chip
+    select, whatever the pins are called), is the storage capability;
+    designs/sdcard_leds requires it. A Digilent slot's power pin is held low;
+    the OrangeCrab's slot shares the switches' and the UART's pins and stays
+    out of its rig."""
+    from tools import codegen, studio
+    design = os.path.join(REPO, "designs", "sdcard_leds", "design_top.sv")
+    want = {"de1": (".miso(onboard_sdcard_SD_DAT)", ".cs_n(onboard_sdcard_SD_DAT3)"),
+            "de2_115": (".miso(onboard_sdcard_SD_DAT[0])", ".cs_n(onboard_sdcard_SD_DAT[3])"),
+            "nexys_a7": (".miso(onboard_sdcard_dat[0])", "assign onboard_sdcard_reset = 1'b0;"),
+            "tang_mega_138k_lcd_480_272_tm1638": (".miso(onboard_sdcard_d0_miso)", ".cs_n(onboard_sdcard_d3_cs)"),
+            "saylinx": (".mosi(onboard_sdcard_mosi)", ".cs_n(onboard_sdcard_cs_n)"),
+            "tang_primer_20k_dock_hdmi_tm1638": (".miso(onboard_sdcard_d[0])", ".cs_n(onboard_sdcard_d[3])")}
+    for rig, texts in want.items():
+        r = config_init.resolve_configuration(rig)
+        assert codegen.validate_configuration(r) == [] and studio.design_fit(r)["sdcard_leds"] == [], rig
+        top = codegen.emit_top_sv(r, design=design)
+        assert "sd_spi_reader # (.CLK_MHZ(clk_mhz))" in top and ".st_data(cap_storage_data)" in top, rig
+        for t in texts:
+            assert t in top, (rig, t)
+    assert any("storage" in m for m in studio.design_fit(config_init.resolve_configuration("orangecrab_ecp5"))["sdcard_leds"])
+    with_storage = [rig for rig in config_init.read_configurations()
+                    if codegen.build_capability_plans(config_init.resolve_configuration(rig))["storage"].providers]
+    assert len(with_storage) == 28 and "orangecrab_ecp5" not in with_storage
+
+
 def test_an_infrared_remote_reaches_a_design_that_asks_for_it():
     """The OMDAZZ / RZRD receivers and the DE2-115's are NEC remote receivers;
     designs/ir_remote_leds requires one: it fits them, not the DE2, whose IrDA
