@@ -159,7 +159,14 @@ module design_top
     // adc_value is the 12-bit code of channel adc_channel (mV = value * adc_mv / 4096)
     input                            adc_valid,
     input        [          3 : 0]   adc_channel,
-    input        [         11 : 0]   adc_value
+    input        [         11 : 0]   adc_value,
+
+    // ---- Infrared remote (optional): one clock of ir_valid per key press
+    // (NEC: the remote's address, the key's command byte), ir_repeat while held
+    input                            ir_valid,
+    input        [         15 : 0]   ir_address,
+    input        [          7 : 0]   ir_command,
+    input                            ir_repeat
 );
 
     // -------------------------------------------------------------------------

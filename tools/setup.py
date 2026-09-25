@@ -255,6 +255,43 @@ def plug_placements(connectors, layout, module, conn_ids=None):
 # setup -> configuration
 # ---------------------------------------------------------------------------
 
+def _bank_signal(bind, board):
+    """The one signal of an on-board part's bind that is a whole pinmap bank of
+    listed pins (led_bank's `led: onboard_leds`), and that bank: the signal a
+    use's `pins:` narrows."""
+    whole = [(sig, ref) for sig, ref in bind.items()
+             if isinstance(ref, str) and "." not in ref and "[" not in ref and _bank_size(board, ref) is not None]
+    if len(whole) != 1:
+        raise SetupError("`pins:` needs a part bound to one whole bank of pins, not {}".format(bind))
+    return whole[0]
+
+
+def _bank_size(board, bank):
+    """How many pins the pinmap bank has when it is a list of pins, else None."""
+    pins = ((config_init.read_board_pinmap(board) or {}).get("pinBanks") or {}).get(bank, {}).get("pins")
+    return len(pins) if isinstance(pins, list) else None
+
+
+def _subset_pins(t_bind, a_bind, board):
+    """The `pins:` a use took of the part's whole bank when the attach's bind is
+    the part's with that one signal a list of the bank's pins, else None."""
+    try:
+        sig, bank = _bank_signal(t_bind, board)
+    except SetupError:
+        return None
+    refs = a_bind.get(sig)
+    if not isinstance(refs, list) or set(a_bind) != set(t_bind) or \
+            any(a_bind[k] != t_bind[k] for k in t_bind if k != sig):
+        return None
+    keys = []
+    for r in refs:
+        m = re.match(r"^" + re.escape(bank) + r"\[(\d+)\]$", str(r))
+        if not m:
+            return None
+        keys.append(int(m.group(1)))
+    return keys
+
+
 def _connector_banks(layout):
     """{bank: [its pin refs in bank order]} for the connectors that are one bank."""
     out = {}
@@ -366,9 +403,20 @@ def _generate(setup):
             params = {k: v for k, v in dict(t.get("params") or {}, **(use.get("params") or {})).items()
                       if v is not None}
             a = {"peripheral": t["peripheral"]}
+            bind = copy.deepcopy(t["bind"])
+            if use.get("pins") is not None:          # some of the part's pins, in this order
+                sig, bank = _bank_signal(bind, setup["board"])
+                n = _bank_size(setup["board"], bank)
+                bad = [k for k in use["pins"] if not (isinstance(k, int) and 0 <= k < n)]
+                if bad:
+                    raise SetupError("on-board item '{}': {} has pins 0..{}, not {}".format(
+                        use["onboard"], bank, n - 1, ", ".join(map(str, bad))))
+                bind[sig] = ["{}[{}]".format(bank, k) for k in use["pins"]]
+                if "width" in params:
+                    params["width"] = len(use["pins"])
             if params:
                 a["params"] = params
-            a["bind"] = copy.deepcopy(t["bind"])
+            a["bind"] = bind
             attach.append(copy.deepcopy(a))
         elif "module" in use:
             attach.append(_module_attach(connectors, layout, modules, use))
@@ -489,12 +537,22 @@ def _derive(configuration, before=()):
     for a in configuration.get("attach") or []:
         use = None
         for o, vid, t in ((o, vid, t) for o in layout.get("onboard") or [] for vid, _l, t in onboard_variants(o)):
-            if t["peripheral"] == a["peripheral"] and ordered(t.get("bind")) == ordered(a.get("bind")) \
-                    and list(a) == [k for k in ("peripheral", "params", "bind") if k in a]:
+            if t["peripheral"] != a["peripheral"] or list(a) != [k for k in ("peripheral", "params", "bind") if k in a]:
+                continue
+            subset = None
+            if ordered(t.get("bind")) != ordered(a.get("bind")):
+                subset = _subset_pins(t.get("bind") or {}, a.get("bind") or {}, configuration["board"])
+                if subset is None:
+                    continue
+            if True:
                 use = {"onboard": o["id"]}
                 if vid is not None:
                     use["variant"] = vid
                 base, have = _params(t), _params(a)
+                if subset is not None:
+                    use["pins"] = subset
+                    if "width" in base and have.get("width") == len(subset):
+                        have = dict(have, width=base["width"])   # the width `pins:` sets
                 if have != base:
                     use["params"] = dict({k: v for k, v in have.items() if base.get(k) != v},
                                          **{k: None for k in base if k not in have})   # null: left out

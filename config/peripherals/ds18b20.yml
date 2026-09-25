@@ -1,0 +1,24 @@
+# A Maxim DS18B20 1-Wire temperature sensor (the PiSwords6's):
+# rtl/peripherals/ds18b20_reader.sv converts and reads it once a second,
+# checking the scratchpad's CRC; readings in 1/16 C, its own resolution.
+
+Peripheral:
+  id: ds18b20
+  description: DS18B20 1-Wire temperature sensor, readings in 1/16 C
+  # the on-board devices it models: a temperature device on one data line
+  models: {kind: temperature, pins: {dq: [dq, DQ, one_wire, ow]}}
+  signals:
+    - { name: dq, type: scalar, direction: inout, comment: "The 1-Wire data line (pulled up on the board)" }
+  provides:
+    - capability: temperature
+  driver:
+    module: ds18b20_reader
+    file: rtl/peripherals/ds18b20_reader.sv
+    parameters:
+      CLK_MHZ: context.clk_mhz
+    port_map:
+      clk:   context.clk
+      rst:   context.rst
+      dq:    pin.dq
+      valid: capability.temperature.valid
+      temp:  capability.temperature.value

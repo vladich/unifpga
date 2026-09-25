@@ -1,0 +1,31 @@
+# A demodulating infrared receiver (VS1838B, HS0038, TSOP38238 ...: the 38 kHz
+# carrier removed, the output low during a burst) for NEC remote controls:
+# rtl/peripherals/ir_nec_receiver.sv decodes the frames into key events.
+
+Peripheral:
+  id: ir_receiver
+  description: Infrared receiver for NEC remote controls, key events
+  parameters:
+    active_low:
+      type: int
+      default: 1            # every common receiver module idles high
+  # the on-board devices it models: a board inventory's IR receiver
+  models: {kind: ir, pins: {ir: [ir, IR, IRDA_RXD, ir_rx, rx, data]}}
+  signals:
+    - { name: ir, type: scalar, direction: input, comment: "The receiver's demodulated output" }
+  provides:
+    - capability: ir_remote
+  driver:
+    module: ir_nec_receiver
+    file: rtl/peripherals/ir_nec_receiver.sv
+    parameters:
+      CLK_MHZ:    context.clk_mhz
+      ACTIVE_LOW: $active_low
+    port_map:
+      clk:     context.clk
+      rst:     context.rst
+      ir:      pin.ir
+      valid:   capability.ir_remote.valid
+      address: capability.ir_remote.address
+      command: capability.ir_remote.command
+      repeat_: capability.ir_remote.repeat

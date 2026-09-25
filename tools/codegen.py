@@ -1091,6 +1091,169 @@ def _dir_kw(direction):
 
 
 # ---------------------------------------------------------------------------
+# Phase 2a: one pad, one port bit (banks that share pins)
+# ---------------------------------------------------------------------------
+
+def constrained_pads(resolved):
+    """{physical pin: [top port bit]} over every referenced bank: the walk the
+    constraint emitters make, bound bits and unbound ones alike (a referenced
+    list bank is declared and constrained whole). A pin with two port bits is
+    a build error in every toolchain."""
+    banks = resolved["board_pinmap"].get("pinBanks") or {}
+    out = OrderedDict()
+
+    def add(pin, bit):
+        if pin is not None:
+            out.setdefault(str(pin), []).append(bit)
+
+    for name in collect_referenced_banks(resolved):
+        bank = banks.get(name) or {}
+        if bank.get("virtual"):
+            continue
+        pins = bank.get("pins")
+        if isinstance(pins, str):
+            add(pins, name)
+        elif isinstance(pins, list):
+            for i, pin in enumerate(pins):
+                add(pin, "{}[{}]".format(name, i))
+        elif isinstance(pins, dict):
+            for sub, val in pins.items():
+                if not _sub_used(resolved, name, sub):
+                    continue
+                pname = "{}_{}".format(name, sub)
+                if isinstance(val, list):
+                    for i, pin in enumerate(val):
+                        add(pin, "{}[{}]".format(pname, i))
+                else:
+                    add(val, pname)
+    return out
+
+
+def _port_bits(resolved):
+    """Every referenced port (a bank, or a dict bank's sub-key) with its bits:
+    {(bank, sub): [(port bit, bind ref, pin)]}, in bit order."""
+    banks = resolved["board_pinmap"].get("pinBanks") or {}
+    out = OrderedDict()
+    for name in collect_referenced_banks(resolved):
+        bank = banks.get(name) or {}
+        if bank.get("virtual"):
+            continue
+        pins = bank.get("pins")
+        if isinstance(pins, str):
+            out[(name, None)] = [(name, name, pins)]
+        elif isinstance(pins, list):
+            out[(name, None)] = [("{0}[{1}]".format(name, i), "{0}[{1}]".format(name, i), pin)
+                                 for i, pin in enumerate(pins)]
+        elif isinstance(pins, dict):
+            for sub, val in pins.items():
+                if not _sub_used(resolved, name, sub):
+                    continue
+                if isinstance(val, list):
+                    out[(name, sub)] = [("{}_{}[{}]".format(name, sub, i), "{}.{}[{}]".format(name, sub, i), pin)
+                                        for i, pin in enumerate(val)]
+                else:
+                    out[(name, sub)] = [("{}_{}".format(name, sub), "{}.{}".format(name, sub), val)]
+    return out
+
+
+def fold_shared_pads(resolved):
+    """The resolved bundle with every bind moved onto the port bit that owns
+    its pad. A board multiplexes some pins between its parts (the PiSwords6
+    DS18B20's data line is LED 4's pin; a QMTech header carries the daughter
+    board's 7-seg). When both parts are in the rig, the top must have one port
+    bit and one constraint per pad: a port (a bank, or a dict bank's sub-key)
+    all of whose bound pads are carried, unbound, by other referenced ports is
+    folded into those ports' bits — `dq: onboard_temperature.dq` becomes
+    `dq: onboard_leds[3]` when the LED bank is attached without LED 4
+    (`pins: [0, 1, 2, 4, 5, 6, 7]`). Anything else that puts two port bits on
+    one pad is left for validate_configuration to report. An attach's own
+    binds stay under `bind_configured` (the editor draws the sensor on its
+    own part). No sharing: the bundle itself comes back."""
+    ports = _port_bits(resolved)
+    if len(ports) < 2:
+        return resolved
+    driven = set()
+    for attach in resolved["peripherals"]:
+        for ref in (attach.get("bind") or {}).values():
+            driven.update(_bind_bit_ports(resolved, ref))
+    for src in (resolved["configuration"].get("reset") or {}).get("sources") or []:
+        if isinstance(src, dict) and src.get("pin"):
+            driven.add(_bank_ref_to_port(str(src["pin"])))
+    homes = defaultdict(list)                        # pin -> [(port key, bit, ref)]
+    for key, bits in ports.items():
+        for bit, ref, pin in bits:
+            if pin is not None:
+                homes[str(pin)].append((key, bit, ref))
+
+    mapping = {}                                     # (bank, sub, idx) -> target ref | [target refs]
+    folded = set()
+    for key, bits in ports.items():
+        bound = [(bit, ref, pin) for bit, ref, pin in bits if bit in driven]
+        if not bound:
+            continue
+        targets = []
+        for bit, ref, pin in bound:
+            free = [(k, b, r) for k, b, r in homes.get(str(pin), [])
+                    if k != key and k not in folded and b not in driven]
+            if len(free) != 1:
+                targets = None
+                break
+            targets.append(free[0])
+        if not targets:
+            continue
+        folded.add(key)
+        whole = []
+        for (bit, ref, pin), (_k, t_bit, t_ref) in zip(bound, targets):
+            driven.add(t_bit)
+            mapping[_parse_bank_ref(ref)] = t_ref
+            whole.append(t_ref)
+        if len(bound) == len(bits):                  # the port bound whole
+            mapping[(key[0], key[1], None)] = whole if len(bits) > 1 else whole[0]
+    if not mapping:
+        return resolved
+
+    def fold_ref(ref):
+        parsed = _parse_bank_ref(ref) if isinstance(ref, str) else None
+        return mapping.get(parsed, ref) if parsed else ref
+
+    def fold_bind(bind):
+        out = OrderedDict()
+        for sig, ref in bind.items():
+            if isinstance(ref, list):
+                new = []
+                for el in ref:
+                    t = fold_ref(el)
+                    new.extend(t if isinstance(t, list) else [t])
+                out[sig] = new
+            else:
+                out[sig] = fold_ref(ref)
+        return out
+
+    out = dict(resolved)
+    out["peripherals"] = []
+    for attach in resolved["peripherals"]:
+        bind = attach.get("bind") or {}
+        new = fold_bind(bind)
+        if new != bind:
+            attach = dict(attach)
+            attach["bind_configured"] = bind
+            attach["bind"] = new
+        out["peripherals"].append(attach)
+    return out
+
+
+def _port_bank(banks, port_name):
+    """The pinmap bank a generated port belongs to: `onboard_leds` -> that
+    bank, `onboard_7seg_anodes` -> onboard_7seg."""
+    if port_name in banks:
+        return banks[port_name]
+    for name in sorted(banks, key=len, reverse=True):
+        if port_name.startswith(name + "_"):
+            return banks[name]
+    return {}
+
+
+# ---------------------------------------------------------------------------
 # Phase 2b: validation (the pin ledger)
 # ---------------------------------------------------------------------------
 
@@ -1185,6 +1348,7 @@ def validate_configuration(resolved, plans=None):
       * a clock provider with a known frequency exists
       * a bank marked `pull: up` is used only where its toolchain emits the pull-up
     """
+    resolved = fold_shared_pads(resolved)
     if plans is None:
         plans = build_capability_plans(resolved)
     pinmap = resolved["board_pinmap"]
@@ -1251,9 +1415,11 @@ def validate_configuration(resolved, plans=None):
             if sig not in bind and not sdef.get("optional"):
                 problems.append("{}: required signal {!r} is not bound".format(label, sig))
 
-    for pin, bits in sorted(pin_to_bits.items()):
+    for pin, bits in constrained_pads(resolved).items():
         if len(bits) > 1:
-            problems.append("pin {} is constrained for {} top ports: {}".format(pin, len(bits), ", ".join(sorted(bits))))
+            problems.append("pin {} is constrained for {} top ports: {} (parts sharing a pad: leave one out "
+                            "of the rig, or attach the bank without that pin, `pins:`)"
+                            .format(pin, len(bits), ", ".join(bits)))
     for bit, users in sorted(bit_to_attaches.items()):
         if len(users) < 2:
             continue
@@ -1300,6 +1466,7 @@ def emit_top_sv(resolved, strict=True, design=None):
     known; it decides which optional capabilities reach design_top). With `strict` (the default, what synthesize.py uses)
     any wiring problem found by validate_configuration() raises CodegenError
     instead of producing a top that silently drops or shorts signals."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     board = resolved["board"]
     pinmap = resolved["board_pinmap"]
@@ -1364,15 +1531,22 @@ def emit_top_sv(resolved, strict=True, design=None):
         out.append("")
 
     # ---- output pins no part drives (a 4-bit character LCD on an 8-bit data
-    # bank): held at 0, not left floating ----
+    # bank, an LED bank attached without one LED): held at their inactive
+    # level, not left floating ----
     driven = set()
     for attach in resolved["peripherals"]:
         for ref in (attach.get("bind") or {}).values():
             driven.update(_bind_bit_ports(resolved, ref))
-    idle = ["    assign {}[{}] = 1'b0;".format(pname, i) for pname, w, d in _ports
-            if d == "output" and w > 1 for i in range(w) if "{}[{}]".format(pname, i) not in driven]
+    banks = pinmap.get("pinBanks") or {}
+    idle = []
+    for pname, w, d in _ports:
+        if d != "output" or w < 2:
+            continue
+        level = "1'b1" if _port_bank(banks, pname).get("active") == "low" else "1'b0"
+        idle.extend("    assign {}[{}] = {};".format(pname, i, level)
+                    for i in range(w) if "{}[{}]".format(pname, i) not in driven)
     if idle:
-        out.append("    // ---- output pins no part drives: held at 0 ----")
+        out.append("    // ---- output pins no part drives: held inactive ----")
         out.extend(idle)
         out.append("")
 
@@ -1390,13 +1564,18 @@ def emit_top_sv(resolved, strict=True, design=None):
 
 
 def _attach_label(attach):
+    def first(bind):
+        sample = next(iter(bind.values()))
+        if isinstance(sample, list):
+            sample = sample[0] if sample else "?"
+        return sample
+
     bind = attach.get("bind") or {}
     if not bind:
         return attach["peripheral_id"]
-    sample = next(iter(bind.values()))
-    if isinstance(sample, list):
-        sample = sample[0] if sample else "?"
-    return "{} on {}".format(attach["peripheral_id"], sample)
+    if attach.get("bind_configured"):                # folded onto another bank's pad
+        return "{} on {}, the pad of {}".format(attach["peripheral_id"], first(attach["bind_configured"]), first(bind))
+    return "{} on {}".format(attach["peripheral_id"], first(bind))
 
 
 # ---- Context emission ---------------------------------------------------
@@ -2763,6 +2942,7 @@ def emit_xdc(resolved):
     """Emit a Vivado XDC constraint file mapping every top-level FPGA port to
     its physical PACKAGE_PIN + IOSTANDARD. Includes clock create_clock entries
     for any clock-providing peripheral with a known frequency."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
@@ -2883,6 +3063,7 @@ def emit_xdc_simple(resolved):
     """Like emit_xdc(), but emits the simple 4-arg `set_property NAME VAL
     [get_ports …]` form that nextpnr-xilinx (openxc7) accepts. Vivado's
     `-dict { … }` shorthand isn't supported by the open flow."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
@@ -2955,6 +3136,7 @@ def emit_ucf(resolved):
          paired with `NET "<net>" TNM_NET = "<id>";`.
 
     Targets ISE 14.7 — Spartan 3 / 6 and Virtex 4 / 5 / 6."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
@@ -3104,6 +3286,7 @@ def emit_qsf(resolved, part):
     """Emit a Quartus QSF settings file: family, device, top entity, plus
     per-pin set_location_assignment + IO_STANDARD lines for every referenced
     port. Mirrors emit_xdc's bank-walking logic."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     board = resolved["board"]
     pinmap = resolved["board_pinmap"]
@@ -3202,6 +3385,7 @@ def emit_sdc(resolved):
     Efinity. The trailing `derive_pll_clocks` / `derive_clock_uncertainty`
     are Quartus-specific Tcl commands the others reject — gated on the
     toolchain id."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     toolchain_id = (resolved.get("toolchain") or {}).get("Id", "")
     plans = build_capability_plans(resolved)
@@ -3257,6 +3441,7 @@ _GOWIN_IOTYPE = {
 def emit_cst(resolved):
     """Emit a Gowin CST physical constraints file. IO_LOC for pin numbers and
     IO_PORT for IO_TYPE / drive strength."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     # No IO_TYPE unless the pinmap states one (Gowin CSTs constrain
@@ -3382,6 +3567,7 @@ def emit_lpf(resolved):
         LOCATE COMP "<port>" SITE "<pin>";
         IOBUF PORT "<port>" IO_TYPE=<iotype>;
     Indexed bus elements use `port[idx]` syntax."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     default_iotype = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
@@ -3477,6 +3663,7 @@ def emit_peri_xml(resolved, device_def):
     physical ball/pad numbers.
 
     `device_def`: e.g. "T8F81" — same string used in board.fpga.part."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "3.3 V LVTTL / LVCMOS"
@@ -3612,6 +3799,7 @@ def emit_efx_project_xml(resolved, device_def, sv_files, sdc_path, peri_path,
                          project_name="unifpga_top"):
     """Emit Efinity's project XML wrapper. Lists every SV/V source, plus the
     SDC and peri XML, and the standard synth/pnr/bitstream parameters."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     family = (resolved["board"].get("PartFamily") or "Trion").strip()
     out = []
@@ -3669,6 +3857,7 @@ def emit_pcf(resolved):
     """Emit a PCF (Physical Constraint File) for nextpnr-ice40.
     Format: `set_io -nowarn <port> <pin>` per top-level port. Indexed bus
     elements use `port[idx]` syntax — same as XDC/QSF."""
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
 
@@ -3737,6 +3926,7 @@ def emit_microchip_pdc(resolved):
     rejects this dialect. Each vendor has its own constraint flavour even
     when the file extension is the same.
     """
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     board = resolved.get("board") or {}
@@ -3808,6 +3998,7 @@ def emit_pdc(resolved):
 
     Indexed bus elements use the same `port[idx]` convention as XDC/QSF.
     """
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
     board = resolved.get("board") or {}
@@ -3884,6 +4075,7 @@ def emit_ccf(resolved):
     keep the directive `Pin_*` (unlike the more generic NET) because the
     parser uses it for direction sanity-checking.
     """
+    resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     pinmap = resolved["board_pinmap"]
 

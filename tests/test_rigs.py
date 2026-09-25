@@ -335,6 +335,65 @@ def test_an_adc_reaches_a_design_that_asks_for_it():
     assert "ltc2308_scan" in tops["de10_nano"] and ".adc_mv(4096)" in tops["de10_nano"]
 
 
+def test_an_infrared_remote_reaches_a_design_that_asks_for_it():
+    """The OMDAZZ / RZRD receivers and the DE2-115's are NEC remote receivers;
+    designs/ir_remote_leds requires one: it fits them, not the DE2, whose IrDA
+    transceiver is another thing (kind irda)."""
+    from tools import codegen, studio
+    for rig in ("omdazz", "rzrd_pmod_mic3", "de2_115"):
+        assert studio.design_fit(config_init.resolve_configuration(rig))["ir_remote_leds"] == [], rig
+    assert any("ir_remote" in m for m in studio.design_fit(config_init.resolve_configuration("de2"))["ir_remote_leds"])
+    design = os.path.join(REPO, "designs", "ir_remote_leds", "design_top.sv")
+    top = codegen.emit_top_sv(config_init.resolve_configuration("de2_115"), design=design)
+    assert "ir_nec_receiver" in top and ".ir_command(cap_ir_remote_command)" in top
+
+
+def test_an_on_board_part_can_lend_a_pin_to_another():
+    """The PiSwords6 DS18B20's data line is LED 4's pin: the LED bank takes the
+    other seven (`pins:` on an on-board use, as for a gpio header), the design
+    gets 7 LEDs and the sensor; the setup derives back from the configuration."""
+    from tools import codegen, studio
+    setup = su.read_setups()["piswords6"]
+    leds = next(u for u in setup["use"] if u.get("onboard") == "leds")
+    assert leds["pins"] == [0, 1, 2, 4, 5, 6, 7]
+    cfg = config_init.read_configurations()["piswords6"]
+    bank = next(a for a in cfg["attach"] if a["peripheral"] == "led_bank")
+    assert bank["params"]["width"] == 7 and bank["bind"]["led"] == ["onboard_leds[{}]".format(k) for k in leds["pins"]]
+    r = config_init.resolve_configuration("piswords6")
+    assert codegen.validate_configuration(r) == [] and studio.design_fit(r)["temperature_leds"] == []
+    assert su.derive(cfg)["use"] == setup["use"]
+    # one pad, one port bit: the sensor folds onto the LED bank's bit 3, the
+    # top has one (bidirectional) LED port and pin 44 is constrained once
+    folded = codegen.fold_shared_pads(r)
+    sensor = next(a for a in folded["peripherals"] if a["peripheral_id"] == "ds18b20")
+    assert sensor["bind"] == {"dq": "onboard_leds[3]"} and sensor["bind_configured"] == {"dq": "onboard_temperature.dq"}
+    assert all(len(bits) == 1 for bits in codegen.constrained_pads(folded).values())
+    top = codegen.emit_top_sv(r)
+    assert "inout  [7:0] onboard_leds" in top and "onboard_temperature_dq" not in top
+    assert ".dq(onboard_leds[3])" in top and "assign onboard_leds[3]" not in top
+    assert "ds18b20 on onboard_temperature.dq, the pad of onboard_leds[3]" in top
+    assert codegen.emit_qsf(r, "EP4CE6E22C8").count("PIN_44 ") == 1
+    # without the sensor, LED 4 rests at its inactive level (an active-low bank: 1)
+    alone = dict(r, peripherals=[a for a in r["peripherals"] if a["peripheral_id"] != "ds18b20"])
+    assert "assign onboard_leds[3] = 1'b1;" in codegen.emit_top_sv(alone)
+    # the LED bank attached whole beside the sensor: two port bits on pin 44, reported
+    both = dict(r, peripherals=[dict(a) for a in r["peripherals"]])
+    for a in both["peripherals"]:
+        if a["peripheral_id"] == "led_bank":
+            a["bind"], a["params"] = {"led": "onboard_leds"}, dict(a["params"], width=8)
+    assert any("pin 44 is constrained for 2 top ports: onboard_leds[3], onboard_temperature_dq" in p
+               for p in codegen.validate_configuration(both))
+
+
+def test_every_rig_puts_one_port_bit_on_a_pad():
+    """The constraint emitters walk every referenced bank whole; no two port
+    bits of a rig may land on one pin (every toolchain rejects it)."""
+    from tools import codegen
+    for rig_id in config_init.read_configurations():
+        pads = codegen.constrained_pads(codegen.fold_shared_pads(config_init.resolve_configuration(rig_id)))
+        assert all(len(bits) == 1 for bits in pads.values()), (rig_id, {p: b for p, b in pads.items() if len(b) > 1})
+
+
 def test_no_pin_is_both_a_gpio_bit_and_another_parts():
     """In every rig, a pin the design reaches through its gpio port is no other
     part's (a microphone, a TM1638, a tie): one master per pad."""
