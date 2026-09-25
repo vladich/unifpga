@@ -477,11 +477,12 @@ def _iverilog_language_option(version_text):
     return "-g2012"
 
 
-def sim_sources(design_dir, component_exports=()):
+def sim_sources(design_dir, component_exports=(), *, component_sources=None):
     """Simulation view of the same design fileset used by synthesis."""
     rtl = os.path.join(REPO, "rtl")
     files = [os.path.join(rtl, "sim", "timescale.sv")]          # `timescale 1 ns / 1 ps first
-    generated = source_set.component_export_sources(component_exports)
+    generated = (source_set.component_export_sources(component_exports)
+                 if component_sources is None else list(component_sources))
     sources, simulation, _ = source_set.design_inputs(design_dir)
     selected = [p for p in sources if p.endswith((".sv", ".v"))] + simulation
     if {os.path.realpath(path) for path in generated} & {os.path.realpath(path) for path in selected}:
@@ -500,12 +501,13 @@ def sim_sources(design_dir, component_exports=()):
     return files
 
 
-def sim_command(design_dir, out_dir, lang="-g2012", *, component_exports=(), tb_top="tb"):
+def sim_command(design_dir, out_dir, lang="-g2012", *, component_exports=(),
+                component_sources=None, tb_top="tb"):
     # SIMULATION enables the simulation-only modules (fifo_monitor and
     # others sit behind `ifdef SIMULATION)
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_$]*", tb_top):
         raise CliError("simulation top must be a SystemVerilog module name")
-    files = sim_sources(design_dir, component_exports)
+    files = sim_sources(design_dir, component_exports, component_sources=component_sources)
     includes = [design_dir, os.path.join(design_dir, "cpu"),
                 os.path.join(REPO, "rtl", "peripherals"),
                 os.path.join(REPO, "rtl", "peripherals", "designs_common")]
@@ -555,12 +557,17 @@ def cmd_sim(args):
     version = subprocess.run(["iverilog", "-V"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              universal_newlines=True).stdout
     try:
-        cmd = sim_command(design_dir, out, _iverilog_language_option(version),
-                          component_exports=args.component_export, tb_top=args.tb_top)
+        language = _iverilog_language_option(version)
+        # Reject invalid inputs before creating an explicit output directory.
+        sim_command(design_dir, out, language,
+                    component_exports=args.component_export, tb_top=args.tb_top)
     except source_set.SourceSetError as exc:
         raise CliError(str(exc)) from exc
     os.makedirs(out, exist_ok=True)
     try:
+        staged = source_set.stage_component_exports(args.component_export, out)
+        cmd = sim_command(design_dir, out, language,
+                          component_sources=staged, tb_top=args.tb_top)
         source_set.stage_assets(design_dir, out)
     except source_set.SourceSetError as exc:
         raise CliError(str(exc)) from exc

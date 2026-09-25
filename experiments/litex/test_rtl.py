@@ -45,6 +45,10 @@ class GeneratedRTLTests(unittest.TestCase):
                     env=env)
                 self.assertEqual(simulation.returncode, 0, simulation.stdout + simulation.stderr)
                 self.assertIn(expected, simulation.stdout)
+                snapshots = list((scratch / top).glob("component-exports-*/0/litex_sync_fifo.v"))
+                self.assertEqual(len(snapshots), 1)
+                self.assertEqual(snapshots[0].read_bytes(), (export / "litex_sync_fifo.v").read_bytes())
+                self.assertIn(str(snapshots[0]), (scratch / top / "log.txt").read_text())
 
             design = scratch / "design"
             design.mkdir()
