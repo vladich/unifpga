@@ -68,7 +68,7 @@ Layout:
       attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.clk, data: onboard_ps2.data}}
     - id: ir
       label: Infrared receiver
-      device: {kind: ir, bank: onboard_ir}   # no peripheral model yet
+      attach: {peripheral: ir_receiver, bind: {ir: onboard_ir.ir}}
     - id: eeprom
       label: AT24C08 I2C EEPROM
       device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet

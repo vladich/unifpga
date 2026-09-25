@@ -22,6 +22,7 @@ Setup:
     - onboard: buzzer
     - onboard: ps2
     - onboard: temp_sensor
+    - onboard: ir
   extra:
     tie:
       onboard_char_lcd.d[6]: 0

@@ -21,6 +21,7 @@ Setup:
       params: {width: 36}
     - onboard: lcd
     - onboard: ps2
+    - onboard: irda
   extra:
     tie:
       onboard_vga.sync_n: 0

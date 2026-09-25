@@ -57,15 +57,15 @@ Layout:
     - id: ps2
       label: PS/2 connector
       attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.clk, data: onboard_ps2.data}}
-    - id: ir
-      label: Infrared receiver
-      device: {kind: ir, bank: onboard_ir}   # no peripheral model yet
-    - id: eeprom
-      label: AT24C08 I2C EEPROM
-      device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
     - id: temp_sensor
       label: LM75(A) I2C temperature sensor
       attach: {peripheral: i2c_temperature_sensor, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
+    - id: ir
+      label: Infrared receiver
+      attach: {peripheral: ir_receiver, bind: {ir: onboard_ir.ir}}
+    - id: eeprom
+      label: AT24C08 I2C EEPROM
+      device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
     - id: sdram
       label: HY57V641620 SDRAM (x16)
       device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet

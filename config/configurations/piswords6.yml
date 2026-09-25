@@ -22,9 +22,9 @@ Configuration:
         sw: onboard_switches
     - peripheral: led_bank
       params:
-        width: 8
+        width: 7
       bind:
-        led: onboard_leds
+        led: ["onboard_leds[0]", "onboard_leds[1]", "onboard_leds[2]", "onboard_leds[4]", "onboard_leds[5]", "onboard_leds[6]", "onboard_leds[7]"]
     - peripheral: seven_segment_8digit_shared
       params:
         digits: 8
@@ -73,6 +73,9 @@ Configuration:
     - peripheral: buzzer
       bind:
         pwm: onboard_buzzer.beep
+    - peripheral: ds18b20
+      bind:
+        dq: onboard_temperature.dq
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

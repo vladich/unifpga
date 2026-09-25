@@ -48,6 +48,9 @@ Layout:
     - id: lcd
       label: Character LCD module (16x2)
       attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
+    - id: ps2
+      label: PS/2 port (primary)
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: clk2_50mhz
       label: CLOCK2_50 (50 MHz)
       device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
@@ -66,9 +69,6 @@ Layout:
     - id: ex_io
       label: Extended I/O header (EX_IO, JP4 2x7)
       device: {kind: header, bank: ex_io}   # no peripheral model yet
-    - id: ps2
-      label: PS/2 port (primary)
-      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
     - id: ps2_secondary
       label: PS/2 port (secondary, via Y-cable)
       device: {kind: ps2, bank: onboard_ps2_secondary}   # no peripheral model yet
@@ -89,7 +89,7 @@ Layout:
       device: {kind: usb, bank: onboard_usb}   # no peripheral model yet
     - id: irda
       label: IR receiver
-      device: {kind: ir, bank: onboard_irda}   # no peripheral model yet
+      attach: {peripheral: ir_receiver, bind: {ir: onboard_irda.IRDA_RXD}}
     - id: sram
       label: SRAM (2 MB, 16-bit)
       device: {kind: other, bank: onboard_sram}   # no peripheral model yet

@@ -87,7 +87,7 @@ Board:
       device: {"name": "USB host/device (ISP1362)", "kind": "usb"}
       pins: {"OTG_ADDR": ["K7", "F2"], "OTG_DATA": ["F4", "D2", "D1", "F7", "J5", "J8", "J7", "H6", "E2", "E1", "K6", "K5", "G4", "G3", "J6", "K8"], "OTG_CS_N": "F1", "OTG_RD_N": "G2", "OTG_WR_N": "G1", "OTG_RST_N": "G5", "OTG_INT": ["B3", "C3"], "OTG_DACK0_N": "C2", "OTG_DACK1_N": "B2", "OTG_DREQ": ["F6", "E5"], "OTG_FSPEED": "F3", "OTG_LSPEED": "G6"}
     onboard_irda:   # IrDA transceiver
-      device: {"name": "IrDA transceiver", "kind": "ir"}
+      device: {"name": "IrDA transceiver", "kind": "irda"}
       pins: {"IRDA_TXD": "AE24", "IRDA_RXD": "AE25"}
     onboard_sdram:   # SDRAM (8 MB, 16-bit)
       device: {"name": "SDRAM (8 MB, 16-bit)", "kind": "sdram"}

@@ -77,6 +77,9 @@ Configuration:
       bind:
         clk: onboard_ps2.clk
         data: onboard_ps2.data
+    - peripheral: ir_receiver
+      bind:
+        ir: onboard_ir.ir
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

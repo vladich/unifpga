@@ -47,7 +47,7 @@ Layout:
       device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
     - id: temperature
       label: DS18B20 temperature sensor U5
-      device: {kind: temperature, bank: onboard_temperature}   # no peripheral model yet
+      attach: {peripheral: ds18b20, bind: {dq: onboard_temperature.dq}}
     - id: sdram
       label: SDRAM HY57V641620 U2 (4M x16)
       device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
