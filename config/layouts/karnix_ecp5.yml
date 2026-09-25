@@ -53,7 +53,7 @@ Layout:
       device: {kind: hdmi_tx, bank: onboard_hdmi}   # no peripheral model yet
     - id: adc
       label: U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
-      device: {kind: other, bank: onboard_adc}   # no peripheral model yet
+      attach: {peripheral: adc128s022, bind: {cs_n: onboard_adc.cs_n, sclk: onboard_adc.sclk, din: onboard_adc.mosi, dout: onboard_adc.miso}}
     - id: dac
       label: U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
       device: {kind: audio, bank: onboard_dac}   # no peripheral model yet

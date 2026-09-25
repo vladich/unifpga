@@ -61,3 +61,9 @@ Configuration:
         bclk: "gpio[8]"
         lrclk: "gpio[10]"
         sdata: "gpio[9]"
+    - peripheral: adc128s022
+      bind:
+        cs_n: onboard_adc.cs_n
+        sclk: onboard_adc.sclk
+        din: onboard_adc.mosi
+        dout: onboard_adc.miso

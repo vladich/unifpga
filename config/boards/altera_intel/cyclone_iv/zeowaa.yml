@@ -46,7 +46,7 @@ Board:
       device: {"name": "USER oscillator socket (CLK_USER)", "kind": "clock"}
       pins: {"clk": "24"}
     onboard_ps2:   # PS/2 connector
-      device: {"name": "PS/2 connector", "kind": "other"}
+      device: {"name": "PS/2 connector", "kind": "ps2"}
       pins: {"data": "10", "clk": "11"}
     onboard_lcd:   # LCD1602 / LCD12864 socket (20-pin)
       device: {"name": "LCD1602 / LCD12864 socket (20-pin)", "kind": "lcd"}

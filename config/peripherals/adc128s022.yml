@@ -1,4 +1,5 @@
-# A TI ADC128S022 A/D converter (8 channels, 12 bits; the DE0-Nano's):
+# A TI ADC128S022 A/D converter (8 channels, 12 bits; the DE0-Nano's), or its
+# faster sibling ADC128S052 (the Karnix's) with the same serial frame:
 # rtl/peripherals/adc128s022_scan.sv converts its channels in turn. Its full
 # scale is its supply VA: `full_scale_mv` (3.3 V on the DE0-Nano, whose manual's
 # ADC demo reads 0 - 3.3 V; a board's model_params can say otherwise).
@@ -12,7 +13,7 @@ Peripheral:
       default: 3300
   # the on-board devices it models: a board inventory's ADC with these pins
   models: {kind: adc, pins: {cs_n: [ADC_CS_N, cs_n], sclk: [ADC_SCLK, sclk],
-                             din: [ADC_SADDR, din], dout: [ADC_SDAT, dout]}}
+                             din: [ADC_SADDR, din, mosi], dout: [ADC_SDAT, dout, miso]}}
   signals:
     - { name: cs_n, type: scalar, direction: output, comment: "Chip select, active low" }
     - { name: sclk, type: scalar, direction: output }

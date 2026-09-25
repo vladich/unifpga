@@ -55,7 +55,7 @@ Board:
       device: {"name": "J3 HDMI connector (direct from FPGA, series capacitors)", "kind": "hdmi_tx"}
       pins: {"d0_p": "A11", "d0_n": "A12", "d1_p": "D11", "d1_n": "E11", "d2_p": "B11", "d2_n": "C11", "clk_p": "B12", "clk_n": "C12", "scl": "E9", "sda": "D9", "cec": "C9", "hpd": "B8"}
     onboard_adc:   # U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
-      device: {"name": "U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)", "kind": "other"}
+      device: {"name": "U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)", "kind": "adc"}
       pins: {"sclk": "F15", "cs_n": "F16", "mosi": "E16", "miso": "G16"}
     onboard_dac:   # U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
       device: {"name": "U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)", "kind": "audio"}

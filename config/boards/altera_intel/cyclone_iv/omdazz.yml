@@ -54,7 +54,7 @@ Board:
       shares: ["gpio_p1"]   # the board multiplexes these pins
       pins: {"beep": "110"}
     onboard_ps2:   # PS/2 connector
-      device: {"name": "PS/2 connector", "kind": "other"}
+      device: {"name": "PS/2 connector", "kind": "ps2"}
       shares: ["gpio_p1"]   # the board multiplexes these pins
       pins: {"clk": "119", "data": "120"}
     onboard_ir:   # Infrared receiver

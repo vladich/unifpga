@@ -21,6 +21,7 @@ Setup:
     - gpio: gpio
       params: {width: 19}
     - onboard: buzzer
+    - onboard: ps2
   extra:
     tie:
       gpio[4]: 0

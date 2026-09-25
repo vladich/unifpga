@@ -53,7 +53,7 @@ Layout:
       device: {kind: clock, bank: onboard_clk_user}   # no peripheral model yet
     - id: ps2
       label: PS/2 connector
-      device: {kind: other, bank: onboard_ps2}   # no peripheral model yet
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.clk, data: onboard_ps2.data}}
     - id: lcd
       label: LCD1602 / LCD12864 socket (20-pin)
       attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.rs, e: onboard_lcd.en, d: ['onboard_lcd.d[4]', 'onboard_lcd.d[5]', 'onboard_lcd.d[6]', 'onboard_lcd.d[7]'], rw: onboard_lcd.rw}}

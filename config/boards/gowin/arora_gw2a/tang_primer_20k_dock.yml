@@ -123,7 +123,7 @@ Board:
       shares: ["gpio_1", "onboard_ethernet", "onboard_touch"]   # the board multiplexes these pins
       pins: {"d": ["T12", "T11", "P11", "R11", "M15", "M14", "J16", "J14"], "pclk": "F13", "xclk": "G12", "vsync": "G15", "hsync": "G14", "rst_n": "L13", "pwdn": "C10", "scl": "F14", "sda": "F16"}
     onboard_ethernet:   # Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)
-      device: {"name": "Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)", "kind": "other"}
+      device: {"name": "Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)", "kind": "ethernet"}
       iostandard: "LVCMOS33"
       shares: ["onboard_camera", "onboard_touch", "onboard_usb_ulpi"]   # the board multiplexes these pins
       pins: {"ref_clk": "A9", "tx_en": "E16", "txd": ["D16", "E14"], "rxd": ["F15", "C9"], "crs_dv": "M6", "rx_er": "L8", "mdc": "F14", "mdio": "F16", "rst_n": "F10"}

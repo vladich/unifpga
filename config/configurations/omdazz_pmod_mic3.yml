@@ -73,6 +73,10 @@ Configuration:
       bind:
         scl: onboard_temp_sensor.scl
         sda: onboard_temp_sensor.sda
+    - peripheral: ps2_keyboard
+      bind:
+        clk: onboard_ps2.clk
+        data: onboard_ps2.data
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:
