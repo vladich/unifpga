@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:peripheral",
+  "title": "Peripheral",
+  "description": "config/peripherals/<id>.yml: a driver contract — the pins a piece of hardware has, the parameters that size it, the capabilities it provides to the design, the clocks it needs and the RTL that drives it.",
+  "type": "object",
+  "required": ["Peripheral"],
+  "additionalProperties": false,
+  "properties": {
+    "Peripheral": { "$ref": "#/$defs/peripheral" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+    "name": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
+    "sv_name": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+    "param_ref": { "description": "$<parameter> of this peripheral", "type": "string", "pattern": "^\\$[a-z_][a-z0-9_]*$" },
+    "ref": {
+      "description": "What a driver port or a pin connects to: pin.<signal>, capability.<capability>.<signal>, context.<clk|rst|clk_mhz|rst_n|diff_buf>, clock.<name>[.mhz], const.<literal> or $<parameter>; an index or slice may follow, a leading ~ inverts",
+      "type": "string",
+      "pattern": "^(~ ?)?((pin|capability|context|clock)\\.[A-Za-z_][A-Za-z0-9_.]*(\\[[0-9]+(:[0-9]+)?\\])?|const\\.[^\\s]+|\\$[a-z_][a-z0-9_]*)$"
+    },
+    "capability_signal": {
+      "description": "<capability>.<signal>",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_]*\\.[a-z_][a-z0-9_]*$"
+    },
+    "literal": { "type": ["string", "integer", "number", "boolean"] },
+    "signal": {
+      "type": "object",
+      "required": ["name", "type", "direction"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "type": { "enum": ["scalar", "bus"] },
+        "direction": { "description": "Seen from the FPGA", "enum": ["input", "output", "inout"] },
+        "width": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "$ref": "#/$defs/param_ref" }] },
+        "optional": { "description": "A board may leave it unwired", "type": "boolean" },
+        "comment": { "type": "string" }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["int", "float", "string", "bool", "enum", "list"] },
+        "default": { "type": ["string", "integer", "number", "boolean", "array", "null"] },
+        "required": { "type": "boolean" },
+        "values": { "description": "The values of an enum", "type": "array", "minItems": 1 },
+        "description": { "type": "string" },
+        "from_width": { "description": "Its value is the width of this bus signal as wired", "$ref": "#/$defs/name" }
+      }
+    },
+    "provides": {
+      "type": "object",
+      "required": ["capability"],
+      "additionalProperties": false,
+      "properties": {
+        "capability": { "$ref": "#/$defs/id" },
+        "params": {
+          "description": "The capability's parameters from this peripheral's: a literal or $<parameter>",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "$ref": "#/$defs/literal" }
+        },
+        "signal_map": {
+          "description": "Capability signal -> this peripheral's signal when the names differ",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "$ref": "#/$defs/name" }
+        },
+        "when": { "description": "Provided only when this boolean parameter is set", "$ref": "#/$defs/param_ref" }
+      }
+    },
+    "port_value": {
+      "oneOf": [
+        { "$ref": "#/$defs/ref" },
+        { "type": "null" },
+        { "description": "A concatenation, first element the MSB", "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/ref" } }
+      ]
+    },
+    "driver": {
+      "description": "The RTL module that drives the pins, or null when the pins are wired straight to the design",
+      "type": "object",
+      "required": ["module", "file", "port_map"],
+      "additionalProperties": false,
+      "properties": {
+        "module": { "$ref": "#/$defs/sv_name" },
+        "file": { "type": "string", "pattern": "^rtl/.+\\.s?v$" },
+        "files": { "description": "Other files the module needs", "type": "array", "items": { "type": "string", "pattern": "^rtl/.+\\.s?vh?$" } },
+        "parameters": {
+          "description": "Module parameter -> a literal, $<parameter>, context.clk_mhz or clock.<name>.mhz",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/sv_name" },
+          "additionalProperties": { "oneOf": [{ "type": ["integer", "number", "boolean"] }, { "$ref": "#/$defs/ref" }] }
+        },
+        "port_map": {
+          "description": "Module port -> what it connects to (null: left open)",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/sv_name" },
+          "additionalProperties": { "$ref": "#/$defs/port_value" }
+        },
+        "port_format": {
+          "description": "Module port -> the number format of the capability signal it carries (codegen converts it to the capability's)",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/sv_name" },
+          "additionalProperties": {
+            "type": "object",
+            "required": ["width", "encoding"],
+            "additionalProperties": false,
+            "properties": {
+              "width": { "type": "integer", "minimum": 1 },
+              "encoding": { "enum": ["offset_binary", "signed", "unsigned"] }
+            }
+          }
+        }
+      }
+    },
+    "clock": {
+      "description": "A clock the driver needs, from the board clock through a PLL (mhz) or divided from another of its clocks (from / divide)",
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "oneOf": [{ "required": ["mhz"] }, { "required": ["from", "divide"] }],
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "mhz": { "oneOf": [{ "type": "number", "exclusiveMinimum": 0 }, { "$ref": "#/$defs/param_ref" }] },
+        "tolerance_pct": { "type": "number", "minimum": 0 },
+        "from": { "$ref": "#/$defs/name" },
+        "divide": { "type": "integer", "minimum": 1 },
+        "aligned": { "description": "Phase-aligned with the clock it divides", "type": "boolean" },
+        "when": {
+          "description": "Needed only when these parameters have these values",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "$ref": "#/$defs/literal" }
+        }
+      }
+    },
+    "derivation": {
+      "description": "A parameter computed from others: one of sum, multiply, divide over parameter names and literals",
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "sum": { "type": "array", "minItems": 1, "items": { "type": ["string", "integer", "number"] } },
+        "multiply": { "type": "array", "minItems": 1, "items": { "type": ["string", "integer", "number"] } },
+        "divide": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": ["string", "integer", "number"] } }
+      }
+    },
+    "peripheral": {
+      "type": "object",
+      "required": ["id", "description", "signals", "provides", "driver"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "description": { "type": "string" },
+        "role": { "description": "tie: the peripheral a rig's tied nets become", "enum": ["tie"] },
+        "parameters": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "$ref": "#/$defs/parameter" }
+        },
+        "derive": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "$ref": "#/$defs/derivation" }
+        },
+        "signals": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/signal" } },
+        "provides": { "type": "array", "items": { "$ref": "#/$defs/provides" } },
+        "driver": { "oneOf": [{ "$ref": "#/$defs/driver" }, { "type": "null" }] },
+        "pin_assigns": {
+          "description": "pin.<signal> or capability.<capability>.<signal> -> what drives it besides the driver",
+          "type": "object",
+          "propertyNames": { "pattern": "^(pin\\.[a-z_][a-z0-9_]*(\\[[0-9]+\\])?|capability\\.[a-z0-9][a-z0-9_]*\\.[a-z_][a-z0-9_]*)$" },
+          "additionalProperties": { "$ref": "#/$defs/ref" }
+        },
+        "clocks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/clock" } },
+        "serves": {
+          "description": "Signal -> the capability signals it carries (tools/trace.py), one list per pin of a bus when they differ",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "$ref": "#/$defs/capability_signal" },
+                { "type": "array", "items": { "$ref": "#/$defs/capability_signal" } }
+              ]
+            }
+          }
+        },
+        "pin_fit": {
+          "description": "Signal -> which end of a wider bus a narrower wiring keeps",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/name" },
+          "additionalProperties": { "enum": ["msb", "lsb"] }
+        },
+        "models": {
+          "description": "Deprecated: the layout drafter's alias table for the on-board devices this peripheral drives; goes when devices name their peripheral",
+          "type": "object"
+        }
+      }
+    }
+  }
+}

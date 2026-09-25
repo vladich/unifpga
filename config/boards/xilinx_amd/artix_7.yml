@@ -49,6 +49,16 @@ Boards:
       - usb_powered
     BoardURL: https://shop.alchitry.com/products/alchitry-pt
     Status: active
+  - Id: alinx_ax7035
+    BoardName: Alinx AX7035
+    ProductName: "AX7035 (ALINX Artix-7 FPGA development board, the AX7035B's predecessor)"
+    BoardProducer: alinx
+    Chip: XC7A35T-2FGG484I
+    Bridges:
+      - jtag
+    Programmer: vivado_hw
+    Status: eol
+    Notes: "Catalogued from its pinmap (the AX7035 user manual); the product page now lists only the AX7035B."
   - Id: alinx_ax7035b
     BoardName: Alinx AX7035B
     ProductName: "AX7035B (ALINX Artix-7 FPGA development board)"

@@ -1,9 +1,8 @@
 """
-YAML smoke tests. These catch the class of bugs found while cleaning up the
-repo: mismatched PartFamily strings between boards and the chip registry,
-fake chip families, missing-comma typos that silently merge two pin names
-into one, toolchain ids that don't resolve to a Python module,
-configurations that reference unknown peripherals, etc.
+YAML smoke tests beyond the schema and relationship check (tools/check.py,
+tests/test_check.py owns the shapes and the references): pin tokens, the
+toolchain driver modules, the configurations resolving and codegen running
+for every rig, the design requirements parser.
 
 Run with:  python -m pytest tests/
 Or stand-alone (pytest not required) via the script at the bottom.
@@ -36,8 +35,6 @@ _PIN_TOKEN = re.compile(r"^[A-Za-z]+\d*$|^\d+$|^[A-Za-z][A-Za-z0-9_]*$")
 
 def _boards():        return config_init.read_boards_catalog()
 def _toolchains():    return config_init.read_toolchains()
-def _chips():         return config_init.read_chips()
-def _programmers():   return config_init.read_programmers()
 def _peripherals():   return config_init.read_peripherals()
 def _capabilities():  return config_init.read_capabilities()
 def _configurations(): return config_init.read_configurations()
@@ -47,41 +44,6 @@ def _configurations(): return config_init.read_configurations()
 # Capability catalog
 # ---------------------------------------------------------------------------
 
-_VALID_DIRECTIONS = {"hw_to_user", "user_to_hw", "inout"}
-_VALID_AGGREGATION = {"concat", "exclusive", "or", "mux", "broadcast"}
-_VALID_SIGNAL_TYPES = {"scalar", "bus"}
-
-
-def test_capabilities_have_required_fields():
-    caps = _capabilities()
-    assert caps, "No capabilities under config/capabilities/"
-    for cap_id, cap in caps.items():
-        assert "id" in cap, "Capability {c}: missing id".format(c=cap_id)
-        assert "signals" in cap, "Capability {c}: missing signals".format(c=cap_id)
-        assert "aggregation" in cap, "Capability {c}: missing aggregation".format(c=cap_id)
-        assert cap["aggregation"] in _VALID_AGGREGATION, (
-            "Capability {c}: aggregation {a!r} is not one of {v}"
-            .format(c=cap_id, a=cap["aggregation"], v=sorted(_VALID_AGGREGATION))
-        )
-
-
-def test_capability_signals_well_formed():
-    for cap_id, cap in _capabilities().items():
-        for sig in cap["signals"]:
-            assert "name" in sig, "Capability {c}: signal without name".format(c=cap_id)
-            assert "type" in sig, ("Capability {c}: signal {s} has no type"
-                                    .format(c=cap_id, s=sig.get("name")))
-            assert sig["type"] in _VALID_SIGNAL_TYPES, (
-                "Capability {c}.{s}: type {t!r} is not one of {v}"
-                .format(c=cap_id, s=sig["name"], t=sig["type"], v=sorted(_VALID_SIGNAL_TYPES))
-            )
-            assert "direction" in sig, ("Capability {c}: signal {s} has no direction"
-                                         .format(c=cap_id, s=sig["name"]))
-            assert sig["direction"] in _VALID_DIRECTIONS, (
-                "Capability {c}.{s}: direction {d!r} is not one of {v}"
-                .format(c=cap_id, s=sig["name"], d=sig["direction"], v=sorted(_VALID_DIRECTIONS))
-            )
-
 
 def test_boards_have_required_fields():
     boards = _boards()
@@ -89,72 +51,6 @@ def test_boards_have_required_fields():
     for board_id, board in boards.items():
         missing = required - set(board.keys())
         assert not missing, "Board {b} missing fields: {m}".format(b=board_id, m=missing)
-
-
-def test_every_board_chip_resolves():
-    """Every board's Chip / Chips entries must exist in the chip registry."""
-    boards = _boards()
-    chips = _chips()
-    for board_id, board in boards.items():
-        chip_refs = []
-        if board.get("Chip"):
-            chip_refs.append(board["Chip"])
-        elif board.get("Chips"):
-            for entry in board["Chips"]:
-                if isinstance(entry, dict):
-                    chip_refs.append(entry.get("Id"))
-                else:
-                    chip_refs.append(entry)
-        for cid in chip_refs:
-            assert cid in chips, "Board {b}: Chip {c!r} not in chip registry".format(b=board_id, c=cid)
-
-
-def test_every_chip_toolchain_is_declared():
-    """Every Toolchains entry in the chip registry must reference a known toolchain id."""
-    chips = _chips()
-    toolchains = _toolchains()
-    for chip_id, chip in chips.items():
-        for ref in chip.get("Toolchains", []):
-            tc_id, _ = config_init.parse_versioned_ref(ref)
-            assert tc_id in toolchains, (
-                "Chip {c}: Toolchains references unknown id {t!r}".format(c=chip_id, t=tc_id)
-            )
-
-
-def test_every_board_programmer_is_declared():
-    """Every board's `Programmer:` field references a known programmer id."""
-    boards = _boards()
-    programmers = _programmers()
-    for board_id, board in boards.items():
-        p = board.get("Programmer")
-        if p is not None:
-            assert p in programmers, \
-                "Board {b}: Programmer {p!r} not in programmers.yml".format(b=board_id, p=p)
-        for ref in board.get("ExtraProgrammers") or []:
-            pid, _ = config_init.parse_versioned_ref(ref)
-            assert pid in programmers, \
-                "Board {b}: ExtraProgrammers entry {p!r} not in programmers.yml".format(b=board_id, p=pid)
-
-
-def test_every_board_producer_is_declared():
-    """Every board's `BoardProducer:` field references a known producer Id."""
-    boards = _boards()
-    producers = config_init.read_board_producers()
-    name_idx = config_init.read_board_producers_name_index()
-    for board_id, board in boards.items():
-        bp = board.get("BoardProducer")
-        if bp is None:
-            continue
-        # Must be a registered Id (after Phase 2 slug migration). The name
-        # index also accepts legacy Name / AKA references in case a future
-        # board is added with the display name by mistake — but the strict
-        # check is membership in `producers` keyed by Id.
-        assert bp in producers, (
-            "Board {b}: BoardProducer {bp!r} is not a registered Id in "
-            "board_producers.yml (resolves via AKA: {via!r})".format(
-                b=board_id, bp=bp, via=name_idx.get(bp)
-            )
-        )
 
 
 def test_board_features_registry_loads():
@@ -170,16 +66,6 @@ def test_board_features_registry_loads():
         assert f["Category"] in valid_categories, \
             "Feature {f}: Category {c!r} not in {v}".format(f=fid, c=f["Category"], v=sorted(valid_categories))
         assert "Description" in f, "Feature {f}: missing Description".format(f=fid)
-
-
-def test_all_board_feature_tokens_are_registered():
-    """Soft check: every Features: token on every board is a registered Id.
-    Phase 3 ships an empty Features: state, so this test is currently
-    enforcing nothing — but as features get populated in subsequent phases,
-    it catches typos and unregistered tokens."""
-    unknown = config_init.validate_board_features()
-    assert not unknown, \
-        "Unregistered Features tokens: {}".format(unknown[:10])
 
 
 def test_mezzanines_registry_validates():
@@ -300,31 +186,6 @@ def _assert_pin_token(board_id, bank, pin_value):
 # Peripheral catalog
 # ---------------------------------------------------------------------------
 
-def test_peripherals_have_required_fields():
-    for pid, p in _peripherals().items():
-        assert "id" in p, "Peripheral {p}: missing id".format(p=pid)
-        assert "signals" in p, "Peripheral {p}: missing signals".format(p=pid)
-        for sig in p["signals"]:
-            assert "name" in sig, "Peripheral {p}: signal without a name".format(p=pid)
-            assert "type" in sig, ("Peripheral {p}: signal {s} has no type"
-                                   .format(p=pid, s=sig.get("name")))
-        # New schema: provides + driver are required (provides may be []).
-        assert "provides" in p, "Peripheral {p}: missing 'provides' (use [] if none)".format(p=pid)
-        assert "driver" in p,   "Peripheral {p}: missing 'driver' (use null for passthrough)".format(p=pid)
-
-
-def test_every_peripheral_provides_known_capabilities():
-    caps = _capabilities()
-    for pid, p in _peripherals().items():
-        for entry in p.get("provides") or []:
-            cap_id = entry.get("capability")
-            assert cap_id in caps, (
-                "Peripheral {p}: provides unknown capability {c!r}".format(p=pid, c=cap_id)
-            )
-
-
-_VALID_CONTEXT_REFS = {"clk", "rst", "rst_n", "clk_mhz"}
-
 
 def test_peripheral_drivers_reference_existing_files():
     for pid, p in _peripherals().items():
@@ -346,98 +207,6 @@ def test_peripheral_drivers_reference_existing_files():
             "Peripheral {p}: file {f} does not declare module '{m}'"
             .format(p=pid, f=drv["file"], m=drv["module"])
         )
-
-
-def _validate_ref(pid, where, ref, pin_names, caps, provided, peripheral=None):
-    """Validate a single port_map / pin_assigns reference. Allows leading '~'
-    (combinational invert) and indexed expressions like pin.d_p[0]."""
-    assert isinstance(ref, str), (
-        "Peripheral {p}: {w} is not a string ({r!r})"
-        .format(p=pid, w=where, r=ref)
-    )
-    expr = ref.lstrip("~ ").strip()
-    # Strip a single trailing index like [0..N].
-    expr_root = expr.split("[", 1)[0]
-    if expr_root.startswith("pin."):
-        pin = expr_root[len("pin."):]
-        assert pin in pin_names, (
-            "Peripheral {p}: {w} references pin '{pin}' not in signals"
-            .format(p=pid, w=where, pin=pin)
-        )
-    elif expr_root.startswith("capability."):
-        rest = expr_root[len("capability."):]
-        cap_id = rest.split(".", 1)[0]
-        assert cap_id in caps, (
-            "Peripheral {p}: {w} references unknown capability '{c}'"
-            .format(p=pid, w=where, c=cap_id)
-        )
-        assert cap_id in provided, (
-            "Peripheral {p}: {w} uses capability '{c}' but the peripheral does "
-            "not declare it under provides:".format(p=pid, w=where, c=cap_id)
-        )
-    elif expr_root.startswith("context."):
-        ctx = expr_root[len("context."):]
-        assert ctx in _VALID_CONTEXT_REFS, (
-            "Peripheral {p}: {w} references unknown context '{c}'"
-            .format(p=pid, w=where, c=ctx)
-        )
-    elif expr_root.startswith("const."):
-        pass
-    elif expr_root.startswith("clock."):
-        # PLL clock the peripheral declares under `clocks:` (P3.1)
-        name = expr_root[len("clock."):]
-        declared = {c["name"] for c in ((peripheral or {}).get("clocks") or [])}
-        assert name in declared, (
-            "Peripheral {p}: {w} references clock '{c}' not declared under clocks:"
-            .format(p=pid, w=where, c=name)
-        )
-    elif expr_root.startswith("$"):
-        # peripheral-instance parameter (`pin.bl: $bl`)
-        assert expr_root[1:] in ((peripheral or {}).get("parameters") or {}), (
-            "Peripheral {p}: {w} references undeclared parameter {r}".format(p=pid, w=where, r=ref)
-        )
-    elif expr_root == "":
-        # A blank RHS in port_map means "leave port unconnected; codegen handles
-        # via pin_assigns or with a wire". Allow it.
-        pass
-    else:
-        raise AssertionError(
-            "Peripheral {p}: {w} = {r!r} does not start with pin./capability./context./const./clock."
-            .format(p=pid, w=where, r=ref)
-        )
-
-
-def test_peripheral_port_map_references_well_formed():
-    caps = _capabilities()
-    for pid, p in _peripherals().items():
-        drv = p.get("driver")
-        if drv is None:
-            continue
-        pin_names = {sig["name"] for sig in p.get("signals", [])}
-        provided = {entry["capability"] for entry in p.get("provides") or []}
-        for port, ref in (drv.get("port_map") or {}).items():
-            if ref is None:
-                continue   # port intentionally unconnected
-            # A list renders as a concatenation (first element = MSB); every
-            # element must be a valid reference on its own.
-            for one in (ref if isinstance(ref, list) else [ref]):
-                _validate_ref(pid, "port_map[{}]".format(port), one, pin_names, caps, provided, p)
-
-
-def test_peripheral_pin_assigns_well_formed():
-    """pin_assigns are direct combinational connections that bypass the driver
-    instance — RHS must use the same vocabulary as port_map."""
-    caps = _capabilities()
-    for pid, p in _peripherals().items():
-        pa = p.get("pin_assigns") or {}
-        if not pa:
-            continue
-        pin_names = {sig["name"] for sig in p.get("signals", [])}
-        provided = {entry["capability"] for entry in p.get("provides") or []}
-        for lhs, rhs in pa.items():
-            # LHS must be a valid pin / capability sink.
-            _validate_ref(pid, "pin_assigns[{}].lhs".format(lhs), lhs, pin_names, caps, provided, p)
-            _validate_ref(pid, "pin_assigns[{}].rhs".format(lhs), rhs, pin_names, caps, provided, p)
 
 
 # ---------------------------------------------------------------------------

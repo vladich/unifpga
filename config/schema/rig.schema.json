@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:rig",
+  "title": "Rig",
+  "description": "config/setups/<id>.yml: one system, a board with what is on it and how the design sees it. The build expands it into the rig's configuration (./unifpga setup show <id>); nothing else is stored for a rig.",
+  "type": "object",
+  "required": ["Setup"],
+  "additionalProperties": false,
+  "properties": {
+    "Setup": { "$ref": "#/$defs/rig" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+    "name": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
+    "bank_ref": {
+      "description": "A pin or pins of the board's pinmap: bank, bank[i], bank.sub or bank.sub[i]",
+      "type": "string",
+      "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)?(\\[[0-9]+\\])?$"
+    },
+    "wire": {
+      "description": "A connector pin of the board's layout: <connector>.<pin> (a physical pin number or name, or [i] the i-th pin of a header whose numbering is not verified)",
+      "type": "string",
+      "pattern": "^[a-z0-9_]+\\.(\\[[0-9]+\\]|[A-Za-z0-9_/]+)$"
+    },
+    "param_value": {
+      "description": "A peripheral parameter as the rig sets it; null removes a value a broader setting gave",
+      "type": ["string", "integer", "number", "boolean", "array", "null"]
+    },
+    "params": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/name" },
+      "additionalProperties": { "$ref": "#/$defs/param_value" }
+    },
+    "bind": {
+      "description": "Peripheral signal -> board pins, overriding the part's own wiring; null leaves the signal unconnected",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/name" },
+      "additionalProperties": {
+        "oneOf": [
+          { "$ref": "#/$defs/bank_ref" },
+          { "type": "array", "items": { "$ref": "#/$defs/bank_ref" } },
+          { "type": "null" }
+        ]
+      }
+    },
+    "design_bits": {
+      "description": "Capability -> the design's bit each pin of this use is (null: a pin the design does not see)",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "use_overrides": {
+      "description": "What a use may change for one toolchain",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "variant": { "type": "string" },
+        "plug": { "$ref": "#/$defs/plug" },
+        "wires": { "$ref": "#/$defs/wires" },
+        "pins": { "$ref": "#/$defs/pins" },
+        "params": { "$ref": "#/$defs/params" },
+        "bind": { "$ref": "#/$defs/bind" },
+        "design_bits": { "$ref": "#/$defs/design_bits" }
+      }
+    },
+    "plug": {
+      "description": "Where a module plugs in: a connector of the layout and, on a double header, its row",
+      "type": "object",
+      "required": ["connector"],
+      "additionalProperties": false,
+      "properties": {
+        "connector": { "$ref": "#/$defs/id" },
+        "row": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "const": "all" }] }
+      }
+    },
+    "wires": {
+      "description": "Module pin label -> the connector pin it is wired to",
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Za-z0-9_/+-]+$" },
+      "additionalProperties": { "$ref": "#/$defs/wire" }
+    },
+    "pins": {
+      "description": "Some of a part's or a connector's pins, in this order: indexes of a bank, or connector pin names",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": ["integer", "string"] }
+    },
+    "use": {
+      "description": "One thing on the rig: an on-board part, a module on a connector, a connector the design drives as gpio, or a raw attach",
+      "type": "object",
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["onboard"] },
+        { "required": ["module"] },
+        { "required": ["gpio"] },
+        { "required": ["raw"] }
+      ],
+      "dependentSchemas": {
+        "plug": { "required": ["module"] },
+        "wires": { "required": ["module"] },
+        "variant": { "required": ["onboard"] }
+      },
+      "properties": {
+        "onboard": { "description": "A part of the board's layout", "$ref": "#/$defs/id" },
+        "module": { "description": "A module (config/modules/)", "$ref": "#/$defs/id" },
+        "gpio": { "description": "A connector of the layout the design gets pin by pin", "$ref": "#/$defs/id" },
+        "raw": {
+          "description": "An attach written out: the peripheral and its wiring, when the board's layout has no part for it",
+          "type": "object",
+          "required": ["peripheral"],
+          "properties": {
+            "peripheral": { "$ref": "#/$defs/id" },
+            "bind": { "$ref": "#/$defs/bind" },
+            "params": { "$ref": "#/$defs/params" },
+            "design_bits": { "$ref": "#/$defs/design_bits" },
+            "label": { "type": "string" }
+          }
+        },
+        "variant": { "description": "Which of the part's variants", "type": "string" },
+        "plug": { "$ref": "#/$defs/plug" },
+        "wires": { "$ref": "#/$defs/wires" },
+        "pins": { "$ref": "#/$defs/pins" },
+        "params": { "$ref": "#/$defs/params" },
+        "bind": { "$ref": "#/$defs/bind" },
+        "design_bits": { "$ref": "#/$defs/design_bits" },
+        "for_toolchain": {
+          "description": "Toolchain -> what this use changes when that toolchain builds",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/id" },
+          "additionalProperties": { "$ref": "#/$defs/use_overrides" }
+        }
+      }
+    },
+    "reset_source": {
+      "description": "One source of the design's reset: a flag (power_up, switch_msb, any_key, ...) or a keyed form (key: msb, tm_key: msb, pll_lock: <clock>) with its modifiers; the names are the reset capability's sources",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/name" },
+      "additionalProperties": { "type": ["boolean", "integer", "string"] }
+    },
+    "design": {
+      "description": "How the design sees the rig: its reset, its clock, which pins are the UART's rx, bus widths, nets tied",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reset": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sources": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/reset_source" } },
+            "sync": { "description": "Synchronizer stages", "type": "integer", "minimum": 0 }
+          }
+        },
+        "clock": {
+          "description": "The design's clock when not the board's: a peripheral clock by name, or a PLL clock",
+          "oneOf": [
+            { "$ref": "#/$defs/name" },
+            {
+              "type": "object",
+              "required": ["name", "mhz"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "$ref": "#/$defs/name" },
+                "mhz": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            }
+          ]
+        },
+        "uart_rx": { "description": "Which UART attach is the design's rx", "type": "integer", "minimum": 0 },
+        "width": {
+          "description": "Capability -> the bus width the design declares",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/id" },
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "tie": { "$ref": "#/$defs/tie" }
+      }
+    },
+    "tie": {
+      "description": "Net -> the level (0 / 1) or expression it is tied to",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/bank_ref" },
+      "additionalProperties": { "type": ["integer", "string"] }
+    },
+    "extra": {
+      "description": "Hardware facts the layout does not carry: nets tied, IO standards and pins overridden, a build that needs the vendor GUI",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tie": { "$ref": "#/$defs/tie" },
+        "io_overrides": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/bank_ref" },
+          "additionalProperties": { "type": ["string", "null"] }
+        },
+        "pin_overrides": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/bank_ref" },
+          "additionalProperties": {
+            "oneOf": [{ "type": "array", "items": { "type": "string" } }, { "type": "null" }]
+          }
+        },
+        "manual": { "type": "boolean" }
+      }
+    },
+    "rig": {
+      "type": "object",
+      "required": ["id", "board", "toolchain", "use"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "board": { "$ref": "#/$defs/id" },
+        "toolchain": { "description": "The default toolchain", "$ref": "#/$defs/id" },
+        "toolchains": {
+          "description": "Every toolchain the rig is checked with (the default among them)",
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "part": { "description": "Which of the board's chips, when it comes with several", "type": "string" },
+        "parts": {
+          "description": "Every chip variant the rig is checked with",
+          "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" }
+        },
+        "use": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/use" } },
+        "design": { "$ref": "#/$defs/design" },
+        "extra": { "$ref": "#/$defs/extra" },
+        "aliases": {
+          "description": "Other names of this rig: each a toolchain and / or chip variant of it ({}: the rig itself under an older name)",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/id" },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "toolchain": { "$ref": "#/$defs/id" },
+              "part": { "type": "string" }
+            }
+          }
+        },
+        "notes": { "type": "array", "items": { "type": "string" } },
+        "for_toolchain": {
+          "description": "Toolchain -> what the design section and the extras change when that toolchain builds",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/id" },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "extra": { "oneOf": [{ "$ref": "#/$defs/extra" }, { "type": "null" }] },
+              "design": { "$ref": "#/$defs/design" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

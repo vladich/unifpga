@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:design",
+  "title": "Design file set",
+  "description": "designs/<design>/fileset.yml: the files of a design that keeps alternative implementations side by side (a design without one is scanned). Paths are relative to the design directory; design_top.sv is among the sources once and tb.sv belongs to simulation (tools/source_set.py).",
+  "type": "object",
+  "required": ["version", "sources", "simulation", "assets"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "sources": {
+      "description": "Synthesized in this order (packages before the modules that import them)",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^[^/].*\\.(sv|v|svh)$" }
+    },
+    "simulation": {
+      "description": "Simulation-only sources",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[^/].*\\.(sv|v)$" }
+    },
+    "assets": {
+      "description": "Memory images the sources read",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[^/].*\\.(hex|mem)$" }
+    }
+  }
+}

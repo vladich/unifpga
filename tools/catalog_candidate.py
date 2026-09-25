@@ -1,8 +1,9 @@
 """Review source-level catalog changes between two exact Git revisions.
 
 This is a staging report for the planned importer. Its optional domain pass
-covers only identities and direct references; it does not create database
-revisions or authorize catalog publication.
+is tools/check.py over the captured documents (schemas, identities,
+references; the rules that need the working tree are listed as skipped); it
+does not create database revisions or authorize catalog publication.
 """
 
 import argparse
@@ -10,7 +11,7 @@ import json
 import sys
 
 from tools.catalog_snapshot import CatalogSnapshotError, capture_catalog_revision
-from tools.catalog_domain import validate_catalog_documents
+from tools.check import check as check_documents
 
 
 CANDIDATE_SCHEMA = "unifpga.catalog-source-candidate/v1"
@@ -86,7 +87,7 @@ def compare_catalog_revisions(repo, base_commit, candidate_commit, source_root="
                                        "detail": "Removal is not an accepted withdrawal or rename"})
     report["summary"] = counts
     if validate_domain:
-        domain = validate_catalog_documents(documents)
+        domain = check_documents(documents=documents, root=source_root)
         report["domain_report"] = domain
         report["validation"]["domain"] = domain["status"]
         if domain["status"] == "failed":
@@ -106,7 +107,7 @@ def main(argv=None):
     parser.add_argument("--base", required=True, help="exact base commit ID")
     parser.add_argument("--candidate", required=True, help="exact candidate commit ID")
     parser.add_argument("--validate-domain", action="store_true",
-                        help="run scoped identity and direct-reference checks")
+                        help="run the schema and relationship check on the captured documents")
     args = parser.parse_args(argv)
     try:
         report = compare_catalog_revisions(args.repo, args.base, args.candidate, args.root,

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:family",
+  "title": "Chip family",
+  "description": "config/chips/<producer>/<family>.yml: one chip family of one producer — its chips, and the toolchains that build for them (a chip may name its own).",
+  "type": "object",
+  "required": ["Producer", "Family", "Description", "DefaultToolchains", "Chips"],
+  "additionalProperties": false,
+  "properties": {
+    "Producer": { "description": "The producer's name as board_producers.yml knows it (Name, an AKA or the Id)", "type": "string", "minLength": 1 },
+    "Family": { "type": "string", "minLength": 1 },
+    "Description": { "type": "string" },
+    "DefaultToolchains": {
+      "description": "Toolchains every chip of the family builds with, as <toolchain>[<version constraint>]",
+      "type": "array",
+      "items": { "$ref": "#/$defs/versioned_ref" }
+    },
+    "Chips": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/chip" }
+    }
+  },
+  "$defs": {
+    "versioned_ref": {
+      "description": "<id> or <id>[<constraint>]: vivado[2017.4+], quartus_prime_lite[18.1-23.1std], ace[*]",
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\[[^\\[\\]]+\\])?$"
+    },
+    "chip": {
+      "type": "object",
+      "required": ["Id"],
+      "additionalProperties": false,
+      "properties": {
+        "Id": { "description": "The part number as the vendor writes it", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.+/-]*$" },
+        "Toolchains": { "description": "This chip's toolchains when they differ from the family's", "type": "array", "items": { "$ref": "#/$defs/versioned_ref" } }
+      }
+    }
+  }
+}
