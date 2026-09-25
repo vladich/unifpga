@@ -1,0 +1,22 @@
+# Acceleration along three axes in milli-g, two's complement (gravity alone
+# reads about 1000 on the axis pointing down), with a one-clock pulse each time
+# new readings arrive.
+
+Capability:
+  id: accelerometer
+  description: Three-axis acceleration in milli-g, one clock pulse per new set of readings.
+  signals:
+    - { name: valid, type: scalar, direction: hw_to_user, comment: "One-clock pulse: new readings" }
+    - { name: x, type: bus, width: 16, direction: hw_to_user, comment: "Two's complement, milli-g" }
+    - { name: y, type: bus, width: 16, direction: hw_to_user, comment: "Two's complement, milli-g" }
+    - { name: z, type: bus, width: 16, direction: hw_to_user, comment: "Two's complement, milli-g" }
+  aggregation: exclusive
+
+  optional: true           # reaches design_top only when the design declares its ports
+  summary: "acceleration readings"
+  design:
+    ports:
+      acc_valid: {signal: valid, width: 1}
+      acc_x: {signal: x, width: 16}
+      acc_y: {signal: y, width: 16}
+      acc_z: {signal: z, width: 16}

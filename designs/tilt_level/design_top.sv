@@ -1,36 +1,9 @@
-// =============================================================================
-// THE VIRTUAL DEVICE INTERFACE
+// A spirit level: the lit LED follows the board's tilt along X (an on-board
+// accelerometer, or any acceleration provider).
 //
-// This file defines the canonical port list every user-written `design_top`
-// targets. The interface is identical on every supported configuration. Per-
-// configuration widths (number of switches, presence of a screen, etc.) come
-// from `parameter` overrides set by the codegen-generated top module.
-//
-// Capabilities a particular board lacks are declared with width 0; SystemVerilog
-// vectors of width 0 are zero-element arrays (no driver, no consumer), which
-// silently optimize away. User code that references e.g. `led[3]` on a board
-// with `w_led = 2` produces a synthesis error — which is the correct behaviour:
-// the design requires more than the board provides, surface the mismatch.
-//
-// To write a new design, copy the body of this file into your project as
-// `design_top.sv` and add your logic. Never rename the ports or change their
-// directions — every board adapter binds to these names.
-//
-// To declare hard capability requirements that synthesize.py should check
-// before building, add a `// requires:` block before the module keyword.
-// Example:
-//
-//     // requires:
-//     //   switches >= 4
-//     //   leds     >= 4
-//     //   buttons  >= 2
-//     //   screen   >= 640x480
-//     //   audio_in
-//     //   serial_console
-//
-// `synthesize.py` parses that block and fails fast if the chosen configuration
-// doesn't meet the requirements.
-// =============================================================================
+// requires:
+//   accelerometer
+//   leds >= 2
 
 module design_top
 # (
@@ -56,23 +29,10 @@ module design_top
     // ---- GPIO ---------------------------------------------------------------
     parameter int w_gpio        = 0,     // Generic bidirectional pin bank
 
-    // ---- Optional capabilities: declare them only when the design uses
-    // them (the generated top connects what the design declares) --------------
-    parameter int sd_width      = 0,     // Small display (SSD1306 OLED ...), pixels
-    parameter int sd_height     = 0,
-    parameter int w_sd_pixel    = 1,     // Bits per small-display pixel
-    parameter int txt_columns   = 0,     // Character display (HD44780 LCD ...)
-    parameter int txt_rows      = 0,
-    parameter int w_act         = 0,     // Actuators (relays, servos, PWM outputs)
 
     // ---- Derived widths (do not override) -----------------------------------
     parameter int w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
-    parameter int w_y = (screen_height > 0) ? $clog2(screen_height) : 1,
-    parameter int w_sd_x = (sd_width  > 1) ? $clog2(sd_width ) : 1,
-    parameter int w_sd_y = (sd_height > 1) ? $clog2(sd_height) : 1,
-    parameter int w_txt_col = (txt_columns > 1) ? $clog2(txt_columns) : 1,
-    parameter int w_txt_row = (txt_rows    > 1) ? $clog2(txt_rows   ) : 1,
-    parameter int w_act_level = w_act * 8
+    parameter int w_y = (screen_height > 0) ? $clog2(screen_height) : 1
 )
 (
     // ---- Clock & reset ------------------------------------------------------
@@ -119,32 +79,6 @@ module design_top
     // ---- General-purpose I/O ------------------------------------------------
     inout        [w_gpio   - 1 : 0]  gpio,
 
-    // ---- Small display (optional): the driver fetches the pixel at
-    // (sd_x, sd_y) one clock after presenting it ------------------------------
-    input        [w_sd_x   - 1 : 0]  sd_x,
-    input        [w_sd_y   - 1 : 0]  sd_y,
-    output logic [w_sd_pixel - 1 : 0] sd_pixel,
-
-    // ---- Character display (optional): the character code at
-    // (txt_col, txt_row), fetched one clock after the position -----------------
-    input        [w_txt_col - 1 : 0] txt_col,
-    input        [w_txt_row - 1 : 0] txt_row,
-    output logic [          7 : 0]   txt_char,
-
-    // ---- Actuators (optional): an on/off bit and an 8-bit level each -------
-    output logic [w_act    - 1 : 0]  act_on,
-    output logic [w_act_level - 1 : 0] act_level,
-
-    // ---- Keyboard (optional): one clock of kbd_valid per key event; kbd_key is
-    // the key's USB HID usage code (A = 8'h04, Enter = 8'h28), kbd_down 1 pressed --
-    input                            kbd_valid,
-    input        [          7 : 0]   kbd_key,
-    input                            kbd_down,
-
-    // ---- Temperature (optional): one clock of temp_valid per new reading;
-    // temp is two's complement in 1/16 degrees Celsius (400 = 25.0 C) ---------
-    input                            temp_valid,
-    input        [         15 : 0]   temp,
 
     // ---- Accelerometer (optional): one clock of acc_valid per new set of
     // readings; each axis two's complement in milli-g ---------------------------
@@ -157,7 +91,6 @@ module design_top
     // -------------------------------------------------------------------------
     // Default tie-offs. Override below as needed.
     // -------------------------------------------------------------------------
-    assign led      = '0;
     assign abcdefgh = '0;
     assign digit    = '0;
     assign rgb_r    = '0;
@@ -168,13 +101,32 @@ module design_top
     assign blue     = '0;
     assign sound    = '0;
     assign uart_tx  = 1'b1;
-    assign sd_pixel  = '0;
-    assign txt_char  = 8'h20;    // a space
-    assign act_on    = '0;
-    assign act_level = '0;
 
     // -------------------------------------------------------------------------
-    // User logic goes here.
+    // A spirit level on the LEDs: one LED lit, its position following the tilt
+    // along X (about -1 g at one end, +1 g at the other, level in the middle).
     // -------------------------------------------------------------------------
+
+    logic signed [15:0] tilt;               // clamped to -1024 .. 1023 milli-g
+
+    always_ff @ (posedge clk)
+        if (rst)
+            tilt <= '0;
+        else if (acc_valid)
+            tilt <= $signed (acc_x) < -16'sd1024 ? -16'sd1024
+                  : $signed (acc_x) >  16'sd1023 ?  16'sd1023
+                  : $signed (acc_x);
+
+    // 0 .. 2047 above the low end, scaled to 0 .. w_led - 1
+    wire [10:0] above = 11'(tilt + 16'sd1024);
+    wire [31:0] index = (32'(above) * w_led) >> 11;
+
+    always_comb
+    begin
+        led = '0;
+        for (int i = 0; i < w_led; i++)
+            if (index == i)
+                led [i] = 1'b1;
+    end
 
 endmodule

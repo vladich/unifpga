@@ -306,6 +306,19 @@ def test_a_temperature_sensor_reaches_a_design_that_asks_for_it():
     assert all(".temp(cap_temperature_value)" in t for t in tops.values())
 
 
+def test_an_accelerometer_reaches_a_design_that_asks_for_it():
+    """The Nexys 4 boards' ADXL362 is an accelerometer (milli-g per axis);
+    designs/tilt_level requires one: it fits them, not the Basys3."""
+    from tools import codegen, studio
+    for rig in ("nexys4", "nexys4_ddr", "nexys_a7"):
+        assert studio.design_fit(config_init.resolve_configuration(rig))["tilt_level"] == [], rig
+    assert any("accelerometer" in m for m in
+               studio.design_fit(config_init.resolve_configuration("basys3"))["tilt_level"])
+    design = os.path.join(REPO, "designs", "tilt_level", "design_top.sv")
+    top = codegen.emit_top_sv(config_init.resolve_configuration("nexys_a7"), design=design)
+    assert "adxl362_reader" in top and ".acc_x(cap_accelerometer_x)" in top
+
+
 def test_no_pin_is_both_a_gpio_bit_and_another_parts():
     """In every rig, a pin the design reaches through its gpio port is no other
     part's (a microphone, a TM1638, a tie): one master per pad."""
