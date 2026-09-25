@@ -33,14 +33,16 @@ Accepted results now include `elaboration` with schema
 `unifpga.slang-elaboration/v1`. It projects each elaborated module and
 interface instance, its parent instance, definition, source location, ports,
 evaluated widths and parameters, and port connection facts. Generate-array
-paths retain their indices. A direct symbol reference is reported only for
-simple named-value or assignment expressions; other expressions remain
+and instance-array paths retain their indices. A direct symbol reference is
+reported only for simple named-value or assignment expressions; other expressions remain
 unresolved. Interface connections identify the interface instance and
 modport when Slang provides them. A null connection expression means an
 unconnected port. Failed frontend results have `elaboration: null`.
 
 `projection_status: complete` means this narrow fact projection found no
-unhandled port kinds; `semantic_completeness: unproven` is always present.
+unhandled port or instance kinds; `semantic_completeness: unproven` is always
+present. Primitive gates are currently unprojected instance kinds and appear
+as findings, not as graph nodes.
 This graph does not prove clock/reset roles, bus protocols, handshake or
 timing behavior, electrical constraints, vendor-IP equivalence, or that a
 design can be mapped to a virtual device. The graph is bounded by 100,000

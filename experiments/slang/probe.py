@@ -174,6 +174,12 @@ def _elaboration(root, manager, top, ast):
             raise ProbeError("elaborated fact exceeds text limit")
         return result
 
+    def add_finding(code, symbol):
+        if len(findings) >= MAX_GRAPH_ITEMS:
+            raise ProbeError("elaborated graph exceeds finding limit")
+        findings.append({"code": code, "symbol_kind": fact_text(symbol.kind).split(".")[-1],
+                         "location": _location(root, manager, symbol.location)})
+
     def port_fact(port):
         row = {"name": fact_text(port.name), "symbol_kind": fact_text(port.kind).split(".")[-1],
                "location": _location(root, manager, port.location),
@@ -192,8 +198,7 @@ def _elaboration(root, manager, top, ast):
             row["interface_definition"] = fact_text(port.interfaceDef.name) if port.interfaceDef else None
             row["modport"] = fact_text(port.modport) if port.modport else None
         else:
-            findings.append({"code": "unprojected_port_kind", "symbol_kind": row["symbol_kind"],
-                             "location": row["location"]})
+            add_finding("unprojected_port_kind", port)
         return row
 
     def parameter_fact(parameter):
@@ -238,8 +243,10 @@ def _elaboration(root, manager, top, ast):
             if projected_items > MAX_GRAPH_ITEMS:
                 raise ProbeError("elaborated graph exceeds projected item limit")
             path = fact_text(symbol.hierarchicalPath)
+            name = symbol.name or (symbol.arrayName + "".join(
+                "[{}]".format(index) for index in symbol.arrayPath))
             instances.append({"path": path, "parent_instance": parent_path,
-                              "name": fact_text(symbol.name), "definition": fact_text(body.definition.name),
+                              "name": fact_text(name), "definition": fact_text(body.definition.name),
                               "kind": "interface" if symbol.isInterface else
                                       "module" if symbol.isModule else "other",
                               "location": _location(root, manager, symbol.location),
@@ -248,9 +255,12 @@ def _elaboration(root, manager, top, ast):
                               "connections": [connection_fact(c) for c in connections]})
             for child in body:
                 visit(child, path, depth + 1)
-        elif isinstance(symbol, (ast.GenerateBlockSymbol, ast.GenerateBlockArraySymbol)):
+        elif isinstance(symbol, (ast.GenerateBlockSymbol, ast.GenerateBlockArraySymbol,
+                                 ast.InstanceArraySymbol)):
             for child in symbol:
                 visit(child, parent_path, depth + 1)
+        elif symbol.kind.name.endswith("Instance"):
+            add_finding("unprojected_instance_kind", symbol)
 
     visit(top, None, 0)
     result = {"schema": ELABORATION_SCHEMA,

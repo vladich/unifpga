@@ -72,6 +72,18 @@ class ProbeTests(unittest.TestCase):
             with self.assertRaisesRegex(probe.ProbeError, "instance limit"):
                 probe.run(FIXTURES, FIXTURES / "graph.json")
 
+    def test_instance_arrays_are_projected_and_primitives_are_explicit_gaps(self):
+        result = probe.run(FIXTURES, FIXTURES / "array.json")
+        self.assertTrue(result["accepted"], result)
+        graph = result["elaboration"]
+        self.assertEqual(graph["projection_status"], "partial")
+        nodes = {item["path"]: item for item in graph["instances"]}
+        self.assertEqual(set(nodes), {"array_top", "array_top.lane[0]", "array_top.lane[1]"})
+        self.assertEqual(nodes["array_top.lane[0]"]["name"], "lane[0]")
+        self.assertEqual(nodes["array_top.lane[1]"]["name"], "lane[1]")
+        self.assertEqual(graph["findings"][0]["code"], "unprojected_instance_kind")
+        self.assertEqual(graph["findings"][0]["symbol_kind"], "PrimitiveInstance")
+
     def test_single_compilation_unit_is_explicit(self):
         with tempfile.TemporaryDirectory() as name:
             path = pathlib.Path(name) / "request.json"
