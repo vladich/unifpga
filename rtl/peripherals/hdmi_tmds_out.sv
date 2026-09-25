@@ -13,9 +13,9 @@
 //   timing_clk_i  serial / 2 when TIMING = "serial": Gowin DVI_TX designs
 //                 run `vga` on their 5x DDR serial clock (125 MHz),
 //                 ours is 10x SDR (250 MHz); tied off otherwise
-//   lab_clk_i     the lab clock; TIMING picks which clock the `vga` timing
+//   design_clk_i     the design clock; TIMING picks which clock the `vga` timing
 //                 generator (x / y / syncs) runs on: "serial" (Gowin DVI_TX
-//                 boards, on timing_clk_i), "lab" (Tang Nano 4K, colorlight, marsohod3gw2) or
+//                 boards, on timing_clk_i), "design" (Tang Nano 4K, colorlight, marsohod3gw2) or
 //                 "pixel" (Tang Primer 25K), with that clock's MHz for its
 //                 pixel enable; "dvi" is dvi_top's own dvi_sync on the pixel
 //                 clock, as on boards that instantiate dvi_top directly
@@ -31,12 +31,12 @@ module hdmi_tmds_out
     parameter     TIMING     = "serial",
     parameter int SERIAL_MHZ = 252,
     parameter int PIXEL_MHZ  = 25,
-    parameter int LAB_MHZ    = 27
+    parameter int DESIGN_MHZ    = 27
 )
 (
     input               serial_clk_i,
     input               pixel_clk_i,
-    input               lab_clk_i,
+    input               design_clk_i,
     input               timing_clk_i,
     input               rst_i,
 
@@ -57,8 +57,8 @@ module hdmi_tmds_out
 
     wire timing_clk;
     generate
-        if (TIMING == "lab") begin : g_timing_lab
-            assign timing_clk = lab_clk_i;
+        if (TIMING == "design") begin : g_timing_design
+            assign timing_clk = design_clk_i;
         end else if (TIMING == "pixel") begin : g_timing_pixel
             assign timing_clk = pixel_clk_i;
         end else if (TIMING == "serial") begin : g_timing_serial
@@ -67,7 +67,7 @@ module hdmi_tmds_out
             assign timing_clk = serial_clk_i;     // unused: dvi_sync runs on the pixel clock
         end
     endgenerate
-    localparam int TIMING_MHZ = (TIMING == "lab") ? LAB_MHZ : (TIMING == "pixel") ? PIXEL_MHZ
+    localparam int TIMING_MHZ = (TIMING == "design") ? DESIGN_MHZ : (TIMING == "pixel") ? PIXEL_MHZ
                               : (TIMING == "serial") ? SERIAL_MHZ / 2 : SERIAL_MHZ;
 
     dvi_top

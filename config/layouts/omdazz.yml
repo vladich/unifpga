@@ -74,7 +74,7 @@ Layout:
       device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
     - id: sdram
       label: HY57V561620FTP-H SDRAM (x16)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+      attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.clk, cke: onboard_sdram.cke, cs_n: onboard_sdram.cs_n, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq, dqm: onboard_sdram.dqm}}
     - id: config_flash
       label: EPCS serial configuration flash (AS)
       device: {kind: flash, bank: onboard_config_flash}   # no peripheral model yet

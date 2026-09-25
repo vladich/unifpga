@@ -65,7 +65,7 @@ Layout:
       device: {kind: flash, bank: onboard_flash}   # no peripheral model yet
     - id: sdcard
       label: microSD card slot J2 (SDIO, push-pull)
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.d[0]', dat3: 'onboard_sdcard.d[3]'}}
     - id: spi_lcd
       label: SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14" ST7789)
       device: {kind: lcd_spi, bank: onboard_spi_lcd}   # no peripheral model yet

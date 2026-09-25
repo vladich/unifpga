@@ -1,5 +1,5 @@
-# Setup lattice_crosslink_nx_evn: the rig config/configurations/lattice_crosslink_nx_evn.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig lattice_crosslink_nx_evn: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show lattice_crosslink_nx_evn).
 
 Setup:
   id: lattice_crosslink_nx_evn
@@ -18,7 +18,6 @@ Setup:
     - onboard: leds
     - onboard: uart
   extra:
-    manual: true
+    {manual: true}
   for_toolchain:
-    nextpnr_oxide:
-      extra: null
+    nextpnr_oxide: {extra: null}

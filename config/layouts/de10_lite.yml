@@ -54,6 +54,9 @@ Layout:
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: accelerometer
+      label: Accelerometer (ADXL345, SPI/I2C)
+      attach: {peripheral: adxl345_spi, bind: {mosi: onboard_accelerometer.GSENSOR_SDI, miso: onboard_accelerometer.GSENSOR_SDO, sclk: onboard_accelerometer.GSENSOR_SCLK, cs_n: onboard_accelerometer.GSENSOR_CS_n}}
     - id: adc_clk_10mhz
       label: ADC_CLK_10 (10 MHz, MAX 10 ADC PLL)
       device: {kind: clock, bank: onboard_adc_clk_10mhz}   # no peripheral model yet
@@ -62,7 +65,4 @@ Layout:
       device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
     - id: sdram
       label: SDRAM (64 MB, 16-bit)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
-    - id: accelerometer
-      label: Accelerometer (ADXL345, SPI/I2C)
-      attach: {peripheral: adxl345_spi, bind: {mosi: onboard_accelerometer.GSENSOR_SDI, miso: onboard_accelerometer.GSENSOR_SDO, sclk: onboard_accelerometer.GSENSOR_SCLK, cs_n: onboard_accelerometer.GSENSOR_CS_n}}
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 10}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}

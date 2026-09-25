@@ -1,5 +1,5 @@
-# Setup zeowaa: the rig config/configurations/zeowaa.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig zeowaa: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show zeowaa).
 
 Setup:
   id: zeowaa
@@ -8,6 +8,7 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
+      design_bits: {buttons: [0, 1, 2, null]}
     - onboard: switches
     - onboard: leds
     - onboard: 7seg
@@ -22,7 +23,9 @@ Setup:
       params: {width: 19}
     - onboard: buzzer
     - onboard: ps2
+  design:
+    reset:
+      sources:
+      - {key: msb}
   extra:
-    tie:
-      gpio[4]: 0
-      gpio[2]: 1
+    tie: {'gpio[4]': 0, 'gpio[2]': 1}

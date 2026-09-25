@@ -104,10 +104,12 @@ Board:
     onboard_sdram0:   # SDRAM module on J9 (accessory; signals as named by the console schematic)
       device: {"name": "SDRAM module on J9 (accessory; signals as named by the console schematic)", "kind": "sdram"}
       shares: ["sdram0_header"]   # the board multiplexes these pins
+      model_params: {col_bits: 9}
       pins: {"clk": "B17", "cs_n": "F21", "ras_n": "F16", "cas_n": "E17", "we_n": "D16", "ba0": "F15", "ba1": "C20", "a": ["D19", "E19", "C19", "C18", "E16", "D15", "D14", "A19", "A18", "C17", "D20", "D17", "B18"], "dq": ["E14", "E13", "C15", "C14", "B13", "C13", "A14", "A13", "B21", "A21", "B20", "A20", "A15", "A16", "B15", "B16"], "dm": ["F14", "F13"]}
     onboard_sdram1:   # SDRAM module on J10 (accessory; signals as named by the console schematic)
       device: {"name": "SDRAM module on J10 (accessory; signals as named by the console schematic)", "kind": "sdram"}
       shares: ["onboard_gba_slot", "sdram1_header"]   # the board multiplexes these pins
+      model_params: {col_bits: 9}
       pins: {"clk": "U20", "cs_n": "T20", "ras_n": "Y18", "cas_n": "Y19", "we_n": "AB20", "ba0": "N15", "ba1": "U18", "a": ["R16", "P15", "R14", "P14", "AA19", "AA21", "AA20", "AB22", "AB21", "Y22", "U17", "Y21", "V20"], "dq": ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "N13", "N14", "N17", "P17", "W21", "W22", "V17", "W17"], "dm": ["AA18", "AB18"]}
     onboard_gba_slot:   # GBA cartridge slot accessory on J10
       device: {"name": "GBA cartridge slot accessory on J10", "kind": "other"}

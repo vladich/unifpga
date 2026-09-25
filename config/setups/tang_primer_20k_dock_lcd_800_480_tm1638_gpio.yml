@@ -1,5 +1,5 @@
-# Setup tang_primer_20k_dock_lcd_800_480_tm1638_gpio: the rig config/configurations/tang_primer_20k_dock_lcd_800_480_tm1638_gpio.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_primer_20k_dock_lcd_800_480_tm1638_gpio: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_primer_20k_dock_lcd_800_480_tm1638_gpio).
 
 Setup:
   id: tang_primer_20k_dock_lcd_800_480_tm1638_gpio
@@ -10,12 +10,16 @@ Setup:
     - onboard: clock
     - onboard: leds
       params: {active: high}
+      design_bits: {leds: [null, null, null, null, null, null]}
     - onboard: uart
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3]}
     - onboard: buttons
+      design_bits: {buttons: []}
     - onboard: lcd
     - module: tm1638_led_key
       wires: {STB: j12.6, CLK: j12.8, DIO: j12.10}
+      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
     - onboard: headphone
     - module: i2s_dac_breakout
       wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
@@ -24,3 +28,10 @@ Setup:
       params: {width: 8}
     - gpio: j12
       params: {width: 8}
+    - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {key: msb}
+    clock: pixel
+    width: {switches: 8, gpio: 32}

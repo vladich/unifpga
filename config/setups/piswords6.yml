@@ -1,5 +1,5 @@
-# Setup piswords6: the rig config/configurations/piswords6.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig piswords6: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show piswords6).
 
 Setup:
   id: piswords6
@@ -8,6 +8,7 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
+      design_bits: {buttons: [0, 1, 2, null]}
     - onboard: switches
     - onboard: leds
       pins: [0, 1, 2, 4, 5, 6, 7]   # LED 4 (pin 44) is the DS18B20's data line
@@ -22,7 +23,9 @@ Setup:
       params: {width: 16}
     - onboard: buzzer
     - onboard: temperature
+  design:
+    reset:
+      sources:
+      - {key: msb}
   extra:
-    tie:
-      gpio[1]: 0
-      gpio[3]: 1
+    tie: {'gpio[1]': 0, 'gpio[3]': 1}

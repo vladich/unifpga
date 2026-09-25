@@ -1,5 +1,5 @@
-# Setup terasic_sockit: the rig config/configurations/terasic_sockit.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig terasic_sockit: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show terasic_sockit).
 
 Setup:
   id: terasic_sockit
@@ -14,6 +14,8 @@ Setup:
     - onboard: cpu_resetn
     - onboard: switches
     - onboard: vga
+  design:
+    uart_rx: 0
+    width: {gpio: 2}
   extra:
-    tie:
-      onboard_vga.sync_n: 0
+    tie: {onboard_vga.sync_n: 0}

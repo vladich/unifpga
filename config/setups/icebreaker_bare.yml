@@ -1,5 +1,5 @@
-# Setup icebreaker_bare: the rig config/configurations/icebreaker_bare.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig icebreaker_bare: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show icebreaker_bare).
 
 Setup:
   id: icebreaker_bare
@@ -11,10 +11,17 @@ Setup:
     - onboard: button
     - onboard: rgb_led_0
     - onboard: leds
+      design_bits: {leds: [4, 3, 2, 1, 0]}
     - onboard: led_green
+      design_bits: {leds: [5]}
     - onboard: led_red
+      design_bits: {leds: [6]}
     - onboard: buttons
     - gpio: pmod_p1b
       params: {width: 8}
     - gpio: pmod_p1a
       params: {width: 8}
+  design:
+    reset:
+      sources:
+      - {key: 0}

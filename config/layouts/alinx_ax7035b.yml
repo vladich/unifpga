@@ -42,6 +42,9 @@ Layout:
     - id: uart
       label: uart
       attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: temp_sensor
+      label: Temperature sensor LM75 (I2C)
+      attach: {peripheral: i2c_temperature_sensor, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
     - id: ddr3
       label: DDR3 SDRAM
       device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet
@@ -56,16 +59,13 @@ Layout:
       device: {kind: hdmi_tx, bank: onboard_hdmi_tx}   # no peripheral model yet
     - id: sdcard
       label: microSD card slot (SD mode)
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.data[0]', dat3: 'onboard_sdcard.data[3]'}}
     - id: qspi_flash
       label: QSPI flash (Micron N25Q128, 16 MB)
       device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
     - id: eeprom
       label: I2C EEPROM 24LC04
       device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
-    - id: temp_sensor
-      label: Temperature sensor LM75 (I2C)
-      attach: {peripheral: i2c_temperature_sensor, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
     - id: hdmi_rx
       label: 'HDMI input (commented out in LiteX: "UNVERIFIED")'
       device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet

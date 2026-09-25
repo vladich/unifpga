@@ -1,5 +1,5 @@
-# Setup de10_lite: the rig config/configurations/de10_lite.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig de10_lite: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show de10_lite).
 
 Setup:
   id: de10_lite
@@ -9,6 +9,7 @@ Setup:
     - onboard: clk50mhz
     - onboard: buttons
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]}
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
@@ -21,7 +22,12 @@ Setup:
     - gpio: arduino
       params: {width: 16}
     - onboard: accelerometer
+    - onboard: sdram
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
+    uart_rx: 0
+    tie: {arduino_reset_n: ~rst}
   extra:
-    tie:
-      gpio[1]: 0
-      gpio[3]: 1
+    tie: {'gpio[1]': 0, 'gpio[3]': 1}

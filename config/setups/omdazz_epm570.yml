@@ -1,5 +1,5 @@
-# Setup omdazz_epm570: the rig config/configurations/omdazz_epm570.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig omdazz_epm570: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show omdazz_epm570).
 
 Setup:
   id: omdazz_epm570

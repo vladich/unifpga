@@ -73,7 +73,7 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    lab_top_3_1_note_recognizer
+    note_recognizer_3_1
     # (
         .clk_mhz       ( clk_mhz         ),
         .w_btn         ( w_btn           ),
@@ -89,7 +89,7 @@ module design_top
         .w_green       ( w_green         ),
         .w_blue        ( w_blue          )
     )
-    i_lab_top_3_1_note_recognizer
+    i_note_recognizer_3_1
     (
         .clk           ( clk             ),
         .slow_clk      (                 ),
@@ -144,7 +144,7 @@ module design_top
 
     //------------------------------------------------------------------------
 
-    lab_top_3_3_note_synthesizer
+    note_synthesizer_3_3
     # (
         .clk_mhz       ( clk_mhz       ),
         .w_btn         ( w_btn         ),
@@ -160,7 +160,7 @@ module design_top
         .w_green       ( w_green       ),
         .w_blue        ( w_blue        )
     )
-    i_lab_top_3_3_note_synthesizer
+    i_note_synthesizer_3_3
     (
         .clk           ( clk           ),
         .slow_clk      (               ),

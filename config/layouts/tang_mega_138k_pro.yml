@@ -63,6 +63,9 @@ Layout:
     - id: ws2812
       label: WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
       attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
+    - id: fan
+      label: 4-pin PWM fan connector
+      attach: {peripheral: fan_pwm, bind: {pwm: onboard_fan.pwm, tach: onboard_fan.tach}}
     - id: hdmi_rx
       label: DVI/HDMI B (RX) connector J12
       device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet
@@ -113,7 +116,7 @@ Layout:
       device: {kind: serdes, bank: onboard_m2}   # no peripheral model yet
     - id: sdcard
       label: microSD card slot J19 (SDIO)
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.d0, dat3: onboard_sdcard.d3}}
     - id: camera_dvp
       label: DVP camera connector (FPC 24P, OV5640-style)
       device: {kind: camera_dvp, bank: onboard_camera_dvp}   # no peripheral model yet
@@ -132,6 +135,3 @@ Layout:
     - id: twi_2
       label: EEPROM ZD24C08A (on TWI mux ch.2)
       device: {kind: other, bank: onboard_twi_2}   # no peripheral model yet
-    - id: fan
-      label: 4-pin PWM fan connector
-      attach: {peripheral: fan_pwm, bind: {pwm: onboard_fan.pwm, tach: onboard_fan.tach}}

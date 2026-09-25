@@ -40,7 +40,7 @@ Capability:
   summary: "{screen_width}×{screen_height}, rgb{w_red + w_green + w_blue} ({w_red}-{w_green}-{w_blue})"
   design:
     parameters:
-      # without a screen the lab_top defaults stand (640x480, 4-bit colours),
+      # without a screen design_top's defaults stand (640x480, 4-bit colours),
       # so the design's x / y stay 10 / 9 bits wide
       screen_width: {value: width, absent: 640}
       screen_height: {value: height, absent: 480}

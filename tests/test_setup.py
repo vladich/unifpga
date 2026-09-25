@@ -23,13 +23,15 @@ def _setups():
 
 
 @pytest.mark.parametrize("sid", _setups())
-def test_setup_generates_its_configuration(sid):
+def test_setup_expands_to_its_configuration(sid):
+    """A rig is its setup: the configuration the build reads is the setup's
+    expansion (no file), the same every time, and it resolves."""
     setup = su.read_setup(sid)
     cfg = config_init.read_configurations()[sid]
     assert su.same_configuration(su.generate(setup), cfg)            # nested keys in codegen's order too
-    with open(su.configuration_path(sid), encoding="utf-8") as f:
-        assert f.read() == su.generated_text(setup)                   # the committed file is the generated one
+    assert su.generated_text(setup) == su.generated_text(setup)
     assert [p for p in su.validate(setup) if p[0] == "error"] == []
+    config_init.resolve_configuration(sid)
 
 
 def test_every_configuration_of_a_laid_out_board_has_a_setup_and_round_trips():
@@ -190,21 +192,19 @@ def scratch(tmp_path, monkeypatch):
     with a copy of the repository's setups)."""
     import shutil
     shutil.copytree(su.SETUP_DIR, str(tmp_path / "setups"))
-    (tmp_path / "configurations").mkdir()
     monkeypatch.setattr(su, "SETUP_DIR", str(tmp_path / "setups"))
-    monkeypatch.setattr(su, "configuration_path", lambda cid: str(tmp_path / "configurations" / (cid + ".yml")))
     return tmp_path
 
 
-def test_save_writes_setup_and_configuration(scratch):
+def test_save_writes_the_setup(scratch):
     rig = copy.deepcopy(su.read_setup("tang_primer_20k_dock_hdmi_tm1638"))
     rig["id"] = "dock_test_rig"
     del rig["aliases"]                                  # the original keeps its old ids
     rig["use"] = [u for u in rig["use"] if u.get("module") != "inmp441_breakout"]
     paths = studio.save(rig)
-    assert paths["setup"].endswith("dock_test_rig.yml")
-    text = (scratch / "configurations" / "dock_test_rig.yml").read_text()
-    assert text == su.generated_text(rig) and "inmp441" not in text
+    assert paths["setup"].endswith("dock_test_rig.yml") and list(paths) == ["setup"]
+    assert (scratch / "setups" / "dock_test_rig.yml").read_text() == su.dump_setup(rig)
+    assert "inmp441" not in studio.evaluate(rig)["configuration_text"]
     bad = copy.deepcopy(rig)
     bad["use"].append({"module": "tm1638_led_key", "wires": {"CLK": "j12.8", "STB": "j12.6", "DIO": "j12.10"}})
     with pytest.raises(studio.ApiError, match="used by both"):
@@ -212,9 +212,6 @@ def test_save_writes_setup_and_configuration(scratch):
     for wrong in ("../evil", "Upper", ""):
         with pytest.raises(studio.ApiError):
             studio.save(dict(rig, id=wrong))
-    (scratch / "setups" / "de10_lite.yml").unlink()          # a configuration without a setup
-    with pytest.raises(studio.ApiError, match="exists and has no setup"):
-        studio.save(dict(rig, id="de10_lite"))
 
 
 def test_project_is_the_dry_run(tmp_path, monkeypatch):
@@ -380,10 +377,10 @@ def test_evaluation_traces_around_a_broken_part():
     assert ev["trace"] and ev["excluded"] == [{"use": len(rig["use"]) - 1, "label": "tm1638_led_key",
                                                "reason": "connector 'ja' has no signal pin '99'"}]
     assert {a["attach_index"] for a in ev["trace"]["attaches"] if a["attach_index"] is not None} <= set(range(len(rig["use"]) - 1))
-    profiled = copy.deepcopy(su.read_setup("arty_a7"))       # its profile fixes the bit layout
-    profiled["use"].append({"module": "tm1638_led_key", "wires": {"STB": "ja.1", "CLK": "ja.2", "DIO": "ja.3"}})
-    ev = studio.evaluate(profiled)
-    assert ev["trace"] and ev["excluded"][0]["use"] == len(profiled["use"]) - 1 and "lab_bits" in ev["excluded"][0]["reason"]
+    placed = copy.deepcopy(su.read_setup("arty_a7"))         # its design_bits fix the bit layout
+    placed["use"].append({"module": "tm1638_led_key", "wires": {"STB": "ja.1", "CLK": "ja.2", "DIO": "ja.3"}})
+    ev = studio.evaluate(placed)
+    assert ev["trace"] and ev["excluded"][0]["use"] == len(placed["use"]) - 1 and "design_bits" in ev["excluded"][0]["reason"]
 
 
 def test_design_ports_follow_the_design_top_interface():
@@ -409,7 +406,7 @@ def test_edges_connect_design_bits_to_pins():
     leds = sorted((e["bit"], e["ref"], e["via"]) for e in edges if e["design_port"] == "led" and e["via"] is None)
     assert leds == [(0, "onboard_leds[0]", None), (1, "onboard_leds[1]", None), (2, "onboard_leds[2]", None),
                     (3, "onboard_leds[3]", None)]
-    # the TM1638's pins carry the bits its lab_bits give it, and no sw bit here
+    # the TM1638's pins carry the bits its design_bits give it, and no sw bit here
     tm = {e["design_port"]: e["bits"] for e in edges if e["ref"] == "arduino_io[27]" and e["via"]}
     assert tm == {"btn": list(range(8)), "led": list(range(8)), "abcdefgh": list(range(8)), "digit": list(range(8))}
     mic = {e["ref"] for e in edges if e["design_port"] == "mic_sample"}
@@ -510,12 +507,12 @@ def test_parts_that_do_not_reach_the_design_say_why():
     assert x["use"] == len(rig["use"]) - 1 and not x["connected"] and x["reasons"][0][0] == "exclusive"
     assert "digilent_pmod_mic3 already provides it" in x["reasons"][0][1]
     assert any(p["level"] == "warning" and "audio_in" in p["message"] for p in ev["problems"])
-    # a second TM1638 on a rig whose profile has no entry for it
+    # a second TM1638 on a rig whose other parts have design_bits and it none
     rig = copy.deepcopy(base)
     rig["use"].append({"module": "tm1638_led_key", "wires": {}})
     rig["use"][-1].update(su.autowire(rig, len(rig["use"]) - 1))
     (x,) = studio.evaluate(rig)["parts"]
-    assert x["reasons"][0][0] == "untraced" and "design-wiring profile" in x["reasons"][0][1]
+    assert x["reasons"][0][0] == "untraced" and "design_bits" in x["reasons"][0][1]
     assert x["label"] == "tm1638_led_key #2"
     # an unwired module
     rig = copy.deepcopy(base)

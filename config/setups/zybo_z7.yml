@@ -1,5 +1,5 @@
-# Setup zybo_z7: the rig config/configurations/zybo_z7.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig zybo_z7: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show zybo_z7).
 
 Setup:
   id: zybo_z7
@@ -10,10 +10,14 @@ Setup:
   use:
     - onboard: clk125mhz
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, null]}
     - onboard: buttons
+      design_bits: {buttons: [0, 1, 2, 3]}
     - onboard: leds
+      design_bits: {leds: [0, 1, 2, 3]}
     - module: tm1638_led_key
       wires: {STB: 'pmod_je.[0]', CLK: 'pmod_je.[1]', DIO: 'pmod_je.[2]'}
+      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
     - module: i2s_dac_breakout
       wires: {SCK: 'pmod_jb.[0]', BCK: 'pmod_jb.[2]', LCK: 'pmod_jb.[1]', DIN: 'pmod_jb.[3]'}
     - module: digilent_pmod_vga
@@ -21,3 +25,9 @@ Setup:
       params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}
     - onboard: rgb_led_5
     - onboard: rgb_led_6
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
+    uart_rx: 1
+    width: {gpio: 8}

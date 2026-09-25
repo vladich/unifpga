@@ -71,3 +71,6 @@ Layout:
                params: {clock_pixel_pll: {idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false}, bl: context.rst_n},
                bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs,
                       vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl}}
+    - id: sdcard
+      label: microSD card slot J2
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.d[0]', dat3: 'onboard_sdcard.d[3]'}}

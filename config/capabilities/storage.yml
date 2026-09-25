@@ -1,0 +1,37 @@
+# Block storage — an SD card in its slot, read block by block: the design asks
+# for a 512-byte block while the storage is ready and receives its bytes one
+# clock of `valid` each, then `done` (or `error`: no card, a card that did not
+# answer, a block past the end). `present` while a card has answered the
+# power-up dialogue. Reading only, for now.
+
+Capability:
+  id: storage
+  description: Block storage (an SD card), read 512 bytes at a time.
+  parameters:
+    blocks: { type: int, default: 0, description: "512-byte blocks the medium holds; 0 when unknown until a card answers" }
+  signals:
+    - { name: req,     type: scalar, direction: user_to_hw, comment: "A request, this clock (while ready)" }
+    - { name: block,   type: bus, width: 32, direction: user_to_hw, comment: "The block to read" }
+    - { name: ready,   type: scalar, direction: hw_to_user, comment: "A request is taken this clock" }
+    - { name: data,    type: bus, width: 8,  direction: hw_to_user, comment: "A byte of the block, with valid" }
+    - { name: valid,   type: scalar, direction: hw_to_user, comment: "One clock per byte, 512 per block" }
+    - { name: done,    type: scalar, direction: hw_to_user, comment: "One clock: the block was delivered" }
+    - { name: error,   type: scalar, direction: hw_to_user, comment: "One clock: the request failed" }
+    - { name: present, type: scalar, direction: hw_to_user, comment: "A card answered" }
+  aggregation: exclusive
+  primary: blocks
+
+  optional: true           # reaches design_top only when the design declares its ports
+  summary: "block storage"
+  design:
+    parameters:
+      st_blocks: {value: blocks, absent: 0}
+    ports:
+      st_req: {signal: req, width: 1}
+      st_block: {signal: block, width: 32}
+      st_ready: {signal: ready, width: 1}
+      st_data: {signal: data, width: 8}
+      st_valid: {signal: valid, width: 1}
+      st_done: {signal: done, width: 1}
+      st_error: {signal: error, width: 1}
+      st_present: {signal: present, width: 1}

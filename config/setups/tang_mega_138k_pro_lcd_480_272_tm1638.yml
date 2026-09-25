@@ -1,5 +1,5 @@
-# Setup tang_mega_138k_pro_lcd_480_272_tm1638: the rig config/configurations/tang_mega_138k_pro_lcd_480_272_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_mega_138k_pro_lcd_480_272_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_mega_138k_pro_lcd_480_272_tm1638).
 
 Setup:
   id: tang_mega_138k_pro_lcd_480_272_tm1638
@@ -9,7 +9,9 @@ Setup:
     - onboard: clk
     - onboard: buttons
       params: {active: high}
+      design_bits: {buttons: []}
     - onboard: leds
+      design_bits: {leds: [0, 1, 2, 3, 4, 5]}
     - gpio: pmod_0
       params: {width: 8}
     - gpio: pmod_1
@@ -17,8 +19,10 @@ Setup:
     - gpio: pmod_2
       params: {width: 8}
     - onboard: lcd
+      params: {mirror_screen: true}
     - module: tm1638_led_key
       wires: {STB: 'pmod_2.[7]', CLK: 'pmod_2.[6]', DIO: 'pmod_2.[5]'}
+      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
     - module: inmp441_breakout
       wires: {SCK: 'pmod_0.[2]', WS: 'pmod_0.[1]', SD: 'pmod_0.[6]', L/R: 'pmod_0.[0]'}
     - module: i2s_dac_breakout
@@ -27,7 +31,11 @@ Setup:
     - onboard: audio_dac
     - onboard: ws2812
     - onboard: fan
+    - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {tm_key: msb}
+    uart_rx: 0
   extra:
-    tie:
-      pmod_0[4]: 0
-      pmod_0[5]: 1
+    tie: {'pmod_0[4]': 0, 'pmod_0[5]': 1}

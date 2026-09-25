@@ -42,7 +42,7 @@ Board:
       device: {"name": "RESET button SW5 (FPGA_RESET)", "kind": "reset"}
       pins: {"fpga_reset": ["R8", "R9"]}
     onboard_sram:   # U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)
-      device: {"name": "U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)", "kind": "other"}
+      device: {"name": "U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)", "kind": "sram"}
       pins: {"a": ["N13", "P14", "R15", "T15", "P13", "R14", "R13", "T14", "R12", "T13", "M12", "N12", "M11", "N11", "P11", "P12", "K16", "K15"], "d": ["L16", "L15", "M16", "M15", "K13", "K12", "L13", "L12", "N16", "P15", "L14", "M14", "P16", "R16", "M13", "N14"], "cs_n": "H15", "oe_n": "J14", "we_n": "K14", "ble_n": "J15", "bhe_n": "J16"}
     onboard_ethernet:   # U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
       device: {"name": "U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)", "kind": "ethernet"}

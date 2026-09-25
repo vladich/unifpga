@@ -1,5 +1,5 @@
-# Setup tang_nano_20k_lcd_480_272_no_tm1638: the rig config/configurations/tang_nano_20k_lcd_480_272_no_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_nano_20k_lcd_480_272_no_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_nano_20k_lcd_480_272_no_tm1638).
 
 Setup:
   id: tang_nano_20k_lcd_480_272_no_tm1638
@@ -8,13 +8,21 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {switches: [0, 1]}
     - onboard: leds
     - onboard: uart
     - onboard: lcd
       variant: lcd_480_272
+      bind: {hs: null, vs: null}
     - module: inmp441_breakout
       wires: {L/R: header_j6.1, WS: header_j6.2, SCK: header_j6.3, SD: header_j6.4}
     - onboard: headphone
     - gpio: gpio
       params: {width: 5}
     - onboard: ws2812
+  design:
+    reset:
+      sources:
+      - {power_up: true}
+    tie: {onboard_lcd.hs: 0, onboard_lcd.vs: 0}

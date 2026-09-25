@@ -1,11 +1,11 @@
 """
-Setups: a configuration described as a physical rig.
+Setups: a rig — one file, config/setups/<id>.yml.
 
-A setup (config/setups/<id>.yml) names a board, a toolchain and, in attach
-order, what is used on it:
+A setup names a board, a toolchain and, in attach order, what is used on it:
 
     - onboard: <id>              an on-board device of the board's layout
       params: {...}              (merged over the layout's attach params)
+      pins: [0, 1, 2, 4]         (some of the part's pins, in this order)
     - module: <id>               an add-on module (config/modules/<id>.yml)
       wires: {<module pin>: <connector>.<pin>, ...}
       plug: {connector: jd, row: 2}   (instead of wires: a module plugged by its
@@ -15,20 +15,47 @@ order, what is used on it:
       params: {...}
     - raw: {<attach>}            an attach the physical model does not cover
 
+and how the design (design_top, the virtual device) sees it — on a use:
+
+      bind: {dp: [onboard_leds[4], ...], hs: null}   a signal routed onto other
+                                       pins, or (null) left unwired and tied off
+                                       (a convention, like the design section)
+      design_bits: {leds: [0, 1, 2, ~, 3]}   which bit of the design's bus each of
+                                       the part's bits is (~: none); absent, the
+                                       part takes the next free bits in attach order
+
+and, for the rig, a `design:` section:
+
+    design:
+      reset: {sources: [{key: 0}], sync: 2}  which key / switch resets, and how
+      clock: pixel | {name: lab, mhz: 50}    the clock design_top runs on
+      uart_rx: 0 | 1                         what uart_rx reads with no UART pin
+      width: {buttons: 8}                    a design bus wider than the bits wired to it
+      tie: {<pin>: rst | ~rst | 0 | 1}       pins driven from the reset or tied off
+
+`extra:` holds any other configuration key (io_overrides, pin_overrides, tie
+for the hardware's sake, manual). The rig's configuration — the dict codegen
+reads — is generate()'s expansion of the setup with the board's layout; it is
+computed when a rig is loaded and never a file of the repository
+(./unifpga setup show <id> prints it). UNIFPGA_PROFILE=0 (synthesize.py
+--no-profile) leaves the design section and the design_bits out: buses
+concatenated in attach order, a power-up reset.
+
 The board layout (config/layouts/<board>.yml) says which pinmap entry every
 connector pin is and what the on-board devices attach as; connector types
 (config/connectors.yml) give pin numbering, power pins and voltage.
 
-generate() turns a setup into the configuration dict config/configurations/
-holds; derive() goes the other way for an existing configuration, and
-check_roundtrip() proves the two agree. validate() reports rig problems: pins
-used twice, unknown connectors or pins, module signals the peripheral does not
-have, required signals left unwired, voltage mismatches.
+generate() turns a setup into its configuration dict; derive() goes the other
+way for a configuration dict from elsewhere, and check_roundtrip() proves the
+two agree. validate() reports rig problems: pins used twice, unknown
+connectors or pins, module signals the peripheral does not have, required
+signals left unwired, voltage mismatches.
 """
 
 import copy
 import os
 import re
+from collections import OrderedDict
 
 from config import init as config_init
 from config import overlay
@@ -361,18 +388,35 @@ def _module_attach(connectors, layout, modules, use):
 
 # a rig's build targets (config/init.py): copied as they are between setup and configuration
 TARGET_KEYS = ("toolchain", "toolchains", "part", "parts", "aliases")
+# the design section's keys and the configuration keys they become
+DESIGN_KEYS = (("reset", "reset"), ("clock", "design_clock"), ("uart_rx", "uart_rx"),
+               ("width", "design_width"), ("tie", "tie"))
+DESIGN_CFG_KEYS = tuple(c for _k, c in DESIGN_KEYS if c != "tie")
+USE_KEYS = ("variant", "plug", "wires", "pins", "params", "bind", "design_bits", "for_toolchain")
 
 
-def generate(setup):
+def conventions_enabled():
+    """The rig's design section and design_bits apply. UNIFPGA_PROFILE=0
+    (synthesize.py --no-profile) turns them off: buses concatenated in attach
+    order, a power-up reset, no ties from the design section."""
+    return os.environ.get("UNIFPGA_PROFILE", "1") not in ("0", "false", "no", "off")
+
+
+def generate(setup, conventions=None):
     """The configuration dict (the `Configuration:` mapping) for a setup. Its
     `for_toolchain` patches (config/overlay.py; on the setup and on its uses)
-    are restated on the configuration and its attaches."""
+    are restated on the configuration and its attaches. `conventions` False
+    leaves the design section and the design_bits out (default: the
+    UNIFPGA_PROFILE switch)."""
+    if conventions is None:
+        conventions = conventions_enabled()
     tcs = _patched_toolchains(setup, "use")
-    cfg = _generate(overlay.select(setup, None, "use"))
+    cfg = _generate(overlay.select(setup, None, "use"), conventions)
     if not tcs:
         return cfg
     try:
-        return overlay.split(cfg, {tc: _generate(overlay.select(setup, tc, "use")) for tc in tcs}, "attach")
+        return overlay.split(cfg, {tc: _generate(overlay.select(setup, tc, "use"), conventions) for tc in tcs},
+                             "attach")
     except ValueError as exc:
         raise SetupError("setup '{}': for_toolchain: {}".format(setup.get("id"), exc))
 
@@ -387,7 +431,7 @@ def _patched_toolchains(doc, list_key):
     return out
 
 
-def _generate(setup):
+def _generate(setup, conventions=True):
     layout = read_layout(setup["board"])
     modules = read_modules()
     connectors = read_connectors()
@@ -397,6 +441,10 @@ def _generate(setup):
             cfg[k] = copy.deepcopy(setup[k])
     attach = []
     for use in setup.get("use") or []:
+        unknown = set(use) - set(USE_KEYS) - {"onboard", "module", "gpio", "raw"}
+        if unknown:
+            raise SetupError("setup '{}': a use has no key {}: {}".format(
+                setup["id"], ", ".join(sorted(unknown)), use_label(use, use.get("raw") or {})))
         if "onboard" in use:
             t = onboard_attach(layout, use)
             # the use's params over the part's; `name: null` leaves one of the part's out
@@ -417,9 +465,9 @@ def _generate(setup):
             if params:
                 a["params"] = params
             a["bind"] = bind
-            attach.append(copy.deepcopy(a))
+            a = copy.deepcopy(a)
         elif "module" in use:
-            attach.append(_module_attach(connectors, layout, modules, use))
+            a = _module_attach(connectors, layout, modules, use)
         elif "gpio" in use:
             c = connector(layout, use["gpio"])
             if not c.get("bank"):
@@ -435,15 +483,59 @@ def _generate(setup):
                 a["bind"] = {sig: [c["pins"][str(k)] for k in use["pins"]]}
             else:
                 a["bind"] = {sig: c["bank"]}
-            attach.append(a)
         elif "raw" in use:
-            attach.append(copy.deepcopy(use["raw"]))
+            a = copy.deepcopy(use["raw"])
         else:
             raise SetupError("setup '{}': a use needs onboard, module, gpio or raw: {}".format(setup["id"], use))
+        # how the design sees this part: a signal on other pins or left
+        # unwired, the design bits its bits are (both conventions: off with
+        # the design section)
+        if conventions and use.get("bind") and "raw" not in use:
+            b = dict(a.get("bind") or {})
+            for sig, ref in use["bind"].items():
+                if ref is None:
+                    b.pop(sig, None)
+                else:
+                    b[sig] = copy.deepcopy(ref)
+            a["bind"] = b
+        if not conventions:
+            a.pop("design_bits", None)
+        elif use.get("design_bits"):
+            a["design_bits"] = copy.deepcopy(use["design_bits"])
+        attach.append(a)
     cfg["attach"] = attach
     for k, v in (setup.get("extra") or {}).items():
+        if k in DESIGN_CFG_KEYS or k == "attach":
+            raise SetupError("setup '{}': extra.{} belongs to the design section".format(setup["id"], k))
         cfg[k] = copy.deepcopy(v)
+    if conventions:
+        _apply_design_section(setup, cfg)
     return cfg
+
+
+def _apply_design_section(setup, cfg):
+    """The setup's `design:` onto the configuration: reset, the design clock,
+    uart_rx, wider buses; its ties over the hardware's."""
+    design = setup.get("design") or {}
+    known = dict(DESIGN_KEYS)
+    unknown = set(design) - set(known)
+    if unknown:
+        raise SetupError("setup '{}': design: has no key {} (reset, clock, uart_rx, width, tie)".format(
+            setup["id"], ", ".join(sorted(unknown))))
+    for key, cfg_key in DESIGN_KEYS:
+        value = design.get(key)
+        if value is None:
+            continue
+        if key == "tie":
+            tie = dict(cfg.get("tie") or {})
+            tie.update(value)
+            cfg["tie"] = tie
+        elif key == "uart_rx":
+            cfg["uart_rx"] = int(value)
+        elif key == "width":
+            cfg["design_width"] = {k: int(v) for k, v in value.items()}
+        else:
+            cfg[cfg_key] = copy.deepcopy(value)
 
 
 # ---------------------------------------------------------------------------
@@ -534,7 +626,8 @@ def _derive(configuration, before=()):
         if configuration.get(k) is not None:
             setup[k] = copy.deepcopy(configuration[k])
     uses = []
-    for a in configuration.get("attach") or []:
+    for a_full in configuration.get("attach") or []:
+        a = {k: v for k, v in a_full.items() if k != "design_bits"}
         use = None
         for o, vid, t in ((o, vid, t) for o in layout.get("onboard") or [] for vid, _l, t in onboard_variants(o)):
             if t["peripheral"] != a["peripheral"] or list(a) != [k for k in ("peripheral", "params", "bind") if k in a]:
@@ -581,14 +674,22 @@ def _derive(configuration, before=()):
             use = _derive_module(a, layout, modules, connectors, refs,
                                  prefer=before[len(uses)] if len(before) == len(configuration.get("attach") or []) else None)
         if use is None:
-            use = {"raw": copy.deepcopy(a)}
+            use = {"raw": copy.deepcopy(a_full)}
+        elif a_full.get("design_bits"):
+            use["design_bits"] = copy.deepcopy(a_full["design_bits"])
         uses.append(use)
     notes = file_notes(configuration["id"])
     if notes:
         setup["notes"] = notes
     setup["use"] = uses
+    design = {}
+    for key, cfg_key in DESIGN_KEYS:
+        if cfg_key != "tie" and configuration.get(cfg_key) is not None:
+            design[key] = copy.deepcopy(configuration[cfg_key])
+    if design:
+        setup["design"] = design
     extra = {k: copy.deepcopy(v) for k, v in configuration.items()
-             if k not in ("id", "board", "attach") + TARGET_KEYS}
+             if k not in ("id", "board", "attach") + TARGET_KEYS + DESIGN_CFG_KEYS}
     if extra:
         setup["extra"] = extra
     return setup
@@ -598,20 +699,8 @@ _STANDARD_NOTE = re.compile(r"^(Configuration '.*'\.|Generated from config/setup
 
 
 def file_notes(config_id):
-    """The comment lines heading config/configurations/<id>.yml other than the
-    ones emit_configuration() writes itself."""
-    notes = []
-    path = configuration_path(config_id)
-    if not os.path.exists(path):
-        return notes
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            if not line.startswith("#"):
-                break
-            text = line[1:].strip()
-            if text and not _STANDARD_NOTE.match(text):
-                notes.append(text)
-    return notes
+    """The notes of the rig's setup (they head its configuration text)."""
+    return list((read_setups().get(config_id) or {}).get("notes") or [])
 
 
 def ordered(value):
@@ -770,8 +859,14 @@ def validate(setup, clashes=None):
         # both; the editor warns): a gpio use, or a raw attach of a peripheral that
         # hands its pins straight to the design
         gpio = "gpio" in use or codegen._is_gpio_passthrough(contract)
+        # a driverless part's pins the design does not reach (design_bits: null
+        # there) are free for another part — the HEX decimal points on the
+        # top LEDs of a Terasic board (codegen's ledger applies the same rule)
+        bit_lists = [list(b or []) for b in (a.get("design_bits") or {}).values()] if contract.get("driver") is None else []
         for sig, ref in (a.get("bind") or {}).items():
-            for port_bit, pin in codegen._bind_pins(pinmap, ref):
+            for k, (port_bit, pin) in enumerate(codegen._bind_pins(pinmap, ref)):
+                if bit_lists and any(k >= len(bl) or bl[k] is None for bl in bit_lists):
+                    continue
                 if pin is None:
                     bank = (pinmap.get("pinBanks") or {}).get(re.split(r"[.\[]", str(ref))[0])
                     if not (isinstance(bank, dict) and bank.get("virtual")):     # an on-chip source has no pin
@@ -802,8 +897,8 @@ def _flow(value):
 def dump_setup(setup):
     """The text of config/setups/<id>.yml: one line per use, wires and
     parameters in flow style."""
-    L = ["# Setup {}: the rig config/configurations/{}.yml describes.".format(setup["id"], setup["id"]),
-         "# tools/setup.py generates that configuration from it (./unifpga setup check).",
+    L = ["# Rig {}: its board, what is on it and how the design sees it.".format(setup["id"]),
+         "# The build expands it into the rig's configuration (./unifpga setup show {}).".format(setup["id"]),
          "", "Setup:"]
     for k in ("id", "board") + TARGET_KEYS:
         if setup.get(k) is not None:
@@ -818,14 +913,14 @@ def dump_setup(setup):
             L.append("    - raw: {}".format(_flow(use["raw"])))
         else:
             L.append("    - {}: {}".format(head, use[head]))
-        for k in ("variant", "plug", "wires", "pins", "params", "for_toolchain"):
-            if k in use and (head != "raw" or k == "for_toolchain"):
+        for k in USE_KEYS:
+            if k in use and (head != "raw" or k in ("for_toolchain", "design_bits")):
                 L.append("      {}: {}".format(k, _scalar(use[k]) if k == "variant" else _flow(use[k])))
     import yaml
-    for k in ("extra", "for_toolchain"):
+    for k in ("design", "extra", "for_toolchain"):
         if setup.get(k):
             L.append("  {}:".format(k))
-            text = yaml.safe_dump(setup[k], sort_keys=False, width=100)
+            text = yaml.safe_dump(setup[k], sort_keys=False, width=100, default_flow_style=None)
             L.extend("    " + line for line in text.rstrip("\n").split("\n"))
     return "\n".join(L) + "\n"
 
@@ -833,8 +928,9 @@ def dump_setup(setup):
 def write_setup(setup):
     os.makedirs(SETUP_DIR, exist_ok=True)
     path = os.path.join(SETUP_DIR, setup["id"] + ".yml")
+    text = dump_setup(setup)                     # rendered before the file is touched
     with open(path, "w", encoding="utf-8") as f:
-        f.write(dump_setup(setup))
+        f.write(text)
     return path
 
 
@@ -844,6 +940,10 @@ def write_setup(setup):
 
 _PLAIN = re.compile(r"^[A-Za-z_][\w.\-/ ]*$")
 _TOP_COMMENTS = {
+    "reset": "What resets the design (the rig's design section)",
+    "design_clock": "The clock design_top runs on (the rig's design section)",
+    "uart_rx": "What uart_rx reads with no UART pin wired (the rig's design section)",
+    "design_width": "Design buses wider than the bits wired to them (the rig's design section)",
     "io_overrides": "Gowin IO_TYPE this configuration states beyond the board-wide ones",
     "tie": "Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`",
     "aliases": "The ids of the per-toolchain / per-chip copies this rig replaced (still accepted)",
@@ -885,10 +985,11 @@ def _block(lines, indent, mapping):
 
 
 def emit_configuration(cfg, notes=None):
-    """The text of config/configurations/<id>.yml for a configuration dict."""
+    """A configuration dict as text (./unifpga setup show; the board editor's
+    configuration pane): what the build reads, expanded from the setup."""
     L = ["# Configuration '{}'.".format(cfg["id"])]
     L += ["# " + n for n in (notes or [])]
-    L += ["# Generated from config/setups/{}.yml (./unifpga setup generate); edit the setup.".format(cfg["id"]),
+    L += ["# Expanded from config/setups/{}.yml (./unifpga setup show); edit the setup.".format(cfg["id"]),
           "", "Configuration:"]
     for k in ("id", "board", "toolchain"):
         L.append("  {}: {}".format(k, _scalar(cfg[k])))
@@ -921,10 +1022,6 @@ def emit_configuration(cfg, notes=None):
             L += ["", "  # " + _TOP_COMMENTS[k]]
             _block(L, 2, {k: cfg[k]})
     return "\n".join(L) + "\n"
-
-
-def configuration_path(config_id):
-    return os.path.join(CONFIG_DIR, "configurations", config_id + ".yml")
 
 
 def generated_text(setup):

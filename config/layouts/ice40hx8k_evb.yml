@@ -68,7 +68,7 @@ Layout:
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
     - id: sram
       label: SRAM U5 K6R4016V1D (256K x 16, 10 ns)
-      device: {kind: sdram, bank: onboard_sram}   # no peripheral model yet
+      attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.a, d: onboard_sram.d, ce_n: onboard_sram.cs_n, oe_n: onboard_sram.oe_n, we_n: onboard_sram.we_n}}
     - id: serial_flash
       label: SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)
       device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet

@@ -51,12 +51,12 @@ Layout:
     - id: buzzer
       label: Buzzer (transistor-driven, jumper CB1)
       attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
-    - id: sdcard
-      label: Micro SD card slot (SPI mode)
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
     - id: sdram
       label: SDRAM HY57V2562GTR (256 Mbit, 16M x 16)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 9}, bind: {clk: onboard_sdram.clk, cke: onboard_sdram.cke, cs_n: onboard_sdram.cs_n, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq, dqm: onboard_sdram.dqm}}
+    - id: sdcard
+      label: Micro SD card slot (SPI mode)
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.sclk, cmd: onboard_sdcard.mosi, dat0: onboard_sdcard.miso, dat3: onboard_sdcard.cs_n}}
     - id: spi_flash
       label: SPI configuration flash M25P16 (16 Mbit, EPCS16-compatible)
       device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet

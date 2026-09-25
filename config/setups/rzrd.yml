@@ -1,5 +1,5 @@
-# Setup rzrd: the rig config/configurations/rzrd.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig rzrd: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show rzrd).
 
 Setup:
   id: rzrd
@@ -9,6 +9,8 @@ Setup:
     - onboard: clk
     - onboard: cpu_reset
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {switches: [0, 1, 2, 3]}
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
@@ -23,7 +25,6 @@ Setup:
     - onboard: ps2
     - onboard: temp_sensor
     - onboard: ir
+    - onboard: sdram
   extra:
-    tie:
-      onboard_char_lcd.d[6]: 0
-      onboard_char_lcd.d[4]: 1
+    tie: {'onboard_char_lcd.d[6]': 0, 'onboard_char_lcd.d[4]': 1}

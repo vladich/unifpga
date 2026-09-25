@@ -73,6 +73,11 @@ output_files/
 
 # Claude Code runtime state
 .claude/
+# plan documents stay local: never committed (the history was rewritten to drop them)
 PLAN.md
+*_PLAN.md
+*_PROGRESS.md
+*.plan.md
+plans/
 docs/
 rtl/sim/.vendor_blackboxes.v

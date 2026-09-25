@@ -1,5 +1,5 @@
-# Setup tang_primer_25k_pmod_hdmi: the rig config/configurations/tang_primer_25k_pmod_hdmi.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_primer_25k_pmod_hdmi: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_primer_25k_pmod_hdmi).
 
 Setup:
   id: tang_primer_25k_pmod_hdmi
@@ -8,10 +8,14 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {buttons: [0, 1], switches: [0, 1]}
     - onboard: uart
     - onboard: hdmi_0
     - module: tm1638_led_key
       wires: {STB: 'pmod_2.[3]', CLK: 'pmod_2.[2]', DIO: 'pmod_2.[1]'}
+      params: {rst: context.rst_on_power_up}
+      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
     - module: inmp441_breakout
       wires: {SCK: 'gpio.[4]', WS: 'gpio.[2]', SD: 'gpio.[5]', L/R: 'gpio.[0]'}
     - module: i2s_dac_breakout
@@ -19,7 +23,10 @@ Setup:
     - gpio: gpio
       pins: ['[0]', '[1]', '[2]', '[3]', '[4]', '[5]', '[6]', '[7]', '[8]', '[9]', '[10]', '[11]', '[12]', '[13]', '[14]', '[15]', '[16]', '[17]', '[18]', '[19]', '[20]', '[21]', '[22]', '[23]', '[24]', '[25]', '[26]', '[27]', '[28]', '[29]', '[36]', '[37]']
       params: {width: 32}
+  design:
+    reset:
+      sources:
+      - {power_up: true}
+      - {tm_key: msb}
   extra:
-    tie:
-      gpio[1]: 0
-      gpio[3]: 1
+    tie: {'gpio[1]': 0, 'gpio[3]': 1}

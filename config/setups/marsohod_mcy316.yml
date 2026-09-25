@@ -1,5 +1,5 @@
-# Setup marsohod_mcy316: the rig config/configurations/marsohod_mcy316.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig marsohod_mcy316: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show marsohod_mcy316).
 
 Setup:
   id: marsohod_mcy316

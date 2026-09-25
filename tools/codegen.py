@@ -113,8 +113,8 @@ class CapabilityPlan:
         self.providers = []         # list of (peripheral_idx, params)
         self.offsets = {}           # peripheral_idx -> bit offset (concat only, contiguous providers)
         self.widths = {}            # peripheral_idx -> width
-        self.bits = {}              # peripheral_idx -> [design bit or None per provider bit] (lab_bits)
-        self.merged = False         # lab_bits on a bus the design reads: per-provider wires ORed per bit
+        self.bits = {}              # peripheral_idx -> [design bit or None per provider bit] (design_bits)
+        self.merged = False         # design_bits on a bus the design reads: per-provider wires ORed per bit
         self.params = {}            # final resolved capability params (e.g. width, screen_width)
 
     def add_provider(self, peripheral_idx, peripheral_def, params):
@@ -124,17 +124,43 @@ class CapabilityPlan:
 def _eval_param(spec, peripheral_params, peripheral_def=None):
     """Resolve a peripheral param spec — either a literal or `$<name>`
     referring to a peripheral-instance parameter (or its default from the
-    peripheral YAML when the configuration doesn't override it)."""
+    peripheral YAML when the configuration doesn't override it), or to a value
+    the peripheral derives from its parameters (`derive: {addr_bits: {sum:
+    [bank_bits, row_bits, col_bits]}}`; `sum`, `multiply`, `divide`)."""
     if isinstance(spec, str) and spec.startswith("$"):
         key = spec[1:]
         v = peripheral_params.get(key)
         if v is not None:
             return v
         if peripheral_def is not None:
-            param_def = (peripheral_def.get("parameters") or {}).get(key) or {}
-            return param_def.get("default")
+            param_def = (peripheral_def.get("parameters") or {}).get(key)
+            if param_def is not None:
+                return param_def.get("default")
+            rule = (peripheral_def.get("derive") or {}).get(key)
+            if rule:
+                return _derived_param(rule, peripheral_params, peripheral_def)
         return None
     return spec
+
+
+def _derived_param(rule, peripheral_params, peripheral_def):
+    """`{sum | multiply | divide: [operands]}`, an operand a parameter name or
+    a number; None when an operand has no value."""
+    op, operands = next(iter(rule.items()))
+    values = [_eval_param("$" + x, peripheral_params, peripheral_def) if isinstance(x, str) else x for x in operands]
+    if any(v is None for v in values):
+        return None
+    values = [int(v) for v in values]
+    if op == "sum":
+        return sum(values)
+    if op == "multiply":
+        out = 1
+        for v in values:
+            out *= v
+        return out
+    if op == "divide":
+        return values[0] // values[1]
+    raise CodegenError("{}: derive rule {!r} is not sum, multiply or divide".format(peripheral_def.get("id"), op))
 
 
 def clock_active(clock_def, attach):
@@ -184,11 +210,11 @@ def build_capability_plans(resolved):
             plan.params = dict(params)
         elif plan.aggregation == "concat":
             primary = capability_primary(plan.id, plan.cap)
-            explicit = {pidx: resolved["peripherals"][pidx].get("lab_bits", {}).get(plan.id)
+            explicit = {pidx: resolved["peripherals"][pidx].get("design_bits", {}).get(plan.id)
                         for pidx, _perif, _params in plan.providers
-                        if resolved["peripherals"][pidx].get("lab_bits", {}).get(plan.id) is not None}
+                        if resolved["peripherals"][pidx].get("design_bits", {}).get(plan.id) is not None}
             if explicit:
-                _plan_lab_bits(resolved, plan, primary, explicit)
+                _plan_design_bits(resolved, plan, primary, explicit)
                 continue
             offset = 0
             for pidx, perif, params in plan.providers:
@@ -197,21 +223,21 @@ def build_capability_plans(resolved):
                 plan.offsets[pidx] = offset
                 plan.widths[pidx] = w
                 offset += w
-            plan.params = {primary: max(offset, _lab_width(resolved, plan))}
+            plan.params = {primary: max(offset, _design_width(resolved, plan))}
         else:
             plan.params = {}
 
     return plans
 
 
-def _lab_width(resolved, plan):
-    """`lab_width: {<cap>: n}` (design-wiring profile): the design's bus is n wide even
-    when fewer bits are wired to it — emooc_cc passes w_key = 8 to lab_top
+def _design_width(resolved, plan):
+    """`design_width: {<cap>: n}` (the rig's design section): the design's bus is n wide even
+    when fewer bits are wired to it — emooc_cc passes w_key = 8 to design_top
     and wires 7 keys; the top bit reads 0."""
     try:
-        return int((resolved["configuration"].get("lab_width") or {}).get(plan.id) or 0)
+        return int((resolved["configuration"].get("design_width") or {}).get(plan.id) or 0)
     except (TypeError, ValueError):
-        raise CodegenError("Configuration {}: lab_width.{} is not an integer"
+        raise CodegenError("Configuration {}: design_width.{} is not an integer"
                            .format(resolved["configuration"]["id"], plan.id))
 
 
@@ -243,12 +269,12 @@ def _provider_wire(plan, sig_name, pidx):
     return "cap_{}_{}__p{}".format(plan.id, sig_name, pidx)
 
 
-def _plan_lab_bits(resolved, plan, primary, explicit):
+def _plan_design_bits(resolved, plan, primary, explicit):
     """Bit-mapped aggregation: every provider of the capability names the
-    design bits its own bits occupy (`lab_bits: {<cap>: [b0, b1, ...]}`,
+    design bits its own bits occupy (`design_bits: {<cap>: [b0, b1, ...]}`,
     null = this provider bit reaches no design bit). Bits may be shared
     between providers of a user-driven bus (TM1638 LEDs and the board
-    LEDs both show the lab's `led`), never between providers of a bus the
+    LEDs both show the design's `led`), never between providers of a bus the
     design reads. A provider whose bits form one ascending run keeps the
     slice form (`offsets`), the others are wired bit by bit."""
     cfg_id = resolved["configuration"]["id"]
@@ -259,11 +285,11 @@ def _plan_lab_bits(resolved, plan, primary, explicit):
         w = int(params.get(primary) or params.get("width") or params.get("count") or params.get("digits") or 1)
         bits = explicit.get(pidx)
         if bits is None:
-            raise CodegenError("Configuration {}: lab_bits.{} is set on one provider, so every provider of {} "
+            raise CodegenError("Configuration {}: design_bits.{} is set on one provider, so every provider of {} "
                                "needs it ({} has none)".format(cfg_id, plan.id, plan.id, perif["id"]))
         bits = list(bits) if isinstance(bits, (list, tuple)) else [bits]
         if len(bits) > w:
-            raise CodegenError("Configuration {}: {} lab_bits.{} names {} bits for a {}-bit provider"
+            raise CodegenError("Configuration {}: {} design_bits.{} names {} bits for a {}-bit provider"
                                .format(cfg_id, perif["id"], plan.id, len(bits), w))
         norm = []
         for b in bits:
@@ -272,7 +298,7 @@ def _plan_lab_bits(resolved, plan, primary, explicit):
                 continue
             b = int(b)
             if b < 0:
-                raise CodegenError("Configuration {}: {} lab_bits.{}: negative bit {}".format(cfg_id, perif["id"], plan.id, b))
+                raise CodegenError("Configuration {}: {} design_bits.{}: negative bit {}".format(cfg_id, perif["id"], plan.id, b))
             owner.setdefault(b, perif["id"])
             norm.append(b)
             top = max(top, b + 1)
@@ -282,10 +308,10 @@ def _plan_lab_bits(resolved, plan, primary, explicit):
         live = [b for b in norm if b is not None]
         if live and len(live) == w and live == list(range(live[0], live[0] + w)):
             plan.offsets[pidx] = live[0]
-    plan.params = {primary: max(top, _lab_width(resolved, plan))}
+    plan.params = {primary: max(top, _design_width(resolved, plan))}
     # a bus the design reads is merged bit by bit from per-provider wires
     # (`cap_<cap>_<sig>__p<idx>`): two providers on one bit OR, as in
-    # `lab_key [w_key - 1:0] |= KEY; lab_key [w_tm_key - 1:0] |= tm_key`
+    # `design_key [w_key - 1:0] |= KEY; design_key [w_tm_key - 1:0] |= tm_key`
     plan.merged = reads
 
 
@@ -413,12 +439,12 @@ def collect_clock_requirements(resolved):
             entry["tolerance_pct"] = tol
             entry["users"] = [idx]
             reqs[name] = entry
-    # `lab_clock: {name: lab, mhz: 50}`: the lab on a PLL output of its own
+    # `design_clock: {name: design, mhz: 50}`: the design on a PLL output of its own
     # (a7_lite: clk_wiz's 50 MHz clk_out2 from the 50 MHz oscillator)
-    lc = resolved["configuration"].get("lab_clock")
+    lc = resolved["configuration"].get("design_clock")
     if isinstance(lc, dict):
         if not {"name", "mhz"} <= set(lc) or lc["name"] in reqs:
-            raise CodegenError("Configuration {}: lab_clock {!r} must be {{name, mhz}} with a name no "
+            raise CodegenError("Configuration {}: design_clock {!r} must be {{name, mhz}} with a name no "
                                "peripheral uses".format(cfg_id, lc))
         reqs[lc["name"]] = {"mhz": float(lc["mhz"]), "from": None, "divide": None,
                             "tolerance_pct": 0.5, "users": [], "pll_output": True}
@@ -674,7 +700,7 @@ def plan_clock_tree(resolved, plans=None):
         return abs(a - b) < 1e-6
 
     # a clock at the board's own frequency is the board clock, unless it must
-    # come out of the PLL (a lab clock taken from clk_wiz: phase-aligned
+    # come out of the PLL (a design clock taken from clk_wiz: phase-aligned
     # with the PLL's other outputs, not with the pin)
     aliased = lambda r: same(r["mhz"], f_in) and not r.get("pll_output")
     sources = [(n, r) for n, r in reqs.items() if r["from"] is None and not aliased(r)]
@@ -755,23 +781,23 @@ def plan_clock_tree(resolved, plans=None):
     return [out[n] for n in reqs]
 
 
-def lab_clock(resolved, plans=None):
-    """The clock the lab (design_top, resets, tm1638, ...) runs on. Default:
-    the board oscillator (`clk`). A configuration that runs the lab
-    on a PLL clock (`localparam lab_mhz = pixel_mhz; assign clk = pixel_clk`
+def design_clock(resolved, plans=None):
+    """The clock the design (design_top, resets, tm1638, ...) runs on. Default:
+    the board oscillator (`clk`). A configuration that runs the design
+    on a PLL clock (`localparam design_mhz = pixel_mhz; assign clk = pixel_clk`
     on the iCEBreaker DVI and Tang Primer 20K Dock LCD/HDMI variants) says
-    `lab_clock: pixel` and the whole lab moves to `clk_pixel`; `lab_clock:
-    {name: lab, mhz: 50}` asks the clock tree for a PLL output of its own.
+    `design_clock: pixel` and the whole lab moves to `clk_pixel`; `design_clock:
+    {name: design, mhz: 50}` asks the clock tree for a PLL output of its own.
     Returns {"net", "mhz", "name"} (name None for the board clock)."""
     clock = resolve_clock(resolved, plans)
-    name = resolved["configuration"].get("lab_clock")
+    name = resolved["configuration"].get("design_clock")
     if isinstance(name, dict):
         name = name.get("name")
     if not name:
         return {"net": "clk", "mhz": clock["mhz"] if clock else None, "name": None}
     reqs = collect_clock_requirements(resolved)
     if name not in reqs:
-        raise CodegenError("Configuration {}: lab_clock '{}' is not a clock any attached peripheral "
+        raise CodegenError("Configuration {}: design_clock '{}' is not a clock any attached peripheral "
                            "declares (have: {})".format(resolved["configuration"]["id"], name,
                                                         ", ".join(reqs) or "none"))
     return {"net": "clk_" + name, "mhz": reqs[name]["mhz"], "name": name}
@@ -779,7 +805,7 @@ def lab_clock(resolved, plans=None):
 
 # Values resolved for one top emission. Passing them through the emitters
 # keeps concurrent requests from changing one another's context references.
-EmissionContext = namedtuple("EmissionContext", "lab_clk diff_buf clock_mhz")
+EmissionContext = namedtuple("EmissionContext", "design_clk diff_buf clock_mhz")
 
 
 def _emit_clock_tree(resolved, plans, clock, strict=True):
@@ -798,7 +824,7 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
         return lines
     if not tree:
         return []
-    lab = lab_clock(resolved, plans)
+    dclk = design_clock(resolved, plans)
     lines = ["    // ---- Clock tree: PLL-derived clocks requested by peripherals ----"]
     fin = clock["mhz"]
     fin_str = str(int(fin)) if float(fin).is_integer() else "{:g}".format(fin)
@@ -884,8 +910,8 @@ def _emit_clock_tree(resolved, plans, clock, strict=True):
             lines.append("    // {}: {:.4f} MHz from {} MHz (PFD {:.3f} MHz, VCO {:.1f} MHz)".format(
                 net, sol.f_out, fin_str, sol.f_pfd, sol.f_vco))
             # SB_PLL40_PAD (the default) takes the clock pad itself, which then
-            # cannot feed the fabric: only when the lab moved onto this PLL.
-            use_pad = 1 if lab["name"] == name else 0
+            # cannot feed the fabric: only when the design moved onto this PLL.
+            use_pad = 1 if dclk["name"] == name else 0
             lines.append("    pll_ice40 # (.DIVR(4'd{r}), .DIVF(7'd{f}), .DIVQ(3'd{q}), .FILTER_RANGE(3'd{fr}), "
                          ".USE_PAD(1'b{pad})) i_pll_{name} (.clkin(clk), .clkout({net}), .lock({net}_locked));".format(
                              r=sol.divr, f=sol.divf, q=sol.divq, fr=sol.filter_range, pad=use_pad,
@@ -1371,19 +1397,19 @@ def validate_configuration(resolved, plans=None):
         label = "{}#{}".format(perif["id"], idx)
         sig_defs = {s["name"]: s for s in perif.get("signals", [])}
         bind = attach.get("bind") or {}
-        # a provider bit no lab bit reaches (`lab_bits: {leds: [0, .., 3, ~, ..]}`)
+        # a provider bit no design bit reaches (`design_bits: {leds: [0, .., 3, ~, ..]}`)
         # is neither driven nor read by this attach: e.g. the HEX decimal
         # point (seven_segment_per_digit's dp) on those LEDs
-        lab_lists = [list(b or []) for b in (attach.get("lab_bits") or {}).values()]
-        if lab_lists and (attach.get("params") or {}).get("mirror"):
-            # both would reverse the bank: lab_bits places every bit already
+        bit_lists = [list(b or []) for b in (attach.get("design_bits") or {}).values()]
+        if bit_lists and (attach.get("params") or {}).get("mirror"):
+            # both would reverse the bank: design_bits places every bit already
             # (`leds: [3, 2, 1, 0]`), a mirror flag on top undoes it
-            problems.append("{}: params.mirror and lab_bits both order the bank; lab_bits places every bit, "
+            problems.append("{}: params.mirror and design_bits both order the bank; design_bits places every bit, "
                             "drop the mirror".format(label))
 
         def unmapped(k):
-            # explicit null, or past the end of a short list (_plan_lab_bits pads with None)
-            return any(k >= len(bl) or bl[k] is None for bl in lab_lists)
+            # explicit null, or past the end of a short list (_plan_design_bits pads with None)
+            return any(k >= len(bl) or bl[k] is None for bl in bit_lists)
 
         for sig, ref in bind.items():
             if _is_virtual(ref):
@@ -1440,7 +1466,7 @@ def validate_configuration(resolved, plans=None):
     else:
         try:
             plan_clock_tree(resolved, plans)
-            lab_clock(resolved, plans)
+            design_clock(resolved, plans)
         except CodegenError as exc:
             problems.append(str(exc).split(": ", 1)[-1])
 
@@ -1478,7 +1504,7 @@ def emit_top_sv(resolved, strict=True, design=None):
         if problems:
             raise CodegenError("\n".join(problems))
     referenced_banks = collect_referenced_banks(resolved)
-    lab_clk = lab_clock(resolved, plans)["net"]
+    design_clk = design_clock(resolved, plans)["net"]
     diff_buf = diff_buf_kind(resolved)
 
     out = []
@@ -1487,7 +1513,7 @@ def emit_top_sv(resolved, strict=True, design=None):
     out.append("// Configuration: {}".format(cfg["id"]))
     out.append("// Board:         {} ({})".format(board.get("BoardName", board["Id"]), board["Id"]))
     out.append("// Toolchain:     {}".format(toolchain["Id"]))
-    out.append("// Generated by tools/codegen.py from config/configurations/{}.yml".format(cfg["id"]))
+    out.append("// Generated by tools/codegen.py from the rig config/setups/{}.yml".format(cfg["id"]))
     out.append("// =============================================================================")
     out.append("")
 
@@ -1517,7 +1543,7 @@ def emit_top_sv(resolved, strict=True, design=None):
         clock_mhz = {name: int(round(sol.f_out)) for name, _r, _v, sol in plan_clock_tree(resolved, plans)}
     except CodegenError:
         clock_mhz = {}
-    emit = EmissionContext(lab_clk, diff_buf, clock_mhz)
+    emit = EmissionContext(design_clk, diff_buf, clock_mhz)
 
     # ---- Reset (may reference the switches / buttons buses) ----
     out.extend(_emit_reset(resolved, plans, emit))
@@ -1551,11 +1577,11 @@ def emit_top_sv(resolved, strict=True, design=None):
         out.append("")
 
     # ---- design_top instantiation ----
-    merge = _emit_lab_bits_merge(plans, resolved)
+    merge = _emit_design_bits_merge(plans, resolved)
     if merge:
         out.extend(merge)
         out.append("")
-    out.extend(_emit_lab_top(resolved, plans, design))
+    out.extend(_emit_design_top(resolved, plans, design))
     out.append("")
     out.append("endmodule")
     out.append("")
@@ -1606,19 +1632,19 @@ def _emit_context(resolved, plans):
     lines.append("    wire rst_n = ~ rst;")
 
     # Advertise clk_mhz to the peripheral drivers (context.clk_mhz). Same
-    # value design_top receives (see _emit_lab_top); 50 only as a last resort.
-    # With `lab_clock:` this is the PLL clock's frequency (lab_mhz).
-    lab = lab_clock(resolved, plans)
-    if lab["name"]:
+    # value design_top receives (see _emit_design_top); 50 only as a last resort.
+    # With `design_clock:` this is the PLL clock's frequency (design_mhz).
+    dclk = design_clock(resolved, plans)
+    if dclk["name"]:
         lines.append("    // Lab clock: context.clk is {} ({:g} MHz), see the clock tree below."
-                     .format(lab["net"], lab["mhz"]))
-    lines.append("    localparam int clk_mhz = {};".format(_lab_mhz_int(lab, clock)))
+                     .format(dclk["net"], dclk["mhz"]))
+    lines.append("    localparam int clk_mhz = {};".format(_design_mhz_int(dclk, clock)))
     return lines
 
 
-def _lab_mhz_int(lab, clock):
-    if lab["mhz"] is not None:
-        return int(round(lab["mhz"]))
+def _design_mhz_int(dclk, clock):
+    if dclk["mhz"] is not None:
+        return int(round(dclk["mhz"]))
     return _clk_mhz_int(clock)
 
 
@@ -1690,7 +1716,7 @@ def reset_sources(resolved, plans=None):
             sources.append(("pin", {"ref": src["pin"], "active": src.get("active", "low")}))
         # a bit of another capability: `switch: 3`, `switch_msb: true`, `key: 0`,
         # `any_key: true`; `bank: onboard_buttons` narrows it to that bank's
-        # pins (marsohod3gw2: KEY0 / KEY1 reset, the shield's keys are the lab's)
+        # pins (marsohod3gw2: KEY0 / KEY1 reset, the shield's keys are the design's)
         for kind, spec in kinds.items():
             v = src.get(kind)
             if v is None or v is False:
@@ -1838,7 +1864,7 @@ def _emit_reset(resolved, plans, emit):
                 net = "rst_sync_{}".format(len(terms))
                 lines.append("    // {}: asserted with the pin, released {} clock(s) after it (synchronised deassertion)".format(ref, k))
                 lines.append("    logic [{}:0] {};".format(k - 1, net))
-                lines.append("    always_ff @ (posedge {} or {} {})".format(emit.lab_clk, "negedge" if low else "posedge", ref))
+                lines.append("    always_ff @ (posedge {} or {} {})".format(emit.design_clk, "negedge" if low else "posedge", ref))
                 lines.append("        if ({}{}) {} <= '0;".format("! " if low else "", ref, net))
                 lines.append("        else {} <= {};".format(net, "1'b1" if k == 1 else "{{ {} [{}:0], 1'b1 }}".format(net, k - 2)))
                 terms.append("(~ {} [{}])".format(net, k - 1))
@@ -1854,7 +1880,7 @@ def _emit_reset(resolved, plans, emit):
         elif kind == "power_up":
             lines.append("    wire rst_on_power_up;")
             lines.append("    imitate_reset_on_power_up i_imitate_reset_on_power_up "
-                         "(.clk ({}), .rst (rst_on_power_up));".format(emit.lab_clk))
+                         "(.clk ({}), .rst (rst_on_power_up));".format(emit.design_clk))
             terms.append("rst_on_power_up")
     lines.append("    assign rst = {};".format(" | ".join(terms) if terms else "1'b0"))
     return lines
@@ -1887,10 +1913,10 @@ def _emit_capability_busses(plans):
     return lines
 
 
-def _emit_lab_bits_merge(plans, resolved=None):
-    """For every merged bus (lab_bits on a bus the design reads): each design
+def _emit_design_bits_merge(plans, resolved=None):
+    """For every merged bus (design_bits on a bus the design reads): each design
     bit is the OR of the provider bits mapped onto it, 0 when none. A bus
-    widened by `lab_width` beyond its providers (no lab_bits) reads 0 on the
+    widened by `design_width` beyond its providers (no design_bits) reads 0 on the
     extra bits."""
     lines = []
     for plan in plans.values():
@@ -1901,7 +1927,7 @@ def _emit_lab_bits_merge(plans, resolved=None):
                 cap = "cap_{}_{}".format(plan.id, sig["name"])
                 width = _signal_width(plan, sig)
                 if not lines:
-                    lines.append("    // ---- lab_bits: design bits merged from the providers (OR where shared) ----")
+                    lines.append("    // ---- design_bits: design bits merged from the providers (OR where shared) ----")
                 if width < 1:
                     # the profile hands the design none of these bits: its
                     # zero-width port ([-1:0]) still reads 0, not a floating net
@@ -1914,13 +1940,13 @@ def _emit_lab_bits_merge(plans, resolved=None):
         if plan.aggregation != "concat" or not plan.providers or plan.bits or resolved is None:
             continue
         wired = sum(plan.widths.values())
-        top = _lab_width(resolved, plan)
+        top = _design_width(resolved, plan)
         if top <= wired:
             continue
         for sig in plan.cap.get("signals", []):
             if sig.get("direction") != "hw_to_user" or not _mapped_signal(plan, sig["name"]):
                 continue
-            lines.append("    assign cap_{}_{} [{}:{}] = '0;   // lab_width: no provider on these bits"
+            lines.append("    assign cap_{}_{} [{}:{}] = '0;   // design_width: no provider on these bits"
                          .format(plan.id, sig["name"], top - 1, wired))
     return lines
 
@@ -2044,7 +2070,7 @@ def _emit_passthrough(resolved, idx, attach, plans, emit):
         plan = plans[cap_id]
         sig_map = entry.get("signal_map") or {}
         if open_drain and plan.aggregation == "concat":
-            # colorlight: `LED [0] = lab_led [0] ? 1'b0 : 1'bz` — an LED
+            # colorlight: `LED [0] = design_led [0] ? 1'b0 : 1'bz` — an LED
             # that is on drives its active level, an LED that is off floats
             drive = "1'b0" if active == "low" else "1'b1"
             for cap_sig in plan.cap.get("signals", []):
@@ -2076,7 +2102,7 @@ def _emit_passthrough(resolved, idx, attach, plans, emit):
                 else:
                     lines.append("    assign {} = {}{};".format(cap_target, inv, pin_expr))
         elif plan.aggregation == "concat" and idx in plan.bits and (idx not in plan.offsets or plan.merged):
-            # lab_bits: one assign per provider bit. A bus the design reads
+            # design_bits: one assign per provider bit. A bus the design reads
             # goes through this provider's own wire (merged afterwards).
             bits = plan.bits[idx]
             for cap_sig in plan.cap.get("signals", []):
@@ -2088,7 +2114,7 @@ def _emit_passthrough(resolved, idx, attach, plans, emit):
                 if mirror:
                     pin_bits = list(reversed(pin_bits))
                 cap_base = "cap_{}_{}".format(cap_id, cap_sig_name)
-                lines.append("    // {}: design bits {} (lab_bits)".format(
+                lines.append("    // {}: design bits {} (design_bits)".format(
                     _attach_label(attach), ", ".join("-" if b is None else str(b) for b in bits)))
                 if plan.merged and _mapped_signal(plan, cap_sig_name):
                     wire = _provider_wire(plan, cap_sig_name, idx)
@@ -2198,7 +2224,7 @@ def _emit_driver_instance(resolved, idx, attach, plans, emit):
     formats = drv.get("port_format") or {}
     open_drain = bool((attach.get("params") or {}).get("open_drain"))
     out_sigs = {s["name"] for s in perif.get("signals", []) if s.get("direction") == "output"}
-    # The Tang Mega 138K / orangepi boards hand the lab `screen_width - 1 - x`
+    # The Tang Mega 138K / orangepi boards hand the design `screen_width - 1 - x`
     # and `screen_height - 1 - y` (`mirrored_x`): the panel is mounted rotated
     mirror_screen = bool((attach.get("params") or {}).get("mirror_screen"))
 
@@ -2401,7 +2427,7 @@ def _resolve_ref(ref, attach, plans, bind, emit, lhs_context=False, slice_for_id
                         and slice_for_idx in plan.bits and slice_for_idx not in plan.offsets):
                     bits = plan.bits[slice_for_idx]
                     if any(b is None for b in bits):
-                        raise CodegenError("{}: lab_bits.{} with an unmapped bit is only supported on a "
+                        raise CodegenError("{}: design_bits.{} with an unmapped bit is only supported on a "
                                            "peripheral without a driver".format(attach.get("peripheral_id"), cap_id))
                     return invert + "{" + ", ".join("{}[{}]".format(base, b) for b in reversed(bits)) + "}"
                 if (plan is not None and plan.aggregation == "concat"
@@ -2415,7 +2441,7 @@ def _resolve_ref(ref, attach, plans, bind, emit, lhs_context=False, slice_for_id
     if s.startswith("context."):
         name = s[len("context."):]
         if name == "clk":
-            name = emit.lab_clk
+            name = emit.design_clk
         elif name == "diff_buf":
             return _sv_literal(emit.diff_buf)
         return invert + name + idx_suffix
@@ -2531,8 +2557,8 @@ def _gpio_connection(resolved, plans):
     if sig is None:
         return None, []
     if not plan.providers:
-        # zybo / ax7035b: the lab gets a w_gpio-wide bus wired to nothing
-        w = _lab_width(resolved, plan)
+        # zybo / ax7035b: the design gets a w_gpio-wide bus wired to nothing
+        w = _design_width(resolved, plan)
         if not w:
             return None, []
         decls = ["    wire gpio_nc_{};".format(i) for i in range(w)]
@@ -2552,12 +2578,12 @@ def _gpio_connection(resolved, plans):
             offset, width = plan.offsets[pidx], plan.widths[pidx]
             places = list(range(offset, offset + width))
         elif pidx in plan.bits:
-            # lab_bits: the numbering when pinless elements sit between the
+            # design_bits: the numbering when pinless elements sit between the
             # pins (arty's dummy_ck_io25_14); an unmapped pin reaches no bit
             width = plan.widths[pidx]
             places = list(plan.bits[pidx])
         else:
-            raise CodegenError("Configuration {}: gpio provider {} has neither an offset nor lab_bits"
+            raise CodegenError("Configuration {}: gpio provider {} has neither an offset nor design_bits"
                                .format(resolved["configuration"]["id"], perif["id"]))
         if len(ports) != width:
             log.warning("Configuration %s: %s provides %d gpio bits but its bind %r covers %d pins",
@@ -2565,7 +2591,7 @@ def _gpio_connection(resolved, plans):
         out_only = str((attach.get("params") or {}).get("direction") or "inout") == "out"
         out_net = "gpio_out_{}".format(pidx)
         if out_only:
-            # emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio` — the design's
+            # emooc_cc: `assign GPIO_P2 [14:6] = design_gpio` — the design's
             # gpio drives the header, what is on the pads never reaches it
             decls.append("    wire [{}:0] {};   // {}: direction out, the design drives these pins"
                          .format(width - 1, out_net, _attach_label(attach)))
@@ -2614,9 +2640,9 @@ DESIGN_INTERFACE = os.path.join(REPO, "rtl", "peripherals", "design_top_interfac
 # named values a contract may refer to (`{source: <name>}`): what the top
 # computes itself rather than reads from a capability parameter
 _SOURCES = {
-    "lab_clock_mhz": lambda resolved, plans, plan: _lab_mhz_int(lab_clock(resolved, plans), resolve_clock(resolved, plans)),
-    "lab_width":     lambda resolved, plans, plan: _lab_width(resolved, plan),
-    "lab_clock_net": lambda resolved, plans, plan: lab_clock(resolved, plans)["net"],
+    "design_clock_mhz": lambda resolved, plans, plan: _design_mhz_int(design_clock(resolved, plans), resolve_clock(resolved, plans)),
+    "design_width":     lambda resolved, plans, plan: _design_width(resolved, plan),
+    "design_clock_net": lambda resolved, plans, plan: design_clock(resolved, plans)["net"],
     "reset_net":     lambda resolved, plans, plan: "rst",
     "uart_rx_idle":  lambda resolved, plans, plan: "1'b{}".format(_uart_rx_idle(resolved)),
 }
@@ -2884,7 +2910,7 @@ def _signal_contract_width(plan, sig_name):
     return int(values.get(port.width) or 1)
 
 
-def _emit_lab_top(resolved, plans, design=None):
+def _emit_design_top(resolved, plans, design=None):
     lines = ["    // ---- User logic (design_top) ----"]
     declared = _declared(design, 1)
     ports = [p for p in design_contract()[2] if not p.optional or _included(p.name, plans[p.capability], declared)]

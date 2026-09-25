@@ -1,5 +1,5 @@
-# Setup saylinx: the rig config/configurations/saylinx.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig saylinx: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show saylinx).
 
 Setup:
   id: saylinx
@@ -9,6 +9,8 @@ Setup:
     - onboard: clk
     - onboard: cpu_resetn
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {buttons: [2, 1, 0], switches: [2, 1, 0]}
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
@@ -22,7 +24,7 @@ Setup:
     - gpio: gpio_0
       params: {width: 34}
     - onboard: buzzer
+    - onboard: sdram
+    - onboard: sdcard
   extra:
-    tie:
-      gpio_0[1]: 0
-      gpio_0[3]: 1
+    tie: {'gpio_0[1]': 0, 'gpio_0[3]': 1}

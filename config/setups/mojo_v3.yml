@@ -1,5 +1,5 @@
-# Setup mojo_v3: the rig config/configurations/mojo_v3.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig mojo_v3: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show mojo_v3).
 
 Setup:
   id: mojo_v3
@@ -15,4 +15,4 @@ Setup:
     - onboard: reset
     - onboard: leds
   extra:
-    manual: true
+    {manual: true}

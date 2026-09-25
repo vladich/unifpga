@@ -48,18 +48,18 @@ Layout:
     - id: lcd
       label: Character LCD module (16x2, HD44780 compatible)
       attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
-    - id: clk2_50mhz
-      label: CLOCK_50_2 (50 MHz)
-      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
     - id: ps2
       label: PS/2 port (keyboard + mouse via Y-cable)
       attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_KBCLK, data: onboard_ps2.PS2_KBDAT}}
-    - id: sdcard
-      label: SD card socket
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
     - id: sdram
       label: SDRAM (8 MB, 16-bit)
-      device: {kind: sdram, bank: onboard_sdram}   # no peripheral model yet
+      attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA_, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
+    - id: clk2_50mhz
+      label: CLOCK_50_2 (50 MHz)
+      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
+    - id: sdcard
+      label: SD card socket
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: onboard_sdcard.SD_DAT0, dat3: onboard_sdcard.SD_DAT3}}
     - id: flash
       label: Flash memory (4 MB)
       device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

@@ -59,6 +59,7 @@ Board:
       pins: {"sclk": "P6", "rst_n": "N8", "io": "M8"}
     onboard_sdram:   # SDRAM HY57V2562GTR U9 (256 Mbit, 16M x16)
       device: {"name": "SDRAM HY57V2562GTR U9 (256 Mbit, 16M x16)", "kind": "sdram"}
+      model_params: {col_bits: 9}
       pins: {"a": ["F11", "E11", "D14", "C14", "A14", "A15", "B16", "C15", "C16", "D15", "F14", "D16", "F15"], "ba": ["G11", "F13"], "dq": ["P14", "M12", "N14", "L12", "L13", "L14", "L11", "K12", "G16", "J11", "J16", "J15", "K16", "K15", "L16", "L15"], "clk": "B14", "cke": "F16", "cs_n": "K10", "ras_n": "K11", "cas_n": "J12", "we_n": "J13", "dqm": ["J14", "G15"]}
     camera:   # 摄像头接口 J5 (Header 9X2)
       device: {"name": "摄像头接口 J5 (Header 9X2)", "kind": "header"}

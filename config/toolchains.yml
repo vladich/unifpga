@@ -3,7 +3,7 @@
 #
 # Schema:
 #   Id:             stable kebab-case identifier used in chips/<family>.yml and
-#                   configurations/<id>.yml
+#                   setups/<id>.yml
 #   Name:           display name
 #   SupportedOperations: executable driver methods; [] marks a catalogue-only
 #                   toolchain. A found installation does not imply support.

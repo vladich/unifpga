@@ -285,7 +285,7 @@ def test_open_drain_pwm_and_eight_bit_sample():
 
 
 def test_gpio_header_direction_out_and_header_uart():
-    """emooc_cc: `assign GPIO_P2 [14:6] = lab_gpio` — the design drives 8
+    """emooc_cc: `assign GPIO_P2 [14:6] = gpio` — the design drives 8
     header pins and never reads them, the ninth is the zero extension;
     de0_cv: the lab's UART on GPIO_1 [34] / [35]."""
     r = config_init.resolve_configuration("emooc_cc")
@@ -338,7 +338,7 @@ def test_partially_used_led_bank_stays_whole():
     r = config_init.resolve_configuration("de0_cv")
     leds = next(a for a in r["peripherals"] if a["peripheral_id"] == "led_bank")
     assert leds["params"]["width"] == 10 and leds["bind"] == {"led": "onboard_leds"}
-    assert leds["lab_bits"] == {"leds": [0, 1, 2, 3, None, None, None, None, None, None]}
+    assert leds["design_bits"] == {"leds": [0, 1, 2, 3, None, None, None, None, None, None]}
     assert ".w_led(4)," in codegen.emit_top_sv(r)
 
 
@@ -399,10 +399,10 @@ def test_exact_rpll_dividers_are_pinned():
 
 def test_tmds_timing_follows_the_vga_clock():
     """The TMDS driver's x / y come from `vga` on the clock the design runs
-    it on: the serial clock (Gowin DVI_TX boards), the lab clock (Tang Nano 4K,
+    it on: the serial clock (Gowin DVI_TX boards), the design clock (Tang Nano 4K,
     colorlight), with that clock's MHz for the pixel enable."""
-    for cid, timing, mhz in (("tang_nano_9k_hdmi_tm1638", "serial", 252), ("tang_nano_4k_hdmi_no_tm1638", "lab", "clk_mhz"),
-                             ("colorlight75b_tm1638_ecp5_yosys", "lab", "clk_mhz")):
+    for cid, timing, mhz in (("tang_nano_9k_hdmi_tm1638", "serial", 252), ("tang_nano_4k_hdmi_no_tm1638", "design", "clk_mhz"),
+                             ("colorlight75b_tm1638_ecp5_yosys", "design", "clk_mhz")):
         r = config_init.resolve_configuration(cid)
         hdmi = next(a for a in r["peripherals"] if a["peripheral_id"] == "hdmi_tmds")
         assert hdmi["params"].get("timing", "serial") == timing, cid
@@ -412,8 +412,8 @@ def test_tmds_timing_follows_the_vga_clock():
         if timing == "serial":
             assert ".SERIAL_MHZ({})".format(mhz) in inst and ".PIXEL_MHZ(25)" in inst, inst
         else:
-            assert ".LAB_MHZ({})".format(mhz) in inst, inst
-        assert ".lab_clk_i(clk)" in top or ".lab_clk_i(clk_pixel)" in top
+            assert ".DESIGN_MHZ({})".format(mhz) in inst, inst
+        assert ".design_clk_i(clk)" in top or ".design_clk_i(clk_pixel)" in top
     # the ref form
     from tools import codegen as cg
     emit = cg.EmissionContext("clk", "generic", {"serial": 252})

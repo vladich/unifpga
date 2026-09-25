@@ -1,5 +1,5 @@
-# Setup m2s025_starter: the rig config/configurations/m2s025_starter.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig m2s025_starter: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show m2s025_starter).
 
 Setup:
   id: m2s025_starter
@@ -16,4 +16,4 @@ Setup:
     - onboard: leds
     - onboard: uart
   extra:
-    manual: true
+    {manual: true}

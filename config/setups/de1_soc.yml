@@ -1,5 +1,5 @@
-# Setup de1_soc: the rig config/configurations/de1_soc.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig de1_soc: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show de1_soc).
 
 Setup:
   id: de1_soc
@@ -11,8 +11,11 @@ Setup:
     - onboard: clk50mhz
     - onboard: buttons
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]}
     - onboard: leds
+      design_bits: {leds: [0, 1, 2, 3, null, null, null, null, null, null]}
     - onboard: 7seg
+      bind: {dp: ['onboard_leds[4]', 'onboard_leds[5]', 'onboard_leds[6]', 'onboard_leds[7]', 'onboard_leds[8]', 'onboard_leds[9]']}
     - onboard: vga
     - module: inmp441_breakout
       wires: {SCK: 'gpio_0.[4]', WS: 'gpio_0.[2]', SD: 'gpio_0.[5]', L/R: 'gpio_0.[0]'}
@@ -21,8 +24,10 @@ Setup:
       params: {width: 36}
     - gpio: gpio_0
       params: {width: 36}
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
+    uart_rx: 0
   extra:
-    tie:
-      onboard_vga.sync_n: 0
-      gpio_0[1]: 0
-      gpio_0[3]: 1
+    tie: {onboard_vga.sync_n: 0, 'gpio_0[1]': 0, 'gpio_0[3]': 1}

@@ -1,5 +1,5 @@
-# Setup tang_nano_9k_lcd_480_272_tm1638_hackathon: the rig config/configurations/tang_nano_9k_lcd_480_272_tm1638_hackathon.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_nano_9k_lcd_480_272_tm1638_hackathon: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_nano_9k_lcd_480_272_tm1638_hackathon).
 
 Setup:
   id: tang_nano_9k_lcd_480_272_tm1638_hackathon
@@ -17,3 +17,8 @@ Setup:
     - module: i2s_dac_breakout
       wires: {BCK: 'gpio.[3]', LCK: 'gpio.[5]', DIN: 'gpio.[4]'}
     - onboard: uart
+  design:
+    reset:
+      sources:
+      - {power_up: true}
+      - {any_key: true}

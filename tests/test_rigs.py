@@ -10,7 +10,7 @@ import pytest
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
 
-from config import init as config_init, overlay, profile  # noqa: E402
+from config import init as config_init, overlay  # noqa: E402
 from tools import setup as su  # noqa: E402
 
 
@@ -89,9 +89,9 @@ def test_a_toolchain_builds_the_rig_with_its_patches():
     assert hdmi and hdmi[0]["params"] == {"timing": "dvi"}
     assert "clk" in gowin["configuration"]["io_overrides"] and "clk" not in apicula["configuration"]["io_overrides"]
     old = config_init.resolve_configuration("tang_primer_20k_dock_hdmi_no_tm1638_yosys")
-    assert old["configuration"]["lab_width"].get("switches") == 5          # its profile's patch
+    assert old["configuration"]["design_width"].get("switches") == 5          # its design section's patch
     assert "switches" not in config_init.resolve_configuration(
-        "tang_primer_20k_dock_hdmi_no_tm1638")["configuration"]["lab_width"]
+        "tang_primer_20k_dock_hdmi_no_tm1638")["configuration"]["design_width"]
 
 
 def _body(cfg):
@@ -104,8 +104,7 @@ def test_no_two_rigs_are_the_same_hardware():
     seen = {}
     rigs = config_init.read_configurations()
     for t in config_init.build_targets(rigs):
-        key = (_body(config_init.for_target(rigs[t["rig"]], t["toolchain"], t["part"])),
-               json.dumps(profile.for_toolchain(profile.load(t["rig"]) or {}, t["toolchain"]), sort_keys=True))
+        key = _body(config_init.for_target(rigs[t["rig"]], t["toolchain"], t["part"]))
         assert key not in seen or seen[key] == t["rig"], "{} and {} are the same rig".format(seen.get(key), t["rig"])
         seen[key] = t["rig"]
 
@@ -382,6 +381,69 @@ def test_a_fan_header_is_an_actuator():
     assert ".pwm(onboard_fan_pwm)" in top and ".en(onboard_fan_en)" in top and ".tach(onboard_fan_tacho)" in top
     pro = codegen.emit_top_sv(config_init.resolve_configuration("tang_mega_138k_pro_lcd_480_272_tm1638"))
     assert ".en()," in pro and ".pwm(onboard_fan_pwm)" in pro
+
+
+def test_the_boards_ram_is_the_memory_capability():
+    """An SDRAM (the DE10-Lite's 32M x 16 IS42S16320D: 13 row / 10 column bits,
+    the DE2-115's 32-bit pair, the Colorlight's chip without DQM pins) or an
+    asynchronous SRAM (the Karnix's, the Nexys 4's 70 ns cellular RAM in its
+    asynchronous mode) reaches the design as `memory`; designs/memory_test
+    requires it. The OMDAZZ Pmod-MIC3 rig has none: its module sits on the
+    header the SDRAM shares."""
+    from tools import codegen, studio
+    want = {"de10_lite": (25, 2, "sdram_sdr # (.CLK_MHZ(clk_mhz), .ROW_BITS(13), .COL_BITS(10), .BANK_BITS(2), .DATA_BITS(16), .CAS(2))"),
+            "de2_115": (25, 4, ".DATA_BITS(32)"), "de0": (22, 2, ".ROW_BITS(12), .COL_BITS(8)"),
+            "colorlight75b_tm1638_ecp5": (21, 4, ".sdram_dqm()"),
+            "karnix_ecp5": (18, 2, "async_sram # (.CLK_MHZ(clk_mhz), .ADDR_BITS(18), .ACCESS_NS(10))"),
+            "nexys4": (23, 2, ".ACCESS_NS(70)")}
+    design = os.path.join(REPO, "designs", "memory_test", "design_top.sv")
+    for rig, (addr_bits, data_bytes, text) in want.items():
+        r = config_init.resolve_configuration(rig)
+        assert codegen.validate_configuration(r) == [], rig
+        plan = codegen.build_capability_plans(r)["memory"]
+        assert (plan.params["addr_bits"], plan.params["data_bytes"]) == (addr_bits, data_bytes), rig
+        assert studio.design_fit(r)["memory_test"] == [], rig
+        top = codegen.emit_top_sv(r, design=design)
+        assert text in top and ".w_mem_addr({})".format(addr_bits) in top and ".mem_bytes({})".format(data_bytes) in top, rig
+    top = codegen.emit_top_sv(config_init.resolve_configuration("de10_lite"), design=design)
+    assert ".sdram_dqm({onboard_sdram_DRAM_UDQM, onboard_sdram_DRAM_LDQM})" in top     # two pins, one bus
+    top = codegen.emit_top_sv(config_init.resolve_configuration("nexys4"), design=design)
+    assert "assign onboard_cellular_ram_advn = 1'b0;" in top and "assign onboard_cellular_ram_cre = 1'b0;" in top
+    assert any("memory" in m for m in studio.design_fit(config_init.resolve_configuration("omdazz_pmod_mic3"))["memory_test"])
+    # the rigs with a RAM, in one place
+    with_memory = sorted(rig for rig in config_init.read_configurations()
+                         if codegen.build_capability_plans(config_init.resolve_configuration(rig))["memory"].providers)
+    assert with_memory == ["alinx_ax301", "alinx_ax4010", "c5gx", "colorlight75b_tm1638_ecp5", "de0", "de0_cv",
+                           "de0_nano_vga666", "de0_nano_vga_pmod", "de1", "de10_lite", "de10_lite_tm1638_virtual_switches",
+                           "de2", "de2_115", "ice40hx8k_evb", "karnix_ecp5", "nexys4", "omdazz", "rzrd",
+                           "saylinx", "saylinx_pmod_mic3"]
+
+
+def test_an_sd_card_slot_is_block_storage():
+    """A board's SD slot, driven in SPI mode (DAT0 as MISO, DAT3 as chip
+    select, whatever the pins are called), is the storage capability;
+    designs/sdcard_leds requires it. A Digilent slot's power pin is held low;
+    the OrangeCrab's slot shares the switches' and the UART's pins and stays
+    out of its rig."""
+    from tools import codegen, studio
+    design = os.path.join(REPO, "designs", "sdcard_leds", "design_top.sv")
+    want = {"de1": (".miso(onboard_sdcard_SD_DAT)", ".cs_n(onboard_sdcard_SD_DAT3)"),
+            "de2_115": (".miso(onboard_sdcard_SD_DAT[0])", ".cs_n(onboard_sdcard_SD_DAT[3])"),
+            "nexys_a7": (".miso(onboard_sdcard_dat[0])", "assign onboard_sdcard_reset = 1'b0;"),
+            "tang_mega_138k_lcd_480_272_tm1638": (".miso(onboard_sdcard_d0_miso)", ".cs_n(onboard_sdcard_d3_cs)"),
+            "saylinx": (".mosi(onboard_sdcard_mosi)", ".cs_n(onboard_sdcard_cs_n)"),
+            "tang_primer_20k_dock_hdmi_tm1638": (".miso(onboard_sdcard_d[0])", ".cs_n(onboard_sdcard_d[3])")}
+    for rig, texts in want.items():
+        r = config_init.resolve_configuration(rig)
+        assert codegen.validate_configuration(r) == [] and studio.design_fit(r)["sdcard_leds"] == [], rig
+        top = codegen.emit_top_sv(r, design=design)
+        assert "sd_spi_reader # (.CLK_MHZ(clk_mhz))" in top and ".st_data(cap_storage_data)" in top, rig
+        for t in texts:
+            assert t in top, (rig, t)
+    assert any("storage" in m for m in studio.design_fit(config_init.resolve_configuration("orangecrab_ecp5"))["sdcard_leds"])
+    with_storage = [rig for rig in config_init.read_configurations()
+                    if codegen.build_capability_plans(config_init.resolve_configuration(rig))["storage"].providers]
+    assert len(with_storage) == 28 and "orangecrab_ecp5" not in with_storage
 
 
 def test_an_infrared_remote_reaches_a_design_that_asks_for_it():

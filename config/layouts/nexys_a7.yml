@@ -83,7 +83,7 @@ Layout:
       attach: {peripheral: xadc_aux, params: {width: 4, channels: [3, 10, 2, 11]}, bind: {p: onboard_pmod_jxadc.xa_p, n: onboard_pmod_jxadc.xa_n}}
     - id: sdcard
       label: microSD card slot
-      device: {kind: sdcard, bank: onboard_sdcard}   # no peripheral model yet
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.sck, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.dat[0]', dat3: 'onboard_sdcard.dat[3]', reset: onboard_sdcard.reset}}
     - id: ethernet
       label: 10/100 Ethernet PHY (SMSC, RMII)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet

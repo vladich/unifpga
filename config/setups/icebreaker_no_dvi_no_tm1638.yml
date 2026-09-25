@@ -1,5 +1,5 @@
-# Setup icebreaker_no_dvi_no_tm1638: the rig config/configurations/icebreaker_no_dvi_no_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig icebreaker_no_dvi_no_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show icebreaker_no_dvi_no_tm1638).
 
 Setup:
   id: icebreaker_no_dvi_no_tm1638
@@ -10,8 +10,11 @@ Setup:
     - onboard: clk
     - onboard: uart
     - onboard: button
+      design_bits: {buttons: [null]}
     - onboard: leds
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {buttons: [0, 1, 2], switches: [0, 1, 2]}
     - module: inmp441_breakout
       wires: {SCK: pmod_p1a.3, WS: pmod_p1a.2, SD: pmod_p1a.4, L/R: pmod_p1a.1}
     - module: i2s_dac_breakout
@@ -19,3 +22,7 @@ Setup:
     - onboard: rgb_led_0
     - onboard: led_green
     - onboard: led_red
+  design:
+    reset:
+      sources:
+      - {key: 0}

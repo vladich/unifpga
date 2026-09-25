@@ -8,7 +8,7 @@ FPGA pin each design bit reaches. Peripherals with a driver (TM1638, VGA, I2S,
 provider and its whole pin set.
 
 The mapping comes from codegen's own capability plans (the same code that
-writes top.sv), with the design-wiring profile applied.
+writes top.sv), the rig's design section applied.
 """
 
 import re

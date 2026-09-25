@@ -22,6 +22,6 @@ Capability:
   required: true           # every rig needs one (a new setup starts with the board's)
   design:
     parameters:
-      clk_mhz: {value: {source: lab_clock_mhz}}
+      clk_mhz: {value: {source: design_clock_mhz}}
     ports:
-      clk: {signal: clk, width: 1, net: {source: lab_clock_net}}
+      clk: {signal: clk, width: 1, net: {source: design_clock_net}}

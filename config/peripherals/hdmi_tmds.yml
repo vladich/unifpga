@@ -45,9 +45,9 @@ Peripheral:
   parameters:
     timing:
       type: enum
-      values: [serial, lab, pixel, dvi]
+      values: [serial, design, pixel, dvi]
       default: serial     # the clock the `vga` timing generator runs on (x / y / syncs):
-                          # the serial clock (Gowin DVI_TX boards), the lab clock (Tang Nano 4K,
+                          # the serial clock (Gowin DVI_TX boards), the design clock (Tang Nano 4K,
                           # colorlight, marsohod3gw2) or the pixel clock (Tang Primer 25K); `dvi`
                           # is dvi_top's own dvi_sync, as when dvi_top is instantiated directly (a7_lite)
   clocks:
@@ -69,11 +69,11 @@ Peripheral:
       TIMING:     $timing
       SERIAL_MHZ: clock.serial.mhz
       PIXEL_MHZ:  clock.pixel.mhz
-      LAB_MHZ:    context.clk_mhz
+      DESIGN_MHZ:    context.clk_mhz
     port_map:
       serial_clk_i: clock.serial
       pixel_clk_i:  clock.pixel
-      lab_clk_i:    context.clk
+      design_clk_i:    context.clk
       timing_clk_i: clock.timing
       rst_i:        context.rst
       red_i:        capability.screen.red

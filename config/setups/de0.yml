@@ -1,5 +1,5 @@
-# Setup de0: the rig config/configurations/de0.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig de0: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show de0).
 
 Setup:
   id: de0
@@ -11,6 +11,7 @@ Setup:
     - onboard: buttons
     - onboard: leds_green
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]}
     - onboard: 7seg
     - onboard: vga
     - module: inmp441_breakout
@@ -23,7 +24,11 @@ Setup:
       params: {width: 32}
     - onboard: lcd
     - onboard: ps2
+    - onboard: sdram
+    - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
   extra:
-    tie:
-      gpio_0[3]: 0
-      gpio_0[5]: 1
+    tie: {'gpio_0[3]': 0, 'gpio_0[5]': 1}

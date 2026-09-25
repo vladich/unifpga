@@ -18,8 +18,8 @@ Capability:
   passthrough: gpio_header # the peripheral a setup's `gpio: <connector>` attaches
   design:
     parameters:
-      # without a provider: the configuration's lab_width.gpio (BGM's w_gpio)
-      w_gpio: {value: width, absent: {source: lab_width}}
+      # without a provider: the configuration's design_width.gpio (the design's w_gpio)
+      w_gpio: {value: width, absent: {source: design_width}}
     ports:
-      # straight to the pin nets (inout), also without a provider (lab_width)
+      # straight to the pin nets (inout), also without a provider (design_width)
       gpio: {signal: io, width: w_gpio, net: {source: gpio_connection}}

@@ -1,5 +1,5 @@
-# Setup nexys4: the rig config/configurations/nexys4.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig nexys4: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show nexys4).
 
 Setup:
   id: nexys4
@@ -16,8 +16,8 @@ Setup:
     - onboard: 7seg
     - onboard: cpu_resetn
     - onboard: buttons
+      design_bits: {buttons: [1, 3, 2, 0, 4]}
     - onboard: vga
-    - onboard: pwm_amp
     - onboard: uart
     - module: inmp441_breakout
       wires: {SCK: 'pmod_jd.[4]', WS: 'pmod_jd.[5]', SD: 'pmod_jd.[0]', L/R: 'pmod_jd.[6]'}
@@ -29,9 +29,10 @@ Setup:
     - onboard: temp_sensor
     - onboard: accelerometer
     - onboard: pmod_jxadc
+    - onboard: cellular_ram
+    - onboard: sdcard
+  design:
+    width: {gpio: 32}
+    tie: {onboard_pwm_amp.pwm: 0, onboard_pwm_amp.sd: 0}
   extra:
-    tie:
-      onboard_mic.clk: 0
-      onboard_mic.lrsel: 0
-      pmod_jd[2]: 0
-      pmod_jd[1]: 1
+    tie: {onboard_mic.clk: 0, onboard_mic.lrsel: 0, 'pmod_jd[2]': 0, 'pmod_jd[1]': 1}
