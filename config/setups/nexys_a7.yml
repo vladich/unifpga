@@ -28,6 +28,7 @@ Setup:
     - module: digilent_pmod_amp3
       wires: {'9': 'pmod_jb.[6]', '4': 'pmod_jb.[3]', '1': 'pmod_jb.[0]', '2': 'pmod_jb.[1]'}
     - onboard: usb_hid
+    - onboard: temp_sensor
   extra:
     tie:
       onboard_mic.clk: 0

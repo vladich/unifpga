@@ -65,7 +65,7 @@ Layout:
       device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
     - id: temp_sensor
       label: Temperature sensor LM75 (I2C)
-      device: {kind: temperature, bank: onboard_temp_sensor}   # no peripheral model yet
+      attach: {peripheral: i2c_temperature_sensor, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
     - id: hdmi_rx
       label: 'HDMI input (commented out in LiteX: "UNVERIFIED")'
       device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet

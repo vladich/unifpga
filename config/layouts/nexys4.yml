@@ -69,6 +69,9 @@ Layout:
     - id: uart
       label: uart
       attach: {peripheral: uart_2wire, bind: {rx: onboard_uart.rx}}
+    - id: usb_hid
+      label: USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_usb_hid.clk, data: onboard_usb_hid.data}}
     - id: pmod_jxadc
       label: Pmod header JXADC (XADC analog pairs; usable as digital IO)
       device: {kind: xadc, bank: onboard_pmod_jxadc}   # no peripheral model yet
@@ -80,10 +83,7 @@ Layout:
       device: {kind: accelerometer, bank: onboard_accelerometer}   # no peripheral model yet
     - id: temp_sensor
       label: Temperature sensor (I2C)
-      device: {kind: temperature, bank: onboard_temp_sensor}   # no peripheral model yet
-    - id: usb_hid
-      label: USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
-      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_usb_hid.clk, data: onboard_usb_hid.data}}
+      attach: {peripheral: i2c_temperature_sensor, params: {shift: 3}, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
     - id: ethernet
       label: 10/100 Ethernet PHY (SMSC, RMII)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet

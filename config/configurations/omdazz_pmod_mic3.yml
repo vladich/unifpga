@@ -69,6 +69,10 @@ Configuration:
     - peripheral: buzzer
       bind:
         pwm: onboard_buzzer.beep
+    - peripheral: i2c_temperature_sensor
+      bind:
+        scl: onboard_temp_sensor.scl
+        sda: onboard_temp_sensor.sda
 
   # Pins held at a constant or driven from the reset — `assign PIN = 1'b0` / `~ rst`
   tie:

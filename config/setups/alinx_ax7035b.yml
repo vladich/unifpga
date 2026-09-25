@@ -14,3 +14,4 @@ Setup:
     - onboard: leds
     - onboard: 7seg
     - onboard: uart
+    - onboard: temp_sensor

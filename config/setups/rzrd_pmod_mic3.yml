@@ -21,6 +21,7 @@ Setup:
       params: {width: 14}
     - onboard: buzzer
     - onboard: ps2
+    - onboard: temp_sensor
   extra:
     tie:
       gpio_pseudo_sdram[8]: 0
