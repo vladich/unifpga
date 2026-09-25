@@ -1,0 +1,34 @@
+# xilinx_ml605: ML605.
+
+Board:
+  id: xilinx_ml605
+  name: ML605
+  url: https://www.xilinx.com/products/boards-and-kits/ek-v6-ml605-g.html
+  producer: xilinx_amd
+  chip: XC6VLX240T-1FFG1156C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - nor_flash
+  - parallel_lcd
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2103
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr3_sodimm_socket
+  - intel_strataflash_p30
+  - micron_n25q128a
+  - marvell_88e1111
+  - lcd_char_16x2
+  - silabs_si570

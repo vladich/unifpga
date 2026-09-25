@@ -1,0 +1,24 @@
+# lattice_machxo5_nx_15d_devkit: MachXO5-NX-15D Development Board.
+
+Board:
+  id: lattice_machxo5_nx_15d_devkit
+  name: MachXO5-NX-15D Development Board
+  url: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/machxo5-nx-15d-development-board
+  status: active
+  producer: lattice
+  chip: LFMXO5-15D-8BBG400C
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  features:
+  - jtag_header
+  - usb_jtag_bridge
+  - hyperram
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - arduino_shield_header
+  - raspi_hat_header
+  - pmod_connector
+  devices:
+  - ftdi_ft2232h

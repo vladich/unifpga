@@ -1,0 +1,26 @@
+# myir_zybo_y7_v4: MyIR MYS-7Z010 / MYS-7Z020 Y-Series Zynq-7000 Single Board.
+
+Board:
+  id: myir_zybo_y7_v4
+  name: MyIR MYS-7Z010 / MYS-7Z020 Y-Series Zynq-7000 Single Board
+  url: https://www.myirtech.com/list.asp?id=518
+  status: active
+  producer: myir
+  chip: XC7Z020-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_uart_bridge
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - micron_mt41k128m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211e
+  - microsd_socket_generic

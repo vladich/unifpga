@@ -1,0 +1,39 @@
+# iwave_rainbow_g30d: iW-RainboW-G30D Zynq UltraScale+ MPSoC (ZU7/ZU5/ZU4) Dev Kit.
+
+Board:
+  id: iwave_rainbow_g30d
+  name: iW-RainboW-G30D Zynq UltraScale+ MPSoC (ZU7/ZU5/ZU4) Dev Kit
+  url: https://www.iwavesystems.com/product/zynq-ultrascale-mpsoc-zu7-zu5-zu4/
+  status: active
+  producer: iwave
+  chip: XCZU4EV-1SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sata_host
+  - usb_3_host
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

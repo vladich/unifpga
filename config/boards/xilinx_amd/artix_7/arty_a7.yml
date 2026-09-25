@@ -1,14 +1,46 @@
 # arty_a7 pin map.
 
+
 Board:
   id: arty_a7
-  fpga:
-    producer: "Xilinx (AMD)"
-    family: "Artix 7"
+  name: Arty A7
+  product: Arty A7 (Arty A7-35T / Arty A7-100T)
+  summary: Xilinx Artix-7 XC7A35TICSG324-1L (33,280 logic cells) or XC7A100TCSG324-1 (101,440); 256 MB DDR3L, Quad-SPI
+    flash, 10/100 Ethernet (MII PHY), 4 switches, 4 buttons, 4 LEDs + 4 RGB LEDs, 4 Pmods, chipKIT/Arduino shield
+    header, USB-UART
+  url: https://digilent.com/reference/programmable-logic/arty-a7/start
+  producer: digilent
+  chips:
+  - id: xc7a35ticsg324-1l
+    name: 35t
+  - id: xc7a100tcsg324-1
+    name: 100t
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_10_100
+  - qspi_flash
+  - rgb_leds
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q128a
+  - micron_mt41k128m16
+  - ti_dp83848j
+  - ftdi_ft2232h
+  - digilent_hs2
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk100mhz: { pins: E3, frequency_mhz: 100 }
     onboard_switches:
       pins: [A8, C11, C10, A10]
@@ -97,3 +129,91 @@ Board:
       device: {"name": "DDR3L SDRAM 256 MB (MT41K128M16XX-15E)", "kind": "ddr"}
       iostandard: ["DIFF_SSTL135", "SSTL135"]
       pins: {"addr": ["R2", "M6", "N4", "T1", "N6", "R7", "V6", "U7", "R8", "V7", "R6", "U6", "T6", "T8"], "ba": ["R1", "P4", "P2"], "cas_n": "M4", "ck_n": "V9", "ck_p": "U9", "cke": "N5", "cs_n": "U8", "dm": ["L1", "U1"], "dq": ["K5", "L3", "K3", "L6", "M3", "M1", "L4", "M2", "V4", "T5", "U4", "V5", "V1", "T3", "U3", "R3"], "dqs_n": ["N1", "V2"], "dqs_p": ["N2", "U2"], "odt": "R5", "ras_n": "P3", "reset_n": "K6", "we_n": "P5"}
+  # ---- drawn: headers and parts; ./unifpga layout draft arty_a7 regenerates from here on ----
+  # Physical layout of the Arty A7: its connectors, which pinmap entry each
+  # connector pin is, and the on-board devices as attaches.
+  # Pin numbering: Digilent Arty-A7-35-Master.xdc (`Sch=ja[1]` .. `ja[10]`,
+  # `Sch=ck_io[n]`), checked against config/boards/xilinx_amd/artix_7/arty_a7.yml.
+  layout: {verified: true, generated: false}
+
+  headers:
+    - id: ja
+      type: pmod_2x6
+      label: JA
+      bank: pmod_ja
+      pins: {1: "pmod_ja[0]", 2: "pmod_ja[1]", 3: "pmod_ja[2]", 4: "pmod_ja[3]",
+             7: "pmod_ja[4]", 8: "pmod_ja[5]", 9: "pmod_ja[6]", 10: "pmod_ja[7]"}
+    - id: jb
+      type: pmod_2x6
+      label: JB
+      bank: pmod_jb
+      pins: {1: "pmod_jb[0]", 2: "pmod_jb[1]", 3: "pmod_jb[2]", 4: "pmod_jb[3]",
+             7: "pmod_jb[4]", 8: "pmod_jb[5]", 9: "pmod_jb[6]", 10: "pmod_jb[7]"}
+    - id: jc
+      type: pmod_2x6
+      label: JC
+      bank: pmod_jc
+      pins: {1: "pmod_jc[0]", 2: "pmod_jc[1]", 3: "pmod_jc[2]", 4: "pmod_jc[3]",
+             7: "pmod_jc[4]", 8: "pmod_jc[5]", 9: "pmod_jc[6]", 10: "pmod_jc[7]"}
+    - id: jd
+      type: pmod_2x6
+      label: JD
+      bank: pmod_jd
+      pins: {1: "pmod_jd[0]", 2: "pmod_jd[1]", 3: "pmod_jd[2]", 4: "pmod_jd[3]",
+             7: "pmod_jd[4]", 8: "pmod_jd[5]", 9: "pmod_jd[6]", 10: "pmod_jd[7]"}
+    - id: ck
+      type: chipkit_shield
+      label: Shield header
+      bank: arduino_io
+      pins: {IO0: "arduino_io[0]", IO1: "arduino_io[1]", IO2: "arduino_io[2]", IO3: "arduino_io[3]",
+             IO4: "arduino_io[4]", IO5: "arduino_io[5]", IO6: "arduino_io[6]", IO7: "arduino_io[7]",
+             IO8: "arduino_io[8]", IO9: "arduino_io[9]", IO10: "arduino_io[10]", IO11: "arduino_io[11]",
+             IO12: "arduino_io[12]", IO13: "arduino_io[13]", IO26: "arduino_io[14]", IO27: "arduino_io[15]",
+             IO28: "arduino_io[16]", IO29: "arduino_io[17]", IO30: "arduino_io[18]", IO31: "arduino_io[19]",
+             IO32: "arduino_io[20]", IO33: "arduino_io[21]", IO34: "arduino_io[22]", IO35: "arduino_io[23]",
+             IO36: "arduino_io[24]", IO37: "arduino_io[25]", IO38: "arduino_io[26]", IO39: "arduino_io[27]",
+             IO40: "arduino_io[28]", IO41: "arduino_io[29]"}
+
+  parts:
+    - id: clock
+      label: 100 MHz oscillator
+      attach: {peripheral: clock_input, params: {frequency_mhz: 100}, bind: {clk: clk100mhz}}
+    - id: switches
+      label: SW0-SW3
+      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+    - id: rgb_led_0
+      label: LD0 (RGB)
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_0.r, g: onboard_rgb_led_0.g, b: onboard_rgb_led_0.b}}
+    - id: rgb_led_1
+      label: LD1 (RGB)
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_1.r, g: onboard_rgb_led_1.g, b: onboard_rgb_led_1.b}}
+    - id: rgb_led_2
+      label: LD2 (RGB)
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_2.r, g: onboard_rgb_led_2.g, b: onboard_rgb_led_2.b}}
+    - id: rgb_led_3
+      label: LD3 (RGB)
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_3.r, g: onboard_rgb_led_3.g, b: onboard_rgb_led_3.b}}
+    - id: leds
+      label: LD4-LD7
+      attach: {peripheral: led_bank, params: {width: 4}, bind: {led: onboard_leds}}
+    - id: buttons
+      label: BTN0-BTN3
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: uart
+      label: USB-UART (FT2232)
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: reset
+      label: RESET button
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: xadc_shield
+      label: XADC analog inputs A0-A5 of the shield header (0-3.3 V, single-ended)
+      attach: {peripheral: xadc_aux, params: {width: 6, channels: [4, 5, 6, 7, 15, 0], full_scale_mv: 3300},
+               bind: {p: onboard_xadc_shield.vaux_p, n: onboard_xadc_shield.vaux_n}}
+    - id: xadc_shield_diff
+      label: XADC analog pairs A6/A7, A8/A9, A10/A11 of the shield header (0-1 V)
+      attach: {peripheral: xadc_aux, params: {width: 3, channels: [12, 13, 14]},
+               bind: {p: onboard_xadc_shield_diff.vaux_p, n: onboard_xadc_shield_diff.vaux_n}}
+    - id: power_sense
+      label: Power monitor on XADC pairs (VU / 16, 5V0 / 5.99, 250 mV per A, 500 mV per A)
+      attach: {peripheral: xadc_aux, params: {width: 4, channels: [2, 1, 9, 10]},
+               bind: {p: onboard_power_sense.sense_p, n: onboard_power_sense.sense_n}}

@@ -3,16 +3,46 @@
 # Source: Digilent Arty-Z7-10-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: arty_z7_10
-  fpga:
-    producer: Xilinx
-    family: Zynq 7000
-    part: XC7Z010-1CLG400C
+  name: Arty Z7-10
+  producer: digilent
+  chip: XC7Z010-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_amp_class_d
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - rgb_leds
+  - usb_2_otg
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - cypress_s25fl128s
+  - ftdi_ft2232h
+  - realtek_rtl8211e
+  - microchip_usb3343
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - tmds_direct
+  - pwm_audio_inline
+  - issi_is43tr16256a
+  - ti_txs02612
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     onboard_buttons:
       pins: ["D19", "D20", "L20", "L19"]
     onboard_leds:

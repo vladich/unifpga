@@ -1,0 +1,11 @@
+# upduino_v3: Upduino v3.0.
+
+Board:
+  id: upduino_v3
+  name: Upduino v3.0
+  url: https://tinyvision.ai/products/upduino-v3-0
+  producer: tinyvision_ai
+  chip: iCE40UP5K-SG48
+  bridges:
+  - ft232h-spi
+  programmer: iceprog

@@ -2,9 +2,31 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/lattice_certuspro_nx_vvml.py
 
+
 Board:
   id: lattice_certuspro_nx_vvml
-  pinBanks:
+  name: CertusPro-NX Voice & Vision Machine Learning Board
+  url: https://www.latticesemi.com/certuspro-nx-vvml-board
+  status: active
+  producer: lattice
+  chip: LFCPNX-100-9LFG672I
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  features:
+  - hyperram
+  - qspi_flash
+  - mipi_csi2_input
+  - usb_2_otg
+  - usb_uart_bridge
+  - pmod_connector
+  - user_leds
+  - user_buttons
+  - usb_powered
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h
+  banks:
     sys_clk:
       pins: M22
     onboard_buttons:

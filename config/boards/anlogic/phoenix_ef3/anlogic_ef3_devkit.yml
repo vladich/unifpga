@@ -1,0 +1,11 @@
+# anlogic_ef3_devkit: Phoenix EF3 Dev Kit.
+
+Board:
+  id: anlogic_ef3_devkit
+  name: Phoenix EF3 Dev Kit
+  status: eol
+  producer: anlogic
+  chip: EF3L185BG256C
+  bridges:
+  - jtag
+  programmer: td_pgm

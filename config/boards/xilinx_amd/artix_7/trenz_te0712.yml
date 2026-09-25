@@ -1,0 +1,19 @@
+# trenz_te0712: TE0712 Artix-7 100T 1GB SoM.
+
+Board:
+  id: trenz_te0712
+  name: TE0712 Artix-7 100T 1GB SoM
+  url: https://www.trenz-electronic.de/en/FPGA-Module-with-AMD-Artix-7A100T-2C-1-GByte-DDR3L-4-x-5-cm-low-profile/TE0712-03-72C36-L
+  status: active
+  producer: trenz_electronic
+  chip: XC7A100T-2FGG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - jtag_header
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q128a

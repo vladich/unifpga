@@ -1,0 +1,23 @@
+# qmtech_cyc10lp_10cl080_core: QMtech Cyclone 10 LP 10CL080 Core Board.
+
+Board:
+  id: qmtech_cyc10lp_10cl080_core
+  name: QMtech Cyclone 10 LP 10CL080 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  status: active
+  producer: qmtech
+  chip: 10CL080YU484C8G
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - qspi_flash
+  - sdr_sdram
+  - spi_flash
+  - user_buttons
+  - user_leds
+  devices:
+  - winbond_w9825g6kh
+  - winbond_w25q128
+  - led_discrete_generic
+  - pushbutton_smd_generic

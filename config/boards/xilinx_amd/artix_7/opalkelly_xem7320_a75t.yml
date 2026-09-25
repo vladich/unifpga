@@ -1,0 +1,22 @@
+# opalkelly_xem7320_a75t: XEM7320-A75T.
+
+Board:
+  id: opalkelly_xem7320_a75t
+  name: XEM7320-A75T
+  url: https://opalkelly.com/products/fpga-integration/XEM7320
+  status: active
+  producer: opal_kelly
+  chip: XC7A75T-1
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - usb_3_host
+  - syzygy_standard
+  - syzygy_txr4
+  - usb_powered
+  - user_leds

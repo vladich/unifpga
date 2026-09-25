@@ -252,7 +252,7 @@ def _extract(value, fmt):
     if fmt == "versioned":
         return parse_versioned_ref(value)[0]
     if fmt == "record_id":
-        value = value.get("Id") if isinstance(value, dict) else value
+        value = value.get("id", value.get("Id")) if isinstance(value, dict) else value
     if not isinstance(value, str) or not value.strip():
         raise ValueError("not an id")
     return value
@@ -564,16 +564,10 @@ def _module_pins(ctx, entity, rec_id, record, path):
 
 
 def _board_chips(board):
-    """[(chip id, variant name or None)] of a catalogue entry."""
-    if board.get("Chip"):
-        return [(board["Chip"], None)]
-    out = []
-    for entry in board.get("Chips") or []:
-        if isinstance(entry, dict):
-            out.append((entry.get("Id"), entry.get("Name")))
-        else:
-            out.append((entry, None))
-    return out
+    """[(chip id, variant name or None)] of a board."""
+    if board.get("chip"):
+        return [(board["chip"], None)]
+    return [(c.get("id"), c.get("name")) if isinstance(c, dict) else (c, None) for c in board.get("chips") or []]
 
 
 @rule("rig_chip_variant")
@@ -625,13 +619,32 @@ def _rig_expands(ctx, entity, rec_id, record, path):
         ctx.fail(path, "rig {!r}: {}".format(rec_id, exc))
 
 
-@rule("layout_connector_types")
-def _layout_connector_types(ctx, entity, rec_id, record, path):
+@rule("board_drawn")
+def _board_drawn(ctx, entity, rec_id, record, path):
+    """A board's headers are of a known connector type and sit on its banks;
+    its parts bind its banks."""
     known = set(ctx.records.get("connector_type", {})) | set(record.get("connector_types") or {})
-    for i, conn in enumerate(record.get("connectors") or []):
-        if isinstance(conn, dict) and conn.get("type") not in known:
-            ctx.fail(path, "layout {!r} connector {}: type {!r} is neither in config/connectors.yml nor the layout's connector_types"
-                     .format(rec_id, conn.get("id", i), conn.get("type")))
+    banks = set(record.get("banks") or {})
+    for i, header in enumerate(record.get("headers") or []):
+        if not isinstance(header, dict):
+            continue
+        if header.get("type") not in known:
+            ctx.fail(path, "board {!r} header {}: type {!r} is neither in config/connectors.yml nor the board's connector_types"
+                     .format(rec_id, header.get("id", i), header.get("type")))
+        if header.get("bank") and header["bank"] not in banks:
+            ctx.fail(path, "board {!r} header {}: bank {!r} is not one of its banks".format(rec_id, header.get("id", i), header["bank"]))
+    for part in record.get("parts") or []:
+        if not isinstance(part, dict):
+            continue
+        attaches = [part.get("attach")] + [v.get("attach") for v in part.get("variants") or [] if isinstance(v, dict)]
+        for attach in attaches:
+            for sig, ref in ((attach or {}).get("bind") or {}).items():
+                for one in (ref if isinstance(ref, list) else [ref]):
+                    bank = re.split(r"[.\[]", str(one))[0]
+                    if bank not in banks:
+                        ctx.fail(path, "board {!r} part {}: {} binds {!r}, not one of its banks".format(rec_id, part.get("id"), sig, one))
+        if "device" in part and isinstance(part["device"], dict) and part["device"].get("bank") not in banks:
+            ctx.fail(path, "board {!r} part {}: device bank {!r} is not one of its banks".format(rec_id, part.get("id"), part["device"].get("bank")))
 
 
 @rule("programmer_families")

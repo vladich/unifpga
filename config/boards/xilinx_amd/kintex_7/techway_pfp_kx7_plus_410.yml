@@ -1,0 +1,21 @@
+# techway_pfp_kx7_plus_410: PFP-KX7+ 410T.
+
+Board:
+  id: techway_pfp_kx7_plus_410
+  name: PFP-KX7+ 410T
+  url: https://www.techway.com/p/fpga-board-pcie-with-fmc-slot/
+  status: active
+  producer: techway
+  chip: XC7K410T-2FFG900
+  bridges:
+  - jtag
+  - pcie-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - pcie_endpoint
+  - fmc_plus
+  - jtag_header

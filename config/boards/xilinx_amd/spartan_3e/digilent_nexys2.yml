@@ -1,0 +1,31 @@
+# digilent_nexys2: Nexys 2.
+
+Board:
+  id: digilent_nexys2
+  name: Nexys 2
+  url: https://digilent.com/reference/programmable-logic/nexys-2/start
+  producer: digilent
+  chips:
+  - id: XC3S500E-FG320
+    name: 500k
+  - id: XC3S1200E-FG320
+    name: 1200k
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - nor_flash
+  - sdr_sdram
+  - seven_segment_display
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - seven_seg_module_shared
+  - vga666_resistor_dac
+  - intel_strataflash_p30
+  - micron_mt45w8mw16

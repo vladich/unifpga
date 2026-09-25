@@ -1,0 +1,21 @@
+# trenz_te0727: TE0727 Zynq-7010 Pi-Zero Form Factor.
+
+Board:
+  id: trenz_te0727
+  name: TE0727 Zynq-7010 Pi-Zero Form Factor
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE07XX-Zynq-SoC/TE0727-Zynq-SoC/
+  status: active
+  producer: trenz_electronic
+  chip: XC7Z010-1CLG225C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - hdmi_output
+  - usb_2_otg
+  - jtag_header
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q128a

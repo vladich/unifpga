@@ -1,0 +1,16 @@
+# pangomicro_pangu_50pro_som: Pangu 50Pro Core Board (盘古50Pro核心板).
+
+Board:
+  id: pangomicro_pangu_50pro_som
+  name: Pangu 50Pro Core Board (盘古50Pro核心板)
+  url: https://www.pangomicro.com/open/4293.html
+  status: active
+  notes: Industrial; 4x HSSTLP.
+  producer: pangomicro
+  chip: PG2L50H-FBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - adc_chip

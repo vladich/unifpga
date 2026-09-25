@@ -1,0 +1,25 @@
+# bittware_ia_720i: BittWare IA-720i Agilex 7 I-Series.
+
+Board:
+  id: bittware_ia_720i
+  name: BittWare IA-720i Agilex 7 I-Series
+  url: https://www.bittware-molex.com/products/ia-720i-agilex-7-pcie-fpga-card/
+  status: active
+  notes: BittWare publishes AGI023 with core and transceiver speed grade -1 but no package; R18A is the package of
+    IA-440i and IA-780i, unconfirmed for this card.
+  producer: bittware
+  chip: AGIB023R18A1E1V
+  bridges:
+  - pcie-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

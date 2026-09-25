@@ -1,0 +1,25 @@
+# pangomicro_pgc2k_mbg256_demo: PGC2K-MBG256 DEMO Board.
+
+Board:
+  id: pangomicro_pgc2k_mbg256_demo
+  name: PGC2K-MBG256 DEMO Board
+  url: https://www.pangomicro.com/open/2637.html
+  status: active
+  notes: Pango first-party DEMO; Arduino UNO-compatible; 6-layer PCB; W25Q16 flash; 24C02 EEPROM.
+  producer: pangomicro
+  chip: PGC2K-MBG256
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - clock_generator
+  - eeprom_chip
+  - spi_flash
+  - pmod_connector
+  - arduino_shield_header
+  devices:
+  - led_discrete_generic
+  - pushbutton_smd_generic

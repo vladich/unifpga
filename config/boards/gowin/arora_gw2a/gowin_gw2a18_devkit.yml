@@ -1,0 +1,23 @@
+# gowin_gw2a18_devkit: GW2A-18 Dev Kit.
+
+Board:
+  id: gowin_gw2a18_devkit
+  name: GW2A-18 Dev Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/31/
+  producer: gowin_semi
+  chip: GW2A-LV18PG256C8/I7
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - ddr3_memory
+  - dip_switches
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

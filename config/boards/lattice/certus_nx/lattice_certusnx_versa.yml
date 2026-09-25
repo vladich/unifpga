@@ -2,9 +2,24 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/lattice_certuspro_nx_versa.py
 
+
 Board:
   id: lattice_certusnx_versa
-  pinBanks:
+  name: Certus-NX Versa Eval Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/certus_nx_versa_eval
+  producer: lattice
+  chip: LFD2NX-40-8BG256C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - microsd_socket
+  - pcie_endpoint
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  banks:
     onboard_buttons:
       pins: H21
     onboard_leds:

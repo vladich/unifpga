@@ -1,0 +1,31 @@
+# intel_stratix10_tx_devkit: Stratix 10 TX FPGA Development Kit.
+
+Board:
+  id: intel_stratix10_tx_devkit
+  name: Stratix 10 TX FPGA Development Kit
+  status: eol
+  producer: intel_altera
+  chip: 1ST280EY2F55E2VG
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

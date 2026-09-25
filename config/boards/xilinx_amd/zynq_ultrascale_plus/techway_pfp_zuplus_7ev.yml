@@ -1,0 +1,22 @@
+# techway_pfp_zuplus_7ev: PFP-ZU+ 07V (ZU7EV).
+
+Board:
+  id: techway_pfp_zuplus_7ev
+  name: PFP-ZU+ 07V (ZU7EV)
+  url: https://www.techway.com/p/zynq-board-pcie-avec-fmc/
+  status: active
+  producer: techway
+  chip: XCZU7EV-2FFVC1156E
+  bridges:
+  - jtag
+  - pcie-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - pcie_endpoint
+  - fmc_plus
+  - jtag_header
+  - hdmi_output

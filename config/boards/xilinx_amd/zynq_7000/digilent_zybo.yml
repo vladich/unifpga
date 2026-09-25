@@ -2,9 +2,43 @@
 # Source: official Digilent XDC
 #   https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Zybo-Master.xdc
 
+
 Board:
   id: digilent_zybo
-  pinBanks:
+  name: Zybo
+  url: https://digilent.com/reference/programmable-logic/zybo/start
+  producer: digilent
+  chip: xc7z010-1clg400c
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_2_otg
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - cypress_s25fl128s
+  - realtek_rtl8211e
+  - adi_ssm2603
+  - microchip_usb3343
+  - microsd_socket_generic
+  - tmds_direct
+  - ftdi_ft2232h
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - vga666_resistor_dac
+  - micron_mt41k128m16
+  banks:
     sys_clk:
       pins: L16
     onboard_buttons:

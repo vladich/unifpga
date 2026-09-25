@@ -1,0 +1,16 @@
+# pangomicro_pangu_50k_som: Pangu 50K Core Board (盘古50K核心板).
+
+Board:
+  id: pangomicro_pangu_50k_som
+  name: Pangu 50K Core Board (盘古50K核心板)
+  url: https://www.pangomicro.com/open/4279.html
+  status: active
+  notes: Pure SoM; 4x HSST 6.375G; industrial -40..100 C.
+  producer: pangomicro
+  chip: PGL50H-6IFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - gpio_header_generic

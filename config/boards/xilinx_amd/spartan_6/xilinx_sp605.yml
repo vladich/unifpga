@@ -2,9 +2,35 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_sp605.py
 
+
 Board:
   id: xilinx_sp605
-  pinBanks:
+  name: SP605
+  url: https://www.xilinx.com/products/boards-and-kits/ek-s6-sp605-g.html
+  producer: xilinx_amd
+  chip: XC6SLX45T-3FGG484C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - parallel_lcd
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q128a
+  - marvell_88e1111
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - lcd_char_16x2
+  banks:
     sys_clk:
       pins: AB13
     cpu_resetn:

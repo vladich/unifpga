@@ -1,11 +1,34 @@
 # de0 pin map.
 
+
 Board:
   id: de0
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone III"
-    part: EP3C16F484C6N
+  name: DE0
+  product: Altera DE0 Board
+  summary: Cyclone III EP3C16F484C6N (15,408 LEs); 8 MB SDRAM + 4 MB flash; VGA (4-bit), RS-232, PS/2, SD, 16x2 LCD,
+    2x 2x20 GPIO, 4x 7-seg, 10 SW, 3 buttons, 10 LEDs
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=56&No=364
+  producer: terasic
+  chip: EP3C16F484C6N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - hynix_hy57v641620
+  - usb_blaster_ii_built_in
+  - vga666_resistor_dac
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -16,7 +39,7 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
-  pinBanks:
+  banks:
     clk50mhz: { pins: G21, frequency_mhz: 50 }
     onboard_uart:
       pins:
@@ -67,3 +90,58 @@ Board:
     onboard_flash:   # Flash memory (4 MB)
       device: {"name": "Flash memory (4 MB)", "kind": "flash"}
       pins: {"FL_ADDR": ["P7", "P5", "P6", "N7", "N5", "N6", "M8", "M4", "P2", "N2", "N1", "M3", "M2", "M1", "L7", "L6", "AA2", "M5", "M6", "P1", "P3", "R2"], "FL_DQ": ["R7", "P8", "R8", "U1", "V2", "V3", "W1", "Y1", "T5", "T7", "T4", "U2", "V1", "V4", "W2"], "FL_DQ15_AM1": "Y2", "FL_BYTE_N": "AA1", "FL_CE_N": "N8", "FL_OE_N": "R6", "FL_RST_N": "R1", "FL_RY": "M7", "FL_WE_N": "P4", "FL_WP_N": "T3"}
+  # ---- drawn: headers and parts; ./unifpga layout draft de0 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio_0
+      type: pin_row
+      label: GPIO_0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_0
+      pins: {'[0]': 'gpio_0[0]', '[1]': 'gpio_0[1]', '[2]': 'gpio_0[2]', '[3]': 'gpio_0[3]', '[4]': 'gpio_0[4]', '[5]': 'gpio_0[5]', '[6]': 'gpio_0[6]', '[7]': 'gpio_0[7]', '[8]': 'gpio_0[8]', '[9]': 'gpio_0[9]', '[10]': 'gpio_0[10]', '[11]': 'gpio_0[11]', '[12]': 'gpio_0[12]', '[13]': 'gpio_0[13]', '[14]': 'gpio_0[14]', '[15]': 'gpio_0[15]', '[16]': 'gpio_0[16]', '[17]': 'gpio_0[17]', '[18]': 'gpio_0[18]', '[19]': 'gpio_0[19]', '[20]': 'gpio_0[20]', '[21]': 'gpio_0[21]', '[22]': 'gpio_0[22]', '[23]': 'gpio_0[23]', '[24]': 'gpio_0[24]', '[25]': 'gpio_0[25]', '[26]': 'gpio_0[26]', '[27]': 'gpio_0[27]', '[28]': 'gpio_0[28]', '[29]': 'gpio_0[29]', '[30]': 'gpio_0[30]', '[31]': 'gpio_0[31]'}
+    - id: gpio_1
+      type: pin_row
+      label: GPIO_1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_1
+      pins: {'[0]': 'gpio_1[0]', '[1]': 'gpio_1[1]', '[2]': 'gpio_1[2]', '[3]': 'gpio_1[3]', '[4]': 'gpio_1[4]', '[5]': 'gpio_1[5]', '[6]': 'gpio_1[6]', '[7]': 'gpio_1[7]', '[8]': 'gpio_1[8]', '[9]': 'gpio_1[9]', '[10]': 'gpio_1[10]', '[11]': 'gpio_1[11]', '[12]': 'gpio_1[12]', '[13]': 'gpio_1[13]', '[14]': 'gpio_1[14]', '[15]': 'gpio_1[15]', '[16]': 'gpio_1[16]', '[17]': 'gpio_1[17]', '[18]': 'gpio_1[18]', '[19]': 'gpio_1[19]', '[20]': 'gpio_1[20]', '[21]': 'gpio_1[21]', '[22]': 'gpio_1[22]', '[23]': 'gpio_1[23]', '[24]': 'gpio_1[24]', '[25]': 'gpio_1[25]', '[26]': 'gpio_1[26]', '[27]': 'gpio_1[27]', '[28]': 'gpio_1[28]', '[29]': 'gpio_1[29]', '[30]': 'gpio_1[30]', '[31]': 'gpio_1[31]'}
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 3}, bind: {btn: onboard_buttons}}
+    - id: leds_green
+      label: leds green
+      attach: {peripheral: led_bank, params: {width: 10}, bind: {led: onboard_leds_green}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 10}, bind: {sw: onboard_switches}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_per_digit, params: {digits: 4, segs: 8}, bind: {hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3]}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: lcd
+      label: Character LCD module (16x2, HD44780 compatible)
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
+    - id: ps2
+      label: PS/2 port (keyboard + mouse via Y-cable)
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_KBCLK, data: onboard_ps2.PS2_KBDAT}}
+    - id: sdram
+      label: SDRAM (8 MB, 16-bit)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA_, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
+    - id: clk2_50mhz
+      label: CLOCK_50_2 (50 MHz)
+      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
+    - id: sdcard
+      label: SD card socket
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: onboard_sdcard.SD_DAT0, dat3: onboard_sdcard.SD_DAT3}}
+    - id: flash
+      label: Flash memory (4 MB)
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

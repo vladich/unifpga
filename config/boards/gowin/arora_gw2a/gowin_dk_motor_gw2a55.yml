@@ -1,0 +1,22 @@
+# gowin_dk_motor_gw2a55: GW2A-55 Motor Control Dev Kit (DK_Motor_GW2A-LV55PG484C8I7).
+
+Board:
+  id: gowin_dk_motor_gw2a55
+  name: GW2A-55 Motor Control Dev Kit (DK_Motor_GW2A-LV55PG484C8I7)
+  url: https://www.gowinsemi.com/en/support/devkits_detail/56/
+  status: active
+  producer: gowin_semi
+  chip: GW2A-LV55PG484C8/I7
+  bridges:
+  - jtag
+  programmer: gowin_pgm
+  features:
+  - gpio_header_generic
+  - jtag_header
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

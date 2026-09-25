@@ -1,0 +1,25 @@
+# numato_vesnin: Numato Vesnin Artix-7 FPGA Development Board.
+
+Board:
+  id: numato_vesnin
+  name: Numato Vesnin Artix-7 FPGA Development Board
+  status: eol
+  producer: numato_lab
+  chip: XC7A200T-2FBG484C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - ddr3_memory
+  - qspi_flash
+  - pcie_endpoint
+  - user_leds
+  - user_buttons
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q128a
+  - micron_mt41k256m16
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,11 @@
+# lattice_ice40up_evalkit: iCE40 UltraPlus Evaluation Kit.
+
+Board:
+  id: lattice_ice40up_evalkit
+  name: iCE40 UltraPlus Evaluation Kit
+  url: https://www.latticesemi.com/products/developmentboardsandkits/ice40ultraplusbreakoutboard
+  producer: lattice
+  chip: iCE40UP5K-SG48
+  bridges:
+  - jtag
+  programmer: iceprog

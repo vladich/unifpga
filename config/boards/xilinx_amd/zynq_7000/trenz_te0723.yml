@@ -1,0 +1,19 @@
+# trenz_te0723: TE0723 Zynq-7010 Mini SoM.
+
+Board:
+  id: trenz_te0723
+  name: TE0723 Zynq-7010 Mini SoM
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE07XX-Zynq-SoC/TE0723-Zynq-SoC/
+  status: active
+  producer: trenz_electronic
+  chip: XC7Z010-1CLG225C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - jtag_header
+  devices:
+  - micron_mt41k128m16
+  - micron_n25q128a

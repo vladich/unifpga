@@ -3,16 +3,35 @@
 # Source: Digilent Arty-S7-25-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: arty_s7_25
-  fpga:
-    producer: Xilinx
-    family: Spartan 7
-    part: XC7S25CSGA324-1
+  name: Arty S7-25
+  producer: digilent
+  chip: XC7S25CSGA324-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - qspi_flash
+  - rgb_leds
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - cypress_s25fl128s
+  - micron_mt41k128m16
+  - ftdi_ft2232h
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk100mhz: { pins: "R2" }
     onboard_buttons:
       pins: ["G15", "K16", "J16", "H13"]

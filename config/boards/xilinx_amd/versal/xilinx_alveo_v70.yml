@@ -1,0 +1,16 @@
+# xilinx_alveo_v70: AMD Alveo V70 AI Inference Accelerator Card.
+
+Board:
+  id: xilinx_alveo_v70
+  name: AMD Alveo V70 AI Inference Accelerator Card
+  url: https://www.amd.com/en/products/accelerators/alveo.html
+  status: active
+  producer: xilinx_amd
+  chip: XCVE2802-2MSEVSVH1760
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  features:
+  - lpddr4_memory
+  - pcie_endpoint
+  - qsfp_cage

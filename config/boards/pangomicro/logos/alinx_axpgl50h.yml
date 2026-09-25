@@ -1,0 +1,31 @@
+# alinx_axpgl50h: ALINX AXPGL50H Development Board.
+
+Board:
+  id: alinx_axpgl50h
+  name: ALINX AXPGL50H Development Board
+  url: https://www.pangomicro.com/open/4269.html
+  status: active
+  notes: 1 GB DDR3 + 128 Mbit QSPI; HSST transceivers exposed.
+  producer: alinx
+  chip: PGL50H-6IFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - parallel_camera_input
+  - qspi_flash
+  - usb_2_device
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

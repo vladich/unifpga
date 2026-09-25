@@ -1,8 +1,40 @@
 # terasic_c5g pin map.
 
+
 Board:
   id: terasic_c5g
-  pinBanks:
+  name: Cyclone V GX Starter Kit (C5G)
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=167&No=830
+  producer: terasic
+  chip: 5CGXFC5C6F27C7N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - microsd_socket
+  - qspi_flash
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - wolfson_wm8731
+  - adi_adv7123
+  - micron_mt41k128m16
+  - micron_n25q128a
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - ftdi_ft232r
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  banks:
     onboard_buttons:
       pins: [PIN_P11, PIN_P12, PIN_Y15, PIN_Y16]
     onboard_switches:

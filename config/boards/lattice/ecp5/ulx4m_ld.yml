@@ -1,0 +1,25 @@
+# ulx4m_ld: ULX4M-LD (DDR3, CM4-compatible).
+
+Board:
+  id: ulx4m_ld
+  name: ULX4M-LD (DDR3, CM4-compatible)
+  url: https://www.crowdsupply.com/intergalaktik/ulx4m
+  status: active
+  producer: intergalaktik
+  chip: LFE5U-85F-6BG381C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  extra_programmers:
+  - ecpprog[*]
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - hdmi_output
+  - user_leds
+  - user_buttons
+  - usb_powered

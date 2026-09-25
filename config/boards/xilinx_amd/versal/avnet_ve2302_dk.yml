@@ -1,0 +1,27 @@
+# avnet_ve2302_dk: Versal VE2302 Development Kit.
+
+Board:
+  id: avnet_ve2302_dk
+  name: Versal VE2302 Development Kit
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/versal-ve2302/ve2302-development-kit/
+  status: active
+  producer: avnet
+  chip: XCVE2302-1LSESFVA784
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - lpddr4_memory
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - realtek_rtl8211fd
+  - silabs_cp2108
+  - emmc_chip_generic
+  - microsd_socket_generic

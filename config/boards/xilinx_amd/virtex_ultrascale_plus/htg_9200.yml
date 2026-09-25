@@ -1,0 +1,24 @@
+# htg_9200: HTG-9200 Virtex UltraScale+ QSFP28 Optical Platform.
+
+Board:
+  id: htg_9200
+  name: HTG-9200 Virtex UltraScale+ QSFP28 Optical Platform
+  url: https://www.hitechglobal.com/Boards/Virtex_UltraScale+_Vita57.4.htm
+  status: active
+  producer: hitech_global
+  chip: XCVU13P-2FHGB2104E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - fmc_plus
+  - ddr4_memory
+  - qspi_flash
+  - usb_uart_bridge
+  - jtag_header
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - silabs_si570
+  - micron_n25q256a
+  - ddr4_sodimm_socket

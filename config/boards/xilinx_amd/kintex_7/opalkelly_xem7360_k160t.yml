@@ -1,0 +1,20 @@
+# opalkelly_xem7360_k160t: XEM7360-K160T.
+
+Board:
+  id: opalkelly_xem7360_k160t
+  name: XEM7360-K160T
+  url: https://opalkelly.com/products/fpga-integration/XEM7360
+  status: active
+  producer: opal_kelly
+  chip: XC7K160T-1
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - usb_3_host
+  - usb_powered
+  - user_leds

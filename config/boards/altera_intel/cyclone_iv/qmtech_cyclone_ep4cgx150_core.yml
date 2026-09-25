@@ -2,9 +2,27 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/qmtech_ep4cgx150.py
 
+
 Board:
   id: qmtech_cyclone_ep4cgx150_core
-  pinBanks:
+  name: QMtech Cyclone IV GX EP4CGX150 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  status: active
+  producer: qmtech
+  chip: EP4CGX150DF27C7N
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - qspi_flash
+  - sdr_sdram
+  - user_buttons
+  - user_leds
+  devices:
+  - winbond_w9825g6kh
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: B14
     qspi_flash_clk:

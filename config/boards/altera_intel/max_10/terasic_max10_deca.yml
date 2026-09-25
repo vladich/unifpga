@@ -2,9 +2,43 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/terasic_deca.py
 
+
 Board:
   id: terasic_max10_deca
-  pinBanks:
+  name: MAX 10 DECA
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=944
+  producer: terasic
+  chip: 10M50DAF484C6GES
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - accelerometer
+  - adc_chip
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_10_100
+  - hdmi_output
+  - microsd_socket
+  - usb_2_otg
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - adi_adv7513
+  - microchip_lan8742a
+  - microchip_usb3343
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - adi_adxl345
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ti_tlv320aic3254
+  - lt_ltc2308
+  banks:
     sys_clk:
       pins: [M8, P11]
     onboard_buttons:

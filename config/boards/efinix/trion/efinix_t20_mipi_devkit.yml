@@ -2,9 +2,31 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/efinix_trion_t20_mipi_dev_kit.py
 
+
 Board:
   id: efinix_t20_mipi_devkit
-  pinBanks:
+  name: Trion T20 MIPI Development Kit
+  url: https://www.efinixinc.com/products-devkits-triont20-mipi.html
+  status: active
+  producer: efinix
+  chip: T20F169C3
+  bridges:
+  - usb-jtag
+  programmer: efinity_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - mipi_csi2_input
+  - user_leds
+  - user_buttons
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: D13
     onboard_leds:

@@ -1,0 +1,35 @@
+# xilinx_zcu670: ZCU670.
+
+Board:
+  id: xilinx_zcu670
+  name: ZCU670
+  url: https://www.xilinx.com/products/boards-and-kits/zcu670.html
+  producer: xilinx_amd
+  chip: XCZU67DR-2FSVE1156E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_2_otg
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - ddr4_sodimm_socket
+  - microchip_usb3343
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - emmc_chip_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1512
+  - spansion_s25fl256s

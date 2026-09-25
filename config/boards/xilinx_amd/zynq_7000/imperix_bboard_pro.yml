@@ -1,0 +1,16 @@
+# imperix_bboard_pro: B-Board PRO.
+
+Board:
+  id: imperix_bboard_pro
+  name: B-Board PRO
+  url: https://imperix.com/products/control/inverter-control-board/
+  status: active
+  producer: imperix
+  chip: XC7Z030-3FBG676E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - jtag_header

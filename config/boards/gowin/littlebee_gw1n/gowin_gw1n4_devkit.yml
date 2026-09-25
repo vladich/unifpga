@@ -1,0 +1,25 @@
+# gowin_gw1n4_devkit: GW1N-4 Starter Kit.
+
+Board:
+  id: gowin_gw1n4_devkit
+  name: GW1N-4 Starter Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/1/
+  status: active
+  producer: gowin_semi
+  chip: GW1N-LV4LQ144C6/I5
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - dip_switches
+  - jtag_header
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

@@ -1,0 +1,38 @@
+# avnet_ultrazed_ev_sk: UltraZed-EV Starter Kit (Carrier Card).
+
+Board:
+  id: avnet_ultrazed_ev_sk
+  name: UltraZed-EV Starter Kit (Carrier Card)
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/ultrazed-ev/
+  status: active
+  producer: avnet
+  chip: XCZU7EV-1FBVB900I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - barrel_jack_input
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - pmod_connector
+  - qspi_flash
+  - sfp_cage
+  - usb_2_otg
+  - usb_3_host
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - micron_mt40a256m16
+  - marvell_88e1512
+  - adi_adv7611
+  - adi_adv7511
+  - ti_tmds141
+  - ftdi_ft4232h
+  - emmc_chip_generic
+  - microsd_socket_generic

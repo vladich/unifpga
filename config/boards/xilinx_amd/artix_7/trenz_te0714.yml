@@ -1,0 +1,19 @@
+# trenz_te0714: TE0714 Artix-7 35T Micro SoM.
+
+Board:
+  id: trenz_te0714
+  name: TE0714 Artix-7 35T Micro SoM
+  url: https://www.trenz-electronic.de/en/FPGA-Module-with-AMD-Artix-7A35T-2I-16-MByte-Flash-3-3V-Config.-3-x-4-cm/TE0714-04-42I-7-B
+  status: active
+  producer: trenz_electronic
+  chip: XC7A35T-2CSG325I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - jtag_header
+  - qspi_flash
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q128a

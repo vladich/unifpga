@@ -2,9 +2,17 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/kosagi_fomu_pvt.py
 
+
 Board:
   id: fomu_pvt
-  pinBanks:
+  name: Fomu PVT
+  url: https://www.crowdsupply.com/sutajio-kosagi/fomu
+  producer: foosn
+  chip: iCE40UP5K-UWG30
+  bridges:
+  - jtag
+  programmer: dfu_util
+  banks:
     qspi_flash_clk:
       pins:
         pin: D1

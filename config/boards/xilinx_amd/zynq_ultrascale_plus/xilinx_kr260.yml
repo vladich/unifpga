@@ -1,0 +1,24 @@
+# xilinx_kr260: AMD Kria KR260 Robotics Starter Kit.
+
+Board:
+  id: xilinx_kr260
+  name: AMD Kria KR260 Robotics Starter Kit
+  url: https://www.amd.com/en/products/system-on-modules/kria/k26/kr260-robotics-starter-kit.html
+  status: active
+  producer: xilinx_amd
+  chip: XCK26-SFVC784
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - sfp_cage
+  - ethernet_phy_gigabit
+  - usb_3_host
+  - usb_uart_bridge
+  - microsd_socket
+  - pmod_connector
+  - user_leds
+  - jtag_header
+  devices:
+  - microsd_socket_generic

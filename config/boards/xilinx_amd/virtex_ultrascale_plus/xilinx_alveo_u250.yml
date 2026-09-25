@@ -2,9 +2,22 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_alveo_u250.py
 
+
 Board:
   id: xilinx_alveo_u250
-  pinBanks:
+  name: Alveo U250
+  url: https://www.xilinx.com/products/boards-and-kits/alveo/u250.html
+  producer: xilinx_amd
+  chip: XCU250-FIGD2104-2L-E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_edge_connector
+  devices:
+  - ddr4_sodimm_socket
+  banks:
     cpu_resetn:
       pins: AL20
     onboard_switches:

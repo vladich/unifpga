@@ -1,0 +1,26 @@
+# numato_styx_zynq_z2_dev: Numato Styx Zynq Development Board (carrier).
+
+Board:
+  id: numato_styx_zynq_z2_dev
+  name: Numato Styx Zynq Development Board (carrier)
+  status: eol
+  producer: numato_lab
+  chip: XC7Z020-1CLG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - micron_mt41k256m16
+  - micron_n25q128a
+  - microsd_socket_generic
+  - realtek_rtl8211e

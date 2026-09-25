@@ -1,0 +1,29 @@
+# pangomicro_pg2l200h_ffbg1156_demo: PG2L200H-FFBG1156 DEMO Board.
+
+Board:
+  id: pangomicro_pg2l200h_ffbg1156_demo
+  name: PG2L200H-FFBG1156 DEMO Board
+  url: https://www.pangomicro.com/open/2532.html
+  status: active
+  notes: Pango first-party DEMO; SI5345 clock chip; 64-bit DDR3; PCIe x4.
+  producer: pangomicro
+  chip: PG2L200H-FFBG1156
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - clock_generator
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - hdmi_output
+  - pcie_endpoint
+  - sfp_cage
+  - spi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

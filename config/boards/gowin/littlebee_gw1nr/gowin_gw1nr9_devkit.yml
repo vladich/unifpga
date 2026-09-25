@@ -1,0 +1,19 @@
+# gowin_gw1nr9_devkit: GW1NR-9 Dev Kit.
+
+Board:
+  id: gowin_gw1nr9_devkit
+  name: GW1NR-9 Dev Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/29/
+  producer: gowin_semi
+  chip: GW1NR-LV9QN88PC6/I5
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

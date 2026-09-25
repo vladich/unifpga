@@ -3,16 +3,38 @@
 # Source: Digilent Cora-Z7-10-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: cora_z7_10
-  fpga:
-    producer: Xilinx
-    family: Zynq 7000
-    part: XC7Z010CLG400-1
+  name: Cora Z7-10
+  producer: digilent
+  chip: XC7Z010CLG400-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - rgb_leds
+  - usb_2_otg
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - ftdi_ft2232h
+  - realtek_rtl8211e
+  - microchip_usb3343
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - ti_txs02612
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     onboard_buttons:
       pins: ["D20", "D19"]
     onboard_rgb_led_0:

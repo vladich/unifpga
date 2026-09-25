@@ -1,0 +1,31 @@
+# pangomicro_pg2k400_ffbg676_demo: PG2K400-FFBG676 DEMO Board.
+
+Board:
+  id: pangomicro_pg2k400_ffbg676_demo
+  name: PG2K400-FFBG676 DEMO Board
+  url: https://www.pangomicro.com/open/2534.html
+  status: active
+  notes: Dual-core Cortex-A53 SoPC; 4x 16-bit DDR4 + 2x 16-bit DDR3; 4x SFP+.
+  producer: pangomicro
+  chip: PG2K400-6IFFBG676
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - mipi_csi2_input
+  - pcie_endpoint
+  - qspi_flash
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

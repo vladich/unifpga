@@ -1,0 +1,23 @@
+# iwave_rainbow_g79m: iW-RainboW-G79M Zynq UltraScale+ RFSoC DFE SoM.
+
+Board:
+  id: iwave_rainbow_g79m
+  name: iW-RainboW-G79M Zynq UltraScale+ RFSoC DFE SoM
+  url: https://www.iwavesystems.com/product/zynq-ultrascale-rfsoc-zu67-zu65-zu64-zu63dr/
+  status: active
+  producer: iwave
+  chip: XCZU67DR-2FFVE1156I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - micron_mt40a256m16
+  - macronix_mx25l25645g

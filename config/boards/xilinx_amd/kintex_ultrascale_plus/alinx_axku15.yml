@@ -1,0 +1,32 @@
+# alinx_axku15: Alinx AXKU15.
+
+Board:
+  id: alinx_axku15
+  name: Alinx AXKU15
+  url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Kintex-UltraScale-plus/AXKU15-D.html
+  status: active
+  notes: Industrial XCKU15P-2FFVE1517I per product page; closest registry entry XCKU15P-2FFVE1760E (verify package
+    pin compat before use).
+  producer: alinx
+  chip: XCKU15P-2FFVE1517I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_25gbe_sfp28
+  - fmc_hpc
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - sd_card_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

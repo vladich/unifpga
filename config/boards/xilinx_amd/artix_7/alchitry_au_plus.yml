@@ -1,0 +1,11 @@
+# alchitry_au_plus: Alchitry Au+.
+
+Board:
+  id: alchitry_au_plus
+  name: Alchitry Au+
+  url: https://shop.alchitry.com/products/alchitry-au
+  producer: alchitry
+  chip: XC7A100T-1FTG256C
+  bridges:
+  - jtag
+  programmer: vivado_hw

@@ -1,0 +1,22 @@
+# krtkl_snickerdoodle_one: Snickerdoodle one.
+
+Board:
+  id: krtkl_snickerdoodle_one
+  name: Snickerdoodle one
+  url: https://krtkl.com/snickerdoodle/
+  status: active
+  producer: krtkl
+  chip: XC7Z010-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - microsd_socket
+  - wifi_radio
+  - bluetooth_le_radio
+  - usb_uart_bridge
+  - jtag_header

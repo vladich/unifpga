@@ -2,9 +2,42 @@
 # Source (local Alinx docs):
 #   ~/Alinx/AX515/led_test.qsf
 
+
 Board:
   id: alinx_ax515
-  pinBanks:
+  name: Alinx AX515
+  url: https://coderobin.com/products/alinx-ax515-intel-altera-cyclone-iv-ep4ce15f-fpga-development-board
+  status: active
+  notes: Cyclone IV EP4CE15F23C8. Board also has battery-backed RTC (DS1302) but no `rtc_*` feature exists in features.yml
+    — omitted.
+  producer: alinx
+  chip: EP4CE15F23C8
+  bridges:
+  - usb-blaster
+  programmer: quartus_pgm
+  features:
+  - audio_codec
+  - ddr2_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - sd_card_socket
+  - seven_segment_display
+  - usb_2_device
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - seven_seg_module_shared
+  banks:
     sys_clk:
       pins: PIN_T21
       frequency_mhz: 50

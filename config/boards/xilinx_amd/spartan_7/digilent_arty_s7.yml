@@ -1,0 +1,15 @@
+# digilent_arty_s7: Arty S7.
+
+Board:
+  id: digilent_arty_s7
+  name: Arty S7
+  url: https://digilent.com/reference/programmable-logic/arty-s7/start
+  producer: digilent
+  chips:
+  - id: xc7s25csga324-1
+    name: '25'
+  - id: xc7s50csga324-1
+    name: '50'
+  bridges:
+  - jtag
+  programmer: vivado_hw

@@ -1,0 +1,27 @@
+# adiuvo_astria_rpi2040: Astria & RPI 2040.
+
+Board:
+  id: adiuvo_astria_rpi2040
+  name: Astria & RPI 2040
+  url: https://www.adiuvoengineering.com/product-page/astria-rpi-2040
+  status: active
+  producer: adiuvo
+  chip: XC7S6-1FTGB196C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - qspi_flash
+  - pmod_connector
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

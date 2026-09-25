@@ -1,0 +1,21 @@
+# opalkelly_xem7305: XEM7305.
+
+Board:
+  id: opalkelly_xem7305
+  name: XEM7305
+  url: https://opalkelly.com/products/fpga-integration/XEM7305
+  status: active
+  producer: opal_kelly
+  chip: XC7S50-1
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - usb_3_host
+  - usb_powered
+  - user_leds
+  - user_buttons

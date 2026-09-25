@@ -1,0 +1,23 @@
+# alinx_axu3eg: AXU3EG.
+
+Board:
+  id: alinx_axu3eg
+  name: AXU3EG
+  url: https://alinx.com/en/detail/12
+  producer: alinx
+  chip: XCZU3EG-1SFVC784E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - hdmi_output
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic

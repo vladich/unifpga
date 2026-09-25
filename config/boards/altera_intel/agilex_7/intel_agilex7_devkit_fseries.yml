@@ -1,0 +1,33 @@
+# intel_agilex7_devkit_fseries: Agilex 7 F-Series FPGA Development Kit.
+
+Board:
+  id: intel_agilex7_devkit_fseries
+  name: Agilex 7 F-Series FPGA Development Kit
+  aliases:
+  - terasic_agilex7_f_series_devkit
+  url: https://www.altera.com/products/devkit/po-3202/agilex-7-fpga-f-series-development-kit-p-tile-and-e-tile
+  producer: intel_altera
+  chip: AGFB014R24B2E2V
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

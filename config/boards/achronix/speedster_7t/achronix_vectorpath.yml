@@ -1,0 +1,15 @@
+# achronix_vectorpath: VectorPath S7t-VG6 Accelerator Card.
+
+Board:
+  id: achronix_vectorpath
+  name: VectorPath S7t-VG6 Accelerator Card
+  aliases:
+  - achronix_s7t_vg6
+  url: https://www.achronix.com/product/vectorpath-accelerator-cards
+  status: active
+  notes: 'BittWare lists it as a legacy product: still sold, not recommended for new designs.'
+  producer: achronix
+  chip: AC7t1500
+  bridges:
+  - jtag
+  programmer: ace_pgm

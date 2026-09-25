@@ -1,0 +1,20 @@
+# opalkelly_xem7310_a200: XEM7310-A200.
+
+Board:
+  id: opalkelly_xem7310_a200
+  name: XEM7310-A200
+  url: https://opalkelly.com/products/fpga-integration/XEM7310
+  status: active
+  producer: opal_kelly
+  chip: XC7A200T-1
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - usb_3_host
+  - usb_powered
+  - user_leds

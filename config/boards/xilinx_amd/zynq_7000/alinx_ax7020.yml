@@ -2,9 +2,31 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7020/ (aggregated XDC files; 380 unique signals)
 
+
 Board:
   id: alinx_ax7020
-  pinBanks:
+  name: AX7020
+  url: https://alinx.com/en/detail/4
+  producer: alinx
+  chip: XC7Z020-2CLG400I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - realtek_rtl8211e
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: U18
     cpu_resetn:

@@ -1,0 +1,27 @@
+# redpitaya_signallab_250_12: SIGNALlab 250-12.
+
+Board:
+  id: redpitaya_signallab_250_12
+  name: SIGNALlab 250-12
+  url: https://redpitaya.com/signallab-250-12/
+  status: active
+  producer: redpitaya
+  chip: XC7Z020-1CLG400C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - adc_chip
+  - dac_chip
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - sma_io_pair
+  - usb_2_otg
+  - usb_powered
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - led_discrete_generic

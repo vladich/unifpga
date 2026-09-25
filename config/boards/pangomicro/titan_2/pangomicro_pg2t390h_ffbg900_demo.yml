@@ -1,0 +1,33 @@
+# pangomicro_pg2t390h_ffbg900_demo: PG2T390H-FFBG900 DEMO Board.
+
+Board:
+  id: pangomicro_pg2t390h_ffbg900_demo
+  name: PG2T390H-FFBG900 DEMO Board
+  url: https://www.pangomicro.com/open/2428.html
+  status: active
+  notes: Pango first-party DEMO; PCIe x8; 4x SFP+; 64-bit DDR4; PGC7KD-MBG400 cfg-mgr CPLD.
+  producer: pangomicro
+  chip: PG2T390H-6IFFBG900
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - clock_generator
+  - ddr3_memory
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - microsd_socket
+  - pcie_endpoint
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - microchip_ksz9031rnx
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

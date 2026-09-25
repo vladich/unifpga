@@ -1,0 +1,19 @@
+# qmtech_zynq_7100_core: Zynq 7100 Core Board.
+
+Board:
+  id: qmtech_zynq_7100_core
+  name: Zynq 7100 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  producer: qmtech
+  chip: XC7Z100-2FFG900I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - led_discrete_generic
+  - pushbutton_smd_generic

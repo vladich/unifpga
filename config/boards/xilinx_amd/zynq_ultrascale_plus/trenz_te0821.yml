@@ -1,0 +1,21 @@
+# trenz_te0821: TE0821 Zynq UltraScale+ MPSoC Compact SoM.
+
+Board:
+  id: trenz_te0821
+  name: TE0821 Zynq UltraScale+ MPSoC Compact SoM
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE08XX-Zynq-UltraScale/TE0821-Zynq-UltraScale/
+  status: active
+  producer: trenz_electronic
+  chip: XCZU3EG-1SFVC784E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - emmc_flash
+  - jtag_header
+  - lpddr4_memory
+  - qspi_flash
+  devices:
+  - micron_mt53d512m32
+  - macronix_mx25l25645g

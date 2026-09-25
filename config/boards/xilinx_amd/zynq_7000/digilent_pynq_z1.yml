@@ -2,9 +2,44 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/digilent_pynq_z1.py
 
+
 Board:
   id: digilent_pynq_z1
-  pinBanks:
+  name: PYNQ-Z1
+  url: https://digilent.com/reference/programmable-logic/pynq-z1/start
+  producer: digilent
+  chip: xc7z020-1clg400c
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - rgb_leds
+  - usb_2_otg
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - cypress_s25fl128s
+  - ftdi_ft2232h
+  - realtek_rtl8211fd
+  - microchip_usb3343
+  - microsd_socket_generic
+  - adi_ssm2603
+  - tmds_direct
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - ti_txs02612
+  banks:
     onboard_buttons:
       pins: [D19, D20, L20, L19]
     onboard_switches:

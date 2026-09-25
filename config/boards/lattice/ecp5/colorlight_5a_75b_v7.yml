@@ -1,0 +1,19 @@
+# colorlight_5a_75b_v7: Colorlight 5A-75B v7.0/v8.x.
+
+Board:
+  id: colorlight_5a_75b_v7
+  name: Colorlight 5A-75B v7.0/v8.x
+  url: https://github.com/q3k/chubby75/tree/master/5a-75b
+  status: active
+  producer: colorlight
+  chip: LFE5U-25F-6BG256C
+  bridges:
+  - ft2232h-jtag
+  programmer: ecpprog
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ethernet_phy_gigabit
+  - sdr_sdram
+  - qspi_flash
+  - jtag_header

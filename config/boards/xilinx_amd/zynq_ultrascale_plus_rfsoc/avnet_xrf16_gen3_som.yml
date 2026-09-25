@@ -1,0 +1,30 @@
+# avnet_xrf16_gen3_som: XRF16 Gen3 RFSoC SOM with Carrier.
+
+Board:
+  id: avnet_xrf16_gen3_som
+  name: XRF16 Gen3 RFSoC SOM with Carrier
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/xrf-soms/xrf16-gen3-som
+  status: active
+  producer: avnet
+  chip: XCZU49DR-2FFVF1760I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - ethernet_10gbe_sfp
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - sfp_cage
+  - qsfp_cage
+  - pcie_endpoint
+  - fmc_plus
+  devices:
+  - micron_mt40a256m16
+  - silabs_si5342
+  - marvell_88e1512
+  - ftdi_ft4232h
+  - emmc_chip_generic

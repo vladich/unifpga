@@ -2,9 +2,31 @@
 # Source: official Digilent XDC
 #   https://raw.githubusercontent.com/Digilent/digilent-xdc/master/USB104-A7-100T-Master.xdc
 
+
 Board:
   id: digilent_usb104_a7
-  pinBanks:
+  name: USB104 A7
+  url: https://digilent.com/reference/programmable-logic/usb104-a7/start
+  producer: digilent
+  chip: xc7a100tcsg324-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - cypress_s25fl128s
+  - micron_mt41k256m16
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - led_discrete_generic
+  banks:
     onboard_buttons:
       pins: [V16, U17]
     onboard_leds:

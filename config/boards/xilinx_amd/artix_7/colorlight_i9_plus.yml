@@ -2,9 +2,23 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/colorlight_i9plus.py
 
+
 Board:
   id: colorlight_i9_plus
-  pinBanks:
+  name: ColorLight i9+
+  url: https://github.com/wuxx/Colorlight-FPGA-Projects
+  status: active
+  producer: colorlight
+  chip: XC7A50T-2FGG484I
+  bridges:
+  - ft2232h-jtag
+  programmer: openFPGALoader
+  features:
+  - ethernet_phy_gigabit
+  - sdr_sdram
+  - qspi_flash
+  - jtag_header
+  banks:
     sys_clk:
       pins: K4
     onboard_leds:

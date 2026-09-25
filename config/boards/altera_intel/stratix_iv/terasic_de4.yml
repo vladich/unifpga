@@ -1,0 +1,25 @@
+# terasic_de4: DE4.
+
+Board:
+  id: terasic_de4
+  name: DE4
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=138&No=501
+  producer: terasic
+  chip: EP4SGX230KF40C2N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr2_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1116r
+  - ddr2_sodimm_socket

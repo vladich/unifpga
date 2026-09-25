@@ -1,0 +1,25 @@
+# realdigital_blackboard: Blackboard.
+
+Board:
+  id: realdigital_blackboard
+  name: Blackboard
+  url: https://www.realdigital.org/hardware/blackboard
+  status: active
+  producer: real_digital
+  chip: XC7Z007S-1CLG400C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - usb_2_otg
+  - usb_uart_bridge
+  - usb_powered
+  - hdmi_output
+  - user_leds
+  - rgb_leds
+  - user_buttons
+  - pmod_connector

@@ -2,9 +2,39 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7Z020B/ (aggregated XDC files; 255 unique signals)
 
+
 Board:
   id: alinx_ax7z020
-  pinBanks:
+  name: Alinx AX7Z020
+  url: https://coderobin.com/products/alinx-ax7z020-xilinx-zynq-7000-xc7z020-fpga-development-board
+  status: active
+  notes: B revision; variant with MIPI.
+  producer: alinx
+  chip: XC7Z020-2CLG400I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - can_transceiver
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - mipi_csi2_input
+  - qspi_flash
+  - rs485_transceiver
+  - sd_card_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: U18
     cpu_resetn:

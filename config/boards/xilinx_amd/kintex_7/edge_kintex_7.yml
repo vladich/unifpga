@@ -1,0 +1,22 @@
+# edge_kintex_7: EDGE Kintex 7 (160T).
+
+Board:
+  id: edge_kintex_7
+  name: EDGE Kintex 7 (160T)
+  url: https://allaboutfpga.com/product/edge-kintex-7-fpga-development-board/
+  status: active
+  producer: invent_logics
+  chip: XC7K160T-2FFG676C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - usb_3_host
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - barrel_jack_input

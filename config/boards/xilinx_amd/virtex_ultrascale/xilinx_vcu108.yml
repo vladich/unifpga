@@ -1,0 +1,32 @@
+# xilinx_vcu108: VCU108.
+
+Board:
+  id: xilinx_vcu108
+  name: VCU108
+  url: https://www.xilinx.com/products/boards-and-kits/ek-u1-vcu108-g.html
+  producer: xilinx_amd
+  chip: XCVU095-2FFVA2104E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - micron_n25q256a
+  - silabs_cp2105
+  - ftdi_ft4232h
+  - marvell_88e1111
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr4_sodimm_socket
+  - silabs_si570

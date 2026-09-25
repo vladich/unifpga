@@ -1,0 +1,30 @@
+# efinix_ti375_n1156_devkit: Titanium Ti375 N1156 Development Kit.
+
+Board:
+  id: efinix_ti375_n1156_devkit
+  name: Titanium Ti375 N1156 Development Kit
+  url: https://www.efinixinc.com/products-devkits-titaniumti375n1156.html
+  status: active
+  producer: efinix
+  chip: Ti375N1156C4
+  bridges:
+  - usb-jtag
+  programmer: efinity_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - lpddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - mipi_csi2_input
+  - mipi_dsi_output
+  - user_leds
+  - user_buttons
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  devices:
+  - microsd_socket_generic
+  - emmc_chip_generic

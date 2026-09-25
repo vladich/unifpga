@@ -1,0 +1,37 @@
+# avnet_minized_v2: MiniZed v2 (AES-MINIZED-7Z007S-G rev D).
+
+Board:
+  id: avnet_minized_v2
+  name: MiniZed v2 (AES-MINIZED-7Z007S-G rev D)
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/minized/
+  status: active
+  producer: avnet
+  chip: XC7Z007S-1CLG225C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - wifi_radio
+  - bluetooth_le_radio
+  - audio_codec
+  - imu_chip
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - microsd_socket
+  - pmod_connector
+  - arduino_shield_header
+  - mikrobus_socket
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q128a
+  - murata_lbee5kl1dx
+  - bosch_bno055
+  - adi_adau1761
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - led_discrete_generic

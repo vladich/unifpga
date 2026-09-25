@@ -1,0 +1,27 @@
+# intel_max10_devkit: MAX 10 FPGA Development Kit.
+
+Board:
+  id: intel_max10_devkit
+  name: MAX 10 FPGA Development Kit
+  status: eol
+  producer: intel_altera
+  chip: 10M50DAF484C6GES
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - hdmi_output
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - adi_adv7513
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

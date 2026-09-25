@@ -1,0 +1,24 @@
+# intel_maxv_cpld_evalkit: MAX V CPLD Development Kit.
+
+Board:
+  id: intel_maxv_cpld_evalkit
+  name: MAX V CPLD Development Kit
+  status: eol
+  producer: intel_altera
+  chip: 5M570ZF256C5N
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_powered
+  - user_buttons
+  - user_leds
+  devices:
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

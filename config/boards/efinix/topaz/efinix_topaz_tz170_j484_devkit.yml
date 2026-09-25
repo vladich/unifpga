@@ -2,9 +2,32 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/efinix_tz170_j484_dev_kit.py
 
+
 Board:
   id: efinix_topaz_tz170_j484_devkit
-  pinBanks:
+  name: Topaz Tz170 J484 Development Kit
+  url: https://www.efinixinc.com/products-devkits-topaztz170j484.html
+  status: active
+  producer: efinix
+  chip: Tz170J484C4
+  bridges:
+  - jtag
+  - usb_uart
+  programmer: efinity_pgm
+  features:
+  - jtag_header
+  - usb_uart_bridge
+  - mipi_dsi_output
+  - mipi_csi2_input
+  - lpddr4_memory
+  - microsd_socket
+  - user_leds
+  - user_buttons
+  - spi_flash
+  - fmc_lpc
+  devices:
+  - microsd_socket_generic
+  banks:
     sys_clk:
       pins: C1
     onboard_leds:

@@ -1,0 +1,33 @@
+# gowin_gw2a55_devkit: GW2A-55 Dev Kit.
+
+Board:
+  id: gowin_gw2a55_devkit
+  name: GW2A-55 Dev Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/22/
+  status: active
+  producer: gowin_semi
+  chip: GW2A-LV55PG484C8/I7
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - can_transceiver
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - jtag_header
+  - microsd_socket
+  - mipi_csi2_input
+  - mipi_dsi_output
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - microsd_socket_generic
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

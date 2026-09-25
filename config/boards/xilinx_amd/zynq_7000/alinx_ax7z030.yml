@@ -1,0 +1,29 @@
+# alinx_ax7z030: Alinx AX7Z030.
+
+Board:
+  id: alinx_ax7z030
+  name: Alinx AX7Z030
+  url: https://www.en.alinx.com/detail/268
+  status: active
+  producer: alinx
+  chip: XC7Z030-2FBG676I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic

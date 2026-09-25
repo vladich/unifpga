@@ -1,0 +1,29 @@
+# pangomicro_tla7_evm: TLA7-EVM PG2L100H Industrial Evaluation Board.
+
+Board:
+  id: pangomicro_tla7_evm
+  name: TLA7-EVM PG2L100H Industrial Evaluation Board
+  url: https://www.pangomicro.com/open/4302.html
+  status: active
+  notes: Tronlong Tech (创龙科技); industrial temp-tested.
+  producer: pangomicro
+  chip: PG2L100HFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - adc_chip
+  - fmc_lpc
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

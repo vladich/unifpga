@@ -1,0 +1,26 @@
+# pangomicro_sa_pgl50h_evkb1: SA_PGL50H_EVKB1 Evaluation Kit.
+
+Board:
+  id: pangomicro_sa_pgl50h_evkb1
+  name: SA_PGL50H_EVKB1 Evaluation Kit
+  url: https://www.pangomicro.com/open/4272.html
+  status: active
+  notes: Smartseason separated-EVK (SoM + expansion); USB 3.0 + ADC.
+  producer: pangomicro
+  chip: PGL50H-6IFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - adc_chip
+  - ddr3_memory
+  - microsd_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

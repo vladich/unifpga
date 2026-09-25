@@ -1,0 +1,24 @@
+# microchip_pfsoc_disco_kit_v2: PolarFire SoC Discovery Kit (MPFS095T-1FCSG325E rev2).
+
+Board:
+  id: microchip_pfsoc_disco_kit_v2
+  name: PolarFire SoC Discovery Kit (MPFS095T-1FCSG325E rev2)
+  url: https://www.microchip.com/en-us/development-tool/MPFS-DISCO-KIT
+  status: active
+  producer: microchip
+  chip: MPFS095T-1FCSG325E
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - spi_flash
+  - usb_uart_bridge
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - winbond_w25q128
+  - microchip_ksz9031rnx

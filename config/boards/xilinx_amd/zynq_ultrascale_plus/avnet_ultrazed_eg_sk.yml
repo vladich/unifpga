@@ -1,0 +1,32 @@
+# avnet_ultrazed_eg_sk: UltraZed-EG Starter Kit (IO Carrier).
+
+Board:
+  id: avnet_ultrazed_eg_sk
+  name: UltraZed-EG Starter Kit (IO Carrier)
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/ultrazed/ultrazed-eg/
+  status: active
+  producer: avnet
+  chip: XCZU3EG-1SFVA625I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - arduino_shield_header
+  - barrel_jack_input
+  - ddr4_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - pmod_connector
+  - qspi_flash
+  - usb_2_otg
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - micron_mt40a256m16
+  - marvell_88e1512
+  - adi_adv7511
+  - ftdi_ft4232h
+  - emmc_chip_generic
+  - microsd_socket_generic

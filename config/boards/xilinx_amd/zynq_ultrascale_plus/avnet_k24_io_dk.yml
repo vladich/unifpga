@@ -1,0 +1,30 @@
+# avnet_k24_io_dk: K24 I/O Development Kit.
+
+Board:
+  id: avnet_k24_io_dk
+  name: K24 I/O Development Kit
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/k24-development-kit/
+  status: active
+  producer: avnet
+  chip: XCK24-SFVC784
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - lpddr4_memory
+  - microsd_socket
+  - mikrobus_socket
+  - pmod_connector
+  - qspi_flash
+  - usb_2_otg
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - realtek_rtl8211fd
+  - silabs_cp2108
+  - ti_tmds141
+  - microsd_socket_generic
+  - emmc_chip_generic

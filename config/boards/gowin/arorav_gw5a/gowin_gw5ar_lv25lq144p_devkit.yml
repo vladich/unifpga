@@ -1,0 +1,22 @@
+# gowin_gw5ar_lv25lq144p_devkit: GW5AR-25 LQ144 Starter Kit (DK_START_GW5AR-LV25LQ144P).
+
+Board:
+  id: gowin_gw5ar_lv25lq144p_devkit
+  name: GW5AR-25 LQ144 Starter Kit (DK_START_GW5AR-LV25LQ144P)
+  url: https://www.gowinsemi.com/en/support/devkits/37/
+  status: active
+  producer: gowin_semi
+  chip: GW5AR-LV25LQ144PC2/I1
+  bridges:
+  - jtag
+  programmer: gowin_pgm
+  features:
+  - gpio_header_generic
+  - jtag_header
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

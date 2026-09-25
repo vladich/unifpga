@@ -5,9 +5,45 @@
 #   https://github.com/sipeed/TangMega-60K-example/blob/main/pcie_dma_demo/src/Pins.cst
 #   (+4 more)
 
+
 Board:
   id: sipeed_tang_mega_60k
-  pinBanks:
+  name: Sipeed Tang Mega 60K Dock
+  product: Tang Mega 60K Dock (Tang Mega 60K SOM on the Tang Mega NEO Dock)
+  summary: 'Gowin GW5AT-LV60PG484A (59,904 LUT4, 4x SerDes, PCIe hard core, MIPI D-PHY capable IO) SOM with 512 MB
+    DDR3 (x16; a second x16 chip is drawn on the schematic), 64 Mbit flash; same NEO dock as the 138K: PCIe edge (x1
+    usable), CH569 USB3, RGMII GbE, HDMI TX/RX, RGB LCD FPC, OV5640 DVP FPC, 2 PMOD, 2x20 SDRAM headers, microSD,
+    I2S DAC, WS2812, BL616 USB-JTAG/UART'
+  url: https://wiki.sipeed.com/hardware/en/tang/tang-mega-60k/mega-60k.html
+  status: active
+  producer: sipeed
+  chip: GW5AT-LV60PG484AC1/I0
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm_standard
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - pcie_endpoint
+  - qspi_flash
+  - microsd_socket
+  - hdmi_output
+  - hdmi_input
+  - parallel_camera_input
+  - parallel_lcd
+  - audio_dac
+  - audio_amp_class_d
+  - ethernet_phy_gigabit
+  - usb_3_device
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - pmod_connector
+  - rgb_leds
+  - user_buttons
+  devices:
+  - microsd_socket_generic
+  banks:
     sys_clk:
       pins: V22
     onboard_buttons:    # S4, S2, S1 = EX_KEY.0/1/2 (Y12 is key S1, not the reset: the SOM's reset key is F4)

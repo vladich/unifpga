@@ -2,9 +2,36 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7Z045/ (aggregated XDC files; 184 unique signals)
 
+
 Board:
   id: alinx_ax7z045
-  pinBanks:
+  name: Alinx AX7Z045
+  url: https://www.en.alinx.com/detail/835
+  status: active
+  producer: alinx
+  chip: XC7Z045-2FFG900I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     hdmi_clk:
       pins: H14
     hdmi_data_p:

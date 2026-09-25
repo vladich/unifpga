@@ -1,0 +1,23 @@
+# qmtech_kintex_ultrascale_ku040_core: QMtech Kintex UltraScale XCKU040 Core Board.
+
+Board:
+  id: qmtech_kintex_ultrascale_ku040_core
+  name: QMtech Kintex UltraScale XCKU040 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  status: active
+  producer: qmtech
+  chip: XCKU040-2FFVA1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qspi_flash
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - led_discrete_generic
+  - pushbutton_smd_generic

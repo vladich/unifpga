@@ -1,0 +1,21 @@
+# qmtech_zynq_7010_core: Zynq 7010 Core Board.
+
+Board:
+  id: qmtech_zynq_7010_core
+  name: Zynq 7010 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  producer: qmtech
+  chip: XC7Z010-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - realtek_rtl8211e
+  - led_discrete_generic
+  - pushbutton_smd_generic

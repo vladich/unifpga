@@ -1,0 +1,20 @@
+# trenz_te0823: TE0823 Zynq UltraScale+ Low-Power SoM.
+
+Board:
+  id: trenz_te0823
+  name: TE0823 Zynq UltraScale+ Low-Power SoM
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE08XX-Zynq-UltraScale/TE0823-Zynq-UltraScale/
+  status: active
+  producer: trenz_electronic
+  chip: XCZU3CG-L1SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - jtag_header
+  - lpddr4_memory
+  - qspi_flash
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g

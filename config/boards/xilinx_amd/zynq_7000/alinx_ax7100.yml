@@ -4,9 +4,27 @@
 #   https://github.com/alinxalinx/AX7Z100B_2023.1/blob/master/course_s1_fpga/06_key/auto_create_project/src/constraints/key.xdc
 #   https://github.com/alinxalinx/AX7Z100B_2023.1/blob/master/course_s1_fpga/09_rs232/auto_create_project/src/constraints/rs232.xdc
 
+
 Board:
   id: alinx_ax7100
-  pinBanks:
+  name: AX7100
+  url: https://www.en.alinx.com/Product/SoC-development-Boards/Zynq-7000-SoC/AX7Z100B.html
+  producer: alinx
+  chip: XC7Z100-2FFG900I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: F9
       frequency_mhz: 200

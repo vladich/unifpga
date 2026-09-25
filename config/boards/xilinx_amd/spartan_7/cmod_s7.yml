@@ -3,16 +3,32 @@
 # Source: Digilent Cmod-S7-25-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: cmod_s7
-  fpga:
-    producer: Xilinx
-    family: Spartan 7
-    part: XC7S25CSGA225-1
+  name: CMOD S7
+  url: https://digilent.com/reference/programmable-logic/cmod-s7/start
+  producer: digilent
+  chip: xc7s25csga225-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - qspi_flash
+  - rgb_leds
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - pushbutton_smd_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - macronix_mx25l3233f
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     onboard_buttons:
       pins: ["D2", "D1"]
     onboard_leds:

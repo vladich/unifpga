@@ -1,0 +1,33 @@
+# htg_k325: HTG-K325 Kintex-7 PCIe Development Board.
+
+Board:
+  id: htg_k325
+  name: HTG-K325 Kintex-7 PCIe Development Board
+  url: https://www.hitechglobal.com/Boards/Kintex-7_PCIE.htm
+  status: active
+  producer: hitech_global
+  chip: XC7K325T-2FFG900C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - jtag_header
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - silabs_si570
+  - micron_n25q256a
+  - ddr3_sodimm_socket
+  - marvell_88e1512
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

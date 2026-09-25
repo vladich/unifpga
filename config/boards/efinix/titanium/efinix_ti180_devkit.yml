@@ -1,0 +1,15 @@
+# efinix_ti180_devkit: Titanium Ti180 Development Kit.
+
+Board:
+  id: efinix_ti180_devkit
+  name: Titanium Ti180 Development Kit
+  url: https://www.efinixinc.com/products-devkits-titaniumti180j484.html
+  producer: efinix
+  chip: Ti180M484C4
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - microsd_socket
+  devices:
+  - microsd_socket_generic

@@ -4,9 +4,43 @@
 #   https://github.com/alinxalinx/AXU4EV-P_AXU5EV-P/blob/master/vivado/auto_create_project/src/constraints/system.xdc
 #   https://github.com/alinxalinx/AXU4EV-P_AXU5EV-P/blob/master/vivado/auto_create_project/src/constraints/uart.xdc
 
+
 Board:
   id: alinx_axu5ev_p
-  pinBanks:
+  name: Alinx AXU5EV-P
+  url: https://coderobin.com/products/alinx-axu5ev-p-xilinx-zynq-ultrascale-mpsoc-xczu5ev-fpga-development-board
+  status: active
+  notes: -P variant with PCIe/FMC.
+  producer: alinx
+  chip: XCZU5EV-2SFVC784I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - mipi_csi2_input
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - sfp_cage
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_diff:
       pins:
         p: AE5

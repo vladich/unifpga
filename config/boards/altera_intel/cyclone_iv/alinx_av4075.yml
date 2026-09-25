@@ -1,0 +1,30 @@
+# alinx_av4075: Alinx AV4075.
+
+Board:
+  id: alinx_av4075
+  name: Alinx AV4075
+  url: https://www.en.alinx.com/
+  status: active
+  producer: alinx
+  chip: EP4CE75F23C8N
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - sdr_sdram
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - winbond_w9825g6kh

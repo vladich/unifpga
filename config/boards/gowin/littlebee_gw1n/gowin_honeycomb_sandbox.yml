@@ -1,0 +1,19 @@
+# gowin_honeycomb_sandbox: Honeycomb Sandbox.
+
+Board:
+  id: gowin_honeycomb_sandbox
+  name: Honeycomb Sandbox
+  url: https://www.gowinsemi.com/en/support/devkits_detail/53/
+  producer: gowin_semi
+  chip: GW1N-LV4LQ144C6/I5
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

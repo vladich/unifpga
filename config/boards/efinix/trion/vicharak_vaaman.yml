@@ -1,0 +1,28 @@
+# vicharak_vaaman: Vicharak Vaaman.
+
+Board:
+  id: vicharak_vaaman
+  name: Vicharak Vaaman
+  url: https://vicharak.in/vaaman
+  status: active
+  producer: vicharak
+  chip: T120F324C
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - ddr3_memory
+  - lpddr4_memory
+  - emmc_flash
+  - microsd_socket
+  - hdmi_output
+  - mipi_csi2_input
+  - mipi_dsi_output
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - usb_3_host
+  - wifi_radio
+  - bluetooth_le_radio
+  - audio_codec
+  - pcie_endpoint
+  - jtag_header

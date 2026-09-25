@@ -1,0 +1,28 @@
+# redpitaya_stemlab_125_14: STEMlab 125-14.
+
+Board:
+  id: redpitaya_stemlab_125_14
+  name: STEMlab 125-14
+  url: https://redpitaya.com/stemlab-125-14/
+  status: active
+  producer: redpitaya
+  chip: XC7Z010-1CLG400C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - adc_chip
+  - dac_chip
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - sma_io_pair
+  - usb_2_otg
+  - usb_powered
+  - user_leds
+  devices:
+  - micron_mt41j256m16
+  - microsd_socket_generic
+  - led_discrete_generic

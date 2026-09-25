@@ -2,9 +2,42 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_zc706.py
 
+
 Board:
   id: xilinx_zc706
-  pinBanks:
+  name: ZC706
+  url: https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html
+  producer: xilinx_amd
+  chip: XC7Z045-2FFG900C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q256a
+  - marvell_88e1116r
+  - adi_adv7511
+  - silabs_cp2103
+  - ftdi_ft232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr3_sodimm_socket
+  - silabs_si5324
+  - silabs_si570
+  banks:
     cpu_resetn:
       pins: A8
     onboard_leds:

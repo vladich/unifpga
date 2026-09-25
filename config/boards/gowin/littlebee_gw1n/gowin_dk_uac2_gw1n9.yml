@@ -1,0 +1,23 @@
+# gowin_dk_uac2_gw1n9: GW1N-9 Audio (UAC2) Dev Kit (DK_UAC2_GW1N-LV9LQ144C7I6).
+
+Board:
+  id: gowin_dk_uac2_gw1n9
+  name: GW1N-9 Audio (UAC2) Dev Kit (DK_UAC2_GW1N-LV9LQ144C7I6)
+  url: https://www.gowinsemi.com/en/support/devkits_detail/55/
+  status: active
+  producer: gowin_semi
+  chip: GW1N-LV9LQ144C7/I6
+  bridges:
+  - jtag
+  programmer: gowin_pgm
+  features:
+  - audio_codec
+  - jtag_header
+  - usb_2_device
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

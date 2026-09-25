@@ -2,9 +2,41 @@
 # Source: AMD's ZCU208 board files (Vivado XilinxBoardStore
 #   boards/Xilinx/zcu208/production/2.0/part0_pins.xml + board.xml, Apache-2.0).
 
+
 Board:
   id: xilinx_zcu208
-  pinBanks:
+  name: ZCU208
+  url: https://www.xilinx.com/products/boards-and-kits/zcu208.html
+  producer: xilinx_amd
+  chip: XCZU48DR-2FSVG1517E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_2_otg
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - ddr4_sodimm_socket
+  - microchip_usb3343
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - emmc_chip_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1512
+  - spansion_s25fl256s
+  banks:
     onboard_leds:                 # GPIO_LED_0_LS .. GPIO_LED_7_LS
       iostandard: LVCMOS12
       pins: [AR19, AT17, AR17, AU19, AU20, AW21, AV21, AV17]

@@ -1,0 +1,36 @@
+# alinx_axrf49: Alinx AXRF49.
+
+Board:
+  id: alinx_axrf49
+  name: Alinx AXRF49
+  url: https://docs.alinx.com/wiki/AMD-Dev-Board/RFSoC/AXRF49/AXRF49-User-Manual.html
+  status: active
+  notes: ZU49DR — 16 RF-ADCs/DACs, GPS, MCX RF ports.
+  producer: alinx
+  chip: XCZU49DR-2FSVF1760I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - rf_adc_dac_high_speed
+  - sata_host
+  - sd_card_socket
+  - sma_io_pair
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

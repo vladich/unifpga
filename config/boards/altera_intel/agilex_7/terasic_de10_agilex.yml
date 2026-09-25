@@ -2,9 +2,39 @@
 # Source: Terasic user manual PDF
 #   ~/Terasic/DE10-Agilex_User_Manual_revc.pdf
 
+
 Board:
   id: terasic_de10_agilex
-  pinBanks:
+  name: DE10-Agilex Development and Education Kit
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=142&No=1252
+  status: active
+  producer: terasic
+  chip: AGFB014R24B2E2V
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - fmc_plus
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - cypress_s25fl128s
+  - usb_blaster_ii_built_in
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ti_sn75dp159
+  banks:
     sys_clk:
       pins: PIN_CL34
     cpu_resetn:

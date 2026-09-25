@@ -1,0 +1,32 @@
+# alinx_z11_p: Alinx Z11-P.
+
+Board:
+  id: alinx_z11_p
+  name: Alinx Z11-P
+  url: https://coderobin.com/products/alinx-z11-p-xilinx-zynq-ultrascale-mpsoc-xczu11eg-fpga-development-board
+  status: active
+  notes: ZU11EG carrier; sibling of Z19 family.
+  producer: alinx
+  chip: XCZU11EG-2FFVC1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

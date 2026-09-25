@@ -1,0 +1,11 @@
+# xilinx_alveo_u30: Alveo U30.
+
+Board:
+  id: xilinx_alveo_u30
+  name: Alveo U30
+  url: https://www.xilinx.com/products/boards-and-kits/alveo/u30.html
+  producer: xilinx_amd
+  chip: XCZU7EV
+  bridges:
+  - jtag
+  programmer: vivado_hw

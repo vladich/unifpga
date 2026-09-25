@@ -1,0 +1,20 @@
+# bunnie_novena: Novena (mainboard).
+
+Board:
+  id: bunnie_novena
+  name: Novena (mainboard)
+  url: https://www.crowdsupply.com/sutajio-kosagi/novena
+  status: eol
+  producer: bunnie_studios
+  chip: XC6SLX45-2CSG324C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  extra_programmers:
+  - xc3sprog
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - sata_host
+  - usb_2_otg

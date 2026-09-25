@@ -1,0 +1,35 @@
+# alinx_axrf67: Alinx AXRF67.
+
+Board:
+  id: alinx_axrf67
+  name: Alinx AXRF67
+  url: https://coderobin.com/products/alinx-axrf67-xilinx-zynq-ultrascale-rfsoc-xczu67dr-fpga-development-board
+  status: active
+  notes: ZU67DR — 8 RF-ADCs / 8 RF-DACs.
+  producer: alinx
+  chip: XCZU67DR-2FFVE1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - rf_adc_dac_high_speed
+  - sd_card_socket
+  - sma_io_pair
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,28 @@
+# alinx_axku040: Alinx AXKU040.
+
+Board:
+  id: alinx_axku040
+  name: Alinx AXKU040
+  url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Kintex-UltraScale/AXKU040.html
+  status: active
+  producer: alinx
+  chip: XCKU040-2FFVA1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - fmc_lpc
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

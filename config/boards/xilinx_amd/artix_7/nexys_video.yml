@@ -3,16 +3,51 @@
 # Source: Digilent Nexys-Video-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: nexys_video
-  fpga:
-    producer: Xilinx
-    family: Artix 7
-    part: XC7A200T-1SBG484C
+  name: Nexys Video
+  url: https://digilent.com/reference/programmable-logic/nexys-video/start
+  producer: digilent
+  chip: XC7A200T-1SBG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - parallel_lcd
+  - qspi_flash
+  - usb_2_host
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - realtek_rtl8211e
+  - ftdi_ft232r
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - tmds_direct
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - spansion_s25fl256s
+  - ti_tmds141
+  - adi_ad8195
+  - adi_adau1761
+  - univision_ug2832hsweg04
+  - microchip_pic24fj128_usb_host
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     cpu_resetn: { pins: "G4" }
     onboard_buttons:
       pins: ["B22", "F15", "C22", "D14", "D22"]

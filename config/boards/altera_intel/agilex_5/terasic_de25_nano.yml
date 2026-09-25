@@ -2,9 +2,34 @@
 # Source: Terasic user manual PDF
 #   ~/Terasic/DE25-Nano_User_manual_revB.pdf
 
+
 Board:
   id: terasic_de25_nano
-  pinBanks:
+  name: DE25-Nano Development and Education Board
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1384
+  status: active
+  producer: terasic
+  chip: A5EB013BB23BE4SCS
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - lpddr4_memory
+  - microsd_socket
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: PIN_N72
     cpu_resetn:

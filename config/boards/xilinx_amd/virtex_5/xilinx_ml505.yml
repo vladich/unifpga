@@ -1,0 +1,32 @@
+# xilinx_ml505: Xilinx ML505 LXT Evaluation Platform.
+
+Board:
+  id: xilinx_ml505
+  name: Xilinx ML505 LXT Evaluation Platform
+  url: https://docs.amd.com/v/u/en-US/ug347
+  status: eol
+  producer: xilinx_amd
+  chip: XC5VLX50T-1FFG1136
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - ddr2_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - jtag_header
+  - nor_flash
+  - parallel_lcd
+  - pcie_endpoint
+  - sata_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1111
+  - silabs_cp2102
+  - intel_strataflash_p30
+  - lcd_char_16x2

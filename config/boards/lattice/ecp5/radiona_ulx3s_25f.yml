@@ -1,0 +1,11 @@
+# radiona_ulx3s_25f: ULX3S 25F.
+
+Board:
+  id: radiona_ulx3s_25f
+  name: ULX3S 25F
+  url: https://radiona.org/ulx3s/
+  producer: radiona
+  chip: LFE5U-25F-6BG381C
+  bridges:
+  - jtag
+  programmer: openFPGALoader

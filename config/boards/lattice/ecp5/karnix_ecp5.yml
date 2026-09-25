@@ -1,11 +1,19 @@
 # karnix_ecp5 pin map.
 
+
 Board:
   id: karnix_ecp5
-  fpga:
-    producer: Lattice
-    family: ECP5
-    part: LFE5U-25F-8BG256C
+  name: Karnix ASB-254
+  product: Karnix ASB-254 (Karnaugh Interactive Extendable ASIC Simulation Board; ПИР СЦХ-254 «Карно»)
+  summary: Lattice ECP5 LFE5U-25F-BG256C (24K LUT), 25 MHz osc, 512 KB async SRAM (K6R4016V1D), 128 Mbit W25Q128 config
+    flash, 10/100 Ethernet (LAN8710 MII), RS-485, HDMI, SPI ADC (ADC128S052) + SPI DAC (AD5328) with audio jack, AT24C01
+    EEPROM, 4 keys, 4 LEDs, RPi-style 40-pin header (28 GPIO), FT2232D JTAG+UART
+  status: eol
+  producer: fabmicro
+  chip: LFE5U-25F-8BG256C
+  bridges:
+  - ft2232h-jtag
+  programmer: ecpprog
   defaults:
     iostandard: LVCMOS33
 
@@ -17,7 +25,7 @@ Board:
       device_part: "25k"
       device_pack: "CABGA256"
       speed: "6"
-  pinBanks:
+  banks:
     clk: { pins: B9, frequency_mhz: 25 }
     onboard_leds:
       pins: [A13, A14, A15, B14]
@@ -69,3 +77,61 @@ Board:
     onboard_other:   # U20 FT2232D channel A — JTAG (+ J4 external JTAG header)
       device: {"name": "U20 FT2232D channel A — JTAG (+ J4 external JTAG header)", "kind": "other"}
       pins: {"tck": "T10", "tdi": "R11", "tdo": "M10", "tms": "T11"}
+  # ---- drawn: headers and parts; ./unifpga layout draft karnix_ecp5 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 4}, bind: {led: onboard_leds}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 2}, bind: {sw: onboard_switches}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: adc
+      label: U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
+      attach: {peripheral: adc128s022, bind: {cs_n: onboard_adc.cs_n, sclk: onboard_adc.sclk, din: onboard_adc.mosi, dout: onboard_adc.miso}}
+    - id: reset_button_sw5_fpga_reset
+      label: RESET button SW5 (FPGA_RESET)
+      device: {kind: reset, bank: onboard_reset_button_sw5_fpga_reset}   # no peripheral model yet
+    - id: sram
+      label: U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)
+      attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.a, d: onboard_sram.d, ce_n: onboard_sram.cs_n, oe_n: onboard_sram.oe_n, we_n: onboard_sram.we_n, lb_n: onboard_sram.ble_n, ub_n: onboard_sram.bhe_n}}
+    - id: ethernet
+      label: U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
+      device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
+    - id: rs485
+      label: U9 MAX487 RS-485 transceiver (XS3)
+      device: {kind: other, bank: onboard_rs485}   # no peripheral model yet
+    - id: hdmi
+      label: J3 HDMI connector (direct from FPGA, series capacitors)
+      device: {kind: hdmi_tx, bank: onboard_hdmi}   # no peripheral model yet
+    - id: dac
+      label: U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
+      device: {kind: audio, bank: onboard_dac}   # no peripheral model yet
+    - id: eeprom
+      label: U6 AT24C01C I2C EEPROM (1 kbit) + J2 EEPROM RESET jumper
+      device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
+    - id: serial_flash
+      label: U7 W25Q128JVPIQ SPI config flash (quad)
+      device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
+    - id: other
+      label: U20 FT2232D channel A — JTAG (+ J4 external JTAG header)
+      device: {kind: other, bank: onboard_other}   # no peripheral model yet

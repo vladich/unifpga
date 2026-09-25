@@ -1,0 +1,29 @@
+# terasic_agilex7_f_series_2x_f_tile: Agilex 7 FPGA F-Series Development Kit (2x F-Tile, AGF023).
+
+Board:
+  id: terasic_agilex7_f_series_2x_f_tile
+  name: Agilex 7 FPGA F-Series Development Kit (2x F-Tile, AGF023)
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=142&No=1294
+  status: active
+  producer: terasic
+  chip: AGFD023R24C2E1VC
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - usb_blaster_ii_built_in
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

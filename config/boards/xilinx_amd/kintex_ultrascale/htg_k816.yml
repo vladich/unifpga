@@ -1,0 +1,29 @@
+# htg_k816: HTG-K816 Kintex UltraScale Half-Size PCIe.
+
+Board:
+  id: htg_k816
+  name: HTG-K816 Kintex UltraScale Half-Size PCIe
+  url: https://www.hitechglobal.com/Boards/Kintex_UltraScale_half-size_PCIe.htm
+  status: active
+  producer: hitech_global
+  chip: XCKU060-2FFVA1156E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - silabs_si570
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - led_discrete_generic
+  - pushbutton_smd_generic

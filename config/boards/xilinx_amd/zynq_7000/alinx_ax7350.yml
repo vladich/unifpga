@@ -2,9 +2,37 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX7350B/ (aggregated XDC files; 117 unique signals)
 
+
 Board:
   id: alinx_ax7350
-  pinBanks:
+  name: Alinx AX7350
+  url: https://coderobin.com/products/alinx-ax7350-xilinx-zynq-7000-xc7z035-fpga-development-board
+  status: active
+  notes: B revision of older AX7Z035 (in catalog) — distinct PCB.
+  producer: alinx
+  chip: XC7Z035-2FFG676I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: J14
     cpu_resetn:

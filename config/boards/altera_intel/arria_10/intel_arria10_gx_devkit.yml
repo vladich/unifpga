@@ -1,0 +1,35 @@
+# intel_arria10_gx_devkit: Arria 10 GX FPGA Development Kit.
+
+Board:
+  id: intel_arria10_gx_devkit
+  name: Arria 10 GX FPGA Development Kit
+  aliases:
+  - terasic_arria10_gx_devkit
+  status: eol
+  producer: intel_altera
+  chip: 10AX115S2F45I1SG
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - micron_mt41k256m16
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

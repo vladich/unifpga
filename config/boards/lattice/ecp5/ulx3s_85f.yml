@@ -1,0 +1,25 @@
+# ulx3s_85f: ULX3S (85F).
+
+Board:
+  id: ulx3s_85f
+  name: ULX3S (85F)
+  url: https://www.intergalaktik.eu/projects/ulx3s
+  status: active
+  producer: intergalaktik
+  chip: LFE5U-85F-6BG381C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  extra_programmers:
+  - ecpprog[*]
+  features:
+  - hdmi_output
+  - audio_codec
+  - microsd_socket
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - user_leds
+  - user_buttons
+  - pmod_connector
+  - usb_powered

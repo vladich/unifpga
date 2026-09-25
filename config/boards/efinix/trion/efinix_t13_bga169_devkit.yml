@@ -1,0 +1,11 @@
+# efinix_t13_bga169_devkit: Trion T13 BGA169 Development Kit.
+
+Board:
+  id: efinix_t13_bga169_devkit
+  name: Trion T13 BGA169 Development Kit
+  status: eol
+  producer: efinix
+  chip: T13F169C3
+  bridges:
+  - jtag
+  programmer: efinity_pgm

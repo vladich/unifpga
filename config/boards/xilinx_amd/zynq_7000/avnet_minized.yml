@@ -1,0 +1,29 @@
+# avnet_minized: MiniZed.
+
+Board:
+  id: avnet_minized
+  name: MiniZed
+  aliases:
+  - tria_minized
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/minized/
+  producer: avnet
+  chip: XC7Z007S-1CLG225C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - ddr3_memory
+  - imu_chip
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - wifi_radio
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q128a
+  - murata_lbee5kl1dx
+  - bosch_bno055
+  - adi_adau1761
+  - ftdi_ft2232h
+  - microsd_socket_generic

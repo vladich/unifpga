@@ -13,14 +13,32 @@
 #
 # Part: M2S025T-FCSG325-1 (SmartFusion2, 90K gates, 484 FBGA, speed -1, COM).
 
+
 Board:
   id: m2s025_starter
+  name: SmartFusion2 Starter Kit (M2S025T)
+  product: M2S-FG484 SOM Starter Kit (KIT-M2S025-FG484-EXT)
+  summary: 'Microsemi SmartFusion2 M2S025 (27,696 LEs, 256 KB eNVM, Cortex-M3 MSS) in FG484 on the Emcraft SOM; 64
+    MB LPDDR (MT46H32M16), 16 MB SPI flash (S25FL128S) on SPI0, KSZ8081 10/100 Ethernet PHY, 12 MHz + 32.768 kHz crystals;
+    baseboard: FT232RL USB-UART on MMUART_0, USB3300 ULPI OTG, 2 user LEDs, user + reset buttons, FlashPro and ARM
+    JTAG, 8 breadboard pad areas (P7..P14) with ~100 FPGA I/O.'
+  producer: microchip
+  chip: M2S025T-FCSG325-1
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
   verification:
     status: placeholder
-  fpga:
-    producer: "Microchip (Actel)"
-    family: SmartFusion2
-    part: M2S025T-FCSG325-1
   defaults:
     iostandard: LVCMOS25
 
@@ -32,7 +50,7 @@ Board:
       speed: STD
       part_range: COM
       iostd: LVCMOS25
-  pinBanks:
+  banks:
     clk:              { pins: "H17" }    # placeholder; 50 MHz osc
     onboard_reset:    { pins: "F20" }    # placeholder
     onboard_buttons:                      # placeholder; 2 user buttons
@@ -87,3 +105,85 @@ Board:
     breadboard_p14:   # P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
       device: {"name": "P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
       pins: ["H6", "J6", "K6", "H7", "K7", "G7", "K15", "F6", "L16", "G6", "P16", "F5", "R16", "E4", "N17", "C4", "N16", "C3", "P18", "B1"]
+  # ---- drawn: headers and parts; ./unifpga layout draft m2s025_starter regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: breadboard_p7
+      type: pin_row
+      label: BREADBOARD_P7
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p7
+      pins: {'[0]': 'breadboard_p7[0]', '[1]': 'breadboard_p7[1]', '[2]': 'breadboard_p7[2]', '[3]': 'breadboard_p7[3]', '[4]': 'breadboard_p7[4]', '[5]': 'breadboard_p7[5]', '[6]': 'breadboard_p7[6]', '[7]': 'breadboard_p7[7]', '[8]': 'breadboard_p7[8]', '[9]': 'breadboard_p7[9]', '[10]': 'breadboard_p7[10]'}
+    - id: breadboard_p8
+      type: pin_row
+      label: BREADBOARD_P8
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p8
+      pins: {'[0]': 'breadboard_p8[0]', '[1]': 'breadboard_p8[1]', '[2]': 'breadboard_p8[2]', '[3]': 'breadboard_p8[3]', '[4]': 'breadboard_p8[4]', '[5]': 'breadboard_p8[5]', '[6]': 'breadboard_p8[6]', '[7]': 'breadboard_p8[7]'}
+    - id: breadboard_p9
+      type: pin_row
+      label: BREADBOARD_P9
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p9
+      pins: {'[0]': 'breadboard_p9[0]', '[1]': 'breadboard_p9[1]', '[2]': 'breadboard_p9[2]', '[3]': 'breadboard_p9[3]', '[4]': 'breadboard_p9[4]', '[5]': 'breadboard_p9[5]', '[6]': 'breadboard_p9[6]', '[7]': 'breadboard_p9[7]', '[8]': 'breadboard_p9[8]', '[9]': 'breadboard_p9[9]', '[10]': 'breadboard_p9[10]', '[11]': 'breadboard_p9[11]', '[12]': 'breadboard_p9[12]', '[13]': 'breadboard_p9[13]'}
+    - id: breadboard_p10
+      type: pin_row
+      label: BREADBOARD_P10
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p10
+      pins: {'[0]': 'breadboard_p10[0]', '[1]': 'breadboard_p10[1]', '[2]': 'breadboard_p10[2]', '[3]': 'breadboard_p10[3]', '[4]': 'breadboard_p10[4]', '[5]': 'breadboard_p10[5]', '[6]': 'breadboard_p10[6]', '[7]': 'breadboard_p10[7]', '[8]': 'breadboard_p10[8]', '[9]': 'breadboard_p10[9]', '[10]': 'breadboard_p10[10]', '[11]': 'breadboard_p10[11]', '[12]': 'breadboard_p10[12]', '[13]': 'breadboard_p10[13]', '[14]': 'breadboard_p10[14]', '[15]': 'breadboard_p10[15]'}
+    - id: breadboard_p11
+      type: pin_row
+      label: BREADBOARD_P11
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p11
+      pins: {'[0]': 'breadboard_p11[0]', '[1]': 'breadboard_p11[1]', '[2]': 'breadboard_p11[2]', '[3]': 'breadboard_p11[3]', '[4]': 'breadboard_p11[4]', '[5]': 'breadboard_p11[5]', '[6]': 'breadboard_p11[6]', '[7]': 'breadboard_p11[7]', '[8]': 'breadboard_p11[8]', '[9]': 'breadboard_p11[9]', '[10]': 'breadboard_p11[10]'}
+    - id: breadboard_p12
+      type: pin_row
+      label: BREADBOARD_P12
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p12
+      pins: {'[0]': 'breadboard_p12[0]', '[1]': 'breadboard_p12[1]', '[2]': 'breadboard_p12[2]', '[3]': 'breadboard_p12[3]', '[4]': 'breadboard_p12[4]', '[5]': 'breadboard_p12[5]', '[6]': 'breadboard_p12[6]', '[7]': 'breadboard_p12[7]', '[8]': 'breadboard_p12[8]', '[9]': 'breadboard_p12[9]', '[10]': 'breadboard_p12[10]', '[11]': 'breadboard_p12[11]', '[12]': 'breadboard_p12[12]', '[13]': 'breadboard_p12[13]'}
+    - id: breadboard_p13
+      type: pin_row
+      label: BREADBOARD_P13
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p13
+      pins: {'[0]': 'breadboard_p13[0]', '[1]': 'breadboard_p13[1]', '[2]': 'breadboard_p13[2]', '[3]': 'breadboard_p13[3]', '[4]': 'breadboard_p13[4]', '[5]': 'breadboard_p13[5]', '[6]': 'breadboard_p13[6]', '[7]': 'breadboard_p13[7]', '[8]': 'breadboard_p13[8]', '[9]': 'breadboard_p13[9]', '[10]': 'breadboard_p13[10]', '[11]': 'breadboard_p13[11]', '[12]': 'breadboard_p13[12]', '[13]': 'breadboard_p13[13]', '[14]': 'breadboard_p13[14]', '[15]': 'breadboard_p13[15]', '[16]': 'breadboard_p13[16]', '[17]': 'breadboard_p13[17]', '[18]': 'breadboard_p13[18]', '[19]': 'breadboard_p13[19]'}
+    - id: breadboard_p14
+      type: pin_row
+      label: BREADBOARD_P14
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: breadboard_p14
+      pins: {'[0]': 'breadboard_p14[0]', '[1]': 'breadboard_p14[1]', '[2]': 'breadboard_p14[2]', '[3]': 'breadboard_p14[3]', '[4]': 'breadboard_p14[4]', '[5]': 'breadboard_p14[5]', '[6]': 'breadboard_p14[6]', '[7]': 'breadboard_p14[7]', '[8]': 'breadboard_p14[8]', '[9]': 'breadboard_p14[9]', '[10]': 'breadboard_p14[10]', '[11]': 'breadboard_p14[11]', '[12]': 'breadboard_p14[12]', '[13]': 'breadboard_p14[13]', '[14]': 'breadboard_p14[14]', '[15]': 'breadboard_p14[15]', '[16]': 'breadboard_p14[16]', '[17]': 'breadboard_p14[17]', '[18]': 'breadboard_p14[18]', '[19]': 'breadboard_p14[19]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk}}
+    - id: reset
+      label: reset
+      attach: {peripheral: reset_button, bind: {rst: onboard_reset}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 3}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: uart
+      label: FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: ds1_reset_out_led_nreset_out
+      label: DS1 reset-out LED (nRESET_OUT)
+      device: {kind: other, bank: onboard_ds1_reset_out_led_nreset_out}   # no peripheral model yet
+    - id: usb_ulpi
+      label: USB3300 ULPI USB OTG PHY on P19 mini-USB
+      device: {kind: usb, bank: onboard_usb_ulpi}   # no peripheral model yet
+    - id: flash
+      label: S25FL128S 16 MB SPI flash (SOM, SPI0)
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet
+    - id: other
+      label: P5 FlashPro JTAG (10-pin) and P3 ARM JTAG (20-pin)
+      device: {kind: other, bank: onboard_other}   # no peripheral model yet

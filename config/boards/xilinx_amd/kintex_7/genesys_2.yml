@@ -3,16 +3,53 @@
 # Source: Digilent Genesys-2-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: genesys_2
-  fpga:
-    producer: Xilinx
-    family: Kintex 7
-    part: XC7K325TFFG900-2
+  name: Genesys 2
+  url: https://digilent.com/reference/programmable-logic/genesys-2/start
+  producer: digilent
+  chip: XC7K325TFFG900-2
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - parallel_lcd
+  - qspi_flash
+  - usb_2_host
+  - usb_2_otg
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - ftdi_ft2232h
+  - ftdi_ft232r
+  - realtek_rtl8211e
+  - microsd_socket_generic
+  - tmds_direct
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - vga666_resistor_dac
+  - micron_mt41j256m16
+  - spansion_s25fl256s
+  - ti_tusb1210
+  - ti_tmds141
+  - adi_adau1761
+  - univision_ug2832hsweg04
+  - microchip_pic24fj128_usb_host
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     cpu_resetn: { pins: "R19" }
     onboard_buttons:
       pins: ["E18", "B19", "M20", "C19", "M19"]

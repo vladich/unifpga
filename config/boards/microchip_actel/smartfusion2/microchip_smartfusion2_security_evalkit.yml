@@ -1,0 +1,27 @@
+# microchip_smartfusion2_security_evalkit: SmartFusion2 Security Evaluation Kit (M2S090TS-FGG484).
+
+Board:
+  id: microchip_smartfusion2_security_evalkit
+  name: SmartFusion2 Security Evaluation Kit (M2S090TS-FGG484)
+  url: https://www.microchip.com/en-us/development-tool/M2S090TS-EVAL-KIT
+  status: active
+  producer: microchip
+  chip: M2S090TS-FGG484
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - ethernet_phy_10_100
+  - ethernet_phy_gigabit
+  - spi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - winbond_w25q128
+  - microchip_lan8710a
+  - led_discrete_generic
+  - pushbutton_smd_generic

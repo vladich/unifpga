@@ -1,0 +1,10 @@
+# omdazz_ep4ce6: Omdazz Cyclone IV (EP4CE6).
+
+Board:
+  id: omdazz_ep4ce6
+  name: Omdazz Cyclone IV (EP4CE6)
+  producer: omdazz
+  chip: EP4CE6E22C8
+  bridges:
+  - jtag
+  programmer: quartus_pgm

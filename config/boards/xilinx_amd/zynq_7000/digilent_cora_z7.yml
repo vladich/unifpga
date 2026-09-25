@@ -1,0 +1,15 @@
+# digilent_cora_z7: Cora Z7.
+
+Board:
+  id: digilent_cora_z7
+  name: Cora Z7
+  url: https://digilent.com/reference/programmable-logic/cora-z7/start
+  producer: digilent
+  chips:
+  - id: xc7z007sclg400-1
+    name: 07s
+  - id: xc7z010-1clg400c
+    name: '10'
+  bridges:
+  - jtag
+  programmer: vivado_hw

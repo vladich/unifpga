@@ -1,0 +1,37 @@
+# terasic_han_pilot: HAN Pilot Platform.
+
+Board:
+  id: terasic_han_pilot
+  name: HAN Pilot Platform
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1133
+  status: active
+  producer: terasic
+  chip: 10AS066K3F40E2SG
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - displayport_output
+  - ethernet_10gbe_sfp
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - sata_host
+  - sfp_cage
+  - usb_3_host
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - adi_adv7513
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

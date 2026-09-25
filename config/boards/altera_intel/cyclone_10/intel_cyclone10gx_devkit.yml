@@ -1,0 +1,31 @@
+# intel_cyclone10gx_devkit: Cyclone 10 GX FPGA Development Kit.
+
+Board:
+  id: intel_cyclone10gx_devkit
+  name: Cyclone 10 GX FPGA Development Kit
+  status: eol
+  producer: intel_altera
+  chip: 10CX220YF780E5G
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt40a256m16
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

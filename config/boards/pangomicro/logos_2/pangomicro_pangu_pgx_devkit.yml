@@ -1,0 +1,29 @@
+# pangomicro_pangu_pgx_devkit: PG2L50H Development Board (Pangu PGX).
+
+Board:
+  id: pangomicro_pangu_pgx_devkit
+  name: PG2L50H Development Board (Pangu PGX)
+  url: https://www.pangomicro.com/open/4292.html
+  status: active
+  notes: Entry tier of Pangu line; integrated Wi-Fi & BLE modules.
+  producer: pangomicro
+  chip: PG2L50H-6IMBG324
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - sram
+  - dac_chip
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - pmod_connector
+  - bluetooth_le_radio
+  - wifi_radio
+  - user_leds
+  - user_buttons
+  - seven_segment_display
+  - gpio_header_generic
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

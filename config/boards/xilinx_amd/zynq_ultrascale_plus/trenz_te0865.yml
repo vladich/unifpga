@@ -1,0 +1,19 @@
+# trenz_te0865: TE0865 Zynq UltraScale+ ZU17EG High-End SoM.
+
+Board:
+  id: trenz_te0865
+  name: TE0865 Zynq UltraScale+ ZU17EG High-End SoM
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE08XX-Zynq-UltraScale/TE0865-Zynq-UltraScale/
+  status: active
+  producer: trenz_electronic
+  chip: XCZU17EG-2FFVC1760I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - jtag_header
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g

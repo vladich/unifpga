@@ -1,0 +1,20 @@
+# bunnie_precursor: Precursor.
+
+Board:
+  id: bunnie_precursor
+  name: Precursor
+  url: https://www.crowdsupply.com/sutajio-kosagi/precursor
+  status: active
+  producer: bunnie_studios
+  chip: XC7S50-1LCSGA324I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - lpddr2_memory
+  - qspi_flash
+  - wifi_radio
+  - battery_input
+  - user_leds

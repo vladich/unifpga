@@ -1,0 +1,17 @@
+# trenz_te0750: TE0750.
+
+Board:
+  id: trenz_te0750
+  name: TE0750
+  url: https://shop.trenz-electronic.de/en/Products/Trenz-Electronic/TE07XX-Zynq-SoC/
+  producer: trenz_electronic
+  chip: XC7Z045-2FFG900I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a

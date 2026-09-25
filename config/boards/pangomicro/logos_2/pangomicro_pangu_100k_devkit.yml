@@ -1,0 +1,35 @@
+# pangomicro_pangu_100k_devkit: PG2L100H Development Board (Pangu 100K / 盘古100K).
+
+Board:
+  id: pangomicro_pangu_100k_devkit
+  name: PG2L100H Development Board (Pangu 100K / 盘古100K)
+  url: https://www.pangomicro.com/open/4301.html
+  status: active
+  notes: Pango-branded Pangu 100K -- different SKU from the existing pangomicro_pg2l100h_devkit (consumer vs vendor
+    demo).
+  producer: pangomicro
+  chip: PG2L100HFBG484
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - sfp_cage
+  - hdmi_input
+  - hdmi_output
+  - pcie_endpoint
+  - microsd_socket
+  - eeprom_chip
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - user_leds
+  - user_buttons
+  - gpio_header_generic
+  devices:
+  - silabs_cp2102
+  - micron_mt41j256m16
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

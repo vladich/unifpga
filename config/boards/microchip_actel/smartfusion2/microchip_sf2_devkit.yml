@@ -1,0 +1,25 @@
+# microchip_sf2_devkit: SmartFusion2 Development Kit.
+
+Board:
+  id: microchip_sf2_devkit
+  name: SmartFusion2 Development Kit
+  url: https://www.microchip.com/en-us/development-tool/M2S090-DEV-KIT
+  producer: microchip
+  chip: M2S090TS-FGG484
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - ethernet_phy_10_100
+  - spi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - winbond_w25q128
+  - microchip_lan8710a

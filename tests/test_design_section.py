@@ -29,12 +29,12 @@ def _lines(text, needle):
 
 def test_no_configuration_or_profile_files():
     """The rig is its setup: no config/configurations, no config/profiles, no
-    config/profile.py; the layouts and peripherals carry no design conventions."""
-    for gone in ("configurations", "profiles", "profile.py"):
+    config/profile.py, no config/layouts; the boards carry no design conventions."""
+    for gone in ("configurations", "profiles", "profile.py", "layouts"):
         assert not os.path.exists(os.path.join(REPO, "config", gone)), gone
-    for name in sorted(os.listdir(os.path.join(REPO, "config", "layouts"))):
-        text = open(os.path.join(REPO, "config", "layouts", name)).read()
-        assert "design_bits" not in text and "lab_bits" not in text, name
+    for board in config_init.read_boards().values():
+        text = open(board["_path"]).read()
+        assert "design_bits" not in text and "lab_bits" not in text, board["_path"]
 
 
 def test_setups_hold_the_design_conventions():

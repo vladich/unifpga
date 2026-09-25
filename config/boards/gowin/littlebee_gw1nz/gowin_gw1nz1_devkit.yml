@@ -1,0 +1,23 @@
+# gowin_gw1nz1_devkit: GW1NZ-1 Starter Kit.
+
+Board:
+  id: gowin_gw1nz1_devkit
+  name: GW1NZ-1 Starter Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/27/
+  status: active
+  producer: gowin_semi
+  chip: GW1NZ-LV1FN32C6/I5
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,23 @@
+# gowin_gw1ns4_devkit: GW1NS-4 SoC Starter Kit.
+
+Board:
+  id: gowin_gw1ns4_devkit
+  name: GW1NS-4 SoC Starter Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/32/
+  status: active
+  producer: gowin_semi
+  chip: GW1NS-LV4CQN48C7/I6
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - jtag_header
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

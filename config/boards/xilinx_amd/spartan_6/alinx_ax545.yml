@@ -1,0 +1,27 @@
+# alinx_ax545: AX545.
+
+Board:
+  id: alinx_ax545
+  name: AX545
+  url: https://alinx.com/en/detail/44
+  producer: alinx
+  chip: XC6SLX45-2CSG324C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - microsd_socket
+  - sdr_sdram
+  - seven_segment_display
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - winbond_w9825g6kh
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - seven_seg_module_shared

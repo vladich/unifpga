@@ -1,0 +1,11 @@
+# olimex_xc3s1500_a: XC3S1500-A.
+
+Board:
+  id: olimex_xc3s1500_a
+  name: XC3S1500-A
+  url: https://www.olimex.com/Products/FPGA/XILINX-Spartan-3/
+  producer: olimex
+  chip: XC3S1500-4FG320C
+  bridges:
+  - jtag
+  programmer: openocd

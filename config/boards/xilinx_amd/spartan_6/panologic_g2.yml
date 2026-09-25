@@ -2,9 +2,17 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/pano_logic_g2.py
 
+
 Board:
   id: panologic_g2
-  pinBanks:
+  name: Pano Logic G2
+  url: https://github.com/tomverbeure/panologic-g2
+  producer: pano_logic
+  chip: XC6SLX150-2CSG484C
+  bridges:
+  - jtag
+  programmer: openocd
+  banks:
     cpu_resetn:
       pins: AB14
     onboard_leds:

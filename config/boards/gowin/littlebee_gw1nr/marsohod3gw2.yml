@@ -1,12 +1,17 @@
 # marsohod3gw2 pin map.
 
+
 Board:
   id: marsohod3gw2
-  fpga:
-    producer: Gowin
-    family: LittleBee/GW1NR
-    part: GW1NR-LV9QN88PC6/I5
-
+  name: Marsohod3 GW
+  product: Марсоход3GW2 (Marsohod3GW2)
+  summary: Gowin GW1NR-LV9QN88PC6/I5 (8640 LUT4, 8 MB in-package PSRAM), 100 MHz osc, FT2232H (JTAG + sync FIFO /
+    UART), ADC1175 8-bit ADC, HDMI out, 8 LEDs, 2 keys, 2x 2x7 expansion headers (20 IO)
+  producer: marsohod
+  chip: GW1NR-LV9QN88PC6/I5
+  bridges:
+  - jtag
+  programmer: openFPGALoader
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -15,7 +20,7 @@ Board:
       set_device: "GW1NR-LV9QN88PC6/I5 -name GW1NR-9 -device_version C"
       options: [use_done_as_gpio, use_mspi_as_gpio, use_sspi_as_gpio, use_ready_as_gpio, use_reconfign_as_gpio]
       gprj_device: '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>'
-  pinBanks:
+  banks:
     onboard_hdmi:
       # ELVDS_OBUF pairs with IO_TYPE=LVCMOS18D (1.8 V bank)
       pins:
@@ -49,3 +54,34 @@ Board:
     onboard_other:   # JTAG (FPGA dedicated) + JTAG2 external header
       device: {"name": "JTAG (FPGA dedicated) + JTAG2 external header", "kind": "other"}
       pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8", "reconfig_n": "9"}
+  # ---- drawn: headers and parts; ./unifpga layout draft marsohod3gw2 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]'}
+  parts:
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: ft_bridge
+      label: ft bridge
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_ft_bridge.b1, rx: onboard_ft_bridge.b0}}
+    - id: adc
+      label: adc
+      attach: {peripheral: adc_8bit_mic, bind: {d: onboard_adc.d, clk: onboard_adc.clk}}
+    - id: hdmi
+      label: hdmi
+      attach: {peripheral: hdmi_tmds, params: {timing: design, clock_serial_mhz: 250}, bind: {d_p: onboard_hdmi.d_p, clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: other
+      label: JTAG (FPGA dedicated) + JTAG2 external header
+      device: {kind: other, bank: onboard_other}   # no peripheral model yet

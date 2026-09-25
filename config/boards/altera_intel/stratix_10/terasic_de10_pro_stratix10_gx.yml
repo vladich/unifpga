@@ -2,9 +2,33 @@
 # Source: Terasic user manual PDF
 #   ~/Terasic/DE10-Pro_SX_User_Manual_RevE.pdf
 
+
 Board:
   id: terasic_de10_pro_stratix10_gx
-  pinBanks:
+  name: DE10-Pro Stratix 10 GX Development and Education Kit
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=248&No=1144&PartNo=4
+  status: active
+  producer: terasic
+  chip: 1SG280HU2F50E2VG
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - pcie_endpoint
+  - qsfp_cage
+  - sfp_cage
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  banks:
     sys_clk:
       pins: PIN_E29
     cpu_resetn:

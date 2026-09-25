@@ -1,0 +1,29 @@
+# htg_k800: HTG-K800 Kintex UltraScale PCIe Development Platform.
+
+Board:
+  id: htg_k800
+  name: HTG-K800 Kintex UltraScale PCIe Development Platform
+  url: https://www.hitechglobal.com/Boards/Kintex-UltraScale.htm
+  status: active
+  producer: hitech_global
+  chip: XCKU115-2FLVA1517E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - fmc_hpc
+  - jtag_header
+  - pcie_endpoint
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - silabs_si570
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - led_discrete_generic
+  - pushbutton_smd_generic

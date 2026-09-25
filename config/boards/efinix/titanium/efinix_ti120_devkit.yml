@@ -1,0 +1,11 @@
+# efinix_ti120_devkit: Titanium Ti120 Development Kit.
+
+Board:
+  id: efinix_ti120_devkit
+  name: Titanium Ti120 Development Kit
+  status: eol
+  producer: efinix
+  chip: Ti120F324C4
+  bridges:
+  - jtag
+  programmer: efinity_pgm

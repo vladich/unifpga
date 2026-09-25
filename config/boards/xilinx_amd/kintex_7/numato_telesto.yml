@@ -1,0 +1,26 @@
+# numato_telesto: Numato Telesto Kintex-7 FPGA Development Board.
+
+Board:
+  id: numato_telesto
+  name: Numato Telesto Kintex-7 FPGA Development Board
+  status: eol
+  producer: numato_lab
+  chip: XC7K160T-2FFG676C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - fmc_lpc
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q128a
+  - micron_mt41k256m16
+  - led_discrete_generic
+  - pushbutton_smd_generic

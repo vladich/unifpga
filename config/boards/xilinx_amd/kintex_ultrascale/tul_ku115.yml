@@ -1,0 +1,17 @@
+# tul_ku115: TUL PCIe KU115 Accelerator.
+
+Board:
+  id: tul_ku115
+  name: TUL PCIe KU115 Accelerator
+  url: https://web.archive.org/web/20251221132110/https://www.tulembedded.com/FPGA/images/TUL_PCIe_KU115_Introduction.pdf
+  status: active
+  producer: tul
+  chip: XCKU115-2FLVB2104E
+  bridges:
+  - pcie-jtag
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - jtag_header

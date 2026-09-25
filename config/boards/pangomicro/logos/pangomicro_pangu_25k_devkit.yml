@@ -8,9 +8,39 @@
 #   https://raw.githubusercontent.com/chili-chips-ba/tango-with-pango/main/0.Doc/DevKit/ExampleRTL--25G/49_mdio_rw_test/prj/mdio_rw_test.fdc
 #   https://github.com/chili-chips-ba/tango-with-pango/blob/main/0.Doc/DevKit/DFPGL25G_DevKit--UserManual.CHINESE-v1.0.pdf
 
+
 Board:
   id: pangomicro_pangu_25k_devkit
-  pinBanks:
+  name: Pangu 25K Development Board (DFPGL25G_DevKit, 盘古25K核心板)
+  url: https://www.pangomicro.com/open/4264.html
+  status: active
+  notes: 'Manual: DFPGL25G_DevKit--UserManual.CHINESE-v1.0.pdf at chili-chips-ba/tango-with-pango.'
+  producer: pangomicro
+  chip: PGL25G2-6CMBG324
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - rs485_transceiver
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - seven_segment_display
+  - parallel_lcd
+  - eeprom_chip
+  - spi_flash
+  - gpio_header_generic
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     clk:
       pins: V9
       frequency_mhz: 50

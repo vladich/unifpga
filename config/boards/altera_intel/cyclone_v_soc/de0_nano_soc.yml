@@ -1,11 +1,41 @@
 # de0_nano_soc pin map.
 
+
 Board:
   id: de0_nano_soc
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone V SoC"
-    part: 5CSEMA4U23C6N
+  name: DE0-Nano-SoC
+  product: DE0-Nano-SoC Kit (Atlas-SoC Kit)
+  summary: 'Cyclone V SE SoC 5CSEMA4U23C6N (40K LEs, dual Cortex-A9 HPS); 1 GB HPS DDR3; HPS Gigabit Ethernet, USB
+    OTG, micro SD, UART-USB, G-sensor, LTC header; FPGA: LTC2308 ADC, 2x 2x20 GPIO, Arduino header, 4 SW, 2 KEY, 8
+    LEDs'
+  aliases:
+  - terasic_atlas_soc
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=165&No=941
+  producer: terasic
+  chip: 5CSEMA4U23C6N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - accelerometer
+  - adc_chip
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - microsd_socket_generic
+  - microchip_ksz9031rnx
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - adi_adxl345
+  - ti_adc128s022
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -16,7 +46,7 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
-  pinBanks:
+  banks:
     fpga_clk1_50mhz: { pins: V11, frequency_mhz: 50 }
     onboard_buttons:
       active: low
@@ -99,3 +129,76 @@ Board:
       iostandard: "3.3V"
       shares: ["onboard_hps_uart"]   # the board multiplexes these pins
       pins: {"HPS_LTC_GPIO": "H13", "HPS_I2C1_SCLK": "B21", "HPS_I2C1_SDAT": "A21", "HPS_SPIM_CLK": "C19", "HPS_SPIM_MISO": "B19", "HPS_SPIM_MOSI": "B16", "HPS_SPIM_SS": "C16"}
+  # ---- drawn: headers and parts; ./unifpga layout draft de0_nano_soc regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio_0
+      type: pin_row
+      label: GPIO_0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_0
+      pins: {'[0]': 'gpio_0[0]', '[1]': 'gpio_0[1]', '[2]': 'gpio_0[2]', '[3]': 'gpio_0[3]', '[4]': 'gpio_0[4]', '[5]': 'gpio_0[5]', '[6]': 'gpio_0[6]', '[7]': 'gpio_0[7]', '[8]': 'gpio_0[8]', '[9]': 'gpio_0[9]', '[10]': 'gpio_0[10]', '[11]': 'gpio_0[11]', '[12]': 'gpio_0[12]', '[13]': 'gpio_0[13]', '[14]': 'gpio_0[14]', '[15]': 'gpio_0[15]', '[16]': 'gpio_0[16]', '[17]': 'gpio_0[17]', '[18]': 'gpio_0[18]', '[19]': 'gpio_0[19]', '[20]': 'gpio_0[20]', '[21]': 'gpio_0[21]', '[22]': 'gpio_0[22]', '[23]': 'gpio_0[23]', '[24]': 'gpio_0[24]', '[25]': 'gpio_0[25]', '[26]': 'gpio_0[26]', '[27]': 'gpio_0[27]', '[28]': 'gpio_0[28]', '[29]': 'gpio_0[29]', '[30]': 'gpio_0[30]', '[31]': 'gpio_0[31]', '[32]': 'gpio_0[32]', '[33]': 'gpio_0[33]', '[34]': 'gpio_0[34]', '[35]': 'gpio_0[35]'}
+    - id: gpio_1
+      type: pin_row
+      label: GPIO_1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_1
+      pins: {'[0]': 'gpio_1[0]', '[1]': 'gpio_1[1]', '[2]': 'gpio_1[2]', '[3]': 'gpio_1[3]', '[4]': 'gpio_1[4]', '[5]': 'gpio_1[5]', '[6]': 'gpio_1[6]', '[7]': 'gpio_1[7]', '[8]': 'gpio_1[8]', '[9]': 'gpio_1[9]', '[10]': 'gpio_1[10]', '[11]': 'gpio_1[11]', '[12]': 'gpio_1[12]', '[13]': 'gpio_1[13]', '[14]': 'gpio_1[14]', '[15]': 'gpio_1[15]', '[16]': 'gpio_1[16]', '[17]': 'gpio_1[17]', '[18]': 'gpio_1[18]', '[19]': 'gpio_1[19]', '[20]': 'gpio_1[20]', '[21]': 'gpio_1[21]', '[22]': 'gpio_1[22]', '[23]': 'gpio_1[23]', '[24]': 'gpio_1[24]', '[25]': 'gpio_1[25]', '[26]': 'gpio_1[26]', '[27]': 'gpio_1[27]', '[28]': 'gpio_1[28]', '[29]': 'gpio_1[29]', '[30]': 'gpio_1[30]', '[31]': 'gpio_1[31]', '[32]': 'gpio_1[32]', '[33]': 'gpio_1[33]', '[34]': 'gpio_1[34]', '[35]': 'gpio_1[35]'}
+  parts:
+    - id: fpga_clk1_50mhz
+      label: fpga clk1 50mhz
+      attach: {peripheral: clock_input, bind: {clk: fpga_clk1_50mhz}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: fpga_clk2_50mhz
+      label: FPGA_CLK2_50 (50 MHz)
+      device: {kind: clock, bank: onboard_fpga_clk2_50mhz}   # no peripheral model yet
+    - id: fpga_clk3_50mhz
+      label: FPGA_CLK3_50 (50 MHz)
+      device: {kind: clock, bank: onboard_fpga_clk3_50mhz}   # no peripheral model yet
+    - id: hps_clk1_25mhz
+      label: HPS_CLK1_25 (25 MHz)
+      device: {kind: clock, bank: onboard_hps_clk1_25mhz}   # no peripheral model yet
+    - id: hps_clk2_25mhz
+      label: HPS_CLK2_25 (25 MHz)
+      device: {kind: clock, bank: onboard_hps_clk2_25mhz}   # no peripheral model yet
+    - id: arduino_io
+      label: Arduino Uno R3 expansion header
+      device: {kind: header, bank: arduino_io}   # no peripheral model yet
+    - id: adc
+      label: A/D converter (LTC2308, SPI, 2x5 analog header)
+      attach: {peripheral: ltc2308, bind: {convst: onboard_adc.ADC_CONVST, sck: onboard_adc.ADC_SCK, sdi: onboard_adc.ADC_SDI, sdo: onboard_adc.ADC_SDO}}
+    - id: hps_key
+      label: HPS user push-button (HPS_KEY)
+      device: {kind: buttons, bank: onboard_hps_key}   # no peripheral model yet
+    - id: hps_led
+      label: HPS user LED (HPS_LED)
+      device: {kind: leds, bank: onboard_hps_led}   # no peripheral model yet
+    - id: hps_ethernet
+      label: HPS Gigabit Ethernet PHY (KSZ9031RN)
+      device: {kind: ethernet, bank: onboard_hps_ethernet}   # no peripheral model yet
+    - id: hps_uart
+      label: HPS UART to USB (FT232R)
+      device: {kind: uart, bank: onboard_hps_uart}   # no peripheral model yet
+    - id: hps_ddr3
+      label: HPS DDR3 SDRAM (1 GB, 32-bit)
+      device: {kind: ddr3, bank: onboard_hps_ddr3}   # no peripheral model yet
+    - id: hps_sdcard
+      label: HPS micro SD card socket
+      device: {kind: sdcard, bank: onboard_hps_sdcard}   # no peripheral model yet
+    - id: hps_usb_otg
+      label: HPS USB 2.0 OTG PHY (USB3300)
+      device: {kind: usb, bank: onboard_hps_usb_otg}   # no peripheral model yet
+    - id: hps_gsensor
+      label: HPS accelerometer (ADXL345 G-sensor)
+      device: {kind: other, bank: onboard_hps_gsensor}   # no peripheral model yet
+    - id: hps_ltc_header
+      label: HPS LTC connector (2x7, SPI/I2C/GPIO)
+      device: {kind: header, bank: hps_ltc_header}   # no peripheral model yet

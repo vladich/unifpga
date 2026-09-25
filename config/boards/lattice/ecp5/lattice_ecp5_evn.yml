@@ -1,0 +1,20 @@
+# lattice_ecp5_evn: ECP5 Evaluation Board.
+
+Board:
+  id: lattice_ecp5_evn
+  name: ECP5 Evaluation Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/ecp5evaluationboard
+  producer: lattice
+  chip: LFE5UM5G-85F-8BG381C
+  bridges:
+  - jtag
+  programmer: ecpprog
+  features:
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q128a
+  - silabs_si5342
+  - microsd_socket_generic

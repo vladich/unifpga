@@ -2,9 +2,23 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/efinix_ti375_c529_dev_kit.py
 
+
 Board:
   id: efinix_ti375_devkit
-  pinBanks:
+  name: Titanium Ti375 Development Kit
+  url: https://www.efinixinc.com/products-devkits-titaniumti375c529.html
+  producer: efinix
+  chip: Ti375C529C4
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - emmc_flash
+  - microsd_socket
+  devices:
+  - microsd_socket_generic
+  - emmc_chip_generic
+  banks:
     sys_clk:
       pins: U4
     onboard_leds:

@@ -1,0 +1,21 @@
+# qmtech_cycloneiv_ep4ce15_core: QMtech Cyclone IV EP4CE15 Core Board.
+
+Board:
+  id: qmtech_cycloneiv_ep4ce15_core
+  name: QMtech Cyclone IV EP4CE15 Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  status: active
+  producer: qmtech
+  chip: EP4CE15F23C8N
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - qspi_flash
+  - sdr_sdram
+  - user_buttons
+  - user_leds
+  devices:
+  - winbond_w9825g6kh
+  - led_discrete_generic
+  - pushbutton_smd_generic

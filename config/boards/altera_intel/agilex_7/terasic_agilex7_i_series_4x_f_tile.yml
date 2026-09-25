@@ -1,0 +1,30 @@
+# terasic_agilex7_i_series_4x_f_tile: Altera Agilex 7 FPGA I-Series Transceiver-SoC Development Kit (4x F-Tile).
+
+Board:
+  id: terasic_agilex7_i_series_4x_f_tile
+  name: Altera Agilex 7 FPGA I-Series Transceiver-SoC Development Kit (4x F-Tile)
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=142&No=1305
+  status: active
+  producer: terasic
+  chip: AGIB027R31B1E1VC
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - emmc_flash
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - usb_blaster_ii_built_in
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
