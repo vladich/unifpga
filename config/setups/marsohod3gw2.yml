@@ -1,5 +1,5 @@
-# Setup marsohod3gw2: the rig config/configurations/marsohod3gw2.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig marsohod3gw2: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show marsohod3gw2).
 
 Setup:
   id: marsohod3gw2
@@ -8,17 +8,21 @@ Setup:
   use:
     - onboard: leds
     - onboard: buttons
+      design_bits: {buttons: [null, null]}
     - onboard: clk
     - onboard: ft_bridge
     - module: marsohod3_shield_keys
       wires: {IO11: 'gpio.[11]', IO10: 'gpio.[10]', IO9: 'gpio.[9]', IO8: 'gpio.[8]'}
+      design_bits: {buttons: [0, 1, 2, 3]}
     - onboard: adc
+      params: {clock: clock.pixel}
     - onboard: hdmi
     - module: marsohod3_shield_display
       wires: {IO6: 'gpio.[6]', IO7: 'gpio.[7]', IO4: 'gpio.[4]', IO2: 'gpio.[2]', IO0: 'gpio.[0]', IO5: 'gpio.[5]', IO3: 'gpio.[3]', IO1: 'gpio.[1]', IO14: 'gpio.[14]', IO12: 'gpio.[12]', IO13: 'gpio.[13]', IO15: 'gpio.[15]'}
+  design:
+    reset:
+      sources:
+      - {any_key: true, bank: onboard_buttons}
+      - {pll_lock: serial}
   extra:
-    tie:
-      gpio[16]: 0
-      gpio[17]: 0
-      gpio[18]: 0
-      gpio[19]: 0
+    tie: {'gpio[16]': 0, 'gpio[17]': 0, 'gpio[18]': 0, 'gpio[19]': 0}

@@ -1,5 +1,5 @@
-# Setup alinx_ax301: the rig config/configurations/alinx_ax301.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig alinx_ax301: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show alinx_ax301).
 
 Setup:
   id: alinx_ax301
@@ -9,6 +9,8 @@ Setup:
     - onboard: clk
     - onboard: cpu_resetn
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {switches: [0, 1, 2]}
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
@@ -23,7 +25,7 @@ Setup:
     - onboard: buzzer
     - onboard: sdram
     - onboard: sdcard
+  design:
+    {uart_rx: 0}
   extra:
-    tie:
-      gpio_0[1]: 0
-      gpio_0[3]: 1
+    tie: {'gpio_0[1]': 0, 'gpio_0[3]': 1}

@@ -1,5 +1,5 @@
-# Setup de0_cv: the rig config/configurations/de0_cv.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig de0_cv: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show de0_cv).
 
 Setup:
   id: de0_cv
@@ -13,7 +13,9 @@ Setup:
     - onboard: cpu_resetn
     - onboard: switches
     - onboard: leds
+      design_bits: {leds: [0, 1, 2, 3, null, null, null, null, null, null]}
     - onboard: 7seg
+      bind: {dp: ['onboard_leds[4]', 'onboard_leds[5]', 'onboard_leds[6]', 'onboard_leds[7]', 'onboard_leds[8]', 'onboard_leds[9]']}
     - onboard: vga
     - module: inmp441_breakout
       wires: {SCK: 'gpio_0.[4]', WS: 'gpio_0.[2]', SD: 'gpio_0.[5]', L/R: 'gpio_0.[0]'}
@@ -29,6 +31,4 @@ Setup:
     - onboard: sdram
     - onboard: sdcard
   extra:
-    tie:
-      gpio_0[1]: 0
-      gpio_0[3]: 1
+    tie: {'gpio_0[1]': 0, 'gpio_0[3]': 1}

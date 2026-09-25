@@ -1,5 +1,5 @@
-# Setup tang_mega_138k_lcd_480_272_tm1638: the rig config/configurations/tang_mega_138k_lcd_480_272_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_mega_138k_lcd_480_272_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_mega_138k_lcd_480_272_tm1638).
 
 Setup:
   id: tang_mega_138k_lcd_480_272_tm1638
@@ -8,13 +8,16 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
+      design_bits: {buttons: [8, 9, 10]}
     - gpio: pmod_0
       params: {width: 8}
     - gpio: pmod_1
       params: {width: 8}
     - onboard: lcd
+      params: {mirror_screen: true}
     - module: tm1638_led_key
       wires: {STB: pmod_1.9, CLK: pmod_1.7, DIO: pmod_1.5}
+      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
     - module: inmp441_breakout
       wires: {SCK: pmod_0.11, WS: pmod_0.9, SD: pmod_1.11, L/R: pmod_0.7}
     - module: i2s_dac_breakout
@@ -24,3 +27,9 @@ Setup:
     - onboard: ws2812
     - onboard: fan
     - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {tm_key: msb}
+    uart_rx: 0
+    width: {gpio: 24}

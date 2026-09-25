@@ -1,5 +1,5 @@
-# Setup de1: the rig config/configurations/de1.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig de1: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show de1).
 
 Setup:
   id: de1
@@ -11,7 +11,9 @@ Setup:
     - onboard: buttons
     - onboard: leds_green
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]}
     - onboard: 7seg
+      bind: {dp: ['onboard_leds[6]', 'onboard_leds[7]', 'onboard_leds[8]', 'onboard_leds[9]']}
     - onboard: vga
     - module: inmp441_breakout
       wires: {SCK: 'gpio_1.[4]', WS: 'gpio_1.[2]', SD: 'gpio_1.[5]', L/R: 'gpio_1.[0]'}
@@ -23,7 +25,11 @@ Setup:
     - onboard: ps2
     - onboard: sdram
     - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
+    tie: {'onboard_leds[0]': 0, 'onboard_leds[1]': 0, 'onboard_leds[2]': 0, 'onboard_leds[3]': 0, 'onboard_leds[4]': 0,
+      'onboard_leds[5]': 0}
   extra:
-    tie:
-      gpio_1[1]: 0
-      gpio_1[3]: 1
+    tie: {'gpio_1[1]': 0, 'gpio_1[3]': 1}

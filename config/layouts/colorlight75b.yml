@@ -31,7 +31,7 @@ Layout:
       attach: {peripheral: led_bank, params: {width: 1, active: low, open_drain: true}, bind: {led: onboard_leds}}
     - id: hdmi
       label: hdmi
-      attach: {peripheral: hdmi_tmds, params: {timing: lab, clock_serial_mhz: 250}, bind: {d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n, clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n}}
+      attach: {peripheral: hdmi_tmds, params: {timing: design, clock_serial_mhz: 250}, bind: {d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n, clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n}}
     - id: sdram
       label: ESMT M12L64322A SDRAM (2M x 32, 8 MB)
       attach: {peripheral: sdram_sdr, params: {row_bits: 11, data_bits: 32, col_bits: 8}, bind: {clk: onboard_sdram.clk, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq}}

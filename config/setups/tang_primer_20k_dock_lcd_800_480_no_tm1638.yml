@@ -1,5 +1,5 @@
-# Setup tang_primer_20k_dock_lcd_800_480_no_tm1638: the rig config/configurations/tang_primer_20k_dock_lcd_800_480_no_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_primer_20k_dock_lcd_800_480_no_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_primer_20k_dock_lcd_800_480_no_tm1638).
 
 Setup:
   id: tang_primer_20k_dock_lcd_800_480_no_tm1638
@@ -19,3 +19,9 @@ Setup:
       wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
       params: {align_right: 0, offset_by_one_cycle: 1}
     - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {key: msb}
+    clock: pixel
+    width: {gpio: 32}

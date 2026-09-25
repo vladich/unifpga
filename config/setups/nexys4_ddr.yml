@@ -1,5 +1,5 @@
-# Setup nexys4_ddr: the rig config/configurations/nexys4_ddr.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig nexys4_ddr: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show nexys4_ddr).
 
 Setup:
   id: nexys4_ddr
@@ -16,6 +16,7 @@ Setup:
     - onboard: 7seg
     - onboard: cpu_resetn
     - onboard: buttons
+      design_bits: {buttons: [1, 3, 2, 0, 4]}
     - onboard: vga
     - onboard: pwm_amp
     - onboard: uart
@@ -30,9 +31,7 @@ Setup:
     - onboard: accelerometer
     - onboard: pmod_jxadc
     - onboard: sdcard
+  design:
+    width: {gpio: 32}
   extra:
-    tie:
-      onboard_mic.clk: 0
-      onboard_mic.lrsel: 0
-      pmod_jd[2]: 0
-      pmod_jd[1]: 1
+    tie: {onboard_mic.clk: 0, onboard_mic.lrsel: 0, 'pmod_jd[2]': 0, 'pmod_jd[1]': 1}

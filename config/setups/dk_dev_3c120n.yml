@@ -1,5 +1,5 @@
-# Setup dk_dev_3c120n: the rig config/configurations/dk_dev_3c120n.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig dk_dev_3c120n: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show dk_dev_3c120n).
 
 Setup:
   id: dk_dev_3c120n
@@ -12,7 +12,8 @@ Setup:
     - onboard: 7seg
     - onboard: buttons
     - onboard: switches
+  design:
+    uart_rx: 1
+    width: {gpio: 1}
   extra:
-    tie:
-      onboard_7seg.minus: 0
-      onboard_speaker: 0
+    tie: {onboard_7seg.minus: 0, onboard_speaker: 0}

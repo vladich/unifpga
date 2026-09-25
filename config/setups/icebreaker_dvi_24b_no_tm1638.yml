@@ -1,5 +1,5 @@
-# Setup icebreaker_dvi_24b_no_tm1638: the rig config/configurations/icebreaker_dvi_24b_no_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig icebreaker_dvi_24b_no_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show icebreaker_dvi_24b_no_tm1638).
 
 Setup:
   id: icebreaker_dvi_24b_no_tm1638
@@ -10,10 +10,18 @@ Setup:
     - onboard: clk
     - onboard: uart
     - onboard: button
+      design_bits: {buttons: [null]}
     - onboard: leds
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {buttons: [0, 1, 2], switches: [0, 1, 2]}
     - module: 1bitsquared_dvi_pmod_24b
       wires: {A1: pmod_p1a.1, A2: pmod_p1a.2, A3: pmod_p1a.3, A4: pmod_p1a.4, A7: pmod_p1a.7, A8: pmod_p1a.8, A9: pmod_p1a.9, A10: pmod_p1a.10, B1: pmod_p1b.1, B2: pmod_p1b.2, B3: pmod_p1b.3, B4: pmod_p1b.4, B7: pmod_p1b.7, B8: pmod_p1b.8, B9: pmod_p1b.9, B10: pmod_p1b.10}
     - onboard: rgb_led_0
     - onboard: led_green
     - onboard: led_red
+  design:
+    reset:
+      sources:
+      - {key: 0}
+    clock: pixel

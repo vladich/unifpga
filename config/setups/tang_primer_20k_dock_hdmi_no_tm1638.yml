@@ -1,5 +1,5 @@
-# Setup tang_primer_20k_dock_hdmi_no_tm1638: the rig config/configurations/tang_primer_20k_dock_hdmi_no_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_primer_20k_dock_hdmi_no_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_primer_20k_dock_hdmi_no_tm1638).
 
 Setup:
   id: tang_primer_20k_dock_hdmi_no_tm1638
@@ -22,23 +22,19 @@ Setup:
       wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
       params: {align_right: 0, offset_by_one_cycle: 1}
     - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {key: msb}
+    clock: pixel
+    width: {gpio: 32}
   extra:
-    io_overrides:
-      clk: LVCMOS33
-      gpio_1[2]: LVCMOS33
-      gpio_1[3]: LVCMOS33
-      gpio_1[6]: LVCMOS33
-      gpio_1[7]: LVCMOS33
-      gpio_2[0]: LVCMOS33
-      gpio_2[4]: LVCMOS33
-      onboard_headphone: LVCMOS33
-      onboard_leds[2]: LVCMOS33
-      onboard_leds[3]: LVCMOS33
-      onboard_leds[4]: LVCMOS33
-      onboard_leds[5]: LVCMOS33
-      onboard_pa_enable: LVCMOS33
+    io_overrides: {clk: LVCMOS33, 'gpio_1[2]': LVCMOS33, 'gpio_1[3]': LVCMOS33, 'gpio_1[6]': LVCMOS33, 'gpio_1[7]': LVCMOS33,
+      'gpio_2[0]': LVCMOS33, 'gpio_2[4]': LVCMOS33, onboard_headphone: LVCMOS33, 'onboard_leds[2]': LVCMOS33,
+      'onboard_leds[3]': LVCMOS33, 'onboard_leds[4]': LVCMOS33, 'onboard_leds[5]': LVCMOS33, onboard_pa_enable: LVCMOS33}
   for_toolchain:
     nextpnr_apicula:
       extra:
-        io_overrides:
-          clk: null
+        io_overrides: {clk: null}
+      design:
+        width: {switches: 5}

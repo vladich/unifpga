@@ -1,5 +1,5 @@
-# Setup orangepi_msoc: the rig config/configurations/orangepi_msoc.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig orangepi_msoc: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show orangepi_msoc).
 
 Setup:
   id: orangepi_msoc
@@ -17,3 +17,8 @@ Setup:
     - module: i2s_dac_breakout
       wires: {SCK: 'gpio.[8]', BCK: 'gpio.[10]', LCK: 'gpio.[14]', DIN: 'gpio.[12]'}
       params: {align_right: 0, offset_by_one_cycle: 1}
+  design:
+    reset:
+      sources:
+      - {key: msb}
+    width: {gpio: 20}

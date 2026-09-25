@@ -1,5 +1,5 @@
-# Setup basys3: the rig config/configurations/basys3.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig basys3: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show basys3).
 
 Setup:
   id: basys3
@@ -10,9 +10,11 @@ Setup:
   use:
     - onboard: clk
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, null]}
     - onboard: leds
     - onboard: 7seg
     - onboard: buttons
+      design_bits: {buttons: [1, 3, 2, 0, 4]}
     - onboard: vga
     - onboard: uart
     - module: inmp441_breakout
@@ -23,7 +25,10 @@ Setup:
       wires: {'9': 'pmod_jb.[6]', '4': 'pmod_jb.[3]', '1': 'pmod_jb.[0]', '2': 'pmod_jb.[1]'}
     - onboard: usb_hid
     - onboard: pmod_jxadc
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
+    width: {gpio: 24}
   extra:
-    tie:
-      pmod_ja[2]: 0
-      pmod_ja[1]: 1
+    tie: {'pmod_ja[2]': 0, 'pmod_ja[1]': 1}

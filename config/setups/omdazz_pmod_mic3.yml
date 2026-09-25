@@ -1,5 +1,5 @@
-# Setup omdazz_pmod_mic3: the rig config/configurations/omdazz_pmod_mic3.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig omdazz_pmod_mic3: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show omdazz_pmod_mic3).
 
 Setup:
   id: omdazz_pmod_mic3
@@ -9,6 +9,8 @@ Setup:
     - onboard: clk
     - onboard: cpu_reset
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {switches: [0, 1, 2, 3]}
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
@@ -25,6 +27,4 @@ Setup:
     - onboard: ps2
     - onboard: ir
   extra:
-    tie:
-      gpio_pseudo_sdram[8]: 0
-      gpio_pseudo_sdram[10]: 1
+    tie: {'gpio_pseudo_sdram[8]': 0, 'gpio_pseudo_sdram[10]': 1}

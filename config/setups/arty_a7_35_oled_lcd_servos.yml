@@ -1,5 +1,5 @@
-# Setup arty_a7_35_oled_lcd_servos: the rig config/configurations/arty_a7_35_oled_lcd_servos.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig arty_a7_35_oled_lcd_servos: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show arty_a7_35_oled_lcd_servos).
 
 Setup:
   id: arty_a7_35_oled_lcd_servos
@@ -27,4 +27,4 @@ Setup:
     - onboard: rgb_led_2
     - onboard: rgb_led_3
   extra:
-    manual: true
+    {manual: true}

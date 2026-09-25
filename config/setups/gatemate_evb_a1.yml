@@ -1,5 +1,5 @@
-# Setup gatemate_evb_a1: the rig config/configurations/gatemate_evb_a1.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig gatemate_evb_a1: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show gatemate_evb_a1).
 
 Setup:
   id: gatemate_evb_a1
@@ -13,4 +13,4 @@ Setup:
     - onboard: buttons
     - onboard: leds
   extra:
-    manual: true
+    {manual: true}

@@ -1,5 +1,5 @@
-# Setup orangecrab_ecp5: the rig config/configurations/orangecrab_ecp5.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig orangecrab_ecp5: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show orangecrab_ecp5).
 
 Setup:
   id: orangecrab_ecp5
@@ -13,6 +13,9 @@ Setup:
     - onboard: buttons
     - onboard: vga
     - onboard: switches
+      design_bits: {switches: []}
     - onboard: uart
     - module: inmp441_breakout
       wires: {SCK: 'gpio.[5]', WS: 'gpio.[4]', SD: 'gpio.[6]', L/R: 'gpio.[3]'}
+  design:
+    width: {gpio: 8}

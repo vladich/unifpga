@@ -1,5 +1,5 @@
-# Setup tang_nano_4k_hdmi_no_tm1638: the rig config/configurations/tang_nano_4k_hdmi_no_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_nano_4k_hdmi_no_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_nano_4k_hdmi_no_tm1638).
 
 Setup:
   id: tang_nano_4k_hdmi_no_tm1638
@@ -8,6 +8,8 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {buttons: [1, 0], switches: [1, 0]}
     - onboard: hdmi
     - onboard: camera
       variant: inmp441_i2s_mic
@@ -16,3 +18,8 @@ Setup:
     - onboard: camera
       variant: gpio
     - onboard: led
+  design:
+    reset:
+      sources:
+      - {power_up: true}
+    uart_rx: 0

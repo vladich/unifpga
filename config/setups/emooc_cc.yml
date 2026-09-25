@@ -1,5 +1,5 @@
-# Setup emooc_cc: the rig config/configurations/emooc_cc.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig emooc_cc: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show emooc_cc).
 
 Setup:
   id: emooc_cc
@@ -9,6 +9,7 @@ Setup:
     - onboard: clk
     - onboard: uart
     - onboard: buttons
+      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, null]}
     - onboard: switches
     - onboard: leds
     - onboard: 7seg
@@ -21,4 +22,10 @@ Setup:
       params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}
     - gpio: gpio_p2
       pins: ['[4]', '[5]', '[6]', '[7]', '[8]', '[9]', '[10]', '[11]']
-      params: {width: 8}
+      params: {width: 8, direction: out}
+  design:
+    reset:
+      sources:
+      - {key: msb}
+    width: {buttons: 8}
+    tie: {'gpio_p2[12]': 0}

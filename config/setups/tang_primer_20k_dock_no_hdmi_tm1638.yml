@@ -1,5 +1,5 @@
-# Setup tang_primer_20k_dock_no_hdmi_tm1638: the rig config/configurations/tang_primer_20k_dock_no_hdmi_tm1638.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig tang_primer_20k_dock_no_hdmi_tm1638: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show tang_primer_20k_dock_no_hdmi_tm1638).
 
 Setup:
   id: tang_primer_20k_dock_no_hdmi_tm1638
@@ -9,11 +9,15 @@ Setup:
     - onboard: clock
     - onboard: leds
       params: {active: high}
+      design_bits: {leds: [null, null, null, null, null, null]}
     - onboard: uart
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3]}
     - onboard: buttons
+      design_bits: {buttons: []}
     - module: tm1638_led_key
       wires: {STB: j12.6, CLK: j12.8, DIO: j12.10}
+      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
     - module: inmp441_breakout
       wires: {SCK: j14.10, WS: j14.6, SD: j14.12, L/R: j14.8}
     - onboard: headphone
@@ -21,3 +25,8 @@ Setup:
       wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
       params: {align_right: 0, offset_by_one_cycle: 1}
     - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {key: msb}
+    width: {switches: 8, gpio: 32}

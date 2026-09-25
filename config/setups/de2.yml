@@ -1,5 +1,5 @@
-# Setup de2: the rig config/configurations/de2.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig de2: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show de2).
 
 Setup:
   id: de2
@@ -10,9 +10,13 @@ Setup:
     - onboard: uart
     - onboard: buttons
     - onboard: leds_green
+      design_bits: {leds: [0, 1, 2, 3, 4, 5, 6, 7]}
     - onboard: leds
+      design_bits: {leds: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]}
     - onboard: switches
+      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, null]}
     - onboard: 7seg
+      bind: {dp: ['onboard_leds[10]', 'onboard_leds[11]', 'onboard_leds[12]', 'onboard_leds[13]', 'onboard_leds[14]', 'onboard_leds[15]', 'onboard_leds[16]', 'onboard_leds[17]']}
     - onboard: vga
     - module: inmp441_breakout
       wires: {SCK: 'gpio_1.[4]', WS: 'gpio_1.[2]', SD: 'gpio_1.[5]', L/R: 'gpio_1.[0]'}
@@ -25,9 +29,11 @@ Setup:
     - onboard: ps2
     - onboard: sdram
     - onboard: sdcard
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
+    tie: {'onboard_leds[0]': 0, 'onboard_leds[1]': 0, 'onboard_leds[2]': 0, 'onboard_leds[3]': 0, 'onboard_leds[4]': 0,
+      'onboard_leds[5]': 0, 'onboard_leds[6]': 0, 'onboard_leds[7]': 0, 'onboard_leds[8]': 0, 'onboard_leds[9]': 0}
   extra:
-    tie:
-      onboard_vga.sync: 0
-      gpio_1[1]: 0
-      gpio_1[3]: 1
-      onboard_leds_green[8]: 0
+    tie: {onboard_vga.sync: 0, 'gpio_1[1]': 0, 'gpio_1[3]': 1, 'onboard_leds_green[8]': 0}

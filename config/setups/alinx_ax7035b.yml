@@ -1,5 +1,5 @@
-# Setup alinx_ax7035b: the rig config/configurations/alinx_ax7035b.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig alinx_ax7035b: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show alinx_ax7035b).
 
 Setup:
   id: alinx_ax7035b
@@ -11,8 +11,13 @@ Setup:
     - onboard: clk
     - onboard: cpu_resetn
     - onboard: buttons
+      params: {as_switches: true}
+      design_bits: {buttons: [3, 2, 1, 0], switches: [3, 2, 1, 0]}
     - onboard: leds
+      design_bits: {leds: [3, 2, 1, 0]}
     - onboard: 7seg
     - onboard: uart
     - onboard: temp_sensor
     - onboard: sdcard
+  design:
+    width: {gpio: 68}

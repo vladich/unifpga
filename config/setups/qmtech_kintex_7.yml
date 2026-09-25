@@ -1,5 +1,5 @@
-# Setup qmtech_kintex_7: the rig config/configurations/qmtech_kintex_7.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig qmtech_kintex_7: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show qmtech_kintex_7).
 
 Setup:
   id: qmtech_kintex_7
@@ -19,3 +19,5 @@ Setup:
     - onboard: db_leds
     - onboard: db_buttons
     - onboard: db_sdcard
+  design:
+    {uart_rx: 0}

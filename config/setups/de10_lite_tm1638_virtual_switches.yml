@@ -1,5 +1,5 @@
-# Setup de10_lite_tm1638_virtual_switches: the rig config/configurations/de10_lite_tm1638_virtual_switches.yml describes.
-# tools/setup.py generates that configuration from it (./unifpga setup check).
+# Rig de10_lite_tm1638_virtual_switches: its board, what is on it and how the design sees it.
+# The build expands it into the rig's configuration (./unifpga setup show de10_lite_tm1638_virtual_switches).
 
 Setup:
   id: de10_lite_tm1638_virtual_switches
@@ -8,6 +8,7 @@ Setup:
   use:
     - onboard: clk50mhz
     - onboard: buttons
+      design_bits: {buttons: [0, 1]}
     - onboard: switches
     - onboard: leds
     - onboard: 7seg
@@ -23,7 +24,11 @@ Setup:
       params: {width: 16}
     - onboard: accelerometer
     - onboard: sdram
+  design:
+    reset:
+      sources:
+      - {switch_msb: true}
+    uart_rx: 0
+    tie: {arduino_reset_n: ~rst}
   extra:
-    tie:
-      gpio[1]: 0
-      gpio[3]: 1
+    tie: {'gpio[1]': 0, 'gpio[3]': 1}
