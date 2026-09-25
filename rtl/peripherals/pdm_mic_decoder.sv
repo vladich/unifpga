@@ -74,11 +74,12 @@ module pdm_mic_decoder
             if (pdm_rising) begin
                 if (dec_cnt == decimation - 1) begin
                     // Convert sum (0..decimation) to signed centered around zero.
-                    sample_o <= ($signed({1'b0, sum}) - decimation/2)
+                    sample_o <= ($signed({1'b0, sum}) + $signed({1'b0, pdm_data})
+                                 - decimation/2)
                                 <<< (output_w - $clog2(decimation+1) - 1);
                     valid_o  <= 1'b1;
                     dec_cnt  <= '0;
-                    sum      <= {{($bits(sum)-1){1'b0}}, pdm_data};
+                    sum      <= '0;
                 end else begin
                     dec_cnt <= dec_cnt + 1'b1;
                     sum     <= sum + pdm_data;

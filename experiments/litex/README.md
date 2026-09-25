@@ -30,12 +30,28 @@ LITEX_ROOT="$PROJECT_DIR/deps/litex" TMPDIR="$TASK_RUN_ROOT/tmp" "$TASK_RUN_ROOT
 The first direct Migen conversion used ambiguous endpoint names such as
 `valid` and `valid_1`. The wrapper exports `sink_*` and `source_*` names and
 checks the emitted port inventory. Two fresh processes emitted identical RTL
-and manifests for width 8, depth 4 in the initial run. The generated module
-still needs independent Verilog simulation and a mixed-source composition test.
+and manifests for width 8, depth 4 in the initial run.
 The seven focused probe tests pass, including a Migen-level packet and
 backpressure scenario, parameter width checks, and invalid-input/source guards.
-The Migen simulator test checks the upstream FHDL behavior, not the emitted RTL.
-The current host has no Icarus, Verilator, or Yosys, so this experiment reports
-`export-only` rather than claiming those checks passed. No LiteX source was
-modified; any LiteX-side patch needs a demonstrated export limitation and its
-own tests.
+The Migen simulator test checks upstream FHDL behavior, not emitted RTL. A
+separate `test_rtl.py` exports width 16/depth 4 RTL and uses Icarus Verilog to
+simulate it standalone and in a mixed-source PDM capture. Set `IVERILOG` and
+`VVP` to the corresponding binaries (or put them on `PATH`) and run unittest
+discovery over `experiments/litex`. The test skips clearly when either binary
+is unavailable. The first independent run used Icarus 13.0 built from the
+official `v13_0` tag at `dfeee909ed9f20b4870dd93423156c0170c0e1ff` in
+task-local scratch; this repository does not install a simulator.
+
+`pdm_fifo_capture.sv` is an explicit adapter around the unifpga
+`pdm_mic_decoder` and generated LiteX FIFO. The microphone cannot be stalled,
+so samples arriving at a full FIFO are discarded and counted (saturating at
+65535). Consumers can stall the FIFO output. The composed test checks the first
+positive and negative sample, a full queue, stable backpressured data, packet
+boundaries, loss accounting, drain, and reset. It also caught and fixes the
+decoder's first-window off-by-one sum. This is one mixed-source *subsystem*, not
+one of the two required complex P2a systems. It has no catalog registration,
+visual authoring, SoC firmware, synthesis/area/timing comparison, or hardware
+evidence. The probe manifest still says `export-only` because export alone does
+not guarantee that a downstream caller ran the separate RTL test. No LiteX
+source was modified; any LiteX-side patch needs a demonstrated export
+limitation and its own tests.
