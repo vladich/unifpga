@@ -333,6 +333,9 @@ intended SKIP, not a failure.
   successive LED values. The testbench moves the timer counter near each
   ten-million-tick threshold to keep simulation bounded; it does not validate
   a full second of timing, synthesis, or any LiteX component integration.
+  A separate pinned LiteX UART TX variant is exercised at the APS subsystem
+  boundary by `experiments/litex/test_uart_rtl.py`; see
+  `experiments/litex/README.md` for its fixed-rate bus contract and limits.
 - **A new board**: write its file
   `config/boards/<producer>/<family>/<id>.yml` (copy a board on a similar
   chip: the catalogue fields, then its banks of pins; `./unifpga check`
