@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from toolchains.quartus_prime import quartus_prime as qp  # noqa: E402
 
-Q13 = {"Id": "quartus2", "Version": "13.0sp1"}
+Q13 = {"id": "quartus2", "version": "13.0sp1"}
 
 
 def _lib(tmp_path, name):
@@ -29,7 +29,7 @@ def test_q13_on_linux_preloads_the_first_allocator_found(tmp_path):
 
 def test_only_quartus_13_on_linux(tmp_path):
     _lib(tmp_path, "libjemalloc.so.2")
-    for tc, system in (({"Id": "quartus_prime_lite", "Version": "23.1std"}, "Linux"), (Q13, "Darwin")):
+    for tc, system in (({"id": "quartus_prime_lite", "version": "23.1std"}, "Linux"), (Q13, "Darwin")):
         env = {}
         assert qp._preload_allocator(env, tc, lib_dirs=[str(tmp_path)], system=system) is None
         assert "LD_PRELOAD" not in env

@@ -210,7 +210,9 @@ def _records_of(spec, path, doc, finding, entity):
         else:
             yield _path_id(spec["files"], path), doc, None
         return
-    node = doc.get(root) if isinstance(doc, dict) else None
+    node = doc
+    for segment in root.split("."):                # dotted: a list nested in a record (Family.chips)
+        node = node.get(segment) if isinstance(node, dict) else None
     if kind == "one":
         if not isinstance(node, dict):
             finding("invalid_root", path, "{} must be a mapping".format(root))
@@ -234,17 +236,8 @@ def _records_of(spec, path, doc, finding, entity):
 
 
 def _target_ids(entity, records):
-    """The ids a reference to `entity` may name; a producer also by Name / AKA."""
-    ids = set(records.get(entity, {}))
-    if entity == "producer":
-        for _path, rec in records.get("producer", {}).values():
-            if isinstance(rec, dict):
-                if isinstance(rec.get("Name"), str):
-                    ids.add(rec["Name"])
-                for aka in rec.get("AKA") or []:
-                    if isinstance(aka, str):
-                        ids.add(aka)
-    return ids
+    """The ids a reference to `entity` may name."""
+    return set(records.get(entity, {}))
 
 
 def _extract(value, fmt):
@@ -254,7 +247,7 @@ def _extract(value, fmt):
     if fmt == "versioned":
         return parse_versioned_ref(value)[0]
     if fmt == "record_id":
-        value = value.get("id", value.get("Id")) if isinstance(value, dict) else value
+        value = value.get("id") if isinstance(value, dict) else value
     if not isinstance(value, str) or not value.strip():
         raise ValueError("not an id")
     return value
@@ -524,10 +517,10 @@ def _board_kinds(ctx, entity, rec_id, record, path):
 
 @rule("producer_names_unique")
 def _producer_names_unique(ctx, entity, rec_id, record, path):
-    """A producer's Name and AKAs name no other producer."""
-    for name in [record.get("Name")] + list(record.get("AKA") or []):
+    """A producer's name and akas name no other producer."""
+    for name in [record.get("name")] + list(record.get("aka") or []):
         for other_id, (_p, other) in ctx.records.get("producer", {}).items():
-            if other_id != rec_id and isinstance(other, dict) and name in [other.get("Name"), other_id] + list(other.get("AKA") or []):
+            if other_id != rec_id and isinstance(other, dict) and name in [other.get("name"), other_id] + list(other.get("aka") or []):
                 ctx.fail(path, "producer {!r}: {!r} also names producer {!r}".format(rec_id, name, other_id))
 
 
@@ -679,8 +672,7 @@ def _rig_chip_variant(ctx, entity, rec_id, record, path):
         w = str(part).strip().lower()
         names = set()
         for cid, vname in chips:
-            chip = ctx.record("chip", cid) or {}
-            names |= {str(cid).lower(), str(vname or "").lower(), str(chip.get("Part") or cid).lower()}
+            names |= {str(cid).lower(), str(vname or "").lower()}
         if w not in names:
             ctx.fail(path, "rig {!r}: part {!r} is not one of the board's chips ({})".format(
                 rec_id, part, ", ".join(vname or cid for cid, vname in chips) or "none"))
@@ -742,20 +734,9 @@ def _board_drawn(ctx, entity, rec_id, record, path):
             ctx.fail(path, "board {!r} part {}: device bank {!r} is not one of its banks".format(rec_id, part.get("id"), part["device"].get("bank")))
 
 
-@rule("programmer_families")
-def _programmer_families(ctx, entity, rec_id, record, path):
-    families = {(f.get("Producer"), f.get("Family")) for _p, f in ctx.records.get("family", {}).values() if isinstance(f, dict)}
-    if not families:
-        return
-    for item in record.get("SupportedFamilies") or []:
-        key = (item.get("Producer"), item.get("Family"))
-        if key not in families:
-            ctx.fail(path, "programmer {!r}: SupportedFamilies {} / {} is not a chip family".format(rec_id, key[0], key[1]))
-
-
 @rule("toolchain_driver", needs_repo=True)
 def _toolchain_driver(ctx, entity, rec_id, record, path):
-    if record.get("SupportedOperations") and not os.path.isfile(os.path.join(ctx.repo, "toolchains", rec_id, rec_id + ".py")):
+    if record.get("operations") and not os.path.isfile(os.path.join(ctx.repo, "toolchains", rec_id, rec_id + ".py")):
         ctx.fail(path, "toolchain {!r} has operations but no driver toolchains/{}/{}.py".format(rec_id, rec_id, rec_id))
 
 

@@ -149,7 +149,7 @@ def _load_yaml_dir(subdir, root_key, id_key, *, base=None, missing_ok=False):
     return out
 
 
-def _unique_catalog(items, source, kind, key="Id"):
+def _unique_catalog(items, source, kind, key="id"):
     """Index a single-file registry without losing malformed or repeated IDs."""
     if not isinstance(items, list):
         raise ConfigError("{}: {} must be a list".format(source, kind))
@@ -180,13 +180,13 @@ def supported_operations(toolchain):
     A catalogue entry may describe a chip/tool even before its driver exists.
     That description must never be treated as executable support by default.
     """
-    operations = toolchain.get("SupportedOperations")
+    operations = toolchain.get("operations")
     if not isinstance(operations, list) or any(
             not isinstance(op, str) or op not in ("synthesize", "program")
             for op in operations) or len(operations) != len(set(operations)):
-        raise ConfigError("Toolchain '{t}' needs a unique SupportedOperations list "
+        raise ConfigError("Toolchain '{t}' needs a unique operations list "
                           "containing only synthesize and/or program"
-                          .format(t=toolchain.get("Id", "?")))
+                          .format(t=toolchain.get("id", "?")))
     return operations
 
 
@@ -195,7 +195,7 @@ def require_toolchain_operation(toolchain, operation):
     if operation not in supported_operations(toolchain):
         raise ConfigError("Toolchain '{t}' does not implement {op}; choose a "
                           "supported toolchain or implement its driver"
-                          .format(t=toolchain.get("Id", "?"), op=operation))
+                          .format(t=toolchain.get("id", "?"), op=operation))
 
 
 def pinmap_fingerprint(pinmap):
@@ -258,35 +258,12 @@ def read_programmers():
     return _unique_catalog(items, os.path.join(dir_path, "programmers.yml"), "Programmer")
 
 
-def read_board_producers():
-    """Read the registry of board producers from board_producers.yml.
-
-    A board producer is the manufacturer / maker of a physical dev board
-    (Digilent, Trenz Electronic, Sipeed, …). It is orthogonal to the
-    chip producer (the silicon vendor — AMD/Xilinx, Intel/Altera, etc.).
-    Each board's `BoardProducer:` field references an `Id:` from this
-    registry; `read_board_producers_name_index()` builds a lookup that
-    accepts the canonical Name plus any AKA aliases for migration / legacy
-    references."""
-    items = _load_yaml(os.path.join(dir_path, "board_producers.yml"), "Producers")
-    return _unique_catalog(items, os.path.join(dir_path, "board_producers.yml"), "Producer")
-
-
-def read_board_producers_name_index():
-    """Map every known display-name / AKA string to its registry Id.
-
-    Used during the BoardProducer-string-to-Id migration to resolve
-    freeform display strings (e.g. "Xilinx (AMD)", "QMtech", "1BitSquared")
-    back to canonical slug ids. Keys are case-sensitive — call sites
-    should normalize as needed."""
-    producers = read_board_producers()
-    idx = {}
-    for pid, p in producers.items():
-        idx[p.get("Name", pid)] = pid
-        idx[pid] = pid
-        for aka in (p.get("AKA") or []):
-            idx[aka] = pid
-    return idx
+def read_producers():
+    """config/producers.yml: who makes boards, chips and modules (Digilent,
+    Trenz Electronic, Sipeed, and the chip vendors that ship their own dev
+    kits). Boards, chip families and mezzanines name a producer by id.
+    {id: producer}."""
+    return _registry("producers.yml", "Producers", "producer")
 
 
 def _registry(name, root, kind, key="id"):
@@ -344,32 +321,24 @@ def _walk_mezzanine_catalog_files():
                 yield fam_path, prod_name, fname[:-4]
 
 
-def read_mezzanines_catalog():
-    """Read every config/mezzanines/<producer>/<family>.yml — the registry
-    for mezzanine cards, SoMs, and piggyback boards. Returns {id: entry}.
-
-    Each entry has at minimum: Id, Name, Producer, Type
-    (one of: mezzanine | som | piggyback | carrier), Connector (slug describing the
-    physical interface to a host board). SoMs additionally have a Chip
-    (the FPGA part on the module). Mezzanines have no Chip but list
-    Devices (the peripheral chips populating the card).
-    """
-    catalog = {}
+def read_mezzanines():
+    """Every config/mezzanines/<producer>/<family>.yml: SoMs, mezzanine cards,
+    piggyback boards and carriers, catalogue only. {id: mezzanine} with _path,
+    _producer_dir and _family_dir."""
+    out = {}
     for fam_path, prod_name, fam_name in _walk_mezzanine_catalog_files():
         data = _read_yaml_file(fam_path) or {}
-        for entry in (data.get("Mezzanines") or []):
-            entry["_registry_path"] = fam_path
-            entry["_producer_dir"]  = prod_name
-            entry["_family_dir"]    = fam_name
-            mid = entry.get("Id")
-            if not mid:
-                raise ConfigError("Mezzanine in {p} missing Id".format(p=fam_path))
-            if mid in catalog:
-                raise ConfigError(
-                    "Duplicate mezzanine Id {i!r} (in {a} and {b})".format(
-                        i=mid, a=catalog[mid]["_registry_path"], b=fam_path))
-            catalog[mid] = entry
-    return catalog
+        for ordinal, entry in enumerate(data.get("Mezzanines") or [], 1):
+            mid = entry.get("id") if isinstance(entry, dict) else None
+            if not isinstance(mid, str) or not mid.strip():
+                raise ConfigError("{}: mezzanine {} needs a nonempty string id".format(fam_path, ordinal))
+            if mid in out:
+                raise ConfigError("duplicate mezzanine id {!r}: {} and {}".format(mid, out[mid]["_path"], fam_path))
+            entry["_path"] = fam_path
+            entry["_producer_dir"] = prod_name
+            entry["_family_dir"] = fam_name
+            out[mid] = entry
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -467,12 +436,13 @@ def read_board(board_id):
 
 
 def _family_names():
-    """{(producer_dir, family_dir): (Producer, Family)} from the chip families."""
+    """{(producer_dir, family_dir): (producer id, family name)} from the chip families."""
     out = {}
     for fam_path, prod_dir, fam_slug in _walk_chip_registry_files():
         data = _parsed(fam_path)
-        if isinstance(data, dict):
-            out[(prod_dir, fam_slug)] = (data.get("Producer"), data.get("Family"))
+        fam = data.get("Family") if isinstance(data, dict) else None
+        if isinstance(fam, dict):
+            out[(prod_dir, fam_slug)] = (fam.get("producer"), fam.get("name"))
     return out
 
 
@@ -553,45 +523,39 @@ def _walk_chip_registry_files():
 
 
 def read_chips():
-    """Read every chip registry file under config/chips/<producer>/<family>.yml
-    and return {chip_id: chip_info}.
-
-    Each chip_info has PartProducer, PartFamily, Toolchains (chip-level
-    overrides, parsed as [{id, version_constraint}, ...]), and any other
-    metadata from the chip entry. Chips inherit DefaultToolchains from
-    their family file when they don't declare their own."""
+    """Every chip of every family file config/chips/<producer>/<family>.yml:
+    {chip id: {id, toolchains, producer, family, family_name, _path}} — the
+    chip's own `toolchains` or the family's `default_toolchains`, the
+    producer's id, the family's id (the file's name) and the family's name
+    as the vendor writes it."""
     out = {}
     origins = {}
-    for fam_path, prod_dir, fam_slug in _walk_chip_registry_files():
+    for fam_path, _prod_dir, fam_slug in _walk_chip_registry_files():
         data = _read_yaml_file(fam_path)
-        if not isinstance(data, dict):
-            raise ConfigError("{}: chip registry must be a mapping".format(fam_path))
-        if any(not isinstance(data.get(field), str) or not data[field].strip()
-               for field in ("Producer", "Family")):
-            raise ConfigError("{}: chip registry needs Producer and Family"
-                              .format(fam_path))
-        producer = data.get("Producer")
-        family = data.get("Family")
-        default_tcs = data.get("DefaultToolchains") or []
-        chips = data.get("Chips")
+        fam = data.get("Family") if isinstance(data, dict) else None
+        if not isinstance(fam, dict):
+            raise ConfigError("{}: needs a Family mapping".format(fam_path))
+        if any(not isinstance(fam.get(field), str) or not fam[field].strip()
+               for field in ("producer", "name")):
+            raise ConfigError("{}: the family needs a producer and a name".format(fam_path))
+        if fam.get("id") != fam_slug:
+            raise ConfigError("{}: the family's id must be {!r}, the file's name".format(fam_path, fam_slug))
+        default_tcs = fam.get("default_toolchains") or []
+        chips = fam.get("chips")
         if not isinstance(chips, list):
-            raise ConfigError("{}: Chips must be a list".format(fam_path))
+            raise ConfigError("{}: chips must be a list".format(fam_path))
         for ordinal, chip in enumerate(chips, 1):
-            if (not isinstance(chip, dict) or not isinstance(chip.get("Id"), str) or
-                    not chip["Id"].strip()):
-                raise ConfigError("{}: chip item {} needs a nonempty string Id"
-                                  .format(fam_path, ordinal))
-            cid = chip["Id"]
+            if not isinstance(chip, dict) or not isinstance(chip.get("id"), str) or not chip["id"].strip():
+                raise ConfigError("{}: chip item {} needs a nonempty string id".format(fam_path, ordinal))
+            cid = chip["id"]
             if cid in out:
-                raise ConfigError("duplicate chip Id {!r}: {} and {}".format(
-                    cid, origins[cid], fam_path))
+                raise ConfigError("duplicate chip id {!r}: {} and {}".format(cid, origins[cid], fam_path))
             entry = dict(chip)
-            entry["PartProducer"] = producer
-            entry["PartFamily"] = family
-            # Chip's Toolchains override the family DefaultToolchains
-            if "Toolchains" not in entry or not entry["Toolchains"]:
-                entry["Toolchains"] = list(default_tcs)
-            entry["_registry_path"] = fam_path
+            entry["toolchains"] = list(chip.get("toolchains") or default_tcs)
+            entry["producer"] = fam["producer"]
+            entry["family"] = fam_slug
+            entry["family_name"] = fam["name"]
+            entry["_path"] = fam_path
             out[cid] = entry
             origins[cid] = fam_path
     return out
@@ -616,13 +580,13 @@ def programmers_for_board(board_id, *, catalog=None, chips=None, programmers=Non
 
     Resolution rules (additive):
       1. **Bundled / chip-tied via toolchain:** any programmer whose
-         `Bundled:` toolchain id appears in the board's chip's
-         `Toolchains` list.
+         `bundled:` toolchain id appears in the board's chip's
+         `toolchains` list.
       2. **Third-party with explicit chip-family support:** any programmer
-         whose `SupportedFamilies:` includes (chip.PartProducer, chip.PartFamily)
-         AND whose `RequiresBridge:` is satisfied by the board's `Bridges:`
+         whose `families:` names the family of one of the board's chips
+         AND whose `requires_bridge:` is satisfied by the board's `Bridges:`
          (or which has no bridge requirement).
-      3. **Bootloader-tied:** any programmer whose `RequiresBootloader:`
+      3. **Bootloader-tied:** any programmer whose `requires_bootloader:`
          matches the board's `Bootloader:` (if set).
       4. **Board-explicit:** every entry in the board's `ExtraProgrammers:`
          list (parsed for version constraints).
@@ -656,53 +620,46 @@ def programmers_for_board(board_id, *, catalog=None, chips=None, programmers=Non
 
     # Collect the union of toolchain ids supported by ANY of the board's chips.
     chip_toolchain_ids = set()
-    chip_pp = None
-    chip_pf = None
+    chip_families = set()
     for cid in chip_ids:
         chip = chips.get(cid)
         if chip is None:
             log.warning("Board %s references unknown chip %s", board_id, cid)
             continue
-        chip_pp = chip.get("PartProducer")
-        chip_pf = chip.get("PartFamily")
-        for ref in chip.get("Toolchains", []):
+        chip_families.add(chip.get("family"))
+        for ref in chip.get("toolchains", []):
             tc_id, _ = parse_versioned_ref(ref)
             chip_toolchain_ids.add(tc_id)
 
     result = []
     seen = set()
     def add(p):
-        if p["Id"] not in seen:
+        if p["id"] not in seen:
             result.append(p)
-            seen.add(p["Id"])
+            seen.add(p["id"])
 
     # Rule 1: bundled vendor programmers via toolchain match
     for pid, p in programmers.items():
-        if p.get("Bundled") and p["Bundled"] in chip_toolchain_ids:
+        if p.get("bundled") and p["bundled"] in chip_toolchain_ids:
             # If the programmer requires a specific bridge, check it
-            req = p.get("RequiresBridge")
+            req = p.get("requires_bridge")
             if req and req not in bridges:
                 continue
             add(p)
     # Rule 2: third-party with explicit family support
     for pid, p in programmers.items():
-        if p.get("Bundled"):
+        if p.get("bundled"):
             continue
-        sf = p.get("SupportedFamilies") or []
-        match = any(
-            (entry.get("Producer") == chip_pp and entry.get("Family") == chip_pf)
-            for entry in sf
-        )
-        if not match:
+        if not chip_families & set(p.get("families") or []):
             continue
-        req = p.get("RequiresBridge")
+        req = p.get("requires_bridge")
         if req and req not in bridges:
             continue
         add(p)
     # Rule 3: bootloader-tied
     if bootloader:
         for pid, p in programmers.items():
-            if p.get("RequiresBootloader") == bootloader:
+            if p.get("requires_bootloader") == bootloader:
                 add(p)
     # Rule 4: board-explicit ExtraProgrammers
     for ref in board.get("ExtraProgrammers") or []:
@@ -913,7 +870,7 @@ def toolchain_constraints(boards, chips, board_id, toolchain_id, selected_chip_i
         if chip is None:
             log.warning("Board %s references unknown chip %s", board_id, cid)
             continue
-        for ref in chip.get("Toolchains", []):
+        for ref in chip.get("toolchains", []):
             tc_id, constraint = parse_versioned_ref(ref)
             if tc_id == toolchain_id:
                 constraints.append(constraint or "*")
@@ -927,23 +884,23 @@ def is_compatible(boards, chips, board_id, toolchain_id):
 
 def require_toolchain_version(toolchain):
     """Reject an installation that conflicts with its pin or chip limits."""
-    configured = toolchain.get("ConfiguredVersion")
-    detected = toolchain.get("DetectedInstallVersion")
-    if toolchain.get("DetectSource") and configured:
+    configured = toolchain.get("configured_version")
+    detected = toolchain.get("detected_install_version")
+    if toolchain.get("detect_source") and configured:
         if not detected:
             raise ConfigError("Toolchain '{t}' version could not be determined for "
                               "the detected installation; configured version is {v}"
-                              .format(t=toolchain["Id"], v=configured))
+                              .format(t=toolchain["id"], v=configured))
         if str(configured).casefold() != str(detected).casefold():
             raise ConfigError("Toolchain '{t}' detected version {found} conflicts "
                               "with configured version {expected}"
-                              .format(t=toolchain["Id"], found=detected,
+                              .format(t=toolchain["id"], found=detected,
                                       expected=configured))
-    version = detected if toolchain.get("DetectSource") else configured
-    constraints = toolchain.get("ChipVersionConstraints") or []
+    version = detected if toolchain.get("detect_source") else configured
+    constraints = toolchain.get("chip_version_constraints") or []
     if not constraints:
         raise ConfigError("Toolchain '{t}' has no chip compatibility evidence"
-                          .format(t=toolchain["Id"]))
+                          .format(t=toolchain["id"]))
     from tools import toolchain_detect
     try:
         matches = [toolchain_detect.matches_version(version, constraint)
@@ -952,37 +909,38 @@ def require_toolchain_version(toolchain):
             return
     except ValueError as exc:
         raise ConfigError("Toolchain '{t}' has invalid chip version constraint: {e}"
-                          .format(t=toolchain["Id"], e=exc)) from exc
+                          .format(t=toolchain["id"], e=exc)) from exc
     raise ConfigError("Toolchain '{t}' version {v} does not meet chip constraint(s) {c}"
-                      .format(t=toolchain["Id"], v=version or "unknown",
+                      .format(t=toolchain["id"], v=version or "unknown",
                               c=", ".join(constraints)))
 
 
 def resolve_toolchain_install(toolchain):
     """Copy of a toolchains.yml entry with the install resolved by
-    tools/toolchain_detect.py: the `InstallDir` pin when it exists, else the
+    tools/toolchain_detect.py: the `install_dir` pin when it exists, else the
     vendor environment variable, PATH, then the default install parents.
-    Adds `BinDirs` (for PATH), `Bins`, `DetectSource`, `DetectNotes`, and
-    separate configured and install-path version evidence;
-    leaves `InstallDir` as written when nothing is found so the driver's own
-    error message still names it."""
+    Adds `bin_dirs` (for PATH), `bins`, `detect_source`, `detect_notes`, and
+    separate configured and install-path version evidence
+    (`configured_version`, `detected_install_version`); leaves `install_dir`
+    as written when nothing is found so the driver's own error message still
+    names it."""
     tc = dict(toolchain)
-    tc["ConfiguredVersion"] = str(tc["Version"]) if tc.get("Version") else None
+    tc["configured_version"] = str(tc["version"]) if tc.get("version") else None
     try:
         from tools import toolchain_detect
     except ImportError:              # config/ imported without the repo root on sys.path
         return tc
-    det = toolchain_detect.detect(tc["Id"], pin=tc.get("InstallDir"))
-    tc["DetectSource"] = det.source
-    tc["DetectedInstallVersion"] = str(det.version) if det.found and det.version else None
-    tc["DetectNotes"] = list(det.notes)
-    tc["BinDirs"] = list(det.bin_dirs)
-    tc["Bins"] = dict(det.bins)
+    det = toolchain_detect.detect(tc["id"], pin=tc.get("install_dir"))
+    tc["detect_source"] = det.source
+    tc["detected_install_version"] = str(det.version) if det.found and det.version else None
+    tc["detect_notes"] = list(det.notes)
+    tc["bin_dirs"] = list(det.bin_dirs)
+    tc["bins"] = dict(det.bins)
     if det.found:
         if det.install_dir:
-            tc["InstallDir"] = det.install_dir
-        if det.version and not tc.get("Version"):
-            tc["Version"] = det.version
+            tc["install_dir"] = det.install_dir
+        if det.version and not tc.get("version"):
+            tc["version"] = det.version
     return tc
 
 
@@ -1053,7 +1011,7 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
         if chip is None:
             raise ConfigError("Board '{b}' references unknown chip '{c}'"
                               .format(b=board_id, c=cid))
-        board_resolved["Part"] = chip.get("Part") or cid
+        board_resolved["Part"] = cid
     elif board_resolved.get("Chips"):
         parts_list = []
         for entry in board_resolved["Chips"]:
@@ -1066,7 +1024,7 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
             if chip is None:
                 raise ConfigError("Board '{b}' references unknown chip '{c}'"
                                   .format(b=board_id, c=cid))
-            p = {"Part": chip.get("Part") or cid, "Id": cid}
+            p = {"Part": cid, "Id": cid}
             if name:
                 p["Name"] = name
             parts_list.append(p)
@@ -1104,7 +1062,7 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
                           .format(c=configuration_id, t=toolchain_id,
                                   chip=selected_chip_id, b=board_id))
     resolved_toolchain = resolve_toolchain_install(toolchains[toolchain_id])
-    resolved_toolchain["ChipVersionConstraints"] = constraints
+    resolved_toolchain["chip_version_constraints"] = constraints
 
     board_pinmap = read_board_pinmap(board_id)
     if board_pinmap is None:

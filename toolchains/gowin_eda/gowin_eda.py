@@ -37,7 +37,7 @@ PROJECT_NAME = "unifpga_top"
 
 
 def _resolve_gowin_bin(toolchain, name, sub="IDE/bin"):
-    install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    install_dir = os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
     if install_dir:
         candidate = os.path.join(install_dir, sub, name)
         if os.path.exists(candidate):
@@ -200,7 +200,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         log.info("[dry run] gw_sh not invoked. Artifacts in %s", output)
         return 0
 
-    install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    install_dir = os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
     gw_sh = _resolve_gowin_bin(toolchain, "gw_sh")
     if gw_sh is None:
         log.error("Could not locate gw_sh. Set toolchain.InstallDir in "
@@ -268,7 +268,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         log.error("Could not locate programmer_cli.")
         return 1
 
-    install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    install_dir = os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
     env = _gowin_env(install_dir)
     # programmer_cli wants the family name `set_device` gives with `-name`
     # (GW1NR-9C, GW2AR-18C, GW5AST-138B); the LittleBee 9K default is what the

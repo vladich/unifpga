@@ -30,18 +30,18 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 def prepare_toolchain(toolchain):
     """Report where the toolchain was found and put its tool directories first
     in PATH (the drivers resolve their binaries with shutil.which())."""
-    if toolchain.get("DetectSource"):
-        log.info("Toolchain %s: %s (%s)", toolchain["Id"], toolchain.get("InstallDir") or
-                 ", ".join(toolchain.get("BinDirs") or []), toolchain["DetectSource"])
+    if toolchain.get("detect_source"):
+        log.info("Toolchain %s: %s (%s)", toolchain["id"], toolchain.get("install_dir") or
+                 ", ".join(toolchain.get("bin_dirs") or []), toolchain["detect_source"])
     else:
-        for note in toolchain.get("DetectNotes") or []:
-            log.warning("Toolchain %s: %s", toolchain["Id"], note)
-    for d in reversed(toolchain.get("BinDirs") or []):
+        for note in toolchain.get("detect_notes") or []:
+            log.warning("Toolchain %s: %s", toolchain["id"], note)
+    for d in reversed(toolchain.get("bin_dirs") or []):
         os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
 
 
 def toolchain_module(toolchain):
-    return importlib.import_module("toolchains.{id}.{id}".format(id=toolchain["Id"]))
+    return importlib.import_module("toolchains.{id}.{id}".format(id=toolchain["id"]))
 
 
 def driver_exit_code(result, operation):
@@ -118,7 +118,7 @@ def main(argv=None):
     target = resolved.get("target") or {"id": cfg["id"], "rig": cfg["id"]}
     log.info("Configuration: %s  (%sboard: %s, toolchain: %s, %d peripherals)",
              target["id"], "" if target["id"] == target["rig"] else "rig " + target["rig"] + ", ",
-             board["Id"], toolchain["Id"], len(peripherals))
+             board["Id"], toolchain["id"], len(peripherals))
     try:
         config.init.require_toolchain_operation(toolchain, "synthesize")
         if args.program:

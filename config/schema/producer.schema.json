@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:unifpga:schema:producer",
   "title": "Producers",
-  "description": "config/board_producers.yml: who makes boards, chips and modules. Boards, families and mezzanines name a producer by Id (or, in family files, by Name or an AKA).",
+  "description": "config/producers.yml: who makes boards, chips and modules. Boards, chip families and mezzanines name a producer by id.",
   "type": "object",
   "required": ["Producers"],
   "additionalProperties": false,
@@ -12,23 +12,23 @@
   "$defs": {
     "producer": {
       "type": "object",
-      "required": ["Id", "Name", "AKA", "URL", "Country", "FoundedYear", "Categories", "Description", "DefunctSince", "Notes"],
+      "required": ["id", "name", "aka", "url", "country", "founded", "categories", "description", "defunct_since", "notes"],
       "additionalProperties": false,
       "properties": {
-        "Id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
-        "Name": { "type": "string", "minLength": 1 },
-        "AKA": { "description": "Other names the producer goes by", "type": ["array", "null"], "items": { "type": "string", "minLength": 1 } },
-        "URL": { "type": ["string", "null"], "pattern": "^https?://" },
-        "Country": { "type": ["string", "null"] },
-        "FoundedYear": { "type": ["integer", "null"], "minimum": 1800 },
-        "Categories": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "aka": { "description": "Other names the producer goes by", "type": ["array", "null"], "items": { "type": "string", "minLength": 1 } },
+        "url": { "type": ["string", "null"], "pattern": "^https?://" },
+        "country": { "type": ["string", "null"] },
+        "founded": { "description": "The year", "type": ["integer", "null"], "minimum": 1800 },
+        "categories": {
           "type": "array",
           "uniqueItems": true,
           "items": { "enum": ["hobby", "industrial", "edu", "academic", "foss_friendly", "chip_vendor", "som_vendor", "defunct"] }
         },
-        "Description": { "type": "string" },
-        "DefunctSince": { "type": ["integer", "null"], "minimum": 1800 },
-        "Notes": { "type": ["string", "null"] }
+        "description": { "type": "string" },
+        "defunct_since": { "description": "The year, for a producer no longer in business", "type": ["integer", "null"], "minimum": 1800 },
+        "notes": { "type": ["string", "null"] }
       }
     }
   }

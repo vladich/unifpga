@@ -3,7 +3,7 @@
 Toolchain auto-detection, the vendors' install locations searched in one
 place:
 
-    1. the `InstallDir` pin from config/toolchains.yml when it exists
+    1. the `install_dir` pin from config/toolchains.yml when it exists
        (`~` and `$VAR` expanded);
     2. the vendor's environment variable (XILINX_VIVADO, QUARTUS_ROOTDIR,
        GOWIN_VERSION_DIR, EFINITY_HOME, OSS_CAD_SUITE, ...);
@@ -175,7 +175,7 @@ def _detect_vivado(tid, pin, env, home, system, fs):
     if pin and ok(pin):
         return result(pin, "pin")
     if pin:
-        notes.append("InstallDir pin {!r} has no bin/vivado".format(pin))
+        notes.append("install_dir pin {!r} has no bin/vivado".format(pin))
     x = env.get("XILINX_VIVADO")
     if x:
         x = _expand(x, env, home)
@@ -250,7 +250,7 @@ def _detect_quartus(tid, pin, env, home, system, fs, dirs):
     if pin and ok(pin):
         return result(pin, "pin")
     if pin:
-        notes.append("InstallDir pin {!r} is not a quartus/ dir with {}/quartus_sh".format(pin, bindir))
+        notes.append("install_dir pin {!r} is not a quartus/ dir with {}/quartus_sh".format(pin, bindir))
     q = env.get("QUARTUS_ROOTDIR")
     if q:
         q = _expand(q, env, home)
@@ -320,7 +320,7 @@ def _detect_gowin(tid, pin, env, home, system, fs, edition):
     if pin and ok(resolve_mac(pin)):
         return result(resolve_mac(pin), "pin")
     if pin:
-        notes.append("InstallDir pin {!r} has no IDE/bin/gw_sh".format(pin))
+        notes.append("install_dir pin {!r} has no IDE/bin/gw_sh".format(pin))
     v = env.get("GOWIN_VERSION_DIR")
     if v:
         v = resolve_mac(_expand(v, env, home))
@@ -546,7 +546,7 @@ def detect(toolchain_id, pin=None, env=None, home=None, system=None, fs=None):
     fs = fs or RealFS()
     rule = RULES.get(toolchain_id)
     if rule is None:
-        det = _missing(toolchain_id, ["no detection rule for this toolchain; set InstallDir in config/toolchains.yml"])
+        det = _missing(toolchain_id, ["no detection rule for this toolchain; set install_dir in config/toolchains.yml"])
     else:
         det = rule(toolchain_id, _expand(pin, env, home) if pin else None, env, home, system, fs)
     if real:
@@ -558,8 +558,8 @@ def report(toolchains):
     """Lines for `synthesize.py --list-toolchains`."""
     lines = []
     for tid, tc in sorted(toolchains.items()):
-        det = detect(tid, pin=tc.get("InstallDir"))
-        operations = ", ".join(tc.get("SupportedOperations") or []) or "catalogue only"
+        det = detect(tid, pin=tc.get("install_dir"))
+        operations = ", ".join(tc.get("operations") or []) or "catalogue only"
         if det.found:
             where = det.install_dir or ", ".join(det.bin_dirs)
             lines.append("{:24s} found   {} ({}{}); operations: {}".format(

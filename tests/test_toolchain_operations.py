@@ -19,10 +19,10 @@ STUB_IDS = {
 
 def test_registry_declares_executable_operations():
     toolchains = config.init.read_toolchains()
-    assert {tid for tid, tc in toolchains.items() if not tc["SupportedOperations"]} == STUB_IDS
-    assert toolchains["ise"]["SupportedOperations"] == ["synthesize"]
-    assert toolchains["libero_soc"]["SupportedOperations"] == ["synthesize"]
-    assert toolchains["vivado"]["SupportedOperations"] == ["synthesize", "program"]
+    assert {tid for tid, tc in toolchains.items() if not tc["operations"]} == STUB_IDS
+    assert toolchains["ise"]["operations"] == ["synthesize"]
+    assert toolchains["libero_soc"]["operations"] == ["synthesize"]
+    assert toolchains["vivado"]["operations"] == ["synthesize", "program"]
 
 
 def test_detection_report_distinguishes_installation_from_operation_support(monkeypatch):
@@ -38,15 +38,15 @@ def test_detection_report_distinguishes_installation_from_operation_support(monk
 
 @pytest.mark.parametrize("operations", [None, "synthesize", ["build"], ["program", "program"], [4]])
 def test_missing_or_invalid_operation_metadata_fails_closed(operations):
-    with pytest.raises(config.init.ConfigError, match="SupportedOperations"):
+    with pytest.raises(config.init.ConfigError, match="unique operations list"):
         config.init.require_toolchain_operation(
-            {"Id": "bad", "SupportedOperations": operations}, "synthesize")
+            {"id": "bad", "operations": operations}, "synthesize")
 
 
 @pytest.mark.parametrize("toolchain_id", sorted(STUB_IDS))
 def test_placeholder_driver_methods_cannot_report_success(toolchain_id, tmp_path):
     driver = importlib.import_module("toolchains.{0}.{0}".format(toolchain_id))
-    toolchain = {"Id": toolchain_id}
+    toolchain = {"id": toolchain_id}
     assert driver.synthesize(
         dir=str(tmp_path), configuration={"id": "example"}, board={"Id": "board"},
         board_pinmap={}, toolchain=toolchain, peripherals=[], top="design_top.sv",
@@ -87,7 +87,7 @@ def test_direct_partial_programmers_refuse_success(tmp_path):
 
     (tmp_path / (ise.PROJECT_NAME + ".bit")).write_bytes(b"bitstream")
     (tmp_path / "libero_project").mkdir()
-    assert ise.program(board={"Id": "board"}, toolchain={"Id": "ise"},
+    assert ise.program(board={"Id": "board"}, toolchain={"id": "ise"},
                        output=str(tmp_path)) != 0
-    assert libero_soc.program(board={"Id": "board"}, toolchain={"Id": "libero_soc"},
+    assert libero_soc.program(board={"Id": "board"}, toolchain={"id": "libero_soc"},
                               output=str(tmp_path)) != 0

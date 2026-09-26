@@ -25,8 +25,8 @@
         "from": { "type": "string", "pattern": "^(\\*keys|\\*|[A-Za-z_][A-Za-z0-9_]*)(\\.(\\*keys|\\*|[A-Za-z_][A-Za-z0-9_]*))*$" },
         "to": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
         "format": {
-          "description": "How the value names its target: plain (the id), versioned (<id>[<constraint>]), record_id (an Id or {Id: ...}), producer_name (a producer's Id, Name or AKA)",
-          "enum": ["plain", "versioned", "record_id", "producer_name"]
+          "description": "How the value names its target: plain (the id), versioned (<id>[<constraint>]), record_id (an id or {id: ...})",
+          "enum": ["plain", "versioned", "record_id"]
         },
         "rule": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
         "why": { "description": "What the relationship is used for", "type": "string" }
@@ -39,7 +39,7 @@
       "properties": {
         "why": { "description": "What the entity is and what uses it", "type": "string" },
         "files": { "description": "Repository-relative glob of its files (* within one path segment)", "$ref": "#/$defs/path" },
-        "root": { "description": "The key under which a file's record or records sit; absent: the whole document is the record", "type": "string" },
+        "root": { "description": "The key under which a file's record or records sit (dotted for a nested list: Family.chips); absent: the whole document is the record", "type": "string" },
         "records": { "description": "How records sit under the root: one, a list, or a mapping keyed by id", "enum": ["one", "list", "map"], "default": "one" },
         "id": { "description": "The field that identifies a record (absent for a map: the key; for one record without an id field: the file name)", "type": "string" },
         "file_named_after_id": { "description": "One record per file, the file named <id>.yml", "type": "boolean", "default": false },

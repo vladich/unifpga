@@ -62,7 +62,7 @@ def test_every_target_and_alias_resolves_to_its_toolchain_and_part():
     for t in targets:
         r = config_init.resolve_configuration(t["id"])
         assert r["target"] == t, t
-        assert r["toolchain"]["Id"] == t["toolchain"] and r["configuration"]["toolchain"] == t["toolchain"]
+        assert r["toolchain"]["id"] == t["toolchain"] and r["configuration"]["toolchain"] == t["toolchain"]
         assert "for_toolchain" not in r["configuration"]
         assert all("for_toolchain" not in a for a in r["configuration"]["attach"])
 
@@ -283,7 +283,7 @@ def test_a_usb_keyboard_bridged_as_ps2_is_the_designs_keyboard():
 def test_a_pull_up_the_toolchain_cannot_emit_is_refused():
     from tools import codegen
     r = copy.deepcopy(config_init.resolve_configuration("basys3"))
-    r["toolchain"] = dict(r["toolchain"], Id="quartus_prime_lite")
+    r["toolchain"] = dict(r["toolchain"], id="quartus_prime_lite")
     assert any("pulled up" in p for p in codegen.validate_configuration(r))
     r["board_pinmap"]["pinBanks"]["onboard_usb_hid"]["pull"] = "down"
     assert any("pull 'down' is not known" in p for p in codegen.validate_configuration(r))

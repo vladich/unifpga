@@ -27,16 +27,16 @@ def _catalogue():
     return {
         "schema/entities.yml": {"Entities": check.read_entities()},
         "design_top.yml": {"DesignTop": {"sections": [{"title": "Everything", "capabilities": ["leds", "reset"]}]}},
-        "toolchains.yml": {"Toolchains": [{"Id": "tool", "Name": "Tool", "SupportedOperations": [],
-                                           "KnownVersions": ["1.0"], "Version": None, "InstallDir": None}]},
-        "programmers.yml": {"Programmers": [{"Id": "prog", "Name": "Prog", "KnownVersions": [], "Version": None,
-                                             "Bundled": "tool", "Binary": "prog", "Bridge": "jtag",
-                                             "SupportedFamilies": [{"Producer": "Maker Inc", "Family": "Family"}]}]},
-        "board_producers.yml": {"Producers": [{"Id": "maker", "Name": "Maker", "AKA": ["Maker Inc"], "URL": None,
-                                               "Country": None, "FoundedYear": None, "Categories": ["hobby"],
-                                               "Description": "", "DefunctSince": None, "Notes": None}]},
-        "chips/maker/family.yml": {"Producer": "Maker Inc", "Family": "Family", "Description": "",
-                                   "DefaultToolchains": ["tool[*]"], "Chips": [{"Id": "CHIP-1"}]},
+        "toolchains.yml": {"Toolchains": [{"id": "tool", "name": "Tool", "operations": [],
+                                           "known_versions": ["1.0"], "version": None, "install_dir": None}]},
+        "programmers.yml": {"Programmers": [{"id": "prog", "name": "Prog", "known_versions": [], "version": None,
+                                             "bundled": "tool", "binary": "prog", "bridge": "jtag",
+                                             "families": ["family"]}]},
+        "producers.yml": {"Producers": [{"id": "maker", "name": "Maker", "aka": ["Maker Inc"], "url": None,
+                                         "country": None, "founded": None, "categories": ["hobby"],
+                                         "description": "", "defunct_since": None, "notes": None}]},
+        "chips/maker/family.yml": {"Family": {"id": "family", "producer": "maker", "name": "Family", "description": "",
+                                              "default_toolchains": ["tool[*]"], "chips": [{"id": "CHIP-1"}]}},
         "boards/maker/family/board.yml": {"Board": {
             "id": "board", "name": "Board", "producer": "maker", "chip": "CHIP-1", "programmer": "prog",
             "features": ["led_feature"], "devices": ["led_device"],
@@ -84,10 +84,10 @@ def _catalogue():
                                 {"kind": "header", "description": "A header", "features": []}]},
         "devices.yml": {"Devices": [{"id": "led_device", "name": "An LED", "manufacturer": "Generic", "part": "LED",
                                      "feature": "led_feature", "interface": "gpio", "peripherals": ["led"]}]},
-        "mezzanines/maker/family.yml": {"Producer": "maker", "Mezzanines": [{
-            "Id": "som", "Name": "A SoM", "Producer": "maker", "Type": "som", "Connector": "b2b_custom_maker",
-            "Chip": "CHIP-1", "Features": ["led_feature"], "Devices": ["led_device"], "Status": "active",
-            "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
+        "mezzanines/maker/family.yml": {"Mezzanines": [{
+            "id": "som", "name": "A SoM", "producer": "maker", "type": "som", "connector": "b2b_custom_maker",
+            "chip": "CHIP-1", "features": ["led_feature"], "devices": ["led_device"], "status": "active",
+            "compatible_boards": ["board"], "default_carrier": "board"}]},
     }
 
 
@@ -151,13 +151,13 @@ def test_a_valid_catalogue_passes_and_lists_the_rules_that_need_the_tree():
 
 def test_schema_violations_name_the_place():
     documents = _catalogue()
-    documents["setups/rig.yml"]["Setup"]["use"][0]["lab_bits"] = {"leds": [0]}
+    documents["setups/rig.yml"]["Setup"]["use"][0]["extra_bits"] = {"leds": [0]}
     documents["capabilities/leds.yml"]["Capability"]["aggregation"] = "sum"
     del documents["modules/addon.yml"]["Module"]["source"]
     report = _run(documents)
     assert _codes(report) == {"schema"}
     details = _details(report, "schema")
-    assert any(d.startswith("Setup/use/0") and "lab_bits" in d for d in details)
+    assert any(d.startswith("Setup/use/0") and "extra_bits" in d for d in details)
     assert any(d.startswith("Capability/aggregation") for d in details)
     assert any(d.startswith("Module") and "source" in d for d in details)
 
@@ -167,19 +167,21 @@ def test_unknown_and_invalid_references_are_precise():
     documents["setups/rig.yml"]["Setup"]["board"] = "absent"
     documents["setups/rig.yml"]["Setup"]["use"][1]["module"] = "missing"
     documents["peripherals/led.yml"]["Peripheral"]["provides"][0]["capability"] = "unknown"
-    documents["chips/maker/family.yml"]["DefaultToolchains"] = ["tool[bad"]
+    documents["chips/maker/family.yml"]["Family"]["default_toolchains"] = ["tool[bad"]
     documents["boards/maker/family/board.yml"]["Board"]["chip"] = "absent_chip"
-    documents["mezzanines/maker/family.yml"]["Mezzanines"][0]["Producer"] = "nobody"
+    documents["mezzanines/maker/family.yml"]["Mezzanines"][0]["producer"] = "nobody"
+    documents["programmers.yml"]["Programmers"][0]["families"] = ["other"]
     report = _run(documents)
     unknown = _details(report, "unknown_reference")
-    assert len(unknown) == 5, unknown
+    assert len(unknown) == 6, unknown
     for text in ("rig 'rig' board refers to absent board 'absent'",
                  "use.*.module/use/1/module refers to absent module 'missing'",
                  "provides.*.capability/provides/0/capability refers to absent capability 'unknown'",
                  "board 'board' chip refers to absent chip 'absent_chip'",
-                 "mezzanine 'som' Producer refers to absent producer 'nobody'"):
+                 "mezzanine 'som' producer refers to absent producer 'nobody'",
+                 "programmer 'prog' families.*/families/0 refers to absent family 'other'"):
         assert any(text in d for d in unknown), text
-    assert _details(report, "invalid_reference") == ["family 'maker/family' DefaultToolchains.*: 'tool[bad' is not a toolchain reference"]
+    assert _details(report, "invalid_reference") == ["family 'family' default_toolchains.*: 'tool[bad' is not a toolchain reference"]
 
 
 def test_identities_and_files():
@@ -213,13 +215,12 @@ def test_rules_catch_what_a_reference_cannot():
     documents["setups/rig.yml"]["Setup"]["design"]["reset"]["sources"].append({"magic": True})
     documents["setups/rig.yml"]["Setup"]["part"] = "chip-9"
     documents["boards/maker/family/board.yml"]["Board"]["headers"][0]["type"] = "mystery"
-    documents["programmers.yml"]["Programmers"][0]["SupportedFamilies"] = [{"Producer": "Maker Inc", "Family": "Other"}]
     documents["boards/maker/family/board.yml"]["Board"]["features"] = []
     documents["boards/maker/family/board.yml"]["Board"]["banks"]["j1"]["device"]["kind"] = "mystery"
-    documents["board_producers.yml"]["Producers"].append(dict(documents["board_producers.yml"]["Producers"][0], Id="other", AKA=["Maker"]))
+    documents["producers.yml"]["Producers"].append(dict(documents["producers.yml"]["Producers"][0], id="other", aka=["Maker"]))
     report = _run(documents)
     assert _codes(report) == {"peripheral_refs", "module_pins", "capability_refs", "rig_reset_sources",
-                              "rig_chip_variant", "board_drawn", "programmer_families", "board_kinds", "producer_names_unique"}
+                              "rig_chip_variant", "board_drawn", "board_kinds", "producer_names_unique"}
     kinds = _details(report, "board_kinds")
     assert any("kind 'mystery'" in d for d in kinds) and any("led_feature" in d and "none is listed" in d for d in kinds)
     assert "'Maker' also names producer" in _details(report, "producer_names_unique")[0]
@@ -232,7 +233,6 @@ def test_rules_catch_what_a_reference_cannot():
     assert "rig 'rig': reset source 'magic' is not one of bank, pin, pll_lock, power_up" in _details(report, "rig_reset_sources")[0]
     assert "part 'chip-9' is not one of the board's chips (CHIP-1)" in _details(report, "rig_chip_variant")[0]
     assert "'mystery'" in _details(report, "board_drawn")[0]
-    assert "Maker Inc / Other" in _details(report, "programmer_families")[0]
 
 
 def test_a_chip_variant_matches_by_id_or_name():

@@ -24,7 +24,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain,
     log.error(
         "[stub %s] cannot synthesize configuration=%s, board=%s, top=%s, "
         "step=%s, output=%s, peripherals=%d",
-        toolchain["Id"], configuration["id"], board["Id"], top, step, output,
+        toolchain["id"], configuration["id"], board["Id"], top, step, output,
         len(peripherals),
     )
     return 2

@@ -28,7 +28,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__
 
 
 def _resolve_vivado_bin(toolchain):
-    install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    install_dir = os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
     if install_dir:
         candidate = os.path.join(install_dir, "bin", "vivado")
         if os.path.exists(candidate):

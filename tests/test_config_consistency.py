@@ -352,21 +352,14 @@ def test_catalogue_aliases_name_no_real_entry_twice():
     """`Aliases:` keep the ids of duplicates merged into an entry (catalogue
     corrections): an alias is never also a board or mezzanine id, and no id is
     the alias of two entries."""
-    import glob
-    ids, seen = set(), {}
-    entries = []
-    for f in glob.glob(os.path.join(REPO_ROOT, "config", "boards", "*", "*.yml")) + \
-            glob.glob(os.path.join(REPO_ROOT, "config", "mezzanines", "*", "*.yml")):
-        with open(f) as fh:
-            data = yaml.safe_load(fh) or {}
-        for e in (data.get("Boards") or []) + (data.get("Mezzanines") or []):
-            ids.add(e["Id"])
-            entries.append(e)
+    entries = list(config_init.read_boards().values()) + list(config_init.read_mezzanines().values())
+    ids, seen = {e["id"] for e in entries}, {}
+    assert len(ids) == len(entries)
     for e in entries:
-        for a in e.get("Aliases") or []:
-            assert a not in ids, "{} is an alias of {} and an entry of its own".format(a, e["Id"])
-            assert a not in seen, "{} is an alias of {} and of {}".format(a, e["Id"], seen[a])
-            seen[a] = e["Id"]
+        for a in e.get("aliases") or []:
+            assert a not in ids, "{} is an alias of {} and an entry of its own".format(a, e["id"])
+            assert a not in seen, "{} is an alias of {} and of {}".format(a, e["id"], seen[a])
+            seen[a] = e["id"]
 
 
 def test_unwired_pin_notes_name_module_pins_and_a_level():

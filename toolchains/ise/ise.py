@@ -55,7 +55,7 @@ PROJECT_NAME = "unifpga_top"
 def _resolve_ise_bin(toolchain, name):
     """Look up an ISE binary (xst, ngdbuild, map, par, trce, bitgen).
     Prefers `<InstallDir>/bin/lin64/<name>` then $PATH."""
-    install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    install_dir = os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
     if install_dir:
         for sub in ("bin/lin64", "bin/lin", "bin"):
             cand = os.path.join(install_dir, sub, name)

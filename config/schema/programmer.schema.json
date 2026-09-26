@@ -13,34 +13,27 @@
     "bridge": { "description": "A physical interface: jtag, ft2232h-jtag, usb-dfu, ...", "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
     "programmer": {
       "type": "object",
-      "required": ["Id", "Name", "KnownVersions", "Version", "Bundled", "Binary", "Bridge"],
+      "required": ["id", "name", "known_versions", "version", "bundled", "binary", "bridge"],
       "additionalProperties": false,
       "properties": {
-        "Id": { "description": "Lower case, except a tool whose own name is not (openFPGALoader)", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_]*$" },
-        "Name": { "type": "string", "minLength": 1 },
-        "KnownVersions": { "type": "array", "items": { "type": ["string", "number"] } },
-        "Version": { "type": ["string", "null"] },
-        "Bundled": { "description": "The toolchain it ships with, or null for a third-party tool", "type": ["string", "null"], "pattern": "^[a-z0-9][a-z0-9_]*$" },
-        "Binary": { "description": "The executable expected on PATH", "type": "string", "minLength": 1 },
-        "Bridge": { "$ref": "#/$defs/bridge" },
-        "RequiresBridge": { "description": "The bridge a board must have for this programmer", "$ref": "#/$defs/bridge" },
-        "SupportedFamilies": {
-          "description": "For a third-party tool: the chip families it targets, by producer and family name",
+        "id": { "description": "Lower case, except a tool whose own name is not (openFPGALoader)", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "known_versions": { "type": "array", "items": { "type": ["string", "number"] } },
+        "version": { "type": ["string", "null"] },
+        "bundled": { "description": "The toolchain it ships with, or null for a third-party tool", "type": ["string", "null"], "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "binary": { "description": "The executable expected on PATH", "type": "string", "minLength": 1 },
+        "bridge": { "$ref": "#/$defs/bridge" },
+        "requires_bridge": { "description": "The bridge a board must have for this programmer", "$ref": "#/$defs/bridge" },
+        "families": {
+          "description": "For a third-party tool: the chip families it targets (ids of config/chips/<producer>/<family>.yml)",
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "object",
-            "required": ["Producer", "Family"],
-            "additionalProperties": false,
-            "properties": {
-              "Producer": { "type": "string", "minLength": 1 },
-              "Family": { "type": "string", "minLength": 1 }
-            }
-          }
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" }
         },
-        "RequiresBootloader": { "description": "The bootloader a board must run for this programmer", "type": "string", "minLength": 1 },
-        "InstallDir": { "type": ["string", "null"] },
-        "URL": { "type": "string", "pattern": "^https?://" }
+        "requires_bootloader": { "description": "The bootloader a board must run for this programmer", "type": "string", "minLength": 1 },
+        "install_dir": { "type": ["string", "null"] },
+        "url": { "type": "string", "pattern": "^https?://" }
       }
     }
   }

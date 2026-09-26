@@ -32,7 +32,7 @@ PROJECT_NAME = "unifpga_top"
 
 
 def _resolve_quartus_bin(toolchain, name):
-    install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    install_dir = os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
     if install_dir:
         candidate = os.path.join(install_dir, "bin", name)
         if os.path.exists(candidate):
@@ -172,7 +172,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     log.info("Wrote %s", sdc_path)
 
     with open(qpf_path, "w") as f:
-        f.write(_emit_qpf(toolchain.get("Version") or "23.1std"))
+        f.write(_emit_qpf(toolchain.get("version") or "23.1std"))
 
     log.info("Source files (%d):", len(sv_files))
     for sv in sv_files:
@@ -205,7 +205,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     # the wrapper only sets it for a subset of subcommands, so do it here too.
     env = dict(os.environ)
     env["QUARTUS_64BIT"] = "1"
-    install_dir = os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    install_dir = os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
     lib64 = os.path.join(install_dir, "linux64")
     if os.path.isdir(lib64):
         env["LD_LIBRARY_PATH"] = lib64 + ":" + env.get("LD_LIBRARY_PATH", "")
@@ -243,7 +243,7 @@ def _preload_allocator(env, toolchain, lib_dirs=_LIB_DIRS, system=None):
     """Put a standalone malloc on LD_PRELOAD for Quartus II 13.x on Linux.
     $UNIFPGA_QUARTUS_MALLOC names the library to use, or `off` to skip.
     Returns the library preloaded, or None."""
-    if (system or os.uname().sysname) != "Linux" or not str(toolchain.get("Version") or "").startswith("13"):
+    if (system or os.uname().sysname) != "Linux" or not str(toolchain.get("version") or "").startswith("13"):
         return None
     choice = env.get("UNIFPGA_QUARTUS_MALLOC")
     if choice == "off":

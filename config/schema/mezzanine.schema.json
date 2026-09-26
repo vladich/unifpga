@@ -2,36 +2,35 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:unifpga:schema:mezzanine",
   "title": "Mezzanines",
-  "description": "config/mezzanines/<producer>/<family>.yml: SoMs, mezzanine cards, piggyback boards and carriers of one producer's family, catalogue only. (Keys are still capitalised like the toolchain and programmer registries; the board files are lowercase.)",
+  "description": "config/mezzanines/<producer>/<family>.yml: SoMs, mezzanine cards, piggyback boards and carriers of one producer's family, catalogue only.",
   "type": "object",
-  "required": ["Producer", "Mezzanines"],
+  "required": ["Mezzanines"],
   "additionalProperties": false,
   "properties": {
-    "Producer": { "type": "string", "minLength": 1 },
     "Mezzanines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/mezzanine" } }
   },
   "$defs": {
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
     "mezzanine": {
       "type": "object",
-      "required": ["Id", "Name", "Producer", "Type", "Connector", "Features", "Status"],
+      "required": ["id", "name", "producer", "type", "connector", "features", "status"],
       "additionalProperties": false,
       "properties": {
-        "Id": { "$ref": "#/$defs/id" },
-        "Name": { "type": "string", "minLength": 1 },
-        "BoardName": { "type": "string" },
-        "Aliases": { "type": "array", "items": { "type": "string" } },
-        "Producer": { "$ref": "#/$defs/id" },
-        "Type": { "enum": ["som", "mezzanine", "piggyback", "carrier"] },
-        "Connector": { "description": "The interface to the host board (a connector type, or b2b_custom_<producer>)", "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
-        "Chip": { "description": "A SoM's FPGA", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.+/-]*$" },
-        "Features": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
-        "Devices": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
-        "CompatibleBoards": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
-        "DefaultCarrier": { "$ref": "#/$defs/id" },
-        "BoardURL": { "type": "string", "pattern": "^https?://" },
-        "Status": { "enum": ["active", "eol", "preview"] },
-        "Notes": { "type": "string" }
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "board_name": { "type": "string" },
+        "aliases": { "type": "array", "items": { "type": "string" } },
+        "producer": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["som", "mezzanine", "piggyback", "carrier"] },
+        "connector": { "description": "The interface to the host board (a connector type, or b2b_custom_<producer>)", "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "chip": { "description": "A SoM's FPGA", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.+/-]*$" },
+        "features": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "devices": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "compatible_boards": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "default_carrier": { "$ref": "#/$defs/id" },
+        "url": { "type": "string", "pattern": "^https?://" },
+        "status": { "enum": ["active", "eol", "preview"] },
+        "notes": { "type": "string" }
       }
     }
   }

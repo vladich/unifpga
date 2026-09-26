@@ -43,7 +43,8 @@ def test_the_drafter_keeps_a_header_read_from_a_document():
 
 def _board_tree(tmp_path, monkeypatch, board_text):
     (tmp_path / "chips" / "maker").mkdir(parents=True)
-    (tmp_path / "chips" / "maker" / "family.yml").write_text("Producer: Maker\nFamily: Family\nDescription: ''\nDefaultToolchains: []\nChips: [{Id: X}]\n")
+    (tmp_path / "chips" / "maker" / "family.yml").write_text(
+        "Family: {id: family, producer: maker, name: Family, description: '', default_toolchains: [], chips: [{id: X}]}\n")
     (tmp_path / "boards" / "maker" / "family").mkdir(parents=True)
     path = tmp_path / "boards" / "maker" / "family" / "one.yml"
     path.write_text(board_text)

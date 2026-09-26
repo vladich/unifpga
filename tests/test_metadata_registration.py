@@ -78,30 +78,38 @@ def test_chip_registries_reject_duplicate_ids(tmp_path, monkeypatch):
     family = tmp_path / "chips" / "lattice"
     family.mkdir(parents=True)
     for name in ("a.yml", "b.yml"):
-        _write(family, name, "Producer: Lattice\nFamily: Test\nChips:\n  - Id: repeated\n")
+        _write(family, name, "Family: {id: %s, producer: lattice, name: Test, chips: [{id: repeated}]}\n" % name[:-4])
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="duplicate chip Id 'repeated'"):
+    with pytest.raises(config_init.ConfigError, match="duplicate chip id 'repeated'"):
         config_init.read_chips()
 
 
 def test_chip_registries_reject_null_list(tmp_path, monkeypatch):
     family = tmp_path / "chips" / "lattice"
     family.mkdir(parents=True)
-    _write(family, "bad.yml", "Producer: Lattice\nFamily: Test\nChips: null\n")
+    _write(family, "bad.yml", "Family: {id: bad, producer: lattice, name: Test, chips: null}\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="Chips must be a list"):
+    with pytest.raises(config_init.ConfigError, match="chips must be a list"):
         config_init.read_chips()
 
 
 def test_chip_registries_require_identity_and_list(tmp_path, monkeypatch):
+    """A family file: a Family mapping with a producer, a name, the id the file
+    is named after, and a list of chips."""
     family = tmp_path / "chips" / "lattice"
     family.mkdir(parents=True)
-    catalog = _write(family, "bad.yml", "Producer: Lattice\nFamily: Test\n")
+    catalog = _write(family, "bad.yml", "Family: {id: bad, producer: lattice, name: Test}\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="Chips must be a list"):
+    with pytest.raises(config_init.ConfigError, match="chips must be a list"):
         config_init.read_chips()
-    catalog.write_text("Chips: []\n", encoding="utf-8")
-    with pytest.raises(config_init.ConfigError, match="needs Producer and Family"):
+    catalog.write_text("Family: {id: bad, chips: []}\n", encoding="utf-8")
+    with pytest.raises(config_init.ConfigError, match="needs a producer and a name"):
+        config_init.read_chips()
+    catalog.write_text("Family: {id: other, producer: lattice, name: Test, chips: []}\n", encoding="utf-8")
+    with pytest.raises(config_init.ConfigError, match="id must be 'bad', the file's name"):
+        config_init.read_chips()
+    catalog.write_text("Producer: Lattice\nFamily: Test\n", encoding="utf-8")
+    with pytest.raises(config_init.ConfigError, match="needs a Family mapping"):
         config_init.read_chips()
 
 
@@ -120,9 +128,9 @@ def test_board_files_are_named_after_their_id_and_need_a_family(tmp_path, monkey
         config_init.read_boards_catalog()
     chips = tmp_path / "chips" / "lattice"
     chips.mkdir(parents=True)
-    _write(chips, "ice40.yml", "Producer: Lattice\nFamily: ICE40\nChips: [{Id: X}]\n")
+    _write(chips, "ice40.yml", "Family: {id: ice40, producer: lattice, name: ICE40, chips: [{id: X}]}\n")
     entry = config_init.read_boards_catalog()["one"]
-    assert (entry["BoardName"], entry["Chip"], entry["PartFamily"]) == ("One", "X", "ICE40")
+    assert (entry["BoardName"], entry["Chip"], entry["PartProducer"], entry["PartFamily"]) == ("One", "X", "lattice", "ICE40")
     assert config_init.read_board_pinmap("one") is None          # no banks: a catalogue-only board
 
 
@@ -130,6 +138,7 @@ def test_tinyfpga_bx_uses_lp_hx_family_and_keeps_pinmap():
     board = config_init.read_board_entry("tinyfpga_bx")
     chip = config_init.read_chips()[board["Chip"]]
     pinmap = config_init.read_board_pinmap("tinyfpga_bx")
-    assert board["PartFamily"] == chip["PartFamily"] == "ICE40"
+    assert board["PartFamily"] == chip["family_name"] == "ICE40" and chip["family"] == "ice40"
+    assert board["PartProducer"] == chip["producer"] == "lattice"
     assert board["_family_dir"] == "ice40"
     assert pinmap["id"] == "tinyfpga_bx"

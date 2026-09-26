@@ -8,8 +8,7 @@
 #
 # Paths in `from`: dotted, `*` every item of a list or value of a mapping,
 # `*keys` every key of a mapping. `format`: how a value names its target
-# (plain id, versioned `<id>[<constraint>]`, record_id `x` or `{Id: x}`,
-# producer_name a producer's Id / Name / AKA).
+# (plain id, versioned `<id>[<constraint>]`, record_id `x` or `{id: x}`).
 
 Entities:
 
@@ -97,50 +96,55 @@ Entities:
 
   family:
     why: >-
-      A chip family of a producer, config/chips/<producer>/<family>.yml: its
-      chips and the toolchains that build for them. Toolchain compatibility of a
-      rig (config.init toolchain_constraints), programmer resolution, build
-      targets.
+      A chip family of a producer, config/chips/<producer>/<family>.yml (the
+      file named after the family's id, the directory grouping the producer's
+      families as config/boards/ does): its chips, the toolchains that build
+      for them, its name as the vendor's tools want it. Toolchain compatibility
+      of a rig (config.init toolchain_constraints), programmer resolution,
+      build targets, the vendor layer codegen emits.
     files: config/chips/*/*.yml
+    root: Family
+    id: id
+    file_named_after_id: true
     schema: family.schema.json
     relations:
-      - {from: Producer, to: producer, format: producer_name, why: "whose family"}
-      - {from: DefaultToolchains.*, to: toolchain, format: versioned, why: "the builds every chip of the family accepts"}
+      - {from: producer, to: producer, why: "whose family"}
+      - {from: default_toolchains.*, to: toolchain, format: versioned, why: "the builds every chip of the family accepts"}
 
   chip:
     why: >-
-      One chip of a family (the Chips list of the family file): the part a
+      One chip of a family (the chips list of the family file): the part a
       board carries and a rig's `part` selects; its toolchains gate the builds.
     files: config/chips/*/*.yml
-    root: Chips
+    root: Family.chips
     records: list
-    id: Id
+    id: id
     schema: null
     no_schema_because: family.schema.json covers the whole family file, chips included
     relations:
-      - {from: Toolchains.*, to: toolchain, format: versioned, why: "a chip's own builds"}
+      - {from: toolchains.*, to: toolchain, format: versioned, why: "a chip's own builds"}
 
   producer:
     why: >-
-      Who makes boards, chips and modules, config/board_producers.yml.
+      Who makes boards, chips and modules, config/producers.yml.
       Grouping, file placement, catalogue browsing.
-    files: config/board_producers.yml
+    files: config/producers.yml
     root: Producers
     records: list
-    id: Id
+    id: id
     schema: producer.schema.json
     relations:
-      - {rule: producer_names_unique, why: "a name or AKA names one producer (boards and families resolve producers by name)"}
+      - {rule: producer_names_unique, why: "a name or an aka names one producer"}
 
   toolchain:
     why: >-
       A synthesis toolchain, config/toolchains.yml: its driver
-      (toolchains/<Id>.py), versions, install. Builds, target ids, the vendor
-      layer codegen emits.
+      (toolchains/<id>/<id>.py), versions, install. Builds, target ids, the
+      vendor layer codegen emits.
     files: config/toolchains.yml
     root: Toolchains
     records: list
-    id: Id
+    id: id
     schema: toolchain.schema.json
     relations:
       - {rule: toolchain_driver, why: "a toolchain with operations has its driver module"}
@@ -153,11 +157,11 @@ Entities:
     files: config/programmers.yml
     root: Programmers
     records: list
-    id: Id
+    id: id
     schema: programmer.schema.json
     relations:
-      - {from: Bundled, to: toolchain, why: "applies wherever the toolchain does"}
-      - {rule: programmer_families, why: "the families a third-party tool supports exist"}
+      - {from: bundled, to: toolchain, why: "applies wherever the toolchain does"}
+      - {from: families.*, to: family, why: "the chip families a third-party tool loads"}
 
   design:
     why: >-
@@ -267,12 +271,12 @@ Entities:
     files: config/mezzanines/*/*.yml
     root: Mezzanines
     records: list
-    id: Id
+    id: id
     schema: mezzanine.schema.json
     relations:
-      - {from: Producer, to: producer, why: "whose module"}
-      - {from: Chip, to: chip, why: "the part on a SoM"}
-      - {from: Features.*, to: feature, why: "catalogue browsing"}
-      - {from: Devices.*, to: device, format: record_id, why: "catalogue browsing"}
-      - {from: CompatibleBoards.*, to: board, why: "carriers it fits"}
-      - {from: DefaultCarrier, to: board, why: "the carrier it is sold with"}
+      - {from: producer, to: producer, why: "whose module"}
+      - {from: chip, to: chip, why: "the part on a SoM"}
+      - {from: features.*, to: feature, why: "catalogue browsing"}
+      - {from: devices.*, to: device, why: "catalogue browsing"}
+      - {from: compatible_boards.*, to: board, why: "carriers it fits"}
+      - {from: default_carrier, to: board, why: "the carrier it is sold with"}

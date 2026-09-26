@@ -58,7 +58,7 @@ def _source_list(resolved, design_top, generated_top):
     standalone and reach headers through `include (Vivado alone lists them)."""
     import importlib
     from tools import source_set
-    tc = resolved["toolchain"]["Id"]
+    tc = resolved["toolchain"]["id"]
     try:
         driver = importlib.import_module("toolchains.{0}.{0}".format(tc))
         files = driver._collect_sv_sources(REPO, resolved["peripherals"], design_top, generated_top)
@@ -130,7 +130,7 @@ def cmd_generate(args):
         manifest["entries"].append({
             "id": entry_id,
             "design": design_rel,
-            "toolchain": resolved["toolchain"]["Id"],
+            "toolchain": resolved["toolchain"]["id"],
             "strict_ok": strict_ok,
             "files": files,
             "incdirs": incdirs,

@@ -215,6 +215,6 @@ def test_resolver_fills_install_dir_from_detection(monkeypatch):
     fs = FakeFS(exes=["/tools/Xilinx/Vivado/2023.2/bin/vivado"])
     monkeypatch.setattr(td, "detect", lambda tid, pin=None: td._detect_vivado(
         tid, None, {"PATH": ""}, HOME, "linux", fs))
-    tc = config_init.resolve_toolchain_install({"Id": "vivado", "InstallDir": "~/nowhere"})
-    assert tc["InstallDir"] == "/tools/Xilinx/Vivado/2023.2"
-    assert tc["BinDirs"] == ["/tools/Xilinx/Vivado/2023.2/bin"] and tc["DetectSource"].startswith("search:")
+    tc = config_init.resolve_toolchain_install({"id": "vivado", "install_dir": "~/nowhere"})
+    assert tc["install_dir"] == "/tools/Xilinx/Vivado/2023.2"
+    assert tc["bin_dirs"] == ["/tools/Xilinx/Vivado/2023.2/bin"] and tc["detect_source"].startswith("search:")

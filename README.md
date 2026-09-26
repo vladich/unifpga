@@ -2,7 +2,7 @@
 
 A multi-vendor FPGA build abstraction. Designs use a virtual-device interface;
 the catalog describes how board configurations and vendor or open-source
-toolchains can provide it. `SupportedOperations` and board evidence determine
+toolchains can provide it. A toolchain's `operations` and board evidence determine
 which catalog entries are currently eligible for a build or programming run.
 
 > **Status:** configuration and generated-project checks exist, but full
@@ -80,7 +80,7 @@ and build scripts. uni-fpga decouples the three concerns:
 maps physical pins to the design's virtual capability ports, emits the right
 constraint file, then dispatches to the toolchain driver.
 
-The toolchain registry declares `SupportedOperations` separately from install
+The toolchain registry declares each toolchain's `operations` separately from install
 detection. `./unifpga tools` shows both. Catalogue-only toolchains have `[]`;
 attempting their build or program operation exits before creating build output.
 ISE and Libero SoC currently support synthesis but require an external
@@ -138,10 +138,10 @@ by Yuri Panchul and contributors; see
 | `unifpga` | Short command line (`board`, `build`, `program`, `sim`, `gui`, `prepare`, `clean`, `tools`, `designs`); logic in `tools/cli.py`. Remembers the board in `settings.yml`, builds into `<design>/run/<configuration>/`. |
 | `synthesize.py` | Top-level entry point. Resolves a configuration, codegens `top.sv`, dispatches to the toolchain. |
 | `config/boards/<producer>/<family>/<id>.yml` | One board, one file: its catalogue fields (name, chip or chip variants, programmer, bridges, features, devices), its banks of pins, its verification for hardware builds the documents its model is checked against (`documents:`; `./unifpga sources fetch` records their digests) with each bank, header and part read from one carrying its `source`, and, as drawn, its own connector types, headers and parts (`./unifpga layout draft <board>` regenerates the drawn section from the banks, the rigs and the board-sources registry). The directory is the board's chip family. |
-| `config/chips/<producer>/<family>.yml` | Chip registry per family — each chip lists eligible toolchains (with optional `[version]` constraints). Boards reference these chips by Id. |
+| `config/chips/<producer>/<family>.yml` | One chip family, one file: its producer, its name as the vendor's tools want it, its chips and the toolchains that build for them (with optional `[version]` constraints; a chip may name its own). Boards reference chips by id, programmers reference families by id. |
 | `config/toolchains.yml` | Toolchain registry, including the executable operations each driver supports. |
 | `config/programmers.yml` | Registry of bundled vendor, third-party, and board-specific bitstream loaders. |
-| `config/board_producers.yml` | Registry of board makers with URL, country, founding year, categories, and description. Each board's `BoardProducer:` references one of these by Id. |
+| `config/producers.yml` | Registry of producers of boards, chips and modules with URL, country, founding year, categories, and description. A board's, a chip family's and a mezzanine's `producer:` references one of these by id. |
 | `config/features.yml`, `config/kinds.yml`, `config/devices.yml` | The vocabulary behind a board's catalogue fields: features (browsable classes such as `user_leds`, `hdmi_output`, `sdr_sdram`, each with the capabilities a device of the class can provide), the kinds a board's banks give their devices (each with the features it implies; `./unifpga check` reports a board whose banks imply a feature it does not list), and the named chips and modules with the peripherals that drive them. |
 | `config/setups/<id>.yml` | A rig, one file: board, toolchain(s), the ordered `use:` list (on-board parts, modules on connectors, headers as gpio, raw attaches) with each use's `params`, `pins`, `bind` and `design_bits`, and the `design:` section (`reset`, `clock`, `uart_rx`, `width`, `tie`). `tools/setup.py` expands it into the configuration the build reads (`./unifpga setup show <id>` prints it); `UNIFPGA_PROFILE=0` / `synthesize.py --no-profile` leaves the design section out (buses in attach order, a power-up reset). |
 | `config/modules/<id>.yml`, `config/connectors.yml` | Add-on modules with their pinouts, and the connector types (how a header is numbered). |
@@ -336,12 +336,12 @@ intended SKIP, not a failure.
   the board lists among its documents.
 - **A new toolchain**: add `toolchains/<id>/<id>.py` exposing `synthesize`
   and `program`, plus a `config/toolchains.yml` entry with an explicit
-  `SupportedOperations` list. Mark unfinished methods unsupported and make
+  `operations` list. Mark unfinished methods unsupported and make
   them return a nonzero error. Existing functional drivers are templates —
   `vivado.py` for vendor TCL flows,
   `nextpnr_icestorm.py` for yosys/nextpnr open flows, `nextpnr_gatemate.py`
   for himbaechel-uarch flows, `quartus2.py` / `gowin_standard.py` for thin
-  re-exports of an adjacent driver with a different InstallDir.
+  re-exports of an adjacent driver with a different `install_dir`.
 
 ## Repository layout
 
@@ -351,15 +351,16 @@ intended SKIP, not a failure.
 ├── config/
 │   ├── toolchains.yml         # registry of synthesis toolchains
 │   ├── programmers.yml        # registry of bitstream loaders
-│   ├── chips/                 # chip registry, per-family
-│   │   ├── xilinx_amd/<family>.yml   # chips + DefaultToolchains[version_constraint]
+│   ├── producers.yml          # who makes boards, chips and modules
+│   ├── chips/                 # chip families, one file each
+│   │   ├── xilinx_amd/<family>.yml   # producer, name, chips + default_toolchains[version_constraint]
 │   │   ├── altera_intel/<family>.yml
-│   │   └── ...                # other chip families
-│   ├── boards/                # board catalogs + pinmaps
+│   │   └── ...                # other producers' families
+│   ├── boards/                # boards, one file each, grouped like the chip families
 │   │   ├── xilinx_amd/        # producer dirs
-│   │   │   ├── artix_7.yml    # family catalog: boards reference chips by Id
-│   │   │   └── artix_7/<id>.yml  # per-board pinmaps
-│   │   └── ...                # other family catalogs and pinmaps
+│   │   │   └── artix_7/<id>.yml  # a board of that family: catalogue fields, banks, drawing
+│   │   └── ...
+│   ├── mezzanines/<producer>/<family>.yml  # SoMs and daughtercards, catalogue only
 │   ├── setups/<id>.yml        # rigs: parts, modules, and how the design sees them
 │   ├── modules/<id>.yml       # add-on modules (Pmods, breakouts)
 │   ├── peripherals/*.yml      # peripheral definitions

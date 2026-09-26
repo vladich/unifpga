@@ -40,7 +40,7 @@ PROJECT_NAME = "unifpga_top"
 
 
 def _resolve_install_dir(toolchain):
-    return os.path.expanduser(toolchain.get("InstallDir") or "").rstrip("/")
+    return os.path.expanduser(toolchain.get("install_dir") or "").rstrip("/")
 
 
 def _resolve_bin(toolchain, name, sub="bin"):

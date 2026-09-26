@@ -154,8 +154,8 @@ def board_data(board_id):
                           "summary": c.get("summary"), "size": c.get("size"), "depth": c.get("depth"),
                           "design_parameters": list(((c.get("design") or {}).get("parameters") or {}))}
                          for cid, c in config_init.read_capabilities().items()],
-        # only the toolchains the board's chip(s) support (the chip registry's
-        # Toolchains, inherited from the family's DefaultToolchains)
+        # only the toolchains the board's chip(s) support (the chip's toolchains,
+        # the family's default_toolchains unless it names its own)
         "toolchains": board_toolchains(board_id),
         # the board's chips when it has several (Arty A7 35T / 100T): a rig names its default
         # `part:` and, in `parts:`, every chip it is checked with

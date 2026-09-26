@@ -273,11 +273,11 @@ def remove_run_dir(design_dir):
 
 def installed_toolchains():
     """{toolchain id: found?} the way synthesize.py resolves installs
-    (tools/toolchain_detect.py: InstallDir pin, vendor variable, PATH, the
+    (tools/toolchain_detect.py: install_dir pin, vendor variable, PATH, the
     default install directories)."""
     found = {}
     for tid, tc in config.init.read_toolchains().items():
-        found[tid] = toolchain_detect.detect(tid, pin=tc.get("InstallDir")).found
+        found[tid] = toolchain_detect.detect(tid, pin=tc.get("install_dir")).found
     return found
 
 
@@ -327,7 +327,7 @@ def _select(cfgs, cfg_id, installed=None):
     tc = cfg.get("toolchain", "?")
     print("Board configuration: {id}  (board {b}, toolchain {tc}) -- saved to {p}".format(
         id=cfg_id, b=cfg.get("board", "?"), tc=tc, p=SETTINGS_PATH))
-    pin = (config.init.read_toolchains().get(tc) or {}).get("InstallDir")
+    pin = (config.init.read_toolchains().get(tc) or {}).get("install_dir")
     det = toolchain_detect.detect(tc, pin=pin)
     if det.found:
         print("Toolchain {tc}: {where} ({src})".format(
@@ -656,8 +656,8 @@ def cmd_gui(args):
                                                    component_exports=exports), out)
         finally:
             os.environ.pop("UNIFPGA_NEXTPNR_GUI", None)
-    tc = config.init.resolve_toolchain_install(config.init.read_toolchains().get(tc_id) or {"Id": tc_id})
-    for d in reversed(tc.get("BinDirs") or []):
+    tc = config.init.resolve_toolchain_install(config.init.read_toolchains().get(tc_id) or {"id": tc_id})
+    for d in reversed(tc.get("bin_dirs") or []):
         os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
     if not shutil.which(cmd[0]):
         raise CliError("{} is not on PATH (./unifpga tools shows where the toolchain is looked for)".format(cmd[0]))

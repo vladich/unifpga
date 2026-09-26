@@ -63,7 +63,7 @@ PROJECT_NAME = "unifpga_top"
 
 
 def _resolve_libero_bin(toolchain):
-    install_dir = os.path.expanduser((toolchain.get("InstallDir") or "").rstrip("/"))
+    install_dir = os.path.expanduser((toolchain.get("install_dir") or "").rstrip("/"))
     for cand in (os.path.join(install_dir, "bin64", "libero"),
                  os.path.join(install_dir, "bin", "libero")):
         if os.path.exists(cand) and os.access(cand, os.X_OK):
