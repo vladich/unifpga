@@ -155,7 +155,7 @@ by Yuri Panchul and contributors; see
 | `designs/<name>/design_top.sv` | Example designs. |
 | `tools/codegen.py` | Generates `top.sv` and per-toolchain constraint files from a resolved configuration. |
 | `tools/lint_generated.py` | Lints every generated top with Verilator (locally or `remote --host <box>`). |
-| `tools/verify_pinmap_against_vendor.py` | Checks board pinmaps against the vendor constraint files (Digilent XDC so far). |
+| `tools/verify_pinmap_against_vendor.py` | Checks a board's banks against the vendor constraint file its documents list (Digilent XDC so far), fetched into the document cache. |
 | `toolchains/<id>/<id>.py` | Per-toolchain driver. Each defines `synthesize(...)` and `program(...)`. |
 
 The main configuration registries reject duplicate YAML mapping keys and IDs,
@@ -332,7 +332,8 @@ intended SKIP, not a failure.
   chip: the catalogue fields, then its banks of pins; `./unifpga check`
   validates it), draw it (`./unifpga layout draft <id>`) and write a rig
   `config/setups/<id>.yml` (or make it in the board editor). For Digilent boards,
-  `tools/verify_pinmap_against_vendor.py` checks the pins against the vendor XDC.
+  `tools/verify_pinmap_against_vendor.py` checks the pins against the vendor XDC
+  the board lists among its documents.
 - **A new toolchain**: add `toolchains/<id>/<id>.py` exposing `synthesize`
   and `program`, plus a `config/toolchains.yml` entry with an explicit
   `SupportedOperations` list. Mark unfinished methods unsupported and make

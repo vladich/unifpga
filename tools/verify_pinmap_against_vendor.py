@@ -1,26 +1,18 @@
 #!/usr/bin/env python3
 """
-Cross-check our `config/boards/<id>.yml` pinmaps against authoritative vendor
-constraint files, and import boards we don't have yet.
+Cross-check a board's banks against the vendor's constraint file.
 
-Currently supports the **Digilent XDC repo** (github.com/Digilent/digilent-xdc,
-MIT-licensed). Their `<Board>-Master.xdc` files document every board pin with
-PACKAGE_PIN + IOSTANDARD + canonical port name — vendor-authoritative.
+Supports the Digilent XDC repository (github.com/Digilent/digilent-xdc,
+MIT-licensed): a `<Board>-Master.xdc` documents every board pin with
+PACKAGE_PIN + IOSTANDARD + a canonical port name. A board that has one lists
+it among its documents (kind constraints, a digilent-xdc URL); the check reads
+it from the document cache (./unifpga sources fetch <board> downloads it).
 
-Usage
------
-    # check coverage against repo (all known boards)
-    python -m tools.verify_pinmap_against_vendor --source digilent --check
+    python -m tools.verify_pinmap_against_vendor            # every board with such a document
+    python -m tools.verify_pinmap_against_vendor basys3 -v  # one board, with the unmapped ports
 
-    # check one board
-    python -m tools.verify_pinmap_against_vendor --source digilent --check basys3
-
-    # import a new board (XDC → YAML)
-    python -m tools.verify_pinmap_against_vendor --source digilent \
-        --import nexys_video --as nexys_video
-
-Resolves Digilent's XDC files from `~/Projects/digilent-xdc` (clone the repo
-there once, or set $DIGILENT_XDC_DIR).
+A mismatch is a finding to look into (the banks, the XDC or the port-name
+mapping below may be wrong); the check changes nothing.
 """
 
 import argparse
@@ -28,25 +20,25 @@ import os
 import re
 import sys
 
-import yaml
-
-
 REPO = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-BOARDS_DIR = os.path.join(REPO, "config", "boards")
+if REPO not in sys.path:
+    sys.path.insert(0, REPO)
 
-DIGILENT_DIR = os.environ.get(
-    "DIGILENT_XDC_DIR",
-    os.path.expanduser("~/Projects/digilent-xdc"),
-)
-
-
-# our board id -> Digilent XDC filename: config/vendor_constraints.yml
-def _digilent_boards():
-    with open(os.path.join(REPO, "config", "vendor_constraints.yml"), encoding="utf-8") as f:
-        return (yaml.safe_load(f)["VendorConstraints"] or {}).get("digilent") or {}
+from config import init as config_init     # noqa: E402
+from tools import board_sources            # noqa: E402
 
 
-DIGILENT_BOARDS = _digilent_boards()
+def xdc_document(board):
+    """The board's Digilent XDC document, or None."""
+    for d in board.get("documents") or []:
+        if d.get("kind") == "constraints" and "digilent-xdc" in (d.get("url") or ""):
+            return d
+    return None
+
+
+def boards_with_xdc():
+    return {b: bd for b, bd in config_init.read_boards().items() if xdc_document(bd)}
+
 
 # Map Digilent canonical port names → our pinBank names. Our convention
 # prefixes most things with "onboard_"; Digilent uses uppercase abbreviations.
@@ -54,6 +46,7 @@ DIGILENT_BOARDS = _digilent_boards()
 DIGILENT_PORT_MAP = {
     # Clock(s).
     "CLK100MHZ":  "clk100mhz",
+    "CLK":        "clk",                 # Basys 3, Nexys 4
     "SYSCLK":     "clk",
     "GCLK":       "clk",
 
@@ -155,19 +148,24 @@ _LINE_RE = re.compile(
 )
 
 
-def parse_digilent_xdc(path):
-    """Return list of (canonical_port, idx_or_None, pin, iostd) tuples."""
+# The older two-statement form (Nexys 4, ZedBoard):
+#   set_property PACKAGE_PIN <pin> [get_ports { <name>[<i>] }]   (IOSTANDARD on a line of its own)
+_PLAIN_RE = re.compile(
+    r"^\s*#?\s*set_property\s+PACKAGE_PIN\s+(?P<pin>\S+)\s+"
+    r"\[get_ports\s+\{?\s*(?P<port>[A-Za-z_][A-Za-z0-9_]*)"
+    r"(?:\s*\[\s*(?P<idx>\d+)\s*\])?",
+)
+
+
+def parse_digilent_xdc_text(text):
+    """[(canonical port, idx or None, pin, iostd or None)] of an XDC's text,
+    in either of Digilent's forms."""
     out = []
-    with open(path) as f:
-        for line in f:
-            m = _LINE_RE.match(line)
-            if not m:
-                continue
-            port = m.group("port")
-            idx = int(m.group("idx")) if m.group("idx") is not None else None
-            pin = m.group("pin")
-            iostd = m.group("std")
-            out.append((port, idx, pin, iostd))
+    for line in text.splitlines():
+        m = _LINE_RE.match(line) or _PLAIN_RE.match(line)
+        if m:
+            out.append((m.group("port"), int(m.group("idx")) if m.group("idx") is not None else None,
+                        m.group("pin"), m.groupdict().get("std")))
     return out
 
 
@@ -175,23 +173,11 @@ def parse_digilent_xdc(path):
 # YAML pinmap loader — flatten our pinBanks: { name → list/dict/str of pins }
 # ----------------------------------------------------------------------------
 
-def load_yaml_pins(board_id):
-    """Return dict mapping our canonical pin token to its physical pin.
-    Tokens look like:
-        clk
-        onboard_leds[3]
-        onboard_7seg.anodes[5]
-        onboard_uart.tx
-    """
-    path = os.path.join(BOARDS_DIR, board_id + ".yml")
-    if not os.path.exists(path):
-        return None
-    with open(path) as f:
-        data = yaml.safe_load(f)
-    banks = ((data.get("Board") or {}).get("pinBanks") or {})
-
+def pins_of(board):
+    """{token: FPGA pin} of a board's banks. Tokens: clk, onboard_leds[3],
+    onboard_7seg.anodes[5], onboard_uart.tx."""
     out = {}
-    for bank, body in banks.items():
+    for bank, body in (board.get("banks") or {}).items():
         if isinstance(body, str):
             out[bank] = body
             continue
@@ -199,24 +185,21 @@ def load_yaml_pins(board_id):
             continue
         pins = body.get("pins")
         if pins is None:
-            # virtual: clock or similar
-            continue
-        if isinstance(pins, str):
-            out[bank] = pins
+            continue                                   # a virtual clock or alike
+        if isinstance(pins, (str, int)):
+            out[bank] = str(pins)
         elif isinstance(pins, list):
             for i, p in enumerate(pins):
-                if p is None:
-                    continue
-                out["{}[{}]".format(bank, i)] = p
+                if p is not None:
+                    out["{}[{}]".format(bank, i)] = str(p)
         elif isinstance(pins, dict):
             for sub, val in pins.items():
-                if isinstance(val, str):
-                    out["{}.{}".format(bank, sub)] = val
+                if isinstance(val, (str, int)):
+                    out["{}.{}".format(bank, sub)] = str(val)
                 elif isinstance(val, list):
                     for i, p in enumerate(val):
-                        if p is None:
-                            continue
-                        out["{}.{}[{}]".format(bank, sub, i)] = p
+                        if p is not None:
+                            out["{}.{}[{}]".format(bank, sub, i)] = str(p)
     return out
 
 
@@ -273,174 +256,63 @@ def map_digilent_port(port, idx, pmod_zero_based=False):
 # Cross-check
 # ----------------------------------------------------------------------------
 
-def check_one(board_id, xdc_path, verbose=False):
-    """Compare config/boards/<board_id>.yml against the XDC.
-    Returns (match_count, mismatch_list, our_only, vendor_only)."""
-    ours = load_yaml_pins(board_id)
-    if ours is None:
-        print("  [{}] NO YAML — vendor file present, our pinmap missing"
-              .format(board_id), file=sys.stderr)
-        return None
-    vendor_tuples = parse_digilent_xdc(xdc_path)
-
-    # Pre-scan: a JA[0] / JB[0] etc. anywhere in the file means this XDC uses
-    # 0-based-contiguous Pmod numbering (Arty / Zybo / Eclypse). Otherwise it
-    # uses 1-based-with-gaps (Nexys / Basys / Genesys).
-    pmod_zero_based = any(
-        idx == 0 and re.match(r"^J[A-E]$", port.upper())
-        for port, idx, _, _ in vendor_tuples
-    )
-
-    vendor_map = {}                # our-format-token → pin
-    unmapped = []                  # Digilent ports that don't fit DIGILENT_PORT_MAP
+def compare(ours, vendor_tuples):
+    """(matches, mismatches [(token, our pin, vendor pin)], our_only,
+    vendor_only, unmapped [(port, idx, pin)]) of our {token: pin} against the
+    XDC's (port, idx, pin, iostd) tuples."""
+    # A JA[0] / JB[0] anywhere means this XDC numbers Pmod pins 0-based and
+    # contiguous (Arty / Zybo / Eclypse); otherwise 1-based with gaps (Nexys / Basys).
+    pmod_zero_based = any(idx == 0 and re.match(r"^J[A-E]$", port.upper()) for port, idx, _, _ in vendor_tuples)
+    vendor_map, unmapped = {}, []
     for port, idx, pin, _ in vendor_tuples:
         token = map_digilent_port(port, idx, pmod_zero_based=pmod_zero_based)
         if token is None:
             unmapped.append((port, idx, pin))
             continue
-        # Dedup duplicates (Digilent files have commented + uncommented copies
-        # of the same line — both parse).
-        vendor_map[token] = pin
-
+        vendor_map[token] = pin                        # commented and live copies of a line both parse
     matches, mismatches = [], []
     for tok, our_pin in ours.items():
         v = vendor_map.get(tok)
         if v is None:
             continue
-        if v == our_pin:
-            matches.append(tok)
-        else:
-            mismatches.append((tok, our_pin, v))
-
-    our_only = sorted(set(ours) - set(vendor_map))
-    vendor_only = sorted(set(vendor_map) - set(ours))
-
-    return matches, mismatches, our_only, vendor_only, unmapped
+        (matches if v == our_pin else mismatches).append(tok if v == our_pin else (tok, our_pin, v))
+    return matches, mismatches, sorted(set(ours) - set(vendor_map)), sorted(set(vendor_map) - set(ours)), unmapped
 
 
-# ----------------------------------------------------------------------------
-# Import — write a fresh config/boards/<id>.yml from a Digilent XDC
-# ----------------------------------------------------------------------------
-
-def import_xdc_as(xdc_path, board_id, family, part, producer="Xilinx"):
-    """Generate a config/boards/<id>.yml from a Digilent XDC. Groups bus
-    members into list pins; non-bus ports become single-pin banks.
-    """
-    tuples = parse_digilent_xdc(xdc_path)
-
-    # Same Pmod normalisation as --check: detect 0-based vs 1-based per file.
-    pmod_zero_based = any(
-        idx == 0 and re.match(r"^J[A-E]$", port.upper())
-        for port, idx, _, _ in tuples
-    )
-
-    # Collect: token → pin. Then re-bin into pinBanks structure.
-    flat = {}
-    iostd = "LVCMOS33"
-    for port, idx, pin, std in tuples:
-        token = map_digilent_port(port, idx, pmod_zero_based=pmod_zero_based)
-        if token is None:
-            continue
-        flat[token] = pin
-        iostd = std        # last seen wins; OK because Xilinx boards usually all-LVCMOS33
-
-    # Rebuild banks. Token shapes:
-    #   "clk"                            → simple string
-    #   "onboard_leds[3]"                → list per index
-    #   "onboard_7seg.anodes[5]"         → nested dict[list]
-    #   "onboard_uart.tx"                → nested dict[str]
-    banks = {}
-    for tok, pin in sorted(flat.items()):
-        m = re.match(r"^([a-z_][a-z0-9_]*)(?:\.([a-z_][a-z0-9_]*))?(?:\[(\d+)\])?$", tok)
-        if not m:
-            continue
-        bank, sub, idx = m.group(1), m.group(2), m.group(3)
-        if sub is None and idx is None:
-            banks.setdefault(bank, {})["__pin"] = pin
-        elif sub is None and idx is not None:
-            banks.setdefault(bank, {}).setdefault("__list", {})[int(idx)] = pin
-        elif sub is not None and idx is None:
-            banks.setdefault(bank, {}).setdefault("__sub", {})[sub] = pin
-        else:
-            banks.setdefault(bank, {}).setdefault("__sub_list", {}).setdefault(sub, {})[int(idx)] = pin
-
-    # Materialize into the on-disk YAML form.
-    out = {}
-    for bank, body in banks.items():
-        block = {}
-        if "__pin" in body:
-            block["pins"] = body["__pin"]
-        if "__list" in body:
-            mx = max(body["__list"].keys()) + 1
-            block["pins"] = [body["__list"].get(i) for i in range(mx)]
-        if "__sub" in body or "__sub_list" in body:
-            inner = {}
-            for sub, p in (body.get("__sub") or {}).items():
-                inner[sub] = p
-            for sub, items in (body.get("__sub_list") or {}).items():
-                mx = max(items.keys()) + 1
-                inner[sub] = [items.get(i) for i in range(mx)]
-            block["pins"] = inner
-        out[bank] = block
-
-    # Render YAML with comments.
-    lines = []
-    lines.append("# {} pin map.".format(board_id))
-    lines.append("#")
-    lines.append("# Source: Digilent {} (github.com/Digilent/digilent-xdc, MIT-licensed)".format(os.path.basename(xdc_path)))
-    lines.append("# Imported via tools/verify_pinmap_against_vendor.py.")
-    lines.append("")
-    lines.append("Board:")
-    lines.append("  id: {}".format(board_id))
-    lines.append("  fpga:")
-    lines.append("    producer: {}".format(producer))
-    lines.append("    family: {}".format(family))
-    lines.append("    part: {}".format(part))
-    lines.append("  defaults:")
-    lines.append("    iostandard: {}".format(iostd))
-    lines.append("")
-    lines.append("  pinBanks:")
-    for bank in sorted(out.keys()):
-        block = out[bank]
-        pins = block["pins"]
-        if isinstance(pins, str):
-            lines.append('    {}: {{ pins: "{}" }}'.format(bank, pins))
-        elif isinstance(pins, list):
-            lines.append("    {}:".format(bank))
-            elems = ['"{}"'.format(p) if p is not None else "null" for p in pins]
-            lines.append("      pins: [" + ", ".join(elems) + "]")
-        elif isinstance(pins, dict):
-            lines.append("    {}:".format(bank))
-            lines.append("      pins:")
-            for sub, val in pins.items():
-                if isinstance(val, str):
-                    lines.append('        {}: "{}"'.format(sub, val))
-                elif isinstance(val, list):
-                    elems = ['"{}"'.format(p) if p is not None else "null" for p in val]
-                    lines.append("        {}: [{}]".format(sub, ", ".join(elems)))
-    lines.append("")
-    return "\n".join(lines)
+def check_board(board_id):
+    """compare() of a board's banks with its Digilent XDC document (fetched
+    into the cache when it is not there yet)."""
+    board = config_init.read_board(board_id)
+    if board is None:
+        raise board_sources.SourcesError("no board '{}'".format(board_id))
+    doc = xdc_document(board)
+    if doc is None:
+        raise board_sources.SourcesError("board '{}' lists no Digilent XDC among its documents".format(board_id))
+    got = board_sources.fetch(board_id, doc)
+    with open(got["path"], encoding="utf-8", errors="replace") as f:
+        tuples = parse_digilent_xdc_text(f.read())
+    return compare(pins_of(board), tuples)
 
 
 # ----------------------------------------------------------------------------
 # CLI
 # ----------------------------------------------------------------------------
 
-def cmd_check(args):
+def main(argv=None):
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("boards", nargs="*", help="board ids (default: every board with a Digilent XDC document)")
+    p.add_argument("-v", "--verbose", action="store_true", help="list the vendor-only, our-only and unmapped ports")
+    args = p.parse_args(argv)
+    with_xdc = boards_with_xdc()
+    ids = args.boards or sorted(with_xdc)
     rc = 0
-    only = args.only
-    for board_id, xdc_name in sorted(DIGILENT_BOARDS.items()):
-        if only and board_id not in only:
+    for board_id in ids:
+        try:
+            matches, mism, our_only, vendor_only, unmapped = check_board(board_id)
+        except board_sources.SourcesError as exc:
+            print("[{}] {}".format(board_id, exc))
+            rc = 2
             continue
-        xdc_path = os.path.join(DIGILENT_DIR, xdc_name)
-        if not os.path.exists(xdc_path):
-            print("[{}] missing vendor XDC at {}".format(board_id, xdc_path))
-            continue
-        result = check_one(board_id, xdc_path, verbose=args.verbose)
-        if result is None:
-            print("[{}] no local pinmap (consider --import)".format(board_id))
-            continue
-        matches, mism, our_only, vendor_only, unmapped = result
         status = "OK" if not mism else "MISMATCH"
         print("[{}] {} — {} match, {} mismatch, {} our-only, {} vendor-only, {} unmapped"
               .format(board_id, status, len(matches), len(mism), len(our_only), len(vendor_only), len(unmapped)))
@@ -450,62 +322,12 @@ def cmd_check(args):
                 print("  WRONG  {}: ours={}  vendor={}".format(tok, our_pin, v_pin))
         if args.verbose:
             for tok in vendor_only:
-                print("  +VENDOR {}: {}".format(tok, "(see XDC)"))
+                print("  +VENDOR {}".format(tok))
             for tok in our_only:
                 print("  -OURS   {}".format(tok))
             for port, idx, pin in unmapped:
-                ix = "[{}]".format(idx) if idx is not None else ""
-                print("  ?UNMAP  {}{} → {}".format(port, ix, pin))
+                print("  ?UNMAP  {}{} -> {}".format(port, "[{}]".format(idx) if idx is not None else "", pin))
     return rc
-
-
-def cmd_import(args):
-    xdc_name = DIGILENT_BOARDS.get(args.import_)
-    if xdc_name is None:
-        print("Unknown Digilent board id '{}'. Supported: {}"
-              .format(args.import_, ", ".join(sorted(DIGILENT_BOARDS))))
-        return 2
-    xdc_path = os.path.join(DIGILENT_DIR, xdc_name)
-    if not os.path.exists(xdc_path):
-        print("Vendor file not found: {}".format(xdc_path))
-        return 2
-    target_id = args.as_ or args.import_
-    out_path = os.path.join(BOARDS_DIR, target_id + ".yml")
-    if os.path.exists(out_path) and not args.overwrite:
-        print("Refusing to overwrite {} (use --overwrite)".format(out_path))
-        return 2
-    text = import_xdc_as(xdc_path, target_id, args.family, args.part)
-    with open(out_path, "w") as f:
-        f.write(text)
-    print("Wrote {}".format(out_path))
-    return 0
-
-
-def main(argv=None):
-    p = argparse.ArgumentParser(description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--source", choices=["digilent"], default="digilent")
-    g = p.add_mutually_exclusive_group(required=True)
-    g.add_argument("--check", action="store_true", help="diff our YAML against vendor file(s)")
-    g.add_argument("--import", dest="import_",
-                   help="generate a fresh config/boards/<id>.yml from the vendor file")
-    p.add_argument("--only", nargs="*", help="restrict --check to these board ids")
-    p.add_argument("--as", dest="as_", help="target board id for --import (defaults to vendor id)")
-    p.add_argument("--family", help="family to write into the imported YAML (e.g. 'Artix 7')")
-    p.add_argument("--part",   help="part to write into the imported YAML (e.g. 'XC7A35TICSG324-1L')")
-    p.add_argument("--overwrite", action="store_true",
-                   help="allow --import to overwrite an existing file")
-    p.add_argument("-v", "--verbose", action="store_true")
-    args = p.parse_args(argv)
-
-    if args.check:
-        return cmd_check(args)
-    if args.import_:
-        if not args.family or not args.part:
-            print("--import requires --family and --part", file=sys.stderr)
-            return 2
-        return cmd_import(args)
-    return 2
 
 
 if __name__ == "__main__":

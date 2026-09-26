@@ -88,7 +88,6 @@ def _catalogue():
             "Id": "som", "Name": "A SoM", "Producer": "maker", "Type": "som", "Connector": "b2b_custom_maker",
             "Chip": "CHIP-1", "Features": ["led_feature"], "Devices": ["led_device"], "Status": "active",
             "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
-        "vendor_constraints.yml": {"VendorConstraints": {"maker": {"board": "Board-Master.xdc"}}},
     }
 
 
