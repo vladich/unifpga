@@ -40,7 +40,7 @@ module audio_noise(
   logic [22:0] noise_shiftreg_next;
   logic [7:0] noise_output;
 
-  localparam NOISE_SHREG_INIT = 22'h7FFFF8;
+  localparam logic [22:0] NOISE_SHREG_INIT = 23'h7FFFF8;
 
   // Shift register left
   // LSB is (bit22 ^ bit17)

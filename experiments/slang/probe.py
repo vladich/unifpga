@@ -14,11 +14,20 @@ import sys
 
 
 SCHEMA = "unifpga.slang-probe/v1"
+SCHEMA_V2 = "unifpga.slang-probe/v2"
+ELABORATION_SCHEMA = "unifpga.slang-elaboration/v1"
 SLANG_VERSION = "11.0.0"
 MAX_FILES = 256
 MAX_FILE_BYTES = 4 * 1024 * 1024
 MAX_TOTAL_BYTES = 32 * 1024 * 1024
+MAX_GRAPH_SYMBOLS = 100000
+MAX_GRAPH_INSTANCES = 4096
+MAX_INSTANCE_ITEMS = 1024
+MAX_GRAPH_ITEMS = 8192
+MAX_GRAPH_BYTES = 8 * 1024 * 1024
+MAX_FACT_TEXT_BYTES = 4096
 _DEFINE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]*(?:=[^\r\n]*)?$")
+_OVERRIDE = re.compile(r"^([A-Za-z_][A-Za-z0-9_$]*)=(.+)$")
 
 
 class ProbeError(ValueError):
@@ -67,10 +76,14 @@ def load_request(root, request_path):
         request = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_fields)
     except (UnicodeError, json.JSONDecodeError) as exc:
         raise ProbeError("invalid UTF-8 JSON request: {}".format(exc)) from exc
-    if not isinstance(request, dict) or set(request) != {
-            "schema", "sources", "include_dirs", "defines", "top", "compilation_unit"}:
-        raise ProbeError("request fields do not match {}".format(SCHEMA))
-    if request["schema"] != SCHEMA or request["compilation_unit"] not in ("separate", "single"):
+    common_fields = {"schema", "sources", "include_dirs", "defines", "top", "compilation_unit"}
+    if not isinstance(request, dict) or request.get("schema") not in (SCHEMA, SCHEMA_V2):
+        raise ProbeError("unsupported schema or compilation-unit policy")
+    expected_fields = common_fields if request["schema"] == SCHEMA else \
+        common_fields | {"top_parameter_overrides"}
+    if set(request) != expected_fields:
+        raise ProbeError("request fields do not match a supported schema")
+    if request["compilation_unit"] not in ("separate", "single"):
         raise ProbeError("unsupported schema or compilation-unit policy")
     sources = request["sources"]
     includes = request["include_dirs"]
@@ -88,6 +101,17 @@ def load_request(root, request_path):
     if any(not isinstance(item, str) or len(item) > 1024 or not _DEFINE.fullmatch(item)
            for item in defines) or len(set(item.split("=", 1)[0] for item in defines)) != len(defines):
         raise ProbeError("invalid or duplicate macro definition")
+    overrides = request.get("top_parameter_overrides", [])
+    if not isinstance(overrides, list) or len(overrides) > MAX_FILES:
+        raise ProbeError("invalid top parameter overrides")
+    names = []
+    for item in overrides:
+        match = _OVERRIDE.fullmatch(item) if isinstance(item, str) and len(item) <= 1024 else None
+        if not match or any(ord(ch) < 32 for ch in item):
+            raise ProbeError("invalid top parameter override")
+        names.append(match.group(1))
+    if len(set(names)) != len(names):
+        raise ProbeError("duplicate top parameter override")
     return request, source_paths, include_paths, hashlib.sha256(raw).hexdigest()
 
 
@@ -120,20 +144,154 @@ def _inventory(root, paths):
 
 
 def _diagnostics(root, manager, diagnostics):
-    rows = []
-    for diag in diagnostics:
-        location = None
-        try:
-            path = pathlib.Path(manager.getFullPath(diag.location.buffer)).resolve()
-            if path.is_file() and path.is_relative_to(root):
-                location = {"path": path.relative_to(root).as_posix(),
-                            "line": manager.getLineNumber(diag.location),
-                            "column": manager.getColumnNumber(diag.location)}
-        except (OSError, RuntimeError, ValueError):
-            pass
-        rows.append({"code": str(diag.code), "severity": "error" if diag.isError() else "warning",
-                     "location": location})
-    return rows
+    return [{"code": str(diag.code), "severity": "error" if diag.isError() else "warning",
+             "location": _location(root, manager, diag.location)} for diag in diagnostics]
+
+
+def _location(root, manager, location):
+    """A source coordinate is useful only when it names an admitted file."""
+    try:
+        path = pathlib.Path(manager.getFullPath(location.buffer)).resolve()
+        if path.is_file() and path.is_relative_to(root):
+            return {"path": path.relative_to(root).as_posix(),
+                    "line": manager.getLineNumber(location),
+                    "column": manager.getColumnNumber(location)}
+    except (OSError, RuntimeError, ValueError):
+        pass
+    return None
+
+
+def _range(root, manager, source_range):
+    if source_range is None:
+        return None
+    start = _location(root, manager, source_range.start)
+    end = _location(root, manager, source_range.end)
+    if start is None or end is None or start["path"] != end["path"]:
+        return None
+    return {"path": start["path"],
+            "start": {"line": start["line"], "column": start["column"]},
+            "end": {"line": end["line"], "column": end["column"]}}
+
+
+def _elaboration(root, manager, top, ast, top_overrides):
+    """Project bounded elaborated facts, without serializing Slang's AST.
+
+    Widths and values are facts for this exact macro/parameter selection. A
+    connection expression is only a possible direct net edge when Slang says
+    it is a named value or assignment; other expressions remain unresolved.
+    """
+    instances = []
+    findings = []
+    visited_symbols = 0
+    projected_items = 0
+
+    def fact_text(value):
+        result = str(value)
+        if len(result.encode("utf-8")) > MAX_FACT_TEXT_BYTES:
+            raise ProbeError("elaborated fact exceeds text limit")
+        return result
+
+    def add_finding(code, symbol):
+        if len(findings) >= MAX_GRAPH_ITEMS:
+            raise ProbeError("elaborated graph exceeds finding limit")
+        findings.append({"code": code, "symbol_kind": fact_text(symbol.kind).split(".")[-1],
+                         "location": _location(root, manager, symbol.location)})
+
+    def port_fact(port):
+        row = {"name": fact_text(port.name), "symbol_kind": fact_text(port.kind).split(".")[-1],
+               "location": _location(root, manager, port.location),
+               "direction": None, "type": None, "evaluated_bit_width": None,
+               "signed": None, "four_state": None,
+               "interface_definition": None, "modport": None}
+        if isinstance(port, ast.PortSymbol):
+            row["direction"] = {"In": "input", "Out": "output", "InOut": "inout",
+                                "Ref": "ref"}.get(port.direction.name, port.direction.name.lower())
+            dtype = port.type
+            row["type"] = fact_text(dtype)
+            row["evaluated_bit_width"] = int(dtype.bitWidth) if dtype.isFixedSize else None
+            row["signed"] = bool(dtype.isSigned)
+            row["four_state"] = bool(dtype.isFourState)
+        elif isinstance(port, ast.InterfacePortSymbol):
+            row["interface_definition"] = fact_text(port.interfaceDef.name) if port.interfaceDef else None
+            row["modport"] = fact_text(port.modport) if port.modport else None
+        else:
+            add_finding("unprojected_port_kind", port)
+        return row
+
+    def parameter_fact(parameter, requested_override):
+        is_type = isinstance(parameter, ast.TypeParameterSymbol)
+        value = None if is_type else parameter.value
+        origin = "request" if requested_override else (
+            "instantiation" if parameter.isOverridden else "default")
+        return {"name": fact_text(parameter.name), "kind": "type" if is_type else "value",
+                "type": fact_text(parameter.targetType.type if is_type else parameter.type),
+                "evaluated_value": None if is_type else fact_text(value),
+                "has_unknown_bits": None if is_type else bool(value.hasUnknown()),
+                "is_local": bool(parameter.isLocalParam),
+                "is_overridden": origin != "default", "override_origin": origin,
+                "location": _location(root, manager, parameter.location)}
+
+    def connection_fact(connection):
+        expression = connection.expression
+        kind = fact_text(expression.kind).split(".")[-1] if expression else None
+        reference = None
+        if expression and kind in ("NamedValue", "Assignment"):
+            symbol = expression.getSymbolReference()
+            if symbol is not None:
+                reference = fact_text(symbol.hierarchicalPath)
+        interface, modport = connection.ifaceConn
+        return {"port": fact_text(connection.port.name), "expression_kind": kind,
+                "source_range": _range(root, manager, expression.sourceRange) if expression else None,
+                "direct_symbol_reference": reference,
+                "interface_instance": fact_text(interface.hierarchicalPath) if interface else None,
+                "modport": fact_text(modport.name) if modport else None}
+
+    def visit(symbol, parent_path, depth):
+        nonlocal visited_symbols, projected_items
+        visited_symbols += 1
+        if visited_symbols > MAX_GRAPH_SYMBOLS or depth > 64:
+            raise ProbeError("elaborated graph exceeds symbol or depth limit")
+        if isinstance(symbol, ast.InstanceSymbol):
+            if len(instances) >= MAX_GRAPH_INSTANCES:
+                raise ProbeError("elaborated graph exceeds instance limit")
+            body = symbol.body
+            ports, parameters, connections = body.portList, body.parameters, symbol.portConnections
+            if max(len(ports), len(parameters), len(connections)) > MAX_INSTANCE_ITEMS:
+                raise ProbeError("elaborated instance exceeds port or parameter limit")
+            projected_items += len(ports) + len(parameters) + len(connections)
+            if projected_items > MAX_GRAPH_ITEMS:
+                raise ProbeError("elaborated graph exceeds projected item limit")
+            path = fact_text(symbol.hierarchicalPath)
+            name = symbol.name or (symbol.arrayName + "".join(
+                "[{}]".format(index) for index in symbol.arrayPath))
+            instances.append({"path": path, "parent_instance": parent_path,
+                              "name": fact_text(name), "definition": fact_text(body.definition.name),
+                              "kind": "interface" if symbol.isInterface else
+                                      "module" if symbol.isModule else "other",
+                              "location": _location(root, manager, symbol.location),
+                              "ports": [port_fact(port) for port in ports],
+                              "parameters": [parameter_fact(p, parent_path is None and
+                                                             str(p.name) in top_overrides)
+                                             for p in parameters],
+                              "connections": [connection_fact(c) for c in connections]})
+            for child in body:
+                visit(child, path, depth + 1)
+        elif isinstance(symbol, (ast.GenerateBlockSymbol, ast.GenerateBlockArraySymbol,
+                                 ast.InstanceArraySymbol)):
+            for child in symbol:
+                visit(child, parent_path, depth + 1)
+        elif symbol.kind.name.endswith("Instance"):
+            add_finding("unprojected_instance_kind", symbol)
+
+    visit(top, None, 0)
+    result = {"schema": ELABORATION_SCHEMA,
+            "scope": "elaborated-interface-and-instance-facts",
+            "projection_status": "partial" if findings else "complete",
+            "semantic_completeness": "unproven",
+            "instances": instances, "findings": findings}
+    if len(json.dumps(result, separators=(",", ":")).encode("utf-8")) > MAX_GRAPH_BYTES:
+        raise ProbeError("elaborated graph exceeds output byte limit")
+    return result
 
 
 def run(root, request_path):
@@ -166,6 +324,7 @@ def run(root, request_path):
         trees = [syntax.SyntaxTree.fromFile(str(path), manager, options) for path in sources]
     compilation_options = ast.CompilationOptions()
     compilation_options.topModules = {request["top"]}
+    compilation_options.paramOverrides = request.get("top_parameter_overrides", [])
     compilation_options.maxInstanceDepth = 64
     compilation_options.maxGenerateSteps = 100000
     compilation_options.maxConstexprSteps = 100000
@@ -189,12 +348,26 @@ def run(root, request_path):
         raise ProbeError("source changed during frontend run")
     tops = sorted(str(instance.name) for instance in root_symbol.topInstances)
     diagnostics = parse_diagnostics + semantic_diagnostics
-    return {"schema": SCHEMA, "pyslang_version": version,
+    accepted = request["top"] in tops and not any(row["severity"] == "error" for row in diagnostics)
+    elaboration = None
+    if accepted:
+        top_symbol = next(instance for instance in root_symbol.topInstances
+                          if str(instance.name) == request["top"])
+        allowed = {str(parameter.name) for parameter in top_symbol.body.parameters
+                   if not parameter.isLocalParam}
+        top_overrides = [item.split("=", 1)[0]
+                         for item in request.get("top_parameter_overrides", [])]
+        unknown = next((name for name in top_overrides if name not in allowed), None)
+        if unknown is not None:
+            raise ProbeError("top parameter override is not a parameter of {}: {}".format(
+                request["top"], unknown))
+        elaboration = _elaboration(root, manager, top_symbol, ast, set(top_overrides))
+    return {"schema": request["schema"], "pyslang_version": version,
             "request_sha256": request_digest, "compilation_unit": request["compilation_unit"],
             "top": request["top"], "elaborated_tops": tops,
             "sources": source_before, "read_files": files,
             "parse_diagnostics": parse_diagnostics, "semantic_diagnostics": semantic_diagnostics,
-            "accepted": request["top"] in tops and not any(row["severity"] == "error" for row in diagnostics)}
+            "accepted": accepted, "elaboration": elaboration}
 
 
 def main(argv=None):

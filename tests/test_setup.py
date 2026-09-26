@@ -397,6 +397,21 @@ def test_design_ports_follow_the_design_top_interface():
     assert ports["gpio"]["width"] == 42 and ports["led"]["width"] == 8
 
 
+def test_pins_the_fpga_drives_itself_are_sources_not_gaps():
+    """A pin the build drives from the clock tree, a level or the reset (a
+    peripheral's `pin.X: clock.pixel / const.0 / $bl`) is no design bit: the
+    trace names its source so the editor draws it driven, not dangling."""
+    ev = studio.evaluate(su.read_setup("tang_mega_138k_lcd_480_272_tm1638"))
+    lcd = next(a for a in ev["trace"]["attaches"] if a["peripheral"] == "lcd_480_272")
+    assert lcd["links"]["ck"] == [] and lcd["sources"]["ck"]["kind"] == "clock"
+    assert lcd["sources"]["ck"]["text"] == "the pixel clock, 8 MHz from the PLL"
+    assert set(lcd["sources"]) == {"ck"}                    # r, g, b, hs, vs, de carry design bits
+    ev = studio.evaluate(su.read_setup("de10_lite"))
+    ties = [a["sources"]["pin"] for a in ev["trace"]["attaches"] if a["peripheral"] == "pin_tie"]
+    assert {t["text"] for t in ties} == {"tied to 0", "tied to 1", "the design's reset, inverted"}
+    assert {t["kind"] for t in ties} == {"tied", "reset"}
+
+
 def test_edges_connect_design_bits_to_pins():
     r = config_init.resolve_configuration("arty_a7_pmod_mic3")
     edges = trace.trace(r)["edges"]

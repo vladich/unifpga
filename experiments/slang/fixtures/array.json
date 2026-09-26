@@ -1,0 +1,8 @@
+{
+  "schema": "unifpga.slang-probe/v1",
+  "sources": ["array.sv"],
+  "include_dirs": [],
+  "defines": [],
+  "top": "array_top",
+  "compilation_unit": "separate"
+}
