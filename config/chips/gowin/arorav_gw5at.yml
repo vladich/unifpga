@@ -1,11 +1,13 @@
 # Gowin / AroraV/GW5AT — chip registry
 # GW5A with hard RISC-V core.
 
-Producer: Gowin
-Family: AroraV/GW5AT
-Description: GW5A with hard RISC-V core.
-DefaultToolchains:
-  - gowin_standard[*]
-Chips:
-  - Id: GW5AT-LV138PG484AC1/I0
-  - Id: GW5AT-LV60PG484AC1/I0
+Family:
+  id: arorav_gw5at
+  producer: gowin_semi
+  name: AroraV/GW5AT
+  description: GW5A with hard RISC-V core.
+  default_toolchains:
+    - gowin_standard[*]
+  chips:
+    - id: GW5AT-LV138PG484AC1/I0
+    - id: GW5AT-LV60PG484AC1/I0

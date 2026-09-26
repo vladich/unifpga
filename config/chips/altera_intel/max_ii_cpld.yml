@@ -1,12 +1,14 @@
 # Altera (Intel) / MAX II CPLD — chip registry
 # Smaller flash CPLD. Quartus II.
 
-Producer: Altera (Intel)
-Family: MAX II CPLD
-Description: Smaller flash CPLD. Quartus II.
-DefaultToolchains:
-  - quartus2[*]
-Chips:
-  - Id: 5M2210ZF256C4N
-  - Id: EPM570T100C5
-  - Id: 5M570ZF256C5N
+Family:
+  id: max_ii_cpld
+  producer: intel_altera
+  name: MAX II CPLD
+  description: Smaller flash CPLD. Quartus II.
+  default_toolchains:
+    - quartus2[*]
+  chips:
+    - id: 5M2210ZF256C4N
+    - id: EPM570T100C5
+    - id: 5M570ZF256C5N

@@ -1,11 +1,13 @@
 # Gowin / AroraV/GW5AST — chip registry
 # GW5A with safety/security features.
 
-Producer: Gowin
-Family: AroraV/GW5AST
-Description: GW5A with safety/security features.
-DefaultToolchains:
-  - gowin_standard[*]
-Chips:
-  - Id: GW5AST-LV138FPG676AES
-  - Id: GW5AST-LV138PG484AC1/I0
+Family:
+  id: arorav_gw5ast
+  producer: gowin_semi
+  name: AroraV/GW5AST
+  description: GW5A with safety/security features.
+  default_toolchains:
+    - gowin_standard[*]
+  chips:
+    - id: GW5AST-LV138FPG676AES
+    - id: GW5AST-LV138PG484AC1/I0

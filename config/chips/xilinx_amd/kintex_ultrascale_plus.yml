@@ -1,16 +1,18 @@
 # Xilinx (AMD) / Kintex Ultrascale+ — chip registry
 # 16 nm Kintex follow-on. Vivado.
 
-Producer: Xilinx (AMD)
-Family: Kintex Ultrascale+
-Description: 16 nm Kintex follow-on. Vivado.
-DefaultToolchains:
-  - vivado[*]
-Chips:
-  - Id: XCKU11P-2FFVE1517E
-  - Id: XCKU15P-2FFVE1760E
-  - Id: XCKU5P-2FFVB676E
-  - Id: XCKU3P-2FFVB676I
-  - Id: XCKU15P-2FFVE1517I-CIV
-  - Id: XCKU15P-2FFVE1517I
-  - Id: XCKU5P-2FFVB676I
+Family:
+  id: kintex_ultrascale_plus
+  producer: xilinx_amd
+  name: Kintex Ultrascale+
+  description: 16 nm Kintex follow-on. Vivado.
+  default_toolchains:
+    - vivado[*]
+  chips:
+    - id: XCKU11P-2FFVE1517E
+    - id: XCKU15P-2FFVE1760E
+    - id: XCKU5P-2FFVB676E
+    - id: XCKU3P-2FFVB676I
+    - id: XCKU15P-2FFVE1517I-CIV
+    - id: XCKU15P-2FFVE1517I
+    - id: XCKU5P-2FFVB676I

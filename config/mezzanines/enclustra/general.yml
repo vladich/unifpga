@@ -1,300 +1,299 @@
 # enclustra / general - mezzanines, SoMs, piggyback boards
 
-Producer: enclustra
 Mezzanines:
-  - Id: enclustra_mars_zx2_som
-    Name: "Enclustra Mars ZX2 SoM (SoDIMM)"
-    Producer: enclustra
-    Type: som
-    Connector: sodimm_ddr3_200pin
-    Chip: XC7Z020-2CLG400I
-    Features:
+  - id: enclustra_mars_zx2_som
+    name: "Enclustra Mars ZX2 SoM (SoDIMM)"
+    producer: enclustra
+    type: som
+    connector: sodimm_ddr3_200pin
+    chip: XC7Z020-2CLG400I
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mars-zx2/"
-    Status: active
-    DefaultCarrier: enclustra_mars_eb1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mars-zx2/"
+    status: active
+    default_carrier: enclustra_mars_eb1
+    compatible_boards:
       - enclustra_mars_eb1
       - enclustra_mars_pe1
-  - Id: enclustra_mars_zx3_som
-    Name: "Enclustra Mars ZX3 SoM (SoDIMM)"
-    Producer: enclustra
-    Type: som
-    Connector: sodimm_ddr3_200pin
-    Chip: XC7Z020-2CLG484I
-    Features:
+  - id: enclustra_mars_zx3_som
+    name: "Enclustra Mars ZX3 SoM (SoDIMM)"
+    producer: enclustra
+    type: som
+    connector: sodimm_ddr3_200pin
+    chip: XC7Z020-2CLG484I
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mars-zx3/"
-    Status: active
-    DefaultCarrier: enclustra_mars_eb1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mars-zx3/"
+    status: active
+    default_carrier: enclustra_mars_eb1
+    compatible_boards:
       - enclustra_mars_eb1
       - enclustra_mars_pe1
-  - Id: enclustra_mars_mx2_som
-    Name: "Enclustra Mars MX2 SoM (Artix-7 SoDIMM)"
-    Producer: enclustra
-    Type: som
-    Connector: sodimm_ddr3_200pin
-    Chip: XC7A200T-2FBG484I
-    Features:
+  - id: enclustra_mars_mx2_som
+    name: "Enclustra Mars MX2 SoM (Artix-7 SoDIMM)"
+    producer: enclustra
+    type: som
+    connector: sodimm_ddr3_200pin
+    chip: XC7A200T-2FBG484I
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
-    Status: eol
-    DefaultCarrier: enclustra_mars_eb1
-    CompatibleBoards:
+    status: eol
+    default_carrier: enclustra_mars_eb1
+    compatible_boards:
       - enclustra_mars_eb1
       - enclustra_mars_pe1
-  - Id: enclustra_mars_pm3_som
-    Name: "Enclustra Mars PM3 SoM (Cyclone V GX SoDIMM)"
-    Producer: enclustra
-    Type: carrier
-    Connector: sodimm_ddr3_200pin
-    Chip: 5CGXFC5C6F23C7N
-    Features:
+  - id: enclustra_mars_pm3_som
+    name: "Enclustra Mars PM3 SoM (Cyclone V GX SoDIMM)"
+    producer: enclustra
+    type: carrier
+    connector: sodimm_ddr3_200pin
+    chip: 5CGXFC5C6F23C7N
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
-    Status: eol
-    DefaultCarrier: enclustra_mars_eb1
-    CompatibleBoards:
+    status: eol
+    default_carrier: enclustra_mars_eb1
+    compatible_boards:
       - enclustra_mars_eb1
-  - Id: enclustra_mars_xu3_som
-    Name: "Enclustra Mars XU3 SoM (Zynq UltraScale+ SoDIMM)"
-    Producer: enclustra
-    Type: som
-    Connector: sodimm_ddr4_260pin
-    Chip: XCZU3EG-2SBVA484I
-    Features:
+  - id: enclustra_mars_xu3_som
+    name: "Enclustra Mars XU3 SoM (Zynq UltraScale+ SoDIMM)"
+    producer: enclustra
+    type: som
+    connector: sodimm_ddr4_260pin
+    chip: XCZU3EG-2SBVA484I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - marvell_88e1512
       - emmc_chip_generic
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mars-xu3/"
-    Status: active
-    DefaultCarrier: enclustra_mars_eb1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mars-xu3/"
+    status: active
+    default_carrier: enclustra_mars_eb1
+    compatible_boards:
       - enclustra_mars_eb1
       - enclustra_mars_pe1
-  - Id: enclustra_mars_ma3_som
-    Name: "Enclustra Mars MA3 SoM (PolarFire SoC SoDIMM)"
-    Producer: enclustra
-    Type: som
-    Connector: sodimm_ddr4_260pin
-    Chip: MPFS250T-FCVG484E
-    Features:
+  - id: enclustra_mars_ma3_som
+    name: "Enclustra Mars MA3 SoM (PolarFire SoC SoDIMM)"
+    producer: enclustra
+    type: som
+    connector: sodimm_ddr4_260pin
+    chip: MPFS250T-FCVG484E
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - marvell_88e1512
       - emmc_chip_generic
-    Status: eol
-    DefaultCarrier: enclustra_mars_eb1
-    CompatibleBoards:
+    status: eol
+    default_carrier: enclustra_mars_eb1
+    compatible_boards:
       - enclustra_mars_eb1
-  - Id: enclustra_mercury_plus_xu1_som
-    Name: "Enclustra Mercury+ XU1 ZU2EG SoM"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XCZU2EG-1SFVC784I
-    Features:
+  - id: enclustra_mercury_plus_xu1_som
+    name: "Enclustra Mercury+ XU1 ZU2EG SoM"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XCZU2EG-1SFVC784I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - marvell_88e1512
       - microchip_usb3343
       - emmc_chip_generic
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu1/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu1/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1
       - enclustra_mercury_plus_pe3
-  - Id: enclustra_mercury_plus_xu5_som
-    Name: "Mercury XU5 (not Mercury+), two Hirose FX10 connectors"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XCZU5EV-1SFVC784I
-    Features:
+  - id: enclustra_mercury_plus_xu5_som
+    name: "Mercury XU5 (not Mercury+), two Hirose FX10 connectors"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XCZU5EV-1SFVC784I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - marvell_88e1512
       - microchip_usb3343
       - emmc_chip_generic
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu5/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu5/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1
       - enclustra_mercury_plus_pe3
-  - Id: enclustra_mercury_plus_xu7_som
-    Name: "Enclustra Mercury+ XU7 ZU7EV SoM"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XCZU7EV-1FFVC1156I
-    Features:
+  - id: enclustra_mercury_plus_xu7_som
+    name: "Enclustra Mercury+ XU7 ZU7EV SoM"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XCZU7EV-1FFVC1156I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - marvell_88e1512
       - microchip_usb3343
       - emmc_chip_generic
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu7/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu7/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1
       - enclustra_mercury_plus_pe3
-  - Id: enclustra_mercury_plus_xu8_som
-    Name: "Enclustra Mercury+ XU8 ZU15EG SoM"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XCZU15EG-1FFVC900I
-    Features:
+  - id: enclustra_mercury_plus_xu8_som
+    name: "Enclustra Mercury+ XU8 ZU15EG SoM"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XCZU15EG-1FFVC900I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - marvell_88e1512
       - microchip_usb3343
       - emmc_chip_generic
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu8/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu8/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1
       - enclustra_mercury_plus_pe3
-  - Id: enclustra_mercury_plus_zx1_som
-    Name: "Mercury ZX1 (not Mercury+), two Hirose FX10 connectors"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XC7Z030-2FBG676I
-    Features:
+  - id: enclustra_mercury_plus_zx1_som
+    name: "Mercury ZX1 (not Mercury+), two Hirose FX10 connectors"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XC7Z030-2FBG676I
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-zx1/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-zx1/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1
-  - Id: enclustra_mercury_plus_zx5_som
-    Name: "Enclustra Mercury+ ZX5 Zynq-7045 SoM"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XC7Z045-2FFG900I
-    Features:
+  - id: enclustra_mercury_plus_zx5_som
+    name: "Enclustra Mercury+ ZX5 Zynq-7045 SoM"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XC7Z045-2FFG900I
+    features:
       - ddr3_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
       - emmc_chip_generic
-    BoardURL: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-zx5/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/system-on-chip-modules/mercury-zx5/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1
-  - Id: enclustra_mercury_kx1_som
-    Name: "Enclustra Mercury KX1 Kintex-7 K160T SoM"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XC7K160T-2FFG676I
-    Features:
+  - id: enclustra_mercury_kx1_som
+    name: "Enclustra Mercury KX1 Kintex-7 K160T SoM"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XC7K160T-2FFG676I
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
-    BoardURL: "https://www.enclustra.com/en/products/fpga-modules/mercury-kx1/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/fpga-modules/mercury-kx1/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1
-  - Id: enclustra_mercury_kx2_som
-    Name: "Enclustra Mercury KX2 Kintex-7 K325T SoM"
-    Producer: enclustra
-    Type: som
-    Connector: hirose_fx10
-    Chip: XC7K325T-2FFG900I
-    Features:
+  - id: enclustra_mercury_kx2_som
+    name: "Enclustra Mercury KX2 Kintex-7 K325T SoM"
+    producer: enclustra
+    type: som
+    connector: hirose_fx10
+    chip: XC7K325T-2FFG900I
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - marvell_88e1512
-    BoardURL: "https://www.enclustra.com/en/products/fpga-modules/mercury-kx2/"
-    Status: active
-    DefaultCarrier: enclustra_mercury_plus_st1
-    CompatibleBoards:
+    url: "https://www.enclustra.com/en/products/fpga-modules/mercury-kx2/"
+    status: active
+    default_carrier: enclustra_mercury_plus_st1
+    compatible_boards:
       - enclustra_mercury_plus_st1
       - enclustra_mercury_plus_pe1

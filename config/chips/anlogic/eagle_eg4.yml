@@ -1,10 +1,12 @@
 # Anlogic / Eagle EG4 — chip registry
 # Anlogic Eagle FPGA. TD (Tang Dynasty).
 
-Producer: Anlogic
-Family: Eagle EG4
-Description: Anlogic Eagle FPGA. TD (Tang Dynasty).
-DefaultToolchains:
-  - td[*]
-Chips:
-  - Id: EG4S20BG256
+Family:
+  id: eagle_eg4
+  producer: anlogic
+  name: Eagle EG4
+  description: Anlogic Eagle FPGA. TD (Tang Dynasty).
+  default_toolchains:
+    - td[*]
+  chips:
+    - id: EG4S20BG256

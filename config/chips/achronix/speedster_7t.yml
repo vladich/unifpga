@@ -1,11 +1,13 @@
 # Achronix / Speedster 7t — chip registry
 # TSMC 7 nm Achronix with hard MLP blocks for ML. ACE.
 
-Producer: Achronix
-Family: Speedster 7t
-Description: TSMC 7 nm Achronix with hard MLP blocks for ML. ACE.
-DefaultToolchains:
-  - ace[*]
-Chips:
-  - Id: AC7t1500
-  - Id: AC7t1500ES0
+Family:
+  id: speedster_7t
+  producer: achronix
+  name: Speedster 7t
+  description: TSMC 7 nm Achronix with hard MLP blocks for ML. ACE.
+  default_toolchains:
+    - ace[*]
+  chips:
+    - id: AC7t1500
+    - id: AC7t1500ES0

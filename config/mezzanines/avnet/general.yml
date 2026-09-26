@@ -1,168 +1,167 @@
 # avnet / general - mezzanines, SoMs, piggyback boards
 
-Producer: avnet
 Mezzanines:
-  - Id: avnet_microzed_7010_som
-    Name: "Avnet MicroZed 7010 SoM (standalone)"
-    Producer: avnet
-    Type: som
-    Connector: b2b_microheader
-    Chip: XC7Z010-1CLG400C
-    Features:
+  - id: avnet_microzed_7010_som
+    name: "Avnet MicroZed 7010 SoM (standalone)"
+    producer: avnet
+    type: som
+    connector: b2b_microheader
+    chip: XC7Z010-1CLG400C
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_10_100
       - usb_uart_bridge
-    Devices:
+    devices:
       - micron_mt41k256m16
       - cypress_s25fl128s
       - microchip_lan8710a
       - silabs_cp2104
-    BoardURL: "https://www.tria-technologies.com/product/microzed/"
-    Status: active
-    DefaultCarrier: avnet_microzed_iocc
-    CompatibleBoards:
+    url: "https://www.tria-technologies.com/product/microzed/"
+    status: active
+    default_carrier: avnet_microzed_iocc
+    compatible_boards:
       - avnet_microzed_iocc
       - avnet_microzed_fmc_cc
-  - Id: avnet_microzed_7020_som
-    Name: "Avnet MicroZed 7020 SoM (standalone)"
-    Producer: avnet
-    Type: som
-    Connector: b2b_microheader
-    Chip: XC7Z020-1CLG400C
-    Features:
+  - id: avnet_microzed_7020_som
+    name: "Avnet MicroZed 7020 SoM (standalone)"
+    producer: avnet
+    type: som
+    connector: b2b_microheader
+    chip: XC7Z020-1CLG400C
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_10_100
       - usb_uart_bridge
-    Devices:
+    devices:
       - micron_mt41k256m16
       - cypress_s25fl128s
       - microchip_lan8710a
       - silabs_cp2104
-    BoardURL: "https://www.tria-technologies.com/product/microzed/"
-    Status: active
-    DefaultCarrier: avnet_microzed_iocc
-    CompatibleBoards:
+    url: "https://www.tria-technologies.com/product/microzed/"
+    status: active
+    default_carrier: avnet_microzed_iocc
+    compatible_boards:
       - avnet_microzed_iocc
       - avnet_microzed_fmc_cc
-  - Id: avnet_picozed_7015_som
-    Name: "Avnet PicoZed 7015 SoM (standalone)"
-    Producer: avnet
-    Type: som
-    Connector: b2b_picozed_3x100
-    Chip: XC7Z015-1CLG485C
-    Features:
+  - id: avnet_picozed_7015_som
+    name: "Avnet PicoZed 7015 SoM (standalone)"
+    producer: avnet
+    type: som
+    connector: b2b_picozed_3x100
+    chip: XC7Z015-1CLG485C
+    features:
       - ddr3_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - micron_n25q256a
       - marvell_88e1512
       - emmc_chip_generic
-    BoardURL: "https://www.tria-technologies.com/product/picozed/"
-    Status: active
-    DefaultCarrier: avnet_picozed_fmc_cc_v2
-    CompatibleBoards:
+    url: "https://www.tria-technologies.com/product/picozed/"
+    status: active
+    default_carrier: avnet_picozed_fmc_cc_v2
+    compatible_boards:
       - avnet_picozed_fmc_cc_v2
-  - Id: avnet_picozed_7030_som
-    Name: "Avnet PicoZed 7030 SoM (standalone)"
-    Producer: avnet
-    Type: som
-    Connector: b2b_picozed_3x100
-    Chip: XC7Z030-1SBG485C
-    Features:
+  - id: avnet_picozed_7030_som
+    name: "Avnet PicoZed 7030 SoM (standalone)"
+    producer: avnet
+    type: som
+    connector: b2b_picozed_3x100
+    chip: XC7Z030-1SBG485C
+    features:
       - ddr3_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - micron_n25q256a
       - marvell_88e1512
       - emmc_chip_generic
-    BoardURL: "https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/picozed/"
-    Status: active
-    DefaultCarrier: avnet_picozed_fmc_cc_v2
-    CompatibleBoards:
+    url: "https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/picozed/"
+    status: active
+    default_carrier: avnet_picozed_fmc_cc_v2
+    compatible_boards:
       - avnet_picozed_fmc_cc_v2
-  - Id: avnet_ultrazed_3eg_som
-    Name: "Avnet UltraZed-EG ZU3EG SoM (AES-ZU3EG-1-SOM-G)"
-    Producer: avnet
-    Type: som
-    Connector: b2b_jx_3x100
-    Chip: XCZU3EG-1SFVA625I
-    Features:
+  - id: avnet_ultrazed_3eg_som
+    name: "Avnet UltraZed-EG ZU3EG SoM (AES-ZU3EG-1-SOM-G)"
+    producer: avnet
+    type: som
+    connector: b2b_jx_3x100
+    chip: XCZU3EG-1SFVA625I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - marvell_88e1512
       - emmc_chip_generic
-    BoardURL: "https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/ultrazed/"
-    Status: active
-    DefaultCarrier: avnet_ultrazed_eg_iocc
-    CompatibleBoards:
+    url: "https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/ultrazed/"
+    status: active
+    default_carrier: avnet_ultrazed_eg_iocc
+    compatible_boards:
       - avnet_ultrazed_eg_iocc
       - avnet_ultrazed_3eg_pcie
-  - Id: avnet_ultrazed_ev_som
-    Name: "Avnet UltraZed-EV ZU7EV SoM (AES-ZU7EV-1-SOM-G)"
-    Producer: avnet
-    Type: som
-    Connector: b2b_jx_3x100
-    Chip: XCZU7EV-1FBVB900I
-    Features:
+  - id: avnet_ultrazed_ev_som
+    name: "Avnet UltraZed-EV ZU7EV SoM (AES-ZU7EV-1-SOM-G)"
+    producer: avnet
+    type: som
+    connector: b2b_jx_3x100
+    chip: XCZU7EV-1FBVB900I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - marvell_88e1512
       - emmc_chip_generic
-    BoardURL: "https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/ultrazed/"
-    Status: active
-    DefaultCarrier: avnet_ultrazed_ev_sk
-    CompatibleBoards:
+    url: "https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/ultrazed/"
+    status: active
+    default_carrier: avnet_ultrazed_ev_sk
+    compatible_boards:
       - avnet_ultrazed_ev_sk
       - avnet_ultrazed_ev
-  - Id: avnet_fmc_imageon
-    Name: "Avnet FMC-IMAGEON HDMI I/O FMC Card"
-    Producer: avnet
-    Type: mezzanine
-    Connector: fmc_lpc
-    Features:
+  - id: avnet_fmc_imageon
+    name: "Avnet FMC-IMAGEON HDMI I/O FMC Card"
+    producer: avnet
+    type: mezzanine
+    connector: fmc_lpc
+    features:
       - hdmi_input
       - hdmi_output
-    Devices:
+    devices:
       - adi_adv7611
       - adi_adv7511
-    Status: eol
-  - Id: avnet_fmc_motorcontrol
-    Name: "Avnet FMC Motor Control FMC Card"
-    Producer: avnet
-    Type: mezzanine
-    Connector: fmc_lpc
-    Features:
+    status: eol
+  - id: avnet_fmc_motorcontrol
+    name: "Avnet FMC Motor Control FMC Card"
+    producer: avnet
+    type: mezzanine
+    connector: fmc_lpc
+    features:
       - adc_chip
       - dac_chip
       - power_monitor_i2c
-    Status: eol
-  - Id: avnet_fmc_hdmi_cam
-    Name: "Avnet HDMI Input/Output FMC + Camera"
-    Producer: avnet
-    Type: mezzanine
-    Connector: fmc_lpc
-    Features:
+    status: eol
+  - id: avnet_fmc_hdmi_cam
+    name: "Avnet HDMI Input/Output FMC + Camera"
+    producer: avnet
+    type: mezzanine
+    connector: fmc_lpc
+    features:
       - hdmi_input
       - hdmi_output
       - parallel_camera_input
-    Devices:
+    devices:
       - adi_adv7611
       - adi_adv7511
-    BoardURL: "https://www.avnet.com/fsp/opasdata/d120001/medias/docus/53/AES-FMC-HDMI-CAM-G-FMC_HDMI_CAM_HG_v0_1.pdf"
-    Status: active
+    url: "https://www.avnet.com/fsp/opasdata/d120001/medias/docus/53/AES-FMC-HDMI-CAM-G-FMC_HDMI_CAM_HG_v0_1.pdf"
+    status: active

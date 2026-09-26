@@ -1,14 +1,16 @@
 # Gowin / AroraV/GW5A — chip registry
 # 22 nm high-end Gowin (Arora V). gowin_standard.
 
-Producer: Gowin
-Family: AroraV/GW5A
-Description: 22 nm high-end Gowin (Arora V). gowin_standard.
-DefaultToolchains:
-  - gowin_standard[*]
-  - nextpnr_apicula[*]
-Chips:
-  - Id: GW5A-LV25MG121NC1/I0
-  - Id: GW5A-LV25MG121NES
-  - Id: GW5A-LV25UG324C1/I0
-  - Id: GW5AR-LV15MG132PC1/I0
+Family:
+  id: arorav_gw5a
+  producer: gowin_semi
+  name: AroraV/GW5A
+  description: 22 nm high-end Gowin (Arora V). gowin_standard.
+  default_toolchains:
+    - gowin_standard[*]
+    - nextpnr_apicula[*]
+  chips:
+    - id: GW5A-LV25MG121NC1/I0
+    - id: GW5A-LV25MG121NES
+    - id: GW5A-LV25UG324C1/I0
+    - id: GW5AR-LV15MG132PC1/I0

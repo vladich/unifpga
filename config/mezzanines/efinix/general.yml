@@ -1,19 +1,18 @@
 # efinix / general - mezzanines, SoMs, piggyback boards
 
-Producer: efinix
 Mezzanines:
-  - Id: efinix_qse_camera_daughter
-    Name: "Efinix MIPI Camera QSE Daughter Card"
-    BoardName: "Dual Raspberry Pi Camera Connector Daughter Card (part number EFINIX_IFB_PICAMX2); card-side J2 40-pin Samtec QTE-020-01-F-D-A mating the dev-board QSE"
-    Producer: efinix
-    Type: piggyback
-    Connector: qse_high_speed
-    Features:
+  - id: efinix_qse_camera_daughter
+    name: "Efinix MIPI Camera QSE Daughter Card"
+    board_name: "Dual Raspberry Pi Camera Connector Daughter Card (part number EFINIX_IFB_PICAMX2); card-side J2 40-pin Samtec QTE-020-01-F-D-A mating the dev-board QSE"
+    producer: efinix
+    type: piggyback
+    connector: qse_high_speed
+    features:
       - mipi_csi2_input
       - pcam_connector
-    BoardURL: "https://www.efinixinc.com/products-devkits.html"
-    Status: active
-    CompatibleBoards:
+    url: "https://www.efinixinc.com/products-devkits.html"
+    status: active
+    compatible_boards:
       - efinix_ti60_devkit
       - efinix_ti180_devkit
       - efinix_topaz_tz170_j484_devkit

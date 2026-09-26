@@ -1,12 +1,14 @@
 # Altera (Intel) / Cyclone II — chip registry
 # 90 nm low-cost FPGA (2004). Quartus II 13.0sp1 last.
 
-Producer: Altera (Intel)
-Family: Cyclone II
-Description: 90 nm low-cost FPGA (2004). Quartus II 13.0sp1 last.
-DefaultToolchains:
-  - quartus2[*]
-Chips:
-  - Id: EP2C20F484C7
-  - Id: EP2C35F672C6
-  - Id: EP2C70F896C6N
+Family:
+  id: cyclone_ii
+  producer: intel_altera
+  name: Cyclone II
+  description: 90 nm low-cost FPGA (2004). Quartus II 13.0sp1 last.
+  default_toolchains:
+    - quartus2[*]
+  chips:
+    - id: EP2C20F484C7
+    - id: EP2C35F672C6
+    - id: EP2C70F896C6N

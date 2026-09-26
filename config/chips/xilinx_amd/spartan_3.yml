@@ -1,11 +1,13 @@
 # Xilinx (AMD) / Spartan 3 — chip registry
 # 90 nm low-cost LUT4 FPGA (2003). ISE 14.7 last supporting release.
 
-Producer: Xilinx (AMD)
-Family: Spartan 3
-Description: 90 nm low-cost LUT4 FPGA (2003). ISE 14.7 last supporting release.
-DefaultToolchains:
-  - ise[*]
-Chips:
-  - Id: XC3S1500-4FG320C
-  - Id: XC3S50A-4TQG144C
+Family:
+  id: spartan_3
+  producer: xilinx_amd
+  name: Spartan 3
+  description: 90 nm low-cost LUT4 FPGA (2003). ISE 14.7 last supporting release.
+  default_toolchains:
+    - ise[*]
+  chips:
+    - id: XC3S1500-4FG320C
+    - id: XC3S50A-4TQG144C

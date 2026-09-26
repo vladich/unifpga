@@ -1,11 +1,13 @@
 # Gowin / LittleBee/GW1NS — chip registry
 # GW1N with Cortex-M3 hard core.
 
-Producer: Gowin
-Family: LittleBee/GW1NS
-Description: GW1N with Cortex-M3 hard core.
-DefaultToolchains:
-  - gowin_eda[*]
-  - nextpnr_apicula[*]
-Chips:
-  - Id: GW1NS-LV4CQN48C7/I6
+Family:
+  id: littlebee_gw1ns
+  producer: gowin_semi
+  name: LittleBee/GW1NS
+  description: GW1N with Cortex-M3 hard core.
+  default_toolchains:
+    - gowin_eda[*]
+    - nextpnr_apicula[*]
+  chips:
+    - id: GW1NS-LV4CQN48C7/I6

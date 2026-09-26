@@ -1,28 +1,30 @@
 # Xilinx (AMD) / Kintex 7 — chip registry
 # 28 nm mid-range 7-series. Vivado, openXC7 (partial).
 
-Producer: Xilinx (AMD)
-Family: Kintex 7
-Description: 28 nm mid-range 7-series. Vivado, openXC7 (partial).
-DefaultToolchains:
-  - vivado[*]
-  - nextpnr_openxc7[*]
-Chips:
-  - Id: XC7K160T-1
-  - Id: XC7K160T-2FBG676I
-  - Id: XC7K160T-2FFG676C
-  - Id: XC7K160T-2FFG676I
-  - Id: XC7K325T-2FBG676I
-  - Id: XC7K325T-2FFG676I
-  - Id: XC7K325T-2FFG900
-  - Id: XC7K325T-2FFG900C
-  - Id: XC7K325T-2FFG900I
-  - Id: XC7K325TFFG900-2
-  - Id: XC7K410T-2FBG676I
-  - Id: XC7K410T-2FFG676I
-  - Id: XC7K410T-2FFG900
-  - Id: XC7K410T-2FFG900C
-  - Id: XC7K480T-2FFG901C
-  - Id: XC7K70T-2FBG676C
-  - Id: xc7k325tffg676-3
-  - Id: XC7K70T-1FBG484
+Family:
+  id: kintex_7
+  producer: xilinx_amd
+  name: Kintex 7
+  description: 28 nm mid-range 7-series. Vivado, openXC7 (partial).
+  default_toolchains:
+    - vivado[*]
+    - nextpnr_openxc7[*]
+  chips:
+    - id: XC7K160T-1
+    - id: XC7K160T-2FBG676I
+    - id: XC7K160T-2FFG676C
+    - id: XC7K160T-2FFG676I
+    - id: XC7K325T-2FBG676I
+    - id: XC7K325T-2FFG676I
+    - id: XC7K325T-2FFG900
+    - id: XC7K325T-2FFG900C
+    - id: XC7K325T-2FFG900I
+    - id: XC7K325TFFG900-2
+    - id: XC7K410T-2FBG676I
+    - id: XC7K410T-2FFG676I
+    - id: XC7K410T-2FFG900
+    - id: XC7K410T-2FFG900C
+    - id: XC7K480T-2FFG901C
+    - id: XC7K70T-2FBG676C
+    - id: xc7k325tffg676-3
+    - id: XC7K70T-1FBG484

@@ -1,10 +1,12 @@
 # Cologne Chip / GateMate — chip registry
 # German open-flow-friendly 28 nm FPGA. yosys + p_r, nextpnr-himbaechel.
 
-Producer: Cologne Chip
-Family: GateMate
-Description: German open-flow-friendly 28 nm FPGA. yosys + p_r, nextpnr-himbaechel.
-DefaultToolchains:
-  - nextpnr_gatemate[*]
-Chips:
-  - Id: CCGM1A1
+Family:
+  id: gatemate
+  producer: cologne_chip
+  name: GateMate
+  description: German open-flow-friendly 28 nm FPGA. yosys + p_r, nextpnr-himbaechel.
+  default_toolchains:
+    - nextpnr_gatemate[*]
+  chips:
+    - id: CCGM1A1

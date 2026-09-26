@@ -4,29 +4,28 @@
 # They are SoMs (FPGA on module + DDR + flash + B2B connector) and
 # require a carrier board to be usable. Migrated 2026-05-15.
 
-Producer: alinx
 Mezzanines:
-  - Id: alinx_acku040
-    Name: "Alinx ACKU040 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCKU040-2FFVA1156I
-    Features:
+  - id: alinx_acku040
+    name: "Alinx ACKU040 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCKU040-2FFVA1156I
+    features:
       - ddr4_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-acku040-xilinx-kintex-ultrascale-xcku040-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axku040
-  - Id: alinx_acku060
-    Name: "Alinx ACKU060 SOM"
-    DefaultCarrier: alinx_axku062
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCKU060-2FFVA1156I
-    Features:
+    url: "https://coderobin.com/products/alinx-acku040-xilinx-kintex-ultrascale-xcku040-fpga-som"
+    status: active
+    default_carrier: alinx_axku040
+  - id: alinx_acku060
+    name: "Alinx ACKU060 SOM"
+    default_carrier: alinx_axku062
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCKU060-2FFVA1156I
+    features:
       - ddr4_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-acku060-xilinx-kintex-ultrascale-xcku060-fpga-som"
-    Status: active
+    url: "https://coderobin.com/products/alinx-acku060-xilinx-kintex-ultrascale-xcku060-fpga-som"
+    status: active

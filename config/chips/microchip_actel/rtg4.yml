@@ -1,10 +1,12 @@
 # Microchip (Actel) / RTG4 — chip registry
 # Rad-tolerant flash FPGA (space). Libero SoC.
 
-Producer: Microchip (Actel)
-Family: RTG4
-Description: Rad-tolerant flash FPGA (space). Libero SoC.
-DefaultToolchains:
-  - libero_soc[*]
-Chips:
-  - Id: RT4G150-CG1657
+Family:
+  id: rtg4
+  producer: microchip
+  name: RTG4
+  description: Rad-tolerant flash FPGA (space). Libero SoC.
+  default_toolchains:
+    - libero_soc[*]
+  chips:
+    - id: RT4G150-CG1657

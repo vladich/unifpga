@@ -1,19 +1,21 @@
 # Efinix / Trion — chip registry
 # 40 nm Quantum-architecture FPGA. Efinity.
 
-Producer: Efinix
-Family: Trion
-Description: 40 nm Quantum-architecture FPGA. Efinity.
-DefaultToolchains:
-  - efinity[*]
-Chips:
-  - Id: T120F324C
-  - Id: T120F324C4
-  - Id: T120F576C4
-  - Id: T13F169C3
-  - Id: T20F169C3
-  - Id: T20F256C2
-  - Id: T35F324C3
-  - Id: T8F81
-  - Id: T8F81C2
-  - Id: T8Q144C3
+Family:
+  id: trion
+  producer: efinix
+  name: Trion
+  description: 40 nm Quantum-architecture FPGA. Efinity.
+  default_toolchains:
+    - efinity[*]
+  chips:
+    - id: T120F324C
+    - id: T120F324C4
+    - id: T120F576C4
+    - id: T13F169C3
+    - id: T20F169C3
+    - id: T20F256C2
+    - id: T35F324C3
+    - id: T8F81
+    - id: T8F81C2
+    - id: T8Q144C3

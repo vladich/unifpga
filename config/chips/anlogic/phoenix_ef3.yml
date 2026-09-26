@@ -1,10 +1,12 @@
 # Anlogic / Phoenix EF3 — chip registry
 # Anlogic Phoenix. TD.
 
-Producer: Anlogic
-Family: Phoenix EF3
-Description: Anlogic Phoenix. TD.
-DefaultToolchains:
-  - td[*]
-Chips:
-  - Id: EF3L185BG256C
+Family:
+  id: phoenix_ef3
+  producer: anlogic
+  name: Phoenix EF3
+  description: Anlogic Phoenix. TD.
+  default_toolchains:
+    - td[*]
+  chips:
+    - id: EF3L185BG256C

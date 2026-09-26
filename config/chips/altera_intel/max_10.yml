@@ -1,17 +1,19 @@
 # Altera (Intel) / MAX 10 — chip registry
 # Single-chip non-volatile FPGA (sold as CPLD replacement). Quartus Prime.
 
-Producer: Altera (Intel)
-Family: MAX 10
-Description: Single-chip non-volatile FPGA (sold as CPLD replacement). Quartus Prime.
-DefaultToolchains:
-  - quartus_prime_lite[*]
-Chips:
-  - Id: 10M02SCU169C8G
-  - Id: 10M08SAE144C8G
-  - Id: 10M08SCM153C8G
-  - Id: 10M16SAU169C8G
-  - Id: 10M50DAF484C6G
-  - Id: 10M50DAF484C6GES
-  - Id: 10M50DAF484C7G
-  - Id: 10M50SAE144C8GES
+Family:
+  id: max_10
+  producer: intel_altera
+  name: MAX 10
+  description: Single-chip non-volatile FPGA (sold as CPLD replacement). Quartus Prime.
+  default_toolchains:
+    - quartus_prime_lite[*]
+  chips:
+    - id: 10M02SCU169C8G
+    - id: 10M08SAE144C8G
+    - id: 10M08SCM153C8G
+    - id: 10M16SAU169C8G
+    - id: 10M50DAF484C6G
+    - id: 10M50DAF484C6GES
+    - id: 10M50DAF484C7G
+    - id: 10M50SAE144C8GES

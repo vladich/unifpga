@@ -1,20 +1,22 @@
 # Altera (Intel) / Stratix 10 — chip registry
 # 14 nm high-end with eASIC tile options. Quartus Prime Pro.
 
-Producer: Altera (Intel)
-Family: Stratix 10
-Description: 14 nm high-end with eASIC tile options. Quartus Prime Pro.
-DefaultToolchains:
-  - quartus_prime_pro[*]
-Chips:
-  - Id: 1SD110PT2F55E1VG
-  - Id: 1SG280HU2F50E2VG
-  - Id: 1SM21BHU2F53E1VG
-  - Id: 1SM21BHU2F53E2VG
-  - Id: 1SN165BBU2F53A1VG
-  - Id: 1ST280EY2F55E2VG
-  - Id: 1SX085HN3F43E2VG
-  - Id: 1SX280HU2F50E1VG
-  - Id: 1SX280LU2F50E2VG
-  - Id: 1SD280PT2F55E1VG
-  - Id: 1SM21CHU2F53E2VG
+Family:
+  id: stratix_10
+  producer: intel_altera
+  name: Stratix 10
+  description: 14 nm high-end with eASIC tile options. Quartus Prime Pro.
+  default_toolchains:
+    - quartus_prime_pro[*]
+  chips:
+    - id: 1SD110PT2F55E1VG
+    - id: 1SG280HU2F50E2VG
+    - id: 1SM21BHU2F53E1VG
+    - id: 1SM21BHU2F53E2VG
+    - id: 1SN165BBU2F53A1VG
+    - id: 1ST280EY2F55E2VG
+    - id: 1SX085HN3F43E2VG
+    - id: 1SX280HU2F50E1VG
+    - id: 1SX280LU2F50E2VG
+    - id: 1SD280PT2F55E1VG
+    - id: 1SM21CHU2F53E2VG

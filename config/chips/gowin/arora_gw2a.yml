@@ -1,13 +1,15 @@
 # Gowin / Arora/GW2A — chip registry
 # Mid-range Gowin FPGA (Arora series).
 
-Producer: Gowin
-Family: Arora/GW2A
-Description: Mid-range Gowin FPGA (Arora series).
-DefaultToolchains:
-  - gowin_eda[*]
-  - nextpnr_apicula[*]
-Chips:
-  - Id: GW2A-LV18PG256C8/I7
-  - Id: GW2A-LV18PG484C8/I7
-  - Id: GW2A-LV55PG484C8/I7
+Family:
+  id: arora_gw2a
+  producer: gowin_semi
+  name: Arora/GW2A
+  description: Mid-range Gowin FPGA (Arora series).
+  default_toolchains:
+    - gowin_eda[*]
+    - nextpnr_apicula[*]
+  chips:
+    - id: GW2A-LV18PG256C8/I7
+    - id: GW2A-LV18PG484C8/I7
+    - id: GW2A-LV55PG484C8/I7

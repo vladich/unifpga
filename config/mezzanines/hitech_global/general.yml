@@ -1,87 +1,86 @@
 # hitech_global / general - mezzanines, SoMs, piggyback boards
 
-Producer: hitech_global
 Mezzanines:
-  - Id: htg_fmc_x6qsfp28
-    Name: "HTG-FMC-X6QSFP28 6-Port QSFP28 FMC+ Daughter Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_plus
-    Features:
+  - id: htg_fmc_x6qsfp28
+    name: "HTG-FMC-X6QSFP28 6-Port QSFP28 FMC+ Daughter Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_plus
+    features:
       - qsfp_cage
-    Status: eol
-  - Id: htg_fmc_x4qsfpdd
-    Name: "HTG-FMC-X4QSFPDD 4-Port QSFP-DD FMC+ Daughter Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_plus
-    Features:
+    status: eol
+  - id: htg_fmc_x4qsfpdd
+    name: "HTG-FMC-X4QSFPDD 4-Port QSFP-DD FMC+ Daughter Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_plus
+    features:
       - qsfp_dd_cage
-    Status: eol
-  - Id: htg_fmc_dp_quad_sfp
-    Name: "HTG-FMC-DP-QUAD-SFP+ Daughter Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_hpc
-    Features:
+    status: eol
+  - id: htg_fmc_dp_quad_sfp
+    name: "HTG-FMC-DP-QUAD-SFP+ Daughter Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_hpc
+    features:
       - sfp_cage
-    Status: eol
-  - Id: htg_fmc_x4sfp28
-    Name: "HTG-FMC-X4SFP28 4-Port SFP28 FMC+ Daughter Card (25 GbE)"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_plus
-    Features:
+    status: eol
+  - id: htg_fmc_x4sfp28
+    name: "HTG-FMC-X4SFP28 4-Port SFP28 FMC+ Daughter Card (25 GbE)"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_plus
+    features:
       - ethernet_25gbe_sfp28
-    Status: eol
-  - Id: htg_fmc_pcie_gen3
-    Name: "HTG-FMC-PCIE-Gen3 FMC PCIe x8 Daughter Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_hpc
-    Features:
+    status: eol
+  - id: htg_fmc_pcie_gen3
+    name: "HTG-FMC-PCIE-Gen3 FMC PCIe x8 Daughter Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_hpc
+    features:
       - pcie_endpoint
-    Status: eol
-  - Id: htg_fmc_ddr4_sodimm
-    Name: "HTG-FMC-DDR4-SODIMM Dual DDR4 SODIMM FMC Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_hpc
-    Features:
+    status: eol
+  - id: htg_fmc_ddr4_sodimm
+    name: "HTG-FMC-DDR4-SODIMM Dual DDR4 SODIMM FMC Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_hpc
+    features:
       - ddr4_memory
-    Devices:
+    devices:
       - ddr4_sodimm_socket
-    Status: eol
-  - Id: htg_fmc_qdrii_plus
-    Name: "HTG-FMC-QDRII+ QDR-II+ SRAM FMC Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_hpc
-    Features:
+    status: eol
+  - id: htg_fmc_qdrii_plus
+    name: "HTG-FMC-QDRII+ QDR-II+ SRAM FMC Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_hpc
+    features:
       - qdrii_sram
-    Status: eol
-  - Id: htg_fmc_hdmi_tx_rx
-    Name: "HTG-FMC-HDMI HDMI TX/RX FMC Daughter Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_hpc
-    Features:
+    status: eol
+  - id: htg_fmc_hdmi_tx_rx
+    name: "HTG-FMC-HDMI HDMI TX/RX FMC Daughter Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_hpc
+    features:
       - hdmi_input
       - hdmi_output
-    Status: eol
-  - Id: htg_fmc_dual_sata
-    Name: "HTG-FMC-2SATA Dual SATA Host FMC Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_hpc
-    Features:
+    status: eol
+  - id: htg_fmc_dual_sata
+    name: "HTG-FMC-2SATA Dual SATA Host FMC Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_hpc
+    features:
       - sata_host
-    Status: eol
-  - Id: htg_fmc_nvme
-    Name: "HTG-FMC-NVMe Dual M.2 NVMe FMC Card"
-    Producer: hitech_global
-    Type: mezzanine
-    Connector: fmc_hpc
-    Features:
+    status: eol
+  - id: htg_fmc_nvme
+    name: "HTG-FMC-NVMe Dual M.2 NVMe FMC Card"
+    producer: hitech_global
+    type: mezzanine
+    connector: fmc_hpc
+    features:
       - nvme_socket
-    Status: eol
+    status: eol

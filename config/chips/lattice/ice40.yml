@@ -1,21 +1,23 @@
 # Lattice / ICE40 — chip registry
 # Small, low-power FPGAs (SiliconBlue heritage). iCEcube2 (LP/HX/LM).
 
-Producer: Lattice
-Family: ICE40
-Description: Small, low-power FPGAs (SiliconBlue heritage). iCEcube2 (LP/HX/LM).
-DefaultToolchains:
-  - nextpnr_icestorm[*]
-  - icecube2[*]
-Chips:
-  - Id: iCE40HX1K-TQ144
-  - Id: iCE40HX1K-VQ100
-  - Id: iCE40HX4K-TQ144
-  - Id: iCE40HX8K-CB132
-  - Id: iCE40HX8K-CT256
-  - Id: iCE40LP8K-CM81
-  - Id: iCE40LP1K-CM36
-  - Id: iCE5LP4K-SG48
-  - Id: iCE40LP1K-SWG16
-  - Id: iCE5LP4K-SWG36
-  - Id: iCE40HX8K-BG121
+Family:
+  id: ice40
+  producer: lattice
+  name: ICE40
+  description: Small, low-power FPGAs (SiliconBlue heritage). iCEcube2 (LP/HX/LM).
+  default_toolchains:
+    - nextpnr_icestorm[*]
+    - icecube2[*]
+  chips:
+    - id: iCE40HX1K-TQ144
+    - id: iCE40HX1K-VQ100
+    - id: iCE40HX4K-TQ144
+    - id: iCE40HX8K-CB132
+    - id: iCE40HX8K-CT256
+    - id: iCE40LP8K-CM81
+    - id: iCE40LP1K-CM36
+    - id: iCE5LP4K-SG48
+    - id: iCE40LP1K-SWG16
+    - id: iCE5LP4K-SWG36
+    - id: iCE40HX8K-BG121

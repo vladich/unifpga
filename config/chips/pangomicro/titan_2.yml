@@ -1,12 +1,14 @@
 # Pangomicro / Titan-2 — chip registry
 # 28 nm Titan II. PDS.
 
-Producer: Pangomicro
-Family: Titan-2
-Description: 28 nm Titan II. PDS.
-DefaultToolchains:
-  - pango_ds[*]
-Chips:
-  - Id: PG2T560HFBG676
-  - Id: PGT2L100H-6FBG676
-  - Id: PG2T390H-6IFFBG900
+Family:
+  id: titan_2
+  producer: pangomicro
+  name: Titan-2
+  description: 28 nm Titan II. PDS.
+  default_toolchains:
+    - pango_ds[*]
+  chips:
+    - id: PG2T560HFBG676
+    - id: PGT2L100H-6FBG676
+    - id: PG2T390H-6IFFBG900

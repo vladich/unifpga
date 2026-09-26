@@ -1,13 +1,12 @@
 # sipeed / general - mezzanines, SoMs, piggyback boards
 
-Producer: sipeed
 Mezzanines:
-  - Id: sipeed_tang_primer_20k_dock_carrier
-    Name: "Sipeed Tang Primer 20K Dock (carrier)"
-    Producer: sipeed
-    Type: carrier
-    Connector: ddr3_sodimm_footprint
-    Features:
+  - id: sipeed_tang_primer_20k_dock_carrier
+    name: "Sipeed Tang Primer 20K Dock (carrier)"
+    producer: sipeed
+    type: carrier
+    connector: ddr3_sodimm_footprint
+    features:
       - usb_jtag_bridge
       - usb_uart_bridge
       - ethernet_phy_gigabit
@@ -17,44 +16,44 @@ Mezzanines:
       - parallel_lcd
       - parallel_camera_input
       - pmod_connector
-    Devices:
+    devices:
       - microsd_socket_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html"
-    Status: active
-    CompatibleBoards:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html"
+    status: active
+    compatible_boards:
       - sipeed_tang_primer_20k_module
-  - Id: sipeed_tang_primer_20k_lite_carrier
-    Name: "Sipeed Tang Primer 20K Lite (carrier, IO-breakout)"
-    Producer: sipeed
-    Type: carrier
-    Connector: ddr3_sodimm_footprint
-    Features:
+  - id: sipeed_tang_primer_20k_lite_carrier
+    name: "Sipeed Tang Primer 20K Lite (carrier, IO-breakout)"
+    producer: sipeed
+    type: carrier
+    connector: ddr3_sodimm_footprint
+    features:
       - pmod_connector
       - gpio_header_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html"
-    Status: active
-    CompatibleBoards:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html"
+    status: active
+    compatible_boards:
       - sipeed_tang_primer_20k_module
-  - Id: sipeed_tang_primer_25k_dock_carrier
-    Name: "Sipeed Tang Primer 25K Dock (carrier)"
-    Producer: sipeed
-    Type: carrier
-    Connector: tang_primer_25k_b2b
-    Features:
+  - id: sipeed_tang_primer_25k_dock_carrier
+    name: "Sipeed Tang Primer 25K Dock (carrier)"
+    producer: sipeed
+    type: carrier
+    connector: tang_primer_25k_b2b
+    features:
       - usb_jtag_bridge
       - pmod_connector
       - usb_2_host
       - gpio_header_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-primer-25k/primer-25k.html"
-    Status: active
-    CompatibleBoards:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-primer-25k/primer-25k.html"
+    status: active
+    compatible_boards:
       - tang_primer_25k
-  - Id: sipeed_tang_console_carrier
-    Name: "Sipeed Tang Console carrier (Mega SoM socket)"
-    Producer: sipeed
-    Type: carrier
-    Connector: tang_mega_b2b
-    Features:
+  - id: sipeed_tang_console_carrier
+    name: "Sipeed Tang Console carrier (Mega SoM socket)"
+    producer: sipeed
+    type: carrier
+    connector: tang_mega_b2b
+    features:
       - hdmi_output
       - usb_3_host
       - usb_2_device
@@ -66,20 +65,20 @@ Mezzanines:
       - parallel_lcd
       - user_buttons
       - usb_jtag_bridge
-    Devices:
+    devices:
       - microsd_socket_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-console/mega-console.html"
-    Status: active
-    CompatibleBoards:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-console/mega-console.html"
+    status: active
+    compatible_boards:
       - sipeed_tang_mega_60k
       - tang_mega_138k
       - tang_mega_138k_pro
-  - Id: sipeed_tang_mega_neo_dock
-    Name: "Sipeed Tang Mega NEO Dock (shared 60K / 138K carrier)"
-    Producer: sipeed
-    Type: carrier
-    Connector: tang_mega_b2b
-    Features:
+  - id: sipeed_tang_mega_neo_dock
+    name: "Sipeed Tang Mega NEO Dock (shared 60K / 138K carrier)"
+    producer: sipeed
+    type: carrier
+    connector: tang_mega_b2b
+    features:
       - hdmi_output
       - hdmi_input
       - ethernet_phy_gigabit
@@ -92,95 +91,95 @@ Mezzanines:
       - parallel_camera_input
       - parallel_lcd
       - microsd_socket
-    Devices:
+    devices:
       - microsd_socket_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-mega-60k/mega-60k.html"
-    Status: active
-    CompatibleBoards:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-mega-60k/mega-60k.html"
+    status: active
+    compatible_boards:
       - sipeed_tang_mega_60k
       - tang_mega_138k                  # (the 138K Pro is its own FPG676 board)
-  - Id: sipeed_pmod_dvi
-    Name: "Sipeed Tang PMOD_DVI (HDMI in/out via LVDS)"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+  - id: sipeed_pmod_dvi
+    name: "Sipeed Tang PMOD_DVI (HDMI in/out via LVDS)"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - hdmi_output
       - hdmi_input
       - tmds_pmod
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
-  - Id: sipeed_pmod_dvp
-    Name: "Sipeed Tang PMOD_DVP (M12 camera input)"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active
+  - id: sipeed_pmod_dvp
+    name: "Sipeed Tang PMOD_DVP (M12 camera input)"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - parallel_camera_input
       - pcam_connector
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
-  - Id: sipeed_pmod_tf_card
-    Name: "Sipeed Tang PMOD_TF-CARD (microSD)"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active
+  - id: sipeed_pmod_tf_card
+    name: "Sipeed Tang PMOD_TF-CARD (microSD)"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - microsd_socket
-    Devices:
+    devices:
       - microsd_socket_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
-  - Id: sipeed_pmod_hub75e
-    Name: "Sipeed Tang PMOD_HUB75E (LED matrix driver)"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active
+  - id: sipeed_pmod_hub75e
+    name: "Sipeed Tang PMOD_HUB75E (LED matrix driver)"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - addressable_leds
-    Devices:
+    devices:
       - hub75e_panel
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
-  - Id: sipeed_pmod_ledx8
-    Name: "Sipeed Tang PMOD_LEDx8"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active
+  - id: sipeed_pmod_ledx8
+    name: "Sipeed Tang PMOD_LEDx8"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - user_leds
-    Devices:
+    devices:
       - led_discrete_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
-  - Id: sipeed_pmod_btn4_4
-    Name: "Sipeed Tang PMOD_BTN4+4 (4 buttons + 4-pos DIP)"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active
+  - id: sipeed_pmod_btn4_4
+    name: "Sipeed Tang PMOD_BTN4+4 (4 buttons + 4-pos DIP)"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - user_buttons
       - dip_switches
-    Devices:
+    devices:
       - pushbutton_smd_generic
       - dip_switch_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
-  - Id: sipeed_pmod_dtx2
-    Name: "Sipeed Tang PMOD_DTx2 (dual 7-seg display)"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active
+  - id: sipeed_pmod_dtx2
+    name: "Sipeed Tang PMOD_DTx2 (dual 7-seg display)"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - seven_segment_display
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
-  - Id: sipeed_pmod_ds2x2
-    Name: "Sipeed Tang PMOD_DS2x2 (dual PlayStation2 gamepad)"
-    Producer: sipeed
-    Type: piggyback
-    Connector: pmod_connector
-    Features:
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active
+  - id: sipeed_pmod_ds2x2
+    name: "Sipeed Tang PMOD_DS2x2 (dual PlayStation2 gamepad)"
+    producer: sipeed
+    type: piggyback
+    connector: pmod_connector
+    features:
       - gpio_header_generic
-    BoardURL: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
-    Status: active
+    url: "https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html"
+    status: active

@@ -1,9 +1,11 @@
 # Gowin / Aurora - chip registry
 
-Producer: Gowin
-Family: Aurora
-Description: ""
-DefaultToolchains:
-  - gowin_eda[*]
-Chips:
-  - Id: GW3A-LV20LQ144C6/I5
+Family:
+  id: aurora
+  producer: gowin_semi
+  name: Aurora
+  description: ""
+  default_toolchains:
+    - gowin_eda[*]
+  chips:
+    - id: GW3A-LV20LQ144C6/I5

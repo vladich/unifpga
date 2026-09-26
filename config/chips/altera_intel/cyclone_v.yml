@@ -1,17 +1,19 @@
 # Altera (Intel) / Cyclone V — chip registry
 # 28 nm Cyclone (2011). Quartus Prime + nextpnr-mistral (open).
 
-Producer: Altera (Intel)
-Family: Cyclone V
-Description: 28 nm Cyclone (2011). Quartus Prime + nextpnr-mistral (open).
-DefaultToolchains:
-  - quartus_prime_lite[*]
-  - nextpnr_mistral[*]
-Chips:
-  - Id: 5CEBA4F23C7N
-  - Id: 5CEFA5F23C8
-  - Id: 5CEFA7F31I7N
-  - Id: 5CGTFD9E5F35I7N
-  - Id: 5CGXFC5C6F23C7N
-  - Id: 5CGXFC5C6F27C7N
-  - Id: 5CSXFC6D6F31I7N
+Family:
+  id: cyclone_v
+  producer: intel_altera
+  name: Cyclone V
+  description: 28 nm Cyclone (2011). Quartus Prime + nextpnr-mistral (open).
+  default_toolchains:
+    - quartus_prime_lite[*]
+    - nextpnr_mistral[*]
+  chips:
+    - id: 5CEBA4F23C7N
+    - id: 5CEFA5F23C8
+    - id: 5CEFA7F31I7N
+    - id: 5CGTFD9E5F35I7N
+    - id: 5CGXFC5C6F23C7N
+    - id: 5CGXFC5C6F27C7N
+    - id: 5CSXFC6D6F31I7N

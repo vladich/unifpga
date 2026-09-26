@@ -1,12 +1,14 @@
 # Xilinx (AMD) / Virtex 5 — chip registry
 # 65 nm Virtex (2006). ISE 14.7 last supporting release.
 
-Producer: Xilinx (AMD)
-Family: Virtex 5
-Description: 65 nm Virtex (2006). ISE.
-DefaultToolchains:
-  - ise[*]
-Chips:
-  - Id: XC5VFX70T-1FFG1136
-  - Id: XC5VLX50T-1FFG1136
-  - Id: XC5VSX50T-1FFG1136
+Family:
+  id: virtex_5
+  producer: xilinx_amd
+  name: Virtex 5
+  description: 65 nm Virtex (2006). ISE.
+  default_toolchains:
+    - ise[*]
+  chips:
+    - id: XC5VFX70T-1FFG1136
+    - id: XC5VLX50T-1FFG1136
+    - id: XC5VSX50T-1FFG1136

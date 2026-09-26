@@ -1,26 +1,28 @@
 # Xilinx (AMD) / Zynq Ultrascale+ RFSoC — chip registry
 # Zynq UltraScale+ with hard ADC/DAC for RF. Vivado.
 
-Producer: Xilinx (AMD)
-Family: Zynq Ultrascale+ RFSoC
-Description: Zynq UltraScale+ with hard ADC/DAC for RF. Vivado.
-DefaultToolchains:
-  - vivado[*]
-Chips:
-  - Id: XCZU28DR-2FFVG1517E
-  - Id: XCZU29DR-2FFVF1760E
-  - Id: XCZU39DR-2FFVF1760E
-  - Id: XCZU47DR-2FFVE1156E
-  - Id: XCZU47DR-2FFVE1156I
-  - Id: XCZU47DR-2FFVG1517I
-  - Id: XCZU47DR-2FSVE1156I
-  - Id: XCZU48DR-2FFVG1517E
-  - Id: XCZU48DR-2FFVG1517I
-  - Id: XCZU48DR-2FSVG1517E
-  - Id: XCZU49DR-2FFVF1760E
-  - Id: XCZU49DR-2FFVF1760I
-  - Id: XCZU67DR-2FFVE1156I
-  - Id: XCZU67DR-2FFVG1517E
-  - Id: XCZU67DR-2FSVE1156E
-  - Id: XCZU49DR-2FSVF1760I
-  - Id: XCZU43DR-2FFVG1517E
+Family:
+  id: zynq_ultrascale_plus_rfsoc
+  producer: xilinx_amd
+  name: Zynq Ultrascale+ RFSoC
+  description: Zynq UltraScale+ with hard ADC/DAC for RF. Vivado.
+  default_toolchains:
+    - vivado[*]
+  chips:
+    - id: XCZU28DR-2FFVG1517E
+    - id: XCZU29DR-2FFVF1760E
+    - id: XCZU39DR-2FFVF1760E
+    - id: XCZU47DR-2FFVE1156E
+    - id: XCZU47DR-2FFVE1156I
+    - id: XCZU47DR-2FFVG1517I
+    - id: XCZU47DR-2FSVE1156I
+    - id: XCZU48DR-2FFVG1517E
+    - id: XCZU48DR-2FFVG1517I
+    - id: XCZU48DR-2FSVG1517E
+    - id: XCZU49DR-2FFVF1760E
+    - id: XCZU49DR-2FFVF1760I
+    - id: XCZU67DR-2FFVE1156I
+    - id: XCZU67DR-2FFVG1517E
+    - id: XCZU67DR-2FSVE1156E
+    - id: XCZU49DR-2FSVF1760I
+    - id: XCZU43DR-2FFVG1517E

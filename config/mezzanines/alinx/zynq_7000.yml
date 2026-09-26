@@ -4,105 +4,104 @@
 # They are SoMs (FPGA on module + DDR + flash + B2B connector) and
 # require a carrier board to be usable. Migrated 2026-05-15.
 
-Producer: alinx
 Mezzanines:
-  - Id: alinx_ac7010
-    Name: "Alinx AC7010 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z010-1CLG400I
-    Features:
+  - id: alinx_ac7010
+    name: "Alinx AC7010 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z010-1CLG400I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7010-xilinx-zynq-7000-xc7z010-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_ax7010
-    Notes: "Mid-range Z7010 SOM (size larger than AC7Z010). Carrier-board-agnostic; no pin map."
-  - Id: alinx_ac7z010
-    Name: "Alinx AC7Z010 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z010-1CLG400I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7010-xilinx-zynq-7000-xc7z010-fpga-som"
+    status: active
+    default_carrier: alinx_ax7010
+    notes: "Mid-range Z7010 SOM (size larger than AC7Z010). Carrier-board-agnostic; no pin map."
+  - id: alinx_ac7z010
+    name: "Alinx AC7Z010 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z010-1CLG400I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7Z010-xilinx-zynq-7000-xc7z010-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_ax7z010
-    Notes: "Bare-minimum Z7010 SOM, 1.38'x1.65'. No pin map (SOM)."
-  - Id: alinx_ac7020
-    Name: "Alinx AC7020 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z020-2CLG400I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7Z010-xilinx-zynq-7000-xc7z010-fpga-som"
+    status: active
+    default_carrier: alinx_ax7z010
+    notes: "Bare-minimum Z7010 SOM, 1.38'x1.65'. No pin map (SOM)."
+  - id: alinx_ac7020
+    name: "Alinx AC7020 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z020-2CLG400I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7020-xilinx-zynq-7000-xc7z020-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_ax7020
-    Notes: "Mid-range Z7020 SOM (full-feature)."
-  - Id: alinx_ac7z020
-    Name: "Alinx AC7Z020 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z020-2CLG400I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7020-xilinx-zynq-7000-xc7z020-fpga-som"
+    status: active
+    default_carrier: alinx_ax7020
+    notes: "Mid-range Z7020 SOM (full-feature)."
+  - id: alinx_ac7z020
+    name: "Alinx AC7Z020 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z020-2CLG400I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7Z020-xilinx-zynq-7000-xc7z020-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_ax7z020
-    Notes: "Bare-minimum Z7020 SOM, compact."
-  - Id: alinx_ac7015b
-    Name: "Alinx AC7015B SOM"
-    DefaultCarrier: alinx_ax7015
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z015-2CLG485I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7Z020-xilinx-zynq-7000-xc7z020-fpga-som"
+    status: active
+    default_carrier: alinx_ax7z020
+    notes: "Bare-minimum Z7020 SOM, compact."
+  - id: alinx_ac7015b
+    name: "Alinx AC7015B SOM"
+    default_carrier: alinx_ax7015
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z015-2CLG485I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7015b-xilinx-zynq-7000-xc7z015-fpga-som"
-    Status: active
-  - Id: alinx_ac7021b
-    Name: "Alinx AC7021B SOM"
-    DefaultCarrier: alinx_ax7021
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z020-2CLG484I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7015b-xilinx-zynq-7000-xc7z015-fpga-som"
+    status: active
+  - id: alinx_ac7021b
+    name: "Alinx AC7021B SOM"
+    default_carrier: alinx_ax7021
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z020-2CLG484I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7021b-xilinx-zynq-7000-xc7z020-fpga-som"
-    Status: active
-  - Id: alinx_ac7z035
-    Name: "Alinx AC7Z035 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z035-2FFG676I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7021b-xilinx-zynq-7000-xc7z020-fpga-som"
+    status: active
+  - id: alinx_ac7z035
+    name: "Alinx AC7Z035 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z035-2FFG676I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7Z035-xilinx-zynq-7000-xc7z035-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_ax7z035
-  - Id: alinx_ac7z100
-    Name: "Alinx AC7Z100 SOM"
-    DefaultCarrier: alinx_ax7z100b
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7Z100-2FFG900I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7Z035-xilinx-zynq-7000-xc7z035-fpga-som"
+    status: active
+    default_carrier: alinx_ax7z035
+  - id: alinx_ac7z100
+    name: "Alinx AC7Z100 SOM"
+    default_carrier: alinx_ax7z100b
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7Z100-2FFG900I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7Z100-xilinx-zynq-7000-xc7z100-fpga-som"
-    Status: active
+    url: "https://coderobin.com/products/alinx-ac7Z100-xilinx-zynq-7000-xc7z100-fpga-som"
+    status: active

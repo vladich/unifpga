@@ -4,44 +4,43 @@
 # They are SoMs (FPGA on module + DDR + flash + B2B connector) and
 # require a carrier board to be usable. Migrated 2026-05-15.
 
-Producer: alinx
 Mezzanines:
-  - Id: alinx_acku3
-    Name: "Alinx ACKU3 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCKU3P-2FFVB676I
-    Features:
+  - id: alinx_acku3
+    name: "Alinx ACKU3 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCKU3P-2FFVB676I
+    features:
       - ddr4_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-acku3-xilinx-kintex-ultrascale-xcku3p-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axku3
-    Notes: "Chip XCKU3P-2FFVB676I not in registry — add."
-  - Id: alinx_acku5
-    Name: "Alinx ACKU5 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCKU5P-2FFVB676I
-    Features:
+    url: "https://coderobin.com/products/alinx-acku3-xilinx-kintex-ultrascale-xcku3p-fpga-som"
+    status: active
+    default_carrier: alinx_axku3
+    notes: "Chip XCKU3P-2FFVB676I not in registry — add."
+  - id: alinx_acku5
+    name: "Alinx ACKU5 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCKU5P-2FFVB676I
+    features:
       - ddr4_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-acku5-xilinx-kintex-ultrascale-xcku5p-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axku5
-    Notes: "Industrial XCKU5P-2FFVB676I; mapped to existing registry XCKU5P-2FFVB676E."
-  - Id: alinx_acku15
-    Name: "Alinx ACKU15 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCKU15P-2FFVE1517I
-    Features:
+    url: "https://coderobin.com/products/alinx-acku5-xilinx-kintex-ultrascale-xcku5p-fpga-som"
+    status: active
+    default_carrier: alinx_axku5
+    notes: "Industrial XCKU5P-2FFVB676I; mapped to existing registry XCKU5P-2FFVB676E."
+  - id: alinx_acku15
+    name: "Alinx ACKU15 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCKU15P-2FFVE1517I
+    features:
       - ddr4_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-acku15-xilinx-kintex-ultrascale-xcku15p-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axku15
-    Notes: "Industrial XCKU15P-2FFVE1517I per product page; closest registry XCKU15P-2FFVE1760E (different package — needs verification)."
+    url: "https://coderobin.com/products/alinx-acku15-xilinx-kintex-ultrascale-xcku15p-fpga-som"
+    status: active
+    default_carrier: alinx_axku15
+    notes: "Industrial XCKU15P-2FFVE1517I per product page; closest registry XCKU15P-2FFVE1760E (different package — needs verification)."

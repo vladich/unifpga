@@ -1,14 +1,16 @@
 # Lattice / MachXO2 — chip registry
 # Small, low-power flash-based CPLD-like FPGA. Diamond + nextpnr-machxo2 (open).
 
-Producer: Lattice
-Family: MachXO2
-Description: Small, low-power flash-based CPLD-like FPGA. Diamond + nextpnr-machxo2 (open).
-DefaultToolchains:
-  - nextpnr_trellis[*]
-  - lattice_diamond[*]
-Chips:
-  - Id: LCMXO2-1200HC-4SG32C
-  - Id: LCMXO2-1200ZE-1QN84C
-  - Id: LCMXO2-256HC-4SG32C
-  - Id: LCMXO2-7000HE-4TG144C
+Family:
+  id: machxo2
+  producer: lattice
+  name: MachXO2
+  description: Small, low-power flash-based CPLD-like FPGA. Diamond + nextpnr-machxo2 (open).
+  default_toolchains:
+    - nextpnr_trellis[*]
+    - lattice_diamond[*]
+  chips:
+    - id: LCMXO2-1200HC-4SG32C
+    - id: LCMXO2-1200ZE-1QN84C
+    - id: LCMXO2-256HC-4SG32C
+    - id: LCMXO2-7000HE-4TG144C

@@ -1,10 +1,12 @@
 # Altera (Intel) / Agilex 9 — chip registry
 # Top-end Direct-RF Agilex.
 
-Producer: Altera (Intel)
-Family: Agilex 9
-Description: Top-end Direct-RF Agilex.
-DefaultToolchains:
-  - quartus_prime_pro[*]
-Chips:
-  - Id: AGRF039R47A1E2V
+Family:
+  id: agilex_9
+  producer: intel_altera
+  name: Agilex 9
+  description: Top-end Direct-RF Agilex.
+  default_toolchains:
+    - quartus_prime_pro[*]
+  chips:
+    - id: AGRF039R47A1E2V

@@ -1,94 +1,93 @@
 # myir / general - mezzanines, SoMs, piggyback boards
 
-Producer: myir
 Mezzanines:
-  - Id: myir_myc_c7z015_som
-    Name: "MyIR MYC-C7Z015 Zynq-7015 SoM"
-    Aliases: [myir_myc_c7z015]
-    Producer: myir
-    Type: som
-    Connector: b2b_custom_myir
-    Chip: XC7Z015-2CLG485I
-    Features:
+  - id: myir_myc_c7z015_som
+    name: "MyIR MYC-C7Z015 Zynq-7015 SoM"
+    aliases: [myir_myc_c7z015]
+    producer: myir
+    type: som
+    connector: b2b_custom_myir
+    chip: XC7Z015-2CLG485I
+    features:
       - ddr3_memory
       - qspi_flash
       - emmc_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k256m16
       - macronix_mx25l25645g
       - realtek_rtl8211e
-    BoardURL: "https://www.myirtech.com/list.asp?id=552"
-    Status: active
-    DefaultCarrier: myir_myd_c7z015
-  - Id: myir_myc_czu3eg_som
-    Name: "MyIR MYC-CZU3EG Zynq UltraScale+ SoM (ZU3EG)"
-    Producer: myir
-    Type: som
-    Connector: b2b_custom_myir
-    Chip: XCZU3EG-1SFVC784I
-    Features:
+    url: "https://www.myirtech.com/list.asp?id=552"
+    status: active
+    default_carrier: myir_myd_c7z015
+  - id: myir_myc_czu3eg_som
+    name: "MyIR MYC-CZU3EG Zynq UltraScale+ SoM (ZU3EG)"
+    producer: myir
+    type: som
+    connector: b2b_custom_myir
+    chip: XCZU3EG-1SFVC784I
+    features:
       - ddr4_memory
       - emmc_flash
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - realtek_rtl8211fd
-    BoardURL: "https://www.myirtech.com/list.asp?id=837"
-    Status: active
-    DefaultCarrier: myir_myd_czu3eg_v3
-  - Id: myir_myc_czu4ev_som
-    Name: "MyIR MYC-CZU4EV Zynq UltraScale+ SoM (ZU4EV)"
-    Producer: myir
-    Type: som
-    Connector: b2b_custom_myir
-    Chip: XCZU4EV-1SFVC784I
-    Features:
+    url: "https://www.myirtech.com/list.asp?id=837"
+    status: active
+    default_carrier: myir_myd_czu3eg_v3
+  - id: myir_myc_czu4ev_som
+    name: "MyIR MYC-CZU4EV Zynq UltraScale+ SoM (ZU4EV)"
+    producer: myir
+    type: som
+    connector: b2b_custom_myir
+    chip: XCZU4EV-1SFVC784I
+    features:
       - ddr4_memory
       - emmc_flash
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - realtek_rtl8211fd
-    BoardURL: "https://www.myirtech.com/list.asp?id=712"
-    Status: active
-    DefaultCarrier: myir_myd_czu4ev_v2
-  - Id: myir_myc_czu5ev_som
-    Name: "MyIR MYC-CZU5EV Zynq UltraScale+ SoM (ZU5EV)"
-    Producer: myir
-    Type: som
-    Connector: b2b_custom_myir
-    Chip: XCZU5EV-2SFVC784I
-    Features:
+    url: "https://www.myirtech.com/list.asp?id=712"
+    status: active
+    default_carrier: myir_myd_czu4ev_v2
+  - id: myir_myc_czu5ev_som
+    name: "MyIR MYC-CZU5EV Zynq UltraScale+ SoM (ZU5EV)"
+    producer: myir
+    type: som
+    connector: b2b_custom_myir
+    chip: XCZU5EV-2SFVC784I
+    features:
       - ddr4_memory
       - emmc_flash
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt40a256m16
       - macronix_mx25l25645g
       - realtek_rtl8211fd
-    BoardURL: "https://www.myirtech.com/list.asp?id=712"
-    Status: active
-    DefaultCarrier: myir_myd_czu5ev_v2
-  - Id: myir_myc_y7z010_som
-    Name: "MyIR MYC-Y7Z010/Z020 Zynq-7000 SoM"
-    Producer: myir
-    Type: som
-    Connector: b2b_custom_myir
-    Chip: XC7Z020-2CLG400I
-    Features:
+    url: "https://www.myirtech.com/list.asp?id=712"
+    status: active
+    default_carrier: myir_myd_czu5ev_v2
+  - id: myir_myc_y7z010_som
+    name: "MyIR MYC-Y7Z010/Z020 Zynq-7000 SoM"
+    producer: myir
+    type: som
+    connector: b2b_custom_myir
+    chip: XC7Z020-2CLG400I
+    features:
       - ddr3_memory
       - qspi_flash
       - ethernet_phy_gigabit
-    Devices:
+    devices:
       - micron_mt41k128m16
       - macronix_mx25l25645g
       - realtek_rtl8211e
-    BoardURL: "https://www.myirtech.com/list.asp?id=679"
-    Status: active
-    DefaultCarrier: myir_myd_y7z010_v2
+    url: "https://www.myirtech.com/list.asp?id=679"
+    status: active
+    default_carrier: myir_myd_y7z010_v2

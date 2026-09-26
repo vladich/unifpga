@@ -1,10 +1,12 @@
 # Renesas / ForgeFPGA — chip registry
 # ~1k LUT mini-FPGA (SLG4791x / SLG4792x). ForgeFPGA.
 
-Producer: Renesas
-Family: ForgeFPGA
-Description: ~1k LUT mini-FPGA (SLG4791x / SLG4792x). ForgeFPGA.
-DefaultToolchains:
-  - forge_fpga[*]
-Chips:
-  - Id: SLG47910V
+Family:
+  id: forgefpga
+  producer: renesas
+  name: ForgeFPGA
+  description: ~1k LUT mini-FPGA (SLG4791x / SLG4792x). ForgeFPGA.
+  default_toolchains:
+    - forge_fpga[*]
+  chips:
+    - id: SLG47910V

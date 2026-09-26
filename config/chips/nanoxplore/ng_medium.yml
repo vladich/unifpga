@@ -1,10 +1,12 @@
 # NanoXplore / NG-MEDIUM — chip registry
 # Rad-hard European FPGA, mid-range. NanoXmap.
 
-Producer: NanoXplore
-Family: NG-MEDIUM
-Description: Rad-hard European FPGA, mid-range. NanoXmap.
-DefaultToolchains:
-  - nanoxmap[*]
-Chips:
-  - Id: NG-MEDIUM-CG289
+Family:
+  id: ng_medium
+  producer: nanoxplore
+  name: NG-MEDIUM
+  description: Rad-hard European FPGA, mid-range. NanoXmap.
+  default_toolchains:
+    - nanoxmap[*]
+  chips:
+    - id: NG-MEDIUM-CG289

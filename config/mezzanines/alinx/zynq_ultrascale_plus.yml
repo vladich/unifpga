@@ -4,121 +4,120 @@
 # They are SoMs (FPGA on module + DDR + flash + B2B connector) and
 # require a carrier board to be usable. Migrated 2026-05-15.
 
-Producer: alinx
 Mezzanines:
-  - Id: alinx_acu2cg
-    Name: "Alinx ACU2CG SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU2CG-1SFVC784E
-    Features:
+  - id: alinx_acu2cg
+    name: "Alinx ACU2CG SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU2CG-1SFVC784E
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu2cg-xilinx-zynq-ultrascale-mpsoc-xczu2cg-fpga-som"
-    Status: active
-  - Id: alinx_acu3eg
-    Name: "Alinx ACU3EG SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU3EG-1SFVC784I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu2cg-xilinx-zynq-ultrascale-mpsoc-xczu2cg-fpga-som"
+    status: active
+  - id: alinx_acu3eg
+    name: "Alinx ACU3EG SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU3EG-1SFVC784I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu3eg-xilinx-zynq-ultrascale-mpsoc-xczu3eg-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axu3eg
-  - Id: alinx_acu4ev
-    Name: "Alinx ACU4EV SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU4EV-1SFVC784I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu3eg-xilinx-zynq-ultrascale-mpsoc-xczu3eg-fpga-som"
+    status: active
+    default_carrier: alinx_axu3eg
+  - id: alinx_acu4ev
+    name: "Alinx ACU4EV SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU4EV-1SFVC784I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu4ev-xilinx-zynq-ultrascale-mpsoc-xczu4ev-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axu4ev
-  - Id: alinx_acu5ev
-    Name: "Alinx ACU5EV SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU5EV-2SFVC784I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu4ev-xilinx-zynq-ultrascale-mpsoc-xczu4ev-fpga-som"
+    status: active
+    default_carrier: alinx_axu4ev
+  - id: alinx_acu5ev
+    name: "Alinx ACU5EV SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU5EV-2SFVC784I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu5ev-xilinx-zynq-ultrascale-mpsoc-xczu5ev-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axu5ev
-  - Id: alinx_acu7ev
-    Name: "Alinx ACU7EV SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU7EV-2FFVC1156I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu5ev-xilinx-zynq-ultrascale-mpsoc-xczu5ev-fpga-som"
+    status: active
+    default_carrier: alinx_axu5ev
+  - id: alinx_acu7ev
+    name: "Alinx ACU7EV SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU7EV-2FFVC1156I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu7ev-xilinx-zynq-ultrascale-mpsoc-xczu7ev-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axu7ev
-  - Id: alinx_acu9eg
-    Name: "Alinx ACU9EG SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU9EG-2FFVB1156I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu7ev-xilinx-zynq-ultrascale-mpsoc-xczu7ev-fpga-som"
+    status: active
+    default_carrier: alinx_axu7ev
+  - id: alinx_acu9eg
+    name: "Alinx ACU9EG SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU9EG-2FFVB1156I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu9eg-xilinx-zynq-ultrascale-mpsoc-xczu9eg-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axu9eg
-  - Id: alinx_acu11eg
-    Name: "Alinx ACU11EG SOM"
-    DefaultCarrier: alinx_z11_p
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU11EG-2FFVC1156I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu9eg-xilinx-zynq-ultrascale-mpsoc-xczu9eg-fpga-som"
+    status: active
+    default_carrier: alinx_axu9eg
+  - id: alinx_acu11eg
+    name: "Alinx ACU11EG SOM"
+    default_carrier: alinx_z11_p
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU11EG-2FFVC1156I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu11eg-xilinx-zynq-ultrascale-mpsoc-xczu11eg-fpga-som"
-    Status: active
-  - Id: alinx_acu15eg
-    Name: "Alinx ACU15EG SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU15EG-2FFVB1156I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu11eg-xilinx-zynq-ultrascale-mpsoc-xczu11eg-fpga-som"
+    status: active
+  - id: alinx_acu15eg
+    name: "Alinx ACU15EG SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU15EG-2FFVB1156I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu15eg-xilinx-zynq-ultrascale-mpsoc-xczu15eg-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_axu15eg
-  - Id: alinx_acu19eg
-    Name: "Alinx ACU19EG SOM"
-    DefaultCarrier: alinx_z19_p
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCZU19EG-2FFVC1760I
-    Features:
+    url: "https://coderobin.com/products/alinx-acu15eg-xilinx-zynq-ultrascale-mpsoc-xczu15eg-fpga-som"
+    status: active
+    default_carrier: alinx_axu15eg
+  - id: alinx_acu19eg
+    name: "Alinx ACU19EG SOM"
+    default_carrier: alinx_z19_p
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCZU19EG-2FFVC1760I
+    features:
       - ddr4_memory
       - qspi_flash
       - emmc_flash
-    BoardURL: "https://coderobin.com/products/alinx-acu19eg-xilinx-zynq-ultrascale-mpsoc-xczu19eg-fpga-som"
-    Status: active
+    url: "https://coderobin.com/products/alinx-acu19eg-xilinx-zynq-ultrascale-mpsoc-xczu19eg-fpga-som"
+    status: active

@@ -1,13 +1,15 @@
 # Lattice / CertusPro-NX — chip registry
 # Larger Nexus FPGA. Radiant + nextpnr-nexus.
 
-Producer: Lattice
-Family: CertusPro-NX
-Description: Larger Nexus FPGA. Radiant + nextpnr-nexus.
-DefaultToolchains:
-  - nextpnr_nexus[*]
-  - nextpnr_oxide[*]
-  - lattice_radiant[*]
-Chips:
-  - Id: LFCPNX-100-9LFG672C
-  - Id: LFCPNX-100-9LFG672I
+Family:
+  id: certuspro_nx
+  producer: lattice
+  name: CertusPro-NX
+  description: Larger Nexus FPGA. Radiant + nextpnr-nexus.
+  default_toolchains:
+    - nextpnr_nexus[*]
+    - nextpnr_oxide[*]
+    - lattice_radiant[*]
+  chips:
+    - id: LFCPNX-100-9LFG672C
+    - id: LFCPNX-100-9LFG672I

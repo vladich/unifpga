@@ -1,12 +1,14 @@
 # Lattice / MachXO3 — chip registry
 # MachXO3 LF/L successor to MachXO2. Diamond.
 
-Producer: Lattice
-Family: MachXO3
-Description: MachXO3 LF/L successor to MachXO2. Diamond.
-DefaultToolchains:
-  - lattice_diamond[*]
-  - nextpnr_trellis[*]
-Chips:
-  - Id: LCMXO3LF-6900C-5BG256C
-  - Id: LCMXO3LF-9400C-5BG400C
+Family:
+  id: machxo3
+  producer: lattice
+  name: MachXO3
+  description: MachXO3 LF/L successor to MachXO2. Diamond.
+  default_toolchains:
+    - lattice_diamond[*]
+    - nextpnr_trellis[*]
+  chips:
+    - id: LCMXO3LF-6900C-5BG256C
+    - id: LCMXO3LF-9400C-5BG400C

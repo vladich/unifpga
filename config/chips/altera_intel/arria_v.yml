@@ -1,12 +1,14 @@
 # Altera (Intel) / Arria V — chip registry
 # 28 nm Arria GX/GZ/SX. Quartus Prime.
 
-Producer: Altera (Intel)
-Family: Arria V
-Description: 28 nm Arria GX/GZ/SX. Quartus Prime.
-DefaultToolchains:
-  - quartus_prime_standard[*]
-Chips:
-  - Id: 5AGXFB3H4F35C5N
-  - Id: 5AGZME5K2F40I3N
-  - Id: 5AGXFB3H4F35C4N
+Family:
+  id: arria_v
+  producer: intel_altera
+  name: Arria V
+  description: 28 nm Arria GX/GZ/SX. Quartus Prime.
+  default_toolchains:
+    - quartus_prime_standard[*]
+  chips:
+    - id: 5AGXFB3H4F35C5N
+    - id: 5AGZME5K2F40I3N
+    - id: 5AGXFB3H4F35C4N

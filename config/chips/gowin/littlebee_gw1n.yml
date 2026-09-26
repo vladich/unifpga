@@ -1,17 +1,19 @@
 # Gowin / LittleBee/GW1N — chip registry
 # Small, low-cost Chinese FPGAs (LittleBee series). Gowin EDA + apicula (open).
 
-Producer: Gowin
-Family: LittleBee/GW1N
-Description: Small, low-cost Chinese FPGAs (LittleBee series). Gowin EDA + apicula (open).
-DefaultToolchains:
-  - gowin_eda[*]
-  - nextpnr_apicula[*]
-Chips:
-  - Id: GW1N-1-LV
-  - Id: GW1N-LV1QN48C6/I5
-  - Id: GW1N-LV4LQ144C6/I5
-  - Id: GW1N-LV9EQ144C6/I5
-  - Id: GW1N-LV9LQ144C7/I6
-  - Id: GW1NSR-LV4CMPG64PC7/I6
-  - Id: GW1NSR-LV4CMG64PC7/I6
+Family:
+  id: littlebee_gw1n
+  producer: gowin_semi
+  name: LittleBee/GW1N
+  description: Small, low-cost Chinese FPGAs (LittleBee series). Gowin EDA + apicula (open).
+  default_toolchains:
+    - gowin_eda[*]
+    - nextpnr_apicula[*]
+  chips:
+    - id: GW1N-1-LV
+    - id: GW1N-LV1QN48C6/I5
+    - id: GW1N-LV4LQ144C6/I5
+    - id: GW1N-LV9EQ144C6/I5
+    - id: GW1N-LV9LQ144C7/I6
+    - id: GW1NSR-LV4CMPG64PC7/I6
+    - id: GW1NSR-LV4CMG64PC7/I6

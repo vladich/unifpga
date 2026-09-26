@@ -4,17 +4,16 @@
 # They are SoMs (FPGA on module + DDR + flash + B2B connector) and
 # require a carrier board to be usable. Migrated 2026-05-15.
 
-Producer: alinx
 Mezzanines:
-  - Id: alinx_ac7k325b
-    Name: "Alinx AC7K325B SOM"
-    DefaultCarrier: alinx_av7k325
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7K325T-2FFG900I
-    Features:
+  - id: alinx_ac7k325b
+    name: "Alinx AC7K325B SOM"
+    default_carrier: alinx_av7k325
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7K325T-2FFG900I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7K325b-xilinx-kintex-7-xc7k325t-fpga-som"
-    Status: active
+    url: "https://coderobin.com/products/alinx-ac7K325b-xilinx-kintex-7-xc7k325t-fpga-som"
+    status: active

@@ -1,15 +1,17 @@
 # Microchip (Actel) / PolarFire SoC — chip registry
 # PolarFire + RISC-V quad-core. Libero SoC + SoftConsole.
 
-Producer: Microchip (Actel)
-Family: PolarFire SoC
-Description: PolarFire + RISC-V quad-core. Libero SoC + SoftConsole.
-DefaultToolchains:
-  - libero_soc[*]
-Chips:
-  - Id: MPFS025T-1FCVG484E
-  - Id: MPFS025T-FCSG325E
-  - Id: MPFS095T-1FCSG325E
-  - Id: MPFS250T-FCG1152EES
-  - Id: MPFS250T-FCVG484E
-  - Id: MPFS250T-FCVG484EES
+Family:
+  id: polarfire_soc
+  producer: microchip
+  name: PolarFire SoC
+  description: PolarFire + RISC-V quad-core. Libero SoC + SoftConsole.
+  default_toolchains:
+    - libero_soc[*]
+  chips:
+    - id: MPFS025T-1FCVG484E
+    - id: MPFS025T-FCSG325E
+    - id: MPFS095T-1FCSG325E
+    - id: MPFS250T-FCG1152EES
+    - id: MPFS250T-FCVG484E
+    - id: MPFS250T-FCVG484EES

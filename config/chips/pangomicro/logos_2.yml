@@ -1,18 +1,20 @@
 # Pangomicro / Logos-2 — chip registry
 # 28 nm Logos II. PDS.
 
-Producer: Pangomicro
-Family: Logos-2
-Description: 28 nm Logos II. PDS.
-DefaultToolchains:
-  - pango_ds[*]
-Chips:
-  - Id: PG2L100HFBG484
-  - Id: PG2L50H-6IMBG324
-  - Id: PG2L50H-6IFBG484
-  - Id: PG2L50H-FBG484
-  - Id: PG2L100H-6IFBG676
-  - Id: PG2L200H-6IFBB484
-  - Id: PG2L200H-FBB484
-  - Id: PG2L200H-6IFBB676
-  - Id: PG2L200H-FFBG1156
+Family:
+  id: logos_2
+  producer: pangomicro
+  name: Logos-2
+  description: 28 nm Logos II. PDS.
+  default_toolchains:
+    - pango_ds[*]
+  chips:
+    - id: PG2L100HFBG484
+    - id: PG2L50H-6IMBG324
+    - id: PG2L50H-6IFBG484
+    - id: PG2L50H-FBG484
+    - id: PG2L100H-6IFBG676
+    - id: PG2L200H-6IFBB484
+    - id: PG2L200H-FBB484
+    - id: PG2L200H-6IFBB676
+    - id: PG2L200H-FFBG1156

@@ -1,13 +1,15 @@
 # Microchip (Actel) / SmartFusion2 — chip registry
 # Cortex-M3 + IGLOO2 fabric. Libero SoC.
 
-Producer: Microchip (Actel)
-Family: SmartFusion2
-Description: Cortex-M3 + IGLOO2 fabric. Libero SoC.
-DefaultToolchains:
-  - libero_soc[*]
-Chips:
-  - Id: M2S025-FG484
-  - Id: M2S025T-FCSG325-1
-  - Id: M2S090TS-FGG484
-  - Id: M2S150-FCG1152I
+Family:
+  id: smartfusion2
+  producer: microchip
+  name: SmartFusion2
+  description: Cortex-M3 + IGLOO2 fabric. Libero SoC.
+  default_toolchains:
+    - libero_soc[*]
+  chips:
+    - id: M2S025-FG484
+    - id: M2S025T-FCSG325-1
+    - id: M2S090TS-FGG484
+    - id: M2S150-FCG1152I

@@ -1,9 +1,11 @@
 # Efinix / Topaz - chip registry
 
-Producer: Efinix
-Family: Topaz
-Description: ""
-DefaultToolchains:
-  - efinity[*]
-Chips:
-  - Id: Tz170J484C4
+Family:
+  id: topaz
+  producer: efinix
+  name: Topaz
+  description: ""
+  default_toolchains:
+    - efinity[*]
+  chips:
+    - id: Tz170J484C4

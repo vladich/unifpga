@@ -1,10 +1,12 @@
 # Anlogic / Elf EF2 — chip registry
 # Anlogic Elf 2. TD.
 
-Producer: Anlogic
-Family: Elf EF2
-Description: Anlogic Elf 2. TD.
-DefaultToolchains:
-  - td[*]
-Chips:
-  - Id: EF2L45LG144C
+Family:
+  id: elf_ef2
+  producer: anlogic
+  name: Elf EF2
+  description: Anlogic Elf 2. TD.
+  default_toolchains:
+    - td[*]
+  chips:
+    - id: EF2L45LG144C

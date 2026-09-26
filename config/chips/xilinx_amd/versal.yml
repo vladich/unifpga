@@ -1,25 +1,27 @@
 # Xilinx (AMD) / Versal — chip registry
 # 7 nm ACAP — AI Engines + scalar + PL. Vivado + Vitis.
 
-Producer: Xilinx (AMD)
-Family: Versal
-Description: 7 nm ACAP — AI Engines + scalar + PL. Vivado + Vitis.
-DefaultToolchains:
-  - vivado[*]
-Chips:
-  - Id: XC2VE3858-1LSESFVA1760
-  - Id: XCVC1902-1MSEVSVA2197
-  - Id: XCVC1902-2MSEVSVA2197
-  - Id: XCVC1902-2MSEVSVD1760
-  - Id: XCVE2002-1LSESFVA784
-  - Id: XCVE2302-1LSESFVA784
-  - Id: XCVE2802-2MSEVSVH1760
-  - Id: XCVH1582-2MSEVSVA3697
-  - Id: XCVM1802-2MSEVSVA2197
-  - Id: XCVM1802-2MSEVSVH1760
-  - Id: XCVP1202-2MSEVSVA2785
-  - Id: XCVP1502-1MSEVSVA2197
-  - Id: XCVP1502-2MSEVSVA2197
-  - Id: XCVP1802-2MSEVSVA6865
-  - Id: XCVC1502-2MSEVSVA2197
-  - Id: XCVP1802-2MSEVSVA5601
+Family:
+  id: versal
+  producer: xilinx_amd
+  name: Versal
+  description: 7 nm ACAP — AI Engines + scalar + PL. Vivado + Vitis.
+  default_toolchains:
+    - vivado[*]
+  chips:
+    - id: XC2VE3858-1LSESFVA1760
+    - id: XCVC1902-1MSEVSVA2197
+    - id: XCVC1902-2MSEVSVA2197
+    - id: XCVC1902-2MSEVSVD1760
+    - id: XCVE2002-1LSESFVA784
+    - id: XCVE2302-1LSESFVA784
+    - id: XCVE2802-2MSEVSVH1760
+    - id: XCVH1582-2MSEVSVA3697
+    - id: XCVM1802-2MSEVSVA2197
+    - id: XCVM1802-2MSEVSVH1760
+    - id: XCVP1202-2MSEVSVA2785
+    - id: XCVP1502-1MSEVSVA2197
+    - id: XCVP1502-2MSEVSVA2197
+    - id: XCVP1802-2MSEVSVA6865
+    - id: XCVC1502-2MSEVSVA2197
+    - id: XCVP1802-2MSEVSVA5601

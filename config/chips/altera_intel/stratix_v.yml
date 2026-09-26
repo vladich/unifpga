@@ -1,14 +1,16 @@
 # Altera (Intel) / Stratix V — chip registry
 # 28 nm high-end. Quartus Prime Std.
 
-Producer: Altera (Intel)
-Family: Stratix V
-Description: 28 nm high-end. Quartus Prime Std.
-DefaultToolchains:
-  - quartus_prime_standard[*]
-Chips:
-  - Id: 5SGSMD5K2F40C2N
-  - Id: 5SGTMC7K3F40C2N
-  - Id: 5SGXEA7K2F40C2N
-  - Id: 5SGXEA7N2F45C2N
-  - Id: 5SGXEABK2H40C2
+Family:
+  id: stratix_v
+  producer: intel_altera
+  name: Stratix V
+  description: 28 nm high-end. Quartus Prime Std.
+  default_toolchains:
+    - quartus_prime_standard[*]
+  chips:
+    - id: 5SGSMD5K2F40C2N
+    - id: 5SGTMC7K3F40C2N
+    - id: 5SGXEA7K2F40C2N
+    - id: 5SGXEA7N2F45C2N
+    - id: 5SGXEABK2H40C2

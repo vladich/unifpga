@@ -1,300 +1,299 @@
 ---
-# Registry of synthesis toolchains.
+# Registry of synthesis toolchains (schema: config/schema/toolchain.schema.json).
 #
-# Schema:
-#   Id:             stable kebab-case identifier used in chips/<family>.yml and
-#                   setups/<id>.yml
-#   Name:           display name
-#   SupportedOperations: executable driver methods; [] marks a catalogue-only
-#                   toolchain. A found installation does not imply support.
-#   KnownVersions:  list of versions seen in the wild; lets chip entries
-#                   reference a constrained range like `vivado[2017.4+]` or
-#                   `quartus_prime_lite[18.1-23.1std]`
-#   Version:        optional configured version pin. When an installation is
-#                   found, its path-derived version must agree with this pin;
-#                   chip version constraints are checked at build/program
-#                   admission. A binary version probe is not yet available.
-#   InstallDir:     optional pin for where the toolchain lives locally; `~`
-#                   and `$VAR` expand at read time. When the pin is empty or
-#                   does not exist, tools/toolchain_detect.py finds the
-#                   install: the vendor environment variable (XILINX_VIVADO,
-#                   QUARTUS_ROOTDIR, GOWIN_VERSION_DIR, EFINITY_HOME,
-#                   OSS_CAD_SUITE), the tool on $PATH, then the
-#                   default install parents ($HOME, /opt, /tools; /Applications
-#                   on macOS; /c /d /e on Windows) with the newest version.
-#                   `python3 synthesize.py --list-toolchains` shows the result.
+#   id:              the toolchain's id, as chip families (config/chips/) and
+#                    rigs (config/setups/) name it
+#   name:            display name
+#   operations:      the executable driver methods; [] marks a catalogue-only
+#                    toolchain. A found installation does not imply support.
+#   known_versions:  versions seen in the wild; lets a chip family constrain
+#                    a range like `vivado[2017.4+]` or
+#                    `quartus_prime_lite[18.1-23.1std]`
+#   version:         optional configured version pin. When an installation is
+#                    found, its path-derived version must agree with this pin;
+#                    chip version constraints are checked at build/program
+#                    admission. A binary version probe is not yet available.
+#   install_dir:     optional pin for where the toolchain lives locally; `~`
+#                    and `$VAR` expand at read time. When the pin is empty or
+#                    does not exist, tools/toolchain_detect.py finds the
+#                    install: the vendor environment variable (XILINX_VIVADO,
+#                    QUARTUS_ROOTDIR, GOWIN_VERSION_DIR, EFINITY_HOME,
+#                    OSS_CAD_SUITE), the tool on $PATH, then the
+#                    default install parents ($HOME, /opt, /tools; /Applications
+#                    on macOS; /c /d /e on Windows) with the newest version.
+#                    `./unifpga tools` shows the result.
 #
 # Editions: where a vendor ships separate binaries per edition (Quartus
 # Prime Lite vs Standard vs Pro; Gowin EDA vs Gowin EDA Standard NODELOCK),
-# we encode each as a distinct Id. Editions that only differ by license
+# we encode each as a distinct id. Editions that only differ by license
 # (Vivado WebPACK / Design / Enterprise; Lattice Diamond Free / Subscription)
-# share a single Id — they all run the same on-disk binary.
+# share a single id — they all run the same on-disk binary.
 
 Toolchains:
 #
 #  ----------------- Proprietary toolchains ------------------
 #
-  - Id: vivado
-    Name: Vivado
-    SupportedOperations: [synthesize, program]
-    KnownVersions: [2014.4, 2015.4, 2016.4, 2017.4, 2018.3, 2019.2, 2020.2, 2021.2, 2022.2, 2023.2, 2024.2]
-    Version: "2023.2"
-    InstallDir: "~/Xilinx/Vivado/2023.2/"
+  - id: vivado
+    name: Vivado
+    operations: [synthesize, program]
+    known_versions: [2014.4, 2015.4, 2016.4, 2017.4, 2018.3, 2019.2, 2020.2, 2021.2, 2022.2, 2023.2, 2024.2]
+    version: "2023.2"
+    install_dir: "~/Xilinx/Vivado/2023.2/"
 
-  - Id: ise
-    Name: XilinxISE
-    SupportedOperations: [synthesize]
-    KnownVersions: [14.7]
-    Version: "14.7"
-    InstallDir:
+  - id: ise
+    name: XilinxISE
+    operations: [synthesize]
+    known_versions: [14.7]
+    version: "14.7"
+    install_dir:
 
-  - Id: quartus_prime_lite
-    Name: "Quartus Prime Lite Edition"
-    SupportedOperations: [synthesize, program]
+  - id: quartus_prime_lite
+    name: "Quartus Prime Lite Edition"
+    operations: [synthesize, program]
     # Free edition. Covers MAX 10, Cyclone IV / V / 10 LP, Cyclone V SoC,
     # Arria II GX, MAX V / II CPLDs. Anything beyond needs Standard or Pro.
-    KnownVersions: ["18.1", "19.1", "20.1", "21.1", "22.1std", "23.1std", "24.1std"]
-    Version: "23.1std"
-    InstallDir: "~/intelFPGA_lite/23.1std/quartus/"
+    known_versions: ["18.1", "19.1", "20.1", "21.1", "22.1std", "23.1std", "24.1std"]
+    version: "23.1std"
+    install_dir: "~/intelFPGA_lite/23.1std/quartus/"
 
-  - Id: quartus_prime_standard
-    Name: "Quartus Prime Standard Edition"
-    SupportedOperations: [synthesize, program]
+  - id: quartus_prime_standard
+    name: "Quartus Prime Standard Edition"
+    operations: [synthesize, program]
     # Paid edition. Adds Stratix V, Arria V, Cyclone 10 GX support.
-    KnownVersions: ["18.1", "19.1", "20.1", "21.1", "22.1", "23.1", "24.1"]
-    Version:
-    InstallDir:
+    known_versions: ["18.1", "19.1", "20.1", "21.1", "22.1", "23.1", "24.1"]
+    version:
+    install_dir:
 
-  - Id: quartus_prime_pro
-    Name: "Quartus Prime Pro Edition"
-    SupportedOperations: [synthesize, program]
+  - id: quartus_prime_pro
+    name: "Quartus Prime Pro Edition"
+    operations: [synthesize, program]
     # Required for Stratix 10, Agilex 3/5/7/9, Arria 10.
-    KnownVersions: ["18.1", "19.3", "20.4", "21.4", "22.4", "23.4", "24.3"]
-    Version:
-    InstallDir:
+    known_versions: ["18.1", "19.3", "20.4", "21.4", "22.4", "23.4", "24.3"]
+    version:
+    install_dir:
 
-  - Id: quartus2
-    Name: Quartus2
-    SupportedOperations: [synthesize, program]
+  - id: quartus2
+    name: Quartus2
+    operations: [synthesize, program]
     # Quartus II 13.0sp1 is the last version that supports Cyclone II/III
     # (used by DE0/DE1/DE2/dk_dev_3c120n/marsohod_mcy316). Cyclone IV/V/MAX 10
     # still go through quartus_prime_lite.
-    KnownVersions: ["13.0sp1", "13.1"]
-    Version: "13.0sp1"
-    InstallDir: "~/altera/13.0sp1/quartus/"
+    known_versions: ["13.0sp1", "13.1"]
+    version: "13.0sp1"
+    install_dir: "~/altera/13.0sp1/quartus/"
 
-  - Id: libero_soc
-    Name: LiberoSoC
-    SupportedOperations: [synthesize]
-    KnownVersions: ["2021.3", "2022.2", "2022.3", "2023.1", "2023.2", "2024.1", "2024.2"]
-    Version: "2024.1"
-    InstallDir: "/usr/local/microchip/Libero_SoC_v2024.1/Libero/"
+  - id: libero_soc
+    name: LiberoSoC
+    operations: [synthesize]
+    known_versions: ["2021.3", "2022.2", "2022.3", "2023.1", "2023.2", "2024.1", "2024.2"]
+    version: "2024.1"
+    install_dir: "/usr/local/microchip/Libero_SoC_v2024.1/Libero/"
 
-  - Id: libero_ide
-    Name: LiberoIDE
-    SupportedOperations: []
+  - id: libero_ide
+    name: LiberoIDE
+    operations: []
     # Final Libero IDE release was v9.2 (~2014). Covers Actel-era flash:
     # ProASIC3 / IGLOO / SmartFusion / Fusion / Axcelerator.
-    KnownVersions: ["9.1", "9.2"]
-    Version:
-    InstallDir:
+    known_versions: ["9.1", "9.2"]
+    version:
+    install_dir:
 
-  - Id: efinity
-    Name: Efinity
-    SupportedOperations: [synthesize, program]
-    KnownVersions: ["2022.1", "2022.2", "2023.1", "2023.2", "2024.1", "2024.2"]
-    Version: "2023.2"
-    InstallDir: "~/efinity/2023.2/"
+  - id: efinity
+    name: Efinity
+    operations: [synthesize, program]
+    known_versions: ["2022.1", "2022.2", "2023.1", "2023.2", "2024.1", "2024.2"]
+    version: "2023.2"
+    install_dir: "~/efinity/2023.2/"
 
-  - Id: gowin_eda
-    Name: GowinEDA
-    SupportedOperations: [synthesize, program]
+  - id: gowin_eda
+    name: GowinEDA
+    operations: [synthesize, program]
     # Educational license (free). Covers GW1N* / GW2A* parts.
-    KnownVersions: ["1.9.9.03.Education", "1.9.10.02.Educational", "1.9.11.01.Educational", "1.9.11.03.Educational"]
-    Version: "1.9.11.03.Educational"
-    InstallDir: "~/Gowin/1.9.11.03.Educational/"
+    known_versions: ["1.9.9.03.Education", "1.9.10.02.Educational", "1.9.11.01.Educational", "1.9.11.03.Educational"]
+    version: "1.9.11.03.Educational"
+    install_dir: "~/Gowin/1.9.11.03.Educational/"
 
-  - Id: gowin_standard
-    Name: GowinStandard
-    SupportedOperations: [synthesize, program]
+  - id: gowin_standard
+    name: GowinStandard
+    operations: [synthesize, program]
     # NODELOCK Standard license required (for AroraV/GW5* parts).
-    KnownVersions: ["1.9.8.11", "1.9.9.02", "1.9.10"]
-    Version: "1.9.9.02"
-    InstallDir: "~/Gowin/1.9.9.02/"
+    known_versions: ["1.9.8.11", "1.9.9.02", "1.9.10"]
+    version: "1.9.9.02"
+    install_dir: "~/Gowin/1.9.9.02/"
 
-  - Id: pango_ds
-    Name: PangoDS
-    SupportedOperations: []
-    KnownVersions: ["2024.1"]
-    Version:
-    InstallDir:
+  - id: pango_ds
+    name: PangoDS
+    operations: []
+    known_versions: ["2024.1"]
+    version:
+    install_dir:
 
-  - Id: lattice_radiant
-    Name: LatticeRadiant
-    SupportedOperations: []
-    KnownVersions: ["2.2", "3.0", "3.1", "3.2", "2023.1", "2023.2", "2024.1"]
-    Version:
-    InstallDir:
+  - id: lattice_radiant
+    name: LatticeRadiant
+    operations: []
+    known_versions: ["2.2", "3.0", "3.1", "3.2", "2023.1", "2023.2", "2024.1"]
+    version:
+    install_dir:
 
-  - Id: lattice_diamond
-    Name: LatticeDiamond
-    SupportedOperations: []
+  - id: lattice_diamond
+    name: LatticeDiamond
+    operations: []
     # ECP3 / ECP5, MachXO / XO2 / XO3.
-    KnownVersions: ["3.10", "3.11", "3.12", "3.13"]
-    Version:
-    InstallDir:
+    known_versions: ["3.10", "3.11", "3.12", "3.13"]
+    version:
+    install_dir:
 
-  - Id: icecube2
-    Name: iCEcube2
-    SupportedOperations: []
+  - id: icecube2
+    name: iCEcube2
+    operations: []
     # SiliconBlue-heritage flow for original iCE40 LP/HX/LM. Last public
     # release ~2020.12; maintained but not actively developed.
-    KnownVersions: ["2017.08", "2020.12"]
-    Version:
-    InstallDir:
+    known_versions: ["2017.08", "2020.12"]
+    version:
+    install_dir:
 
-  - Id: isplever
-    Name: ispLEVER
-    SupportedOperations: []
+  - id: isplever
+    name: ispLEVER
+    operations: []
     # EOL FPGA flow. Covers ECP/ECP2/ECP3 (alt path), XP/XP2, MachXO,
     # ispLSI, LatticeSC/SCM, ORCA.
-    KnownVersions: ["8.0", "8.1"]
-    Version: "8.1"
-    InstallDir:
+    known_versions: ["8.0", "8.1"]
+    version: "8.1"
+    install_dir:
 
-  - Id: isplever_classic
-    Name: ispLEVER-Classic
-    SupportedOperations: []
+  - id: isplever_classic
+    name: ispLEVER-Classic
+    operations: []
     # Still-distributed CPLD-only build. ispMACH 4000 / 5000.
-    KnownVersions: ["2.0", "2.1"]
-    Version: "2.1"
-    InstallDir:
+    known_versions: ["2.0", "2.1"]
+    version: "2.1"
+    install_dir:
 
-  - Id: max_plus_2
-    Name: MAX+PLUS-II
-    SupportedOperations: []
+  - id: max_plus_2
+    name: MAX+PLUS-II
+    operations: []
     # Altera's pre-Quartus flow. Covers FLEX, APEX 20K, ACEX, MAX 7000.
-    KnownVersions: ["10.2-BL2"]
-    Version: "10.2-BL2"
-    InstallDir:
+    known_versions: ["10.2-BL2"]
+    version: "10.2-BL2"
+    install_dir:
 
-  - Id: actel_designer
-    Name: ActelDesigner
-    SupportedOperations: []
+  - id: actel_designer
+    name: ActelDesigner
+    operations: []
     # Pre-Libero Actel flow. ACT 1/2/3, eX, SX, MX, RTSX.
-    KnownVersions: ["6.2", "7.0"]
-    Version:
-    InstallDir:
+    known_versions: ["6.2", "7.0"]
+    version:
+    install_dir:
 
-  - Id: ace
-    Name: AchronixACE
-    SupportedOperations: []
-    KnownVersions: ["9.1", "10.0", "10.1", "11.0"]
-    Version:
-    InstallDir:
+  - id: ace
+    name: AchronixACE
+    operations: []
+    known_versions: ["9.1", "10.0", "10.1", "11.0"]
+    version:
+    install_dir:
 
-  - Id: td
-    Name: TangDynasty
-    SupportedOperations: []
-    KnownVersions: ["4.6", "5.0", "5.6"]
-    Version:
-    InstallDir:
+  - id: td
+    name: TangDynasty
+    operations: []
+    known_versions: ["4.6", "5.0", "5.6"]
+    version:
+    install_dir:
 
-  - Id: forge_fpga
-    Name: ForgeFPGA
-    SupportedOperations: []
-    KnownVersions: ["5.0", "6.0"]
-    Version:
-    InstallDir:
+  - id: forge_fpga
+    name: ForgeFPGA
+    operations: []
+    known_versions: ["5.0", "6.0"]
+    version:
+    install_dir:
 
-  - Id: nanoxmap
-    Name: NanoXmap
-    SupportedOperations: []
-    KnownVersions: ["3.5", "4.0", "4.5"]
-    Version:
-    InstallDir:
+  - id: nanoxmap
+    name: NanoXmap
+    operations: []
+    known_versions: ["3.5", "4.0", "4.5"]
+    version:
+    install_dir:
 
-  - Id: quickworks
-    Name: QuickWorks
-    SupportedOperations: []
+  - id: quickworks
+    name: QuickWorks
+    operations: []
     # Legacy QuickLogic IDE for pre-EOS-S3 parts.
-    KnownVersions: ["10.0", "11.0", "14.4"]
-    Version:
-    InstallDir:
+    known_versions: ["10.0", "11.0", "14.4"]
+    version:
+    install_dir:
 
 #
 #  ------ Open-source toolchains based on yosys/nextpnr -------
 #
-  - Id: nextpnr_openxc7
-    Name: OpenXC7
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_openxc7
+    name: OpenXC7
+    operations: [synthesize, program]
     # yosys/nextpnr-xilinx: Artix 7, Spartan 7, Kintex 7 (partial), Zynq 7000.
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:
 
-  - Id: nextpnr_icestorm
-    Name: IceStorm
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_icestorm
+    name: IceStorm
+    operations: [synthesize, program]
     # yosys/nextpnr-ice40: iCE40 + iCE40 UltraPlus.
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:
 
-  - Id: nextpnr_trellis
-    Name: Trellis
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_trellis
+    name: Trellis
+    operations: [synthesize, program]
     # yosys/nextpnr-ecp5: ECP5; yosys/nextpnr-machxo2: MachXO2/3L/LF.
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:
 
-  - Id: nextpnr_nexus
-    Name: Nexus
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_nexus
+    name: Nexus
+    operations: [synthesize, program]
     # yosys/nextpnr-nexus: Lattice CrossLink-NX, Certus-NX, CertusPro-NX,
     # MachXO5-NX (preliminary).
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:
 
-  - Id: nextpnr_oxide
-    Name: Oxide
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_oxide
+    name: Oxide
+    operations: [synthesize, program]
     # Historical name for the Nexus open flow — thin re-export of nextpnr_nexus.
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:
 
-  - Id: nextpnr_mistral
-    Name: Mistral
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_mistral
+    name: Mistral
+    operations: [synthesize, program]
     # yosys/nextpnr-mistral: Cyclone V (bitstream OK; programmer needs Quartus
     # JIC or openOCD).
-    KnownVersions: [git-master-d6bd02c]   # last commit with both pos_t and rnode_t typedefs
-    Version:
-    InstallDir:
+    known_versions: [git-master-d6bd02c]   # last commit with both pos_t and rnode_t typedefs
+    version:
+    install_dir:
 
-  - Id: nextpnr_apicula
-    Name: Apicula
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_apicula
+    name: Apicula
+    operations: [synthesize, program]
     # yosys/nextpnr-himbaechel + Apicula: Gowin LittleBee/Arora.
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:
 
-  - Id: nextpnr_gatemate
-    Name: Gatemate
-    SupportedOperations: [synthesize, program]
+  - id: nextpnr_gatemate
+    name: Gatemate
+    operations: [synthesize, program]
     # yosys/nextpnr-himbaechel + prjpeppercorn: Cologne Chip GateMate.
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:
 
-  - Id: qorc_sdk
-    Name: QORC-SDK
-    SupportedOperations: []
+  - id: qorc_sdk
+    name: QORC-SDK
+    operations: []
     # QuickLogic open flow for EOS S3 (yosys + VPR via ql-symbiflow).
-    KnownVersions: [git-master]
-    Version:
-    InstallDir:
+    known_versions: [git-master]
+    version:
+    install_dir:

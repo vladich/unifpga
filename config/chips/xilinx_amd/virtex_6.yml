@@ -1,10 +1,12 @@
 # Xilinx (AMD) / Virtex 6 — chip registry
 # 40 nm Virtex (2009). ISE 14.7 last.
 
-Producer: Xilinx (AMD)
-Family: Virtex 6
-Description: 40 nm Virtex (2009). ISE 14.7 last.
-DefaultToolchains:
-  - ise[*]
-Chips:
-  - Id: XC6VLX240T-1FFG1156C
+Family:
+  id: virtex_6
+  producer: xilinx_amd
+  name: Virtex 6
+  description: 40 nm Virtex (2009). ISE 14.7 last.
+  default_toolchains:
+    - ise[*]
+  chips:
+    - id: XC6VLX240T-1FFG1156C

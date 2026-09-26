@@ -1,12 +1,14 @@
 # Lattice / MachXO3D — chip registry
 # MachXO3 with security blocks (hardware root of trust). Diamond-only.
 
-Producer: Lattice
-Family: MachXO3D
-Description: MachXO3 with security blocks (hardware root of trust). Diamond-only.
-DefaultToolchains:
-  - lattice_diamond[*]
-Chips:
-  - Id: LCMXO3D-9400HC-1BG256C
-  - Id: LCMXO3D-9400HC-5BG400I
-  - Id: LCMXO3D-9400HC-5BG256C
+Family:
+  id: machxo3d
+  producer: lattice
+  name: MachXO3D
+  description: MachXO3 with security blocks (hardware root of trust). Diamond-only.
+  default_toolchains:
+    - lattice_diamond[*]
+  chips:
+    - id: LCMXO3D-9400HC-1BG256C
+    - id: LCMXO3D-9400HC-5BG400I
+    - id: LCMXO3D-9400HC-5BG256C

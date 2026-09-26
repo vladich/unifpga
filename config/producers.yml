@@ -1,0 +1,868 @@
+---
+# Registry of producers: who makes boards, chips and modules (several make
+# both — AMD/Xilinx and Intel/Altera also ship their own dev kits). Schema:
+# config/schema/producer.schema.json.
+#
+# A board's `producer:` (config/boards/), a chip family's `producer:`
+# (config/chips/) and a mezzanine's `producer:` (config/mezzanines/) name an
+# `id:` of this registry.
+#
+# Slug rules:
+#   - lowercase, spaces/punct → underscore
+#   - parentheses dropped (e.g. "Xilinx (AMD)" → xilinx_amd)
+#   - leading-digit slugs avoided (e.g. "1BitSquared" → onebitsquared)
+#   - chip-vendor producers prefer a `<vendor>_semi` or vendor-line suffix
+#     to disambiguate corporate-rename history
+#     (e.g. Gowin Semiconductor → gowin_semi; Intel/Altera → intel_altera)
+#
+# Categories vocabulary:
+#   chip_vendor    — designs FPGA silicon
+#   edu            — primarily educational dev boards
+#   industrial     — commercial / industrial-grade dev kits, accelerators
+#   hobby          — community / hobbyist boards
+#   som_vendor     — primarily ships system-on-modules
+#   academic       — affiliated with / spun out of a university lab
+#   foss_friendly  — explicitly supports open-source toolchains
+#   defunct        — no longer in business (combined with defunct_since:)
+#
+# Per-entry fields: id, name, aka (list or null), url, country, founded (year
+# or null), categories (list), description, defunct_since (year or null),
+# notes (string or null)
+
+Producers:
+
+  - id: achronix
+    name: "Achronix Semiconductor"
+    aka: ["Achronix"]
+    url: "https://www.achronix.com/"
+    country: USA
+    founded: 2004
+    categories: [chip_vendor, industrial]
+    description: "Fabless semiconductor company producing high-performance Speedster22i HD and Speedster7t FPGAs and Speedcore embedded FPGA (eFPGA) IP."
+    defunct_since: null
+    notes: null
+
+  - id: adiuvo
+    name: "Adiuvo Engineering & Training Ltd"
+    aka: ["Adiuvo Engineering", "Adiuvo Engineering and Training"]
+    url: "https://www.adiuvoengineering.com/"
+    country: UK
+    founded: 2014
+    categories: [edu, industrial]
+    description: "UK consultancy founded by Adam Taylor providing FPGA design services and training for mission-critical embedded systems."
+    defunct_since: null
+    notes: null
+
+  - id: alchitry
+    name: "Alchitry"
+    aka: ["Alchitry"]
+    url: "https://www.alchitry.com/"
+    country: USA
+    founded: null
+    categories: [hobby, edu]
+    description: "Maker of the Alchitry Au (Xilinx Artix-7) and Cu (Lattice iCE40) FPGA dev boards; acquired the Mojo product line from Embedded Micro."
+    defunct_since: null
+    notes: null
+
+  - id: alinx
+    name: "ALINX"
+    aka: ["Alinx", "ALINX Electronic Technology"]
+    url: "https://www.alinx.com/"
+    country: China
+    founded: 2007
+    categories: [industrial, edu]
+    description: "Chinese vendor of Xilinx/AMD and Intel/Altera FPGA development boards and SoMs, popular for Zynq/Artix kits with rich peripheral expansion."
+    defunct_since: null
+    notes: null
+
+  - id: anlogic
+    name: "Anlogic"
+    aka: ["Anlogic", "Anlu Microelectronics", "安路科技", "Shanghai Anlogic Infotech"]
+    url: "https://www.anlogic.com/"
+    country: China
+    founded: 2011
+    categories: [chip_vendor, industrial]
+    description: "Chinese FPGA chip vendor producing the Eagle, Elf, Phoenix and Salamander/SF1 FPGA families."
+    defunct_since: null
+    notes: null
+
+  - id: avnet
+    name: "Avnet"
+    aka: ["Avnet Electronics Marketing", "Avnet Silica", "Avnet/Digilent"]
+    url: "https://www.avnet.com/"
+    country: USA
+    founded: 1921
+    categories: [industrial, som_vendor]
+    description: "Global electronics distributor that also designs FPGA/SoC development kits and SoMs (MicroZed, UltraZed, MiniZed) around AMD Xilinx Zynq devices."
+    defunct_since: null
+    notes: "Operates the Avnet Engineering Services / Tria business unit for embedded modules."
+
+  - id: beagleboard
+    name: "BeagleBoard.org Foundation"
+    aka: ["BeagleBoard", "BeagleBoard.org"]
+    url: "https://www.beagleboard.org/"
+    country: USA
+    founded: 2008
+    categories: [edu, hobby, foss_friendly]
+    description: "Non-profit organization producing open-hardware single-board computers including the BeagleV-Fire (Microchip PolarFire SoC RISC-V + FPGA fabric)."
+    defunct_since: null
+    notes: null
+
+  - id: bittware
+    name: "BittWare"
+    aka: ["BittWare, a Molex Company"]
+    url: "https://www.bittware.com/"
+    country: USA
+    founded: 1989
+    categories: [industrial]
+    description: "Concord, NH-based maker of enterprise-class FPGA accelerator cards (Altera/Achronix/AMD), owned by Molex."
+    defunct_since: null
+    notes: null
+
+  - id: brisbane_silicon
+    name: "BrisbaneSilicon"
+    aka: null
+    url: "https://brisbanesilicon.com.au/"
+    country: Australia
+    founded: null
+    categories: [hobby, edu, foss_friendly]
+    description: "Small Australian team designing affordable Gowin-based FPGA and Lua-programmable microcontroller boards (BRS-100, ELM11)."
+    defunct_since: null
+    notes: null
+
+  - id: bunnie_studios
+    name: "Bunnie Studios"
+    aka: ["Sutajio Ko-usagi", "Sutajio Ko-usagi PTE LTD", "Kosagi"]
+    url: "https://www.bunniestudios.com/"
+    country: Singapore
+    founded: null
+    categories: [hobby, foss_friendly]
+    description: "Andrew 'bunnie' Huang's Singapore-based design studio producing open-hardware FPGA projects such as Novena, NeTV2, and Precursor."
+    defunct_since: null
+    notes: null
+
+  - id: cologne_chip
+    name: "Cologne Chip AG"
+    aka: ["Cologne Chip"]
+    url: "https://www.colognechip.com/"
+    country: Germany
+    founded: 2002
+    categories: [chip_vendor, foss_friendly]
+    description: "German fabless semiconductor company producing the GateMate FPGA family with a fully open-source toolchain."
+    defunct_since: null
+    notes: null
+
+  - id: colorlight
+    name: "Colorlight"
+    aka: ["ColorLight", "Colorlight Cloud Tech"]
+    url: "https://www.colorlightinside.com/"
+    country: China
+    founded: 2003
+    categories: [industrial, hobby]
+    description: "Manufacturer of LED display receiver/controller cards (e.g. 5A-75B, 5A-75E, i5/i9) widely repurposed by hobbyists as low-cost Lattice ECP5 dev boards."
+    defunct_since: null
+    notes: null
+
+  - id: digilent
+    name: "Digilent"
+    aka: ["Digilent Inc.", "Digilent (NI)"]
+    url: "https://digilent.com/"
+    country: USA
+    founded: 2000
+    categories: [edu]
+    description: "Educational electronics company known for Basys, Nexys, Arty, Cmod, Zybo and Cora FPGA/SoC boards widely used in university courses."
+    defunct_since: null
+    notes: "Acquired by National Instruments in 2013; remains the dominant academic FPGA board supplier."
+
+  - id: efinix
+    name: "Efinix"
+    aka: ["Efinix"]
+    url: "https://www.efinixinc.com/"
+    country: USA
+    founded: 2012
+    categories: [chip_vendor, industrial]
+    description: "Fabless FPGA vendor producing Trion and Titanium FPGAs based on the Quantum programmable fabric technology."
+    defunct_since: null
+    notes: null
+
+  - id: embedded_micro
+    name: "Embedded Micro"
+    aka: ["Embedded Micro"]
+    url: "https://embeddedmicro.com/"
+    country: USA
+    founded: null
+    categories: [hobby, edu, defunct]
+    description: "Original maker of the Mojo v3 (Spartan-6) FPGA dev board for hobbyists; product line and rights transferred to Alchitry."
+    defunct_since: null
+    notes: "Now operating as / superseded by Alchitry."
+
+  - id: emoocc
+    name: "emooc.cc"
+    aka: ["emoocc.cc"]
+    url: "http://www.emooc.cc/"
+    country: China
+    founded: null
+    categories: [edu, hobby]
+    description: "Chinese educational vendor of pocket-format Altera/Intel FPGA experimental boards (EPI-EWB series)."
+    defunct_since: null
+    notes: null
+
+  - id: enclustra
+    name: "Enclustra"
+    aka: ["Enclustra GmbH"]
+    url: "https://www.enclustra.com/"
+    country: Switzerland
+    founded: 2004
+    categories: [industrial, som_vendor]
+    description: "Swiss supplier of industrial FPGA system-on-modules and base boards using AMD Xilinx and Intel/Altera devices (Mercury, Mars, Atlas families)."
+    defunct_since: null
+    notes: null
+
+  - id: fabmicro
+    name: "Fabmicro LLC"
+    aka: ["Fabmicro", "ООО Фабмикро"]
+    url: "https://www.fabmicro.ru/"
+    country: Russia
+    founded: null
+    categories: [industrial, hobby, foss_friendly]
+    description: "Tyumen-based Russian electronics contract-design firm; creator of the Lattice ECP5 Karnix ASB-254 FPGA board."
+    defunct_since: null
+    notes: null
+
+  - id: flex_logix
+    name: "Flex Logix Technologies, Inc."
+    aka: ["Flex Logix", "Flexlogic"]
+    url: "https://flex-logix.com/"
+    country: USA
+    founded: 2014
+    categories: [chip_vendor, defunct]
+    description: "Mountain View, CA eFPGA IP and InferX AI accelerator vendor; assets acquired by Analog Devices in November 2024."
+    defunct_since: 2024
+    notes: "Ships eFPGA IP and AI inference chips, not dev boards. Operated independently 2014-2024; absorbed into ADI."
+
+  - id: folknology
+    name: "Folknology"
+    aka: ["Folknology"]
+    url: "https://folknology.com/"
+    country: UK
+    founded: null
+    categories: [hobby, foss_friendly]
+    description: "Independent maker of the BlackIce II and BlackIce MX open-hardware Lattice iCE40 FPGA dev boards."
+    defunct_since: null
+    notes: null
+
+  - id: foosn
+    name: "Foosn"
+    aka: ["Foosn"]
+    url: "https://www.crowdsupply.com/sutajio-kosagi/fomu"
+    country: null
+    founded: null
+    categories: [hobby, foss_friendly]
+    description: "Maker of the Fomu, a Lattice iCE40 UltraPlus FPGA board that fits entirely inside a USB Type-A port."
+    defunct_since: null
+    notes: null
+
+  - id: forgefunder
+    name: "ForgeFunder"
+    aka: null
+    url: "https://forgefunder.com/"
+    country: India
+    founded: null
+    categories: [foss_friendly, edu]
+    description: "Crowdfunding platform run by Kunal Ghosh (VLSI System Design) for open-source silicon and FPGA/RISC-V projects such as VSDSquadron and OpenPDK."
+    defunct_since: null
+    notes: "Crowdfunding platform, not a board manufacturer; hosts campaigns rather than designing boards itself."
+
+  - id: gowin_semi
+    name: "Gowin Semiconductor"
+    aka: ["Gowin", "GOWIN Semiconductor", "广东高云半导体"]
+    url: "https://www.gowinsemi.com/"
+    country: China
+    founded: 2014
+    categories: [chip_vendor, industrial]
+    description: "Chinese FPGA vendor producing the LittleBee (GW1N/GW2A) and Arora (GW5A) FPGA families, widely used on Sipeed Tang boards."
+    defunct_since: null
+    notes: null
+
+  - id: great_scott_gadgets
+    name: "Great Scott Gadgets"
+    aka: ["Great Scott Gadgets"]
+    url: "https://greatscottgadgets.com/"
+    country: USA
+    founded: 2011
+    categories: [hobby, foss_friendly, industrial]
+    description: "Open-source hardware company founded by Michael Ossmann; products include HackRF One, Ubertooth, and the LUNA/Apollo (iCE40 UltraPlus) USB debug+FPGA platform."
+    defunct_since: null
+    notes: null
+
+  - id: hitech_global
+    name: "HiTech Global, LLC"
+    aka: ["HiTech Global"]
+    url: "https://www.hitechglobal.com/"
+    country: USA
+    founded: 2004
+    categories: [industrial]
+    description: "San Jose, CA design house offering high-end Xilinx/AMD and Intel/Altera evaluation boards, FMC modules, and IP cores."
+    defunct_since: null
+    notes: null
+
+  - id: imperix
+    name: "imperix SA"
+    aka: ["Imperix"]
+    url: "https://imperix.com/"
+    country: Switzerland
+    founded: 2013
+    categories: [industrial, academic]
+    description: "Sion-based EPFL spinoff producing Zynq-based rapid control prototyping hardware (B-Box, B-Board) for power electronics research."
+    defunct_since: null
+    notes: null
+
+  - id: intel_altera
+    name: "Altera"
+    aka: ["Intel", "Intel FPGA", "Intel PSG", "Altera Corporation", "Intel (Altera)", "Altera (Intel)"]
+    url: "https://www.altera.com/"
+    country: USA
+    founded: 1983
+    categories: [chip_vendor]
+    description: "Designer of the Cyclone, Arria, Stratix and Agilex FPGA families plus SoC FPGAs; originally Altera, owned by Intel 2015-2025, then spun back out as Altera Corporation."
+    defunct_since: null
+    notes: "Acquired by Intel in 2015 as the Programmable Solutions Group; majority stake divested to Silver Lake in 2025 and re-established as standalone Altera Corp."
+
+  - id: intergalaktik
+    name: "Intergalaktik d.o.o."
+    aka: ["Intergalaktik"]
+    url: "https://www.intergalaktik.eu/"
+    country: Croatia
+    founded: null
+    categories: [hobby, foss_friendly, edu]
+    description: "Croatian company producing and distributing the ULX3S and ULX4M open-source Lattice ECP5 FPGA boards in collaboration with Radiona.org."
+    defunct_since: null
+    notes: null
+
+  - id: invent_logics
+    name: "Invent Logics"
+    aka: ["AllAboutFPGA"]
+    url: "https://allaboutfpga.com/"
+    country: India
+    founded: null
+    categories: [edu, hobby]
+    description: "Chennai-based proprietorship manufacturing the low-cost EDGE series of Xilinx Spartan-6/7, Artix-7 and Zynq SoC educational FPGA boards."
+    defunct_since: null
+    notes: null
+
+  - id: iwave
+    name: "iWave Systems Technologies Pvt. Ltd."
+    aka: ["iWave Systems", "iWave Global", "iWave Japan"]
+    url: "https://www.iwavesystems.com/"
+    country: India
+    founded: 1999
+    categories: [som_vendor, industrial]
+    description: "Bangalore-based embedded design house offering SoMs and SBCs based on Zynq UltraScale+, NXP, TI and Renesas SoCs for industrial, medical, automotive and avionics markets."
+    defunct_since: null
+    notes: null
+
+  - id: krtkl
+    name: "krtkl inc."
+    aka: null
+    url: "https://krtkl.com/"
+    country: USA
+    founded: 2014
+    categories: [hobby, industrial]
+    description: "San Francisco company producing the Snickerdoodle family of Zynq-based wireless-enabled single-board computers, originally crowdfunded via Crowd Supply."
+    defunct_since: null
+    notes: null
+
+  - id: lattice
+    name: "Lattice Semiconductor"
+    aka: ["Lattice", "Lattice Semi"]
+    url: "https://www.latticesemi.com/"
+    country: USA
+    founded: 1983
+    categories: [chip_vendor, foss_friendly]
+    description: "FPGA silicon vendor focused on low-power and small-form-factor devices: iCE40, MachXO2/3/5, ECP5, CrossLink-NX, Certus-NX and Avant families."
+    defunct_since: null
+    notes: "iCE40 and ECP5 have first-class open-source toolchain support via Project IceStorm/Trellis and nextpnr."
+
+  - id: logic_fruit
+    name: "Logic Fruit Technologies"
+    aka: ["Logic Fruit"]
+    url: "https://www.logic-fruit.com/"
+    country: India
+    founded: 2009
+    categories: [industrial]
+    description: "Gurugram-based semiconductor systems firm building Xilinx Kintex/Virtex-based FPGA accelerator cards, IP cores and custom SBCs."
+    defunct_since: null
+    notes: null
+
+  - id: marsohod
+    name: "Marsohod"
+    aka: ["marsohod.org", "Marsohod project"]
+    url: "https://marsohod.org/"
+    country: Russia
+    founded: 2011
+    categories: [edu, hobby]
+    description: "Russian/CIS hobbyist community producing low-cost Altera/Intel MAX and Cyclone FPGA learning boards (Marsohod, Marsohod2, Marsohod3)."
+    defunct_since: null
+    notes: null
+
+  - id: menta
+    name: "Menta"
+    aka: ["Menta eFPGA"]
+    url: "https://www.menta-efpga.com/"
+    country: France
+    founded: 2007
+    categories: [chip_vendor]
+    description: "Valbonne (Sophia Antipolis) eFPGA IP provider supplying programmable fabric IP for integration into ASICs and SoCs."
+    defunct_since: null
+    notes: "Ships eFPGA IP, not development boards."
+
+  - id: microchip
+    name: "Microchip Technology"
+    aka: ["Microchip", "Microsemi", "Actel", "Microchip (Actel)"]
+    url: "https://www.microchip.com/en-us/products/fpgas-and-plds"
+    country: USA
+    founded: 1989
+    categories: [chip_vendor]
+    description: "Owner of the former Actel/Microsemi flash- and antifuse-based FPGA lines: IGLOO, ProASIC3, SmartFusion2, IGLOO2, PolarFire and PolarFire SoC (RISC-V)."
+    defunct_since: null
+    notes: "Acquired Microsemi in 2018; Microsemi had previously acquired Actel in 2010."
+
+  - id: mist
+    name: "MIST"
+    aka: ["MiST", "MIST board", "MIST FPGA"]
+    url: "http://www.harbaum.org/till/mist/"
+    country: Germany
+    founded: null
+    categories: [hobby, defunct]
+    description: "Till Harbaum's Cyclone III FPGA board recreating Atari ST, Amiga and other 8/16-bit retro computers; production has ended."
+    defunct_since: null
+    notes: null
+
+  - id: mister
+    name: "MiSTer FPGA"
+    aka: ["MiSTer", "MiSTer-devel"]
+    url: "https://mister-devel.github.io/MkDocs_MiSTer/"
+    country: null
+    founded: 2017
+    categories: [hobby, foss_friendly]
+    description: "Open-source community FPGA retro-computing platform built on the Terasic DE10-Nano, started by Alexey 'Sorgelig' Melnikov as a successor to MIST."
+    defunct_since: null
+    notes: null
+
+  - id: myir
+    name: "MYIR Electronics Limited"
+    aka: ["MYIR Tech", "MYIR Tech Limited"]
+    url: "https://www.myirtech.com/"
+    country: China
+    founded: 2011
+    categories: [som_vendor, industrial]
+    description: "Shenzhen-based provider of ARM, FPGA and RISC-V SoMs and dev kits, including Zynq-7000 and Zynq UltraScale+ boards (Z-turn, MYC-CZU3EG)."
+    defunct_since: null
+    notes: null
+
+  - id: nanoxplore
+    name: "NanoXplore"
+    aka: ["NanoXplore"]
+    url: "https://www.nanoxplore.com/"
+    country: France
+    founded: 2010
+    categories: [chip_vendor, industrial]
+    description: "European fabless semiconductor company producing rad-hard / space-grade FPGAs (NG-MEDIUM, NG-LARGE, NG-ULTRA) for aerospace and defense."
+    defunct_since: null
+    notes: null
+
+  - id: numato_lab
+    name: "Numato Lab"
+    aka: ["Numato", "Numato Systems"]
+    url: "https://numato.com/"
+    country: India
+    founded: 2010
+    categories: [hobby, edu]
+    description: "Indian maker of compact, low-cost FPGA development boards and modules covering AMD Xilinx Spartan/Artix/Kintex and Lattice devices, often used for hobby and prototyping."
+    defunct_since: null
+    notes: null
+
+  - id: olimex
+    name: "Olimex"
+    aka: ["Olimex Ltd."]
+    url: "https://www.olimex.com/"
+    country: Bulgaria
+    founded: 1991
+    categories: [hobby, foss_friendly, edu]
+    description: "Bulgarian open-source hardware company producing iCE40 and other FPGA development boards alongside ARM/RISC-V SBCs and programmer/debugger tools."
+    defunct_since: null
+    notes: null
+
+  - id: omdazz
+    name: "Omdazz"
+    aka: ["OMDAZZ", "Omdazz FPGA Demo Board Store"]
+    url: "https://omdazz.aliexpress.com/store/2274002"
+    country: China
+    founded: null
+    categories: [edu, hobby]
+    description: "Chinese AliExpress storefront for low-cost Altera Cyclone IV and similar entry-level FPGA development boards."
+    defunct_since: null
+    notes: null
+
+  - id: onebitsquared
+    name: "1BitSquared"
+    aka: ["1BitSquared", "1 Bit Squared"]
+    url: "https://1bitsquared.com/"
+    country: USA
+    founded: null
+    categories: [hobby, foss_friendly, edu]
+    description: "Open-hardware retailer and maker producing/distributing the iCEBreaker (iCE40) and OrangeCrab (ECP5) FPGA dev boards aimed at the open-source FPGA toolchain community."
+    defunct_since: null
+    notes: null
+
+  - id: opal_kelly
+    name: "Opal Kelly Incorporated"
+    aka: ["Opal Kelly"]
+    url: "https://www.opalkelly.com/"
+    country: USA
+    founded: 2004
+    categories: [industrial]
+    description: "Portland, OR vendor of USB/PCIe-attached Xilinx and Altera FPGA integration modules (XEM, ZEM series) with the FrontPanel software stack."
+    defunct_since: null
+    notes: null
+
+  - id: orange_pi
+    name: "Orange Pi"
+    aka: ["Shenzhen Xunlong Software", "OrangePi"]
+    url: "http://www.orangepi.org/"
+    country: China
+    founded: 2014
+    categories: [hobby, som_vendor]
+    description: "Shenzhen Xunlong's open-source SBC brand; primarily ARM SoC boards, with the Orange Pi MSoC variant integrating an FPGA."
+    defunct_since: null
+    notes: null
+
+  - id: pano_logic
+    name: "Pano Logic"
+    aka: ["Pano Logic Inc.", "PanoLogic"]
+    url: "https://en.wikipedia.org/wiki/Pano_Logic"
+    country: USA
+    founded: 2006
+    categories: [defunct, hobby]
+    description: "Defunct zero-client thin-client maker whose Xilinx Spartan-3E/Spartan-6 G1/G2 cubes were repurposed as cheap FPGA boards after bankruptcy."
+    defunct_since: 2013
+    notes: null
+
+  - id: pangomicro
+    name: "Shenzhen Pango Microsystems"
+    aka: ["Pango", "Pangomicro", "PangoMicro", "PANGO MICRO"]
+    url: "https://www.pangomicro.com/en/"
+    country: China
+    founded: null
+    categories: [chip_vendor, industrial]
+    description: "Chinese FPGA chip vendor and programmable SoC platform supplier; product families include Titan, Logos and Compa."
+    defunct_since: null
+    notes: null
+
+  - id: papilio
+    name: "Gadget Factory"
+    aka: ["Papilio", "Gadget Factory LLC"]
+    url: "https://store.gadgetfactory.net/"
+    country: USA
+    founded: 2009
+    categories: [hobby, edu, foss_friendly]
+    description: "Jack Gassett's Colorado open-source hardware company; designer of the Papilio Spartan-based FPGA boards aimed at makers and education."
+    defunct_since: null
+    notes: null
+
+  - id: piswords
+    name: "PISwords"
+    aka: ["PISWORDS", "Piswords Store"]
+    url: "https://piswords.com/"
+    country: China
+    founded: null
+    categories: [hobby, edu]
+    description: "Shenzhen-based hardware maker and AliExpress reseller of low-cost Altera and Xilinx FPGA/CPLD core and demo boards."
+    defunct_since: null
+    notes: null
+
+  - id: qmtech
+    name: "QMTECH"
+    aka: ["QMtech", "QM Tech", "Chengdu QMTECH"]
+    url: "https://www.qmtech.cn/"
+    country: China
+    founded: null
+    categories: [hobby, industrial]
+    description: "Chinese vendor of low-cost FPGA core boards and baseboards covering AMD Xilinx (Spartan-6, Artix-7, Kintex-7) and Intel/Altera (Cyclone IV/10) devices."
+    defunct_since: null
+    notes: null
+
+  - id: quicklogic
+    name: "QuickLogic Corporation"
+    aka: ["QuickLogic", "QUIK"]
+    url: "https://www.quicklogic.com/"
+    country: USA
+    founded: 1988
+    categories: [chip_vendor, industrial, foss_friendly]
+    description: "San Jose fabless semiconductor company providing embedded FPGA IP, ultra-low-power FPGAs and open-source FPGA tooling."
+    defunct_since: null
+    notes: null
+
+  - id: radiona
+    name: "Radiona"
+    aka: ["Radiona.org", "Zagreb Makerspace"]
+    url: "https://radiona.org/"
+    country: Croatia
+    founded: null
+    categories: [hobby, edu, foss_friendly]
+    description: "Zagreb makerspace and producer of the open-source Lattice ECP5-based ULX3S FPGA education board, co-developed with FER University of Zagreb."
+    defunct_since: null
+    notes: null
+
+  - id: real_digital
+    name: "Real Digital"
+    aka: ["RealDigital"]
+    url: "https://www.realdigital.org/"
+    country: USA
+    founded: null
+    categories: [edu, academic]
+    description: "Academic FPGA board vendor (founded by Clint Cole) producing the Blackboard (Zynq) and Boolean Board (Spartan-7) for electrical and computer engineering education."
+    defunct_since: null
+    notes: null
+
+  - id: redpitaya
+    name: "Red Pitaya d.o.o."
+    aka: ["Red Pitaya", "RedPitaya"]
+    url: "https://redpitaya.com/"
+    country: Slovenia
+    founded: 2013
+    categories: [edu, industrial, foss_friendly]
+    description: "Solkan, Slovenia spinoff from Instrumentation Technologies making Zynq-7010-based open-source test-and-measurement instruments (STEMlab)."
+    defunct_since: null
+    notes: null
+
+  - id: renesas
+    name: "Renesas Electronics"
+    aka: ["Renesas", "Dialog Semiconductor", "Silego"]
+    url: "https://www.renesas.com/"
+    country: Japan
+    founded: 2010
+    categories: [chip_vendor, industrial]
+    description: "Japanese semiconductor manufacturer; entered the FPGA market in 2021 with the ForgeFPGA family inherited from Silego/Dialog (GreenPAK lineage)."
+    defunct_since: null
+    notes: null
+
+  - id: replay
+    name: "FPGA Arcade"
+    aka: ["Replay", "FPGA Arcade Replay", "Replay Board"]
+    url: "https://www.fpgaarcade.com/"
+    country: null
+    founded: null
+    categories: [hobby]
+    description: "Mike Johnson's retrocomputing FPGA project, producer of the Xilinx-based Replay board for re-implementing classic arcade and home-computer hardware."
+    defunct_since: null
+    notes: null
+
+  - id: rhs_research
+    name: "RHS Research LLC"
+    aka: ["RHS Research", "RHSResearchLLC"]
+    url: "https://rhsresearch.com/"
+    country: USA
+    founded: null
+    categories: [hobby, industrial]
+    description: "Syracuse, NY small-batch maker of compact PCIe / M.2 Xilinx Artix-7 FPGA boards (NiteFury, LiteFury, PicoEVB)."
+    defunct_since: null
+    notes: null
+
+  - id: rzrd
+    name: "rzrd.net"
+    aka: ["RZ-EasyFPGA", "rzrd"]
+    url: "http://www.rzrd.net/"
+    country: China
+    founded: null
+    categories: [hobby, edu]
+    description: "Chinese vendor of inexpensive Altera Cyclone IV development boards such as the RZ-EasyFPGA A2.1."
+    defunct_since: null
+    notes: null
+
+  - id: saylinx
+    name: "Saylinx"
+    aka: ["SAYLINX"]
+    url: null
+    country: China
+    founded: null
+    categories: [hobby]
+    description: "Chinese third-party brand of low-cost Xilinx Spartan-6 and Altera FPGA development boards sold on AliExpress."
+    defunct_since: null
+    notes: null
+
+  - id: sifive
+    name: "SiFive"
+    aka: ["SiFive, Inc."]
+    url: "https://www.sifive.com/"
+    country: USA
+    founded: 2015
+    categories: [chip_vendor]
+    description: "San Mateo RISC-V company founded by the inventors of RISC-V; produced the HiFive Unleashed SoC board (with an Expansion variant exposing an FPGA socket)."
+    defunct_since: null
+    notes: null
+
+  - id: microphase
+    name: "MicroPhase"
+    aka: ["MicroPhase Technology"]
+    url: "https://github.com/MicroPhase"
+    country: China
+    founded: null
+    categories: [hobby]
+    description: "Maker of low-cost Xilinx boards (A7-Lite, Zynq boards)."
+    defunct_since: null
+    notes: null
+
+  - id: sipeed
+    name: "Sipeed"
+    aka: ["Sipeed Technology"]
+    url: "https://www.sipeed.com/"
+    country: China
+    founded: 2017
+    categories: [hobby, foss_friendly]
+    description: "Chinese maker of affordable AI/RISC-V SBCs and Gowin-based Tang series FPGA boards (Tang Nano 1K/4K/9K/20K, Tang Primer, Tang Mega) popular with the open-source toolchain community."
+    defunct_since: null
+    notes: null
+
+  - id: stepfpga
+    name: "STEP FPGA"
+    aka: ["stepfpga.com", "STEP-MAX10"]
+    url: "https://www.stepfpga.com/"
+    country: China
+    founded: null
+    categories: [edu, hobby]
+    description: "Chinese vendor of compact DIP-format beginner FPGA boards based on Intel MAX10 and Lattice MachXO2."
+    defunct_since: null
+    notes: null
+
+  - id: sundance
+    name: "Sundance Multiprocessor Technology Ltd"
+    aka: ["Sundance", "Sundance.com"]
+    url: "https://www.sundance.com/"
+    country: UK
+    founded: 1989
+    categories: [industrial]
+    description: "Chesham, UK supplier of high-performance embedded computing systems, DSP and FPGA modules for robotics, vision and motion-control applications."
+    defunct_since: null
+    notes: null
+
+  - id: techway
+    name: "Techway"
+    aka: ["TECHWAY"]
+    url: "https://www.techway.fr/"
+    country: France
+    founded: 2003
+    categories: [industrial]
+    description: "Villebon-sur-Yvette company specializing in Xilinx Virtex/Kintex/Zynq UltraScale+ FPGA boards and FMC+ modules for signal and video acquisition."
+    defunct_since: null
+    notes: null
+
+  - id: terasic
+    name: "Terasic"
+    aka: ["Terasic Inc.", "Terasic Technologies"]
+    url: "https://www.terasic.com.tw/"
+    country: Taiwan
+    founded: 2004
+    categories: [edu, industrial]
+    description: "Official Intel/Altera development board partner producing the DE-series (DE0/DE1/DE2/DE10) and SoCKit boards used widely in academia."
+    defunct_since: null
+    notes: null
+
+  - id: tinyfpga
+    name: "TinyFPGA"
+    aka: ["Tiny FPGA", "Luke Valenty"]
+    url: "https://tinyfpga.com/"
+    country: USA
+    founded: null
+    categories: [hobby, foss_friendly]
+    description: "Luke Valenty's series of tiny, breadboard-friendly open-source Lattice iCE40 (and ECP5) FPGA development boards targeting the open IceStorm/nextpnr toolchain."
+    defunct_since: null
+    notes: null
+
+  - id: tinyvision_ai
+    name: "tinyVision.ai"
+    aka: ["TinyVision.ai", "Tinyvision.ai", "Tinyvision.ai Inc."]
+    url: "https://tinyvision.ai/"
+    country: USA
+    founded: null
+    categories: [hobby, industrial, foss_friendly]
+    description: "San Diego company building ultra-low-power computer-vision SoMs based on Lattice iCE40 UltraPlus FPGAs, distributed via Crowd Supply."
+    defunct_since: null
+    notes: null
+
+  - id: trenz_electronic
+    name: "Trenz Electronic"
+    aka: ["Trenz", "Trenz Electronic GmbH"]
+    url: "https://www.trenz-electronic.de/"
+    country: Germany
+    founded: 1997
+    categories: [industrial, som_vendor]
+    description: "German manufacturer of industrial FPGA/SoC system-on-modules and carrier boards built around AMD Xilinx Zynq, Zynq UltraScale+ and Versal devices."
+    defunct_since: null
+    notes: null
+
+  - id: tria_technologies
+    name: "Tria Technologies"
+    aka: ["Tria", "Avnet Embedded"]
+    url: "https://www.tria-technologies.com/"
+    country: USA
+    founded: 2024
+    categories: [som_vendor, industrial]
+    description: "Avnet subsidiary launched in 2024 to consolidate its embedded compute business, producing UltraZed and ZUBoard Zynq UltraScale+ SoMs and dev kits."
+    defunct_since: null
+    notes: "Spun out of Avnet Embedded; continues legacy Avnet/MiniZed/UltraZed product lines."
+
+  - id: tul
+    name: "TUL Corporation"
+    aka: ["TUL"]
+    url: "https://www.tulembedded.com/"
+    country: Taiwan
+    founded: 1997
+    categories: [edu, industrial]
+    description: "Taipei-based publicly listed manufacturer best known in FPGA circles for producing the PYNQ-Z2 board for the AMD/Xilinx University Program."
+    defunct_since: null
+    notes: null
+
+  - id: vicharak
+    name: "Vicharak"
+    aka: null
+    url: "https://vicharak.in/"
+    country: India
+    founded: null
+    categories: [hobby, edu]
+    description: "Surat-based startup founded by Akshar Vastarpara producing the Vaaman reconfigurable SBC (RK3399 + Efinix Trion T120 FPGA) and Axon ARM board."
+    defunct_since: null
+    notes: null
+
+  - id: vlsi_design
+    name: "VLSI Design"
+    aka: null
+    url: null
+    country: null
+    founded: null
+    categories: [edu]
+    description: "Generic name used by several Indian small-scale manufacturers of low-cost educational VLSI/FPGA trainer kits (Spartan/Cyclone)."
+    defunct_since: null
+    notes: "Not a single canonical vendor; 'VLSI Design Inc.' could not be verified as a distinct FPGA board producer. May refer to VLSI Design Laboratory (Coimbatore) or similar regional training-kit makers; leave fields null until disambiguated."
+
+  - id: xilinx_amd
+    name: "AMD (Xilinx)"
+    aka: ["Xilinx", "Xilinx (AMD)", "Xilinx Inc.", "AMD Adaptive Computing", "AMD"]
+    url: "https://www.amd.com/en/products/adaptive-socs-and-fpgas.html"
+    country: USA
+    founded: 1984
+    categories: [chip_vendor]
+    description: "Inventor of the FPGA and producer of the Spartan, Artix, Kintex, Virtex, Zynq, UltraScale+ and Versal device families plus the Vivado/Vitis toolchain."
+    defunct_since: null
+    notes: "Acquired by AMD in February 2022; the former Xilinx business is now AMD's Adaptive and Embedded Computing Group."
+
+  - id: zeowaa
+    name: "Zeowaa"
+    aka: ["ZEOWAA", "A-C4E6E10", "A-E115FB"]
+    url: null
+    country: China
+    founded: null
+    categories: [hobby, edu]
+    description: "Chinese AliExpress brand of low-cost Altera Cyclone IV development boards widely used in education (e.g. A-C4E6E10, A-E115FB)."
+    defunct_since: null
+    notes: null

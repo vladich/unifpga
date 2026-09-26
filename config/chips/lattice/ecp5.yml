@@ -1,22 +1,24 @@
 # Lattice / ECP5 — chip registry
 # 40 nm cost-optimized Lattice. Diamond + nextpnr-ecp5 (open).
 
-Producer: Lattice
-Family: ECP5
-Description: 40 nm cost-optimized Lattice. Diamond + nextpnr-ecp5 (open).
-DefaultToolchains:
-  - nextpnr_trellis[*]
-  - lattice_diamond[*]
-Chips:
-  - Id: LFE5U-12F-6BG381C
-  - Id: LFE5U-25F-6BG256C
-  - Id: LFE5U-25F-8BG256C
-  - Id: LFE5U-25F-6BG381
-  - Id: LFE5U-25F-6BG381C
-  - Id: LFE5U-25F-8MG285C
-  - Id: LFE5U-45F-6BG381C
-  - Id: LFE5U-85F-6BG381C
-  - Id: LFE5U-85F-8MG285C
-  - Id: LFE5UM-25F
-  - Id: LFE5UM-45F-8BG381C
-  - Id: LFE5UM5G-85F-8BG381C
+Family:
+  id: ecp5
+  producer: lattice
+  name: ECP5
+  description: 40 nm cost-optimized Lattice. Diamond + nextpnr-ecp5 (open).
+  default_toolchains:
+    - nextpnr_trellis[*]
+    - lattice_diamond[*]
+  chips:
+    - id: LFE5U-12F-6BG381C
+    - id: LFE5U-25F-6BG256C
+    - id: LFE5U-25F-8BG256C
+    - id: LFE5U-25F-6BG381
+    - id: LFE5U-25F-6BG381C
+    - id: LFE5U-25F-8MG285C
+    - id: LFE5U-45F-6BG381C
+    - id: LFE5U-85F-6BG381C
+    - id: LFE5U-85F-8MG285C
+    - id: LFE5UM-25F
+    - id: LFE5UM-45F-8BG381C
+    - id: LFE5UM5G-85F-8BG381C

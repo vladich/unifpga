@@ -1,10 +1,12 @@
 # NanoXplore / NG-ULTRA — chip registry
 # Rad-hard space-grade FPGA (ESA / CNES). NanoXmap.
 
-Producer: NanoXplore
-Family: NG-ULTRA
-Description: Rad-hard space-grade FPGA (ESA / CNES). NanoXmap.
-DefaultToolchains:
-  - nanoxmap[*]
-Chips:
-  - Id: NG-ULTRA-CG1156
+Family:
+  id: ng_ultra
+  producer: nanoxplore
+  name: NG-ULTRA
+  description: Rad-hard space-grade FPGA (ESA / CNES). NanoXmap.
+  default_toolchains:
+    - nanoxmap[*]
+  chips:
+    - id: NG-ULTRA-CG1156

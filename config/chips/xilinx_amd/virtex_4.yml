@@ -1,12 +1,14 @@
 # Xilinx (AMD) / Virtex 4 — chip registry
 # 90 nm high-end FPGA (2004). ISE 14.7 last supporting release.
 
-Producer: Xilinx (AMD)
-Family: Virtex 4
-Description: 90 nm high-end FPGA (2004). ISE 14.7 last.
-DefaultToolchains:
-  - ise[*]
-Chips:
-  - Id: XC4VFX12-FF668-10
-  - Id: XC4VLX25-FF668-10
-  - Id: XC4VSX35-FF668-10
+Family:
+  id: virtex_4
+  producer: xilinx_amd
+  name: Virtex 4
+  description: 90 nm high-end FPGA (2004). ISE 14.7 last.
+  default_toolchains:
+    - ise[*]
+  chips:
+    - id: XC4VFX12-FF668-10
+    - id: XC4VLX25-FF668-10
+    - id: XC4VSX35-FF668-10

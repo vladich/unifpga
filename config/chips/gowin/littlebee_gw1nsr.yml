@@ -1,13 +1,15 @@
 # Gowin / LittleBee/GW1NSR — chip registry
 # GW1NS with embedded SDRAM.
 
-Producer: Gowin
-Family: LittleBee/GW1NSR
-Description: GW1NS with embedded SDRAM.
-DefaultToolchains:
-  - gowin_eda[*]
-  - nextpnr_apicula[*]
-Chips:
-  - Id: GW1NSR-LV4CQN48GC7/I6
-  - Id: GW1NSR-LV4CQN48PC6/I5
-  - Id: GW1NSR-LV4CQN48PC7/I6
+Family:
+  id: littlebee_gw1nsr
+  producer: gowin_semi
+  name: LittleBee/GW1NSR
+  description: GW1NS with embedded SDRAM.
+  default_toolchains:
+    - gowin_eda[*]
+    - nextpnr_apicula[*]
+  chips:
+    - id: GW1NSR-LV4CQN48GC7/I6
+    - id: GW1NSR-LV4CQN48PC6/I5
+    - id: GW1NSR-LV4CQN48PC7/I6

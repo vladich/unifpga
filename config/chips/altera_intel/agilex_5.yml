@@ -1,15 +1,17 @@
 # Altera (Intel) / Agilex 5 — chip registry
 # Mid-range Agilex. Quartus Prime Pro.
 
-Producer: Altera (Intel)
-Family: Agilex 5
-Description: Mid-range Agilex. Quartus Prime Pro.
-DefaultToolchains:
-  - quartus_prime_pro[*]
-Chips:
-  - Id: A5D029BB32AE6SR0
-  - Id: A5ED014BB32AE6SR0
-  - Id: A5ED065BB32AE6SR0
-  - Id: A5EB013BB23BE4SCS
-  - Id: A5ED013BB32AE4SCS
-  - Id: A5ED065BB32AE4S
+Family:
+  id: agilex_5
+  producer: intel_altera
+  name: Agilex 5
+  description: Mid-range Agilex. Quartus Prime Pro.
+  default_toolchains:
+    - quartus_prime_pro[*]
+  chips:
+    - id: A5D029BB32AE6SR0
+    - id: A5ED014BB32AE6SR0
+    - id: A5ED065BB32AE6SR0
+    - id: A5EB013BB23BE4SCS
+    - id: A5ED013BB32AE4SCS
+    - id: A5ED065BB32AE4S

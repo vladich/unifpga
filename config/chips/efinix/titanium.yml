@@ -1,15 +1,17 @@
 # Efinix / Titanium — chip registry
 # 16 nm Titanium (some SKUs with hard RISC-V). Efinity.
 
-Producer: Efinix
-Family: Titanium
-Description: 16 nm Titanium (some SKUs with hard RISC-V). Efinity.
-DefaultToolchains:
-  - efinity[*]
-Chips:
-  - Id: Ti120F324C4
-  - Id: Ti180M484C4
-  - Id: Ti35F256C4
-  - Id: Ti375C529C4
-  - Id: Ti375N1156C4
-  - Id: Ti60F225C4
+Family:
+  id: titanium
+  producer: efinix
+  name: Titanium
+  description: 16 nm Titanium (some SKUs with hard RISC-V). Efinity.
+  default_toolchains:
+    - efinity[*]
+  chips:
+    - id: Ti120F324C4
+    - id: Ti180M484C4
+    - id: Ti35F256C4
+    - id: Ti375C529C4
+    - id: Ti375N1156C4
+    - id: Ti60F225C4

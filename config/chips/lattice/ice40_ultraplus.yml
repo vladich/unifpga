@@ -1,14 +1,16 @@
 # Lattice / ICE40 UltraPlus — chip registry
 # UP5K/UWG30. iCEcube2, Radiant.
 
-Producer: Lattice
-Family: ICE40 UltraPlus
-Description: UP5K/UWG30. iCEcube2, Radiant.
-DefaultToolchains:
-  - nextpnr_icestorm[*]
-  - icecube2[*]
-  - lattice_radiant[*]
-Chips:
-  - Id: iCE40UP5K-B-EVN
-  - Id: iCE40UP5K-SG48
-  - Id: iCE40UP5K-UWG30
+Family:
+  id: ice40_ultraplus
+  producer: lattice
+  name: ICE40 UltraPlus
+  description: UP5K/UWG30. iCEcube2, Radiant.
+  default_toolchains:
+    - nextpnr_icestorm[*]
+    - icecube2[*]
+    - lattice_radiant[*]
+  chips:
+    - id: iCE40UP5K-B-EVN
+    - id: iCE40UP5K-SG48
+    - id: iCE40UP5K-UWG30

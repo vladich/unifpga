@@ -4,41 +4,40 @@
 # They are SoMs (FPGA on module + DDR + flash + B2B connector) and
 # require a carrier board to be usable. Migrated 2026-05-15.
 
-Producer: alinx
 Mezzanines:
-  - Id: alinx_ac7a035
-    Name: "Alinx AC7A035 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7A35T-2FGG484I
-    Features:
+  - id: alinx_ac7a035
+    name: "Alinx AC7A035 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7A35T-2FGG484I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7a035-xilinx-artix-7-xc7a35t-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_ax7a035
-  - Id: alinx_ac7a200
-    Name: "Alinx AC7A200 SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7A200T-2FBG484I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7a035-xilinx-artix-7-xc7a35t-fpga-som"
+    status: active
+    default_carrier: alinx_ax7a035
+  - id: alinx_ac7a200
+    name: "Alinx AC7A200 SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7A200T-2FBG484I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7a200-xilinx-artix-7-xc7a200t-fpga-som"
-    Status: active
-    DefaultCarrier: alinx_ax7a200
-  - Id: alinx_ac7100b
-    Name: "Alinx AC7100B SOM"
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XC7A100T-2FGG484I
-    Features:
+    url: "https://coderobin.com/products/alinx-ac7a200-xilinx-artix-7-xc7a200t-fpga-som"
+    status: active
+    default_carrier: alinx_ax7a200
+  - id: alinx_ac7100b
+    name: "Alinx AC7100B SOM"
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XC7A100T-2FGG484I
+    features:
       - ddr3_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-ac7100b-xilinx-artix-7-xc7a100t-som"
-    Status: active
-    Notes: "Used in the Facebook Open Compute Time Card."
+    url: "https://coderobin.com/products/alinx-ac7100b-xilinx-artix-7-xc7a100t-som"
+    status: active
+    notes: "Used in the Facebook Open Compute Time Card."

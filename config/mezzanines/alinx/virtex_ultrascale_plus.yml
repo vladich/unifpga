@@ -4,17 +4,16 @@
 # They are SoMs (FPGA on module + DDR + flash + B2B connector) and
 # require a carrier board to be usable. Migrated 2026-05-15.
 
-Producer: alinx
 Mezzanines:
-  - Id: alinx_acvu13
-    Name: "Alinx ACVU13 SOM"
-    DefaultCarrier: alinx_axvu13g
-    Producer: alinx
-    Type: som
-    Connector: b2b_custom_alinx
-    Chip: XCVU13P-2FHGB2104I
-    Features:
+  - id: alinx_acvu13
+    name: "Alinx ACVU13 SOM"
+    default_carrier: alinx_axvu13g
+    producer: alinx
+    type: som
+    connector: b2b_custom_alinx
+    chip: XCVU13P-2FHGB2104I
+    features:
       - ddr4_memory
       - qspi_flash
-    BoardURL: "https://coderobin.com/products/alinx-acvu13-xilinx-virtex-ultrascale-xcvu13p-fpga-som"
-    Status: active
+    url: "https://coderobin.com/products/alinx-acvu13-xilinx-virtex-ultrascale-xcvu13p-fpga-som"
+    status: active

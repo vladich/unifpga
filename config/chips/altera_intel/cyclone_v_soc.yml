@@ -1,17 +1,19 @@
 # Altera (Intel) / Cyclone V SoC — chip registry
 # Cyclone V with hard ARM A9 dual-core (HPS). Quartus Prime.
 
-Producer: Altera (Intel)
-Family: Cyclone V SoC
-Description: Cyclone V with hard ARM A9 dual-core (HPS). Quartus Prime.
-DefaultToolchains:
-  - quartus_prime_lite[*]
-  - nextpnr_mistral[*]
-Chips:
-  - Id: 5CSEBA6U23I7
-  - Id: 5CSEMA4U23C6N
-  - Id: 5CSEMA5F31C6N
-  - Id: 5CSEMA6U23A7N
-  - Id: 5CSXFC6D6F31C6
-  - Id: 5CSXFC6D6F31C6N
-  - Id: 5CSEBA6U23I7N
+Family:
+  id: cyclone_v_soc
+  producer: intel_altera
+  name: Cyclone V SoC
+  description: Cyclone V with hard ARM A9 dual-core (HPS). Quartus Prime.
+  default_toolchains:
+    - quartus_prime_lite[*]
+    - nextpnr_mistral[*]
+  chips:
+    - id: 5CSEBA6U23I7
+    - id: 5CSEMA4U23C6N
+    - id: 5CSEMA5F31C6N
+    - id: 5CSEMA6U23A7N
+    - id: 5CSXFC6D6F31C6
+    - id: 5CSXFC6D6F31C6N
+    - id: 5CSEBA6U23I7N

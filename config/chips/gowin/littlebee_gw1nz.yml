@@ -1,12 +1,14 @@
 # Gowin / LittleBee/GW1NZ — chip registry
 # Low-power variant.
 
-Producer: Gowin
-Family: LittleBee/GW1NZ
-Description: Low-power variant.
-DefaultToolchains:
-  - gowin_eda[*]
-  - nextpnr_apicula[*]
-Chips:
-  - Id: GW1NZ-LV1FN32C6/I5
-  - Id: GW1NZ-LV1QN48C6/I5
+Family:
+  id: littlebee_gw1nz
+  producer: gowin_semi
+  name: LittleBee/GW1NZ
+  description: Low-power variant.
+  default_toolchains:
+    - gowin_eda[*]
+    - nextpnr_apicula[*]
+  chips:
+    - id: GW1NZ-LV1FN32C6/I5
+    - id: GW1NZ-LV1QN48C6/I5

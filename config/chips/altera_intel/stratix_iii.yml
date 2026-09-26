@@ -1,10 +1,12 @@
 # Altera (Intel) / Stratix III — chip registry
 # 65 nm high-end. Quartus II.
 
-Producer: Altera (Intel)
-Family: Stratix III
-Description: 65 nm high-end. Quartus II.
-DefaultToolchains:
-  - quartus2[*]
-Chips:
-  - Id: EP3SL150F1152C3N
+Family:
+  id: stratix_iii
+  producer: intel_altera
+  name: Stratix III
+  description: 65 nm high-end. Quartus II.
+  default_toolchains:
+    - quartus2[*]
+  chips:
+    - id: EP3SL150F1152C3N

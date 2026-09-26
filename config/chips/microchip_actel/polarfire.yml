@@ -1,13 +1,15 @@
 # Microchip (Actel) / PolarFire — chip registry
 # 28 nm flash FPGA (current). Libero SoC.
 
-Producer: Microchip (Actel)
-Family: PolarFire
-Description: 28 nm flash FPGA (current). Libero SoC.
-DefaultToolchains:
-  - libero_soc[*]
-Chips:
-  - Id: MPF300T-FCG484E
-  - Id: MPF300TS-1FCG1152I
-  - Id: MPF300TS-FCG1152I
-  - Id: MPF200TS-FCG484I
+Family:
+  id: polarfire
+  producer: microchip
+  name: PolarFire
+  description: 28 nm flash FPGA (current). Libero SoC.
+  default_toolchains:
+    - libero_soc[*]
+  chips:
+    - id: MPF300T-FCG484E
+    - id: MPF300TS-1FCG1152I
+    - id: MPF300TS-FCG1152I
+    - id: MPF200TS-FCG484I

@@ -1,12 +1,14 @@
 # Xilinx (AMD) / Artix Ultrascale+ — chip registry
 
-Producer: Xilinx (AMD)
-Family: Artix Ultrascale+
-Description: 16 nm cost-optimized Artix UltraScale+. Vivado.
-DefaultToolchains:
-  - vivado[*]
-Chips:
-  - Id: XCAU15P-2FFVB676E
-  - Id: XCAU25P-2E
-  - Id: XCAU15P-2FFVB676I
-  - Id: XCAU25P-2FFVB676I
+Family:
+  id: artix_ultrascale_plus
+  producer: xilinx_amd
+  name: Artix Ultrascale+
+  description: 16 nm cost-optimized Artix UltraScale+. Vivado.
+  default_toolchains:
+    - vivado[*]
+  chips:
+    - id: XCAU15P-2FFVB676E
+    - id: XCAU25P-2E
+    - id: XCAU15P-2FFVB676I
+    - id: XCAU25P-2FFVB676I

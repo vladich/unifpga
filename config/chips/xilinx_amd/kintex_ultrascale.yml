@@ -1,18 +1,20 @@
 # Xilinx (AMD) / Kintex Ultrascale — chip registry
 # 20 nm Kintex follow-on. Vivado.
 
-Producer: Xilinx (AMD)
-Family: Kintex Ultrascale
-Description: 20 nm Kintex follow-on. Vivado.
-DefaultToolchains:
-  - vivado[*]
-Chips:
-  - Id: XCKU040-1FBVA676C
-  - Id: XCKU040-1FFVA1156I
-  - Id: XCKU040-2FFVA1156E
-  - Id: XCKU040-2FFVA1156I
-  - Id: XCKU060-2FFVA1156E
-  - Id: XCKU060-2FFVA1156I
-  - Id: XCKU115-2FLVA1517E
-  - Id: XCKU115-2FLVA1517I
-  - Id: XCKU115-2FLVB2104E
+Family:
+  id: kintex_ultrascale
+  producer: xilinx_amd
+  name: Kintex Ultrascale
+  description: 20 nm Kintex follow-on. Vivado.
+  default_toolchains:
+    - vivado[*]
+  chips:
+    - id: XCKU040-1FBVA676C
+    - id: XCKU040-1FFVA1156I
+    - id: XCKU040-2FFVA1156E
+    - id: XCKU040-2FFVA1156I
+    - id: XCKU060-2FFVA1156E
+    - id: XCKU060-2FFVA1156I
+    - id: XCKU115-2FLVA1517E
+    - id: XCKU115-2FLVA1517I
+    - id: XCKU115-2FLVB2104E

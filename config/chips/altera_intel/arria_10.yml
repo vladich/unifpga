@@ -1,15 +1,17 @@
 # Altera (Intel) / Arria 10 — chip registry
 # 20 nm with hard FP DSP. Quartus Prime Std/Pro.
 
-Producer: Altera (Intel)
-Family: Arria 10
-Description: 20 nm with hard FP DSP. Quartus Prime Std/Pro.
-DefaultToolchains:
-  - quartus_prime_pro[*]
-Chips:
-  - Id: 10AS066K3F40E2SG
-  - Id: 10AS066N3F40E2SG
-  - Id: 10AX115N2F45E1SG
-  - Id: 10AX115N3F40E2SG
-  - Id: 10AX115N4F45E3SG
-  - Id: 10AX115S2F45I1SG
+Family:
+  id: arria_10
+  producer: intel_altera
+  name: Arria 10
+  description: 20 nm with hard FP DSP. Quartus Prime Std/Pro.
+  default_toolchains:
+    - quartus_prime_pro[*]
+  chips:
+    - id: 10AS066K3F40E2SG
+    - id: 10AS066N3F40E2SG
+    - id: 10AX115N2F45E1SG
+    - id: 10AX115N3F40E2SG
+    - id: 10AX115N4F45E3SG
+    - id: 10AX115S2F45I1SG

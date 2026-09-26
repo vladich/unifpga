@@ -1,26 +1,28 @@
 # Xilinx (AMD) / Virtex Ultrascale+ — chip registry
 # 16 nm. Vivado.
 
-Producer: Xilinx (AMD)
-Family: Virtex Ultrascale+
-Description: 16 nm. Vivado.
-DefaultToolchains:
-  - vivado[*]
-Chips:
-  - Id: XCU200-2FSGD2104E
-  - Id: XCU250-FIGD2104-2L-E
-  - Id: XCU26-L2FSVH2892E
-  - Id: XCU280-L2FSVH2892E
-  - Id: XCU50-FSVH2104-2-E
-  - Id: XCU55C-FSVH2892E
-  - Id: XCVU13P-2FHGB2104E
-  - Id: XCVU19P-2FSVB3824E
-  - Id: XCVU29P-L2FSGA2577E
-  - Id: XCVU37P-L2FSVH2892E
-  - Id: XCVU9P-2FLGA2104E
-  - Id: XCVU9P-L2FLGA2104E
-  - Id: XCVU9P-L2FSGD2104E
-  - Id: XCVU37P-2FSVH2892E
-  - Id: XCVU7P-2FLVB2104E
-  - Id: XCVU13P-2FHGB2104I
-  - Id: XCVU9P-2FLGB2104E
+Family:
+  id: virtex_ultrascale_plus
+  producer: xilinx_amd
+  name: Virtex Ultrascale+
+  description: 16 nm. Vivado.
+  default_toolchains:
+    - vivado[*]
+  chips:
+    - id: XCU200-2FSGD2104E
+    - id: XCU250-FIGD2104-2L-E
+    - id: XCU26-L2FSVH2892E
+    - id: XCU280-L2FSVH2892E
+    - id: XCU50-FSVH2104-2-E
+    - id: XCU55C-FSVH2892E
+    - id: XCVU13P-2FHGB2104E
+    - id: XCVU19P-2FSVB3824E
+    - id: XCVU29P-L2FSGA2577E
+    - id: XCVU37P-L2FSVH2892E
+    - id: XCVU9P-2FLGA2104E
+    - id: XCVU9P-L2FLGA2104E
+    - id: XCVU9P-L2FSGD2104E
+    - id: XCVU37P-2FSVH2892E
+    - id: XCVU7P-2FLVB2104E
+    - id: XCVU13P-2FHGB2104I
+    - id: XCVU9P-2FLGB2104E

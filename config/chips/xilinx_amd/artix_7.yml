@@ -1,47 +1,49 @@
 # Xilinx (AMD) / Artix 7 — chip registry
 # 28 nm mainstream 7-series. Vivado, openXC7.
 
-Producer: Xilinx (AMD)
-Family: Artix 7
-Description: 28 nm mainstream 7-series. Vivado, openXC7.
-DefaultToolchains:
-  - vivado[*]
-  - nextpnr_openxc7[*]
-Chips:
-  - Id: XC7A100T-1CSG324C
-  - Id: XC7A100T-1FGG484C
-  - Id: XC7A100T-1FGG676C
-  - Id: XC7A100T-1FTG256C
-  - Id: XC7A100T-2CSG324I
-  - Id: XC7A100T-2FGG484C
-  - Id: XC7A100T-2FGG484I
-  - Id: XC7A15T-CPG236I
-  - Id: XC7A200T-1
-  - Id: XC7A200T-1FBG484C
-  - Id: XC7A200T-1SBG484C
-  - Id: XC7A200T-2FBG484C
-  - Id: XC7A200T-2FBG484I
-  - Id: XC7A200T-2FBG676C
-  - Id: XC7A35T-1CPG236C
-  - Id: XC7A35T-1CSG324C
-  - Id: XC7A35T-1FGG484C
-  - Id: XC7A35T-1FTG256C
-  - Id: XC7A35T-2CSG324C
-  - Id: XC7A35T-2CSG324I
-  - Id: XC7A35T-2CSG325I
-  - Id: XC7A35T-2FGG484I
-  - Id: XC7A35T-CPG236I
-  - Id: XC7A50T-1CSG324C
-  - Id: XC7A50T-2CSG325C
-  - Id: XC7A50T-2FGG484I
-  - Id: XC7A75T-1
-  - Id: xc7a100tcsg324-1
-  - Id: xc7a100tfgg484-2
-  - Id: xc7a200tfbg484-2
-  - Id: xc7a35tcpg236-1
-  - Id: xc7a35tfgg484-1
-  - Id: xc7a35tfgg484-2
-  - Id: xc7a35ticsg324-1l
-  - Id: xc7a50ticsg324-1L
-  - Id: XC7A35T-2FGG484
-  - Id: XC7A50T-1FGG484C
+Family:
+  id: artix_7
+  producer: xilinx_amd
+  name: Artix 7
+  description: 28 nm mainstream 7-series. Vivado, openXC7.
+  default_toolchains:
+    - vivado[*]
+    - nextpnr_openxc7[*]
+  chips:
+    - id: XC7A100T-1CSG324C
+    - id: XC7A100T-1FGG484C
+    - id: XC7A100T-1FGG676C
+    - id: XC7A100T-1FTG256C
+    - id: XC7A100T-2CSG324I
+    - id: XC7A100T-2FGG484C
+    - id: XC7A100T-2FGG484I
+    - id: XC7A15T-CPG236I
+    - id: XC7A200T-1
+    - id: XC7A200T-1FBG484C
+    - id: XC7A200T-1SBG484C
+    - id: XC7A200T-2FBG484C
+    - id: XC7A200T-2FBG484I
+    - id: XC7A200T-2FBG676C
+    - id: XC7A35T-1CPG236C
+    - id: XC7A35T-1CSG324C
+    - id: XC7A35T-1FGG484C
+    - id: XC7A35T-1FTG256C
+    - id: XC7A35T-2CSG324C
+    - id: XC7A35T-2CSG324I
+    - id: XC7A35T-2CSG325I
+    - id: XC7A35T-2FGG484I
+    - id: XC7A35T-CPG236I
+    - id: XC7A50T-1CSG324C
+    - id: XC7A50T-2CSG325C
+    - id: XC7A50T-2FGG484I
+    - id: XC7A75T-1
+    - id: xc7a100tcsg324-1
+    - id: xc7a100tfgg484-2
+    - id: xc7a200tfbg484-2
+    - id: xc7a35tcpg236-1
+    - id: xc7a35tfgg484-1
+    - id: xc7a35tfgg484-2
+    - id: xc7a35ticsg324-1l
+    - id: xc7a50ticsg324-1L
+    - id: XC7A35T-2FGG484
+    - id: XC7A50T-1FGG484C

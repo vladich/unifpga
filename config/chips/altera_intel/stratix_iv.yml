@@ -1,12 +1,14 @@
 # Altera (Intel) / Stratix IV — chip registry
 # 40 nm high-end. Quartus Prime Std.
 
-Producer: Altera (Intel)
-Family: Stratix IV
-Description: 40 nm high-end. Quartus Prime Std.
-DefaultToolchains:
-  - quartus_prime_standard[*]
-Chips:
-  - Id: EP4S100G2F40C2
-  - Id: EP4SGX230KF40C2
-  - Id: EP4SGX230KF40C2N
+Family:
+  id: stratix_iv
+  producer: intel_altera
+  name: Stratix IV
+  description: 40 nm high-end. Quartus Prime Std.
+  default_toolchains:
+    - quartus_prime_standard[*]
+  chips:
+    - id: EP4S100G2F40C2
+    - id: EP4SGX230KF40C2
+    - id: EP4SGX230KF40C2N

@@ -1,11 +1,13 @@
 # Microchip (Actel) / IGLOO2 — chip registry
 # Flash FPGA (current). Libero SoC.
 
-Producer: Microchip (Actel)
-Family: IGLOO2
-Description: Flash FPGA (current). Libero SoC.
-DefaultToolchains:
-  - libero_soc[*]
-Chips:
-  - Id: M2GL090TS-FG484
-  - Id: M2GL010T-1FGG484
+Family:
+  id: igloo2
+  producer: microchip
+  name: IGLOO2
+  description: Flash FPGA (current). Libero SoC.
+  default_toolchains:
+    - libero_soc[*]
+  chips:
+    - id: M2GL090TS-FG484
+    - id: M2GL010T-1FGG484

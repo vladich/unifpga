@@ -1,10 +1,12 @@
 # Pangomicro / Titan — chip registry
 # High-end Titan with SerDes/PCIe. PDS.
 
-Producer: Pangomicro
-Family: Titan
-Description: High-end Titan with SerDes/PCIe. PDS.
-DefaultToolchains:
-  - pango_ds[*]
-Chips:
-  - Id: PGT180HFBG484
+Family:
+  id: titan
+  producer: pangomicro
+  name: Titan
+  description: High-end Titan with SerDes/PCIe. PDS.
+  default_toolchains:
+    - pango_ds[*]
+  chips:
+    - id: PGT180HFBG484

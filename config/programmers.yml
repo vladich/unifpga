@@ -7,316 +7,316 @@
 # either a vendor-bundled programmer or a third-party tool like
 # `openFPGALoader`.
 #
-# Field schema:
-#   Id:                  kebab-case identifier (referenced from chips/<family>.yml or
-#                        board.ExtraProgrammers); version constraints use
+# Field schema (config/schema/programmer.schema.json):
+#   id:                  the programmer's id, as a board's programmer /
+#                        extra_programmers name it; version constraints use
 #                        bracket notation: `vivado_hw[*]`, `vivado_hw[2017+]`,
 #                        `iceprog[git-master]`
-#   Name:                display name
-#   KnownVersions:       list of versions seen in the wild
-#   Version:             version installed locally (for InstallDir / binary resolution)
-#   Bundled:             toolchain Id this programmer ships with, or null for
-#                        third-party / community tools. When non-null, the
-#                        programmer is "chip-tied via toolchain": it applies
-#                        wherever the chip's Toolchains include this id.
-#   Binary:              executable name expected on $PATH
-#   Bridge:              physical interface this programmer speaks (jtag,
+#   name:                display name
+#   known_versions:      list of versions seen in the wild
+#   version:             version installed locally (for install_dir / binary resolution)
+#   bundled:             the id of the toolchain this programmer ships with, or
+#                        null for third-party / community tools. When non-null,
+#                        the programmer is "chip-tied via toolchain": it applies
+#                        wherever the chip's toolchains include this id.
+#   binary:              executable name expected on $PATH
+#   bridge:              physical interface this programmer speaks (jtag,
 #                        ft2232h-spi, ft2232h-jtag, usb-dfu, avr-mojo, etc.)
-#   RequiresBridge:      bridge that must be on the board for this programmer
+#   requires_bridge:     bridge that must be on the board for this programmer
 #                        to apply. Skipped if null (e.g., bundled vendor
 #                        programmers usually accept any vendor cable).
-#   SupportedFamilies:   for non-bundled programmers — list of
-#                        {Producer, Family} pairs the programmer can target.
+#   families:            for non-bundled programmers — the chip families the
+#                        programmer can target, by family id (config/chips/).
 #                        Implies chip-tied compatibility.
-#   RequiresBootloader:  for bootloader-tied programmers (dfu-util) — the
+#   requires_bootloader: for bootloader-tied programmers (dfu-util) — the
 #                        bootloader type required on the board.
-#   InstallDir:          optional override (expanded with ~ / $VAR)
-#   URL:                 project / vendor page
+#   install_dir:         optional override (expanded with ~ / $VAR)
+#   url:                 project / vendor page
 
 Programmers:
 
 #  ---------- Bundled vendor programmers ----------
 #  These apply wherever their bundled toolchain applies. No explicit
-#  SupportedFamilies list — derived from the chip's Toolchains.
+#  families list — derived from the chip's toolchains.
 
-  - Id: vivado_hw
-    Name: "Vivado HW Server"
-    KnownVersions: [2014.4, 2015.4, 2016.4, 2017.4, 2018.3, 2019.2, 2020.2, 2021.2, 2022.2, 2023.2, 2024.2]
-    Version: "2023.2"
-    Bundled: vivado
-    Binary: hw_server
-    Bridge: jtag
-    URL: https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html
+  - id: vivado_hw
+    name: "Vivado HW Server"
+    known_versions: [2014.4, 2015.4, 2016.4, 2017.4, 2018.3, 2019.2, 2020.2, 2021.2, 2022.2, 2023.2, 2024.2]
+    version: "2023.2"
+    bundled: vivado
+    binary: hw_server
+    bridge: jtag
+    url: https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html
 
-  - Id: ise_impact
-    Name: iMPACT
-    KnownVersions: [14.7]
-    Version: "14.7"
-    Bundled: ise
-    Binary: impact
-    Bridge: jtag
-    URL: https://www.amd.com/en/support/downloadable-files/ise-design-suite-14-7.html
+  - id: ise_impact
+    name: iMPACT
+    known_versions: [14.7]
+    version: "14.7"
+    bundled: ise
+    binary: impact
+    bridge: jtag
+    url: https://www.amd.com/en/support/downloadable-files/ise-design-suite-14-7.html
 
-  - Id: quartus_pgm
-    Name: "Quartus Programmer"
-    KnownVersions: ["18.1", "19.1", "20.1", "21.1", "22.1std", "23.1std", "24.1std"]
-    Version: "23.1std"
-    Bundled: quartus_prime_lite
-    Binary: quartus_pgm
-    Bridge: jtag
+  - id: quartus_pgm
+    name: "Quartus Programmer"
+    known_versions: ["18.1", "19.1", "20.1", "21.1", "22.1std", "23.1std", "24.1std"]
+    version: "23.1std"
+    bundled: quartus_prime_lite
+    binary: quartus_pgm
+    bridge: jtag
 
-  - Id: quartus2_pgm
-    Name: "Quartus II 13 Programmer"
-    KnownVersions: ["13.0sp1"]
-    Version: "13.0sp1"
-    Bundled: quartus2
-    Binary: quartus_pgm
-    Bridge: jtag
+  - id: quartus2_pgm
+    name: "Quartus II 13 Programmer"
+    known_versions: ["13.0sp1"]
+    version: "13.0sp1"
+    bundled: quartus2
+    binary: quartus_pgm
+    bridge: jtag
 
-  - Id: libero_fpexpress
-    Name: "FlashPro Express"
-    KnownVersions: ["2022.2", "2023.1", "2023.2", "2024.1", "2024.2"]
-    Version: "2024.1"
-    Bundled: libero_soc
-    Binary: FPExpress
-    Bridge: jtag
+  - id: libero_fpexpress
+    name: "FlashPro Express"
+    known_versions: ["2022.2", "2023.1", "2023.2", "2024.1", "2024.2"]
+    version: "2024.1"
+    bundled: libero_soc
+    binary: FPExpress
+    bridge: jtag
 
-  - Id: efinity_pgm
-    Name: "Efinity Programmer"
-    KnownVersions: ["2022.1", "2023.1", "2023.2", "2024.1"]
-    Version: "2023.2"
-    Bundled: efinity
-    Binary: efx_pgm
-    Bridge: jtag
+  - id: efinity_pgm
+    name: "Efinity Programmer"
+    known_versions: ["2022.1", "2023.1", "2023.2", "2024.1"]
+    version: "2023.2"
+    bundled: efinity
+    binary: efx_pgm
+    bridge: jtag
 
-  - Id: gowin_pgm
-    Name: "Gowin Programmer"
-    KnownVersions: ["1.9.9.03.Education", "1.9.11.03.Educational"]
-    Version: "1.9.11.03.Educational"
-    Bundled: gowin_eda
-    Binary: programmer
-    Bridge: jtag
+  - id: gowin_pgm
+    name: "Gowin Programmer"
+    known_versions: ["1.9.9.03.Education", "1.9.11.03.Educational"]
+    version: "1.9.11.03.Educational"
+    bundled: gowin_eda
+    binary: programmer
+    bridge: jtag
 
-  - Id: gowin_pgm_standard
-    Name: "Gowin Programmer (Standard build)"
-    KnownVersions: ["1.9.9.02"]
-    Version: "1.9.9.02"
-    Bundled: gowin_standard
-    Binary: programmer
-    Bridge: jtag
+  - id: gowin_pgm_standard
+    name: "Gowin Programmer (Standard build)"
+    known_versions: ["1.9.9.02"]
+    version: "1.9.9.02"
+    bundled: gowin_standard
+    binary: programmer
+    bridge: jtag
 
-  - Id: diamond_pgm
-    Name: "Lattice Diamond Programmer"
-    KnownVersions: ["3.11", "3.12", "3.13"]
-    Version:
-    Bundled: lattice_diamond
-    Binary: pgrcmd
-    Bridge: jtag
+  - id: diamond_pgm
+    name: "Lattice Diamond Programmer"
+    known_versions: ["3.11", "3.12", "3.13"]
+    version:
+    bundled: lattice_diamond
+    binary: pgrcmd
+    bridge: jtag
 
-  - Id: radiant_pgm
-    Name: "Lattice Radiant Programmer"
-    KnownVersions: ["2.2", "3.0", "2024.1"]
-    Version:
-    Bundled: lattice_radiant
-    Binary: radiant-programmer
-    Bridge: jtag
+  - id: radiant_pgm
+    name: "Lattice Radiant Programmer"
+    known_versions: ["2.2", "3.0", "2024.1"]
+    version:
+    bundled: lattice_radiant
+    binary: radiant-programmer
+    bridge: jtag
 
-  - Id: icecube2_pgm
-    Name: "iCEcube2 Programmer"
-    KnownVersions: ["2017.08", "2020.12"]
-    Version:
-    Bundled: icecube2
-    Binary: pgrcmd
-    Bridge: jtag
+  - id: icecube2_pgm
+    name: "iCEcube2 Programmer"
+    known_versions: ["2017.08", "2020.12"]
+    version:
+    bundled: icecube2
+    binary: pgrcmd
+    bridge: jtag
 
-  - Id: td_pgm
-    Name: "Tang Dynasty Programmer"
-    KnownVersions: ["4.6", "5.0", "5.6"]
-    Version:
-    Bundled: td
-    Binary: td_programmer
-    Bridge: jtag
+  - id: td_pgm
+    name: "Tang Dynasty Programmer"
+    known_versions: ["4.6", "5.0", "5.6"]
+    version:
+    bundled: td
+    binary: td_programmer
+    bridge: jtag
 
-  - Id: pango_pgm
-    Name: "Pango Design Suite Programmer"
-    KnownVersions: ["2024.1"]
-    Version:
-    Bundled: pango_ds
-    Binary: pds_programmer
-    Bridge: jtag
+  - id: pango_pgm
+    name: "Pango Design Suite Programmer"
+    known_versions: ["2024.1"]
+    version:
+    bundled: pango_ds
+    binary: pds_programmer
+    bridge: jtag
 
-  - Id: renesas_go_pgm
-    Name: "Renesas Go Configure / ForgeFPGA Workshop"
-    KnownVersions: ["6.0"]
-    Version:
-    Bundled: forge_fpga
-    Binary: GoConfigureSoftwareHub
-    Bridge: i2c
+  - id: renesas_go_pgm
+    name: "Renesas Go Configure / ForgeFPGA Workshop"
+    known_versions: ["6.0"]
+    version:
+    bundled: forge_fpga
+    binary: GoConfigureSoftwareHub
+    bridge: i2c
 
-  - Id: ace_pgm
-    Name: "Achronix ACE Bitporter"
-    KnownVersions: ["10.0", "11.0"]
-    Version:
-    Bundled: ace
-    Binary: ace
-    Bridge: jtag
+  - id: ace_pgm
+    name: "Achronix ACE Bitporter"
+    known_versions: ["10.0", "11.0"]
+    version:
+    bundled: ace
+    binary: ace
+    bridge: jtag
 
-  - Id: nanoxmap_impulse
-    Name: "NanoXplore Impulse"
-    KnownVersions: ["4.0", "4.5"]
-    Version:
-    Bundled: nanoxmap
-    Binary: impulse
-    Bridge: jtag
+  - id: nanoxmap_impulse
+    name: "NanoXplore Impulse"
+    known_versions: ["4.0", "4.5"]
+    version:
+    bundled: nanoxmap
+    binary: impulse
+    bridge: jtag
 
-  - Id: qorc_flash
-    Name: "QuickLogic QORC flasher"
-    KnownVersions: [git-master]
-    Version:
-    Bundled: qorc_sdk
-    Binary: qorc-flash
-    Bridge: usb-cdc-bootloader
+  - id: qorc_flash
+    name: "QuickLogic QORC flasher"
+    known_versions: [git-master]
+    version:
+    bundled: qorc_sdk
+    binary: qorc-flash
+    bridge: usb-cdc-bootloader
 
-  - Id: isplever_classic_pgm
-    Name: "ispVM (ispLEVER Classic CPLD)"
-    KnownVersions: ["2.1"]
-    Version: "2.1"
-    Bundled: isplever_classic
-    Binary: ispvm
-    Bridge: jtag
+  - id: isplever_classic_pgm
+    name: "ispVM (ispLEVER Classic CPLD)"
+    known_versions: ["2.1"]
+    version: "2.1"
+    bundled: isplever_classic
+    binary: ispvm
+    bridge: jtag
 
 #  ---------- Third-party / open programmers ----------
-#  Not bundled with any toolchain. Use SupportedFamilies / RequiresBridge /
-#  RequiresBootloader to declare what they can program.
+#  Not bundled with any toolchain. Use families / requires_bridge /
+#  requires_bootloader to declare what they can program.
 
-  - Id: openFPGALoader
-    Name: "openFPGALoader (universal)"
-    KnownVersions: ["0.10", "0.11", "0.12", "0.13", git-master]
-    Version: git-master
-    Bundled: null
-    Binary: openFPGALoader
-    Bridge: jtag
-    SupportedFamilies:
-      - { Producer: "Lattice",        Family: ICE40 }
-      - { Producer: "Lattice",        Family: "ICE40 UltraPlus" }
-      - { Producer: "Lattice",        Family: ECP5 }
-      - { Producer: "Lattice",        Family: MachXO2 }
-      - { Producer: "Lattice",        Family: MachXO3 }
-      - { Producer: "Lattice",        Family: "CrossLink-NX" }
-      - { Producer: "Lattice",        Family: "Certus-NX" }
-      - { Producer: "Lattice",        Family: "CertusPro-NX" }
-      - { Producer: "Gowin",          Family: "LittleBee/GW1N" }
-      - { Producer: "Gowin",          Family: "LittleBee/GW1NR" }
-      - { Producer: "Gowin",          Family: "LittleBee/GW1NS" }
-      - { Producer: "Gowin",          Family: "LittleBee/GW1NSR" }
-      - { Producer: "Gowin",          Family: "LittleBee/GW1NZ" }
-      - { Producer: "Gowin",          Family: "Arora/GW2A" }
-      - { Producer: "Gowin",          Family: "Arora/GW2AR" }
-      - { Producer: "Gowin",          Family: "AroraV/GW5A" }
-      - { Producer: "Gowin",          Family: "AroraV/GW5AST" }
-      - { Producer: "Gowin",          Family: "AroraV/GW5AT" }
-      - { Producer: "Xilinx (AMD)",   Family: "Artix 7" }
-      - { Producer: "Xilinx (AMD)",   Family: "Spartan 7" }
-      - { Producer: "Xilinx (AMD)",   Family: "Kintex 7" }
-      - { Producer: "Xilinx (AMD)",   Family: "Zynq 7000" }
-      - { Producer: "Xilinx (AMD)",   Family: "Spartan 6" }
-      - { Producer: "Anlogic",        Family: "Eagle EG4" }
-      - { Producer: "Anlogic",        Family: "Elf EF2" }
-      - { Producer: "Anlogic",        Family: "Phoenix EF3" }
-      - { Producer: "Cologne Chip",   Family: "GateMate" }
-      - { Producer: "Efinix",         Family: "Trion" }
-      - { Producer: "Efinix",         Family: "Titanium" }
-    URL: https://github.com/trabucayre/openFPGALoader
+  - id: openFPGALoader
+    name: "openFPGALoader (universal)"
+    known_versions: ["0.10", "0.11", "0.12", "0.13", git-master]
+    version: git-master
+    bundled: null
+    binary: openFPGALoader
+    bridge: jtag
+    families:
+      - ice40
+      - ice40_ultraplus
+      - ecp5
+      - machxo2
+      - machxo3
+      - crosslink_nx
+      - certus_nx
+      - certuspro_nx
+      - littlebee_gw1n
+      - littlebee_gw1nr
+      - littlebee_gw1ns
+      - littlebee_gw1nsr
+      - littlebee_gw1nz
+      - arora_gw2a
+      - arora_gw2ar
+      - arorav_gw5a
+      - arorav_gw5ast
+      - arorav_gw5at
+      - artix_7
+      - spartan_7
+      - kintex_7
+      - zynq_7000
+      - spartan_6
+      - eagle_eg4
+      - elf_ef2
+      - phoenix_ef3
+      - gatemate
+      - trion
+      - titanium
+    url: https://github.com/trabucayre/openFPGALoader
 
-  - Id: iceprog
-    Name: "iceprog (Project IceStorm)"
-    KnownVersions: [git-master]
-    Version: git-master
-    Bundled: null
-    Binary: iceprog
-    Bridge: ft2232h-spi
-    RequiresBridge: ft2232h-spi
-    SupportedFamilies:
-      - { Producer: "Lattice", Family: ICE40 }
-      - { Producer: "Lattice", Family: "ICE40 UltraPlus" }
-    URL: https://github.com/YosysHQ/icestorm
+  - id: iceprog
+    name: "iceprog (Project IceStorm)"
+    known_versions: [git-master]
+    version: git-master
+    bundled: null
+    binary: iceprog
+    bridge: ft2232h-spi
+    requires_bridge: ft2232h-spi
+    families:
+      - ice40
+      - ice40_ultraplus
+    url: https://github.com/YosysHQ/icestorm
 
-  - Id: ecpprog
-    Name: ecpprog
-    KnownVersions: [git-master]
-    Version: git-master
-    Bundled: null
-    Binary: ecpprog
-    Bridge: ft2232h-jtag
-    RequiresBridge: ft2232h-jtag
-    SupportedFamilies:
-      - { Producer: "Lattice", Family: ECP5 }
-    URL: https://github.com/gregdavill/ecpprog
+  - id: ecpprog
+    name: ecpprog
+    known_versions: [git-master]
+    version: git-master
+    bundled: null
+    binary: ecpprog
+    bridge: ft2232h-jtag
+    requires_bridge: ft2232h-jtag
+    families:
+      - ecp5
+    url: https://github.com/gregdavill/ecpprog
 
-  - Id: dfu_util
-    Name: dfu-util
-    KnownVersions: ["0.10", "0.11"]
-    Version: "0.11"
-    Bundled: null
-    Binary: dfu-util
-    Bridge: usb-dfu
-    RequiresBootloader: usb-dfu
-    URL: https://dfu-util.sourceforge.net/
+  - id: dfu_util
+    name: dfu-util
+    known_versions: ["0.10", "0.11"]
+    version: "0.11"
+    bundled: null
+    binary: dfu-util
+    bridge: usb-dfu
+    requires_bootloader: usb-dfu
+    url: https://dfu-util.sourceforge.net/
 
-  - Id: openocd
-    Name: OpenOCD
-    KnownVersions: ["0.11.0", "0.12.0"]
-    Version: "0.12.0"
-    Bundled: null
-    Binary: openocd
-    Bridge: jtag
-    URL: https://openocd.org/
+  - id: openocd
+    name: OpenOCD
+    known_versions: ["0.11.0", "0.12.0"]
+    version: "0.12.0"
+    bundled: null
+    binary: openocd
+    bridge: jtag
+    url: https://openocd.org/
 
-  - Id: xc3sprog
-    Name: "xc3sprog (third-party Xilinx)"
-    KnownVersions: [git-master]
-    Version:
-    Bundled: null
-    Binary: xc3sprog
-    Bridge: ft2232h-jtag
-    RequiresBridge: ft2232h-jtag
-    SupportedFamilies:
-      - { Producer: "Xilinx (AMD)", Family: "Spartan 6" }
-      - { Producer: "Xilinx (AMD)", Family: "Artix 7" }
-      - { Producer: "Xilinx (AMD)", Family: "Kintex 7" }
-      - { Producer: "Xilinx (AMD)", Family: "Spartan 3" }
-      - { Producer: "Xilinx (AMD)", Family: "Spartan 3E" }
-      - { Producer: "Xilinx (AMD)", Family: "Spartan 3A" }
-    URL: http://xc3sprog.sourceforge.net/
+  - id: xc3sprog
+    name: "xc3sprog (third-party Xilinx)"
+    known_versions: [git-master]
+    version:
+    bundled: null
+    binary: xc3sprog
+    bridge: ft2232h-jtag
+    requires_bridge: ft2232h-jtag
+    families:
+      - spartan_6
+      - artix_7
+      - kintex_7
+      - spartan_3
+      - spartan_3e
+      - spartan_3a
+    url: http://xc3sprog.sourceforge.net/
 
-  - Id: urjtag
-    Name: "UrJTAG (universal JTAG)"
-    KnownVersions: ["0.10"]
-    Version:
-    Bundled: null
-    Binary: jtag
-    Bridge: jtag
-    URL: http://urjtag.org/
+  - id: urjtag
+    name: "UrJTAG (universal JTAG)"
+    known_versions: ["0.10"]
+    version:
+    bundled: null
+    binary: jtag
+    bridge: jtag
+    url: http://urjtag.org/
 
 #  ---------- Board-specific / community programmers ----------
 #  These apply ONLY to boards that explicitly list them in ExtraProgrammers.
 
-  - Id: mojoload
-    Name: "Mojo Loader"
-    KnownVersions: ["v1.2.1"]
-    Version: "v1.2.1"
-    Bundled: null
-    Binary: mojoload
-    Bridge: avr-mojo
-    RequiresBridge: avr-mojo
-    URL: https://github.com/embmicro/mojo-loader
+  - id: mojoload
+    name: "Mojo Loader"
+    known_versions: ["v1.2.1"]
+    version: "v1.2.1"
+    bundled: null
+    binary: mojoload
+    bridge: avr-mojo
+    requires_bridge: avr-mojo
+    url: https://github.com/embmicro/mojo-loader
 
-  - Id: papilio_loader
-    Name: "Papilio Loader"
-    KnownVersions: ["2.8"]
-    Version:
-    Bundled: null
-    Binary: papilio-loader
-    Bridge: papilio-ft2232
-    RequiresBridge: papilio-ft2232
-    URL: https://gadgetfactory.net/
+  - id: papilio_loader
+    name: "Papilio Loader"
+    known_versions: ["2.8"]
+    version:
+    bundled: null
+    binary: papilio-loader
+    bridge: papilio-ft2232
+    requires_bridge: papilio-ft2232
+    url: https://gadgetfactory.net/

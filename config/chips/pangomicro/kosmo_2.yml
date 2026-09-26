@@ -1,9 +1,11 @@
 # Pangomicro / Kosmo-2 — chip registry
 
-Producer: Pangomicro
-Family: Kosmo-2
-Description: ""
-DefaultToolchains:
-  - pango_ds[*]
-Chips:
-  - Id: PG2K400-6IFFBG676
+Family:
+  id: kosmo_2
+  producer: pangomicro
+  name: Kosmo-2
+  description: ""
+  default_toolchains:
+    - pango_ds[*]
+  chips:
+    - id: PG2K400-6IFFBG676

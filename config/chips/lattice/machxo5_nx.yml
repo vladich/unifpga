@@ -1,15 +1,17 @@
 # Lattice / MachXO5-NX — chip registry
 # Nexus-based MachXO5. Radiant.
 
-Producer: Lattice
-Family: MachXO5-NX
-Description: Nexus-based MachXO5. Radiant.
-DefaultToolchains:
-  - lattice_radiant[*]
-  - nextpnr_nexus[*]
-Chips:
-  - Id: LFMXO5-100T-9MG400I
-  - Id: LFMXO5-15D-9MG324I
-  - Id: LFMXO5-25-9MG324I
-  - Id: LFMXO5-15D-8BBG400C
-  - Id: LFMXO5-25-9BBG400C
+Family:
+  id: machxo5_nx
+  producer: lattice
+  name: MachXO5-NX
+  description: Nexus-based MachXO5. Radiant.
+  default_toolchains:
+    - lattice_radiant[*]
+    - nextpnr_nexus[*]
+  chips:
+    - id: LFMXO5-100T-9MG400I
+    - id: LFMXO5-15D-9MG324I
+    - id: LFMXO5-25-9MG324I
+    - id: LFMXO5-15D-8BBG400C
+    - id: LFMXO5-25-9BBG400C
