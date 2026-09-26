@@ -534,9 +534,11 @@ function draw() {
     const gi = gpioConn.has(c.id) ? gpioConn.get(c.id) : null;
     const csel = (S.sel && S.sel.kind === "conn" && S.sel.id === c.id) || (gi !== null && hi.uses.has(gi));
     const g = el("g");
+    const gb = gi !== null ? gpioBits(gi) : null;             // a compact inscription, the detail on hover
     const lbl = el("text", {x: GX - 6, y: cy - 8, "font-size": 12, class: "clickable", fill: csel ? "var(--sel)" : "#343a40"},
-                   c.label + (gi !== null ? "  → " + gpioBits(gi) : ""));
-    if (c.note) lbl.append(el("title", {}, c.label + ": " + c.note));   // hover: how far the model is verified
+                   c.label + (gb ? "  → " + gb.short : ""));
+    const tip = [gb ? gb.full : "", c.note ? c.label + ": " + c.note : ""].filter(Boolean).join("\n\n");   // + how far the model is verified
+    if (tip) lbl.append(el("title", {}, tip));
     target(lbl, {kind: "conn", id: c.id});
     g.append(lbl);
     const boxY = cy + lab + 6;
@@ -2096,13 +2098,32 @@ function setDefault(key, listKey, value) {
   S.setup[key] = value;
   if (S.setup[listKey]) S.setup[listKey] = [value, ...S.setup[listKey].filter((v) => v !== value)];
 }
-// "design_top gpio[35:0]": the bits of design_top's gpio port a `gpio:` use hands
-// the header's pins to (a pin another part uses is not among them)
+// The bits of design_top's gpio port a `gpio:` use hands a header's pins to (a
+// pin another part uses is not among them): `short` stands by the header's name
+// on the schematic (`gpio[18:6]`; `gpio[18:6]·9` when the range has gaps), `full`
+// is its tooltip — the count, and one line per pin of the header saying which
+// gpio bit it is, which module pin took it, or that no design bit reaches it.
 function gpioBits(i) {
-  const bits = traceEdges().filter((e) => e.use === i && e.bit !== null).map((e) => e.bit);
-  if (!bits.length) return "design_top gpio (no bit: its pins are taken)";
-  return "design_top gpio[" + Math.max(...bits) + (bits.length > 1 ? ":" + Math.min(...bits) : "") + "]" +
-         (bits.length < Math.max(...bits) - Math.min(...bits) + 1 ? " (" + bits.length + " bits)" : "");
+  const use = S.setup.use[i], c = conn(use.gpio), ri = refIndex();
+  const edges = traceEdges().filter((e) => e.use === i && e.bit !== null).sort((x, y) => x.bit - y.bit);
+  const bits = edges.map((e) => e.bit);
+  const refOf = {}, edgeOf = {}, wired = {};                 // header pin -> bank ref / its edge / the module pin on it
+  for (const [ref, hp] of Object.entries(ri)) if (hp.split(".")[0] === c.id) refOf[hp.split(".")[1]] = ref;
+  for (const e of edges) { const hp = ri[e.ref]; if (hp) edgeOf[hp.split(".")[1]] = e; }
+  (S.setup.use || []).forEach((u) => { if (u.module) for (const [mp, w] of Object.entries(wiresOf(u))) if (w.split(".")[0] === c.id) wired[w.split(".")[1]] = useLabel(u) + " " + mp; });
+  const n = bits.length, top = n ? Math.max(...bits) : 0, low = n ? Math.min(...bits) : 0;
+  const missing = n ? [...Array(top - low + 1).keys()].map((b) => b + low).filter((b) => !bits.includes(b)) : [];
+  const head = c.label + " → design_top " + (n ? bitRange("gpio", bits) : "gpio") + ": " +
+               (n ? n + " bit" + (n === 1 ? "" : "s") + " of the design's gpio port come from this header's pins" : "none of its pins reaches a gpio bit") +
+               (missing.length ? " (" + bitRange("gpio", missing) + " reach no pin: theirs are wired to other parts)" : "") +
+               (use.pins ? "; the rig hands over pins " + use.pins.join(", ") + " only" : "");
+  const lines = c.rows.flat().map(String).filter((k) => refOf[k]).map((k) => {
+    const e = edgeOf[k], at = refOf[k] + (k.startsWith("[") ? "" : " (pin " + k + ")");     // a pin_row's keys are the refs' own indices
+    return "  " + at + (e ? " = FPGA " + (e.pin || "?") + "  →  gpio[" + e.bit + "]"
+                        : wired[k] ? "  →  " + wired[k] : "  —  no design bit (tied off, or an on-board part's pin)");
+  });
+  return {short: n ? "gpio[" + top + (n > 1 ? ":" + low : "") + "]" + (missing.length ? "·" + n : "") : "gpio: no bit",
+          full: [head].concat(lines).join("\n")};
 }
 
 function renderTargets() {
@@ -2500,6 +2521,18 @@ async function selftest() {
     ok("a drag is not a click", S.sel === sel0);
     $("zoom-fit").click();
     ok("fit shows everything again", S.view === null && $("zoom-level").textContent === "100%");
+    // a header handed to design_top's gpio: a compact inscription by its name, the detail in its tooltip
+    const gu = (S.setup.use || []).findIndex((u) => u.gpio);
+    if (gu >= 0) {
+      const gc = conn(S.setup.use[gu].gpio), gb = gpioBits(gu);
+      const lbl = [...$("svg").querySelectorAll("text")].find((x) => x.firstChild && x.firstChild.textContent === gc.label + "  → " + gb.short);
+      const tipText = lbl && lbl.querySelector("title") ? lbl.querySelector("title").textContent : "";
+      const pinsOfHeader = Object.values(refIndex()).filter((hp) => hp.split(".")[0] === gc.id).length;
+      ok("a gpio header's inscription is compact (" + (lbl ? lbl.firstChild.textContent : "not drawn") + ")",
+         !!lbl && /→ gpio(\[\d+(:\d+)?\](·\d+)?|: no bit)$/.test(lbl.firstChild.textContent));
+      ok("its tooltip names design_top's gpio bits and every pin of the header",
+         tipText.includes(gc.label + " → design_top gpio") && tipText.split("\n").filter((l) => l.startsWith("  ")).length === pinsOfHeader);
+    }
     // driver-mediated trace (PmodVGA on arty_a7_35_pmod_mic3 style rigs)
     // a module's pin through a driver, bit for bit: its wire, its design port and its panel
     const ri = refIndex(), edgesNow = S.ev.trace.edges;
@@ -2834,7 +2867,7 @@ async function selftest() {
     S.setup.use.splice(oi, 1); await changed("unuse"); await settle();
     ok("an on-board device can be dropped", !S.setup.use.some((u) => u.onboard === ob.id));
     const r = await api("/api/save", {setup: S.setup});
-    ok("saved", r.configuration.endsWith("selftest_rig.yml"));
+    ok("saved", (r.setup || "").endsWith("selftest_rig.yml"));          // the route answers with the rig file it wrote
     S.dirty = false;
     const fitting = Object.entries(S.ev.designs || {}).find(([, unmet]) => !unmet.length);
     const pr = await api("/api/project", {setup_id: "selftest_rig", design: fitting[0]});
@@ -2880,7 +2913,7 @@ async function selftest() {
         // ⌘/Ctrl-click navigation inside the editor: a name declared in the file moves the caret to it
         const decl = [...declarations(ta.value)].find(([, l]) => l > 20);
         if (decl) {
-          const [name, dl] = decl, idx = ta.value.lastIndexOf(name);
+          const [name, dl] = decl, idx = [...ta.value.matchAll(new RegExp("\\b" + name + "\\b", "g"))].map((m) => m.index).pop();   // the last whole-word use, not a longer name containing it
           ta.selectionStart = ta.selectionEnd = idx + 1; goToDefinition(pin, ta);
           ok("F12 / " + MODS.points + "-click in the editor goes to a definition",
              ta.value.slice(0, ta.selectionStart).split("\n").length === dl);
