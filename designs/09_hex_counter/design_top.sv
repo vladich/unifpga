@@ -10,49 +10,7 @@
 //   seven_segment >= 4
 
 module design_top
-# (
-    parameter int clk_mhz       = 50,
-                  w_sw          = 0,
-                  w_btn         = 0,
-                  w_led         = 0,
-                  w_digit       = 0,
-                  w_rgb_led     = 0,
-                  screen_width  = 0,
-                  screen_height = 0,
-                  w_red         = 0,
-                  w_green       = 0,
-                  w_blue        = 0,
-                  w_gpio        = 0,
-                  w_x = (screen_width  > 0) ? $clog2(screen_width ) : 1,
-                  w_y = (screen_height > 0) ? $clog2(screen_height) : 1,
-                  // Bits needed to divide clk down to ~1 Hz
-                  w_div  = $clog2(clk_mhz * 1_000_000),
-                  // 4 bits per hex digit
-                  w_value = (w_digit > 0) ? w_digit * 4 : 4
-)
-(
-    input                            clk,
-    input                            rst,
-    input        [w_sw     - 1 : 0]  sw,
-    input        [w_btn    - 1 : 0]  btn,
-    output logic [w_led    - 1 : 0]  led,
-    output logic [          7 : 0]   abcdefgh,
-    output logic [w_digit  - 1 : 0]  digit,
-    output logic [w_rgb_led- 1 : 0]  rgb_r,
-    output logic [w_rgb_led- 1 : 0]  rgb_g,
-    output logic [w_rgb_led- 1 : 0]  rgb_b,
-    input        [w_x      - 1 : 0]  x,
-    input        [w_y      - 1 : 0]  y,
-    output logic [w_red    - 1 : 0]  red,
-    output logic [w_green  - 1 : 0]  green,
-    output logic [w_blue   - 1 : 0]  blue,
-    input        [         23 : 0]   mic_sample,
-    input                            mic_valid,
-    output logic [         15 : 0]   sound,
-    input                            uart_rx,
-    output logic                     uart_tx,
-    inout        [w_gpio   - 1 : 0]  gpio
-);
+`include "design_top_interface.svh"
 
     assign led      = '0;
     assign rgb_r    = '0;

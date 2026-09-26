@@ -6,18 +6,21 @@
 // configuration widths (number of switches, presence of a screen, etc.) come
 // from `parameter` overrides set by the codegen-generated top module.
 //
-// A capability a particular board lacks gets the parameter values below (its
-// `absent` values in config/capabilities/: most widths 0, so the vectors are
-// zero-element arrays that optimize away; a screen 640x480 so pixel code still
-// compiles). User code that references e.g. `led[3]` on a board with
-// `w_led = 2` produces a synthesis error — which is the correct behaviour:
+// Capabilities a particular board lacks are declared with width 0; SystemVerilog
+// vectors of width 0 are zero-element arrays (no driver, no consumer), which
+// silently optimize away. User code that references e.g. `led[3]` on a board
+// with `w_led = 2` produces a synthesis error — which is the correct behaviour:
 // the design requires more than the board provides, surface the mismatch.
 //
-// To write a new design, copy the body of this file into your project as
-// `design_top.sv` and add your logic. Never rename the ports or change their
-// directions — every board adapter binds to these names. An optional
-// capability (its section says so) reaches a design only through the ports
-// the design declares: leave them out when you do not use it.
+// A design does not copy this header: its file says
+//
+//     module design_top
+//     `include "design_top_interface.svh"
+//
+// and the include, rendered next to it by every build (or by `./unifpga
+// interface --write`), is this header without the optional capabilities the
+// design's `// requires:` block does not name. Never rename the ports or
+// change their directions — every board adapter binds to these names.
 //
 // To declare hard capability requirements that synthesize.py should check
 // before building, add a `// requires:` block before the module keyword.
@@ -38,7 +41,6 @@
 // capabilities' design: blocks (config/capabilities/*.yml): edit those, then
 // `./unifpga interface --write`.
 // =============================================================================
-
 module design_top
 # (
     // ---- Clock & reset (always present) -------------------------------------
@@ -54,11 +56,11 @@ module design_top
     parameter int w_rgb_led     = 0,     // Number of RGB LEDs
 
     // ---- Screen (raster-scan pixel display; 0x0 = no screen) ----------------
-    parameter int screen_width  = 640,
-    parameter int screen_height = 480,
-    parameter int w_red         = 4,     // Bits per RED channel
-    parameter int w_green       = 4,     // Bits per GREEN channel
-    parameter int w_blue        = 4,     // Bits per BLUE channel
+    parameter int screen_width  = 0,
+    parameter int screen_height = 0,
+    parameter int w_red         = 0,     // Bits per RED channel
+    parameter int w_green       = 0,     // Bits per GREEN channel
+    parameter int w_blue        = 0,     // Bits per BLUE channel
 
     // ---- General-purpose I/O ------------------------------------------------
     parameter int w_gpio        = 0,     // Generic bidirectional pin bank

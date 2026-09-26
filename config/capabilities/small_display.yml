@@ -25,7 +25,7 @@ Capability:
     parameters:
       sd_width: {value: width, absent: 0, description: "Small display (SSD1306 OLED ...), pixels"}
       sd_height: {value: height, absent: 0}
-      w_sd_pixel: {value: bits, absent: 1, description: Bits per small-display pixel
+      w_sd_pixel: {value: bits, absent: 1, default: 1, description: Bits per small-display pixel
 }
     derived:
       w_sd_x: {clog2: sd_width}

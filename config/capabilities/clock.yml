@@ -24,6 +24,6 @@ Capability:
     comment: Clock
 
     parameters:
-      clk_mhz: {value: {source: design_clock_mhz}, absent: 50, description: "Advertised frequency of `clk` in MHz"}
+      clk_mhz: {value: {source: design_clock_mhz}, default: 50, description: "Advertised frequency of `clk` in MHz"}
     ports:
       clk: {signal: clk, width: 1, net: {source: design_clock_net}}
