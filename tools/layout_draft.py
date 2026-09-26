@@ -11,10 +11,10 @@ as attaches. draft() builds it from:
   * the board's configurations: every attach whose pins are on no header is an
     on-board part (the same peripheral, binding and parameters, so derive()
     turns the configurations back into setups);
-  * the board's registry entry (tools/board_sources.py; the registry is a
-    repository of its own): a header whose facts
-    verify gets its physical numbering and connector type, an on-board part its
-    silkscreen label.
+  * the facts already in the drawn section — a header or part with a `source`
+    (read from one of the board's documents; tools/board_sources.py): a header
+    whose facts verify is kept as it is, physical numbering and connector type
+    included, a part keeps its silkscreen label.
 
 A header without verified facts is a logical row (connector type `pin_row`)
 whose pins are named by their pinmap index ([0], [1], ...), so nobody reads
@@ -73,13 +73,15 @@ def _title(bank):
 
 def draft(board_id):
     """The layout dict for `board_id` (see the module docstring)."""
+    board = config_init.read_board(board_id) or {}
     pinmap = config_init.read_board_pinmap(board_id) or {}
-    entry = board_sources.read(board_id) or {}
     base_types = config_init._load_yaml(os.path.join(su.CONFIG_DIR, "connectors.yml"), "Connectors") or {}
-    connectors_def = dict(base_types, **(entry.get("connector_types") or {}))
-    ok_headers, ok_onboard = board_sources.verified_items(board_id, entry or None, connectors_def) if entry else (set(), set())
-    facts_h = {h["bank"]: h for h in entry.get("headers") or []}
-    facts_o = {o["bank"]: o for o in entry.get("onboard") or []}
+    connectors_def = dict(base_types, **(board.get("connector_types") or {}))
+    # the facts: headers and parts of the drawn section read from a document
+    # (they carry a `source`); the drafter keeps them and draws the rest
+    ok_headers, ok_onboard = board_sources.verified_items(board, connectors_def)
+    facts_h = {h["bank"]: h for h in board.get("headers") or [] if h.get("source") and h.get("bank")}
+    facts_o = {board_sources.part_bank(o): o for o in board.get("parts") or [] if o.get("source")}
 
     builds = [config_init.for_target(cfg, toolchain)        # every toolchain's build of each rig
               for _cid, cfg in sorted(config_init.read_configurations().items()) if cfg["board"] == board_id
@@ -101,17 +103,8 @@ def draft(board_id):
         refs = [ref for ref, _pin in board_sources.bank_pins(pinmap, bank)]
         fact = facts_h.get(bank)
         if bank in ok_headers:
-            by_pin = {fpga: ref for ref, fpga in board_sources.bank_pins(pinmap, bank)}
-            pins = {}
-            for phys, pin in fact["pins"].items():
-                fpga = board_sources._norm_pin(pin)
-                ref = by_pin.get(fpga)
-                if ref and named.get(fpga):
-                    ref = named[fpga].most_common(1)[0][0]
-                if ref:
-                    pins[phys] = ref
-            c = {"id": fact.get("id") or bank, "type": fact["type"], "label": fact.get("label") or bank.upper(),
-                 "bank": bank, "pins": dict(sorted(pins.items(), key=lambda kv: _natural(kv[0])))}
+            c = {k: v for k, v in fact.items() if k in ("id", "type", "label", "note", "bank", "pins", "source")}
+            c["pins"] = dict(sorted(((str(k), v) for k, v in fact["pins"].items()), key=lambda kv: _natural(kv[0])))
         else:
             c = {"id": bank, "type": "pin_row", "label": bank.upper(),
                  "note": "pins in the pinmap's order: the header's physical pin numbers are not verified yet",
@@ -192,11 +185,12 @@ def draft(board_id):
         dev = (banks.get(main) or {}).get("device") if isinstance(banks.get(main), dict) else None
         label = fact.get("label") if main in ok_onboard and fact and fact.get("label") else \
             (dev or {}).get("name") or _title(main)
+        source = {"source": fact["source"]} if main in ok_onboard and fact else {}
         # variants in a canonical order, so their ids follow what they are and not
         # which configuration happened to be read first
         attaches = sorted(parts[main], key=lambda x: (x["peripheral"], json.dumps(x, sort_keys=True)))
         if len(attaches) == 1:
-            onboard.append({"id": oid, "label": label, "attach": attaches[0]})
+            onboard.append(dict({"id": oid, "label": label}, **source, attach=attaches[0]))
             continue
         variants, used = [], set()
         for x in attaches:
@@ -206,7 +200,7 @@ def draft(board_id):
                 vid, k = "{}_{}".format(base, k), k + 1
             used.add(vid)
             variants.append({"id": vid, "label": _variant_label(x, [y for y in attaches if y is not x]), "attach": x})
-        onboard.append({"id": oid, "label": label, "variants": variants})
+        onboard.append(dict({"id": oid, "label": label}, **source, variants=variants))
 
     # the board's other devices (a board inventory, tools/inventory.py, tags
     # their banks `device:`): a part attaching the peripheral that models
@@ -229,8 +223,7 @@ def draft(board_id):
     everything = real + [_main(o) for o in onboard if "device" not in o]
     verified = bool(everything) and all(b in ok_headers for b in real) and \
         all(_main(o) in ok_onboard for o in onboard)
-    # the types the registry defines travel with the layout: builds and the
-    # editor never read the registry
+    # the board's own connector types stay with it
     own = {c["type"]: connectors_def[c["type"]] for c in connectors if c["type"] not in base_types}
     return {"board": board_id, "verified": verified, "generated": True, "connector_types": own,
             "connectors": connectors, "onboard": onboard}
@@ -424,10 +417,13 @@ def emit_drawn(layout):
                 "      label: {}".format(_flow(c["label"]))] + \
                (["      note: {}".format(_flow(c["note"]))] if c.get("note") else []) + \
                (["      bank: {}".format(c["bank"])] if c.get("bank") else []) + [
-                "      pins: {}".format(_flow({str(k): v for k, v in c["pins"].items()}))]
+                "      pins: {}".format(_flow({str(k): v for k, v in c["pins"].items()}))] + \
+               (["      source: {}".format(_flow(c["source"]))] if c.get("source") else [])
     out.append("  parts:" + ("" if layout["onboard"] else " []"))
     for o in layout["onboard"]:
         out += ["    - id: {}".format(o["id"]), "      label: {}".format(_flow(o["label"]))]
+        if o.get("source"):
+            out.append("      source: {}".format(_flow(o["source"])))
         if o.get("shares"):
             out.append("      shares: {}".format(_flow(o["shares"])))
         if "device" in o:

@@ -529,6 +529,28 @@ def _producer_names_unique(ctx, entity, rec_id, record, path):
                 ctx.fail(path, "producer {!r}: {!r} also names producer {!r}".format(rec_id, name, other_id))
 
 
+@rule("board_provenance", needs_repo=True)
+def _board_provenance(ctx, entity, rec_id, record, path):
+    """The board's documents and the facts read from them (tools/board_sources.py
+    verify): documents fetched, every source naming a document and where in
+    it, every header fact of a known connector type with every bank pin at
+    one physical position."""
+    from tools import board_sources as bs
+    if not (record.get("documents") or any(h.get("source") for h in record.get("headers") or [])
+            or any(o.get("source") for o in record.get("parts") or [])
+            or any(isinstance(b, dict) and b.get("source") for b in (record.get("banks") or {}).values())):
+        return
+    v = bs.verify(record)
+    for problem in v["documents"]:
+        ctx.fail(path, "board {!r} document {}".format(rec_id, problem))
+    for bank, problems in v["headers"].items():
+        for problem in problems:
+            ctx.fail(path, "board {!r} header on {}: {}".format(rec_id, bank, problem))
+    for bank, problems in v["parts"].items():
+        for problem in problems:
+            ctx.fail(path, "board {!r} {}: {}".format(rec_id, bank, problem))
+
+
 @rule("peripheral_driver_files", needs_repo=True)
 def _peripheral_driver_files(ctx, entity, rec_id, record, path):
     driver = record.get("driver") or {}

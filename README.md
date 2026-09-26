@@ -137,7 +137,7 @@ by Yuri Panchul and contributors; see
 |---|---|
 | `unifpga` | Short command line (`board`, `build`, `program`, `sim`, `gui`, `prepare`, `clean`, `tools`, `designs`); logic in `tools/cli.py`. Remembers the board in `settings.yml`, builds into `<design>/run/<configuration>/`. |
 | `synthesize.py` | Top-level entry point. Resolves a configuration, codegens `top.sv`, dispatches to the toolchain. |
-| `config/boards/<producer>/<family>/<id>.yml` | One board, one file: its catalogue fields (name, chip or chip variants, programmer, bridges, features, devices), its banks of pins, its verification for hardware builds and, as drawn, its own connector types, headers and parts (`./unifpga layout draft <board>` regenerates the drawn section from the banks, the rigs and the board-sources registry). The directory is the board's chip family. |
+| `config/boards/<producer>/<family>/<id>.yml` | One board, one file: its catalogue fields (name, chip or chip variants, programmer, bridges, features, devices), its banks of pins, its verification for hardware builds the documents its model is checked against (`documents:`; `./unifpga sources fetch` records their digests) with each bank, header and part read from one carrying its `source`, and, as drawn, its own connector types, headers and parts (`./unifpga layout draft <board>` regenerates the drawn section from the banks, the rigs and the board-sources registry). The directory is the board's chip family. |
 | `config/chips/<producer>/<family>.yml` | Chip registry per family — each chip lists eligible toolchains (with optional `[version]` constraints). Boards reference these chips by Id. |
 | `config/toolchains.yml` | Toolchain registry, including the executable operations each driver supports. |
 | `config/programmers.yml` | Registry of bundled vendor, third-party, and board-specific bitstream loaders. |
@@ -206,6 +206,7 @@ build is `<rig>@<toolchain>[@<part>]`, or `synthesize.py -t <toolchain> --part <
 ./unifpga setup check [id]     # each rig expands and resolves; rig errors (pins used twice, unwired signals, ...)
 ./unifpga setup show <id>      # the configuration a rig expands to (what the build reads; not a file)
 ./unifpga check [entity...]    # every configuration file against its schema (config/schema/), every reference resolved
+./unifpga sources fetch|verify [board]   # the documents a board's file lists: fetch them, check the facts read from them against its banks
 ./unifpga view <setup id>      # the same drawing as a read-only HTML file (--board <board> for a board alone)
 ```
 

@@ -204,6 +204,7 @@ Entities:
       - {from: parts.*.attach.peripheral, to: peripheral, why: "the driver of a part"}
       - {from: parts.*.variants.*.attach.peripheral, to: peripheral, why: "the driver of a part variant"}
       - {rule: board_drawn, why: "headers are of a connector type of config/connectors.yml or the board's own and sit on its banks; parts bind its banks"}
+      - {rule: board_provenance, why: "the documents listed are fetched (a digest each); every source of a bank, header or part names one of them and where; a header read from a document puts every bank pin at one position of a known connector type"}
 
   feature:
     why: >-

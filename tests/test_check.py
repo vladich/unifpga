@@ -17,7 +17,7 @@ sys.path.insert(0, REPO)
 
 from tools import check, cli                      # noqa: E402
 
-REPO_RULES = {"rig.rig_expands", "peripheral.peripheral_driver_files",
+REPO_RULES = {"rig.rig_expands", "peripheral.peripheral_driver_files", "board.board_provenance",
               "toolchain.toolchain_driver", "design.design_fileset"}
 
 

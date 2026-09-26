@@ -3742,7 +3742,7 @@ def emit_peri_xml(resolved, device_def):
         # Virtual oscillator-sourced clock — record it in osc_clocks
         # and skip the gpio entry.
         if bank.get("virtual"):
-            if bank.get("source") == "osc":
+            if bank.get("origin") == "osc":
                 osc_clocks.append((bank_name, bank.get("frequency_mhz", 50)))
             continue
 

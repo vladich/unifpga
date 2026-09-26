@@ -55,7 +55,37 @@
         "index_origin": { "description": "The number the board's silkscreen gives the first pin", "oneOf": [{ "type": "integer" }, { "type": "object", "additionalProperties": { "type": "integer" } }] },
         "overrides": { "description": "Constraint properties per pin the standards do not cover", "type": "object", "additionalProperties": { "type": "string" } },
         "pull": { "enum": ["up", "down"] },
-        "source": { "type": "string" }
+        "origin": { "description": "Where a virtual clock comes from (osc: the FPGA's internal oscillator)", "enum": ["osc"] },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "source": {
+      "description": "Where a fact was read: a document of the board (documents[].id) and where in it (a page, a table, a line)",
+      "type": "object",
+      "required": ["doc", "where"],
+      "additionalProperties": false,
+      "properties": {
+        "doc": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$" },
+        "where": { "type": ["string", "integer"], "minLength": 1 },
+        "note": { "type": "string" }
+      }
+    },
+    "document": {
+      "description": "A document the board's physical model is checked against; ./unifpga sources fetch downloads it into the cache and records its digest",
+      "type": "object",
+      "required": ["id", "title", "kind", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["manual", "schematic", "constraints", "pinout", "platform", "wiki", "example", "board-files", "other"] },
+        "url": { "type": "string", "pattern": "^https?://" },
+        "access": { "enum": ["ok", "manual-download", "unavailable"] },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "retrieved": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "cache": { "description": "Where a copy fetched by hand lives, when not at the cache's default path", "type": "string" },
+        "note": { "type": "string" }
       }
     },
     "evidence": {
@@ -107,7 +137,8 @@
         "label": { "type": "string" },
         "note": { "type": "string" },
         "bank": { "type": "string" },
-        "pins": { "type": "object", "additionalProperties": { "$ref": "#/$defs/bank_ref" } }
+        "pins": { "type": "object", "additionalProperties": { "$ref": "#/$defs/bank_ref" } },
+        "source": { "description": "A header read from a document is a fact: the drafter keeps it, the check verifies it", "$ref": "#/$defs/source" }
       }
     },
     "attach": {
@@ -131,6 +162,7 @@
         "id": { "$ref": "#/$defs/id" },
         "label": { "type": "string" },
         "shares": { "description": "Headers whose pins this part also uses", "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "source": { "description": "A part whose label and pins were read from a document", "$ref": "#/$defs/source" },
         "attach": { "$ref": "#/$defs/attach" },
         "variants": {
           "type": "array",
@@ -183,6 +215,7 @@
         "bootloader": { "type": "string", "minLength": 1 },
         "features": { "type": "array", "items": { "$ref": "#/$defs/id" } },
         "devices": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "documents": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/document" } },
         "defaults": {
           "type": "object",
           "additionalProperties": false,

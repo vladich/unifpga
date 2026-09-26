@@ -7,8 +7,9 @@ FPGA pins and the documents they come from, imported into
     same FPGA balls: pins the board multiplexes between devices);
   * the board catalogue: the producer's product name and a line of main
     characteristics (`ProductName:`, `Summary:`);
-  * the board-sources registry entry (tools/board_sources.py): the documents
-    and the inventory itself, as the evidence.
+  * the board file's `documents:` (tools/board_sources.py), merged by URL;
+    each new bank carries the inventory item's `source` (which document,
+    where), the evidence.
 
 Existing banks are never changed: configurations use them, and their output
 must stay what it is. Where an inventory disagrees with an existing bank the
@@ -37,7 +38,6 @@ import re
 import yaml
 
 from config import init as config_init
-from tools import board_sources
 
 PIN_TOKEN = re.compile(r"^[A-Za-z0-9_]+$")
 HEADER_KINDS = {"pmod", "header"}
@@ -180,6 +180,9 @@ def _bank_text(bank, d, shares):
     if shares:
         lines.append("      shares: {}   # the board multiplexes these pins".format(_flow(shares)))
     lines.append("      pins: {}".format(_flow(_as_bank_pins(d))))
+    src = d.get("source")
+    if isinstance(src, dict) and src.get("doc") and src.get("where"):
+        lines.append("      source: {}".format(_flow({"doc": src["doc"], "where": src["where"]})))
     return lines
 
 
@@ -251,35 +254,44 @@ def _set_product(board_id, product_name, summary):
 
 
 # ---------------------------------------------------------------------------
-# registry
+# documents
 # ---------------------------------------------------------------------------
 
-def _record(inv):
-    """The inventory's documents and devices in the board-sources registry
-    entry (documents merged by URL; the inventory replaced)."""
-    path = board_sources.registry_path(inv["board"])
-    doc = {}
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as f:
-            doc = yaml.safe_load(f) or {}
-    entry = doc.setdefault("BoardSources", {"board": inv["board"]})
-    docs = entry.setdefault("documents", [])
-    urls = {d.get("url") for d in docs}
-    for d in inv.get("documents") or []:
-        if d.get("url") not in urls:
-            docs.append(d)
-    for k in ("product_name", "summary"):
-        if inv.get(k):
-            entry[k] = inv[k]
-    entry["inventory"] = inv["devices"]
-    if inv.get("notes"):
-        entry["inventory_notes"] = inv["notes"]
-    head = ("# Board sources of {b}: the documents its physical model is checked against\n"
-            "# and the facts read from them (tools/board_sources.py; the inventory from\n"
-            "# tools/inventory.py).\n\n").format(b=inv["board"])
+def _record_documents(board_id, docs):
+    """The inventory's documents into the board file's `documents:` (merged by
+    URL; the block made after the catalogue fields when the board has none).
+    Returns how many were added."""
+    from tools.layout_draft import DRAWN_MARKER
+    board = config_init.read_board(board_id)
+    known = {d.get("url") for d in board.get("documents") or []}
+    new = [d for d in docs or [] if d.get("url") and d["url"] not in known]
+    if not new:
+        return 0
+    text = yaml.safe_dump(new, sort_keys=False, allow_unicode=True, width=120).rstrip("\n").split("\n")
+    text = ["  " + l for l in text]
+    path = board["_path"]
+    with open(path, encoding="utf-8") as f:
+        lines = f.read().split("\n")
+    start = next((i for i, l in enumerate(lines) if re.match(r"^  documents:\s*$", l)), None)
+    if start is not None:
+        end = start + 1
+        while end < len(lines) and (lines[end].startswith("  - ") or lines[end].startswith("    ") or not lines[end].strip()):
+            end += 1
+        while end > start + 1 and not lines[end - 1].strip():
+            end -= 1
+        lines[end:end] = text
+    else:
+        marker = DRAWN_MARKER.split("{}")[0]
+        at = next((i for i, l in enumerate(lines) if re.match(r"^  (defaults|toolchain_options|banks|verification):", l)
+                   or l.startswith(marker)), None)
+        if at is None:
+            at = len(lines)
+            while at and not lines[at - 1].strip():
+                at -= 1
+        lines[at:at] = ["  documents:"] + text
     with open(path, "w", encoding="utf-8") as f:
-        f.write(head + yaml.safe_dump(doc, sort_keys=False, allow_unicode=True, width=120))
-    return path
+        f.write("\n".join(lines))
+    return len(new)
 
 
 # ---------------------------------------------------------------------------
@@ -307,7 +319,8 @@ def import_inventory(inv, write=True):
             _ensure_banks(path)
             _insert_banks(path, text)
         report["catalogue"] = _set_product(board_id, inv.get("product_name"), inv.get("summary"))
-        report["registry"] = _record(inv)
+        config_init.clear_cache()
+        report["documents"] = _record_documents(board_id, inv.get("documents"))
         config_init.clear_cache()
     return report
 

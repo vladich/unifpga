@@ -797,7 +797,7 @@ def cmd_serve(args):
 def cmd_layout(args):
     """layout draft [board...] [--all]: draw the board's headers and parts into
     its file (the drawn section of config/boards/<producer>/<family>/<board>.yml)
-    from its banks, configurations and registry entry (tools/layout_draft.py);
+    from its banks, its rigs and the facts already drawn from documents (tools/layout_draft.py);
     a hand-made drawn section is left alone."""
     from tools import layout_draft
     boards = sorted({c["board"] for c in config.init.read_configurations().values()})
@@ -829,9 +829,9 @@ def cmd_layout(args):
 
 def cmd_inventory(args):
     """inventory import <file.yml>... [--dry-run]: a board inventory's devices into
-    the board's pinmap (new banks only), its product name and summary into the
-    catalogue, its documents into the board-sources registry
-    (tools/inventory.py); then `./unifpga layout draft` draws them."""
+    the board's banks (new banks only, each with its source), its product name,
+    summary and documents into the board's file (tools/inventory.py); then
+    `./unifpga layout draft` draws them."""
     from tools import inventory
     rc = 0
     for path in args.files:
@@ -844,16 +844,16 @@ def cmd_inventory(args):
 
 
 def cmd_sources(args):
-    """sources fetch [board...]: download the registry's documents into the cache
-    and record their SHA-256; sources text <board> <doc> [--pages a-b] [--grep re]:
-    a document's text; sources verify [board...]: facts against the pinmaps."""
+    """sources fetch [board...]: download the documents a board's file lists
+    into the cache and record their SHA-256; sources text <board> <doc>
+    [--pages a-b] [--grep re]: a document's text; sources verify [board...]:
+    the facts (headers, parts and banks with a source) against the banks."""
     from tools import board_sources as bs
-    registry = bs.read_all()
+    boards = bs.boards_with_documents()
     if args.action == "text":
         if len(args.ids) != 2:
             raise CliError("sources text <board> <document id>")
-        entry = registry.get(args.ids[0]) or {}
-        doc = next((d for d in entry.get("documents") or [] if d["id"] == args.ids[1]), None)
+        doc = bs.documents(boards.get(args.ids[0])).get(args.ids[1])
         if doc is None:
             raise CliError("no document '{}' for {}".format(args.ids[1], args.ids[0]))
         pages = tuple(int(x) for x in args.pages.split("-")) if args.pages else None
@@ -872,13 +872,13 @@ def cmd_sources(args):
             print("=== page {} ===".format(n))
             print("\n".join(lines))
         return 0
-    ids = args.ids or sorted(registry)
+    ids = args.ids or sorted(boards)
     failed = 0
     for b in ids:
-        if b not in registry:
-            raise CliError("no registry entry {} ($UNIFPGA_SOURCES_DIR)".format(bs.registry_path(b)))
+        if b not in boards:
+            raise CliError("board '{}' lists no documents (its file's documents:)".format(b))
         if args.action == "fetch":
-            for doc in registry[b].get("documents") or []:
+            for doc in boards[b].get("documents") or []:
                 try:
                     got = bs.fetch(b, doc)
                     if got["sha256"] != doc.get("sha256") or got["bytes"] != doc.get("bytes"):
@@ -888,11 +888,11 @@ def cmd_sources(args):
                     failed += 1
                     print("{:<28} {:<14} FAILED: {}".format(b, doc["id"], exc))
             continue
-        v = bs.verify(b, registry[b])
+        v = bs.verify(boards[b])
         bad = v["documents"] + ["header {}: {}".format(k, p) for k, ps in v["headers"].items() for p in ps] + \
-            ["on-board {}: {}".format(k, p) for k, ps in v["onboard"].items() for p in ps]
+            ["part {}: {}".format(k, p) for k, ps in v["parts"].items() for p in ps]
         failed += bool(bad)
-        print("{:<32} {} ({} headers, {} on-board parts checked)".format(b, "FAIL" if bad else "ok", len(v["headers"]), len(v["onboard"])))
+        print("{:<32} {} ({} headers, {} parts or banks checked)".format(b, "FAIL" if bad else "ok", len(v["headers"]), len(v["parts"])))
         for line in bad:
             print("    " + line)
         for line in v["info"]:
@@ -997,22 +997,21 @@ def build_parser():
     ck.add_argument("--json", action="store_true", help="print the report as JSON")
 
     ly = sub.add_parser("layout", help="draw boards' headers and parts (the drawn section of their files) "
-                                        "from their banks, rigs and the board-sources registry")
+                                        "from their banks, their rigs and the facts already drawn from documents")
     ly.add_argument("action", choices=["draft"])
     ly.add_argument("boards", nargs="*")
     ly.add_argument("--all", action="store_true", help="every board a configuration uses")
     ly.add_argument("--setups", action="store_true", help="re-derive the board's setups from its configurations")
 
-    so = sub.add_parser("sources", help="the board-sources registry ($UNIFPGA_SOURCES_DIR, default "
-                                        "../unifpga-board-sources): fetch documents, "
-                                        "show their text, verify the facts against the pinmaps")
+    so = sub.add_parser("sources", help="the documents a board's file lists: fetch them into the cache, "
+                                        "show their text, verify the facts read from them against the banks")
     so.add_argument("action", choices=["fetch", "text", "verify"])
     so.add_argument("ids", nargs="*", help="boards (text: <board> <document id>)")
     so.add_argument("--pages", help="text: a page or a range, e.g. 30-34")
     so.add_argument("--grep", help="text: only lines matching this regular expression")
 
     iv = sub.add_parser("inventory", help="import board inventories (every on-board device with its pins and "
-                                           "sources) into the pinmaps, the catalogue and the registry")
+                                           "sources) into the boards' files")
     iv.add_argument("action", choices=["import"])
     iv.add_argument("files", nargs="+", help="inventory YAML files")
     iv.add_argument("--dry-run", action="store_true", help="report what would change, write nothing")
