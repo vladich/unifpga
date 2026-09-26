@@ -8,13 +8,31 @@ Capability:
   id: small_display
   description: Small serial pixel panel (OLED / TFT) scanned by (x, y); the design returns the pixel.
   parameters:
-    width:  { type: int, required: true, description: "Pixels across" }
-    height: { type: int, required: true, description: "Pixels down" }
-    bits:   { type: int, default: 1, description: "Bits per pixel (1 = monochrome; the driver reads bit 0 of each)" }
+    width:
+      type: int
+      required: true
+      description: Pixels across
+    height:
+      type: int
+      required: true
+      description: Pixels down
+    bits:
+      type: int
+      default: 1
+      description: Bits per pixel (1 = monochrome; the driver reads bit 0 of each)
   signals:
-    - { name: x,     type: bus, direction: hw_to_user, comment: "Pixel column being fetched; width = $clog2(width)" }
-    - { name: y,     type: bus, direction: hw_to_user, comment: "Pixel row being fetched; width = $clog2(height)" }
-    - { name: pixel, type: bus, direction: user_to_hw, comment: "The design's pixel at (x, y)" }
+    - name: x
+      type: bus
+      direction: hw_to_user
+      comment: Pixel column being fetched; width = $clog2(width)
+    - name: y
+      type: bus
+      direction: hw_to_user
+      comment: Pixel row being fetched; width = $clog2(height)
+    - name: pixel
+      type: bus
+      direction: user_to_hw
+      comment: The design's pixel at (x, y)
   aggregation: exclusive
   size: [width, height]    # what `small_display >= WxH` compares
 
@@ -23,14 +41,30 @@ Capability:
   design:
     comment: 'Small display (optional): the driver fetches the pixel at (sd_x, sd_y) one clock after presenting it'
     parameters:
-      sd_width: {value: width, absent: 0, description: "Small display (SSD1306 OLED ...), pixels"}
-      sd_height: {value: height, absent: 0}
-      w_sd_pixel: {value: bits, absent: 1, default: 1, description: Bits per small-display pixel
-}
+      sd_width:
+        value: width
+        absent: 0
+        description: Small display (SSD1306 OLED ...), pixels
+      sd_height:
+        value: height
+        absent: 0
+      w_sd_pixel:
+        value: bits
+        absent: 1
+        default: 1
+        description: Bits per small-display pixel
     derived:
-      w_sd_x: {clog2: sd_width}
-      w_sd_y: {clog2: sd_height}
+      w_sd_x:
+        clog2: sd_width
+      w_sd_y:
+        clog2: sd_height
     ports:
-      sd_x: {signal: x, width: w_sd_x}
-      sd_y: {signal: y, width: w_sd_y}
-      sd_pixel: {signal: pixel, width: w_sd_pixel}
+      sd_x:
+        signal: x
+        width: w_sd_x
+      sd_y:
+        signal: y
+        width: w_sd_y
+      sd_pixel:
+        signal: pixel
+        width: w_sd_pixel

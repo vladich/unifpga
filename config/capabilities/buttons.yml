@@ -10,7 +10,10 @@ Capability:
       type: int
       description: Total number of buttons exposed (sum across providers).
   signals:
-    - { name: btn, type: bus, width: $width, direction: hw_to_user }
+    - name: btn
+      type: bus
+      width: $width
+      direction: hw_to_user
   aggregation: concat
 
   primary: width
@@ -18,7 +21,11 @@ Capability:
     comment: Buttons (active-high — codegen normalizes polarity)
 
     parameters:
-      w_btn: {value: width, absent: 0, description: Width of push-button bus
-}
+      w_btn:
+        value: width
+        absent: 0
+        description: Width of push-button bus
     ports:
-      btn: {signal: btn, width: w_btn}
+      btn:
+        signal: btn
+        width: w_btn

@@ -8,25 +8,48 @@ Setup:
   use:
     - onboard: clock
     - onboard: leds
-      params: {active: high}
-      design_bits: {leds: [null, null, null, null, null, null]}
+      params:
+        active: high
+      design_bits:
+        leds: [null, null, null, null, null, null]
     - onboard: uart
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, 3]}
+      design_bits:
+        switches: [0, 1, 2, 3]
     - onboard: buttons
-      design_bits: {buttons: []}
+      design_bits:
+        buttons: []
     - module: tm1638_led_key
-      wires: {STB: j12.6, CLK: j12.8, DIO: j12.10}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: j12.6
+        CLK: j12.8
+        DIO: j12.10
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: []
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {SCK: j14.10, WS: j14.6, SD: j14.12, L/R: j14.8}
+      wires:
+        SCK: j14.10
+        WS: j14.6
+        SD: j14.12
+        L/R: j14.8
     - onboard: headphone
     - module: i2s_dac_breakout
-      wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
-      params: {align_right: 0, offset_by_one_cycle: 1}
+      wires:
+        SCK: j12.11
+        BCK: j12.9
+        LCK: j12.5
+        DIN: j12.7
+      params:
+        align_right: 0
+        offset_by_one_cycle: 1
     - onboard: sdcard
   design:
     reset:
       sources:
-      - {key: msb}
-    width: {switches: 8, gpio: 32}
+      - key: msb
+    width:
+      switches: 8
+      gpio: 32

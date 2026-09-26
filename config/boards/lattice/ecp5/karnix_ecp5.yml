@@ -91,18 +91,31 @@ Board:
       device_pack: "CABGA256"
       speed: "6"
   banks:
-    clk: { pins: B9, frequency_mhz: 25, source: {doc: pcb12, where: 'net CLK: Y2.3, R55, R76; Net-(U5B-PT38A)=B9'} }
+    clk:
+      pins: B9
+      frequency_mhz: 25
+      source:
+        doc: pcb12
+        where: 'net CLK: Y2.3, R55, R76; Net-(U5B-PT38A)=B9'
     onboard_leds:
-      source: {doc: pcb12, where: 'nets LED0..LED3, R1/R20 220R to D1..D4 anode'}
+      source:
+        doc: pcb12
+        where: nets LED0..LED3, R1/R20 220R to D1..D4 anode
       pins: [A13, A14, A15, B14]
     onboard_buttons:
-      source: {doc: pcb12, where: nets KEY0..KEY3; SW1 1=+3V3 2=KEY0; R2 10K to GND}
+      source:
+        doc: pcb12
+        where: nets KEY0..KEY3; SW1 1=+3V3 2=KEY0; R2 10K to GND
       pins: [B13, C13, D13, E13]
     gpio:
-      source: {doc: pcb12, where: XS5 pads -> R3..R36 51R -> GPIO_nn -> U5}
+      source:
+        doc: pcb12
+        where: XS5 pads -> R3..R36 51R -> GPIO_nn -> U5
       pins: [L1, L2, M1, M2, K4, K5, L4, L5, N1, P2, L3, M3, P1, R1]
     onboard_vga:
-      source: {doc: pcb12, where: GPIO_14..27 nets; BGM lpf comments 'Connected to GPIO_nn'}
+      source:
+        doc: pcb12
+        where: GPIO_14..27 nets; BGM lpf comments 'Connected to GPIO_nn'
       pins:
         r: [M4, N3, N4, D16]
         g: [R2, T2, P4, R3]
@@ -112,104 +125,293 @@ Board:
     onboard_switches:
       pins: [A7, A8]
     onboard_uart:
-      source: {doc: pcb12, where: nets UART_DEBUG_RXD/TXD}
+      source:
+        doc: pcb12
+        where: nets UART_DEBUG_RXD/TXD
       pins:
         rx: D12
         tx: E12
     onboard_reset_button_sw5_fpga_reset:   # RESET button SW5 (FPGA_RESET)
-      device: {"name": "RESET button SW5 (FPGA_RESET)", "kind": "reset"}
-      pins: {"fpga_reset": ["R8", "R9"]}
+      device:
+        name: RESET button SW5 (FPGA_RESET)
+        kind: reset
+      pins:
+        fpga_reset: [R8, R9]
     onboard_sram:   # U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)
-      source: {doc: pcb12, where: 'nets SRAM_A00..A17, SRAM_D00..D15, SRAM_#CS/#OE/#WE/#BLE/#BHE'}
-      device: {"name": "U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)", "kind": "sram", "id": "samsung_k6r4016v1d"}
-      pins: {"a": ["N13", "P14", "R15", "T15", "P13", "R14", "R13", "T14", "R12", "T13", "M12", "N12", "M11", "N11", "P11", "P12", "K16", "K15"], "d": ["L16", "L15", "M16", "M15", "K13", "K12", "L13", "L12", "N16", "P15", "L14", "M14", "P16", "R16", "M13", "N14"], "cs_n": "H15", "oe_n": "J14", "we_n": "K14", "ble_n": "J15", "bhe_n": "J16"}
+      source:
+        doc: pcb12
+        where: nets SRAM_A00..A17, SRAM_D00..D15, SRAM_#CS/#OE/#WE/#BLE/#BHE
+      device:
+        name: U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)
+        kind: sram
+        id: samsung_k6r4016v1d
+      pins:
+        a: [N13, P14, R15, T15, P13, R14, R13, T14, R12, T13, M12, N12, M11, N11, P11, P12, K16, K15]
+        d: [L16, L15, M16, M15, K13, K12, L13, L12, N16, P15, L14, M14, P16, R16, M13, N14]
+        cs_n: H15
+        oe_n: J14
+        we_n: K14
+        ble_n: J15
+        bhe_n: J16
     onboard_ethernet:   # U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
-      source: {doc: pcb12, where: nets LAN_*}
-      device: {"name": "U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)", "kind": "ethernet", "id": "microchip_lan8710a"}
-      pins: {"tx_clk": "B4", "tx_en": "A4", "txd": ["B5", "A5", "B6", "A6"], "rx_clk": "F1", "rx_dv": "B7", "rx_er": "C2", "rxd": ["D1", "E2", "E1", "F2"], "col": "B2", "crs": "C1", "mdc": "A2", "mdio": "B1", "int_n": "B3", "rst_n": "A3"}
+      source:
+        doc: pcb12
+        where: nets LAN_*
+      device:
+        name: U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
+        kind: ethernet
+        id: microchip_lan8710a
+      pins:
+        tx_clk: B4
+        tx_en: A4
+        txd: [B5, A5, B6, A6]
+        rx_clk: F1
+        rx_dv: B7
+        rx_er: C2
+        rxd: [D1, E2, E1, F2]
+        col: B2
+        crs: C1
+        mdc: A2
+        mdio: B1
+        int_n: B3
+        rst_n: A3
     onboard_rs485:   # U9 MAX487 RS-485 transceiver (XS3)
-      source: {doc: pcb12, where: nets RS485_RO/DI/DE}
-      device: {"name": "U9 MAX487 RS-485 transceiver (XS3)", "kind": "other"}
-      shares: ["onboard_switches"]   # the board multiplexes these pins
-      pins: {"ro": "A7", "di": "A8", "de_re": "C7"}
+      source:
+        doc: pcb12
+        where: nets RS485_RO/DI/DE
+      device:
+        name: U9 MAX487 RS-485 transceiver (XS3)
+        kind: other
+      shares: [onboard_switches]   # the board multiplexes these pins
+      pins:
+        ro: A7
+        di: A8
+        de_re: C7
     onboard_hdmi:   # J3 HDMI connector (direct from FPGA, series capacitors)
-      source: {doc: pcb12, where: nets HDMI_*}
-      device: {"name": "J3 HDMI connector (direct from FPGA, series capacitors)", "kind": "hdmi_tx"}
-      pins: {"d0_p": "A11", "d0_n": "A12", "d1_p": "D11", "d1_n": "E11", "d2_p": "B11", "d2_n": "C11", "clk_p": "B12", "clk_n": "C12", "scl": "E9", "sda": "D9", "cec": "C9", "hpd": "B8"}
+      source:
+        doc: pcb12
+        where: nets HDMI_*
+      device:
+        name: J3 HDMI connector (direct from FPGA, series capacitors)
+        kind: hdmi_tx
+      pins:
+        d0_p: A11
+        d0_n: A12
+        d1_p: D11
+        d1_n: E11
+        d2_p: B11
+        d2_n: C11
+        clk_p: B12
+        clk_n: C12
+        scl: E9
+        sda: D9
+        cec: C9
+        hpd: B8
     onboard_adc:   # U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
-      source: {doc: pcb12, where: nets ADC_SPI_*}
-      device: {"name": "U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)", "kind": "adc", "id": "ti_adc128s052"}
-      pins: {"sclk": "F15", "cs_n": "F16", "mosi": "E16", "miso": "G16"}
+      source:
+        doc: pcb12
+        where: nets ADC_SPI_*
+      device:
+        name: U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
+        kind: adc
+        id: ti_adc128s052
+      pins:
+        sclk: F15
+        cs_n: F16
+        mosi: E16
+        miso: G16
     onboard_dac:   # U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
-      source: {doc: pcb12, where: nets DAC_SPI_*}
-      device: {"name": "U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)", "kind": "audio"}
-      pins: {"sclk": "C16", "cs_n": "C15", "mosi": "B15", "miso": "B16"}
+      source:
+        doc: pcb12
+        where: nets DAC_SPI_*
+      device:
+        name: U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
+        kind: audio
+      pins:
+        sclk: C16
+        cs_n: C15
+        mosi: B15
+        miso: B16
     onboard_eeprom:   # U6 AT24C01C I2C EEPROM (1 kbit) + J2 EEPROM RESET jumper
-      source: {doc: pcb12, where: 'nets EEPROM_I2C_SCK/SDA, EEPROM_WP, EEPROM_RESET'}
-      device: {"name": "U6 AT24C01C I2C EEPROM (1 kbit) + J2 EEPROM RESET jumper", "kind": "eeprom", "id": "microchip_at24c01c"}
-      pins: {"scl": "R7", "sda": "P7", "wp": "R6", "reset": "T6"}
+      source:
+        doc: pcb12
+        where: nets EEPROM_I2C_SCK/SDA, EEPROM_WP, EEPROM_RESET
+      device:
+        name: U6 AT24C01C I2C EEPROM (1 kbit) + J2 EEPROM RESET jumper
+        kind: eeprom
+        id: microchip_at24c01c
+      pins:
+        scl: R7
+        sda: P7
+        wp: R6
+        reset: T6
     onboard_serial_flash:   # U7 W25Q128JVPIQ SPI config flash (quad)
-      source: {doc: pcb12, where: 'U7 pads; nets SPI_CONFIG_*, QSPI_D2/D3'}
-      device: {"name": "U7 W25Q128JVPIQ SPI config flash (quad)", "kind": "flash", "id": "winbond_w25q128"}
-      pins: {"cs_n": "N8", "mosi_io0": "T8", "miso_io1": "T7", "io2": "M7", "io3": "N7", "sck": "N9"}
+      source:
+        doc: pcb12
+        where: U7 pads; nets SPI_CONFIG_*, QSPI_D2/D3
+      device:
+        name: U7 W25Q128JVPIQ SPI config flash (quad)
+        kind: flash
+        id: winbond_w25q128
+      pins:
+        cs_n: N8
+        mosi_io0: T8
+        miso_io1: T7
+        io2: M7
+        io3: N7
+        sck: N9
     onboard_other:   # U20 FT2232D channel A — JTAG (+ J4 external JTAG header)
-      device: {"name": "U20 FT2232D channel A — JTAG (+ J4 external JTAG header)", "kind": "other", "id": "ftdi_ft2232d"}
-      pins: {"tck": "T10", "tdi": "R11", "tdo": "M10", "tms": "T11"}
+      device:
+        name: U20 FT2232D channel A — JTAG (+ J4 external JTAG header)
+        kind: other
+        id: ftdi_ft2232d
+      pins:
+        tck: T10
+        tdi: R11
+        tdo: M10
+        tms: T11
   # ---- drawn: headers and parts; ./unifpga layout draft karnix_ecp5 regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: gpio
       type: pin_row
       label: GPIO
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
-      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]'}
+      pins:
+        '[0]': gpio[0]
+        '[1]': gpio[1]
+        '[2]': gpio[2]
+        '[3]': gpio[3]
+        '[4]': gpio[4]
+        '[5]': gpio[5]
+        '[6]': gpio[6]
+        '[7]': gpio[7]
+        '[8]': gpio[8]
+        '[9]': gpio[9]
+        '[10]': gpio[10]
+        '[11]': gpio[11]
+        '[12]': gpio[12]
+        '[13]': gpio[13]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 4}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 4
+        bind:
+          led: onboard_leds
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 4
+        bind:
+          btn: onboard_buttons
     - id: vga
       label: vga
-      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+      attach:
+        peripheral: vga_4bit
+        params:
+          bits_r: 4
+          bits_g: 4
+          bits_b: 4
+          pin_bits_r: 4
+          pin_bits_g: 4
+          pin_bits_b: 4
+          color_depth: 444
+          gate: false
+        bind:
+          r: onboard_vga.r
+          g: onboard_vga.g
+          b: onboard_vga.b
+          hs: onboard_vga.hs
+          vs: onboard_vga.vs
     - id: switches
       label: switches
-      attach: {peripheral: sw_bank, params: {width: 2}, bind: {sw: onboard_switches}}
+      attach:
+        peripheral: sw_bank
+        params:
+          width: 2
+        bind:
+          sw: onboard_switches
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: adc
       label: U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
-      attach: {peripheral: adc128s022, bind: {cs_n: onboard_adc.cs_n, sclk: onboard_adc.sclk, din: onboard_adc.mosi, dout: onboard_adc.miso}}
+      attach:
+        peripheral: adc128s022
+        bind:
+          cs_n: onboard_adc.cs_n
+          sclk: onboard_adc.sclk
+          din: onboard_adc.mosi
+          dout: onboard_adc.miso
     - id: sram
       label: U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)
-      attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.a, d: onboard_sram.d, ce_n: onboard_sram.cs_n, oe_n: onboard_sram.oe_n, we_n: onboard_sram.we_n, lb_n: onboard_sram.ble_n, ub_n: onboard_sram.bhe_n}}
+      attach:
+        peripheral: async_sram
+        params:
+          addr_bits: 18
+        bind:
+          a: onboard_sram.a
+          d: onboard_sram.d
+          ce_n: onboard_sram.cs_n
+          oe_n: onboard_sram.oe_n
+          we_n: onboard_sram.we_n
+          lb_n: onboard_sram.ble_n
+          ub_n: onboard_sram.bhe_n
     - id: reset_button_sw5_fpga_reset
       label: RESET button SW5 (FPGA_RESET)
-      device: {kind: reset, bank: onboard_reset_button_sw5_fpga_reset}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: reset
+        bank: onboard_reset_button_sw5_fpga_reset
     - id: ethernet
       label: U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
-      device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ethernet
+        bank: onboard_ethernet
     - id: rs485
       label: U9 MAX487 RS-485 transceiver (XS3)
-      device: {kind: other, bank: onboard_rs485}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_rs485
     - id: hdmi
       label: J3 HDMI connector (direct from FPGA, series capacitors)
-      device: {kind: hdmi_tx, bank: onboard_hdmi}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: hdmi_tx
+        bank: onboard_hdmi
     - id: dac
       label: U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
-      device: {kind: audio, bank: onboard_dac}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: audio
+        bank: onboard_dac
     - id: eeprom
       label: U6 AT24C01C I2C EEPROM (1 kbit) + J2 EEPROM RESET jumper
-      device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: eeprom
+        bank: onboard_eeprom
     - id: serial_flash
       label: U7 W25Q128JVPIQ SPI config flash (quad)
-      device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_serial_flash
     - id: other
       label: U20 FT2232D channel A — JTAG (+ J4 external JTAG header)
-      device: {kind: other, bank: onboard_other}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_other

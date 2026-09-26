@@ -8,7 +8,8 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
-      design_bits: {buttons: [0, 1, 2, null]}
+      design_bits:
+        buttons: [0, 1, 2, null]
     - onboard: switches
     - onboard: leds
     - onboard: 7seg
@@ -16,16 +17,27 @@ Setup:
     - onboard: vga
     - onboard: uart
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[1]', WS: 'gpio.[3]', SD: 'gpio.[0]', L/R: 'gpio.[5]'}
+      wires:
+        SCK: gpio.[1]
+        WS: gpio.[3]
+        SD: gpio.[0]
+        L/R: gpio.[5]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio.[14]', BCK: 'gpio.[12]', LCK: 'gpio.[8]', DIN: 'gpio.[10]'}
+      wires:
+        SCK: gpio.[14]
+        BCK: gpio.[12]
+        LCK: gpio.[8]
+        DIN: gpio.[10]
     - gpio: gpio
-      params: {width: 19}
+      params:
+        width: 19
     - onboard: buzzer
     - onboard: ps2
   design:
     reset:
       sources:
-      - {key: msb}
+      - key: msb
   extra:
-    tie: {'gpio[4]': 0, 'gpio[2]': 1}
+    tie:
+      gpio[4]: 0
+      gpio[2]: 1

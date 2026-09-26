@@ -62,12 +62,39 @@ Board:
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
         - "RESERVE_DATA0_AFTER_CONFIGURATION \"AS INPUT TRI-STATED\""
   banks:
-    clk50mhz: { pins: AH15, frequency_mhz: 50, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
-    clk125mhz: { pins: A14, frequency_mhz: 125, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
-    clkin_sma: { pins: AH14, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
-    clkout_sma: { pins: AE23, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
-    altera_config_dclk: { pins: P3, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
-    altera_config_data0: { pins: N7 }
+    clk50mhz:
+      pins: AH15
+      frequency_mhz: 50
+      iostandard: 1.8 V
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
+    clk125mhz:
+      pins: A14
+      frequency_mhz: 125
+      iostandard: 1.8 V
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
+    clkin_sma:
+      pins: AH14
+      iostandard: 1.8 V
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
+    clkout_sma:
+      pins: AE23
+      iostandard: 1.8 V
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
+    altera_config_dclk:
+      pins: P3
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
+    altera_config_data0:
+      pins: N7
     termination_blk0:
       pins:
         rup: AA17
@@ -81,12 +108,16 @@ Board:
         rup: U7
         rdn: U8
     termination_blk3:
-      source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf}
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
       pins:
         rup: AA22
         rdn: AB23
     onboard_ddr2_top:
-      source: {doc: manual, where: 'Table 2–51, p. 62-63'}
+      source:
+        doc: manual
+        where: Table 2–51, p. 62-63
       pins:
         wen: A10
         rasn: F8
@@ -163,7 +194,9 @@ Board:
         "Y13": SSTL-18 CLASS I
         "Y14": SSTL-18 CLASS I
     onboard_ddr2:
-      source: {doc: manual, where: 'Table 2–51, p. 59-63'}
+      source:
+        doc: manual
+        where: Table 2–51, p. 59-63
       iostandard: SSTL-18 CLASS I
       pins:
         dq: [AG22, AH21, AH22, AG21, AD17, AH23, AE19, AF24, AG18, AG17, AH18, AH17, AF15, AE17, AF16, AB16, AE11, AG11, AG10, AH11, AE9, AE12, AF10, AE13, AC8, AH7, AG8, AH8, AG7, AA10, AF7, AD10, A12, C14, A11, C13, D15, C12, E14, D13, B7, C11, A7, C10, E11, B6, H13, D10, C17, B19, B18, C19, D20, C16, A19, E17, C21, C22, A21, A22, C24, B21, D21, E18, E22, C25, A23, B25, A26, F21, B26, D22]
@@ -207,7 +240,9 @@ Board:
       pins:
         d: [G3, G4, H3, H4, J5, J6, K1, K2, L1, L2, L3, L4, N3, N4]
     onboard_ethernet_phy:
-      source: {doc: manual, where: 'Table 2–44, p. 50-51'}
+      source:
+        doc: manual
+        where: Table 2–44, p. 50-51
       pins:
         mdc: N8
         mdio: L5
@@ -222,7 +257,9 @@ Board:
       overrides:
         "B14": 1.8 V
     onboard_parallel_flash:
-      source: {doc: manual, where: 'Table 2–56, p. 68'}
+      source:
+        doc: manual
+        where: Table 2–56, p. 68
       iostandard: 1.8 V
       pins:
         oen: Y17
@@ -231,7 +268,9 @@ Board:
         rdybsyn: AG25
         resetn: AB20
     onboard_sram:
-      source: {doc: manual, where: 'Table 2–53, p. 64'}
+      source:
+        doc: manual
+        where: Table 2–53, p. 64
       iostandard: 1.8 V
       pins:
         ben: [AF20, AH26, AE22, AB21]
@@ -243,14 +282,22 @@ Board:
         psn: B4
         advn: AA19
     onboard_flash_sram:
-      source: {doc: manual, where: 'Table 2–53, p. 64-66; Table 2–56, p. 68-69'}
+      source:
+        doc: manual
+        where: Table 2–53, p. 64-66; Table 2–56, p. 68-69
       iostandard: 1.8 V
       pins:
         a: [AC11, AH10, AA13, AC10, Y15, AF22, AF26, AF4, AD8, AG26, AH6, AD24, AF9, AA8, AC22, AE8, AF13, AB14, AF23, AG12, AB18, Y19, AG3, AE16, AB7]
         d: [J14, D6, J17, G7, F18, C6, H17, C18, D18, G16, G22, F12, D11, E24, H21, G9, A4, G13, H14, B8, C8, F7, B11, B22, A18, G8, J12, D9, C9, E7, H10, J10]
     hsma:
-      source: {doc: manual, where: 'Table 2–47, p. 53-55'}
-      index_origin: {clk_in_p: 1, clk_out_p: 1, clk_in_n: 1, clk_out_n: 1}
+      source:
+        doc: manual
+        where: Table 2–47, p. 53-55
+      index_origin:
+        clk_in_p: 1
+        clk_out_p: 1
+        clk_in_n: 1
+        clk_out_n: 1
       pins:
         clk_in0: AG14
         clk_in_p: [Y2, J2]
@@ -274,8 +321,14 @@ Board:
         "G5": SSTL-2 CLASS II
         "G6": SSTL-2 CLASS II
     hsmb:
-      source: {doc: manual, where: 'Table 2–29, p. 38; Table 2–47, p. 55; Table 2–48, p. 58'}
-      index_origin: {clk_in_n: 1, clk_in_p: 1, clk_out_n: 1, clk_out_p: 1}
+      source:
+        doc: manual
+        where: Table 2–29, p. 38; Table 2–47, p. 55; Table 2–48, p. 58
+      index_origin:
+        clk_in_n: 1
+        clk_in_p: 1
+        clk_out_n: 1
+        clk_out_p: 1
       pins:
         clk_in0: A15
         clk_out0: J22
@@ -306,23 +359,35 @@ Board:
       pins:
         de: AC24
     onboard_leds:
-      source: {doc: manual, where: 'Table 2–27, p. 38'}
+      source:
+        doc: manual
+        where: Table 2–27, p. 38
       active: low
       iostandard: 1.8 V
       pins: [AD15, AE20, AF18, AD19, AE15, AC17, AG19, AF19]
     onboard_max_ctrl:
-      source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf}
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
       iostandard: 1.8 V
       pins:
         csn: D23
         oen: E25
         wen: C15
         clk: D14
-    cpu_resetn: { pins: T21, active: low, source: {doc: manual, where: 'Table 2–14, p. 31; Table 2–23, p. 36'} }
+    cpu_resetn:
+      pins: T21
+      active: low
+      source:
+        doc: manual
+        where: Table 2–14, p. 31; Table 2–23, p. 36
     onboard_7seg:
-      source: {doc: manual, where: 'Table 2–33, p. 40'}
+      source:
+        doc: manual
+        where: Table 2–33, p. 40
       iostandard: 1.8 V
-      index_origin: {anodes: 1}
+      index_origin:
+        anodes: 1
       pins:
         ca: AD5
         cb: A3
@@ -334,18 +399,28 @@ Board:
         dp: AD4
         minus: G19
         anodes: [B3, C5, E4, C3]
-    onboard_speaker: { pins: H22, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
+    onboard_speaker:
+      pins: H22
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
     onboard_buttons:
-      source: {doc: manual, where: 'Table 2–23, p. 36'}
+      source:
+        doc: manual
+        where: Table 2–23, p. 36
       active: low
       iostandard: 1.8 V
       pins: [AD7, AC12, AH3, AA12]
     onboard_switches:
-      source: {doc: manual, where: 'Table 2–25, p. 37'}
+      source:
+        doc: manual
+        where: Table 2–25, p. 37
       iostandard: 1.8 V
       pins: [AC14, AD18, AG23, AC19, AD14, G20, AB15, AF25]
     onboard_usb:
-      source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf}
+      source:
+        doc: golden_qsf
+        where: cycloneIII_3c120_dev_golden_top.qsf
       pins:
         ifclk: B15
         cmd_data: C27
@@ -357,31 +432,72 @@ Board:
       overrides:
         "B15": 1.8 V
     onboard_fpga_jtag:   # FPGA JTAG (routed to HSMC ports)
-      device: {"name": "FPGA JTAG (routed to HSMC ports)", "kind": "other"}
+      device:
+        name: FPGA JTAG (routed to HSMC ports)
+        kind: other
       iostandard: "2.5 V"
-      pins: {"FPGA_JTAG_TCK": "P5", "FPGA_JTAG_TMS": "P8"}
+      pins:
+        FPGA_JTAG_TCK: P5
+        FPGA_JTAG_TMS: P8
   # ---- drawn: headers and parts; ./unifpga layout draft dk_dev_3c120n regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers: []
   parts:
     - id: clk50mhz
       label: clk50mhz
-      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+      attach:
+        peripheral: clock_input
+        params:
+          frequency_mhz: 50
+        bind:
+          clk: clk50mhz
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 8, active: low}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 8
+          active: low
+        bind:
+          led: onboard_leds
     - id: cpu_resetn
       label: cpu resetn
-      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+      attach:
+        peripheral: reset_button
+        bind:
+          rst: cpu_resetn
     - id: 7seg
       label: 7seg
-      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 4, active: low, digits_active: high}, bind: {segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg], dp: onboard_7seg.dp, digits: ['onboard_7seg.anodes[3]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[0]']}}
+      attach:
+        peripheral: seven_segment_8digit_shared
+        params:
+          digits: 4
+          active: low
+          digits_active: high
+        bind:
+          segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
+          dp: onboard_7seg.dp
+          digits: ['onboard_7seg.anodes[3]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[0]']
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 4
+        bind:
+          btn: onboard_buttons
     - id: switches
       label: switches
-      attach: {peripheral: sw_bank, params: {width: 8}, bind: {sw: onboard_switches}}
+      attach:
+        peripheral: sw_bank
+        params:
+          width: 8
+        bind:
+          sw: onboard_switches
     - id: fpga_jtag
       label: FPGA JTAG (routed to HSMC ports)
-      device: {kind: other, bank: onboard_fpga_jtag}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_fpga_jtag

@@ -9,23 +9,57 @@ Setup:
     - onboard: clk
     - onboard: uart
     - onboard: buttons
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, null]}
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, null]
     - onboard: switches
     - onboard: leds
     - onboard: 7seg
     - module: inmp441_breakout
-      wires: {SCK: 'gpio_p1.[16]', WS: 'gpio_p1.[15]', SD: 'gpio_p1.[17]', L/R: 'gpio_p1.[14]'}
+      wires:
+        SCK: gpio_p1.[16]
+        WS: gpio_p1.[15]
+        SD: gpio_p1.[17]
+        L/R: gpio_p1.[14]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio_p2.[0]', BCK: 'gpio_p2.[1]', LCK: 'gpio_p2.[2]', DIN: 'gpio_p2.[3]'}
+      wires:
+        SCK: gpio_p2.[0]
+        BCK: gpio_p2.[1]
+        LCK: gpio_p2.[2]
+        DIN: gpio_p2.[3]
     - module: digilent_pmod_vga
-      wires: {R0: 'gpio_p1.[2]', R1: 'gpio_p1.[3]', R2: 'gpio_p1.[4]', R3: 'gpio_p1.[5]', G0: 'gpio_p1.[6]', G1: 'gpio_p1.[7]', G2: 'gpio_p1.[8]', G3: 'gpio_p1.[9]', B0: 'gpio_p1.[10]', B1: 'gpio_p1.[11]', B2: 'gpio_p1.[12]', B3: 'gpio_p1.[13]', HS: 'gpio_p1.[0]', VS: 'gpio_p1.[1]'}
-      params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}
+      wires:
+        R0: gpio_p1.[2]
+        R1: gpio_p1.[3]
+        R2: gpio_p1.[4]
+        R3: gpio_p1.[5]
+        G0: gpio_p1.[6]
+        G1: gpio_p1.[7]
+        G2: gpio_p1.[8]
+        G3: gpio_p1.[9]
+        B0: gpio_p1.[10]
+        B1: gpio_p1.[11]
+        B2: gpio_p1.[12]
+        B3: gpio_p1.[13]
+        HS: gpio_p1.[0]
+        VS: gpio_p1.[1]
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        gate: false
     - gpio: gpio_p2
       pins: ['[4]', '[5]', '[6]', '[7]', '[8]', '[9]', '[10]', '[11]']
-      params: {width: 8, direction: out}
+      params:
+        width: 8
+        direction: out
   design:
     reset:
       sources:
-      - {key: msb}
-    width: {buttons: 8}
-    tie: {'gpio_p2[12]': 0}
+      - key: msb
+    width:
+      buttons: 8
+    tie:
+      gpio_p2[12]: 0

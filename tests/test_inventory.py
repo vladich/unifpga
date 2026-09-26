@@ -39,7 +39,7 @@ def test_new_devices_become_onboard_banks_and_shared_pins_are_named():
     banks = dict(BOARD["banks"], onboard_led_pmod={"pins": ["B1", "B2"]})
     assert iv._shares("onboard_led_pmod", ["B1", "B2"], banks) == ["pmod_0"]
     lines = iv._bank_text("onboard_camera", p["add"][1][1], ["pmod_0"])
-    assert lines[1] == '      device: {"name": "Camera", "kind": "camera_dvp"}' and '"pmod_0"' in lines[2]
+    assert lines[1:4] == ["      device:", "        name: Camera", "        kind: camera_dvp"] and "pmod_0" in lines[4]
 
 
 def test_header_pins_drop_power_and_repeated_rails():

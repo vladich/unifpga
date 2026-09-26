@@ -380,5 +380,7 @@ def test_aps_manifest_excludes_duplicate_legacy_modules_and_orders_packages():
     assert "decoder_pkg.sv" not in rel
     assert rel.index("pkg/decoder_pkg.sv") < rel.index("design_top.sv")
     assert rel.index("pkg/decoder_pkg.sv") < rel.index("aps_cpu/processor_core.sv")
-    assert simulation == [os.path.join(d, "tb.sv"), os.path.join(d, "tb_firmware.sv")]
+    assert simulation == [os.path.join(d, name) for name in
+                          ("tb.sv", "tb_firmware.sv", "tb_litex_uart.sv")]
     assert os.path.join(d, "program.hex") in assets
+    assert os.path.join(d, "program_litex_uart.hex") in assets

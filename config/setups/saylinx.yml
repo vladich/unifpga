@@ -9,22 +9,37 @@ Setup:
     - onboard: clk
     - onboard: cpu_resetn
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {buttons: [2, 1, 0], switches: [2, 1, 0]}
+      params:
+        as_switches: true
+      design_bits:
+        buttons: [2, 1, 0]
+        switches: [2, 1, 0]
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
     - onboard: uart
     - module: inmp441_breakout
-      wires: {SCK: 'gpio_0.[4]', WS: 'gpio_0.[2]', SD: 'gpio_0.[5]', L/R: 'gpio_0.[0]'}
+      wires:
+        SCK: gpio_0.[4]
+        WS: gpio_0.[2]
+        SD: gpio_0.[5]
+        L/R: gpio_0.[0]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio_0.[12]', BCK: 'gpio_0.[10]', LCK: 'gpio_0.[6]', DIN: 'gpio_0.[8]'}
+      wires:
+        SCK: gpio_0.[12]
+        BCK: gpio_0.[10]
+        LCK: gpio_0.[6]
+        DIN: gpio_0.[8]
     - gpio: gpio_1
-      params: {width: 34}
+      params:
+        width: 34
     - gpio: gpio_0
-      params: {width: 34}
+      params:
+        width: 34
     - onboard: buzzer
     - onboard: sdram
     - onboard: sdcard
   extra:
-    tie: {'gpio_0[1]': 0, 'gpio_0[3]': 1}
+    tie:
+      gpio_0[1]: 0
+      gpio_0[3]: 1

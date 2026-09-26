@@ -2,8 +2,6 @@
 // tb_firmware. The real UART programmer releases the CPU; only the long timer
 // wait is shortened by setting its counter near the firmware's threshold.
 module tb_firmware;
-    localparam integer UART_BIT_NS = 8680; // 115200 baud at a 1 ns timescale
-
     logic clk = 1'b0;
     logic rst = 1'b0;
     logic uart_rx = 1'b1;
@@ -20,21 +18,7 @@ module tb_firmware;
         .led(led), .uart_rx(uart_rx)
     );
 
-    task automatic send_uart(input logic [7:0] value);
-        integer bit_index;
-        begin
-            uart_rx = 1'b0; // start
-            #UART_BIT_NS;
-            for (bit_index = 0; bit_index < 8; bit_index = bit_index + 1) begin
-                uart_rx = value[bit_index];
-                #UART_BIT_NS;
-            end
-            uart_rx = ^value; // even parity, as required by Bluster
-            #UART_BIT_NS;
-            uart_rx = 1'b1; // stop and inter-byte idle
-            #(2 * UART_BIT_NS);
-        end
-    endtask
+`include "tb_uart_send.svh"
 
     initial begin
         #1_000_000;
@@ -51,10 +35,10 @@ module tb_firmware;
             $fatal(1, "LED changed before CPU release: %h", led);
 
         // Bluster's four-byte all-ones finish command releases the CPU.
-        send_uart(8'hff);
-        send_uart(8'hff);
-        send_uart(8'hff);
-        send_uart(8'hff);
+        send_programmer_byte(8'hff);
+        send_programmer_byte(8'hff);
+        send_programmer_byte(8'hff);
+        send_programmer_byte(8'hff);
         wait (dut.system.bl2core_rst === 1'b0);
         repeat (100) @(posedge dut.clk10MHz);
         if (led !== 8'b0)

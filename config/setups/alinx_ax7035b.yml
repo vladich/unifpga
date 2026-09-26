@@ -6,18 +6,25 @@ Setup:
   board: alinx_ax7035b
   toolchain: vivado
   toolchains: [vivado, nextpnr_openxc7]
-  aliases: {alinx_ax7035b_openxc7: {toolchain: nextpnr_openxc7}}
+  aliases:
+    alinx_ax7035b_openxc7:
+      toolchain: nextpnr_openxc7
   use:
     - onboard: clk
     - onboard: cpu_resetn
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {buttons: [3, 2, 1, 0], switches: [3, 2, 1, 0]}
+      params:
+        as_switches: true
+      design_bits:
+        buttons: [3, 2, 1, 0]
+        switches: [3, 2, 1, 0]
     - onboard: leds
-      design_bits: {leds: [3, 2, 1, 0]}
+      design_bits:
+        leds: [3, 2, 1, 0]
     - onboard: 7seg
     - onboard: uart
     - onboard: temp_sensor
     - onboard: sdcard
   design:
-    width: {gpio: 68}
+    width:
+      gpio: 68

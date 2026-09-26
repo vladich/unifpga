@@ -14,12 +14,28 @@ Peripheral:
       default: 4
   # the on-board devices it models: a board inventory's I2C temperature sensor
   # (its INT / CT threshold outputs are left unbound: the reader polls)
-  models: {kind: temperature, pins: {scl: [scl, SCL, TMP_SCL], sda: [sda, SDA, TMP_SDA]}}
+  models:
+    kind: temperature
+    pins:
+      scl: [scl, SCL, TMP_SCL]
+      sda: [sda, SDA, TMP_SDA]
   signals:
-    - { name: scl, type: scalar, direction: output }
-    - { name: sda, type: scalar, direction: inout }
-    - { name: int, type: scalar, direction: input, optional: true, comment: "Interrupt (over/under threshold), not used" }
-    - { name: ct,  type: scalar, direction: input, optional: true, comment: "Critical-temperature output, not used" }
+    - name: scl
+      type: scalar
+      direction: output
+    - name: sda
+      type: scalar
+      direction: inout
+    - name: int
+      type: scalar
+      direction: input
+      optional: true
+      comment: Interrupt (over/under threshold), not used
+    - name: ct
+      type: scalar
+      direction: input
+      optional: true
+      comment: Critical-temperature output, not used
   provides:
     - capability: temperature
   driver:

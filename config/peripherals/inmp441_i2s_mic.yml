@@ -5,10 +5,22 @@ Peripheral:
   id: inmp441_i2s_mic
   description: INMP441 I²S MEMS microphone
   signals:
-    - { name: sck, type: scalar, direction: output, comment: "I²S bit clock" }
-    - { name: ws,  type: scalar, direction: output, comment: "Word-select / LRCLK" }
-    - { name: sd,  type: scalar, direction: input,  comment: "Serial data from mic" }
-    - { name: lr,  type: scalar, direction: output, comment: "L/R channel select (tied to GND or VCC on module)" }
+    - name: sck
+      type: scalar
+      direction: output
+      comment: I²S bit clock
+    - name: ws
+      type: scalar
+      direction: output
+      comment: Word-select / LRCLK
+    - name: sd
+      type: scalar
+      direction: input
+      comment: Serial data from mic
+    - name: lr
+      type: scalar
+      direction: output
+      comment: L/R channel select (tied to GND or VCC on module)
   provides:
     - capability: audio_in
   driver:

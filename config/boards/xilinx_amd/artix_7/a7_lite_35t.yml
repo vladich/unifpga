@@ -73,102 +73,324 @@ Board:
     iostandard: LVCMOS33
 
   banks:
-    clk50mhz: { pins: J19, frequency_mhz: 50, source: {doc: xdc, where: line 59} }
-    cpu_resetn: { pins: L18, active: low, source: {doc: xdc, where: line 76} }
+    clk50mhz:
+      pins: J19
+      frequency_mhz: 50
+      source:
+        doc: xdc
+        where: line 59
+    cpu_resetn:
+      pins: L18
+      active: low
+      source:
+        doc: xdc
+        where: line 76
     onboard_buttons:
-      source: {doc: xdc, where: lines 70-71}
+      source:
+        doc: xdc
+        where: lines 70-71
       pins: [AA1, W1]
     onboard_leds:
-      source: {doc: xdc, where: lines 66-67}
+      source:
+        doc: xdc
+        where: lines 66-67
       active: low
       pins: [M18, N18]
     onboard_uart:
-      source: {doc: xdc, where: lines 83-84}
+      source:
+        doc: xdc
+        where: lines 83-84
       pins:
         rx: U2
         tx: V2
     onboard_hdmi:
-      source: {doc: xdc, where: lines 103-115}
+      source:
+        doc: xdc
+        where: lines 103-115
       # TMDS pairs from the FGG484 package (IO_L14P/N_T2_SRCC_15, L9P/N, L11P/N,
       # L4P/N); the XDC constrains the P pins only, Vivado places the N halves.
       iostandard: TMDS_33
       pins:
         clk_p: "L19,L20"
         clk_n: L20
-        d_p: ["K21,K22", "J20,J21", "G17,G18"]
+        d_p: ['K21,K22', 'J20,J21', 'G17,G18']
         d_n: [K22, J21, G18]
     gpio:
-      source: {doc: xdc, where: lines 232-275}
+      source:
+        doc: xdc
+        where: lines 232-275
       pins: [F13, F14, E13, E14, D14, D15, E16, D16, D17, D21, G21, C22, B22]
     onboard_qspi_flash:   # QSPI flash
-      source: {doc: xdc, where: lines 91-96}
-      device: {"name": "QSPI flash", "kind": "flash"}
-      pins: {"clk": "L12", "cs": "P20", "dq0": "P22", "dq1": "R22", "dq2": "P21", "dq3": "R21"}
+      source:
+        doc: xdc
+        where: lines 91-96
+      device:
+        name: QSPI flash
+        kind: flash
+      pins:
+        clk: L12
+        cs: P20
+        dq0: P22
+        dq1: R22
+        dq2: P21
+        dq3: R21
     onboard_eeprom:   # I2C EEPROM
-      source: {doc: xdc, where: lines 122-123}
-      device: {"name": "I2C EEPROM", "kind": "other"}
-      pins: {"scl": "H15", "sda": "H17"}
+      source:
+        doc: xdc
+        where: lines 122-123
+      device:
+        name: I2C EEPROM
+        kind: other
+      pins:
+        scl: H15
+        sda: H17
     onboard_sdcard:   # microSD card slot
-      source: {doc: xdc, where: lines 130-135}
-      device: {"name": "microSD card slot", "kind": "sdcard"}
-      pins: {"clk": "U7", "cmd": "AA8", "data0": "Y7", "data1": "W9", "data2": "Y8", "data3": "AB8"}
+      source:
+        doc: xdc
+        where: lines 130-135
+      device:
+        name: microSD card slot
+        kind: sdcard
+      pins:
+        clk: U7
+        cmd: AA8
+        data0: Y7
+        data1: W9
+        data2: Y8
+        data3: AB8
     onboard_ddr3:   # DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
-      source: {doc: xdc, where: lines 146-199}
-      device: {"name": "DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)", "kind": "ddr", "id": "micron_mt41k256m16"}
+      source:
+        doc: xdc
+        where: lines 146-199
+      device:
+        name: DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
+        kind: ddr
+        id: micron_mt41k256m16
       iostandard: "SSTL15 / DIFF_SSTL15 (XDC)"
-      pins: {"A0": "P1", "A1": "M6", "A2": "K3", "A3": "K4", "A4": "M5", "A5": "J6", "A6": "N2", "A7": "K6", "A8": "P2", "A9": "L1", "A10": "M2", "A11": "P6", "A12": "L4", "A13": "L5", "A14": "N5", "BA0": "J4", "BA1": "R1", "BA2": "M1", "nCAS": "N3", "nRAS": "M3", "nWE": "L6", "CKE": "N4", "ODT": "L3", "nRST": "F4", "CK_P": "P5", "CK_N": "P4", "D0": "B2", "D1": "F1", "D2": "B1", "D3": "D2", "D4": "C2", "D5": "F3", "D6": "A1", "D7": "G1", "D8": "J5", "D9": "G2", "D10": "K1", "D11": "G3", "D12": "H2", "D13": "H5", "D14": "J1", "D15": "H4", "DM0": "E2", "DM1": "H3", "DQS_P0": "E1", "DQS_N0": "D1", "DQS_P1": "K2", "DQS_N1": "J2"}
+      pins:
+        A0: P1
+        A1: M6
+        A2: K3
+        A3: K4
+        A4: M5
+        A5: J6
+        A6: N2
+        A7: K6
+        A8: P2
+        A9: L1
+        A10: M2
+        A11: P6
+        A12: L4
+        A13: L5
+        A14: N5
+        BA0: J4
+        BA1: R1
+        BA2: M1
+        nCAS: N3
+        nRAS: M3
+        nWE: L6
+        CKE: N4
+        ODT: L3
+        nRST: F4
+        CK_P: P5
+        CK_N: P4
+        D0: B2
+        D1: F1
+        D2: B1
+        D3: D2
+        D4: C2
+        D5: F3
+        D6: A1
+        D7: G1
+        D8: J5
+        D9: G2
+        D10: K1
+        D11: G3
+        D12: H2
+        D13: H5
+        D14: J1
+        D15: H4
+        DM0: E2
+        DM1: H3
+        DQS_P0: E1
+        DQS_N0: D1
+        DQS_P1: K2
+        DQS_N1: J2
     onboard_ethernet:   # Gigabit Ethernet PHY (RTL8211, RGMII)
-      source: {doc: litex, where: 'resources ("eth_clocks", 0) line 99, ("eth", 0) line 104; agrees with a7la ethernet.xdc lines 56-70'}
-      device: {"name": "Gigabit Ethernet PHY (RTL8211, RGMII)", "kind": "ethernet"}
+      source:
+        doc: litex
+        where: resources ("eth_clocks", 0) line 99, ("eth", 0) line 104; agrees with a7la ethernet.xdc lines 56-70
+      device:
+        name: Gigabit Ethernet PHY (RTL8211, RGMII)
+        kind: ethernet
       iostandard: "LVCMOS33"
-      pins: {"rst_n": "N22", "mdc": "M22", "mdio": "M20", "rx_clk": "K18", "rx_ctl": "K19", "rxd": ["L14", "M15", "L16", "M16"], "tx_clk": "K17", "tx_ctl": "N20", "txd": ["K16", "L15", "L13", "M13"]}
+      pins:
+        rst_n: N22
+        mdc: M22
+        mdio: M20
+        rx_clk: K18
+        rx_ctl: K19
+        rxd: [L14, M15, L16, M16]
+        tx_clk: K17
+        tx_ctl: N20
+        txd: [K16, L15, L13, M13]
     gpio_jp2:   # GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)
-      source: {doc: xdc, where: lines 289-332}
-      device: {"name": "GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)", "kind": "header"}
-      pins: {"GPIO2_0P": "W21", "GPIO2_0N": "W22", "GPIO2_1P": "N17", "GPIO2_1N": "P17", "GPIO2_2P": "P19", "GPIO2_2N": "R19", "GPIO2_3P": "R18", "GPIO2_3N": "T18", "GPIO2_4P": "T21", "GPIO2_4N": "U21", "GPIO2_5P": "U22", "GPIO2_5N": "V22", "GPIO2_6P": "Y21", "GPIO2_6N": "Y22", "GPIO2_7P": "AA20", "GPIO2_7N": "AA21", "GPIO2_8P": "AB21", "GPIO2_8N": "AB22", "GPIO2_9P": "AA19", "GPIO2_9N": "AB20", "GPIO2_10P": "U20", "GPIO2_10N": "V20", "GPIO2_11P": "Y18", "GPIO2_11N": "Y19", "GPIO2_12P": "W19", "GPIO2_12N": "W20", "GPIO2_13P": "AA18", "GPIO2_13N": "AB18", "GPIO2_14P": "V18", "GPIO2_14N": "V19", "GPIO2_15P": "V17", "GPIO2_15N": "W17", "GPIO2_16P": "U17", "GPIO2_16N": "U18", "GPIO2_17P": "P14", "GPIO2_17N": "R14", "GPIO2_18P": "P16", "GPIO2_18N": "R17", "GPIO2_19P": "N13", "GPIO2_19N": "N14", "GPIO2_20P": "P15", "GPIO2_20N": "R16", "GPIO2_21P": "AB7", "GPIO2_21N": "AB6"}
+      source:
+        doc: xdc
+        where: lines 289-332
+      device:
+        name: GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)
+        kind: header
+      pins:
+        GPIO2_0P: W21
+        GPIO2_0N: W22
+        GPIO2_1P: N17
+        GPIO2_1N: P17
+        GPIO2_2P: P19
+        GPIO2_2N: R19
+        GPIO2_3P: R18
+        GPIO2_3N: T18
+        GPIO2_4P: T21
+        GPIO2_4N: U21
+        GPIO2_5P: U22
+        GPIO2_5N: V22
+        GPIO2_6P: Y21
+        GPIO2_6N: Y22
+        GPIO2_7P: AA20
+        GPIO2_7N: AA21
+        GPIO2_8P: AB21
+        GPIO2_8N: AB22
+        GPIO2_9P: AA19
+        GPIO2_9N: AB20
+        GPIO2_10P: U20
+        GPIO2_10N: V20
+        GPIO2_11P: Y18
+        GPIO2_11N: Y19
+        GPIO2_12P: W19
+        GPIO2_12N: W20
+        GPIO2_13P: AA18
+        GPIO2_13N: AB18
+        GPIO2_14P: V18
+        GPIO2_14N: V19
+        GPIO2_15P: V17
+        GPIO2_15N: W17
+        GPIO2_16P: U17
+        GPIO2_16N: U18
+        GPIO2_17P: P14
+        GPIO2_17N: R14
+        GPIO2_18P: P16
+        GPIO2_18N: R17
+        GPIO2_19P: N13
+        GPIO2_19N: N14
+        GPIO2_20P: P15
+        GPIO2_20N: R16
+        GPIO2_21P: AB7
+        GPIO2_21N: AB6
   # ---- drawn: headers and parts; ./unifpga layout draft a7_lite_35t regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: gpio
       type: pin_row
       label: GPIO
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
-      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]'}
+      pins:
+        '[0]': gpio[0]
+        '[1]': gpio[1]
+        '[2]': gpio[2]
+        '[3]': gpio[3]
+        '[4]': gpio[4]
+        '[5]': gpio[5]
+        '[6]': gpio[6]
+        '[7]': gpio[7]
+        '[8]': gpio[8]
+        '[9]': gpio[9]
+        '[10]': gpio[10]
+        '[11]': gpio[11]
+        '[12]': gpio[12]
   parts:
     - id: clk50mhz
       label: clk50mhz
-      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+      attach:
+        peripheral: clock_input
+        params:
+          frequency_mhz: 50
+        bind:
+          clk: clk50mhz
     - id: cpu_resetn
       label: cpu resetn
-      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+      attach:
+        peripheral: reset_button
+        bind:
+          rst: cpu_resetn
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 2}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 2
+        bind:
+          led: onboard_leds
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: hdmi
       label: hdmi
-      attach: {peripheral: hdmi_tmds, params: {timing: dvi, clock_serial_mhz: 250}, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+      attach:
+        peripheral: hdmi_tmds
+        params:
+          timing: dvi
+          clock_serial_mhz: 250
+        bind:
+          clk_p: onboard_hdmi.clk_p
+          d_p: onboard_hdmi.d_p
+          clk_n: onboard_hdmi.clk_n
+          d_n: onboard_hdmi.d_n
     - id: sdcard
       label: microSD card slot
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.data0, dat3: onboard_sdcard.data3}}
+      attach:
+        peripheral: sdcard_spi
+        bind:
+          clk: onboard_sdcard.clk
+          cmd: onboard_sdcard.cmd
+          dat0: onboard_sdcard.data0
+          dat3: onboard_sdcard.data3
     - id: qspi_flash
       label: QSPI flash
-      device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_qspi_flash
     - id: eeprom
       label: I2C EEPROM
-      device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_eeprom
     - id: ddr3
       label: DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
-      device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ddr
+        bank: onboard_ddr3
     - id: ethernet
       label: Gigabit Ethernet PHY (RTL8211, RGMII)
-      device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ethernet
+        bank: onboard_ethernet
     - id: gpio_jp2
       label: GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)
-      device: {kind: header, bank: gpio_jp2}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: header
+        bank: gpio_jp2

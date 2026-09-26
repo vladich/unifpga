@@ -7,7 +7,10 @@ Capability:
   id: audio_out
   description: 16-bit signed mono audio sample sink.
   signals:
-    - { name: sample, type: bus, width: 16, direction: user_to_hw }
+    - name: sample
+      type: bus
+      width: 16
+      direction: user_to_hw
   # Every provider hears the same samples (e.g. a PWM amplifier plus I2S DACs
   # on two Pmods at once); the user drives one bus.
   aggregation: broadcast
@@ -16,4 +19,6 @@ Capability:
     comment: Audio out (16-bit signed mono samples; one per cycle)
 
     ports:
-      sound: {signal: sample, width: 16}
+      sound:
+        signal: sample
+        width: 16

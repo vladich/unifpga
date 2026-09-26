@@ -6,11 +6,11 @@ Setup:
   board: gatemate_evb_a1
   toolchain: nextpnr_gatemate
   notes:
-    - "gatemate_evb_a1 — Cologne Chip EVB-A1 (CCGM1A1) via the open-source flow."
-    - "yosys synth_gatemate → nextpnr-himbaechel (gatemate uarch) → gmpack."
+    - gatemate_evb_a1 — Cologne Chip EVB-A1 (CCGM1A1) via the open-source flow.
+    - yosys synth_gatemate → nextpnr-himbaechel (gatemate uarch) → gmpack.
   use:
     - onboard: clk
     - onboard: buttons
     - onboard: leds
   extra:
-    {manual: true}
+    manual: true

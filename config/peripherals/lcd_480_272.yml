@@ -7,27 +7,64 @@ Peripheral:
   # Dock (w_red = 5), 6-6-6 on Tang Mega 138K / 138K Pro (w_red = 6).
   # The user-visible width equals the pin width for these panels.
   parameters:
-    bits_r: { type: int, default: 5 }
-    bits_g: { type: int, default: 6 }
-    bits_b: { type: int, default: 5 }
+    bits_r:
+      type: int
+      default: 5
+    bits_g:
+      type: int
+      default: 6
+    bits_b:
+      type: int
+      default: 5
     # What drives the backlight / init pins when the board has them. It
     # differs per board (`assign LCD_BL = 1'b0` on Tang Nano 9K, `1'b1` on
     # Tang Nano 20K, `~ rst` on Tang Primer 20K Dock); each configuration
     # sets its board's choice.
-    bl:   { type: string, default: const.1 }
-    init: { type: string, default: const.0 }
+    bl:
+      type: string
+      default: const.1
+    init:
+      type: string
+      default: const.0
   signals:
-    - { name: r,    type: bus, width: $bits_r, direction: output }
-    - { name: g,    type: bus, width: $bits_g, direction: output }
-    - { name: b,    type: bus, width: $bits_b, direction: output }
+    - name: r
+      type: bus
+      width: $bits_r
+      direction: output
+    - name: g
+      type: bus
+      width: $bits_g
+      direction: output
+    - name: b
+      type: bus
+      width: $bits_b
+      direction: output
     # hs/vs are optional: the Tang Mega 138K Pro adapter is wired DE-only (its
     # pin constraints have no LCD_HS/VS).
-    - { name: hs,   type: scalar, direction: output, optional: true }
-    - { name: vs,   type: scalar, direction: output, optional: true }
-    - { name: de,   type: scalar, direction: output }
-    - { name: ck,   type: scalar, direction: output }
-    - { name: bl,   type: scalar, direction: output, optional: true, comment: "Backlight enable" }
-    - { name: init, type: scalar, direction: output, optional: true, comment: "Init / display enable" }
+    - name: hs
+      type: scalar
+      direction: output
+      optional: true
+    - name: vs
+      type: scalar
+      direction: output
+      optional: true
+    - name: de
+      type: scalar
+      direction: output
+    - name: ck
+      type: scalar
+      direction: output
+    - name: bl
+      type: scalar
+      direction: output
+      optional: true
+      comment: Backlight enable
+    - name: init
+      type: scalar
+      direction: output
+      optional: true
+      comment: Init / display enable
   provides:
     - capability: screen
       params:
@@ -41,7 +78,8 @@ Peripheral:
   # (Gowin_rPLL 27 -> 9 MHz). Codegen instantiates the
   # vendor PLL wrapper and exposes it as `clock.pixel`.
   clocks:
-    - { name: pixel, mhz: 9 }
+    - name: pixel
+      mhz: 9
   driver:
     module: lcd_480_272
     file: rtl/peripherals/lcd_480_272.sv

@@ -21,12 +21,19 @@ the facts read from them, in the board's own file
       - id: gpio
         type: terasic_gpio_2x20
         bank: gpio
-        pins: {'1': 'gpio[0]', '2': 'gpio[1]', ...}          # physical pin -> bank pin
-        source: {doc: manual, where: "Table 3-14, p. 31"}   # a fact: the drafter keeps it, verify() checks it
+        pins:                            # physical pin -> bank pin
+          '1': gpio[0]
+          '2': gpio[1]
+          ...
+        source:                          # a fact: the drafter keeps it, verify() checks it
+          doc: manual
+          where: Table 3-14, p. 31
     parts:
       - id: leds
         label: LEDR0-LEDR9
-        source: {doc: manual, where: "Table 3-5, p. 28"}
+        source:
+          doc: manual
+          where: Table 3-5, p. 28
 
 Documents are downloaded into a cache outside the repository (vendor files are
 not ours to redistribute): $UNIFPGA_SOURCES_CACHE, default

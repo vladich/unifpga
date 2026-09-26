@@ -4,7 +4,8 @@ Module:
   id: digilent_pmod_con3
   name: Digilent PmodCON3 (4 servos)
   peripheral: servo_pwm
-  params: {count: 4}
+  params:
+    count: 4
   voltage: 3.3
   pins:
     "1": pwm[0]

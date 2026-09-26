@@ -60,33 +60,54 @@ Board:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: W5, frequency_mhz: 100, source: {doc: xdc, where: '"Clock signal", line 7'} }
+    clk:
+      pins: W5
+      frequency_mhz: 100
+      source:
+        doc: xdc
+        where: '"Clock signal", line 7'
     onboard_switches:
-      source: {doc: xdc, where: '"Switches", lines 12-27'}
+      source:
+        doc: xdc
+        where: '"Switches", lines 12-27'
       pins: [V17, V16, W16, W17, W15, V15, W14, W13, V2, T3, T2, R3, W2, U1, T1, R2]
     onboard_leds:
-      source: {doc: xdc, where: '"LEDs", lines 31-46'}
+      source:
+        doc: xdc
+        where: '"LEDs", lines 31-46'
       pins: [U16, E19, U19, V19, W18, U15, U14, V14, V13, V3, W3, U3, P3, N3, P1, L1]
     onboard_7seg:
-      source: {doc: xdc, where: '"7 Segment Display", lines 50-63; seg[0..6] = CA..CG; active-low (Digilent convention, inference)'}
+      source:
+        doc: xdc
+        where: '"7 Segment Display", lines 50-63; seg[0..6] = CA..CG; active-low (Digilent convention, inference)'
       pins:
         segments: [W7, W6, U8, V8, U5, V5, U7]
         dp: V7
         anodes: [U2, U4, V4, W4]
     onboard_buttons:
-      source: {doc: xdc, where: '"Buttons", lines 67-71'}
+      source:
+        doc: xdc
+        where: '"Buttons", lines 67-71'
       pins: [U18, T18, W19, T17, U17]
     pmod_ja:
-      source: {doc: xdc, where: '"Pmod Header JA", lines 75-82; keyed by Pmod pin number (Sch names JA1-4, JA7-10)'}
+      source:
+        doc: xdc
+        where: '"Pmod Header JA", lines 75-82; keyed by Pmod pin number (Sch names JA1-4, JA7-10)'
       pins: [J1, L2, J2, G2, H1, K2, H2, G3]
     pmod_jb:
-      source: {doc: xdc, where: '"Pmod Header JB", lines 85-92; keyed by Pmod pin number (Sch names JB1-4, JB7-10)'}
+      source:
+        doc: xdc
+        where: '"Pmod Header JB", lines 85-92; keyed by Pmod pin number (Sch names JB1-4, JB7-10)'
       pins: [A14, A16, B15, B16, A15, A17, C15, C16]
     pmod_jc:
-      source: {doc: xdc, where: '"Pmod Header JC", lines 95-102; keyed by Pmod pin number (Sch names JC1-4, JC7-10)'}
+      source:
+        doc: xdc
+        where: '"Pmod Header JC", lines 95-102; keyed by Pmod pin number (Sch names JC1-4, JC7-10)'
       pins: [K17, M18, N17, P18, L17, M19, P17, R18]
     onboard_vga:
-      source: {doc: xdc, where: '"VGA Connector", lines 116-129'}
+      source:
+        doc: xdc
+        where: '"VGA Connector", lines 116-129'
       pins:
         r: [G19, H19, J19, N19]
         b: [N18, L18, K18, J18]
@@ -94,75 +115,179 @@ Board:
         hs: P19
         vs: R19
     onboard_uart:
-      source: {doc: xdc, where: '"USB-RS232 Interface", lines 133-134; port names RsRx (FPGA input) / RsTx (FPGA output)'}
+      source:
+        doc: xdc
+        where: '"USB-RS232 Interface", lines 133-134; port names RsRx (FPGA input) / RsTx (FPGA output)'
       pins:
         rx: B18
         tx: A18
     onboard_pmod_jxadc:   # Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 6, 14, 7, 15; usable as digital IO)
-      device: {"name": "Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 6, 14, 7, 15; usable as digital IO)", "kind": "xadc"}
+      device:
+        name: 'Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 6, 14, 7, 15; usable as digital IO)'
+        kind: xadc
       iostandard: "LVCMOS33"
-      model_params: {channels: [6, 14, 7, 15]}
-      pins: {"xa_p": ["J3", "L3", "M2", "N2"], "xa_n": ["K3", "M3", "M1", "N1"]}
+      model_params:
+        channels: [6, 14, 7, 15]
+      pins:
+        xa_p: [J3, L3, M2, N2]
+        xa_n: [K3, M3, M1, N1]
     onboard_usb_hid:   # USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
-      source: {doc: xdc, where: '"USB HID (PS/2)", lines 138-139'}
-      device: {"name": "USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)", "kind": "usb_hid"}
+      source:
+        doc: xdc
+        where: '"USB HID (PS/2)", lines 138-139'
+      device:
+        name: USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
+        kind: usb_hid
       iostandard: "LVCMOS33"
       pull: "up"   # the PIC24 bridge leaves the pair to the FPGA's pull-ups (Digilent master XDC: PULLUP true)
-      pins: {"clk": "C17", "data": "B17"}
+      pins:
+        clk: C17
+        data: B17
     onboard_qspi_flash:   # Quad-SPI flash (configuration + user)
-      source: {doc: xdc, where: 'lines 145-149; the clock is CCLK_0, reachable only through STARTUPE2 (XDC note lines 143-144)'}
-      device: {"name": "Quad-SPI flash (configuration + user)", "kind": "flash"}
+      source:
+        doc: xdc
+        where: lines 145-149; the clock is CCLK_0, reachable only through STARTUPE2 (XDC note lines 143-144)
+      device:
+        name: Quad-SPI flash (configuration + user)
+        kind: flash
       iostandard: "LVCMOS33"
-      pins: {"dq": ["D18", "D19", "G18", "F18"], "cs_n": "K19"}
+      pins:
+        dq: [D18, D19, G18, F18]
+        cs_n: K19
   # ---- drawn: headers and parts; ./unifpga layout draft basys3 regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: pmod_ja
       type: pin_row
       label: PMOD_JA
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_ja
-      pins: {'[0]': 'pmod_ja[0]', '[1]': 'pmod_ja[1]', '[2]': 'pmod_ja[2]', '[3]': 'pmod_ja[3]', '[4]': 'pmod_ja[4]', '[5]': 'pmod_ja[5]', '[6]': 'pmod_ja[6]', '[7]': 'pmod_ja[7]'}
+      pins:
+        '[0]': pmod_ja[0]
+        '[1]': pmod_ja[1]
+        '[2]': pmod_ja[2]
+        '[3]': pmod_ja[3]
+        '[4]': pmod_ja[4]
+        '[5]': pmod_ja[5]
+        '[6]': pmod_ja[6]
+        '[7]': pmod_ja[7]
     - id: pmod_jb
       type: pin_row
       label: PMOD_JB
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_jb
-      pins: {'[0]': 'pmod_jb[0]', '[1]': 'pmod_jb[1]', '[2]': 'pmod_jb[2]', '[3]': 'pmod_jb[3]', '[4]': 'pmod_jb[4]', '[5]': 'pmod_jb[5]', '[6]': 'pmod_jb[6]', '[7]': 'pmod_jb[7]'}
+      pins:
+        '[0]': pmod_jb[0]
+        '[1]': pmod_jb[1]
+        '[2]': pmod_jb[2]
+        '[3]': pmod_jb[3]
+        '[4]': pmod_jb[4]
+        '[5]': pmod_jb[5]
+        '[6]': pmod_jb[6]
+        '[7]': pmod_jb[7]
     - id: pmod_jc
       type: pin_row
       label: PMOD_JC
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_jc
-      pins: {'[0]': 'pmod_jc[0]', '[1]': 'pmod_jc[1]', '[2]': 'pmod_jc[2]', '[3]': 'pmod_jc[3]', '[4]': 'pmod_jc[4]', '[5]': 'pmod_jc[5]', '[6]': 'pmod_jc[6]', '[7]': 'pmod_jc[7]'}
+      pins:
+        '[0]': pmod_jc[0]
+        '[1]': pmod_jc[1]
+        '[2]': pmod_jc[2]
+        '[3]': pmod_jc[3]
+        '[4]': pmod_jc[4]
+        '[5]': pmod_jc[5]
+        '[6]': pmod_jc[6]
+        '[7]': pmod_jc[7]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: switches
       label: switches
-      attach: {peripheral: sw_bank, params: {width: 16}, bind: {sw: onboard_switches}}
+      attach:
+        peripheral: sw_bank
+        params:
+          width: 16
+        bind:
+          sw: onboard_switches
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 16}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 16
+        bind:
+          led: onboard_leds
     - id: 7seg
       label: 7seg
-      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 4, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[0]', 'onboard_7seg.segments[1]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[6]'], dp: onboard_7seg.dp, digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]']}}
+      attach:
+        peripheral: seven_segment_8digit_shared
+        params:
+          digits: 4
+          active: low
+          digits_active: low
+        bind:
+          segments: ['onboard_7seg.segments[0]', 'onboard_7seg.segments[1]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[6]']
+          dp: onboard_7seg.dp
+          digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]']
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 5}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 5
+        bind:
+          btn: onboard_buttons
     - id: vga
       label: vga
-      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+      attach:
+        peripheral: vga_4bit
+        params:
+          bits_r: 4
+          bits_g: 4
+          bits_b: 4
+          pin_bits_r: 4
+          pin_bits_g: 4
+          pin_bits_b: 4
+          color_depth: 444
+        bind:
+          r: onboard_vga.r
+          g: onboard_vga.g
+          b: onboard_vga.b
+          hs: onboard_vga.hs
+          vs: onboard_vga.vs
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: usb_hid
       label: USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
-      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_usb_hid.clk, data: onboard_usb_hid.data}}
+      attach:
+        peripheral: ps2_keyboard
+        bind:
+          clk: onboard_usb_hid.clk
+          data: onboard_usb_hid.data
     - id: pmod_jxadc
       label: 'Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 6, 14, 7, 15; usable as digital IO)'
-      attach: {peripheral: xadc_aux, params: {width: 4, channels: [6, 14, 7, 15]}, bind: {p: onboard_pmod_jxadc.xa_p, n: onboard_pmod_jxadc.xa_n}}
+      attach:
+        peripheral: xadc_aux
+        params:
+          width: 4
+          channels: [6, 14, 7, 15]
+        bind:
+          p: onboard_pmod_jxadc.xa_p
+          n: onboard_pmod_jxadc.xa_n
     - id: qspi_flash
       label: Quad-SPI flash (configuration + user)
-      device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_qspi_flash

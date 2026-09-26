@@ -7,18 +7,51 @@ Peripheral:
   id: ssd1306_spi_oled
   description: SSD1306 OLED panel on 4-wire SPI (monochrome, 128x32 or 128x64)
   parameters:
-    width:   { type: int, default: 128 }
-    height:  { type: int, default: 32, description: "32 or 64 rows (a multiple of 8)" }
-    spi_khz: { type: int, default: 4000, description: "SCLK, at most 10000 (SSD1306)" }
-    com_pins: { type: int, default: 32, description: "COM pins configuration (command DA): 32 = 0x20 on Digilent's UG-2832 panels, 18 = 0x12 on most 128x64 breakouts" }
+    width:
+      type: int
+      default: 128
+    height:
+      type: int
+      default: 32
+      description: 32 or 64 rows (a multiple of 8)
+    spi_khz:
+      type: int
+      default: 4000
+      description: SCLK, at most 10000 (SSD1306)
+    com_pins:
+      type: int
+      default: 32
+      description: 'COM pins configuration (command DA): 32 = 0x20 on Digilent''s UG-2832 panels, 18 = 0x12 on most 128x64 breakouts'
   signals:
-    - { name: sclk, type: scalar, direction: output }
-    - { name: sdin, type: scalar, direction: output }
-    - { name: dc,   type: scalar, direction: output, comment: "0 = command, 1 = display data" }
-    - { name: res,  type: scalar, direction: output, comment: "Reset, active low" }
-    - { name: cs,   type: scalar, direction: output, optional: true, comment: "Chip select, active low" }
-    - { name: vbat, type: scalar, direction: output, optional: true, comment: "VBAT switch (PmodOLED VBATC), 0 = on" }
-    - { name: vdd,  type: scalar, direction: output, optional: true, comment: "VDD switch (PmodOLED VDDC), 0 = on" }
+    - name: sclk
+      type: scalar
+      direction: output
+    - name: sdin
+      type: scalar
+      direction: output
+    - name: dc
+      type: scalar
+      direction: output
+      comment: 0 = command, 1 = display data
+    - name: res
+      type: scalar
+      direction: output
+      comment: Reset, active low
+    - name: cs
+      type: scalar
+      direction: output
+      optional: true
+      comment: Chip select, active low
+    - name: vbat
+      type: scalar
+      direction: output
+      optional: true
+      comment: VBAT switch (PmodOLED VBATC), 0 = on
+    - name: vdd
+      type: scalar
+      direction: output
+      optional: true
+      comment: VDD switch (PmodOLED VDDC), 0 = on
   provides:
     - capability: small_display
       params:

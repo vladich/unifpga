@@ -103,3 +103,20 @@ over the serial wire, sample cadence, and zero loss in that bounded run.
 The pilot has no frame synchronization or error recovery on the serial wire,
 no microphone waveform or sound-quality validation, no clock/baud binding in
 the catalog, and no synthesis or board test. It is not yet a P2a acceptance.
+
+The APS CPU/control candidate now exercises a generated LiteX UART TX PHY
+through a native memory-mapped adapter at APS slot 6. The `tb_litex_uart`
+testbench selects `processor_system.USE_LITEX_UART_TX`, while the normal
+`design_top` keeps its native UART and remains runnable without a LiteX export.
+The fixture firmware waits for 100 real 10 MHz timer ticks, writes the LED,
+and issues two consecutive UART stores. `test_uart_rtl.py` exports the pinned
+10 MHz / 115200 baud PHY, invokes `unifpga sim --component-export`, checks
+both serial bytes and the staged RTL snapshot, and checks that elaboration
+fails when the required export is absent. The adapter holds each byte until
+LiteX reports TX completion. Its only supported registers are data write at
+offset 0 and ready read at offset 8; other offsets keep the APS bus stalled.
+This proves a CPU, instruction memory, timer, LED, bus, adapter, and generated
+PHY together. The virtual-device `design_top` cannot yet select this backend
+through the configuration format, and the test has no UART RX/interrupt,
+synthesis, timing, or board evidence. It remains a CPU/control candidate rather
+than a completed P2a system.

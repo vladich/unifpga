@@ -5,7 +5,14 @@ Peripheral:
   id: qspi_flash
   description: Quad-SPI configuration flash (4-bit data + chip-select)
   signals:
-    - { name: dq,  type: bus, width: 4, direction: inout, comment: "DQ[3:0]" }
-    - { name: csn, type: scalar, direction: output, comment: "Chip-select, active low" }
+    - name: dq
+      type: bus
+      width: 4
+      direction: inout
+      comment: DQ[3:0]
+    - name: csn
+      type: scalar
+      direction: output
+      comment: Chip-select, active low
   provides: []
   driver: null

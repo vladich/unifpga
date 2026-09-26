@@ -1,4 +1,6 @@
-module processor_system(
+module processor_system #(
+  parameter bit USE_LITEX_UART_TX = 1'b0
+)(
 
   input  logic        clk10mhz_i,
   input  logic        clk25175khz_i,
@@ -405,18 +407,26 @@ end
     assign irq_req[5] = '0;
   end
 
-  if(PLATFORM_SUPPORT_UART_TX) begin
-    uart_tx_sb_ctrl   tx_inst(
-      .clk_i                (sysclk                 ),
-      .rst_i                (core_rst               ),
-      .req_i                (req[6]                 ),
-      .write_enable_i       (mem_we                 ),
-      .write_data_i         (mem_wd                 ),
-      .addr_i               (mem_addr               ),
-      .read_data_o          (rdata[6]               ),
-      .ready_o              (ready[6]               ),
-      .tx_o                 (uart_tx                )
-  );
+  if(PLATFORM_SUPPORT_UART_TX) begin : uart_tx_peripheral
+    if (USE_LITEX_UART_TX) begin : litex
+      aps_litex_uart_tx_sb_ctrl tx_inst(
+        .clk_i(sysclk), .rst_i(core_rst), .req_i(req[6]),
+        .write_enable_i(mem_we), .write_data_i(mem_wd), .addr_i(mem_addr),
+        .read_data_o(rdata[6]), .ready_o(ready[6]), .tx_o(uart_tx)
+      );
+    end else begin : native_uart
+      uart_tx_sb_ctrl tx_inst(
+        .clk_i                (sysclk                 ),
+        .rst_i                (core_rst               ),
+        .req_i                (req[6]                 ),
+        .write_enable_i       (mem_we                 ),
+        .write_data_i         (mem_wd                 ),
+        .addr_i               (mem_addr               ),
+        .read_data_o          (rdata[6]               ),
+        .ready_o              (ready[6]               ),
+        .tx_o                 (uart_tx                )
+      );
+    end
   end
   else begin
     assign   rdata[6]   = '0;

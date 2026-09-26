@@ -11,17 +11,22 @@ Setup:
     - onboard: button
     - onboard: rgb_led_0
     - onboard: leds
-      design_bits: {leds: [4, 3, 2, 1, 0]}
+      design_bits:
+        leds: [4, 3, 2, 1, 0]
     - onboard: led_green
-      design_bits: {leds: [5]}
+      design_bits:
+        leds: [5]
     - onboard: led_red
-      design_bits: {leds: [6]}
+      design_bits:
+        leds: [6]
     - onboard: buttons
     - gpio: pmod_p1b
-      params: {width: 8}
+      params:
+        width: 8
     - gpio: pmod_p1a
-      params: {width: 8}
+      params:
+        width: 8
   design:
     reset:
       sources:
-      - {key: 0}
+      - key: 0

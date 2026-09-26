@@ -6,7 +6,9 @@ Module:
   id: lcd1602_hd44780
   name: 1602 character LCD (HD44780, 4-bit bus)
   peripheral: hd44780_lcd
-  params: {columns: 16, rows: 2}
+  params:
+    columns: 16
+    rows: 2
   voltage: [3.3, 5.0]
   pins:
     VSS: ground

@@ -73,48 +73,99 @@ Board:
       loader_board: "tangnano1k"          # openFPGALoader -b
   banks:
     sys_clk:
-      source: {doc: sch6100, where: 'U7 OUT -> R13 22R -> net IOT10A_XTAL_IN = U1 pin 47 IOT10A/GCLKT_0; frequency from wiki_1k ("on-board 27MHz active crystal oscillator"), not printed on the schematic'}
+      source:
+        doc: sch6100
+        where: U7 OUT -> R13 22R -> net IOT10A_XTAL_IN = U1 pin 47 IOT10A/GCLKT_0; frequency from wiki_1k ("on-board 27MHz active crystal oscillator"), not printed on the schematic
       pins: 47
     cpu_resetn:
       active: low
       pins: 13
     onboard_buttons:    # A (S2), B (S1: ball 44 is also JTAGSEL_N)
-      source: {doc: sch6100, where: 'S2 (silk A) net IOT12B_KEY, R20 10K to VBANK1 = U1 pin 13 (IOR10B); S1 (silk B) net IOT13A_KEY, R19 10K to VBANK0 = U1 pin 44 (IOT13A/JTAGSEL_N)'}
+      source:
+        doc: sch6100
+        where: S2 (silk A) net IOT12B_KEY, R20 10K to VBANK1 = U1 pin 13 (IOR10B); S1 (silk B) net IOT13A_KEY, R19 10K to VBANK0 = U1 pin 44 (IOT13A/JTAGSEL_N)
       active: low
-      pins: ["13", "44"]
+      pins: ['13', '44']
     onboard_leds:
-      source: {doc: sch6100, where: 'LED1 R/G/B via R9 2K/R7 2K/R8 4K7 to nets IOR2A_LEDR (pin 9), IOR3A_LEDG (pin 11), IOR2B_LEDB (pin 10)'}
+      source:
+        doc: sch6100
+        where: LED1 R/G/B via R9 2K/R7 2K/R8 4K7 to nets IOR2A_LEDR (pin 9), IOR3A_LEDG (pin 11), IOR2B_LEDB (pin 10)
       active: low
       pins: [9, 10, 11]
     onboard_psram:   # IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM U4 (on the board, not in package; population unconfirmed)
-      source: {doc: sch6100, where: 'U4 #CE=PSRAM_CE (pin 42 IOT14B/MODE1, R35 4.7K to GND), SCLK=IOT9A_SCLK (pin 6 IOT9A/SCLK), SI/SIO0=IOT16A_SIO0 (40), SO/SIO1=IOT16B_SIO1 (39), SIO2=IOT17A_SIO2 (38), SIO3=IOT15B_SIO3 (41)'}
-      device: {"name": "IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM U4 (on the board, not in package; population unconfirmed)", "kind": "psram"}
-      shares: ["header_p5", "onboard_config"]   # the board multiplexes these pins
-      pins: {"ce_n": "42", "sclk": "6", "sio": ["40", "39", "38", "41"]}
+      source:
+        doc: sch6100
+        where: 'U4 #CE=PSRAM_CE (pin 42 IOT14B/MODE1, R35 4.7K to GND), SCLK=IOT9A_SCLK (pin 6 IOT9A/SCLK), SI/SIO0=IOT16A_SIO0 (40), SO/SIO1=IOT16B_SIO1 (39), SIO2=IOT17A_SIO2 (38), SIO3=IOT15B_SIO3 (41)'
+      device:
+        name: IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM U4 (on the board, not in package; population unconfirmed)
+        kind: psram
+      shares: [header_p5, onboard_config]   # the board multiplexes these pins
+      pins:
+        ce_n: '42'
+        sclk: '6'
+        sio: ['40', '39', '38', '41']
     onboard_lcd:   # 40-pin RGB LCD FPC J1 (RGB565 out)
-      source: {doc: sch6100, where: 'nets IOT17B_R0 35, IOR3B_R1 34, IOR6A_R2 31, IOR6C_R3 30, IOR6E_R4 29; IOR6I_G0 28, IOR7A_G1 27, IOR6D_G2 15, IOR6F_G3 16, IOR6G_G4 17, IOR6H_G5 18; IOR6J_B0 19, IOR10A_B1 20, IOR9A_B2 22, IOR8B_B3 23, IOR8A_B4 24; LCD_CLK 8 (IOT10B/GCLKC_0), LCD_HSYNC 33, LCD_VSYNC 32, LCD_DE 21'}
-      device: {"name": "40-pin RGB LCD FPC J1 (RGB565 out)", "kind": "lcd_rgb"}
+      source:
+        doc: sch6100
+        where: nets IOT17B_R0 35, IOR3B_R1 34, IOR6A_R2 31, IOR6C_R3 30, IOR6E_R4 29; IOR6I_G0 28, IOR7A_G1 27, IOR6D_G2 15, IOR6F_G3 16, IOR6G_G4 17, IOR6H_G5 18; IOR6J_B0 19, IOR10A_B1 20, IOR9A_B2 22, IOR8B_B3 23, IOR8A_B4 24; LCD_CLK 8 (IOT10B/GCLKC_0), LCD_HSYNC 33, LCD_VSYNC 32, LCD_DE 21
+      device:
+        name: 40-pin RGB LCD FPC J1 (RGB565 out)
+        kind: lcd_rgb
       iostandard: "LVCMOS33"
-      shares: ["header_p4", "header_p5"]   # the board multiplexes these pins
-      pins: {"clk": "8", "hs": "33", "vs": "32", "de": "21", "r": ["35", "34", "31", "30", "29"], "g": ["28", "27", "15", "16", "17", "18"], "b": ["19", "20", "22", "23", "24"]}
+      shares: [header_p4, header_p5]   # the board multiplexes these pins
+      pins:
+        clk: '8'
+        hs: '33'
+        vs: '32'
+        de: '21'
+        r: ['35', '34', '31', '30', '29']
+        g: ['28', '27', '15', '16', '17', '18']
+        b: ['19', '20', '22', '23', '24']
     onboard_lcd_backlight:   # LCD backlight enable (LCD_BL to LP3320 EN through R2, fitted NC)
-      source: {doc: sch6100, where: 'U1 pin 14 IOR6B/MO/D6 net LCD_BL; LP3320 EN: R1 200k to 5V, R2 NC to LCD_BL (annotated "IOR6F" beside the label)'}
-      device: {"name": "LCD backlight enable (LCD_BL to LP3320 EN through R2, fitted NC)", "kind": "lcd_rgb"}
-      pins: {"bl": "14"}
+      source:
+        doc: sch6100
+        where: 'U1 pin 14 IOR6B/MO/D6 net LCD_BL; LP3320 EN: R1 200k to 5V, R2 NC to LCD_BL (annotated "IOR6F" beside the label)'
+      device:
+        name: LCD backlight enable (LCD_BL to LP3320 EN through R2, fitted NC)
+        kind: lcd_rgb
+      pins:
+        bl: '14'
     onboard_jtag:   # JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)
-      device: {"name": "JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)", "kind": "other", "id": "bouffalo_bl702"}
-      pins: {"tck": "3", "tms": "4", "tdi": "5", "tdo": "7"}
+      device:
+        name: JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)
+        kind: other
+        id: bouffalo_bl702
+      pins:
+        tck: '3'
+        tms: '4'
+        tdi: '5'
+        tdo: '7'
     onboard_config:   # Configuration pins (RECONFIG_N, DONE, READY, MODE0, MODE1)
-      device: {"name": "Configuration pins (RECONFIG_N, DONE, READY, MODE0, MODE1)", "kind": "other"}
-      shares: ["header_p4", "header_p5", "onboard_psram"]   # the board multiplexes these pins
-      pins: {"reconfig_n": "48", "done": "46", "ready": "45", "mode0": "43", "mode1": "42"}
+      device:
+        name: Configuration pins (RECONFIG_N, DONE, READY, MODE0, MODE1)
+        kind: other
+      shares: [header_p4, header_p5, onboard_psram]   # the board multiplexes these pins
+      pins:
+        reconfig_n: '48'
+        done: '46'
+        ready: '45'
+        mode0: '43'
+        mode1: '42'
     header_p4:   # Header P4 (1x20)
-      source: {doc: sch6100, where: 'P4: 1 IOR6I_G0, 2 IOR7A_G1, 3 IOR6D_G2, 4 IOR6F_G3, 5 IOR6G_G4, 6 IOR6H_G5, 7 IOR9A_B2, 8 IOR8B_B3, 9 IOR8A_B4, 10 IOR2B_LEDB, 11 IOR2A_LEDR, 12 IOR3A_LEDG, 13 DONE, 14 READY, 15 IOT10A_XTAL_IN, 16/17 GND, 18/19 5V, 20 IOT12B_KEY'}
-      device: {"name": "Header P4 (1x20)", "kind": "header"}
-      shares: ["cpu_resetn", "onboard_buttons", "onboard_config", "onboard_lcd", "onboard_leds", "sys_clk"]   # the board multiplexes these pins
-      pins: ["28", "27", "15", "16", "17", "18", "22", "23", "24", "10", "9", "11", "46", "45", "47", "13"]
+      source:
+        doc: sch6100
+        where: 'P4: 1 IOR6I_G0, 2 IOR7A_G1, 3 IOR6D_G2, 4 IOR6F_G3, 5 IOR6G_G4, 6 IOR6H_G5, 7 IOR9A_B2, 8 IOR8B_B3, 9 IOR8A_B4, 10 IOR2B_LEDB, 11 IOR2A_LEDR, 12 IOR3A_LEDG, 13 DONE, 14 READY, 15 IOT10A_XTAL_IN, 16/17 GND, 18/19 5V, 20 IOT12B_KEY'
+      device:
+        name: Header P4 (1x20)
+        kind: header
+      shares: [cpu_resetn, onboard_buttons, onboard_config, onboard_lcd, onboard_leds, sys_clk]   # the board multiplexes these pins
+      pins: ['28', '27', '15', '16', '17', '18', '22', '23', '24', '10', '9', '11', '46', '45', '47', '13']
     header_p5:   # Header P5 (1x20)
-      source: {doc: sch6100, where: 'P5: 1 IOR6A_R2, 2 IOR6C_R3, 3 IOR6E_R4, 4 IOR6J_B0, 5 IOR10A_B1, 6 IOR3B_R1, 7 IOT17B_R0, 8 PSRAM_CE, 9 IOT16B_SIO1, 10 IOT17A_SIO2, 11 IOT15B_SIO3, 12 IOT16A_SIO0, 13 GPIO_23, 14 GPIO_26, 15 GPIO_27, 16/17 VBANK0, 18/19 GND, 20 IOT13A_KEY'}
-      device: {"name": "Header P5 (1x20)", "kind": "header"}
-      shares: ["onboard_config", "onboard_lcd", "onboard_psram"]   # the board multiplexes these pins
-      pins: ["31", "30", "29", "19", "20", "34", "35", "42", "39", "38", "41", "40", "44"]
+      source:
+        doc: sch6100
+        where: 'P5: 1 IOR6A_R2, 2 IOR6C_R3, 3 IOR6E_R4, 4 IOR6J_B0, 5 IOR10A_B1, 6 IOR3B_R1, 7 IOT17B_R0, 8 PSRAM_CE, 9 IOT16B_SIO1, 10 IOT17A_SIO2, 11 IOT15B_SIO3, 12 IOT16A_SIO0, 13 GPIO_23, 14 GPIO_26, 15 GPIO_27, 16/17 VBANK0, 18/19 GND, 20 IOT13A_KEY'
+      device:
+        name: Header P5 (1x20)
+        kind: header
+      shares: [onboard_config, onboard_lcd, onboard_psram]   # the board multiplexes these pins
+      pins: ['31', '30', '29', '19', '20', '34', '35', '42', '39', '38', '41', '40', '44']

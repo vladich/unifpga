@@ -7,12 +7,26 @@ Capability:
   id: text_display
   description: Grid of characters scanned by (column, row); the design returns the character code.
   parameters:
-    columns: { type: int, required: true }
-    rows:    { type: int, required: true }
+    columns:
+      type: int
+      required: true
+    rows:
+      type: int
+      required: true
   signals:
-    - { name: column, type: bus, direction: hw_to_user, comment: "Column being fetched; width = $clog2(columns)" }
-    - { name: row,    type: bus, direction: hw_to_user, comment: "Row being fetched; width = $clog2(rows)" }
-    - { name: char,   type: bus, width: 8, direction: user_to_hw, comment: "Character code at (column, row)" }
+    - name: column
+      type: bus
+      direction: hw_to_user
+      comment: Column being fetched; width = $clog2(columns)
+    - name: row
+      type: bus
+      direction: hw_to_user
+      comment: Row being fetched; width = $clog2(rows)
+    - name: char
+      type: bus
+      width: 8
+      direction: user_to_hw
+      comment: Character code at (column, row)
   aggregation: exclusive
   size: [columns, rows]    # what `text_display >= 16x2` compares
 
@@ -21,13 +35,26 @@ Capability:
   design:
     comment: 'Character display (optional): the character code at (txt_col, txt_row), fetched one clock after the position'
     parameters:
-      txt_columns: {value: columns, absent: 0, description: Character display (HD44780 LCD ...)
-}
-      txt_rows: {value: rows, absent: 0}
+      txt_columns:
+        value: columns
+        absent: 0
+        description: Character display (HD44780 LCD ...)
+      txt_rows:
+        value: rows
+        absent: 0
     derived:
-      w_txt_col: {clog2: txt_columns}
-      w_txt_row: {clog2: txt_rows}
+      w_txt_col:
+        clog2: txt_columns
+      w_txt_row:
+        clog2: txt_rows
     ports:
-      txt_col: {signal: column, width: w_txt_col}
-      txt_row: {signal: row, width: w_txt_row}
-      txt_char: {signal: char, width: 8, idle: "8'h20"}   # a design without it: spaces
+      txt_col:
+        signal: column
+        width: w_txt_col
+      txt_row:
+        signal: row
+        width: w_txt_row
+      txt_char:   # a design without it: spaces
+        signal: char
+        width: 8
+        idle: 8'h20

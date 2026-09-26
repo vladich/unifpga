@@ -9,22 +9,34 @@ Setup:
     - onboard: clk
     - onboard: cpu_resetn
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {buttons: [2, 1, 0], switches: [2, 1, 0]}
+      params:
+        as_switches: true
+      design_bits:
+        buttons: [2, 1, 0]
+        switches: [2, 1, 0]
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
     - module: digilent_pmod_mic3
-      wires: {'1': 'gpio_1.[26]', '4': 'gpio_1.[32]', '3': 'gpio_1.[30]'}
+      wires:
+        '1': gpio_1.[26]
+        '4': gpio_1.[32]
+        '3': gpio_1.[30]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio_0.[12]', BCK: 'gpio_0.[10]', LCK: 'gpio_0.[6]', DIN: 'gpio_0.[8]'}
+      wires:
+        SCK: gpio_0.[12]
+        BCK: gpio_0.[10]
+        LCK: gpio_0.[6]
+        DIN: gpio_0.[8]
     - gpio: gpio_1
-      params: {width: 34}
+      params:
+        width: 34
     - gpio: gpio_0
-      params: {width: 34}
+      params:
+        width: 34
     - onboard: uart
     - onboard: buzzer
     - onboard: sdram
     - onboard: sdcard
   design:
-    {uart_rx: 0}
+    uart_rx: 0

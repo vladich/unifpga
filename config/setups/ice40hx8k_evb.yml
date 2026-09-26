@@ -5,27 +5,47 @@ Setup:
   id: ice40hx8k_evb
   board: ice40hx8k_evb
   toolchain: nextpnr_icestorm
-  aliases: {ice40hx8k_evb_yosys: {}}
+  aliases:
+    ice40hx8k_evb_yosys: {}
   use:
     - onboard: clk
     - onboard: buttons
-      design_bits: {buttons: []}
+      design_bits:
+        buttons: []
     - onboard: leds
-      design_bits: {leds: [null, null]}
+      design_bits:
+        leds: [null, null]
     - onboard: switches
-      design_bits: {switches: []}
+      design_bits:
+        switches: []
     - onboard: uart
     - onboard: vga
     - module: tm1638_led_key
-      wires: {STB: 'gpio.[1]', CLK: 'gpio.[0]', DIO: 'gpio.[2]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: gpio.[1]
+        CLK: gpio.[0]
+        DIO: gpio.[2]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: []
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[5]', WS: 'gpio.[4]', SD: 'gpio.[6]', L/R: 'gpio.[3]'}
+      wires:
+        SCK: gpio.[5]
+        WS: gpio.[4]
+        SD: gpio.[6]
+        L/R: gpio.[3]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio.[7]', BCK: 'gpio.[8]', LCK: 'gpio.[10]', DIN: 'gpio.[9]'}
+      wires:
+        SCK: gpio.[7]
+        BCK: gpio.[8]
+        LCK: gpio.[10]
+        DIN: gpio.[9]
     - onboard: sram
   design:
     reset:
       sources:
-      - {tm_key: msb}
-    width: {gpio: 12}
+      - tm_key: msb
+    width:
+      gpio: 12

@@ -786,7 +786,7 @@ def design_clock(resolved, plans=None):
     the board oscillator (`clk`). A configuration that runs the design
     on a PLL clock (`localparam design_mhz = pixel_mhz; assign clk = pixel_clk`
     on the iCEBreaker DVI and Tang Primer 20K Dock LCD/HDMI variants) says
-    `design_clock: pixel` and the whole lab moves to `clk_pixel`; `design_clock:
+    `design_clock: pixel` and the whole design moves to `clk_pixel`; `design_clock:
     {name: design, mhz: 50}` asks the clock tree for a PLL output of its own.
     Returns {"net", "mhz", "name"} (name None for the board clock)."""
     clock = resolve_clock(resolved, plans)

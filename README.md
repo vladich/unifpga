@@ -101,8 +101,12 @@ verification:
   status: verified
   banks_sha256: <sha256 of the board's id, banks, defaults and toolchain_options as resolved for the rig>
   parts: [<the exact chip id selected>]
-  pinout: {source: <vendor schematic or constraint>, revision: <exact revision>}
-  electrical: {source: <vendor electrical document>, revision: <exact revision>}
+  pinout:
+    source: <vendor schematic or constraint>
+    revision: <exact revision>
+  electrical:
+    source: <vendor electrical document>
+    revision: <exact revision>
 ```
 
 `config.init.board_fingerprint(resolved["board"])` computes the digest
@@ -184,17 +188,23 @@ Setup:
     - onboard: clock
     - onboard: leds
     - module: digilent_pmod_mic3
-      plug: {connector: jd, row: 2}
+      plug:
+        connector: jd
+        row: 2
     - module: tm1638_led_key
-      wires: {CLK: ck.IO40, STB: ck.IO41, DIO: ck.IO39}
+      wires:
+        CLK: ck.IO40
+        STB: ck.IO41
+        DIO: ck.IO39
     - gpio: ck
-      params: {width: 30}
+      params:
+        width: 30
 ```
 
 A rig exists once, whatever builds it: `toolchain:` and `part:` are its
 defaults, `toolchains:` and `parts:` every toolchain and chip it is checked
-with. Where a toolchain needs something else, `for_toolchain: {<toolchain>:
-<patch>}` says only what changes — on a use (it moves with the use) or on
+with. Where a toolchain needs something else, `for_toolchain:` names it and
+says only what changes — on a use (it moves with the use) or on
 the setup for the rest (`config/overlay.py`). `aliases:` keeps the ids of the
 per-toolchain and per-chip copies a rig replaced (`arty_a7_35_pmod_mic3_openxc7`
 still builds `arty_a7_pmod_mic3` with nextpnr_openxc7 for the 35T); any other
@@ -341,6 +351,9 @@ intended SKIP, not a failure.
   successive LED values. The testbench moves the timer counter near each
   ten-million-tick threshold to keep simulation bounded; it does not validate
   a full second of timing, synthesis, or any LiteX component integration.
+  A separate pinned LiteX UART TX variant is exercised at the APS subsystem
+  boundary by `experiments/litex/test_uart_rtl.py`; see
+  `experiments/litex/README.md` for its fixed-rate bus contract and limits.
 - **A new board**: write its file
   `config/boards/<producer>/<family>/<id>.yml` (copy a board on a similar
   chip: the catalogue fields, then its banks of pins; `./unifpga check`

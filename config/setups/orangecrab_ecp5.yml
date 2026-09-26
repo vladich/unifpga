@@ -5,17 +5,24 @@ Setup:
   id: orangecrab_ecp5
   board: orangecrab_ecp5
   toolchain: nextpnr_trellis
-  part: "25F"
-  aliases: {orangecrab_ecp5_yosys: {}}
+  part: 25F
+  aliases:
+    orangecrab_ecp5_yosys: {}
   use:
     - onboard: clk
     - onboard: leds
     - onboard: buttons
     - onboard: vga
     - onboard: switches
-      design_bits: {switches: []}
+      design_bits:
+        switches: []
     - onboard: uart
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[5]', WS: 'gpio.[4]', SD: 'gpio.[6]', L/R: 'gpio.[3]'}
+      wires:
+        SCK: gpio.[5]
+        WS: gpio.[4]
+        SD: gpio.[6]
+        L/R: gpio.[3]
   design:
-    width: {gpio: 8}
+    width:
+      gpio: 8

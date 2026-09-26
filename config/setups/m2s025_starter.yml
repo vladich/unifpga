@@ -6,8 +6,8 @@ Setup:
   board: m2s025_starter
   toolchain: libero_soc
   notes:
-    - "m2s025_starter — SmartFusion2 Starter Kit (M2S025T)."
-    - "Drives Libero SoC's TCL batch flow."
+    - m2s025_starter — SmartFusion2 Starter Kit (M2S025T).
+    - Drives Libero SoC's TCL batch flow.
   use:
     - onboard: clk
     - onboard: reset
@@ -16,4 +16,4 @@ Setup:
     - onboard: leds
     - onboard: uart
   extra:
-    {manual: true}
+    manual: true

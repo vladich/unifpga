@@ -187,164 +187,456 @@ Board:
     retrieved: '2026-09-24'
   banks:
     sys_clk:
-      source: {doc: som60_30353, where: SOM "Crystal oscillator" Y1100 50MHz -> BANK4_V22_EMCCLK_50Mhz}
+      source:
+        doc: som60_30353
+        where: SOM "Crystal oscillator" Y1100 50MHz -> BANK4_V22_EMCCLK_50Mhz
       pins: V22
     onboard_buttons:    # S4, S2, S1 = EX_KEY.0/1/2 (Y12 is key S1, not the reset: the SOM's reset key is F4)
-      source: {doc: dock31005, where: 'p9 BUTTON: EX_KEY.0 S4 USER_BUTTON0, EX_KEY.1 S2, EX_KEY.2 S1 to GND, "requires enable internal pull-up"; BTB J2.60/62/64 = BANK5_AA13/AB13/Y12'}
+      source:
+        doc: dock31005
+        where: 'p9 BUTTON: EX_KEY.0 S4 USER_BUTTON0, EX_KEY.1 S2, EX_KEY.2 S1 to GND, "requires enable internal pull-up"; BTB J2.60/62/64 = BANK5_AA13/AB13/Y12'
       active: low
       iostandard: LVCMOS15   # bank 9 is 1.5 V on the 60K SOM
       pins: [AA13, AB13, Y12]
     onboard_leds:
-      source: {doc: cst60, where: '//====== LEDS ======: LEDs[0..7] = T18 R18 R17 P16 U21 T21 R19 P19; wiki Dock parameters "LEDs 4+8: 4x Battery-Indicator + 8x PMOD_LED"'}
+      source:
+        doc: cst60
+        where: '//====== LEDS ======: LEDs[0..7] = T18 R18 R17 P16 U21 T21 R19 P19; wiki Dock parameters "LEDs 4+8: 4x Battery-Indicator + 8x PMOD_LED"'
       pins: [T18, R17, U21, R19]
     pcie_perst:
       pins: W11
     onboard_spi_flash:   # SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)
-      device: {"name": "SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)", "kind": "flash", "id": "winbond_w25q64"}
-      pins: {"cs_n": "T19", "clk": "L12", "d0_mosi": "P22", "d1_miso": "R22", "d2_wp": "P21", "d3_hold": "R21"}
+      device:
+        name: SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)
+        kind: flash
+        id: winbond_w25q64
+      pins:
+        cs_n: T19
+        clk: L12
+        d0_mosi: P22
+        d1_miso: R22
+        d2_wp: P21
+        d3_hold: R21
     onboard_som_leds:   # SOM status LEDs DONE / READY (D2206, D2207)
-      device: {"name": "SOM status LEDs DONE / READY (D2206, D2207)", "kind": "leds"}
+      device:
+        name: SOM status LEDs DONE / READY (D2206, D2207)
+        kind: leds
       active: "high"
-      pins: {"done": "G11", "ready": "U12"}
+      pins:
+        done: G11
+        ready: U12
     onboard_som_keys:   # SOM keys: CPU_RESET (U1304) and RECONFIG (U1303, also dock SW7)
-      device: {"name": "SOM keys: CPU_RESET (U1304) and RECONFIG (U1303, also dock SW7)", "kind": "reset"}
-      pins: {"cpu_reset": "F4", "reconfig_n": "N12"}
+      device:
+        name: 'SOM keys: CPU_RESET (U1304) and RECONFIG (U1303, also dock SW7)'
+        kind: reset
+      pins:
+        cpu_reset: F4
+        reconfig_n: N12
     som_debug:   # SOM debug connector U1201 (JST SH1.0 8-pin: JTAG + UART)
-      source: {doc: som60_30353, where: 'SOM "JTAG Connector" U1201: 1 5V0, 2 TMS BANK10_T13, 3 TDO U13, 4 TCK V12, 5 TDI R13, 6 RX BANK5_V14, 7 TX BANK5_U15, 8 GND'}
-      device: {"name": "SOM debug connector U1201 (JST SH1.0 8-pin: JTAG + UART)", "kind": "header"}
-      shares: ["onboard_uart"]   # the board multiplexes these pins
-      pins: {"2_tms": "T13", "3_tdo": "U13", "4_tck": "V12", "5_tdi": "R13", "6_rx": "V14", "7_tx": "U15"}
+      source:
+        doc: som60_30353
+        where: 'SOM "JTAG Connector" U1201: 1 5V0, 2 TMS BANK10_T13, 3 TDO U13, 4 TCK V12, 5 TDI R13, 6 RX BANK5_V14, 7 TX BANK5_U15, 8 GND'
+      device:
+        name: 'SOM debug connector U1201 (JST SH1.0 8-pin: JTAG + UART)'
+        kind: header
+      shares: [onboard_uart]   # the board multiplexes these pins
+      pins:
+        2_tms: T13
+        3_tdo: U13
+        4_tck: V12
+        5_tdi: R13
+        6_rx: V14
+        7_tx: U15
     onboard_ddr3:   # DDR3 SDRAM x16, lower chip (SOM DDR1, H5TQ4G63EFR 4 Gbit = 512 MB)
-      device: {"name": "DDR3 SDRAM x16, lower chip (SOM DDR1, H5TQ4G63EFR 4 Gbit = 512 MB)", "kind": "ddr3"}
+      device:
+        name: DDR3 SDRAM x16, lower chip (SOM DDR1, H5TQ4G63EFR 4 Gbit = 512 MB)
+        kind: ddr3
       iostandard: "SSTL15_I / SSTL15D_I (BANK_VCCIO=1.5)"
-      pins: {"a": ["M1", "K2", "G2", "J4", "J2", "H2", "G3", "J1", "J5", "H5", "L1", "H3", "K4", "K1", "D1", "R1"], "ba": ["P5", "P2", "M6"], "ras_n": "L5", "cas_n": "L4", "we_n": "M5", "cs_n": "P4", "cke": "K6", "odt": "M2", "reset_n": "L6", "clk": "L3,K3", "dq": ["Y4", "AB3", "AA5", "V4", "AA1", "AB2", "AB5", "AB1", "AA8", "Y8", "AB7", "Y7", "AB8", "W9", "AB6", "Y9"], "dm": ["AA4", "V7"], "dqs": ["Y3,AA3", "V9,V8"]}
+      pins:
+        a: [M1, K2, G2, J4, J2, H2, G3, J1, J5, H5, L1, H3, K4, K1, D1, R1]
+        ba: [P5, P2, M6]
+        ras_n: L5
+        cas_n: L4
+        we_n: M5
+        cs_n: P4
+        cke: K6
+        odt: M2
+        reset_n: L6
+        clk: L3,K3
+        dq: [Y4, AB3, AA5, V4, AA1, AB2, AB5, AB1, AA8, Y8, AB7, Y7, AB8, W9, AB6, Y9]
+        dm: [AA4, V7]
+        dqs: ['Y3,AA3', 'V9,V8']
     onboard_serdes_q0:   # SerDes quad Q0 (4 lanes + 2 reference clocks), balls of the FPGA transceiver
-      device: {"name": "SerDes quad Q0 (4 lanes + 2 reference clocks), balls of the FPGA transceiver", "kind": "serdes"}
-      shares: ["onboard_pcie", "onboard_usr_clk"]   # the board multiplexes these pins
-      pins: {"lane0_tx": "B4,A4", "lane0_rx": "B8,A8", "lane1_tx": "D7,C7", "lane1_rx": "D9,C9", "lane2_tx": "B6,A6", "lane2_rx": "B10,A10", "lane3_tx": "D5,C5", "lane3_rx": "D11,C11", "refclk0": "F6,E6", "refclk1": "F10,E10"}
+      device:
+        name: SerDes quad Q0 (4 lanes + 2 reference clocks), balls of the FPGA transceiver
+        kind: serdes
+      shares: [onboard_pcie, onboard_usr_clk]   # the board multiplexes these pins
+      pins:
+        lane0_tx: B4,A4
+        lane0_rx: B8,A8
+        lane1_tx: D7,C7
+        lane1_rx: D9,C9
+        lane2_tx: B6,A6
+        lane2_rx: B10,A10
+        lane3_tx: D5,C5
+        lane3_rx: D11,C11
+        refclk0: F6,E6
+        refclk1: F10,E10
     onboard_pcie:   # PCIe x4 edge connector J4 (PCIe add-in card, board is the endpoint)
-      device: {"name": "PCIe x4 edge connector J4 (PCIe add-in card, board is the endpoint)", "kind": "pcie"}
+      device:
+        name: PCIe x4 edge connector J4 (PCIe add-in card, board is the endpoint)
+        kind: pcie
       active: "low"
-      shares: ["onboard_serdes_q0", "pcie_perst"]   # the board multiplexes these pins
-      pins: {"perst_n": "W11", "refclk": "F6,E6", "rx0": "B8,A8", "tx0": "B4,A4", "rx1": "D9,C9", "tx1": "D7,C7", "rx2": "B10,A10", "tx2": "B6,A6", "rx3": "D11,C11", "tx3": "D5,C5"}
+      shares: [onboard_serdes_q0, pcie_perst]   # the board multiplexes these pins
+      pins:
+        perst_n: W11
+        refclk: F6,E6
+        rx0: B8,A8
+        tx0: B4,A4
+        rx1: D9,C9
+        tx1: D7,C7
+        rx2: B10,A10
+        tx2: B6,A6
+        rx3: D11,C11
+        tx3: D5,C5
     onboard_adc:   # ADC input connector J11 (2 differential channels, dedicated ADC balls)
-      device: {"name": "ADC input connector J11 (2 differential channels, dedicated ADC balls)", "kind": "adc"}
-      pins: {"adcv_n": "M9", "adcv_p": "L10", "adct_n": "N9", "adct_p": "N10"}
+      device:
+        name: ADC input connector J11 (2 differential channels, dedicated ADC balls)
+        kind: adc
+      pins:
+        adcv_n: M9
+        adcv_p: L10
+        adct_n: N9
+        adct_p: N10
     onboard_sma_gpio:   # SMA_GPIO net pair on SOM (IOL2A)
-      device: {"name": "SMA_GPIO net pair on SOM (IOL2A)", "kind": "other"}
-      pins: {"p": "B1", "n": "A1"}
+      device:
+        name: SMA_GPIO net pair on SOM (IOL2A)
+        kind: other
+      pins:
+        p: B1
+        n: A1
     onboard_dip_switch:   # DIP switch SW2 position 4 (DIP_Switch_0)
-      device: {"name": "DIP switch SW2 position 4 (DIP_Switch_0)", "kind": "switches"}
+      device:
+        name: DIP switch SW2 position 4 (DIP_Switch_0)
+        kind: switches
       active: "low"
-      pins: {"sw0": "AB12"}
+      pins:
+        sw0: AB12
     onboard_usr_clk:   # MS5351M clock generator (USR_CLK_IN to fabric, SerDes refclk1)
-      device: {"name": "MS5351M clock generator (USR_CLK_IN to fabric, SerDes refclk1)", "kind": "clock", "id": "ruimeng_ms5351m"}
-      shares: ["onboard_serdes_q0"]   # the board multiplexes these pins
-      pins: {"usr_clk_in": "V13", "refclk1": "F10,E10"}
+      device:
+        name: MS5351M clock generator (USR_CLK_IN to fabric, SerDes refclk1)
+        kind: clock
+        id: ruimeng_ms5351m
+      shares: [onboard_serdes_q0]   # the board multiplexes these pins
+      pins:
+        usr_clk_in: V13
+        refclk1: F10,E10
     onboard_uart:   # BL616 USB-JTAG & UART debugger (USB-C J7 "USB-DEBUG")
-      device: {"name": "BL616 USB-JTAG & UART debugger (USB-C J7 \"USB-DEBUG\")", "kind": "uart", "id": "bouffalo_bl616"}
+      device:
+        name: BL616 USB-JTAG & UART debugger (USB-C J7 "USB-DEBUG")
+        kind: uart
+        id: bouffalo_bl616
       iostandard: "tx LVCMOS33; rx on 31002 (Y14) is 1.5 V bank 9"
-      shares: ["som_debug"]   # the board multiplexes these pins
-      pins: {"tx": "U15", "rx": "V14", "jtag_tms": "T13", "jtag_tck": "V12", "jtag_tdi": "R13", "jtag_tdo": "U13"}
+      shares: [som_debug]   # the board multiplexes these pins
+      pins:
+        tx: U15
+        rx: V14
+        jtag_tms: T13
+        jtag_tck: V12
+        jtag_tdi: R13
+        jtag_tdo: U13
     onboard_hdmi_0:   # HDMI (DVI) connector J29, transmit
-      source: {doc: dock31005, where: 'p15 FPGA_TMDS (DVI): TMDS via 100nF to J29; DVI-A_HPD via R169; DVI_TWI1 SCL/SDA via 2N7002 to EDID; DVI-A_ALT -> DVI_DIR_SEL (1=TX, 0=RX, pulled up); BTB J1.50-64 (J17/K17 D2, H15/J15 D1, H14/J14 D0, G16/G15 CK), J2.61 K14 DVI-A_ALT, J2.63 K13 DVI-A_HPD, J2.32/34 M13/L13'}
-      device: {"name": "HDMI (DVI) connector J29, transmit", "kind": "hdmi_tx"}
+      source:
+        doc: dock31005
+        where: 'p15 FPGA_TMDS (DVI): TMDS via 100nF to J29; DVI-A_HPD via R169; DVI_TWI1 SCL/SDA via 2N7002 to EDID; DVI-A_ALT -> DVI_DIR_SEL (1=TX, 0=RX, pulled up); BTB J1.50-64 (J17/K17 D2, H15/J15 D1, H14/J14 D0, G16/G15 CK), J2.61 K14 DVI-A_ALT, J2.63 K13 DVI-A_HPD, J2.32/34 M13/L13'
+      device:
+        name: HDMI (DVI) connector J29, transmit
+        kind: hdmi_tx
       iostandard: "LVCMOS33D (TMDS emulated; vendor CST DRIVE=3.5)"
-      shares: ["onboard_hdmi_rx"]   # the board multiplexes these pins
-      pins: {"clk": "G15,G16", "d0": "J14,H14", "d1": "J15,H15", "d2": "K17,J17", "hpd": "K13", "ddc_scl": "M13", "ddc_sda": "L13", "dir_sel": "K14"}
+      shares: [onboard_hdmi_rx]   # the board multiplexes these pins
+      pins:
+        clk: G15,G16
+        d0: J14,H14
+        d1: J15,H15
+        d2: K17,J17
+        hpd: K13
+        ddc_scl: M13
+        ddc_sda: L13
+        dir_sel: K14
     onboard_hdmi_rx:   # HDMI (DVI) connector J29, receive (same connector, DVI_DIR_SEL=0)
-      device: {"name": "HDMI (DVI) connector J29, receive (same connector, DVI_DIR_SEL=0)", "kind": "hdmi_rx"}
-      shares: ["onboard_hdmi_0"]   # the board multiplexes these pins
-      pins: {"clk": "G15,G16", "d0": "J14,H14", "d1": "J15,H15", "d2": "K17,J17", "hpd": "K13", "ddc_scl": "M13", "ddc_sda": "L13", "dir_sel": "K14"}
+      device:
+        name: HDMI (DVI) connector J29, receive (same connector, DVI_DIR_SEL=0)
+        kind: hdmi_rx
+      shares: [onboard_hdmi_0]   # the board multiplexes these pins
+      pins:
+        clk: G15,G16
+        d0: J14,H14
+        d1: J15,H15
+        d2: K17,J17
+        hpd: K13
+        ddc_scl: M13
+        ddc_sda: L13
+        dir_sel: K14
     onboard_ethernet:   # Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII
-      device: {"name": "Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII", "kind": "ethernet_rgmii", "id": "realtek_rtl8211f"}
+      device:
+        name: Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII
+        kind: ethernet_rgmii
+        id: realtek_rtl8211f
       active: "low"
       iostandard: "LVCMOS33"
-      pins: {"txc": "F20", "tx_ctl": "F21", "txd": ["D21", "E21", "D22", "E22"], "rxc": "G21", "rx_ctl": "G22", "rxd": ["F18", "E18", "C22", "B22"], "mdc": "V18", "mdio": "U22", "rst_n": "W20", "phy_clk_25m": "V19"}
+      pins:
+        txc: F20
+        tx_ctl: F21
+        txd: [D21, E21, D22, E22]
+        rxc: G21
+        rx_ctl: G22
+        rxd: [F18, E18, C22, B22]
+        mdc: V18
+        mdio: U22
+        rst_n: W20
+        phy_clk_25m: V19
     onboard_sdcard:   # microSD slot J31 (TF-101A)
-      device: {"name": "microSD slot J31 (TF-101A)", "kind": "sdcard"}
+      device:
+        name: microSD slot J31 (TF-101A)
+        kind: sdcard
       iostandard: "LVCMOS33"
-      shares: ["sdio_header"]   # the board multiplexes these pins
-      pins: {"clk": "V15", "cmd_mosi": "Y16", "d0_miso": "AA15", "d1": "AB15", "d2": "W14", "d3_cs": "W15"}
+      shares: [sdio_header]   # the board multiplexes these pins
+      pins:
+        clk: V15
+        cmd_mosi: Y16
+        d0_miso: AA15
+        d1: AB15
+        d2: W14
+        d3_cs: W15
     sdio_header:   # SDIO header J10 (2x4 2.54 mm)
-      source: {doc: dock31005, where: 'p16 J10 PinHeader_2x04: 1 FPGA_SDIO_D0|SPI_MISO, 2 CMD|SPI_MOSI, 3 D1, 4 CLK|SPI_SCK, 5 D3|SPI_CS, 6 D2, 7 GND, 8 5V'}
-      device: {"name": "SDIO header J10 (2x4 2.54 mm)", "kind": "header"}
-      shares: ["onboard_sdcard"]   # the board multiplexes these pins
-      pins: {"1_d0_miso": "AA15", "2_cmd_mosi": "Y16", "3_d1": "AB15", "4_clk": "V15", "5_d3_cs": "W15", "6_d2": "W14"}
+      source:
+        doc: dock31005
+        where: 'p16 J10 PinHeader_2x04: 1 FPGA_SDIO_D0|SPI_MISO, 2 CMD|SPI_MOSI, 3 D1, 4 CLK|SPI_SCK, 5 D3|SPI_CS, 6 D2, 7 GND, 8 5V'
+      device:
+        name: SDIO header J10 (2x4 2.54 mm)
+        kind: header
+      shares: [onboard_sdcard]   # the board multiplexes these pins
+      pins:
+        1_d0_miso: AA15
+        2_cmd_mosi: Y16
+        3_d1: AB15
+        4_clk: V15
+        5_d3_cs: W15
+        6_d2: W14
     onboard_audio:   # Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
-      device: {"name": "Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)", "kind": "audio_i2s", "id": "princeton_pt8211"}
+      device:
+        name: Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
+        kind: audio_i2s
+        id: princeton_pt8211
       active: "low"
       iostandard: "LVCMOS33"
-      pins: {"bck": "Y17", "ws": "AB17", "din": "AA16", "pa_en_n": "AB16"}
+      pins:
+        bck: Y17
+        ws: AB17
+        din: AA16
+        pa_en_n: AB16
     onboard_ws2812:   # WS2812B-2020 RGB LED (U15) + aRGB strip connector J24
-      device: {"name": "WS2812B-2020 RGB LED (U15) + aRGB strip connector J24", "kind": "ws2812", "id": "worldsemi_ws2812"}
-      pins: {"din": "J16"}
+      device:
+        name: WS2812B-2020 RGB LED (U15) + aRGB strip connector J24
+        kind: ws2812
+        id: worldsemi_ws2812
+      pins:
+        din: J16
     pmod_0:   # PMOD0 socket J9 (2x6 horizontal)
-      source: {doc: dock31005, where: 'p19 EX CONN. J9: 11 PMOD0_IO0, 12 IO1, 9 IO2, 10 IO3, 7 IO4, 8 IO5, 5 IO6, 6 IO7, 3/4 GND, 1/2 +3V3; BTB J0.25/23/15/13/20/18/14/12 = P19/R19/T21/U21/P16/R17/R18/T18'}
-      device: {"name": "PMOD0 socket J9 (2x6 horizontal)", "kind": "pmod"}
-      shares: ["onboard_leds", "onboard_sdram_1"]   # the board multiplexes these pins
-      pins: {"io0": "P19", "io1": "R19", "io2": "T21", "io3": "U21", "io4": "P16", "io5": "R17", "io6": "R18", "io7": "T18"}
+      source:
+        doc: dock31005
+        where: 'p19 EX CONN. J9: 11 PMOD0_IO0, 12 IO1, 9 IO2, 10 IO3, 7 IO4, 8 IO5, 5 IO6, 6 IO7, 3/4 GND, 1/2 +3V3; BTB J0.25/23/15/13/20/18/14/12 = P19/R19/T21/U21/P16/R17/R18/T18'
+      device:
+        name: PMOD0 socket J9 (2x6 horizontal)
+        kind: pmod
+      shares: [onboard_leds, onboard_sdram_1]   # the board multiplexes these pins
+      pins:
+        io0: P19
+        io1: R19
+        io2: T21
+        io3: U21
+        io4: P16
+        io5: R17
+        io6: R18
+        io7: T18
     pmod_1:   # PMOD1 socket J8 (2x6 horizontal)
-      source: {doc: dock31005, where: 'p19 EX CONN. J8: 11 PMOD1_IO0 ... 6 PMOD1_IO7 (same layout as J9); BTB J2.5/3/9/7/13/11/17/15 = Y21/Y22/AB21/AB22/AA20/AA21/AA19/AB20'}
-      device: {"name": "PMOD1 socket J8 (2x6 horizontal)", "kind": "pmod"}
-      shares: ["onboard_camera", "onboard_sdram_1"]   # the board multiplexes these pins
-      pins: {"io0": "Y21", "io1": "Y22", "io2": "AB21", "io3": "AB22", "io4": "AA20", "io5": "AA21", "io6": "AA19", "io7": "AB20"}
+      source:
+        doc: dock31005
+        where: 'p19 EX CONN. J8: 11 PMOD1_IO0 ... 6 PMOD1_IO7 (same layout as J9); BTB J2.5/3/9/7/13/11/17/15 = Y21/Y22/AB21/AB22/AA20/AA21/AA19/AB20'
+      device:
+        name: PMOD1 socket J8 (2x6 horizontal)
+        kind: pmod
+      shares: [onboard_camera, onboard_sdram_1]   # the board multiplexes these pins
+      pins:
+        io0: Y21
+        io1: Y22
+        io2: AB21
+        io3: AB22
+        io4: AA20
+        io5: AA21
+        io6: AA19
+        io7: AB20
     onboard_camera:   # OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)
-      device: {"name": "OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)", "kind": "camera_dvp", "id": "omnivision_ov5640"}
+      device:
+        name: OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)
+        kind: camera_dvp
+        id: omnivision_ov5640
       iostandard: "LVCMOS33, sda (Y13) LVCMOS15 - 60K bank 9 is 1.5 V (vendor CST)"
-      shares: ["onboard_sdram_1", "pmod_1"]   # the board multiplexes these pins
-      pins: {"xclk": "AA21", "pclk": "AB20", "vsync": "Y21", "href": "AB21", "rst_n": "Y22", "pwdn": "AB22", "d": ["P14", "P15", "R16", "R14", "N15", "T20", "AA19", "AA20"], "sda": "Y13", "scl": "AA14"}
+      shares: [onboard_sdram_1, pmod_1]   # the board multiplexes these pins
+      pins:
+        xclk: AA21
+        pclk: AB20
+        vsync: Y21
+        href: AB21
+        rst_n: Y22
+        pwdn: AB22
+        d: [P14, P15, R16, R14, N15, T20, AA19, AA20]
+        sda: Y13
+        scl: AA14
     onboard_sdram_0:   # 2x20 header J13 (SDRAM0 connector, MiSTer-style SDRAM module)
-      device: {"name": "2x20 header J13 (SDRAM0 connector, MiSTer-style SDRAM module)", "kind": "sdram"}
+      device:
+        name: 2x20 header J13 (SDRAM0 connector, MiSTer-style SDRAM module)
+        kind: sdram
       iostandard: "LVCMOS33"
-      model_params: {col_bits: 9}
-      pins: {"dq": ["E14", "E13", "C15", "C14", "B13", "C13", "A14", "A13", "B21", "A21", "B20", "A20", "A15", "A16", "B15", "B16"], "a": ["D19", "E19", "C19", "C18", "E16", "D15", "D14", "A19", "A18", "C17", "D20", "D17", "B18"], "ba": ["F15", "C20"], "clk": "B17", "cs_n": "F19", "ras_n": "F16", "cas_n": "E17", "we_n": "D16", "dqm": ["F14", "F13"]}
+      model_params:
+        col_bits: 9
+      pins:
+        dq: [E14, E13, C15, C14, B13, C13, A14, A13, B21, A21, B20, A20, A15, A16, B15, B16]
+        a: [D19, E19, C19, C18, E16, D15, D14, A19, A18, C17, D20, D17, B18]
+        ba: [F15, C20]
+        clk: B17
+        cs_n: F19
+        ras_n: F16
+        cas_n: E17
+        we_n: D16
+        dqm: [F14, F13]
     onboard_sdram_1:   # 2x20 header J14 (SDRAM1 connector)
-      device: {"name": "2x20 header J14 (SDRAM1 connector)", "kind": "sdram"}
+      device:
+        name: 2x20 header J14 (SDRAM1 connector)
+        kind: sdram
       iostandard: "LVCMOS33"
-      shares: ["onboard_camera", "onboard_leds", "pmod_0", "pmod_1"]   # the board multiplexes these pins
-      model_params: {col_bits: 9}
-      pins: {"dq": ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "N13", "N14", "N17", "P17", "W21", "W22", "V17", "W17"], "a": ["R16", "P15", "R14", "P14", "AA19", "AA21", "AA20", "AB22", "AB21", "Y22", "U17", "Y21", "V20"], "ba": ["N15", "U18"], "clk": "U20", "cs_n": "T20", "ras_n": "Y18", "cas_n": "Y19", "we_n": "AB20", "dqm": ["AA18", "AB18"]}
+      shares: [onboard_camera, onboard_leds, pmod_0, pmod_1]   # the board multiplexes these pins
+      model_params:
+        col_bits: 9
+      pins:
+        dq: [R19, P19, U21, T21, R17, P16, T18, R18, N13, N14, N17, P17, W21, W22, V17, W17]
+        a: [R16, P15, R14, P14, AA19, AA21, AA20, AB22, AB21, Y22, U17, Y21, V20]
+        ba: [N15, U18]
+        clk: U20
+        cs_n: T20
+        ras_n: Y18
+        cas_n: Y19
+        we_n: AB20
+        dqm: [AA18, AB18]
     onboard_lcd:   # RGB LCD FPC J5 (40-pin 0.5 mm, RGB666 on R2-R7/G2-G7/B2-B7)
-      source: {doc: dock31005, where: 'p12 RGB LCD Display J5: R2 HRVLD, R3 HD0, R4 HD1, R5 HTRDY, R6 HD3, R7 HD4, G2-G7 HD5-HD10, B2-B6 HD11-HD15, B7 HCTS, CLK HTACK, HSYNC HTREQ, VSYNC HTVLD, DEN HD2 (R0/R1/G0/G1/B0/B1 grounded, DISP tied +3V3); balls from BTB J0'}
-      device: {"name": "RGB LCD FPC J5 (40-pin 0.5 mm, RGB666 on R2-R7/G2-G7/B2-B7)", "kind": "lcd_rgb"}
+      source:
+        doc: dock31005
+        where: 'p12 RGB LCD Display J5: R2 HRVLD, R3 HD0, R4 HD1, R5 HTRDY, R6 HD3, R7 HD4, G2-G7 HD5-HD10, B2-B6 HD11-HD15, B7 HCTS, CLK HTACK, HSYNC HTREQ, VSYNC HTVLD, DEN HD2 (R0/R1/G0/G1/B0/B1 grounded, DISP tied +3V3); balls from BTB J0'
+      device:
+        name: RGB LCD FPC J5 (40-pin 0.5 mm, RGB666 on R2-R7/G2-G7/B2-B7)
+        kind: lcd_rgb
       iostandard: "LVCMOS33"
-      shares: ["onboard_ch569_hspi"]   # the board multiplexes these pins
-      pins: {"clk": "L19", "de": "L14", "hsync": "N20", "vsync": "L15", "r": ["G18", "G17", "H22", "J22", "K22", "K21"], "g": ["K18", "L21", "M21", "M22", "N22", "L18"], "b": ["M18", "N19", "N18", "K16", "L16", "M20"]}
+      shares: [onboard_ch569_hspi]   # the board multiplexes these pins
+      pins:
+        clk: L19
+        de: L14
+        hsync: N20
+        vsync: L15
+        r: [G18, G17, H22, J22, K22, K21]
+        g: [K18, L21, M21, M22, N22, L18]
+        b: [M18, N19, N18, K16, L16, M20]
     onboard_lcd_touch:   # LCD capacitive-touch FPC J6 (6-pin)
-      device: {"name": "LCD capacitive-touch FPC J6 (6-pin)", "kind": "other"}
+      device:
+        name: LCD capacitive-touch FPC J6 (6-pin)
+        kind: other
       iostandard: "LVCMOS33"
-      pins: {"scl": "W16", "sda": "U16", "int": "T16", "rst": "T15"}
+      pins:
+        scl: W16
+        sda: U16
+        int: T16
+        rst: T15
     onboard_lcd_backlight:   # LCD backlight driver enable (LP3320 U8)
-      device: {"name": "LCD backlight driver enable (LP3320 U8)", "kind": "other"}
+      device:
+        name: LCD backlight driver enable (LP3320 U8)
+        kind: other
       active: "high"
-      pins: {"bl": "P20"}
+      pins:
+        bl: P20
     onboard_ch569_hspi:   # CH569W USB3 bridge, 16-bit HSPI (USB-C J/P1 "USB-3.0" via VL162 mux)
-      device: {"name": "CH569W USB3 bridge, 16-bit HSPI (USB-C J/P1 \"USB-3.0\" via VL162 mux)", "kind": "usb", "id": "wch_ch569w"}
+      device:
+        name: CH569W USB3 bridge, 16-bit HSPI (USB-C J/P1 "USB-3.0" via VL162 mux)
+        kind: usb
+        id: wch_ch569w
       iostandard: "LVCMOS33"
-      shares: ["onboard_lcd"]   # the board multiplexes these pins
-      pins: {"hd": ["G17", "H22", "L14", "K22", "K21", "K18", "L21", "M21", "M22", "N22", "L18", "M18", "N19", "N18", "K16", "L16"], "htclk": "L20", "htvld": "L15", "htreq": "N20", "htack": "L19", "htrdy": "J22", "hrclk": "J20", "hrvld": "G18", "hrack": "J21", "hrts": "K19", "hcts": "M20"}
+      shares: [onboard_lcd]   # the board multiplexes these pins
+      pins:
+        hd: [G17, H22, L14, K22, K21, K18, L21, M21, M22, N22, L18, M18, N19, N18, K16, L16]
+        htclk: L20
+        htvld: L15
+        htreq: N20
+        htack: L19
+        htrdy: J22
+        hrclk: J20
+        hrvld: G18
+        hrack: J21
+        hrts: K19
+        hcts: M20
     onboard_usb_host_1:   # USB-A host port 1 (J18 D1, FPGA soft USB 1.1/2.0 FS)
-      device: {"name": "USB-A host port 1 (J18 D1, FPGA soft USB 1.1/2.0 FS)", "kind": "usb"}
+      device:
+        name: USB-A host port 1 (J18 D1, FPGA soft USB 1.1/2.0 FS)
+        kind: usb
       iostandard: "LVCMOS33"
-      pins: {"dp": "M15", "dn": "M16"}
+      pins:
+        dp: M15
+        dn: M16
     onboard_usb_host_2:   # USB 2nd port (FPGA_USB2, via slide switch SW4 to J18 D2 pads)
-      device: {"name": "USB 2nd port (FPGA_USB2, via slide switch SW4 to J18 D2 pads)", "kind": "usb"}
+      device:
+        name: USB 2nd port (FPGA_USB2, via slide switch SW4 to J18 D2 pads)
+        kind: usb
       iostandard: "LVCMOS33"
-      pins: {"dp": "H13", "dn": "G13"}
+      pins:
+        dp: H13
+        dn: G13
     onboard_joycon_a:   # Joy-Con connector A (J19, FH35C 11-pin, 1.8 V via TXS0108E U50)
-      device: {"name": "Joy-Con connector A (J19, FH35C 11-pin, 1.8 V via TXS0108E U50)", "kind": "joystick"}
+      device:
+        name: Joy-Con connector A (J19, FH35C 11-pin, 1.8 V via TXS0108E U50)
+        kind: joystick
       iostandard: "LVCMOS33"
-      pins: {"fc": "H19", "txd": "H20", "rxd": "G20", "rst": "M17"}
+      pins:
+        fc: H19
+        txd: H20
+        rxd: G20
+        rst: M17
     onboard_joycon_b:   # Joy-Con connector B (J21, FH35C 11-pin, 1.8 V via TXS0108E U50)
-      device: {"name": "Joy-Con connector B (J21, FH35C 11-pin, 1.8 V via TXS0108E U50)", "kind": "joystick"}
+      device:
+        name: Joy-Con connector B (J21, FH35C 11-pin, 1.8 V via TXS0108E U50)
+        kind: joystick
       iostandard: "LVCMOS33"
-      pins: {"fc": "H17", "txd": "H18", "rxd": "J19", "rst": "U8"}
+      pins:
+        fc: H17
+        txd: H18
+        rxd: J19
+        rst: U8
     onboard_mic_array:   # Microphone-array FPC J32 (10-pin 0.5 mm, Sipeed 6+1 mic array with SK9822 LEDs)
-      device: {"name": "Microphone-array FPC J32 (10-pin 0.5 mm, Sipeed 6+1 mic array with SK9822 LEDs)", "kind": "mic"}
+      device:
+        name: Microphone-array FPC J32 (10-pin 0.5 mm, Sipeed 6+1 mic array with SK9822 LEDs)
+        kind: mic
       iostandard: "LVCMOS15 (60K bank 9 is 1.5 V)"
-      pins: {"sk9822_ck": "W12", "sk9822_da": "AA9", "mic_d0": "AA10", "mic_d1": "AB10", "mic_d2": "AA11", "mic_d3": "AB11", "mic_ws": "W10", "mic_bck": "Y11"}
+      pins:
+        sk9822_ck: W12
+        sk9822_da: AA9
+        mic_d0: AA10
+        mic_d1: AB10
+        mic_d2: AA11
+        mic_d3: AB11
+        mic_ws: W10
+        mic_bck: Y11
     onboard_fan:   # PWM fan connector J23 (4-pin)
-      device: {"name": "PWM fan connector J23 (4-pin)", "kind": "fan"}
+      device:
+        name: PWM fan connector J23 (4-pin)
+        kind: fan
       iostandard: "en LVCMOS15 (bank 9), pwm/tacho LVCMOS33"
-      pins: {"en": "V10", "pwm": "W19", "tacho": "T14"}
+      pins:
+        en: V10
+        pwm: W19
+        tacho: T14

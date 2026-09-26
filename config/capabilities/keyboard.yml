@@ -6,9 +6,19 @@ Capability:
   id: keyboard
   description: Key events (USB HID usage codes), one clock pulse per press or release.
   signals:
-    - { name: valid, type: scalar, direction: hw_to_user, comment: "One-clock pulse: a key event" }
-    - { name: key,   type: bus, width: 8, direction: hw_to_user, comment: "USB HID usage code (keyboard page)" }
-    - { name: down,  type: scalar, direction: hw_to_user, comment: "1: pressed, 0: released" }
+    - name: valid
+      type: scalar
+      direction: hw_to_user
+      comment: 'One-clock pulse: a key event'
+    - name: key
+      type: bus
+      width: 8
+      direction: hw_to_user
+      comment: USB HID usage code (keyboard page)
+    - name: down
+      type: scalar
+      direction: hw_to_user
+      comment: '1: pressed, 0: released'
   aggregation: exclusive
 
   optional: true           # reaches design_top only when the design declares its ports
@@ -16,6 +26,12 @@ Capability:
   design:
     comment: 'Keyboard (optional): one clock of kbd_valid per key event; kbd_key is the key''s USB HID usage code (A = 8''h04, Enter = 8''h28), kbd_down 1 pressed'
     ports:
-      kbd_valid: {signal: valid, width: 1}
-      kbd_key: {signal: key, width: 8}
-      kbd_down: {signal: down, width: 1}
+      kbd_valid:
+        signal: valid
+        width: 1
+      kbd_key:
+        signal: key
+        width: 8
+      kbd_down:
+        signal: down
+        width: 1

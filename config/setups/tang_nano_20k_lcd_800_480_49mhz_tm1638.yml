@@ -5,29 +5,45 @@ Setup:
   id: tang_nano_20k_lcd_800_480_49mhz_tm1638
   board: tang_nano_20k
   toolchain: gowin_eda
-  aliases: {tang_nano_20k_lcd_800_480_tm1638_alt: {}}
+  aliases:
+    tang_nano_20k_lcd_800_480_tm1638_alt: {}
   use:
     - onboard: clk
     - onboard: buttons
-      design_bits: {buttons: []}
+      design_bits:
+        buttons: []
     - onboard: leds
-      design_bits: {leds: [0, 1, 2, 3, 4, 5]}
+      design_bits:
+        leds: [0, 1, 2, 3, 4, 5]
     - onboard: uart
     - onboard: lcd
       variant: lcd_800_480_2
-      params: {mirror_screen: true}
+      params:
+        mirror_screen: true
     - module: tm1638_led_key
-      wires: {DIO: header_j5.13, CLK: header_j5.17, STB: header_j5.18}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        DIO: header_j5.13
+        CLK: header_j5.17
+        STB: header_j5.18
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {L/R: header_j6.1, WS: header_j6.2, SCK: header_j6.3, SD: header_j6.4}
+      wires:
+        L/R: header_j6.1
+        WS: header_j6.2
+        SCK: header_j6.3
+        SD: header_j6.4
     - onboard: headphone
     - onboard: ws2812
   design:
     reset:
       sources:
-      - {tm_key: msb}
-    width: {gpio: 5}
+      - tm_key: msb
+    width:
+      gpio: 5
   extra:
     pin_overrides:
       onboard_lcd.r: ['42', '41', '49', '39', '38']

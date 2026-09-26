@@ -84,14 +84,27 @@ Board:
       options: [use_done_as_gpio, use_mspi_as_gpio]
       gprj_device: '<Device id="GW1NSR-4C" package="QFN48P" speed="6" partNumber="GW1NSR-LV4CQN48PC6/I5"/>'
   banks:
-    clk: { pins: "45", frequency_mhz: 27, source: {doc: sch3603, where: 'U12 "27Mhz 3.3V" OUT -> R38 49.9R -> SYS_CLK = U7 pin 45 IOT13A/LPLL_T_in (bank 1, VCCO1 3V3)'} }
+    clk:
+      pins: '45'
+      frequency_mhz: 27
+      source:
+        doc: sch3603
+        where: U12 "27Mhz 3.3V" OUT -> R38 49.9R -> SYS_CLK = U7 pin 45 IOT13A/LPLL_T_in (bank 1, VCCO1 3V3)
     onboard_buttons:
-      source: {doc: sch3603, where: 'KEY1 = U7 pin 14 IOB4B, KEY2 = pin 15 IOB5A; R31/R40 100K to DCDC3_1V8 (bank 3, VCCO3 1V8)'}
+      source:
+        doc: sch3603
+        where: KEY1 = U7 pin 14 IOB4B, KEY2 = pin 15 IOB5A; R31/R40 100K to DCDC3_1V8 (bank 3, VCCO3 1V8)
       active: low
-      pins: ["15", "14"]
-    onboard_led: { pins: "10", source: {doc: sch3603, where: 'net MODE = U7 pin 10 IOT7A/MODE1&IOT7B/MODE2 -> DS3 anode, cathode -> R32 330R -> GND; R48 1K MODE to GND; R47 NC'} }
+      pins: ['15', '14']
+    onboard_led:
+      pins: '10'
+      source:
+        doc: sch3603
+        where: net MODE = U7 pin 10 IOT7A/MODE1&IOT7B/MODE2 -> DS3 anode, cathode -> R32 330R -> GND; R48 1K MODE to GND; R47 NC
     onboard_serial_flash:
-      source: {doc: sch3603, where: 'U11 CS=MSPI_CS pin 2 IOT10B/MCS_N, SO/IO1=MSPI_DO pin 47 IOT11B/MI, WP/IO2=MSPI_WP pin 8 IOT4B/JTAGSEL_N, HOLD/IO3=MSPI_HOLD pin 9 IOT5B/DONE, CLK=MSPI_CLK (R39 1K) pin 1 IOT10A/MCLK, SI/IO0=MSPI_DI pin 48 IOT11A/MO'}
+      source:
+        doc: sch3603
+        where: U11 CS=MSPI_CS pin 2 IOT10B/MCS_N, SO/IO1=MSPI_DO pin 47 IOT11B/MI, WP/IO2=MSPI_WP pin 8 IOT4B/JTAGSEL_N, HOLD/IO3=MSPI_HOLD pin 9 IOT5B/DONE, CLK=MSPI_CLK (R39 1K) pin 1 IOT10A/MCLK, SI/IO0=MSPI_DI pin 48 IOT11A/MO
       pins:
         clk: "1"
         di: "48"
@@ -100,79 +113,185 @@ Board:
         wp: "8"
         hold: "9"
     onboard_hdmi:
-      source: {doc: sch3603, where: HDMI_TXC_P/N = pins 28 IOR17A / 27 IOR17B; TX0_P/N 30 IOR15A / 29 IOR15B; TX1_P/N 32 IOR11A / 31 IOR11B; TX2_P/N 35 IOR2A / 34 IOR2B; 100nF series caps -> U2/U3 -> P1 DATA0..2/CLOCK}
+      source:
+        doc: sch3603
+        where: HDMI_TXC_P/N = pins 28 IOR17A / 27 IOR17B; TX0_P/N 30 IOR15A / 29 IOR15B; TX1_P/N 32 IOR11A / 31 IOR11B; TX2_P/N 35 IOR2A / 34 IOR2B; 100nF series caps -> U2/U3 -> P1 DATA0..2/CLOCK
       pins:
         clk_p: "28,27"
         clk_n: "27"
-        d_p: ["30,29", "32,31", "35,34"]
-        d_n: ["29", "31", "34"]
+        d_p: ['30,29', '32,31', '35,34']
+        d_n: ['29', '31', '34']
     onboard_camera:
-      source: {doc: sch3603, where: 'P3: 3 SDA=CAMERA_SDA pin 46, 5 SCL=CAMERA_SCL pin 44, 7 VSYNC=DVP_VSYNC pin 43, 9 HSYNC <- R22 22R <- DVP_HSYNC pin 42, 13 MCLK <- R24 22R <- DVP_XCLK pin 33, 17 PCLK <- R26 22R <- DVP_PCLK pin 41; PIXDATA0..9 = pins 22,21,17,19,20,18,16,23,39,40 (P3 pins 24 FB_SDA, 23 FC_SDA, 19 D0, 21 D1, 22 D2, 20 D3, 18 D4, 16 D5, 14 D6, 12 D7)'}
-      index_origin: {data: 8}
+      source:
+        doc: sch3603
+        where: 'P3: 3 SDA=CAMERA_SDA pin 46, 5 SCL=CAMERA_SCL pin 44, 7 VSYNC=DVP_VSYNC pin 43, 9 HSYNC <- R22 22R <- DVP_HSYNC pin 42, 13 MCLK <- R24 22R <- DVP_XCLK pin 33, 17 PCLK <- R26 22R <- DVP_PCLK pin 41; PIXDATA0..9 = pins 22,21,17,19,20,18,16,23,39,40 (P3 pins 24 FB_SDA, 23 FC_SDA, 19 D0, 21 D1, 22 D2, 20 D3, 18 D4, 16 D5, 14 D6, 12 D7)'
+      index_origin:
+        data: 8
       pins:
         scl: "44"
         sda: "46"
         vsync: "43"
         hsync: "42"
         pclk: "41"
-        data: ["39", "40"]
+        data: ['39', '40']
     onboard_jtag:   # JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)
-      device: {"name": "JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)", "kind": "other", "id": "bouffalo_bl702"}
-      shares: ["header_p7"]   # the board multiplexes these pins
-      pins: {"tdi": "3", "tdo": "4", "tms": "6", "tck": "7"}
+      device:
+        name: JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)
+        kind: other
+        id: bouffalo_bl702
+      shares: [header_p7]   # the board multiplexes these pins
+      pins:
+        tdi: '3'
+        tdo: '4'
+        tms: '6'
+        tck: '7'
     header_p6:   # Header P6 (1x22)
-      source: {doc: sch3603, where: 'P6: 1 HDMI_TX0_P, 2 TX0_N, 3 TXC_P, 4 TXC_N, 5 PIXDATA7, 6 PIXDATA0, 7 PIXDATA1, 8 PIXDATA4, 9 PIXDATA3, 10 PIXDATA5, 11 PIXDATA2, 12 PIN13_IOB4A, 13 PIXDATA6, 14 MSPI_HOLD, 15 MSPI_WP, 16 DVP_XCLK, 17 MSPI_CS, 18 DCDC3_1V8, 19/20 GND, 21 5V, 22 KEY2'}
-      device: {"name": "Header P6 (1x22)", "kind": "header"}
-      shares: ["onboard_buttons", "onboard_hdmi", "onboard_serial_flash"]   # the board multiplexes these pins
-      pins: ["30", "29", "28", "27", "23", "22", "21", "20", "19", "18", "17", "13", "16", "9", "8", "33", "2", "15"]
+      source:
+        doc: sch3603
+        where: 'P6: 1 HDMI_TX0_P, 2 TX0_N, 3 TXC_P, 4 TXC_N, 5 PIXDATA7, 6 PIXDATA0, 7 PIXDATA1, 8 PIXDATA4, 9 PIXDATA3, 10 PIXDATA5, 11 PIXDATA2, 12 PIN13_IOB4A, 13 PIXDATA6, 14 MSPI_HOLD, 15 MSPI_WP, 16 DVP_XCLK, 17 MSPI_CS, 18 DCDC3_1V8, 19/20 GND, 21 5V, 22 KEY2'
+      device:
+        name: Header P6 (1x22)
+        kind: header
+      shares: [onboard_buttons, onboard_hdmi, onboard_serial_flash]   # the board multiplexes these pins
+      pins: ['30', '29', '28', '27', '23', '22', '21', '20', '19', '18', '17', '13', '16', '9', '8', '33', '2', '15']
     header_p7:   # Header P7 (1x22)
-      source: {doc: sch3603, where: 'P7: 1 HDMI_TX1_N, 2 TX1_P, 3 TX2_N, 4 TX2_P, 5 MODE, 6 PIXDATA8, 7 PIXDATA9, 8 DVP_PCLK, 9 DVP_HSYNC, 10 DVP_VSYNC, 11 MSPI_DO, 12 MSPI_DI, 13 MSPI_CLK, 14 CAMERA_SDA, 15 CAMERA_SCL, 16 DCDC1_2V5, 17 DCDC2_3V3, 18 JTAG_TMS, 19 JTAG_TDI, 20 JTAG_TDO, 21 JTAG_TCK, 22 KEY1'}
-      device: {"name": "Header P7 (1x22)", "kind": "header"}
-      shares: ["onboard_buttons", "onboard_camera", "onboard_hdmi", "onboard_jtag", "onboard_led", "onboard_serial_flash"]   # the board multiplexes these pins
-      pins: ["31", "32", "34", "35", "10", "39", "40", "41", "42", "43", "47", "48", "1", "46", "44", "6", "3", "4", "7", "14"]
+      source:
+        doc: sch3603
+        where: 'P7: 1 HDMI_TX1_N, 2 TX1_P, 3 TX2_N, 4 TX2_P, 5 MODE, 6 PIXDATA8, 7 PIXDATA9, 8 DVP_PCLK, 9 DVP_HSYNC, 10 DVP_VSYNC, 11 MSPI_DO, 12 MSPI_DI, 13 MSPI_CLK, 14 CAMERA_SDA, 15 CAMERA_SCL, 16 DCDC1_2V5, 17 DCDC2_3V3, 18 JTAG_TMS, 19 JTAG_TDI, 20 JTAG_TDO, 21 JTAG_TCK, 22 KEY1'
+      device:
+        name: Header P7 (1x22)
+        kind: header
+      shares: [onboard_buttons, onboard_camera, onboard_hdmi, onboard_jtag, onboard_led, onboard_serial_flash]   # the board multiplexes these pins
+      pins: ['31', '32', '34', '35', '10', '39', '40', '41', '42', '43', '47', '48', '1', '46', '44', '6', '3', '4', '7', '14']
   # ---- drawn: headers and parts; ./unifpga layout draft tang_nano_4k regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: header_p6
       type: pin_row
       label: HEADER_P6
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_p6
-      pins: {'[0]': 'header_p6[0]', '[1]': 'header_p6[1]', '[2]': 'header_p6[2]', '[3]': 'header_p6[3]', '[4]': 'header_p6[4]', '[5]': 'header_p6[5]', '[6]': 'header_p6[6]', '[7]': 'header_p6[7]', '[8]': 'header_p6[8]', '[9]': 'header_p6[9]', '[10]': 'header_p6[10]', '[11]': 'header_p6[11]', '[12]': 'header_p6[12]', '[13]': 'header_p6[13]', '[14]': 'header_p6[14]', '[15]': 'header_p6[15]', '[16]': 'header_p6[16]', '[17]': 'header_p6[17]'}
+      pins:
+        '[0]': header_p6[0]
+        '[1]': header_p6[1]
+        '[2]': header_p6[2]
+        '[3]': header_p6[3]
+        '[4]': header_p6[4]
+        '[5]': header_p6[5]
+        '[6]': header_p6[6]
+        '[7]': header_p6[7]
+        '[8]': header_p6[8]
+        '[9]': header_p6[9]
+        '[10]': header_p6[10]
+        '[11]': header_p6[11]
+        '[12]': header_p6[12]
+        '[13]': header_p6[13]
+        '[14]': header_p6[14]
+        '[15]': header_p6[15]
+        '[16]': header_p6[16]
+        '[17]': header_p6[17]
     - id: header_p7
       type: pin_row
       label: HEADER_P7
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_p7
-      pins: {'[0]': 'header_p7[0]', '[1]': 'header_p7[1]', '[2]': 'header_p7[2]', '[3]': 'header_p7[3]', '[4]': 'header_p7[4]', '[5]': 'header_p7[5]', '[6]': 'header_p7[6]', '[7]': 'header_p7[7]', '[8]': 'header_p7[8]', '[9]': 'header_p7[9]', '[10]': 'header_p7[10]', '[11]': 'header_p7[11]', '[12]': 'header_p7[12]', '[13]': 'header_p7[13]', '[14]': 'header_p7[14]', '[15]': 'header_p7[15]', '[16]': 'header_p7[16]', '[17]': 'header_p7[17]', '[18]': 'header_p7[18]', '[19]': 'header_p7[19]'}
+      pins:
+        '[0]': header_p7[0]
+        '[1]': header_p7[1]
+        '[2]': header_p7[2]
+        '[3]': header_p7[3]
+        '[4]': header_p7[4]
+        '[5]': header_p7[5]
+        '[6]': header_p7[6]
+        '[7]': header_p7[7]
+        '[8]': header_p7[8]
+        '[9]': header_p7[9]
+        '[10]': header_p7[10]
+        '[11]': header_p7[11]
+        '[12]': header_p7[12]
+        '[13]': header_p7[13]
+        '[14]': header_p7[14]
+        '[15]': header_p7[15]
+        '[16]': header_p7[16]
+        '[17]': header_p7[17]
+        '[18]': header_p7[18]
+        '[19]': header_p7[19]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: hdmi
       label: hdmi
-      attach: {peripheral: hdmi_tmds, params: {timing: design, clock_serial_mhz: 270}, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+      attach:
+        peripheral: hdmi_tmds
+        params:
+          timing: design
+          clock_serial_mhz: 270
+        bind:
+          clk_p: onboard_hdmi.clk_p
+          d_p: onboard_hdmi.d_p
+          clk_n: onboard_hdmi.clk_n
+          d_n: onboard_hdmi.d_n
     - id: camera
       label: camera
       variants:
         - id: gpio
           label: its pins as the design's gpio
-          attach: {peripheral: gpio_header, params: {width: 2}, bind: {io: [onboard_camera.scl, onboard_camera.sda]}}
+          attach:
+            peripheral: gpio_header
+            params:
+              width: 2
+            bind:
+              io: [onboard_camera.scl, onboard_camera.sda]
         - id: i2s_audio_out
           label: i2s_audio_out
-          attach: {peripheral: i2s_audio_out, bind: {mclk: 'onboard_camera.data[1]', bclk: onboard_camera.pclk, sdata: onboard_camera.hsync, lrclk: onboard_camera.vsync}}
+          attach:
+            peripheral: i2s_audio_out
+            bind:
+              mclk: onboard_camera.data[1]
+              bclk: onboard_camera.pclk
+              sdata: onboard_camera.hsync
+              lrclk: onboard_camera.vsync
         - id: inmp441_i2s_mic
           label: inmp441_i2s_mic
-          attach: {peripheral: inmp441_i2s_mic, bind: {lr: onboard_serial_flash.hold, ws: onboard_serial_flash.wp, sck: onboard_serial_flash.cs, sd: 'onboard_camera.data[0]'}}
+          attach:
+            peripheral: inmp441_i2s_mic
+            bind:
+              lr: onboard_serial_flash.hold
+              ws: onboard_serial_flash.wp
+              sck: onboard_serial_flash.cs
+              sd: onboard_camera.data[0]
     - id: led
       label: led
-      attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_led}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 1
+        bind:
+          led: onboard_led
     - id: serial_flash
       label: serial flash
-      attach: {peripheral: tm1638_led_key, bind: {dio: onboard_serial_flash.do, clk: onboard_serial_flash.di, stb: onboard_serial_flash.clk}}
+      attach:
+        peripheral: tm1638_led_key
+        bind:
+          dio: onboard_serial_flash.do
+          clk: onboard_serial_flash.di
+          stb: onboard_serial_flash.clk
     - id: jtag
       label: JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)
-      device: {kind: other, bank: onboard_jtag}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_jtag

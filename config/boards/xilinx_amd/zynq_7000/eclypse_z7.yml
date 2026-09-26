@@ -80,143 +80,287 @@ Board:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: D18, frequency_mhz: 125, source: {doc: xdc, where: '"125MHz Clock from Ethernet PHY", line 7'} }
+    clk:
+      pins: D18
+      frequency_mhz: 125
+      source:
+        doc: xdc
+        where: '"125MHz Clock from Ethernet PHY", line 7'
     onboard_buttons:
-      source: {doc: xdc, where: '"Buttons", lines 11-12'}
+      source:
+        doc: xdc
+        where: '"Buttons", lines 11-12'
       pins: [C17, C18]
     onboard_rgb_led_0:
-      source: {doc: xdc, where: '"RGB LEDs", lines 15-17'}
+      source:
+        doc: xdc
+        where: '"RGB LEDs", lines 15-17'
       pins:
         b: A17
         g: B16
         r: B17
     onboard_rgb_led_1:
-      source: {doc: xdc, where: '"RGB LEDs", lines 18-20'}
+      source:
+        doc: xdc
+        where: '"RGB LEDs", lines 18-20'
       pins:
         b: A16
         g: A18
         r: A19
     pmod_jb:
-      source: {doc: xdc, where: '"Pmod Header JB", lines 33-40; keyed by Pmod pin number (Sch names jb1_fpga..jb10_fpga)'}
+      source:
+        doc: xdc
+        where: '"Pmod Header JB", lines 33-40; keyed by Pmod pin number (Sch names jb1_fpga..jb10_fpga)'
       pins: [G15, D16, D17, E18, F18, G17, H18, H17]
     pmod_ja:   # Pmod header JA
-      source: {doc: xdc, where: '"Pmod Header JA", lines 23-30; keyed by Pmod pin number (Sch names ja1_fpga..ja10_fpga)'}
-      device: {"name": "Pmod header JA", "kind": "pmod"}
+      source:
+        doc: xdc
+        where: '"Pmod Header JA", lines 23-30; keyed by Pmod pin number (Sch names ja1_fpga..ja10_fpga)'
+      device:
+        name: Pmod header JA
+        kind: pmod
       iostandard: "LVCMOS33"
-      pins: ["B15", "C15", "D15", "E16", "E15", "F17", "F16", "G16"]
+      pins: [B15, C15, D15, E16, E15, F17, F16, G16]
     syzygy_a:   # SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)
-      source: {doc: xdc, where: '"Syzygy Port A", lines 43-74; no IOSTANDARD in the XDC (set by the Zmod VIO)'}
-      device: {"name": "SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)", "kind": "header"}
-      pins: {"c2p_clk_n": "N20", "c2p_clk_p": "N19", "d_n": ["T17", "T19", "T18", "P18", "R16", "P15", "K18", "K21"], "d_p": ["T16", "R19", "R18", "P17", "P16", "N15", "J18", "J20"], "p2c_clk_n": "M20", "p2c_clk_p": "M19", "s": ["L19", "K20", "L18", "K19", "L22", "J22", "L21", "J21", "N22", "P22", "M21", "M22"]}
+      source:
+        doc: xdc
+        where: '"Syzygy Port A", lines 43-74; no IOSTANDARD in the XDC (set by the Zmod VIO)'
+      device:
+        name: SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)
+        kind: header
+      pins:
+        c2p_clk_n: N20
+        c2p_clk_p: N19
+        d_n: [T17, T19, T18, P18, R16, P15, K18, K21]
+        d_p: [T16, R19, R18, P17, P16, N15, J18, J20]
+        p2c_clk_n: M20
+        p2c_clk_p: M19
+        s: [L19, K20, L18, K19, L22, J22, L21, J21, N22, P22, M21, M22]
     syzygy_b:   # SYZYGY port B (Zmod port B; 8 differential pairs, 2 clock pairs, 12 single-ended)
-      source: {doc: xdc, where: '"Syzygy Port B", lines 77-108; no IOSTANDARD in the XDC (set by the Zmod VIO)'}
-      device: {"name": "SYZYGY port B (Zmod port B; 8 differential pairs, 2 clock pairs, 12 single-ended)", "kind": "header"}
-      pins: {"c2p_clk_n": "Y16", "c2p_clk_p": "W16", "d_n": ["Y15", "W13", "AA13", "AB15", "AA14", "V15", "AB22", "Y21"], "d_p": ["W15", "V13", "Y13", "AB14", "Y14", "V14", "AA22", "Y20"], "p2c_clk_n": "W18", "p2c_clk_p": "W17", "s": ["AA18", "AA19", "Y18", "Y19", "AB20", "AB21", "AB19", "AA21", "U16", "U15", "V17", "U17"]}
+      source:
+        doc: xdc
+        where: '"Syzygy Port B", lines 77-108; no IOSTANDARD in the XDC (set by the Zmod VIO)'
+      device:
+        name: SYZYGY port B (Zmod port B; 8 differential pairs, 2 clock pairs, 12 single-ended)
+        kind: header
+      pins:
+        c2p_clk_n: Y16
+        c2p_clk_p: W16
+        d_n: [Y15, W13, AA13, AB15, AA14, V15, AB22, Y21]
+        d_p: [W15, V13, Y13, AB14, Y14, V14, AA22, Y20]
+        p2c_clk_n: W18
+        p2c_clk_p: W17
+        s: [AA18, AA19, Y18, Y19, AB20, AB21, AB19, AA21, U16, U15, V17, U17]
     onboard_crypto:   # Crypto authentication chip SDA
-      device: {"name": "Crypto authentication chip SDA", "kind": "other"}
+      device:
+        name: Crypto authentication chip SDA
+        kind: other
       iostandard: "LVCMOS33"
-      pins: {"sda": "D22"}
+      pins:
+        sda: D22
     onboard_mcu_rsvd:   # Reserved lines to the platform MCU (mcu_rsvd)
-      device: {"name": "Reserved lines to the platform MCU (mcu_rsvd)", "kind": "other"}
+      device:
+        name: Reserved lines to the platform MCU (mcu_rsvd)
+        kind: other
       iostandard: "LVCMOS33"
-      pins: {"rsvd": ["B22", "B21"]}
+      pins:
+        rsvd: [B22, B21]
     onboard_ps_ethernet:   # PS Gigabit Ethernet (GEM0, RGMII PHY)
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
-      device: {"name": "PS Gigabit Ethernet (GEM0, RGMII PHY)", "kind": "ethernet"}
-      pins: {"rgmii": ["MIO16", "MIO17", "MIO18", "MIO19", "MIO20", "MIO21", "MIO22", "MIO23", "MIO24", "MIO25", "MIO26", "MIO27"], "mdio": ["MIO52", "MIO53"], "reset": "MIO9"}
+      device:
+        name: PS Gigabit Ethernet (GEM0, RGMII PHY)
+        kind: ethernet
+      pins:
+        rgmii: [MIO16, MIO17, MIO18, MIO19, MIO20, MIO21, MIO22, MIO23, MIO24, MIO25, MIO26, MIO27]
+        mdio: [MIO52, MIO53]
+        reset: MIO9
     onboard_ps_usb:   # PS USB 2.0 OTG (USB0, ULPI PHY)
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
-      device: {"name": "PS USB 2.0 OTG (USB0, ULPI PHY)", "kind": "other"}
-      pins: {"ulpi": ["MIO28", "MIO29", "MIO30", "MIO31", "MIO32", "MIO33", "MIO34", "MIO35", "MIO36", "MIO37", "MIO38", "MIO39"], "reset": "MIO46"}
+      device:
+        name: PS USB 2.0 OTG (USB0, ULPI PHY)
+        kind: other
+      pins:
+        ulpi: [MIO28, MIO29, MIO30, MIO31, MIO32, MIO33, MIO34, MIO35, MIO36, MIO37, MIO38, MIO39]
+        reset: MIO46
     onboard_ps_sdcard:   # PS microSD slot (SD0)
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
-      device: {"name": "PS microSD slot (SD0)", "kind": "sdcard"}
-      pins: {"sd": ["MIO40", "MIO41", "MIO42", "MIO43", "MIO44", "MIO45"], "cd": "MIO47"}
+      device:
+        name: PS microSD slot (SD0)
+        kind: sdcard
+      pins:
+        sd: [MIO40, MIO41, MIO42, MIO43, MIO44, MIO45]
+        cd: MIO47
     onboard_ps_qspi_flash:   # PS Quad-SPI flash (boot)
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
-      device: {"name": "PS Quad-SPI flash (boot)", "kind": "flash"}
-      pins: {"qspi": ["MIO1", "MIO2", "MIO3", "MIO4", "MIO5", "MIO6"], "fbclk": "MIO8"}
+      device:
+        name: PS Quad-SPI flash (boot)
+        kind: flash
+      pins:
+        qspi: [MIO1, MIO2, MIO3, MIO4, MIO5, MIO6]
+        fbclk: MIO8
     onboard_ps_uart:   # PS UART0 (the board USB-UART; the bridge is not named in the preset)
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
-      device: {"name": "PS UART0 (the board USB-UART; the bridge is not named in the preset)", "kind": "uart"}
-      pins: {"rxtx": ["MIO14", "MIO15"]}
+      device:
+        name: PS UART0 (the board USB-UART; the bridge is not named in the preset)
+        kind: uart
+      pins:
+        rxtx: [MIO14, MIO15]
     onboard_ps_i2c1:   # PS I2C1
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
-      device: {"name": "PS I2C1", "kind": "other"}
-      pins: {"scl_sda": ["MIO12", "MIO13"]}
+      device:
+        name: PS I2C1
+        kind: other
+      pins:
+        scl_sda: [MIO12, MIO13]
   # ---- drawn: headers and parts; ./unifpga layout draft eclypse_z7 regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: pmod_jb
       type: pin_row
       label: PMOD_JB
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_jb
-      pins: {'[0]': 'pmod_jb[0]', '[1]': 'pmod_jb[1]', '[2]': 'pmod_jb[2]', '[3]': 'pmod_jb[3]', '[4]': 'pmod_jb[4]', '[5]': 'pmod_jb[5]', '[6]': 'pmod_jb[6]', '[7]': 'pmod_jb[7]'}
+      pins:
+        '[0]': pmod_jb[0]
+        '[1]': pmod_jb[1]
+        '[2]': pmod_jb[2]
+        '[3]': pmod_jb[3]
+        '[4]': pmod_jb[4]
+        '[5]': pmod_jb[5]
+        '[6]': pmod_jb[6]
+        '[7]': pmod_jb[7]
     - id: pmod_ja
       type: pin_row
       label: PMOD_JA
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_ja
-      pins: {'[0]': 'pmod_ja[0]', '[1]': 'pmod_ja[1]', '[2]': 'pmod_ja[2]', '[3]': 'pmod_ja[3]', '[4]': 'pmod_ja[4]', '[5]': 'pmod_ja[5]', '[6]': 'pmod_ja[6]', '[7]': 'pmod_ja[7]'}
+      pins:
+        '[0]': pmod_ja[0]
+        '[1]': pmod_ja[1]
+        '[2]': pmod_ja[2]
+        '[3]': pmod_ja[3]
+        '[4]': pmod_ja[4]
+        '[5]': pmod_ja[5]
+        '[6]': pmod_ja[6]
+        '[7]': pmod_ja[7]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: rgb_led_1
       label: rgb led 1
       variants:
         - id: led_bank
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.b}}
+          attach:
+            peripheral: led_bank
+            params:
+              width: 1
+            bind:
+              led: onboard_rgb_led_1.b
         - id: led_bank_2
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.g}}
+          attach:
+            peripheral: led_bank
+            params:
+              width: 1
+            bind:
+              led: onboard_rgb_led_1.g
         - id: led_bank_3
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.r}}
+          attach:
+            peripheral: led_bank
+            params:
+              width: 1
+            bind:
+              led: onboard_rgb_led_1.r
     - id: rgb_led_0
       label: rgb led 0
       variants:
         - id: led_bank
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.b}}
+          attach:
+            peripheral: led_bank
+            params:
+              width: 1
+            bind:
+              led: onboard_rgb_led_0.b
         - id: led_bank_2
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.g}}
+          attach:
+            peripheral: led_bank
+            params:
+              width: 1
+            bind:
+              led: onboard_rgb_led_0.g
         - id: led_bank_3
           label: led_bank (other pins)
-          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.r}}
+          attach:
+            peripheral: led_bank
+            params:
+              width: 1
+            bind:
+              led: onboard_rgb_led_0.r
     - id: syzygy_a
       label: SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)
-      device: {kind: header, bank: syzygy_a}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: header
+        bank: syzygy_a
     - id: syzygy_b
       label: SYZYGY port B (Zmod port B; 8 differential pairs, 2 clock pairs, 12 single-ended)
-      device: {kind: header, bank: syzygy_b}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: header
+        bank: syzygy_b
     - id: crypto
       label: Crypto authentication chip SDA
-      device: {kind: other, bank: onboard_crypto}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_crypto
     - id: mcu_rsvd
       label: Reserved lines to the platform MCU (mcu_rsvd)
-      device: {kind: other, bank: onboard_mcu_rsvd}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_mcu_rsvd
     - id: ps_ethernet
       label: PS Gigabit Ethernet (GEM0, RGMII PHY)
-      device: {kind: ethernet, bank: onboard_ps_ethernet}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ethernet
+        bank: onboard_ps_ethernet
     - id: ps_usb
       label: PS USB 2.0 OTG (USB0, ULPI PHY)
-      device: {kind: other, bank: onboard_ps_usb}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_ps_usb
     - id: ps_sdcard
       label: PS microSD slot (SD0)
-      device: {kind: sdcard, bank: onboard_ps_sdcard}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: sdcard
+        bank: onboard_ps_sdcard
     - id: ps_qspi_flash
       label: PS Quad-SPI flash (boot)
-      device: {kind: flash, bank: onboard_ps_qspi_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_ps_qspi_flash
     - id: ps_uart
       label: PS UART0 (the board USB-UART; the bridge is not named in the preset)
-      device: {kind: uart, bank: onboard_ps_uart}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: uart
+        bank: onboard_ps_uart
     - id: ps_i2c1
       label: PS I2C1
-      device: {kind: other, bank: onboard_ps_i2c1}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_ps_i2c1

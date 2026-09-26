@@ -91,151 +91,377 @@ Board:
       part_range: COM
       iostd: LVCMOS25
   banks:
-    clk:              { pins: "H17", source: {doc: som_ha, where: 'section 2.8 System Clocks, Table 5; 2.12.3; 2.14'} }   # placeholder; 50 MHz osc
-    onboard_reset:    { pins: "F20", source: {doc: bsb_ha, where: section 6 Table 15; P10 breadboard pin 5} }   # placeholder
+    clk:   # placeholder; 50 MHz osc
+      pins: H17
+      source:
+        doc: som_ha
+        where: section 2.8 System Clocks, Table 5; 2.12.3; 2.14
+    onboard_reset:   # placeholder
+      pins: F20
+      source:
+        doc: bsb_ha
+        where: section 6 Table 15; P10 breadboard pin 5
     onboard_buttons:                      # placeholder; 2 user buttons
-      source: {doc: bsb_ha, where: 'section 6 Switches, Table 15'}
-      pins: ["F19", "G19"]
+      source:
+        doc: bsb_ha
+        where: section 6 Switches, Table 15
+      pins: [F19, G19]
     onboard_switches:                     # placeholder; 3 DIP switches
-      pins: ["E20", "E19", "E18"]
+      pins: [E20, E19, E18]
     onboard_leds:                         # placeholder; 8 user LEDs (active-low)
-      source: {doc: bsb_ha, where: 'section 5 LEDs, Table 14'}
-      pins: ["B5", "B6", "C5", "C6",
-             "D5", "D6", "E5", "E6"]
+      source:
+        doc: bsb_ha
+        where: section 5 LEDs, Table 14
+      pins: [B5, B6, C5, C6, D5, D6, E5, E6]
       active: low
     onboard_ds1_reset_out_led_nreset_out:   # DS1 reset-out LED (nRESET_OUT)
-      device: {"name": "DS1 reset-out LED (nRESET_OUT)", "kind": "other"}
-      shares: ["breadboard_p10", "onboard_leds"]   # the board multiplexes these pins
-      pins: {"nreset_out": "D5"}
+      device:
+        name: DS1 reset-out LED (nRESET_OUT)
+        kind: other
+      shares: [breadboard_p10, onboard_leds]   # the board multiplexes these pins
+      pins:
+        nreset_out: D5
     onboard_uart:   # FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)
-      source: {doc: som_ha, where: section 2.15.2 P1 connector pins 29/30; also bsb_ha 2.4}
-      device: {"name": "FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)", "kind": "uart", "id": "ftdi_ft232r"}
-      pins: {"tx": "D21", "rx": "C22"}
+      source:
+        doc: som_ha
+        where: section 2.15.2 P1 connector pins 29/30; also bsb_ha 2.4
+      device:
+        name: FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)
+        kind: uart
+        id: ftdi_ft232r
+      pins:
+        tx: D21
+        rx: C22
     onboard_usb_ulpi:   # USB3300 ULPI USB OTG PHY on P19 mini-USB
-      source: {doc: som_ha, where: 'section 2.15.2 P2 connector ULPI_CLK 26, ULPI_DATA7..0 30..44, ULPI_DIR 46, ULPI_NXT 48, ULPI_STP 50'}
-      device: {"name": "USB3300 ULPI USB OTG PHY on P19 mini-USB", "kind": "usb", "id": "microchip_usb3300"}
-      pins: {"clk": "R17", "dir": "R18", "nxt": "T19", "stp": "T18", "data": ["V22", "V21", "U22", "U21", "T20", "T21", "P17", "V19"]}
+      source:
+        doc: som_ha
+        where: section 2.15.2 P2 connector ULPI_CLK 26, ULPI_DATA7..0 30..44, ULPI_DIR 46, ULPI_NXT 48, ULPI_STP 50
+      device:
+        name: USB3300 ULPI USB OTG PHY on P19 mini-USB
+        kind: usb
+        id: microchip_usb3300
+      pins:
+        clk: R17
+        dir: R18
+        nxt: T19
+        stp: T18
+        data: [V22, V21, U22, U21, T20, T21, P17, V19]
     onboard_flash:   # S25FL128S 16 MB SPI flash (SOM, SPI0)
-      device: {"name": "S25FL128S 16 MB SPI flash (SOM, SPI0)", "kind": "flash", "id": "cypress_s25fl128s"}
-      shares: ["breadboard_p9"]   # the board multiplexes these pins
-      pins: {"sdo": "P19", "sdi": "R21", "ss": "P20", "clk": "R20"}
+      device:
+        name: S25FL128S 16 MB SPI flash (SOM, SPI0)
+        kind: flash
+        id: cypress_s25fl128s
+      shares: [breadboard_p9]   # the board multiplexes these pins
+      pins:
+        sdo: P19
+        sdi: R21
+        ss: P20
+        clk: R20
     onboard_other:   # P5 FlashPro JTAG (10-pin) and P3 ARM JTAG (20-pin)
-      device: {"name": "P5 FlashPro JTAG (10-pin) and P3 ARM JTAG (20-pin)", "kind": "other"}
-      pins: {"tck": "W20", "tms": "V20", "tdo": "Y21"}
+      device:
+        name: P5 FlashPro JTAG (10-pin) and P3 ARM JTAG (20-pin)
+        kind: other
+      pins:
+        tck: W20
+        tms: V20
+        tdo: Y21
     breadboard_p7:   # P7 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 5: P7 Breadboard Area Connector'}
-      device: {"name": "P7 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      pins: ["J18", "K18", "K16", "M2", "M5", "N5", "P7", "M8", "P6", "N6", "M3"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 5: P7 Breadboard Area Connector'
+      device:
+        name: P7 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      pins: [J18, K18, K16, M2, M5, N5, P7, M8, P6, N6, M3]
     breadboard_p8:   # P8 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 6: P8 Breadboard Area Connector'}
-      device: {"name": "P8 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      pins: ["D22", "R2", "N8", "M6", "L5", "L4", "K5", "K4"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 6: P8 Breadboard Area Connector'
+      device:
+        name: P8 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      pins: [D22, R2, N8, M6, L5, L4, K5, K4]
     breadboard_p9:   # P9 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 7: P9 Breadboard Area Connector'}
-      device: {"name": "P9 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      shares: ["onboard_flash"]   # the board multiplexes these pins
-      pins: ["H19", "G18", "G16", "G17", "P22", "R22", "P19", "R21", "P20", "R20", "L20", "M21", "M22", "L21"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 7: P9 Breadboard Area Connector'
+      device:
+        name: P9 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      shares: [onboard_flash]   # the board multiplexes these pins
+      pins: [H19, G18, G16, G17, P22, R22, P19, R21, P20, R20, L20, M21, M22, L21]
     breadboard_p10:   # P10 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 8: P10 Breadboard Area Connector'}
-      device: {"name": "P10 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      shares: ["onboard_ds1_reset_out_led_nreset_out", "onboard_leds"]   # the board multiplexes these pins
-      pins: ["D5", "R15", "N4", "P1", "P3", "N1", "M1", "K1", "N3", "R1", "P4", "P2", "L2", "K2", "L3", "E5"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 8: P10 Breadboard Area Connector'
+      device:
+        name: P10 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      shares: [onboard_ds1_reset_out_led_nreset_out, onboard_leds]   # the board multiplexes these pins
+      pins: [D5, R15, N4, P1, P3, N1, M1, K1, N3, R1, P4, P2, L2, K2, L3, E5]
     breadboard_p11:   # P11 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 9: P11 Breadboard Area Connector'}
-      device: {"name": "P11 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      pins: ["V11", "W11", "W10", "T13", "Y10", "B3", "Y9", "D4", "W9", "A2", "B2"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 9: P11 Breadboard Area Connector'
+      device:
+        name: P11 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      pins: [V11, W11, W10, T13, Y10, B3, Y9, D4, W9, A2, B2]
     breadboard_p12:   # P12 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 10: P12 Breadboard Area Connector'}
-      device: {"name": "P12 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      pins: ["L7", "AB15", "L8", "AA15", "K8", "W15", "M7", "Y15", "U15", "Y17", "W17", "AB17", "AA18", "AB18"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 10: P12 Breadboard Area Connector'
+      device:
+        name: P12 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      pins: [L7, AB15, L8, AA15, K8, W15, M7, Y15, U15, Y17, W17, AB17, AA18, AB18]
     breadboard_p13:   # P13 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 11: P13 Breadboard Area Connector'}
-      device: {"name": "P13 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      shares: ["onboard_buttons", "onboard_reset"]   # the board multiplexes these pins
-      pins: ["K21", "K20", "E22", "F21", "E21", "F20", "B22", "H20", "Y18", "G19", "AA17", "L19", "AA16", "F19", "U19", "L18", "V16", "F18", "W16", "K17"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 11: P13 Breadboard Area Connector'
+      device:
+        name: P13 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      shares: [onboard_buttons, onboard_reset]   # the board multiplexes these pins
+      pins: [K21, K20, E22, F21, E21, F20, B22, H20, Y18, G19, AA17, L19, AA16, F19, U19, L18, V16, F18, W16, K17]
     breadboard_p14:   # P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
-      source: {doc: bsb_ha, where: 'section 3.7, Table 12: P14 Breadboard Area Connector'}
-      device: {"name": "P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)", "kind": "header"}
-      pins: ["H6", "J6", "K6", "H7", "K7", "G7", "K15", "F6", "L16", "G6", "P16", "F5", "R16", "E4", "N17", "C4", "N16", "C3", "P18", "B1"]
+      source:
+        doc: bsb_ha
+        where: 'section 3.7, Table 12: P14 Breadboard Area Connector'
+      device:
+        name: P14 breadboard area (12x2, 2 mm pitch pads, no connector fitted)
+        kind: header
+      pins: [H6, J6, K6, H7, K7, G7, K15, F6, L16, G6, P16, F5, R16, E4, N17, C4, N16, C3, P18, B1]
   # ---- drawn: headers and parts; ./unifpga layout draft m2s025_starter regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: breadboard_p7
       type: pin_row
       label: BREADBOARD_P7
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p7
-      pins: {'[0]': 'breadboard_p7[0]', '[1]': 'breadboard_p7[1]', '[2]': 'breadboard_p7[2]', '[3]': 'breadboard_p7[3]', '[4]': 'breadboard_p7[4]', '[5]': 'breadboard_p7[5]', '[6]': 'breadboard_p7[6]', '[7]': 'breadboard_p7[7]', '[8]': 'breadboard_p7[8]', '[9]': 'breadboard_p7[9]', '[10]': 'breadboard_p7[10]'}
+      pins:
+        '[0]': breadboard_p7[0]
+        '[1]': breadboard_p7[1]
+        '[2]': breadboard_p7[2]
+        '[3]': breadboard_p7[3]
+        '[4]': breadboard_p7[4]
+        '[5]': breadboard_p7[5]
+        '[6]': breadboard_p7[6]
+        '[7]': breadboard_p7[7]
+        '[8]': breadboard_p7[8]
+        '[9]': breadboard_p7[9]
+        '[10]': breadboard_p7[10]
     - id: breadboard_p8
       type: pin_row
       label: BREADBOARD_P8
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p8
-      pins: {'[0]': 'breadboard_p8[0]', '[1]': 'breadboard_p8[1]', '[2]': 'breadboard_p8[2]', '[3]': 'breadboard_p8[3]', '[4]': 'breadboard_p8[4]', '[5]': 'breadboard_p8[5]', '[6]': 'breadboard_p8[6]', '[7]': 'breadboard_p8[7]'}
+      pins:
+        '[0]': breadboard_p8[0]
+        '[1]': breadboard_p8[1]
+        '[2]': breadboard_p8[2]
+        '[3]': breadboard_p8[3]
+        '[4]': breadboard_p8[4]
+        '[5]': breadboard_p8[5]
+        '[6]': breadboard_p8[6]
+        '[7]': breadboard_p8[7]
     - id: breadboard_p9
       type: pin_row
       label: BREADBOARD_P9
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p9
-      pins: {'[0]': 'breadboard_p9[0]', '[1]': 'breadboard_p9[1]', '[2]': 'breadboard_p9[2]', '[3]': 'breadboard_p9[3]', '[4]': 'breadboard_p9[4]', '[5]': 'breadboard_p9[5]', '[6]': 'breadboard_p9[6]', '[7]': 'breadboard_p9[7]', '[8]': 'breadboard_p9[8]', '[9]': 'breadboard_p9[9]', '[10]': 'breadboard_p9[10]', '[11]': 'breadboard_p9[11]', '[12]': 'breadboard_p9[12]', '[13]': 'breadboard_p9[13]'}
+      pins:
+        '[0]': breadboard_p9[0]
+        '[1]': breadboard_p9[1]
+        '[2]': breadboard_p9[2]
+        '[3]': breadboard_p9[3]
+        '[4]': breadboard_p9[4]
+        '[5]': breadboard_p9[5]
+        '[6]': breadboard_p9[6]
+        '[7]': breadboard_p9[7]
+        '[8]': breadboard_p9[8]
+        '[9]': breadboard_p9[9]
+        '[10]': breadboard_p9[10]
+        '[11]': breadboard_p9[11]
+        '[12]': breadboard_p9[12]
+        '[13]': breadboard_p9[13]
     - id: breadboard_p10
       type: pin_row
       label: BREADBOARD_P10
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p10
-      pins: {'[0]': 'breadboard_p10[0]', '[1]': 'breadboard_p10[1]', '[2]': 'breadboard_p10[2]', '[3]': 'breadboard_p10[3]', '[4]': 'breadboard_p10[4]', '[5]': 'breadboard_p10[5]', '[6]': 'breadboard_p10[6]', '[7]': 'breadboard_p10[7]', '[8]': 'breadboard_p10[8]', '[9]': 'breadboard_p10[9]', '[10]': 'breadboard_p10[10]', '[11]': 'breadboard_p10[11]', '[12]': 'breadboard_p10[12]', '[13]': 'breadboard_p10[13]', '[14]': 'breadboard_p10[14]', '[15]': 'breadboard_p10[15]'}
+      pins:
+        '[0]': breadboard_p10[0]
+        '[1]': breadboard_p10[1]
+        '[2]': breadboard_p10[2]
+        '[3]': breadboard_p10[3]
+        '[4]': breadboard_p10[4]
+        '[5]': breadboard_p10[5]
+        '[6]': breadboard_p10[6]
+        '[7]': breadboard_p10[7]
+        '[8]': breadboard_p10[8]
+        '[9]': breadboard_p10[9]
+        '[10]': breadboard_p10[10]
+        '[11]': breadboard_p10[11]
+        '[12]': breadboard_p10[12]
+        '[13]': breadboard_p10[13]
+        '[14]': breadboard_p10[14]
+        '[15]': breadboard_p10[15]
     - id: breadboard_p11
       type: pin_row
       label: BREADBOARD_P11
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p11
-      pins: {'[0]': 'breadboard_p11[0]', '[1]': 'breadboard_p11[1]', '[2]': 'breadboard_p11[2]', '[3]': 'breadboard_p11[3]', '[4]': 'breadboard_p11[4]', '[5]': 'breadboard_p11[5]', '[6]': 'breadboard_p11[6]', '[7]': 'breadboard_p11[7]', '[8]': 'breadboard_p11[8]', '[9]': 'breadboard_p11[9]', '[10]': 'breadboard_p11[10]'}
+      pins:
+        '[0]': breadboard_p11[0]
+        '[1]': breadboard_p11[1]
+        '[2]': breadboard_p11[2]
+        '[3]': breadboard_p11[3]
+        '[4]': breadboard_p11[4]
+        '[5]': breadboard_p11[5]
+        '[6]': breadboard_p11[6]
+        '[7]': breadboard_p11[7]
+        '[8]': breadboard_p11[8]
+        '[9]': breadboard_p11[9]
+        '[10]': breadboard_p11[10]
     - id: breadboard_p12
       type: pin_row
       label: BREADBOARD_P12
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p12
-      pins: {'[0]': 'breadboard_p12[0]', '[1]': 'breadboard_p12[1]', '[2]': 'breadboard_p12[2]', '[3]': 'breadboard_p12[3]', '[4]': 'breadboard_p12[4]', '[5]': 'breadboard_p12[5]', '[6]': 'breadboard_p12[6]', '[7]': 'breadboard_p12[7]', '[8]': 'breadboard_p12[8]', '[9]': 'breadboard_p12[9]', '[10]': 'breadboard_p12[10]', '[11]': 'breadboard_p12[11]', '[12]': 'breadboard_p12[12]', '[13]': 'breadboard_p12[13]'}
+      pins:
+        '[0]': breadboard_p12[0]
+        '[1]': breadboard_p12[1]
+        '[2]': breadboard_p12[2]
+        '[3]': breadboard_p12[3]
+        '[4]': breadboard_p12[4]
+        '[5]': breadboard_p12[5]
+        '[6]': breadboard_p12[6]
+        '[7]': breadboard_p12[7]
+        '[8]': breadboard_p12[8]
+        '[9]': breadboard_p12[9]
+        '[10]': breadboard_p12[10]
+        '[11]': breadboard_p12[11]
+        '[12]': breadboard_p12[12]
+        '[13]': breadboard_p12[13]
     - id: breadboard_p13
       type: pin_row
       label: BREADBOARD_P13
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p13
-      pins: {'[0]': 'breadboard_p13[0]', '[1]': 'breadboard_p13[1]', '[2]': 'breadboard_p13[2]', '[3]': 'breadboard_p13[3]', '[4]': 'breadboard_p13[4]', '[5]': 'breadboard_p13[5]', '[6]': 'breadboard_p13[6]', '[7]': 'breadboard_p13[7]', '[8]': 'breadboard_p13[8]', '[9]': 'breadboard_p13[9]', '[10]': 'breadboard_p13[10]', '[11]': 'breadboard_p13[11]', '[12]': 'breadboard_p13[12]', '[13]': 'breadboard_p13[13]', '[14]': 'breadboard_p13[14]', '[15]': 'breadboard_p13[15]', '[16]': 'breadboard_p13[16]', '[17]': 'breadboard_p13[17]', '[18]': 'breadboard_p13[18]', '[19]': 'breadboard_p13[19]'}
+      pins:
+        '[0]': breadboard_p13[0]
+        '[1]': breadboard_p13[1]
+        '[2]': breadboard_p13[2]
+        '[3]': breadboard_p13[3]
+        '[4]': breadboard_p13[4]
+        '[5]': breadboard_p13[5]
+        '[6]': breadboard_p13[6]
+        '[7]': breadboard_p13[7]
+        '[8]': breadboard_p13[8]
+        '[9]': breadboard_p13[9]
+        '[10]': breadboard_p13[10]
+        '[11]': breadboard_p13[11]
+        '[12]': breadboard_p13[12]
+        '[13]': breadboard_p13[13]
+        '[14]': breadboard_p13[14]
+        '[15]': breadboard_p13[15]
+        '[16]': breadboard_p13[16]
+        '[17]': breadboard_p13[17]
+        '[18]': breadboard_p13[18]
+        '[19]': breadboard_p13[19]
     - id: breadboard_p14
       type: pin_row
       label: BREADBOARD_P14
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p14
-      pins: {'[0]': 'breadboard_p14[0]', '[1]': 'breadboard_p14[1]', '[2]': 'breadboard_p14[2]', '[3]': 'breadboard_p14[3]', '[4]': 'breadboard_p14[4]', '[5]': 'breadboard_p14[5]', '[6]': 'breadboard_p14[6]', '[7]': 'breadboard_p14[7]', '[8]': 'breadboard_p14[8]', '[9]': 'breadboard_p14[9]', '[10]': 'breadboard_p14[10]', '[11]': 'breadboard_p14[11]', '[12]': 'breadboard_p14[12]', '[13]': 'breadboard_p14[13]', '[14]': 'breadboard_p14[14]', '[15]': 'breadboard_p14[15]', '[16]': 'breadboard_p14[16]', '[17]': 'breadboard_p14[17]', '[18]': 'breadboard_p14[18]', '[19]': 'breadboard_p14[19]'}
+      pins:
+        '[0]': breadboard_p14[0]
+        '[1]': breadboard_p14[1]
+        '[2]': breadboard_p14[2]
+        '[3]': breadboard_p14[3]
+        '[4]': breadboard_p14[4]
+        '[5]': breadboard_p14[5]
+        '[6]': breadboard_p14[6]
+        '[7]': breadboard_p14[7]
+        '[8]': breadboard_p14[8]
+        '[9]': breadboard_p14[9]
+        '[10]': breadboard_p14[10]
+        '[11]': breadboard_p14[11]
+        '[12]': breadboard_p14[12]
+        '[13]': breadboard_p14[13]
+        '[14]': breadboard_p14[14]
+        '[15]': breadboard_p14[15]
+        '[16]': breadboard_p14[16]
+        '[17]': breadboard_p14[17]
+        '[18]': breadboard_p14[18]
+        '[19]': breadboard_p14[19]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        params:
+          frequency_mhz: 50
+        bind:
+          clk: clk
     - id: reset
       label: reset
-      attach: {peripheral: reset_button, bind: {rst: onboard_reset}}
+      attach:
+        peripheral: reset_button
+        bind:
+          rst: onboard_reset
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: switches
       label: switches
-      attach: {peripheral: sw_bank, params: {width: 3}, bind: {sw: onboard_switches}}
+      attach:
+        peripheral: sw_bank
+        params:
+          width: 3
+        bind:
+          sw: onboard_switches
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 8
+        bind:
+          led: onboard_leds
     - id: uart
       label: FT232RL USB-UART on P1 mini-USB (serial console, MMUART_0)
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: ds1_reset_out_led_nreset_out
       label: DS1 reset-out LED (nRESET_OUT)
-      device: {kind: other, bank: onboard_ds1_reset_out_led_nreset_out}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_ds1_reset_out_led_nreset_out
     - id: usb_ulpi
       label: USB3300 ULPI USB OTG PHY on P19 mini-USB
-      device: {kind: usb, bank: onboard_usb_ulpi}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: usb
+        bank: onboard_usb_ulpi
     - id: flash
       label: S25FL128S 16 MB SPI flash (SOM, SPI0)
-      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_flash
     - id: other
       label: P5 FlashPro JTAG (10-pin) and P3 ARM JTAG (20-pin)
-      device: {kind: other, bank: onboard_other}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_other

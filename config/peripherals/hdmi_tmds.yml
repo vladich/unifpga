@@ -19,10 +19,23 @@ Peripheral:
   id: hdmi_tmds
   description: HDMI / DVI digital video output (3 TMDS data pairs + 1 TMDS clock pair)
   signals:
-    - { name: clk_p, type: scalar, direction: output }
-    - { name: clk_n, type: scalar, direction: output, optional: true }
-    - { name: d_p,   type: bus, width: 3, direction: output, comment: "Channels 0/1/2 = B/G/R" }
-    - { name: d_n,   type: bus, width: 3, direction: output, optional: true }
+    - name: clk_p
+      type: scalar
+      direction: output
+    - name: clk_n
+      type: scalar
+      direction: output
+      optional: true
+    - name: d_p
+      type: bus
+      width: 3
+      direction: output
+      comment: Channels 0/1/2 = B/G/R
+    - name: d_n
+      type: bus
+      width: 3
+      direction: output
+      optional: true
   provides:
     - capability: screen
       params:
@@ -36,8 +49,14 @@ Peripheral:
   serves:
     clk_p: [screen.x, screen.y]
     clk_n: [screen.x, screen.y]
-    d_p: [[screen.blue, screen.x, screen.y], [screen.green], [screen.red]]
-    d_n: [[screen.blue, screen.x, screen.y], [screen.green], [screen.red]]
+    d_p:
+    - [screen.blue, screen.x, screen.y]
+    - [screen.green]
+    - [screen.red]
+    d_n:
+    - [screen.blue, screen.x, screen.y]
+    - [screen.green]
+    - [screen.red]
   # 640x480@60: 25.2 MHz pixel clock, 252 MHz serial (10x, SDR). The pixel
   # clock is divided from the serial one (Gowin CLKDIV2 + CLKDIV 5; a second
   # MMCM output on Xilinx; the board clock itself when
@@ -51,12 +70,20 @@ Peripheral:
                           # colorlight, marsohod3gw2) or the pixel clock (Tang Primer 25K); `dvi`
                           # is dvi_top's own dvi_sync, as when dvi_top is instantiated directly (a7_lite)
   clocks:
-    - { name: serial, mhz: 252 }
-    - { name: pixel, from: serial, divide: 10 }
+    - name: serial
+      mhz: 252
+    - name: pixel
+      from: serial
+      divide: 10
     # Gowin DVI_TX designs run `vga` on their 5x DDR serial clock (125 MHz);
     # ours is 10x SDR, so the timing generator gets serial / 2, phase-
     # aligned with it (aligned: the rPLL's CLKOUTD, not a CLKDIV the lock starts)
-    - { name: timing, from: serial, divide: 2, aligned: true, when: { timing: serial } }
+    - name: timing
+      from: serial
+      divide: 2
+      aligned: true
+      when:
+        timing: serial
   driver:
     module: hdmi_tmds_out
     file: rtl/peripherals/hdmi_tmds_out.sv

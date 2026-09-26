@@ -4,7 +4,8 @@ Module:
   id: digilent_pmod_od1
   name: Digilent PmodOD1 (4 open-drain outputs)
   peripheral: relay_bank
-  params: {count: 4}
+  params:
+    count: 4
   voltage: 3.3
   pins:
     "1": ctl[0]

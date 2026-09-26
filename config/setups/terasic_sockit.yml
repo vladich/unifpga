@@ -6,7 +6,9 @@ Setup:
   board: terasic_sockit
   toolchain: quartus_prime_lite
   toolchains: [quartus_prime_lite, nextpnr_mistral]
-  aliases: {terasic_sockit_mistral: {toolchain: nextpnr_mistral}}
+  aliases:
+    terasic_sockit_mistral:
+      toolchain: nextpnr_mistral
   use:
     - onboard: buttons
     - onboard: leds
@@ -16,6 +18,8 @@ Setup:
     - onboard: vga
   design:
     uart_rx: 0
-    width: {gpio: 2}
+    width:
+      gpio: 2
   extra:
-    tie: {onboard_vga.sync_n: 0}
+    tie:
+      onboard_vga.sync_n: 0

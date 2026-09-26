@@ -7,15 +7,40 @@ Peripheral:
   id: adxl345_spi
   description: ADXL345 accelerometer on SPI, readings in milli-g
   # the on-board devices it models: an ADXL345 on a 4-wire SPI bank (the DE10-Lite's)
-  models: {kind: accelerometer, device: [ADXL345],
-           pins: {mosi: [GSENSOR_SDI, sdi], miso: [GSENSOR_SDO, sdo], cs_n: [GSENSOR_CS_n, GSENSOR_CS_N], sclk: [GSENSOR_SCLK]}}
+  models:
+    kind: accelerometer
+    device: [ADXL345]
+    pins:
+      mosi: [GSENSOR_SDI, sdi]
+      miso: [GSENSOR_SDO, sdo]
+      cs_n: [GSENSOR_CS_n, GSENSOR_CS_N]
+      sclk: [GSENSOR_SCLK]
   signals:
-    - { name: mosi, type: scalar, direction: output, comment: "Data to the device (SDI)" }
-    - { name: miso, type: scalar, direction: input,  comment: "Data from the device (SDO)" }
-    - { name: sclk, type: scalar, direction: output }
-    - { name: cs_n, type: scalar, direction: output, comment: "Chip select, active low" }
-    - { name: int1, type: scalar, direction: input, optional: true, comment: "Interrupt 1, not used" }
-    - { name: int2, type: scalar, direction: input, optional: true, comment: "Interrupt 2, not used" }
+    - name: mosi
+      type: scalar
+      direction: output
+      comment: Data to the device (SDI)
+    - name: miso
+      type: scalar
+      direction: input
+      comment: Data from the device (SDO)
+    - name: sclk
+      type: scalar
+      direction: output
+    - name: cs_n
+      type: scalar
+      direction: output
+      comment: Chip select, active low
+    - name: int1
+      type: scalar
+      direction: input
+      optional: true
+      comment: Interrupt 1, not used
+    - name: int2
+      type: scalar
+      direction: input
+      optional: true
+      comment: Interrupt 2, not used
   provides:
     - capability: accelerometer
   driver:

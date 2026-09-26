@@ -7,8 +7,15 @@ Capability:
   id: temperature
   description: Temperature readings in 1/16 degrees Celsius, one clock pulse per new reading.
   signals:
-    - { name: valid, type: scalar, direction: hw_to_user, comment: "One-clock pulse: a new reading" }
-    - { name: value, type: bus, width: 16, direction: hw_to_user, comment: "Two's complement, 1/16 degrees Celsius" }
+    - name: valid
+      type: scalar
+      direction: hw_to_user
+      comment: 'One-clock pulse: a new reading'
+    - name: value
+      type: bus
+      width: 16
+      direction: hw_to_user
+      comment: Two's complement, 1/16 degrees Celsius
   aggregation: exclusive
 
   optional: true           # reaches design_top only when the design declares its ports
@@ -16,5 +23,9 @@ Capability:
   design:
     comment: 'Temperature (optional): one clock of temp_valid per new reading; temp is two''s complement in 1/16 degrees Celsius (400 = 25.0 C)'
     ports:
-      temp_valid: {signal: valid, width: 1}
-      temp: {signal: value, width: 16}
+      temp_valid:
+        signal: valid
+        width: 1
+      temp:
+        signal: value
+        width: 16

@@ -5,9 +5,18 @@ Peripheral:
   id: pmod_mic3
   description: Digilent PMOD MIC3 (mic + 12-bit SPI ADC)
   signals:
-    - { name: cs,   type: scalar, direction: output, comment: "ADC chip-select, active low" }
-    - { name: sclk, type: scalar, direction: output, comment: "SPI clock" }
-    - { name: miso, type: scalar, direction: input,  comment: "ADC data out (12-bit serial)" }
+    - name: cs
+      type: scalar
+      direction: output
+      comment: ADC chip-select, active low
+    - name: sclk
+      type: scalar
+      direction: output
+      comment: SPI clock
+    - name: miso
+      type: scalar
+      direction: input
+      comment: ADC data out (12-bit serial)
   provides:
     - capability: audio_in
   driver:
@@ -25,6 +34,8 @@ Peripheral:
     port_format:
       # the ADC's 12-bit offset-binary code (0x800 = silence) becomes the 24-bit signed
       # sample: `value - 12'h800`, sign-extended
-      value: { width: 12, encoding: offset_binary }
+      value:
+        width: 12
+        encoding: offset_binary
   pin_assigns:
     capability.audio_in.valid: const.1

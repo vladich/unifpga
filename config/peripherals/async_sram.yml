@@ -19,26 +19,72 @@ Peripheral:
       description: "The chip's access time"
   # the on-board devices it models: a board inventory's SRAM, its pins under
   # Terasic's, Karnix's or Digilent's names
-  models: {kind: sram, pins: {a: [SRAM_ADDR, SRAM_A, a, addr, adr],
-                              d: [SRAM_DQ, SRAM_D, d, dq, db],
-                              ce_n: [SRAM_CE_N, SRAM_CE_n, ce_n, cs_n, cen],
-                              oe_n: [SRAM_OE_N, SRAM_OE_n, oe_n, oen],
-                              we_n: [SRAM_WE_N, SRAM_WE_n, we_n, wen],
-                              lb_n: [SRAM_LB_N, SRAM_LB_n, lb_n, ble_n, lbn],
-                              ub_n: [SRAM_UB_N, SRAM_UB_n, ub_n, bhe_n, ubn],
-                              adv_n: [advn, adv_n], cre: [cre], clk: [clk], wait: [wait]}}
+  models:
+    kind: sram
+    pins:
+      a: [SRAM_ADDR, SRAM_A, a, addr, adr]
+      d: [SRAM_DQ, SRAM_D, d, dq, db]
+      ce_n: [SRAM_CE_N, SRAM_CE_n, ce_n, cs_n, cen]
+      oe_n: [SRAM_OE_N, SRAM_OE_n, oe_n, oen]
+      we_n: [SRAM_WE_N, SRAM_WE_n, we_n, wen]
+      lb_n: [SRAM_LB_N, SRAM_LB_n, lb_n, ble_n, lbn]
+      ub_n: [SRAM_UB_N, SRAM_UB_n, ub_n, bhe_n, ubn]
+      adv_n: [advn, adv_n]
+      cre: [cre]
+      clk: [clk]
+      wait: [wait]
   signals:
-    - { name: a,     type: bus,    direction: output, comment: "Address" }
-    - { name: d,     type: bus,    direction: inout,  comment: "Data, 16 bits" }
-    - { name: ce_n,  type: scalar, direction: output, optional: true, comment: "Chip enable, active low" }
-    - { name: oe_n,  type: scalar, direction: output, comment: "Output enable, active low" }
-    - { name: we_n,  type: scalar, direction: output, comment: "Write enable, active low" }
-    - { name: lb_n,  type: scalar, direction: output, optional: true, comment: "Low byte enable" }
-    - { name: ub_n,  type: scalar, direction: output, optional: true, comment: "High byte enable" }
-    - { name: adv_n, type: scalar, direction: output, optional: true, comment: "Cellular RAM: address valid, held low" }
-    - { name: cre,   type: scalar, direction: output, optional: true, comment: "Cellular RAM: configuration register enable, held low (asynchronous mode)" }
-    - { name: clk,   type: scalar, direction: output, optional: true, comment: "Cellular RAM: clock, held low (asynchronous mode)" }
-    - { name: wait,  type: scalar, direction: input,  optional: true, comment: "Cellular RAM: wait (not read in asynchronous mode)" }
+    - name: a
+      type: bus
+      direction: output
+      comment: Address
+    - name: d
+      type: bus
+      direction: inout
+      comment: Data, 16 bits
+    - name: ce_n
+      type: scalar
+      direction: output
+      optional: true
+      comment: Chip enable, active low
+    - name: oe_n
+      type: scalar
+      direction: output
+      comment: Output enable, active low
+    - name: we_n
+      type: scalar
+      direction: output
+      comment: Write enable, active low
+    - name: lb_n
+      type: scalar
+      direction: output
+      optional: true
+      comment: Low byte enable
+    - name: ub_n
+      type: scalar
+      direction: output
+      optional: true
+      comment: High byte enable
+    - name: adv_n
+      type: scalar
+      direction: output
+      optional: true
+      comment: 'Cellular RAM: address valid, held low'
+    - name: cre
+      type: scalar
+      direction: output
+      optional: true
+      comment: 'Cellular RAM: configuration register enable, held low (asynchronous mode)'
+    - name: clk
+      type: scalar
+      direction: output
+      optional: true
+      comment: 'Cellular RAM: clock, held low (asynchronous mode)'
+    - name: wait
+      type: scalar
+      direction: input
+      optional: true
+      comment: 'Cellular RAM: wait (not read in asynchronous mode)'
   provides:
     - capability: memory
       params:

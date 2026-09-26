@@ -9,20 +9,29 @@ Setup:
     - onboard: clk50mhz
     - onboard: buttons
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, null]}
+      design_bits:
+        switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, null]
     - onboard: leds_green
-      design_bits: {leds: [0, 1, 2, 3, 4, 5, 6, 7]}
+      design_bits:
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
     - onboard: leds
-      design_bits: {leds: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]}
+      design_bits:
+        leds: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
     - onboard: 7seg
-      bind: {dp: ['onboard_leds[10]', 'onboard_leds[11]', 'onboard_leds[12]', 'onboard_leds[13]', 'onboard_leds[14]', 'onboard_leds[15]', 'onboard_leds[16]', 'onboard_leds[17]']}
+      bind:
+        dp: ['onboard_leds[10]', 'onboard_leds[11]', 'onboard_leds[12]', 'onboard_leds[13]', 'onboard_leds[14]', 'onboard_leds[15]', 'onboard_leds[16]', 'onboard_leds[17]']
     - onboard: vga
     - onboard: uart
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[4]', WS: 'gpio.[2]', SD: 'gpio.[5]', L/R: 'gpio.[0]'}
+      wires:
+        SCK: gpio.[4]
+        WS: gpio.[2]
+        SD: gpio.[5]
+        L/R: gpio.[0]
     - onboard: audio_codec
     - gpio: gpio
-      params: {width: 36}
+      params:
+        width: 36
     - onboard: lcd
     - onboard: ps2
     - onboard: irda
@@ -31,8 +40,21 @@ Setup:
   design:
     reset:
       sources:
-      - {switch_msb: true}
-    tie: {'onboard_leds[0]': 0, 'onboard_leds[1]': 0, 'onboard_leds[2]': 0, 'onboard_leds[3]': 0, 'onboard_leds[4]': 0,
-      'onboard_leds[5]': 0, 'onboard_leds[6]': 0, 'onboard_leds[7]': 0, 'onboard_leds[8]': 0, 'onboard_leds[9]': 0}
+      - switch_msb: true
+    tie:
+      onboard_leds[0]: 0
+      onboard_leds[1]: 0
+      onboard_leds[2]: 0
+      onboard_leds[3]: 0
+      onboard_leds[4]: 0
+      onboard_leds[5]: 0
+      onboard_leds[6]: 0
+      onboard_leds[7]: 0
+      onboard_leds[8]: 0
+      onboard_leds[9]: 0
   extra:
-    tie: {onboard_vga.sync_n: 0, 'gpio[1]': 0, 'gpio[3]': 1, 'onboard_leds_green[8]': 0}
+    tie:
+      onboard_vga.sync_n: 0
+      gpio[1]: 0
+      gpio[3]: 1
+      onboard_leds_green[8]: 0
