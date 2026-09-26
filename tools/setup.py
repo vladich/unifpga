@@ -59,7 +59,7 @@ from collections import OrderedDict
 
 from config import init as config_init
 from config import overlay
-from tools import codegen
+from tools import codegen, yamltext
 
 CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
 SETUP_DIR = os.path.join(CONFIG_DIR, "setups")
@@ -895,20 +895,16 @@ def validate(setup, clashes=None):
 # files
 # ---------------------------------------------------------------------------
 
-def _flow(value):
-    import yaml
-    return yaml.safe_dump(value, default_flow_style=True, sort_keys=False, width=100000).strip()
-
-
 def dump_setup(setup):
-    """The text of config/setups/<id>.yml: one line per use, wires and
-    parameters in flow style."""
+    """The text of config/setups/<id>.yml: one use per item, its wires,
+    parameters and design bits as blocks under it (tools/yamltext.py: a
+    mapping is a block, a list of scalars a flow list)."""
     L = ["# Rig {}: its board, what is on it and how the design sees it.".format(setup["id"]),
          "# The build expands it into the rig's configuration (./unifpga setup show {}).".format(setup["id"]),
          "", "Setup:"]
     for k in ("id", "board") + TARGET_KEYS:
         if setup.get(k) is not None:
-            L.append("  {}: {}".format(k, _flow(setup[k]) if isinstance(setup[k], (list, dict)) else _scalar(setup[k])))
+            L += yamltext.entry(k, setup[k], 2)
     if setup.get("notes"):
         L.append("  notes:")
         L.extend("    - {}".format(_scalar(n)) for n in setup["notes"])
@@ -916,18 +912,17 @@ def dump_setup(setup):
     for use in setup.get("use") or []:
         head = next(k for k in ("onboard", "module", "gpio", "raw") if k in use)
         if head == "raw":
-            L.append("    - raw: {}".format(_flow(use["raw"])))
+            L.append("    - raw:")
+            L += yamltext.block(use["raw"], 8)
         else:
-            L.append("    - {}: {}".format(head, use[head]))
+            L.append("    - {}: {}".format(head, _scalar(use[head])))
         for k in USE_KEYS:
             if k in use and (head != "raw" or k in ("for_toolchain", "design_bits")):
-                L.append("      {}: {}".format(k, _scalar(use[k]) if k == "variant" else _flow(use[k])))
-    import yaml
+                L += yamltext.entry(k, use[k], 6)
     for k in ("design", "extra", "for_toolchain"):
         if setup.get(k):
             L.append("  {}:".format(k))
-            text = yaml.safe_dump(setup[k], sort_keys=False, width=100, default_flow_style=None)
-            L.extend("    " + line for line in text.rstrip("\n").split("\n"))
+            L += yamltext.block(setup[k], 4)
     return "\n".join(L) + "\n"
 
 
@@ -944,7 +939,6 @@ def write_setup(setup):
 # configuration files
 # ---------------------------------------------------------------------------
 
-_PLAIN = re.compile(r"^[A-Za-z_][\w.\-/ ]*$")
 _TOP_COMMENTS = {
     "reset": "What resets the design (the rig's design section)",
     "design_clock": "The clock design_top runs on (the rig's design section)",
@@ -957,37 +951,12 @@ _TOP_COMMENTS = {
 }
 
 
-def _scalar(v):
-    if isinstance(v, bool):
-        return "true" if v else "false"
-    if v is None:
-        return "null"
-    if isinstance(v, (int, float)):
-        return repr(v)
-    s = str(v)
-    if _PLAIN.match(s) and s not in ("true", "false", "null", "yes", "no", "on", "off") and not s.endswith(" "):
-        return s
-    import json
-    return json.dumps(s, ensure_ascii=False)
-
-
-def _inline(v):
-    if isinstance(v, list):
-        return "[" + ", ".join(_inline(x) for x in v) + "]"
-    if isinstance(v, dict):
-        return "{" + ", ".join("{}: {}".format(_scalar(k), _inline(x)) for k, x in v.items()) + "}"
-    return _scalar(v)
+_scalar = yamltext.scalar
+_inline = yamltext.inline
 
 
 def _block(lines, indent, mapping):
-    for k, v in mapping.items():
-        if isinstance(v, dict) and v and not any(isinstance(x, (dict, list)) for x in v.values()) and indent >= 8:
-            lines.append("{}{}: {}".format(" " * indent, _scalar(k), _inline(v)))
-        elif isinstance(v, dict) and v:
-            lines.append("{}{}:".format(" " * indent, _scalar(k)))
-            _block(lines, indent + 2, v)
-        else:
-            lines.append("{}{}: {}".format(" " * indent, _scalar(k), _inline(v)))
+    lines += yamltext.block(mapping, indent)
 
 
 def emit_configuration(cfg, notes=None):

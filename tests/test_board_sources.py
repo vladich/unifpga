@@ -38,7 +38,7 @@ def test_the_drafter_keeps_a_header_read_from_a_document():
     again = next(c for c in drafted if c["bank"] == "gpio")
     assert again["type"] == fact["type"] == "terasic_gpio_2x20" and again["pins"] == fact["pins"]
     assert again["source"] == fact["source"]
-    assert "source: {doc: manual" in ld.emit_drawn(ld.draft("de10_lite"))
+    assert "      source:\n        doc: manual\n" in ld.emit_drawn(ld.draft("de10_lite"))
 
 
 def _board_tree(tmp_path, monkeypatch, board_text):
