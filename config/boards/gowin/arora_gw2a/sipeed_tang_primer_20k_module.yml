@@ -20,6 +20,70 @@ Board:
   - spi_flash
   - microsd_socket
   - spi_lcd
+  documents:
+  - id: som
+    title: Tang Primer 20K SOM 3961 schematic (KiCad title Tang_primer_20K_3691, Rev 1.2, 2022-09-01, 1 sheet)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/Tang_Primer_20K_SOM-3961_Schematic.pdf
+    sha256: b5110caa0508d1d80513ca28978b0836e9b2aec92fc889f850a5a43ec03e6ce8
+    bytes: 972793
+    retrieved: '2026-09-24'
+  - id: core3690
+    title: Tang Primer 20K core board 3690 schematic (Rev 0.02, 2022-04-28; old)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/old/Tang_Primer_20K_Core_board_3690_Schematic.pdf
+    sha256: 0ee806fc8d21c9a33e25ce2c719fe2a9928122f01526f57453e13508489d1bbd
+    bytes: 471642
+    retrieved: '2026-09-24'
+  - id: wiki
+    title: 'Sipeed wiki: Tang Primer 20K (en)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html
+    sha256: 1606d6d98dea59fe1748412242c666e26a2ed380f9289f261dc8f04f53fd4ada
+    bytes: 92829
+    retrieved: '2026-09-24'
+  - id: gowin
+    title: Gowin UG110-1.5E GW2A-18 Pinout (xlsx, from Sipeed Primer_20K/07_Chip_manual)
+    kind: other
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/07_Chip_manual/EN/UG110-1.5E_GW2A-18%20Pinout.xlsx
+    sha256: 77a890773c40960cdc9982b6ffe9986b19e22a35906f5a6850cad80439244683
+    bytes: 266233
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards sipeed_tang_primer_20k.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_primer_20k.py
+    sha256: 656c7d8ed147a457f6217491d710db30a93f4980a293e7a3fb053b06f032465e
+    bytes: 11762
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth boards tang_primer_20k.py
+    kind: platform
+    url: https://github.com/amaranth-lang/amaranth-boards/blob/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/tang_primer_20k.py
+    sha256: 4b5c8eb41fb17ec871b588bb3ad0ab231bb960e98ef3e28c99dac6be817ab661
+    bytes: 12591
+    retrieved: '2026-09-24'
+  - id: cst_litex
+    title: TangPrimer-20K-example Litex/sipeed_tang_primer_20k/src/sipeed_tang_primer_20k.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/Litex/sipeed_tang_primer_20k/src/sipeed_tang_primer_20k.cst
+    sha256: e4faf2f54a23b0dde919445306936f9111a35cf6bdfb6e8877f27618ba7a7d93
+    bytes: 3832
+    retrieved: '2026-09-24'
+  - id: cst_ddr
+    title: TangPrimer-20K-example DDR-test/LicheeTang20K_DDR_Test/src/ddr3.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/DDR-test/LicheeTang20K_DDR_Test/src/ddr3.cst
+    sha256: 2ee91cb3984fad3b352138ea9c65ce3f9e82a5be69bd7135168f09a617771cd6
+    bytes: 5050
+    retrieved: '2026-09-24'
+  - id: cst_spilcd
+    title: TangPrimer-20K-example SPI_lcd/spi_lcd/src/lcd114_test.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/SPI_lcd/spi_lcd/src/lcd114_test.cst
+    sha256: 13f709a89b22f66cae35301ba188baafc6c67d81f69de2c0f4cf45d88e95f443
+    bytes: 420
+    retrieved: '2026-09-24'
   banks:
     onboard_clk:   # 27 MHz oscillator U10
       device: {"name": "27 MHz oscillator U10", "kind": "clock"}
@@ -27,28 +91,34 @@ Board:
       frequency_mhz: 27
       pins: {"clk": "H11"}
     onboard_ddr3:   # DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)
+      source: {doc: som, where: 'FPGA banks 4/5/6 symbol: DDR3_A0..A13, DDR3_BA0..2, DDR3_~RAS/~CAS/~WE/~CS0, DDR3_LDM/UDM, DDR3_DQ0..15, DDR3_DQSL_P/N, DDR3_DQSU_P/N, DDR3_CK_P/N, DDR3_CKEN, DDR3_ODT0, DDR3_~RST'}
       device: {"name": "DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)", "kind": "ddr3"}
       iostandard: "SSTL15 (SSTL15D for dqs/ck; LiteX)"
       pins: {"a": ["F7", "A4", "D6", "F8", "C4", "E6", "B1", "D8", "A5", "F9", "K3", "B7", "A3", "C8"], "ba": ["H4", "D3", "H5"], "ras_n": "R4", "cas_n": "R6", "we_n": "L2", "cs_n": "P5", "dm": ["G1", "K5"], "dq": ["G5", "F5", "F4", "F3", "E2", "C1", "E1", "B3", "M3", "K4", "N2", "L1", "P4", "H3", "R1", "M2"], "dqs": ["G2,G3", "J5,K6"], "ck": "J1,J3", "cke": "J2", "odt": "R3", "reset_n": "B9"}
     onboard_flash:   # SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)
+      source: {doc: som, where: 'U9 XT25B32: ~CS <- M9_IOR34A_FLASH_SPI_~CS (MCS_N), CLK <- L10_IOR34B (MCLK), IO1/DO -> P10_IOR33A (MI), IO0/DI <- R10_IOR33B (MO); WP/HOLD pulled up 4.7K'}
       device: {"name": "SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)", "kind": "flash"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "M9", "clk": "L10", "miso": "P10", "mosi": "R10"}
     onboard_sdcard:   # microSD card slot J2 (SDIO, push-pull)
+      source: {doc: som, where: 'J2 MOLEX 1040310811: DAT0 M8_IOR36A_SDIO_D0, DAT1 M7_IOR47A_SDIO_D1, DAT2 M10_IOR22A_SDIO_D2, DAT3/CD N11_IOR22B_SDIO_D3, CMD R14_IOR7B_SDIO_CMD, CLK N10_IOR27A_SDIO_CLK, DET_A D15_IOR5B_SDIO_DET (4.7K pull-up)'}
       device: {"name": "microSD card slot J2 (SDIO, push-pull)", "kind": "sdcard"}
       iostandard: "LVCMOS33"
       pins: {"clk": "N10", "cmd": "R14", "d": ["M8", "M7", "M10", "N11"], "cd": "D15"}
     onboard_spi_lcd:   # SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14" ST7789)
+      source: {doc: som, where: 'J3 Conn_FPC_8P: LEDA via Q1 Si2301 gate P12_IOR8A_LCD_~BL, RESET G13_IOT12B_LCD_~RST, RS J13_IOT27B_LCD_RS, SDA L15_IOT2A_LCD_SDA, SCL F12_IOT12A_LCD_SCL (R26 22R), CS C16_IOT5A_LCD_~CS'}
       device: {"name": "SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14\" ST7789)", "kind": "lcd_spi"}
       iostandard: "LVCMOS33"
       pins: {"bl_n": "P12", "rst_n": "G13", "rs": "J13", "sda": "L15", "scl": "F12", "cs_n": "C16"}
     onboard_reset:   # Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST
+      source: {doc: som, where: U4 SGM803 ~RESET -> T10_IOR35B_FPGA_~RST (150K pull-up); T10 also on CARD1 pin 15}
       device: {"name": "Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST", "kind": "reset"}
       active: "low"
       iostandard: "LVCMOS33"
       shares: ["header"]   # the board multiplexes these pins
       pins: {"rst_n": "T10"}
     onboard_jtag:   # JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)
+      source: {doc: som, where: 'J1 JST_SHL_SM08B: 1 +5V, 2 B8_IOR25B_JTAG_TMS, 3 C6_IOR25A_JTAG_TDO, 4 A7_IOR26A_JTAG_TCK, 5 A6_IOR26B_JTAG_TDI, 6 T13_IOR8B_FPGA_RXO (FPGA RX), 7 M11_IOR27B_FPGA_TXO (FPGA TX), 8 GND'}
       device: {"name": "JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)", "kind": "header"}
       shares: ["header"]   # the board multiplexes these pins
       pins: ["B8", "C6", "A7", "A6", "T13", "M11"]

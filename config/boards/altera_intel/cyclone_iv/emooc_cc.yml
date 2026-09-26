@@ -13,6 +13,42 @@ Board:
   bridges:
   - jtag
   programmer: quartus_pgm
+  documents:
+  - id: minifpga_ref
+    title: MiniFPGA Board Reference (Cyclone IV E EP4CE6F17C8 pin map, user notes)
+    kind: wiki
+    url: https://raw.githubusercontent.com/wweiyi2004/minifpga-quartus-skill/74d4bab0196791c152166be553e9476d78f18005/skill/references/board-minifpga.md
+    sha256: 5ce6cf7e5f7b1ce14ec0519129e5a96380ea8e17ab628b78272c19ae9767dc4f
+    bytes: 3013
+    retrieved: '2026-09-24'
+  - id: minifpga_clock
+    title: MiniFPGA exp3_clock.qsf (verified project)
+    kind: constraints
+    url: https://raw.githubusercontent.com/wweiyi2004/minifpga-quartus-skill/74d4bab0196791c152166be553e9476d78f18005/examples/fpga_exp3_clock_2024/exp3_clock.qsf
+    sha256: 4b0063a70b037858a1dfbc6890fdb2d0ae7acb7aad5f77dd6bf044bc5b9ecabe
+    bytes: 5995
+    retrieved: '2026-09-24'
+  - id: minifpga_freq
+    title: MiniFPGA freq_counter.qsf
+    kind: constraints
+    url: https://raw.githubusercontent.com/wweiyi2004/minifpga-quartus-skill/74d4bab0196791c152166be553e9476d78f18005/examples/fpga_frequency_counter/freq_counter.qsf
+    sha256: 2c8debd3eba9651da8f8846dfcbad84985b43e10c2a3eec56817b87e47e54991
+    bytes: 8734
+    retrieved: '2026-09-24'
+  - id: multimeter
+    title: SimpleMultiMeter fpga/main.qsf (EP4CE6F17C8, same board)
+    kind: constraints
+    url: https://raw.githubusercontent.com/MaybeThready/SimpleMultiMeter/eea9fddea675e6d6e92f9cbdca3afaf61a0ebeea/fpga/main.qsf
+    sha256: 53315a960b1e6745305762c103fd6722a19bde8f24e7b060b43b6cceba560b55
+    bytes: 7118
+    retrieved: '2026-09-24'
+  - id: piano
+    title: Fernando_piano2.qsf (EP4CE6F17C8, buzzer + switches)
+    kind: constraints
+    url: https://raw.githubusercontent.com/FernandoCC19/Fernando_piano2/101b55c901a15f2360eda2211d003f7afb4bf2b5/Fernando_piano2.qsf
+    sha256: 51a2448b3b3b8857d1f25de74f8af2a0486ef3d5ad1ea292a8f086f9878bf488
+    bytes: 3582
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -24,8 +60,8 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk: { pins: E1, frequency_mhz: 50 }
-    onboard_buzzer: { pins: L3 }
+    clk: { pins: E1, frequency_mhz: 50, source: {doc: minifpga_ref, where: 'Core Pins: clk E1 "50 MHz board clock"'} }
+    onboard_buzzer: { pins: L3, source: {doc: minifpga_clock, where: 'Buzzer_Out L3; also piano BUZZER, multimeter beep'} }
     onboard_uart:
       pins:
         rx: F14
@@ -35,15 +71,19 @@ Board:
         scl: R14
         sda: T15
     onboard_buttons:
+      source: {doc: minifpga_clock, where: 'Key_In[0..2] = J14, J16, J15; minifpga_ref "rst / KEY0 J14 active low"'}
       active: low
       pins: [J14, J16, J15, K16, K15, L15, L16, J13]
     onboard_switches:
+      source: {doc: minifpga_ref, where: 'Core Pins sw[0..7]; also minifpga_clock SW_In[0..7]'}
       active: low
       pins: [R16, P15, P16, N15, N16, M12, N14, N13]
     onboard_leds:
+      source: {doc: minifpga_clock, where: 'LED_Out[0..15]'}
       active: low
       pins: [A5, B5, A4, B4, A3, B3, A2, C3, D15, D16, F15, F16, G15, G16, L13, L14]
     onboard_7seg:
+      source: {doc: minifpga_ref, where: 'Seven-Segment Display: Digitron_Out[0..7], DigitronCS_Out[0..5]; same in multimeter seg/sel'}
       pins:
         segments: [C9, E9, D8, C8, D11, E8, E10, D9]
         anodes: [C14, D14, G11, F11, C11, D12]
@@ -51,9 +91,11 @@ Board:
       index_origin: 4
       pins: [N5, P3, N3, T7, R7, T6, R6, T5, R5, T4, R4, T3, R3, T2, R1, P2, P1, N2, N1, L2, L1, J2, K1, G1, J1, G2, F1, F2, C2, B1, D3, D4, E5, D5]
     gpio_p1:
+      source: {doc: multimeter, where: csn/d_out/d_in/sclk/cba_channel/dc_switch_signal/ct_signal}
       index_origin: 2
       pins: [C6, B6, A6, B7, A7, B8, A8, A9, B9, A11, B11, A12, B12, A13, B13, A14, B14, A15, B16, C15, C16]
     gpio_p2:
+      source: {doc: multimeter, where: unit_leds/range_leds/mode_cs/c_signal/l_signal/ct_led; minifpga_freq T8/T9 loopback}
       index_origin: 2
       pins: [N6, R8, T8, T9, R9, T10, R10, T11, M11, N12, P8, N8, M8, M9, N9, P9, M10, R11, T13, R13, T14]
   # ---- drawn: headers and parts; ./unifpga layout draft emooc_cc regenerates from here on ----

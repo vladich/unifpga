@@ -36,6 +36,126 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  documents:
+  - id: cst
+    title: tang_mega_138k-pro_pins.cst
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/09_Misc/tang_mega_138k-pro_pins.cst
+    sha256: f647104f7b74800890d0283a438b226301bff3a3429a04ec0f6df63c9026e8ba
+    bytes: 18688
+    retrieved: '2026-09-24'
+  - id: xlsx
+    title: Tang_MEGA_138K_Pro_Pinout_Track_Length_Table.xlsx (SOM BTB J1/J2/J3 pin -> ball)
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/08_Pinout_Length_table/Tang_MEGA_138K_Pro_Pinout_Track_Length_Table.xlsx
+    sha256: 476ced15fa108f73ac71c90b7308754ed8cf245b048f694540bc482d95ff9f78
+    bytes: 41592
+    retrieved: '2026-09-24'
+  - id: som4071
+    title: TANG_MEGA-138K-Pro_4071_Schematics (SOM, Rev 1.10)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/02_Schematic/TANG_MEGA-138K-Pro_4071_Schematics.pdf
+    sha256: ee1900257e287f611c42516c24dfdc3f170722a67736a9ccabc8e102c2547636
+    bytes: 2005092
+    retrieved: '2026-09-24'
+  - id: som4072
+    title: TANG_MEGA-138K-Pro_4072_Schematics (SOM, Rev 1.10, 2024-03-25)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/02_Schematic/TANG_MEGA-138K-Pro_4072_Schematics.pdf
+    sha256: fd308dbb33a10a928f7759207f39717881733945981c2fc34e9bbcfb3e1008eb
+    bytes: 5707118
+    retrieved: '2026-09-24'
+  - id: dock_f3
+    title: TANG_MEGA-138K_Dock-4071f3 Schematics (Dock Rev 1.5, 2025-03-25; current)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/02_Schematic/TANG_MEGA-138K_Dock-4071f3__Schematics.pdf
+    sha256: 153d1c170a7d54e11a5d5e9b128ee9139a07b27249377d909e204cbf56e25cec
+    bytes: 5728047
+    retrieved: '2026-09-24'
+  - id: dock_f
+    title: TANG_MEGA-138K_Pro-Dock-4071f Schematics (Dock Rev 1.2, 2024-10-10; also 4071f2)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/02_Schematic/TANG_MEGA-138K_Pro-Dock-4071f_Schematics.pdf
+    sha256: 852040eda6eedfaf9638d8de42192542b56cd817eb79cffb872056fb4d12f82f
+    bytes: 5568843
+    retrieved: '2026-09-24'
+  - id: dock_d
+    title: TANG_MEGA-138K_ProDock-4071d Schematics (Dock Rev 1.02, 2023-08-29; archived)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/02_Schematic/archived/TANG_MEGA-138K_ProDock-4071d_Schematics.pdf
+    sha256: abe29abbe87b7b89a63ea71fb9663aa755c8aff5291e9192243656b6d15ef737
+    bytes: 2547021
+    retrieved: '2026-09-24'
+  - id: readme
+    title: 02_Schematic/readme.txt (4071=4072 SOM, 4071f=4071f2 Dock)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/02_Schematic/readme.txt
+    sha256: c7a412ca36f7b4bc2601dae104d9f1faa7706da7b61036d6e4c4a1fb32ae63a7
+    bytes: 539
+    retrieved: '2026-09-24'
+  - id: spec
+    title: Tang_MEGA_138K_Pro_Specification_V1.0_en-US
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_Pro/01_Specification/Tang_MEGA_138K_Pro_Specification_V1.0_en-US.pdf
+    sha256: 71bcb0bc80a8fd8caab309a8977d91cf6b0a1e74f1b04e07814d3283c7d49bb8
+    bytes: 837954
+    retrieved: '2026-09-24'
+  - id: wiki
+    title: Tang Mega 138K Pro Dock (Sipeed wiki)
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/tang-mega-138k/mega-138k-pro.html
+    sha256: 6646752e14d16b0177612b6374efdcb28c325b8485b2a97154f55e054195a65b
+    bytes: 96948
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards sipeed_tang_mega_138k_pro.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_mega_138k_pro.py
+    sha256: 2f6a987eca91b7e5ba4b22f9eb0a41b36d9ffdfe0c952925860ca4870a1d15c9
+    bytes: 16586
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: amaranth-boards tang_mega_138k_pro_dock.py
+    kind: platform
+    url: https://github.com/amaranth-lang/amaranth-boards/blob/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/tang_mega_138k_pro_dock.py
+    sha256: 310c406a5cdf629927a2a0fce4cbf0e648df22ae3dbab334d70de2dea6df873a
+    bytes: 1734
+    retrieved: '2026-09-24'
+  - id: ex_usb
+    title: TangMega-138KPro-example usb2_soft/usb_uart_loopback/src/usb_ref.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138KPro-example/blob/d3cebf1703f1bcd06dca8a53bf2b660c86a5ec16/usb2_soft/usb_uart_loopback/src/usb_ref.cst
+    sha256: b9d18a4b0da44e198e454a042ce4cc09c9b2e8d6e38a60bd7c0d162fe5aab867
+    bytes: 1757
+    retrieved: '2026-09-24'
+  - id: ex_rgmii
+    title: TangMega-138KPro-example udp_rgmii_send/src/top.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138KPro-example/blob/d3cebf1703f1bcd06dca8a53bf2b660c86a5ec16/udp_rgmii_send/src/top.cst
+    sha256: a1b2d7f4d452c8f7e5afae5c568a87079f00167b093da8d6c66696d93cf9e870
+    bytes: 810
+    retrieved: '2026-09-24'
+  - id: ex_keyled
+    title: TangMega-138KPro-example key_led/src/key_led.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138KPro-example/blob/d3cebf1703f1bcd06dca8a53bf2b660c86a5ec16/key_led/src/key_led.cst
+    sha256: f4449e034b892f1e49ae9083df6025358330679ea0cf9eb77439bbdcc368dc5a
+    bytes: 1666
+    retrieved: '2026-09-24'
+  - id: ex_cam2dvi
+    title: TangMega-138KPro-example cam2hdmi_alt/cam2dvi/src/138K_PRO_DOCK.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138KPro-example/blob/d3cebf1703f1bcd06dca8a53bf2b660c86a5ec16/cam2hdmi_alt/cam2dvi/src/138K_PRO_DOCK.cst
+    sha256: 391bdeef432054ff101d679803e5edd84f49f85df3ef6f4516277c7a8ca00bc9
+    bytes: 10259
+    retrieved: '2026-09-24'
+  - id: ex_sfp
+    title: TangMega-138KPro-example sfp+/customized_phy/10.3125G/src/fpga_project.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138KPro-example/blob/d3cebf1703f1bcd06dca8a53bf2b660c86a5ec16/sfp+/customized_phy/10.3125G/src/fpga_project.cst
+    sha256: fe243f455bf099607bf5be598046b06ec5c49150ec716b7449d5beee31ef2396
+    bytes: 862
+    retrieved: '2026-09-24'
   toolchain_options:
     yosys:
       loader_board: "tangmega138k"          # openFPGALoader -b
@@ -44,14 +164,17 @@ Board:
       options: [use_cpu_as_gpio, use_sspi_as_gpio]
       gprj_device: '<Device name="GW5AST-138B" pn="GW5AST-LV138FPG676AES">gw5ast138b-002</Device>'
   banks:
-    clk: { pins: P16, frequency_mhz: 50 }
+    clk: { pins: P16, frequency_mhz: 50, source: {doc: som4071, where: 'p.7 JTAG&CONFIG, 50MHz Oscillator OUT -> R38 22R -> P16_EMCCLK (IOR103B/EMCCLK)'} }
     onboard_buttons:
+      source: {doc: dock_f3, where: 'p.15 USR_KEY.0 K16, .1 F15, .2 G15, .3 G16, 1.5K pull-ups to +3V3; p.5 LCD.INT0..3 -> 0R -> USR_KEY.0..3'}
       active: low
       pins: [K16, F15, G15, G16]
     onboard_leds:
+      source: {doc: dock_f3, where: 'p.15 PERIPHERALS USR_LED.0 J14 (bank 2), .1 R26, .2 L20, .3 M25, .4 N21, .5 N23 via 3.3K; active low per litex led_n / amaranth invert'}
       active: low
       pins: [J14, R26, L20, M25, N21, N23]
     onboard_lcd:
+      source: {doc: dock_f3, where: 'p.14 FPGA-LCD J20: pins 7-12 MIPI_DPI.D12..D17 (K17 J18 H18 G25 J19 H19), 15-20 D6..D11, 23-28 D0..D5 (M16 M17 F18 F19 G19 F20), 30 CLK H21, 32 HS H22, 33 VS A23, 34 DE A24, 37-40 LCD.INT0..3; LCD_BL F25 -> backlight boost; cst lcd_r[0]=K17..r[5]=H19'}
       pins:
         ck: H21
         de: A24
@@ -59,6 +182,7 @@ Board:
         g: [G20, G21, G22, F22, K15, J16]
         b: [M16, M17, F18, F19, G19, F20]
     onboard_hdmi_0:
+      source: {doc: dock_f3, where: 'p.8 DVI A(TX): DVI_TX0 AB24/AC24, TX1 V24/W24, TX2 AA22/AA23, TXC Y22/Y23 (100nF AC coupling, 499R to 3V3), HPD T15, CEC_TX T14; DDC via TWI mux ch.3 (DVI_A_DDC)'}
       pins:
         clk_p: "Y22,Y23"
         d_p: ["AB24,AC24", "V24,W24", "AA22,AA23"]
@@ -70,10 +194,13 @@ Board:
     # pmod_0[1] = N26 per the TM1638 constraint set
     # (the harvest had merged another variant's L22)
     pmod_0:
+      source: {doc: dock_f3, where: 'p.5 BTB PMOD0_IO0 N18, IO1 N26, IO2 R16, IO3 R17, IO4 M26, IO5 N17, IO6 L24, IO7 T24; p.16 J22: IO0 pin 11, IO1 9, IO2 7, IO3 5, IO4 12, IO5 10, IO6 8, IO7 6 (1/2 +3V3, 3/4 GND); p.16 PIN FUCTION table SSPI'}
       pins: [N18, N26, R16, R17, M26, N17, L24, T24]
     pmod_1:
+      source: {doc: dock_f3, where: 'p.16 J24: IO0 C24 (pin 11), IO1 E25 (9), IO2 L17 (7), IO3 H14 (5), IO4 B24 (12), IO5 D25 (10), IO6 L18 (8), IO7 H15 (6)'}
       pins: [C24, E25, L17, H14, B24, D25, L18, H15]
     pmod_2:
+      source: {doc: dock_f3, where: 'p.16 J26: IO0 C21 (pin 11), IO1 B20 (9), IO2 B19 (7), IO3 A17 (5), IO4 B21 (12), IO5 A20 (10), IO6 A19 (8), IO7 A18 (6)'}
       pins: [C21, B20, B19, A17, B21, A20, A19, A18]
     onboard_ddr3:   # DDR3 SDRAM 2x H5TQ4G63EFR-RDC (512Mx16 each, 32-bit bus, 1 GB)
       device: {"name": "DDR3 SDRAM 2x H5TQ4G63EFR-RDC (512Mx16 each, 32-bit bus, 1 GB)", "kind": "ddr3"}
@@ -98,6 +225,7 @@ Board:
       iostandard: "bank 7, 1.5 V (4.7K pull-ups R33/R36 to +1V5)"
       pins: {"usr_key1": "T8", "usr_key2": "T7"}
     jtag:   # SOM debug connector J5 (JST SH 1.0 8P, JTAG + UART)
+      source: {doc: som4071, where: 'p.7 J5 Conn_01x08: 1 +5V, 2 JTAG_TMS H11, 3 JTAG_TDO J10, 4 JTAG_TCK H12, 5 JTAG_TDI H10, 6 FPGA_RXD N16, 7 FPGA_TXD P15, 8 GND'}
       device: {"name": "SOM debug connector J5 (JST SH 1.0 8P, JTAG + UART)", "kind": "header"}
       shares: ["onboard_uart"]   # the board multiplexes these pins
       pins: ["H11", "J10", "H12", "H10", "N16", "P15"]
@@ -111,6 +239,7 @@ Board:
       device: {"name": "WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)", "kind": "ws2812"}
       pins: {"din": "H16"}
     onboard_uart:   # BL616 USB-JTAG & UART (USB-C), debug UART
+      source: {doc: dock_f3, where: 'p.6 USB_JTAG: N16,3 DBG_UART.RX -> R95 -> BL616_TX; P15,3 DBG_UART.TX -> BL616_RX; JTAG.TMS H11, TCK H12, TDO J10, TDI H10 (bank 10); som4071 N16_FPGA_RXD / P15_FPGA_TXD; litex serial rx N16 tx P15'}
       device: {"name": "BL616 USB-JTAG & UART (USB-C), debug UART", "kind": "uart"}
       shares: ["jtag"]   # the board multiplexes these pins
       pins: {"rx": "N16", "tx": "P15", "jtag_tck": "H12", "jtag_tms": "H11", "jtag_tdi": "H10", "jtag_tdo": "J10"}
@@ -171,6 +300,7 @@ Board:
       device: {"name": "4-pin PWM fan connector", "kind": "fan"}
       pins: {"pwm": "T17", "tach": "T18"}
     header_40p:   # 40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)
+      source: {doc: dock_f3, where: 'p.16 SDRAM CONN. J23: pin n <- SDRAM_* nets with ball annotations (1 D0 U16 ... 20 CLK V23 ... 40 A3 V22), 11 +5V, 12 GND; 29 SDRAM_DM0 = 40P_EXIO0 (L22 via R260), 30 SDRAM_DM1 = 40P_EXIO1 (M24 via R261) p.13; R23/R24 0R options to GND. cst pin_header[0..37] and litex sdram_connector agree'}
       device: {"name": "40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)", "kind": "header"}
       shares: ["onboard_m2", "onboard_pcie"]   # the board multiplexes these pins
       pins: ["U16", "V16", "U15", "V17", "W21", "Y21", "P21", "U17", "P23", "P24", "T23", "R23", "R25", "T25", "W23", "P25", "U24", "V23", "AC26", "U25", "AB25", "AB26", "AA25", "AA24", "Y26", "Y25", "L22", "M24", "W26", "W25", "U26", "V26", "W20", "Y20", "V19", "W19", "U22", "V22"]

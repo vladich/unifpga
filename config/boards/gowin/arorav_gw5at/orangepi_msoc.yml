@@ -16,25 +16,52 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  documents:
+  - id: page
+    title: orangepi.cn product page 'OrangePi MSOC' (硬件规格参数)
+    kind: wiki
+    url: http://www.orangepi.cn/html/hardWare/computerAndMicrocontrollers/details/Orange-Pi-MSOC.html
+    sha256: 7576b2346bc78469315efcac582c8d34df36a5fbdad540841d0cfce52b1f023f
+    bytes: 25354
+    retrieved: '2026-09-24'
+  - id: support
+    title: orangepi.cn MSOC download page (user manual / official material only via Baidu Netdisk)
+    kind: wiki
+    url: http://www.orangepi.cn/html/hardWare/computerAndMicrocontrollers/service-and-support/Orange-pi-MSOC.html
+    sha256: 1e5a600806e4a243815e597f160a1151504ec58786e76d9c571db24363d4923e
+    bytes: 24031
+    retrieved: '2026-09-24'
+  - id: bgm
+    title: BGM boards/orangepi_msoc/board_specific.cst (only public pin source found)
+    kind: constraints
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/main/boards/orangepi_msoc/board_specific.cst
+    sha256: c23b18698870b81b5f15182928376b09cb17e9740c572d4fd8d7b4f0241abd38
+    bytes: 2822
+    retrieved: '2026-09-24'
   toolchain_options:
     gowin:
       set_device: "GW5AT-LV138PG484AC1/I0 -name GW5AT-138B -device_version B"
       options: [use_cpu_as_gpio, use_sspi_as_gpio]
       gprj_device: '<Device name="GW5AT-138B" pn="GW5AT-LV138PG484AC1/I0">gw5at138b-012</Device>'
   banks:
-    clk: { pins: V18, frequency_mhz: 25 }
+    clk: { pins: V18, frequency_mhz: 25, source: {doc: bgm, where: IO_LOC CLK V18; board_specific_top.sv clk_mhz = 25} }
     onboard_leds:
+      source: {doc: bgm, where: 'LED[0..15]'}
       pins: [N13, P14, R14, N14, P15, P16, R16, P17, T18, R18, R17, W22, Y22, AA21, AB22, AB21]
     onboard_uart:
+      source: {doc: bgm, where: 'UART_RX Y19, UART_TX U20'}
       pins:
         rx: Y19
         tx: U20
     onboard_switches:
+      source: {doc: bgm, where: 'SW[0..15]'}
       pins: [U18, U17, W17, V17, AA19, AA18, AB18, AB20, V10, AB12, W10, AA11, AA10, AB11, AA9, AB10]
     onboard_buttons:
+      source: {doc: bgm, where: 'KEY[0..3]'}
       active: low
       pins: [V20, W19, W20, W21]
     onboard_7seg:
+      source: {doc: bgm, where: 'HGFEDCBA[0..7], DIGIT[0..7]'}
       pins:
         ca: M21
         cb: L21
@@ -46,6 +73,7 @@ Board:
         dp: J20
         anodes: [K17, J17, L14, L15, L16, M16, H20, G20]
     gpio:
+      source: {doc: bgm, where: 'GPIO[0..19] comments'}
       pins: [B22, B21, A21, B20, A20, A19, B18, A18, B17, A16, B16, A15, B15, A14, B13, A13, E21, G21, D21, G22]
   # ---- drawn: headers and parts; ./unifpga layout draft orangepi_msoc regenerates from here on ----
   layout: {verified: false, generated: true}

@@ -35,33 +35,81 @@ Board:
   - rgb_led_common_anode
   - issi_is43tr16256a
   - ti_txs02612
+  documents:
+  - id: xdc
+    title: Eclypse-Z7-Master.xdc (Digilent master XDC, Rev B.0)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Eclypse-Z7-Master.xdc
+    sha256: 69bba5eee2caefbc89f9c63d96efb15f27f09b457d746791c9084b4ffa0034bb
+    bytes: 10615
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/eclypse_z7/xdc.xdc
+  - id: preset
+    title: Digilent Vivado board files eclypse-z7 B.0 preset.xml (PS7 MIO configuration)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/eclypse-z7/B.0/preset.xml
+    sha256: 483139384b100dd2ed818a20ba38f9d4776dd09b73a067b5616925c05b9a4402
+    bytes: 44444
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/eclypse_z7/preset.xml
+  - id: board_xml
+    title: Digilent Vivado board files eclypse-z7 B.0 board.xml
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/eclypse-z7/B.0/board.xml
+    sha256: 80d74d84122428a89d72079af56e5a66fbb91138e31d6862d12f1a072f8add6d
+    bytes: 15198
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/eclypse_z7/board.xml
+  - id: board_pins
+    title: Digilent Vivado board files eclypse-z7 B.0 part0_pins.xml
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/eclypse-z7/B.0/part0_pins.xml
+    sha256: 6527ed690b2c196e897d7a17825d048e5ccfdf627a046a510ce5268f163265f9
+    bytes: 3837
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/eclypse_z7/part0_pins.xml
+  - id: litex
+    title: LiteX-Boards platform digilent_eclypse_z7.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/digilent_eclypse_z7.py
+    sha256: 2be3ef834b1c0fd6d6603e130e60d07d456ce4adf85c587c873f5d9a45b8dff4
+    bytes: 9209
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/eclypse_z7/litex.py
   defaults:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: D18, frequency_mhz: 125 }
+    clk: { pins: D18, frequency_mhz: 125, source: {doc: xdc, where: '"125MHz Clock from Ethernet PHY", line 7'} }
     onboard_buttons:
+      source: {doc: xdc, where: '"Buttons", lines 11-12'}
       pins: [C17, C18]
     onboard_rgb_led_0:
+      source: {doc: xdc, where: '"RGB LEDs", lines 15-17'}
       pins:
         b: A17
         g: B16
         r: B17
     onboard_rgb_led_1:
+      source: {doc: xdc, where: '"RGB LEDs", lines 18-20'}
       pins:
         b: A16
         g: A18
         r: A19
     pmod_jb:
+      source: {doc: xdc, where: '"Pmod Header JB", lines 33-40; keyed by Pmod pin number (Sch names jb1_fpga..jb10_fpga)'}
       pins: [G15, D16, D17, E18, F18, G17, H18, H17]
     pmod_ja:   # Pmod header JA
+      source: {doc: xdc, where: '"Pmod Header JA", lines 23-30; keyed by Pmod pin number (Sch names ja1_fpga..ja10_fpga)'}
       device: {"name": "Pmod header JA", "kind": "pmod"}
       iostandard: "LVCMOS33"
       pins: ["B15", "C15", "D15", "E16", "E15", "F17", "F16", "G16"]
     syzygy_a:   # SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)
+      source: {doc: xdc, where: '"Syzygy Port A", lines 43-74; no IOSTANDARD in the XDC (set by the Zmod VIO)'}
       device: {"name": "SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)", "kind": "header"}
       pins: {"c2p_clk_n": "N20", "c2p_clk_p": "N19", "d_n": ["T17", "T19", "T18", "P18", "R16", "P15", "K18", "K21"], "d_p": ["T16", "R19", "R18", "P17", "P16", "N15", "J18", "J20"], "p2c_clk_n": "M20", "p2c_clk_p": "M19", "s": ["L19", "K20", "L18", "K19", "L22", "J22", "L21", "J21", "N22", "P22", "M21", "M22"]}
     syzygy_b:   # SYZYGY port B (Zmod port B; 8 differential pairs, 2 clock pairs, 12 single-ended)
+      source: {doc: xdc, where: '"Syzygy Port B", lines 77-108; no IOSTANDARD in the XDC (set by the Zmod VIO)'}
       device: {"name": "SYZYGY port B (Zmod port B; 8 differential pairs, 2 clock pairs, 12 single-ended)", "kind": "header"}
       pins: {"c2p_clk_n": "Y16", "c2p_clk_p": "W16", "d_n": ["Y15", "W13", "AA13", "AB15", "AA14", "V15", "AB22", "Y21"], "d_p": ["W15", "V13", "Y13", "AB14", "Y14", "V14", "AA22", "Y20"], "p2c_clk_n": "W18", "p2c_clk_p": "W17", "s": ["AA18", "AA19", "Y18", "Y19", "AB20", "AB21", "AB19", "AA21", "U16", "U15", "V17", "U17"]}
     onboard_crypto:   # Crypto authentication chip SDA

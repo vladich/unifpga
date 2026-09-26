@@ -17,6 +17,63 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  documents:
+  - id: sch3603
+    title: Tang_Nano_4K_3603 schematic (KiCad, 2 sheets)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Nano%204K/HDK/02_Schematic/Tang_Nano_4K_3603_Schematic_.pdf
+    sha256: f25359fe86092fc4be89ef7c8a6b934fff847718980ebbde18e1987e1ed9f63d
+    bytes: 307810
+    retrieved: '2026-09-24'
+  - id: ds4k
+    title: Sipeed Tang Nano 4K Datasheet EN V1.0
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Nano%204K/HDK/01_Specification/Sipeed%20Tang%20nano%204K%20Datasheet_EN%20V1.0.pdf
+    sha256: 063122763d7d167cbab37d7697bb0b36de7b9bf0c2010eea29a25e63757b208a
+    bytes: 1166583
+    retrieved: '2026-09-24'
+  - id: wiki_4k
+    title: Sipeed wiki Tang Nano 4K
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-4K/Nano-4K.html
+    sha256: fa7b42cc8d8c6e3b19c4aa75ff1fd8e811e0ec0869248761aec73fb3da9a007d
+    bytes: 81599
+    retrieved: '2026-09-24'
+  - id: cst_video
+    title: TangNano-4K-example camera_hdmi/src/dk_video.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-4K-example/blob/317743fd94e22e5ff053dad86359a3561e5a2181/camera_hdmi/src/dk_video.cst
+    sha256: f9c96c730e81e4da993f008fb9970567b8bb2d3039e945e078ed6c45837b6b4f
+    bytes: 1581
+    retrieved: '2026-09-24'
+  - id: v_video
+    title: TangNano-4K-example camera_hdmi/src/video_top.v (HyperRAM port names)
+    kind: example
+    url: https://github.com/sipeed/TangNano-4K-example/blob/317743fd94e22e5ff053dad86359a3561e5a2181/camera_hdmi/src/video_top.v
+    sha256: 3562ddb69c7c3b949981681831b7c145dd2c94a72103cfaeb8b522ee72316b34
+    bytes: 13702
+    retrieved: '2026-09-24'
+  - id: cst_key
+    title: TangNano-4K-example key_blink/src/key_blink.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-4K-example/blob/317743fd94e22e5ff053dad86359a3561e5a2181/key_blink/src/key_blink.cst
+    sha256: 0b5edebf48b7340072c039c62b5e1a0b5147c174a5e75c351b726d4fe45010f5
+    bytes: 294
+    retrieved: '2026-09-24'
+  - id: cst_led
+    title: TangNano-4K-example led_test/project/src/led_test.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-4K-example/blob/317743fd94e22e5ff053dad86359a3561e5a2181/led_test/project/src/led_test.cst
+    sha256: 9f64e1829fa2425fd4f91df4b828e3c6521682efbeffa89f45c5d82cdf2d9a33
+    bytes: 408
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards sipeed_tang_nano_4k.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_nano_4k.py
+    sha256: 2b7e6d24affe9692fe28ee4a8347a12e5bc76ce075c63c7e69ce2b10e1d0cc9d
+    bytes: 3991
+    retrieved: '2026-09-24'
   toolchain_options:
     yosys:
       loader_board: "tangnano4k"          # openFPGALoader -b
@@ -25,12 +82,14 @@ Board:
       options: [use_done_as_gpio, use_mspi_as_gpio]
       gprj_device: '<Device id="GW1NSR-4C" package="QFN48P" speed="6" partNumber="GW1NSR-LV4CQN48PC6/I5"/>'
   banks:
-    clk: { pins: "45", frequency_mhz: 27 }
+    clk: { pins: "45", frequency_mhz: 27, source: {doc: sch3603, where: 'U12 "27Mhz 3.3V" OUT -> R38 49.9R -> SYS_CLK = U7 pin 45 IOT13A/LPLL_T_in (bank 1, VCCO1 3V3)'} }
     onboard_buttons:
+      source: {doc: sch3603, where: 'KEY1 = U7 pin 14 IOB4B, KEY2 = pin 15 IOB5A; R31/R40 100K to DCDC3_1V8 (bank 3, VCCO3 1V8)'}
       active: low
       pins: ["15", "14"]
-    onboard_led: { pins: "10" }
+    onboard_led: { pins: "10", source: {doc: sch3603, where: 'net MODE = U7 pin 10 IOT7A/MODE1&IOT7B/MODE2 -> DS3 anode, cathode -> R32 330R -> GND; R48 1K MODE to GND; R47 NC'} }
     onboard_serial_flash:
+      source: {doc: sch3603, where: 'U11 CS=MSPI_CS pin 2 IOT10B/MCS_N, SO/IO1=MSPI_DO pin 47 IOT11B/MI, WP/IO2=MSPI_WP pin 8 IOT4B/JTAGSEL_N, HOLD/IO3=MSPI_HOLD pin 9 IOT5B/DONE, CLK=MSPI_CLK (R39 1K) pin 1 IOT10A/MCLK, SI/IO0=MSPI_DI pin 48 IOT11A/MO'}
       pins:
         clk: "1"
         di: "48"
@@ -39,12 +98,14 @@ Board:
         wp: "8"
         hold: "9"
     onboard_hdmi:
+      source: {doc: sch3603, where: HDMI_TXC_P/N = pins 28 IOR17A / 27 IOR17B; TX0_P/N 30 IOR15A / 29 IOR15B; TX1_P/N 32 IOR11A / 31 IOR11B; TX2_P/N 35 IOR2A / 34 IOR2B; 100nF series caps -> U2/U3 -> P1 DATA0..2/CLOCK}
       pins:
         clk_p: "28,27"
         clk_n: "27"
         d_p: ["30,29", "32,31", "35,34"]
         d_n: ["29", "31", "34"]
     onboard_camera:
+      source: {doc: sch3603, where: 'P3: 3 SDA=CAMERA_SDA pin 46, 5 SCL=CAMERA_SCL pin 44, 7 VSYNC=DVP_VSYNC pin 43, 9 HSYNC <- R22 22R <- DVP_HSYNC pin 42, 13 MCLK <- R24 22R <- DVP_XCLK pin 33, 17 PCLK <- R26 22R <- DVP_PCLK pin 41; PIXDATA0..9 = pins 22,21,17,19,20,18,16,23,39,40 (P3 pins 24 FB_SDA, 23 FC_SDA, 19 D0, 21 D1, 22 D2, 20 D3, 18 D4, 16 D5, 14 D6, 12 D7)'}
       index_origin: {data: 8}
       pins:
         scl: "44"
@@ -58,10 +119,12 @@ Board:
       shares: ["header_p7"]   # the board multiplexes these pins
       pins: {"tdi": "3", "tdo": "4", "tms": "6", "tck": "7"}
     header_p6:   # Header P6 (1x22)
+      source: {doc: sch3603, where: 'P6: 1 HDMI_TX0_P, 2 TX0_N, 3 TXC_P, 4 TXC_N, 5 PIXDATA7, 6 PIXDATA0, 7 PIXDATA1, 8 PIXDATA4, 9 PIXDATA3, 10 PIXDATA5, 11 PIXDATA2, 12 PIN13_IOB4A, 13 PIXDATA6, 14 MSPI_HOLD, 15 MSPI_WP, 16 DVP_XCLK, 17 MSPI_CS, 18 DCDC3_1V8, 19/20 GND, 21 5V, 22 KEY2'}
       device: {"name": "Header P6 (1x22)", "kind": "header"}
       shares: ["onboard_buttons", "onboard_hdmi", "onboard_serial_flash"]   # the board multiplexes these pins
       pins: ["30", "29", "28", "27", "23", "22", "21", "20", "19", "18", "17", "13", "16", "9", "8", "33", "2", "15"]
     header_p7:   # Header P7 (1x22)
+      source: {doc: sch3603, where: 'P7: 1 HDMI_TX1_N, 2 TX1_P, 3 TX2_N, 4 TX2_P, 5 MODE, 6 PIXDATA8, 7 PIXDATA9, 8 DVP_PCLK, 9 DVP_HSYNC, 10 DVP_VSYNC, 11 MSPI_DO, 12 MSPI_DI, 13 MSPI_CLK, 14 CAMERA_SDA, 15 CAMERA_SCL, 16 DCDC1_2V5, 17 DCDC2_3V3, 18 JTAG_TMS, 19 JTAG_TDI, 20 JTAG_TDO, 21 JTAG_TCK, 22 KEY1'}
       device: {"name": "Header P7 (1x22)", "kind": "header"}
       shares: ["onboard_buttons", "onboard_camera", "onboard_hdmi", "onboard_jtag", "onboard_led", "onboard_serial_flash"]   # the board multiplexes these pins
       pins: ["31", "32", "34", "35", "10", "39", "40", "41", "42", "43", "47", "48", "1", "46", "44", "6", "3", "4", "7", "14"]

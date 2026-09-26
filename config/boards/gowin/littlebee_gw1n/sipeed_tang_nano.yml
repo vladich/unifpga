@@ -29,34 +29,98 @@ Board:
   - usb_jtag_bridge
   - usb_powered
   - parallel_lcd
+  documents:
+  - id: sch2704
+    title: Tang-NANO-2704 schematic (KiCad, 1 sheet)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Nano/HDK/Tang-NANO-2704%28Schematic%29.pdf
+    sha256: dfa0acab4dfa23af4654700d1e63a3812899f78c85ce3aeaada69fbddb4e7667
+    bytes: 763875
+    retrieved: '2026-09-24'
+  - id: ds2704
+    title: Tang-NANO-2704 Datasheet V1.0
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Nano/Spec/Tang-NANO-2704%20Datasheet%20V1.0.pdf
+    sha256: d28948ace6fee6b00b79db2f9c1ba082bc7269314ca802f7097c535e8349d500
+    bytes: 384220
+    retrieved: '2026-09-24'
+  - id: wiki_nano
+    title: Sipeed wiki Tang Nano
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano/Nano.html
+    sha256: 524fe848a369985ab7008f5cb747593330cf6e18f3eaf801ba383b55a697fd91
+    bytes: 79233
+    retrieved: '2026-09-24'
+  - id: cst_nano
+    title: Tang-Nano-examples nano/src/nano.cst
+    kind: constraints
+    url: https://github.com/sipeed/Tang-Nano-examples/blob/b4f628a9341835690338361418f7be0f23d88e43/nano/src/nano.cst
+    sha256: 486c8db2079d51efe5297fceb8724db0828e2d1a7064b03f3c00d1c606313491
+    bytes: 2272
+    retrieved: '2026-09-24'
+  - id: cst_led
+    title: Tang-Nano-examples example_led/led_prj/src/led_prj.cst
+    kind: constraints
+    url: https://github.com/sipeed/Tang-Nano-examples/blob/b4f628a9341835690338361418f7be0f23d88e43/example_led/led_prj/src/led_prj.cst
+    sha256: 020a71020188d8b795e295901e93adbaf66cdbcec4a2f8f9d013f7a2a9070e66
+    bytes: 328
+    retrieved: '2026-09-24'
+  - id: cst_lcd
+    title: Tang-Nano-examples example_lcd/lcd_pjt/src/rgb_psram.cst
+    kind: constraints
+    url: https://github.com/sipeed/Tang-Nano-examples/blob/b4f628a9341835690338361418f7be0f23d88e43/example_lcd/lcd_pjt/src/rgb_psram.cst
+    sha256: ecc4f522078ea675b7217e0f7126001a2f0a50a0422d86e0ae8d8d58b2480f1e
+    bytes: 1745
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards sipeed_tang_nano.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_nano.py
+    sha256: f0b9eab129c1ff24cb3d487a15e659457aca2f49eafed4e65efce8b2231eecc9
+    bytes: 3770
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards tang_nano.py
+    kind: platform
+    url: https://github.com/amaranth-lang/amaranth-boards/blob/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/tang_nano.py
+    sha256: 44be029ebfddcfaafa1ed7b294e4fb81dfa0d3ce3454c66af1df6f8fad477f19
+    bytes: 2368
+    retrieved: '2026-09-24'
   banks:
     sys_clk:
+      source: {doc: sch2704, where: U5 pin 35 IOR5A/GCLKT_2 net XTAL_IN; XTAL_IN <- R15 0R <- R10 0R <- XO of the CH552T 24 MHz crystal U3 (R14/R16 NC); U7 oscillator footprint also drives XTAL_IN}
       pins: 35
     cpu_resetn:
       active: low
       pins: 15
     onboard_buttons:    # A (S2), B (S1) (schematic 2704)
+      source: {doc: sch2704, where: S2 (silk A) net IOB6B = U5 pin 15; S1 (silk B) net IOB3B = U5 pin 14; R20/R19 10K pull-ups}
       active: low
       pins: ["15", "14"]
     onboard_leds:       # G, B, R
+      source: {doc: sch2704, where: 'LED1 R/G/B via R9/R7/R8 to nets LED_R/LED_G/LED_B; U5 pins 18 IOB10B = LED_R, 16 IOB7A = LED_G, 17 IOB10A = LED_B; anode VBANK2'}
       active: low
       pins: [16, 17, 18]
     onboard_uart:   # CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)
+      source: {doc: sch2704, where: 'U5 pin 8 IOL6F/RECONFIG_N carries nets FPGA_TX and RECONFIG, pin 9 IOL6G/DONE carries FPGA_RX and DONE; CH552_TX0 (CH552 P3.1/TXD) wired to label FPGA_RX, CH552_RX0 (P3.0/RXD) wired to label FPGA_TX (direct wire, no resistor)'}
       device: {"name": "CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)", "kind": "uart"}
       iostandard: "LVCMOS33"
       shares: ["header_p5"]   # the board multiplexes these pins
       pins: {"tx": "8", "rx": "9"}
     onboard_psram:   # IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM (U4, on the board, not in package)
+      source: {doc: sch2704, where: 'U4 #CE=PSRAM_CE, SO/SIO1=SIO1, SIO2, SIO3, SCLK, SI/SIO0=SIO0; U5 pins 19 PSRAM_CE, 20 SCLK, 21 SIO3, 22 SIO0, 23 SIO1, 24 SIO2 (IOB11A..IOB16B)'}
       device: {"name": "IPS6404L-SQ-SPN 64 Mbit QSPI PSRAM (U4, on the board, not in package)", "kind": "psram"}
       iostandard: "LVCMOS33"
       shares: ["header_p4"]   # the board multiplexes these pins
       pins: {"ce_n": "19", "sclk": "20", "sio": ["22", "23", "24", "21"]}
     onboard_lcd:   # 40-pin RGB LCD FPC J1 (RGB565 out; LCD R/G/B low bits tied to the lowest FPGA bit)
+      source: {doc: sch2704, where: 'J1 FPC40: nets R0..R4 = U5 27 IOR7A, 28 IOR6H, 29 IOR6G, 30 IOR6F, 31 IOR6D; G0..G5 = 32 IOR6C, 33 IOR6B, 34 IOR6A, 38 IOT17B, 39 IOT17A, 40 IOT14B; B0..B4 = 41 IOT14A, 42 IOT10B, 43 IOT10A, 44 IOT7B, 45 IOT7A; LCD_CLK 11, LCD_HSYNC 10, LCD_VSYNC 46, LCD_DE 5'}
       device: {"name": "40-pin RGB LCD FPC J1 (RGB565 out; LCD R/G/B low bits tied to the lowest FPGA bit)", "kind": "lcd_rgb"}
       iostandard: "LVCMOS33"
       shares: ["header_p4", "header_p5"]   # the board multiplexes these pins
       pins: {"clk": "11", "hs": "10", "vs": "46", "de": "5", "r": ["27", "28", "29", "30", "31"], "g": ["32", "33", "34", "38", "39", "40"], "b": ["41", "42", "43", "44", "45"]}
     onboard_lcd_backlight:   # LCD backlight enable (net LCD_BL to PT4103 EN through R2, fitted NC)
+      source: {doc: sch2704, where: 'U5 pin 47 IOT3B/MODE1 net LCD_BL; PT4103 EN: R1 0R to 5V, R2 NC to LCD_BL'}
       device: {"name": "LCD backlight enable (net LCD_BL to PT4103 EN through R2, fitted NC)", "kind": "lcd_rgb"}
       iostandard: "LVCMOS33"
       shares: ["onboard_config_mode"]   # the board multiplexes these pins
@@ -69,10 +133,12 @@ Board:
       shares: ["onboard_lcd_backlight"]   # the board multiplexes these pins
       pins: {"mode0": "48", "mode1": "47"}
     header_p4:   # Header P4 (1x20, left)
+      source: {doc: sch2704, where: 'P4 HEADER-1X20: 1 IOR7A .. 8 IOR6A, 9 IOB7A, 10 IOB10A, 11 IOB10B, 12 IOB11B, 13 IOB14A, 14 IOB14B, 15 IOB16B, 16 IOB11A, 17 IOB16A, 18/19 5V, 20 IOB6B'}
       device: {"name": "Header P4 (1x20, left)", "kind": "header"}
       shares: ["cpu_resetn", "onboard_buttons", "onboard_lcd", "onboard_leds", "onboard_psram"]   # the board multiplexes these pins
       pins: ["27", "28", "29", "30", "31", "32", "33", "34", "16", "17", "18", "20", "21", "22", "24", "19", "23", "15"]
     header_p5:   # Header P5 (1x20, right)
+      source: {doc: sch2704, where: 'P5 HEADER-1X20: 1 G3/IOT17B .. 8 B4/IOT7A, 9 LCD_CLK, 10 LCD_HSYNC, 11 LCD_VSYNC, 12 LCD_DE, 13 CH552_RX0, 14 CH552_TX0, 15 IOB3A, 16/17 VBANK0/3, 18/19 GND, 20 IOB3B'}
       device: {"name": "Header P5 (1x20, right)", "kind": "header"}
       shares: ["onboard_lcd", "onboard_uart"]   # the board multiplexes these pins
       pins: ["38", "39", "40", "41", "42", "43", "44", "45", "11", "10", "46", "5", "8", "9", "13", "14"]

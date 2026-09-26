@@ -26,17 +26,74 @@ Board:
   - adc_chip
   devices:
   - ftdi_ft2232h
+  documents:
+  - id: sch
+    title: 'LicheeTang-RV (Schematic), 2 sheets, printed 2020-06-04 (current board: microSD, "new IO map")'
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer/HDK/LicheeTang-RV%28Schematic%29.pdf
+    sha256: c240a4df88ff5b6adc2aaef6310370a50b013a5cd70f7dfc28f2b1026d7703ae
+    bytes: 5353140
+    retrieved: '2026-09-24'
+    note: identical file also at TANG/Premier/HDK/LicheeTang-RV(Schematic).pdf
+  - id: sch_old
+    title: LicheeTang_RV (Schematic), Altium, 2018-06-12 (older board revision)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Premier/HDK/LicheeTang_RV%28Schematic%29.pdf
+    sha256: be56a89a9cc99e1b8f839ea39fe8ec0c4335c391a3c134643b9a5fbc0b1d2a10
+    bytes: 1160752
+    retrieved: '2026-09-24'
+  - id: wiki
+    title: 'Sipeed wiki: Tang Primer board (2022-05-17)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/Tang-primer/Tang-primer.html
+    sha256: 98ab320de8f1210a290e16e3d75730c34179b930d102da5bb89db3cb866baa17
+    bytes: 80447
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/sipeed/wiki/Tang-primer_Tang-primer.html
+  - id: map_new
+    title: Wiki image "Pinout for New Tang Primer Board" (Lichee-tang_NewIoMap.png)
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/zh/tang/assets/Lichee-tang_NewIoMap.png
+    sha256: 7f0dad0e916bd51b1a1aec1ed0c78a15415165343d331f4134e71844c9228bfb
+    bytes: 969316
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/sipeed/wiki/Lichee-tang_NewIoMap.png
+  - id: map_old
+    title: Wiki image "Pinout for Old Tang Primer Board" (E203_pin.png)
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/zh/tang/assets/E203_pin.png
+    sha256: ed6942d882b954421dc684299c4d4d4b71083662eaa30ef47ea940301ec19ae8
+    bytes: 516109
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/sipeed/wiki/E203_pin.png
+  - id: pins_pdf
+    title: sipeed-tang-primer-pins.pdf (community pin sheet linked from the wiki, kprasadvnsi/tang-doc release 1.0.0)
+    kind: wiki
+    url: https://github.com/kprasadvnsi/tang-doc/releases/download/1.0.0/sipeed-tang-primer-pins.pdf
+    sha256: 08eb86cf9993dccd9e17ab94bd21388b9d96ba72ff45325810deb9f0ba2c1642
+    bytes: 76335
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/sipeed/wiki/sipeed-tang-primer-pins.pdf
+  - id: litex
+    title: LiteX-Boards sipeed_tang_primer.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_primer.py
+    sha256: 46a8216ea71b77cf49e21fdedf5e3ffa7bf41728d7203f0549052105aefd5432
+    bytes: 2495
+    retrieved: '2026-09-24'
   banks:
     onboard_clk24:   # 24 MHz oscillator
       device: {"name": "24 MHz oscillator", "kind": "clock"}
       frequency_mhz: 24
       pins: {"clk": "K14"}
     onboard_rgb_led:   # RGB LED LED1 (RGB_3528, common anode)
+      source: {doc: sch, where: 'sheet 2 "RGB LED" R1/R5/R7 4K7 -> zLED_R/zLED_G/zLED_B; U2D R3 IO_T_2,INIT_B; U2A J14 IO_L10P_1; P13 IO_L3P_1,DONE'}
       device: {"name": "RGB LED LED1 (RGB_3528, common anode)", "kind": "leds"}
       active: "low"
       shares: ["onboard_config"]   # the board multiplexes these pins
       pins: {"r": "R3", "g": "J14", "b": "P13"}
     onboard_buttons:   # User key K1 (USR)
+      source: {doc: sch, where: 'sheet 2 "JTAG MODE" K1 USR, R3 10K, zUSR_KEY; U2A K16 IO_L15N_1'}
       device: {"name": "User key K1 (USR)", "kind": "buttons"}
       active: "low"
       pins: {"usr_key": "K16"}
@@ -45,6 +102,7 @@ Board:
       active: "low"
       pins: {"program_b": "T2"}
     onboard_uart:   # GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)
+      source: {doc: sch, where: 'sheet 1 U6 GD32F150Gx (zUART1/2, zSPI1 = JTAG, zSPI2); sheet 2 U2A L13/M13/J13/H13/K11/J11/L12, U2D P7; JTAG pins E14/A15 (U2A), C12/C14 (U2B bank 0)'}
       device: {"name": "GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)", "kind": "uart"}
       shares: ["gpio_j2", "gpio_j3"]   # the board multiplexes these pins
       pins: {"uart1_tx": "J13", "uart1_rx": "H13", "uart2_tx": "L13", "uart2_rx": "M13", "spi_sck": "P7", "spi_nss": "K11", "spi_mosi": "J11", "spi_miso": "L12", "jtag_tms": "A15", "jtag_tck": "C14", "jtag_tdo": "E14", "jtag_tdi": "C12"}
@@ -72,10 +130,12 @@ Board:
       shares: ["gpio_j3", "onboard_config"]   # the board multiplexes these pins
       pins: {"ch0": "N11", "ch1": "M10", "ch2": "L10", "ch3": "P11", "ch4": "M12", "ch5": "N12", "ch6": "P12", "ch7": "R16"}
     gpio_j3:   # Side header/castellated row J3 (SIP40, left side)
+      source: {doc: sch, where: 'sheet 2 J3 SIP40, pad labels (R22_N ...) resolved through the U2 symbol'}
       device: {"name": "Side header/castellated row J3 (SIP40, left side)", "kind": "header"}
       shares: ["onboard_adc", "onboard_config", "onboard_touch_i2c", "onboard_uart"]   # the board multiplexes these pins
       pins: ["N3", "P2", "M4", "R2", "P4", "N5", "N4", "P5", "T5", "T7", "T6", "R7", "R5", "P8", "M10", "R9", "P11", "P9", "L10", "T13", "N11", "T14", "P12", "R12", "N12", "R14", "R16", "T15", "M12", "R15", "L13", "M13", "P7", "K11"]
     gpio_j2:   # Side header/castellated row J2 (SIP40, right side)
+      source: {doc: sch, where: 'sheet 2 J2 SIP40, pad labels (B25_P ...) resolved through the U2 symbol'}
       device: {"name": "Side header/castellated row J2 (SIP40, right side)", "kind": "header"}
       shares: ["onboard_uart"]   # the board multiplexes these pins
       pins: ["D5", "A4", "D6", "A3", "C6", "C5", "C7", "B6", "A5", "C9", "A6", "B10", "A8", "A7", "B14", "B8", "A14", "C8", "B15", "A12", "B16", "A13", "C16", "A11", "C15", "C11", "E16", "B12", "F16", "C10", "A15", "H13", "C14", "J13", "E14", "J11", "C12", "L12"]

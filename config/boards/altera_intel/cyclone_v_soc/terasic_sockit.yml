@@ -43,26 +43,52 @@ Board:
   - lt_ltc2308
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
+  documents:
+  - id: manual
+    title: SoCKit User Manual (Terasic)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=816&FID=e290393ce6f3c783903b6b0bd8847dcd
+    sha256: 7c76c44ad5e291790aba5619a0d2bc3642e3edabd54234465ab4d0bd261b28cf
+    bytes: 6404175
+    retrieved: '2026-09-24'
+  - id: golden_qsf
+    title: SoCKit_golden_top.qsf (Terasic "Build by Terasic V1.0.0" golden top, copy in yuri-panchul/basics-graphics-music)
+    kind: constraints
+    url: https://raw.githubusercontent.com/yuri-panchul/basics-graphics-music/57ff8336dd67a557a03b6866d978e90d354f57a4/boards/terasic_sockit/SoCKit_golden_top.qsf
+    sha256: f59fb3c10df85653cca0384292e6277dc27ba65b7f60198690a601d9bf88e33f
+    bytes: 44758
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards platform terasic_sockit.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/terasic_sockit.py
+    sha256: ea07cd9a449e1a13ee3419f1511cb44f239846646d1808a3b0ac1eee4c8dd0cf
+    bytes: 7962
+    retrieved: '2026-09-24'
   toolchain_options:
     quartus:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    osc_50_b3b: { pins: AF14, frequency_mhz: 50, iostandard: 1.5 V }   # system clock
+    osc_50_b3b: { pins: AF14, frequency_mhz: 50, iostandard: 1.5 V, source: {doc: golden_qsf, where: SoCKit_golden_top.qsf} }   # system clock
     onboard_buttons:
+      source: {doc: manual, where: 'Table 3-10, p. 23'}
       iostandard: 3.3-V LVTTL
       active: low
       pins: [AE9, AE12, AD9, AD11]
     onboard_leds:
+      source: {doc: manual, where: 'Table 3-11, p. 23'}
       iostandard: 3.3-V LVTTL
       pins: [AF10, AD10, AE11, AD7]
-    clk50mhz: { pins: K14, frequency_mhz: 50, iostandard: 2.5 V }
-    cpu_resetn: { pins: AD27, iostandard: 3.3-V LVTTL, active: low }
+    clk50mhz: { pins: K14, frequency_mhz: 50, iostandard: 2.5 V, source: {doc: golden_qsf, where: SoCKit_golden_top.qsf} }
+    cpu_resetn: { pins: AD27, iostandard: 3.3-V LVTTL, active: low, source: {doc: golden_qsf, where: SoCKit_golden_top.qsf} }
     onboard_switches:
+      source: {doc: manual, where: 'Table 3-9, p. 23'}
       iostandard: 2.5 V
       pins: [W25, V25, AC28, AC29]
     onboard_vga:
+      source: {doc: manual, where: 'Table 3-17, p. 30'}
       iostandard: 3.3-V LVTTL
       pins:
         b: [AE28, Y23, Y24, AG28, AF28, V23, W24, AF29]
@@ -74,6 +100,7 @@ Board:
         sync_n: AG2
         vs: AC12
     onboard_audio_codec:
+      source: {doc: manual, where: 'Table 3-14, p. 28'}
       iostandard: 3.3-V LVTTL
       pins:
         adc_dat: AC27
@@ -86,6 +113,7 @@ Board:
         mute: AD26
         xck: AC9
     onboard_ddr3:
+      source: {doc: manual, where: 'Table 3-19, p. 32-34'}
       pins:
         a: [AJ14, AK14, AH12, AJ12, AG15, AH15, AK12, AK13, AH13, AH14, AJ9, AK9, AK7, AK8, AG12]
         ba: [AH10, AJ11, AK11]
@@ -176,7 +204,7 @@ Board:
         AK21: SSTL-15 Class I
         AG17: SSTL-15
         AJ6: SSTL-15 Class I
-    onboard_fan_ctrl: { pins: AG27, iostandard: 3.3-V LVTTL }
+    onboard_fan_ctrl: { pins: AG27, iostandard: 3.3-V LVTTL, source: {doc: golden_qsf, where: SoCKit_golden_top.qsf} }
     hsmc:
       index_origin: {clkin_n: 1, clkin_p: 1, clkout_n: 1, clkout_p: 1}
       pins:
@@ -299,20 +327,24 @@ Board:
         "W2": 1.5-V PCML
         "Y4": 1.5-V PCML
     onboard_irda:
+      source: {doc: manual, where: 'Table 3-18, p. 31'}
       iostandard: 3.3-V LVTTL
       pins:
         rxd: AH2
     onboard_pcie:
+      source: {doc: golden_qsf, where: SoCKit_golden_top.qsf}
       iostandard: 3.3-V LVTTL
       pins:
         perst_n: W22
         wake_n: W21
     onboard_si5338:
+      source: {doc: golden_qsf, where: SoCKit_golden_top.qsf}
       iostandard: 3.3-V LVTTL
       pins:
         scl: AE26
         sda: AJ29
     onboard_temp_sensor:
+      source: {doc: manual, where: 'Table 3-20, p. 34'}
       iostandard: 3.3-V LVTTL
       pins:
         cs_n: AF8
@@ -320,6 +352,7 @@ Board:
         dout: AG1
         sclk: AF9
     onboard_usb:
+      source: {doc: golden_qsf, where: SoCKit_golden_top.qsf}
       iostandard: 1.5 V
       pins:
         clk: AF13
@@ -378,6 +411,7 @@ Board:
       iostandard: "3.3V"
       pins: {"HPS_LCM_D_C": "G22", "HPS_LCM_RST_N": "B26", "HPS_LCM_SPIM_CLK": "C23", "HPS_LCM_SPIM_MOSI": "D22", "HPS_LCM_SPIM_SS": "D24"}
     hps_ltc_header:   # HPS LTC connector (2x7, SPI/I2C/GPIO)
+      source: {doc: manual, where: 'Table 3-31, p. 45'}
       device: {"name": "HPS LTC connector (2x7, SPI/I2C/GPIO)", "kind": "header"}
       iostandard: "3.3V"
       pins: {"HPS_LTC_GPIO": "F16", "HPS_SPIM_CLK": "A23", "HPS_SPIM_MISO": "B23", "HPS_SPIM_MOSI": "C22", "HPS_SPIM_SS": "H20"}

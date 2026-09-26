@@ -44,6 +44,42 @@ Board:
   - ti_adc128s022
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
+  documents:
+  - id: manual
+    title: DE1-SoC User Manual for board rev. F and later (Terasic, DE1-SoC_User_manual_revf.pdf)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=836&FID=3a3708b0790bb9c721f94909c5ac96d6
+    sha256: 49a5d94cd8990bd10b9579b3cb83fdf98fe0056da7ac3f11a3a615e6472d19ae
+    bytes: 7444645
+    retrieved: '2026-09-24'
+  - id: manual_old
+    title: DE1-SoC User Manual for earlier boards (Terasic, DE1-SoC_User_manual.pdf, March 2014; AD7928 ADC)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=836&FID=fb723f964a1d785b94cd7880d8f210e5
+    sha256: c888bdb2435f4b3f3022495fc5484e72553aa59df63b958ff5da4e15178abba8
+    bytes: 10065034
+    retrieved: '2026-09-24'
+  - id: up_qsf
+    title: DE1_SoC.qsf (Intel FPGA University Program board settings, copy in cameronshinn/tiny-tpu)
+    kind: constraints
+    url: https://raw.githubusercontent.com/cameronshinn/tiny-tpu/8218140654667caebd24d4f2b671915d2cf974cf/hardware/synthesis/DE1_SoC.qsf
+    sha256: bfa089b3168205413f30e8e4bd5e249b3f4a5a2f51b24e5297986c37f1e9129f
+    bytes: 61015
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards platform terasic_de1soc.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/terasic_de1soc.py
+    sha256: 3e61aab8cb52a625838420d29547e683c5a72e71e3c1434ce01eeba7c589cba8
+    bytes: 5964
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards platform de1_soc.py
+    kind: platform
+    url: https://raw.githubusercontent.com/amaranth-lang/amaranth-boards/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/de1_soc.py
+    sha256: 1bb0579137620d1c7e7a7113fbc15d82b88928a42e8e15e9d77942a463748423
+    bytes: 3645
+    retrieved: '2026-09-24'
   toolchain_options:
     quartus:
       jtag_device_index: 2   # FPGA behind the HPS in the JTAG chain (quartus_pgm: P;file@2)
@@ -51,21 +87,25 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk50mhz: { pins: AF14, frequency_mhz: 50, iostandard: 3.3-V LVTTL }
-    clk2_50mhz: { pins: AA16, frequency_mhz: 50, iostandard: 3.3-V LVTTL }
-    clk3_50mhz: { pins: Y26, frequency_mhz: 50, iostandard: 3.3-V LVTTL }
-    clk4_50mhz: { pins: K14, frequency_mhz: 50, iostandard: 3.3-V LVTTL }
+    clk50mhz: { pins: AF14, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
+    clk2_50mhz: { pins: AA16, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
+    clk3_50mhz: { pins: Y26, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
+    clk4_50mhz: { pins: K14, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
     onboard_buttons:
+      source: {doc: manual, where: 'Table 3-7, p. 26'}
       iostandard: 3.3-V LVTTL
       active: low
       pins: [AA14, AA15, W15, Y16]
     onboard_switches:
+      source: {doc: manual, where: 'Table 3-6, p. 26'}
       iostandard: 3.3-V LVTTL
       pins: [AB12, AC12, AF9, AF10, AD11, AD12, AE11, AC9, AD10, AE12]
     onboard_leds:
+      source: {doc: manual, where: 'Table 3-8, p. 27'}
       iostandard: 3.3-V LVTTL
       pins: [V16, W16, V17, V18, W17, W19, Y19, W20, W21, Y21]
     onboard_7seg:
+      source: {doc: manual, where: 'Table 3-9, p. 28'}
       iostandard: 3.3-V LVTTL
       pins:
         hex0: [AE26, AE27, AE28, AG27, AF28, AG28, AH28]
@@ -75,6 +115,7 @@ Board:
         hex4: [AA24, Y23, Y24, W22, W24, V23, W25]
         hex5: [V25, AA28, Y27, AB27, AB26, AA26, AA25]
     onboard_vga:
+      source: {doc: manual, where: 'Table 3-16, p. 36'}
       iostandard: 3.3-V LVTTL
       pins:
         b: [B13, G13, H13, F14, H14, F15, G15, J14]
@@ -86,12 +127,15 @@ Board:
         blank_n: F10
         clk: A11
     gpio_0:
+      source: {doc: manual, where: 'Table 3-11, p. 29-30'}
       iostandard: 3.3-V LVTTL
       pins: [AC18, Y17, AD17, Y18, AK16, AK18, AK19, AJ19, AJ17, AJ16, AH18, AH17, AG16, AE16, AF16, AG17, AA18, AA19, AE17, AC20, AH19, AJ20, AH20, AK21, AD19, AD20, AE18, AE19, AF20, AF21, AF19, AG21, AF18, AG20, AG18, AJ21]
     gpio_1:
+      source: {doc: manual, where: 'Table 3-11, p. 30-31'}
       iostandard: 3.3-V LVTTL
       pins: [AB17, AA21, AB21, AC23, AD24, AE23, AE24, AF25, AF26, AG25, AG26, AH24, AH27, AJ27, AK29, AK28, AK27, AJ26, AK26, AH25, AJ25, AJ24, AK24, AG23, AK23, AH23, AK22, AJ22, AH22, AG22, AF24, AF23, AE22, AD21, AA20, AC22]
     onboard_adc:
+      source: {doc: manual, where: 'Table 3-22, p. 44'}
       iostandard: 3.3-V LVTTL
       pins:
         cs_n: AJ4
@@ -99,6 +143,7 @@ Board:
         dout: AK3
         sclk: AK2
     onboard_audio_codec:
+      source: {doc: manual, where: 'Table 3-12, p. 32'}
       iostandard: 3.3-V LVTTL
       pins:
         adc_dat: K7
@@ -108,6 +153,7 @@ Board:
         dac_lrck: H8
         xck: G7
     onboard_sdram:
+      source: {doc: manual, where: 'Table 3-20, p. 40-41'}
       iostandard: 3.3-V LVTTL
       pins:
         addr: [AK14, AH14, AG15, AE14, AB15, AC14, AD14, AF15, AH15, AG13, AG12, AH13, AJ14]
@@ -121,28 +167,33 @@ Board:
         ras_n: AE13
         udqm: AK12
         we_n: AA13
-    onboard_fan_ctrl: { pins: AA12, iostandard: 3.3-V LVTTL }
+    onboard_fan_ctrl: { pins: AA12, iostandard: 3.3-V LVTTL, source: {doc: up_qsf, where: DE1_SoC.qsf} }
     onboard_fpga_i2c:
+      source: {doc: manual, where: 'Table 3-12, p. 32; Table 3-13, p. 33; Table 3-17, p. 37'}
       iostandard: 3.3-V LVTTL
       pins:
         sclk: J12
         sdat: K12
     onboard_irda:
+      source: {doc: manual, where: 'Table 3-18, p. 38'}
       iostandard: 3.3-V LVTTL
       pins:
         rxd: AA30
         txd: AB30
     onboard_ps2:        # one PS/2 port (manual: PS2_CLK AD7, PS2_DAT AE7); the board has no USB HID host
+      source: {doc: manual, where: 'Table 3-21, p. 42'}
       iostandard: 3.3-V LVTTL
       pins:
         clk: AD7
         data: AE7
     onboard_ps2_secondary:
+      source: {doc: manual, where: 'Table 3-21, p. 42'}
       iostandard: 3.3-V LVTTL
       pins:
         clk: AD9
         data: AE9
     onboard_tv_decoder:
+      source: {doc: manual, where: 'Table 3-17, p. 37'}
       iostandard: 3.3-V LVTTL
       pins:
         clk27: H15
@@ -151,6 +202,7 @@ Board:
         reset_n: F6
         vs: A3
     onboard_usb:
+      source: {doc: up_qsf, where: DE1_SoC.qsf}
       iostandard: 3.3-V LVTTL
       pins:
         clk: AF4
@@ -214,6 +266,7 @@ Board:
       iostandard: "3.3V"
       pins: {"HPS_GSENSOR_INT": "B22"}
     hps_ltc_header:   # HPS LTC connector (2x7, SPI/I2C/GPIO)
+      source: {doc: manual, where: 'Table 3-31, p. 53'}
       device: {"name": "HPS LTC connector (2x7, SPI/I2C/GPIO)", "kind": "header"}
       iostandard: "3.3V"
       pins: {"HPS_LTC_GPIO": "H17", "HPS_SPIM_CLK": "C23", "HPS_SPIM_MISO": "E24", "HPS_SPIM_MOSI": "D22", "HPS_SPIM_SS": "D24"}

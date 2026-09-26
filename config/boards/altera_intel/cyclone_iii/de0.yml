@@ -33,6 +33,21 @@ Board:
   - pushbutton_smd_generic
   - dip_switch_generic
   - seven_seg_module_shared
+  documents:
+  - id: manual
+    title: DE0 User Manual (Terasic, 2012)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=364&FID=0c266381d75ef92a8291c5bbdd5b07eb
+    sha256: 5f6851c6ebae626073b1b815a5f48258d7b4547384f396bc8bf0963e892c43ec
+    bytes: 5904909
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards platform de0.py
+    kind: platform
+    url: https://raw.githubusercontent.com/amaranth-lang/amaranth-boards/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/de0.py
+    sha256: 931760ed165c57d9c01a80e04bfcbd1d989648686b692e30a2d26c181100ecec
+    bytes: 4535
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -44,27 +59,33 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk50mhz: { pins: G21, frequency_mhz: 50 }
+    clk50mhz: { pins: G21, frequency_mhz: 50, source: {doc: manual, where: 'Table 4.5, p. 32'} }
     onboard_uart:
+      source: {doc: manual, where: 'Table 4.12, p. 41'}
       pins:
         rts: V22
         rx: U22
         cts: V21
         tx: U21
     onboard_buttons:
+      source: {doc: manual, where: 'Table 4.2, p. 28'}
       active: low
       pins: [H2, G3, F1]
     onboard_leds_green:
+      source: {doc: manual, where: 'Table 4.3, p. 29'}
       pins: [J1, J2, J3, H1, F2, E1, C1, C2, B2, B1]
     onboard_switches:
+      source: {doc: manual, where: 'Table 4.1, p. 28'}
       pins: [J6, H5, H6, G4, G5, J7, H7, E3, E4, D2]
     onboard_7seg:
+      source: {doc: manual, where: 'Table 4.4, p. 30-31'}
       pins:
         hex0: [E11, F11, H12, H13, G12, F12, F13, D13]
         hex1: [A13, B13, C13, A14, B14, E14, A15, B15]
         hex2: [D15, A16, B16, E15, A17, B17, F14, A18]
         hex3: [B18, F15, A19, B19, C19, D19, G15, G16]
     onboard_vga:
+      source: {doc: manual, where: 'Table 4.11, p. 39'}
       pins:
         hs: L21
         vs: L22
@@ -72,26 +93,33 @@ Board:
         g: [H22, J17, K17, J21]
         b: [K22, K21, J22, K18]
     gpio_0:
+      source: {doc: manual, where: 'Table 4.8, p. 35-36'}
       pins: [AB16, AA16, AA15, AB15, AA14, AB14, AB13, AA13, AB10, AA10, AB8, AA8, AB5, AA5, AB4, AA4, V14, U14, Y13, W13, U13, V12, R10, V11, Y10, W10, T8, V8, W7, W6, V5, U7]
     gpio_1:
+      source: {doc: manual, where: 'Table 4.8, p. 36-37'}
       pins: [AA20, AB20, AA19, AB19, AB18, AA18, AA17, AB17, Y17, W17, U15, T15, W15, V15, AB9, AA9, AA7, AB7, T14, R14, U12, T12, R11, R12, U10, T10, U9, T9, Y7, U8, V6, V7]
     onboard_clk2_50mhz:   # CLOCK_50_2 (50 MHz)
       device: {"name": "CLOCK_50_2 (50 MHz)", "kind": "clock"}
       pins: {"CLOCK_50_2": "B12"}
     onboard_lcd:   # Character LCD module (16x2, HD44780 compatible)
+      source: {doc: manual, where: 'Table 4.7, p. 34'}
       device: {"name": "Character LCD module (16x2, HD44780 compatible)", "kind": "lcd_char"}
       pins: {"LCD_DATA": ["D22", "D21", "C22", "C21", "B22", "B21", "D20", "C20"], "LCD_RW": "E22", "LCD_EN": "E21", "LCD_RS": "F22", "LCD_BLON": "F21"}
     onboard_ps2:   # PS/2 port (keyboard + mouse via Y-cable)
+      source: {doc: manual, where: 'Table 4.13, p. 41'}
       device: {"name": "PS/2 port (keyboard + mouse via Y-cable)", "kind": "ps2"}
       pins: {"PS2_KBCLK": "P22", "PS2_KBDAT": "P21", "PS2_MSCLK": "R21", "PS2_MSDAT": "R22"}
     onboard_sdcard:   # SD card socket
+      source: {doc: manual, where: 'Table 4.14, p. 42'}
       device: {"name": "SD card socket", "kind": "sdcard"}
       pins: {"SD_CLK": "Y21", "SD_CMD": "Y22", "SD_DAT0": "AA22", "SD_DAT3": "W21", "SD_WP_N": "W20"}
     onboard_sdram:   # SDRAM (8 MB, 16-bit)
+      source: {doc: manual, where: 'Table 4.15, p. 44-45'}
       device: {"name": "SDRAM (8 MB, 16-bit)", "kind": "sdram"}
       model_params: {row_bits: 12, col_bits: 8}
       pins: {"DRAM_ADDR": ["C4", "A3", "B3", "C3", "A5", "C6", "B6", "A6", "C7", "B7", "B4", "A7", "C8"], "DRAM_DQ": ["D10", "G10", "H10", "E9", "F9", "G9", "H9", "F8", "A8", "B9", "A9", "C10", "B10", "A10", "E10", "F10"], "DRAM_BA_": ["B5", "A4"], "DRAM_LDQM": "E7", "DRAM_UDQM": "B8", "DRAM_RAS_N": "F7", "DRAM_CAS_N": "G8", "DRAM_CKE": "E6", "DRAM_CLK": "E5", "DRAM_WE_N": "D6", "DRAM_CS_N": "G7"}
     onboard_flash:   # Flash memory (4 MB)
+      source: {doc: manual, where: 'Table 4.16, p. 45-46'}
       device: {"name": "Flash memory (4 MB)", "kind": "flash"}
       pins: {"FL_ADDR": ["P7", "P5", "P6", "N7", "N5", "N6", "M8", "M4", "P2", "N2", "N1", "M3", "M2", "M1", "L7", "L6", "AA2", "M5", "M6", "P1", "P3", "R2"], "FL_DQ": ["R7", "P8", "R8", "U1", "V2", "V3", "W1", "Y1", "T5", "T7", "T4", "U2", "V1", "V4", "W2"], "FL_DQ15_AM1": "Y2", "FL_BYTE_N": "AA1", "FL_CE_N": "N8", "FL_OE_N": "R6", "FL_RST_N": "R1", "FL_RY": "M7", "FL_WE_N": "P4", "FL_WP_N": "T3"}
   # ---- drawn: headers and parts; ./unifpga layout draft de0 regenerates from here on ----

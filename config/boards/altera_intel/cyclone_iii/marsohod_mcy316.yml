@@ -17,6 +17,35 @@ Board:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   features:
   - spi_flash
+  documents:
+  - id: sch
+    title: 'MCY316-schema.pdf (KiCad 6, 7 sheets: Power, Config, KeyLeds, SoundFlash, gpio, Memory)'
+    kind: schematic
+    url: https://raw.githubusercontent.com/marsohod4you/MCY316/main/Schematics/MCY316-schema.pdf
+    sha256: 701c92c540c6259b8f300d04fe68eb17dc946e3e86704f2cf36594647875dddf
+    bytes: 658503
+    retrieved: '2026-09-24'
+  - id: readme
+    title: marsohod4you/MCY316 README.md (board feature list)
+    kind: wiki
+    url: https://raw.githubusercontent.com/marsohod4you/MCY316/main/README.md
+    sha256: 8f43cfe6977be5442e76adc1cb06ea28209a2040ce7274c312ffebd20a3e5f80
+    bytes: 1643
+    retrieved: '2026-09-24'
+  - id: qsf_gpio
+    title: MCY316 GpioTest/First.qsf (all board pins)
+    kind: constraints
+    url: https://raw.githubusercontent.com/marsohod4you/MCY316/main/GpioTest/First.qsf
+    sha256: 46cccfa4c42ba28045e0064063f89148a665e03c665acb9f643a063cadfe0c69
+    bytes: 11515
+    retrieved: '2026-09-24'
+  - id: qsf_sdram
+    title: MCY316 SdramVgaFb/Top.qsf
+    kind: constraints
+    url: https://raw.githubusercontent.com/marsohod4you/MCY316/main/SdramVgaFb/Top.qsf
+    sha256: cccfb878681870e11fbbad35f903cbde82cbbd205d7fa7257ccf04c18961c8ea
+    bytes: 12741
+    retrieved: '2026-09-24'
   toolchain_options:
     quartus:
       global_assignments:
@@ -31,6 +60,7 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_NO_OUTPUT_GND \"AS INPUT TRI-STATED\""
   banks:
     onboard_mem:
+      source: {doc: sch, where: sheet 7/7 Memory (U1F IOBank_5)}
       pins:
         dq: ["120", "119", "118", "117", "114", "113", "112", "111", "189", "188", "187", "185", "184", "183", "182", "181", "94", "93", "88", "87", "86", "85", "84", "83", "220", "219", "218", "217", "216", "214", "207", "203"]
         dqm: ["110", "194", "95", "202"]
@@ -41,14 +71,17 @@ Board:
         we: "109"
         clk: "186"
     onboard_buttons:
+      source: {doc: sch, where: 'sheet 4/7: key_0 152, key_1 151'}
       active: low
       pins: ["152", "151"]
-    clk: { pins: "150", frequency_mhz: 50 }
+    clk: { pins: "150", frequency_mhz: 50, source: {doc: sch, where: 'sheet 3/7 Config: X1 IQXO-70 OUT -> clk -> U1C pin 150'} }
     onboard_uart:
+      source: {doc: sch, where: sheet 5/7 SE1 Conn_02x08}
       pins:
         rx: "149"
         tx: "143"
     onboard_7seg:
+      source: {doc: sch, where: sheet 4/7 KeyLeds}
       pins:
         anodes: ["144", "145", "146", "147"]
         ce: "148"
@@ -60,33 +93,40 @@ Board:
         cc: "166"
         cf: "167"
     onboard_leds:
+      source: {doc: sch, where: 'sheet 4/7 KeyLeds: led_0..led_7'}
       pins: ["168", "169", "171", "173", "174", "175", "176", "177"]
     onboard_pcm:
+      source: {doc: sch, where: sheet 5/7 SoundFlash}
       pins:
         dout: "92"
         scki: "126"
         lrck: "127"
         bck: "128"
     onboard_audio_out:
+      source: {doc: sch, where: 'sheet 5/7: sound_out_r 131, sound_out_l 132 -> RC + Q5/Q6 -> J2'}
       pins:
         r: "131"
         l: "132"
     onboard_serial_flash:
+      source: {doc: sch, where: 'sheet 5/7: F_CS/F_SO/F_SI/F_WP/F_RES'}
       pins:
         csb: "133"
         clk: "134"
         io: ["135", "137", "139", "142"]
     gpio_a:
+      source: {doc: sch, where: 'sheet 6/7 gpio: U1B IOBank_1 + PB2'}
       pins: ["234", "233", "20", "19", "18", "232", "231", "235", "236", "238", "239", "237", "230", "226", "13", "9", "223", "6", "5", "224", "222", "221", "4", "240"]
     gpio_a_i:
       pins: ["209", "210", "211", "212"]
     gpio:
+      source: {doc: sch, where: 'sheet 6/7 gpio: U1D IOBank_3 + P81'}
       index_origin: 2
       pins: ["21", "22", "37", "51", "52", "50", "49", "46", "55", "56", "38", "39", "63", "41", "43", "57", "64", "65", "44", "45"]
     gpio_i:
       index_origin: 24
       pins: ["32", "33", "34", "31"]
     gpio_b:
+      source: {doc: sch, where: 'sheet 6/7 gpio: U1E IOBank_2 + PB3'}
       pins: ["71", "70", "82", "81", "80", "69", "68", "72", "73", "76", "78"]
     gpio_b_i:
       pins: ["89", "90", "91"]

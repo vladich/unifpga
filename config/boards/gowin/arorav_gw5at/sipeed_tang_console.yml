@@ -39,12 +39,109 @@ Board:
   - adc_chip
   devices:
   - microsd_socket_generic
+  documents:
+  - id: sch60c
+    title: Tang_60K_Console_V32001C schematic (Rev 1.3, 2025-04-24; KiCad)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Console/02_Schematic/Tang_Mega_60K_Console_32001C__Schematics.pdf
+    sha256: ef2d7f0d9a027f488e36e72aeddec19effc506371f01c58d050746950c8e9400
+    bytes: 3735055
+    retrieved: '2026-09-24'
+  - id: sch60a
+    title: Tang_60K_Console_V32001A schematic (first release; no microSD mux)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Console/02_Schematic/Tang_Mega_60K_Console_32001A__Schematics.pdf
+    sha256: e2470fc2b382050effc889ce55111d70632dd95b0b1d99180329b9471d71e786
+    bytes: 3594265
+    retrieved: '2026-09-24'
+  - id: sch138a
+    title: Tang_138K_Console_V32001A schematic (Rev 1.21, 2024-12-31)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Console/02_Schematic/Tang_Mega_138K_Console_32001A__Schematics.pdf
+    sha256: 3479a5bbf67bd56ca3748260c788b7b46dc723bf9da341ede8ac5e893f12c1ed
+    bytes: 3409655
+    retrieved: '2026-09-24'
+  - id: sch138b
+    title: Tang_138K_Console_V32001B schematic (Rev 1.25, 2025-03-05)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Console/02_Schematic/Tang_Mega_138K_Console_32001B__Schematics.pdf
+    sha256: 9810baff77f48ebdaa88c16db02cbe9e36a545b1be8f43d45e5aa6e55ca2375d
+    bytes: 3566658
+    retrieved: '2026-09-24'
+  - id: sch138c
+    title: Tang_138K_Console_V32001C schematic (Rev 1.3, 2025-04-24)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Console/02_Schematic/Tang_Mega_138K_Console_32001C__Schematics.pdf
+    sha256: 7f838c38f45e2e70073f5a4bab73d360f406d415f05a15dc69ce97a18cf579ed
+    bytes: 3768249
+    retrieved: '2026-09-24'
+  - id: gba
+    title: GBA_SLOT For Tang Console accessory schematic (Rev 1.1, 2025-01-31)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Console/02_Schematic/Accessories/Console_GBA_SLOT__Schematic.pdf
+    sha256: 5b62422227f8fb2fc4b047351f339cba5b35e0f55f1296e2c240491393cf22e4
+    bytes: 146493
+    retrieved: '2026-09-24'
+  - id: som60
+    title: Tang Mega 60K SOM schematic 30353
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/tang_mega_60k_30353_schematics.pdf
+    sha256: f9a1a01862fe8c48cb5461e88f84d61e37d03f2d032e0baee7ef03fb951f6157
+    bytes: 725936
+    retrieved: '2026-09-24'
+  - id: som138
+    title: Tang Mega 138K SOM schematic 30353
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/tang_mega_138k_30353_Schematics..pdf
+    sha256: 214d9ccf71d6ee78ab54c22c437f3d61eac5c11c0b7832609a378a4a5db48065
+    bytes: 733237
+    retrieved: '2026-09-24'
+  - id: cst60
+    title: tang_mega_60K_pins.cst (Mega 60K SOM + NEO dock; used only for SOM-internal DDR3)
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/08_Misc/tang_mega_60K_pins.cst
+    sha256: dcaced4a5d15d60a3615190138ad3522b562c82748e35ffd150139bc7542ff4c
+    bytes: 22738
+    retrieved: '2026-09-24'
+  - id: cst138
+    title: tang_mega_138K_pins.cst (Mega 138K SOM + NEO dock; used only for SOM-internal DDR3)
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/08_Misc/tang_mega_138K_pins.cst
+    sha256: ab24e1876c36b01721e31d8dcf3a2838b873b0f1903d8aeeeccaeec6b82efa9d
+    bytes: 20166
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards sipeed_tang_console.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_console.py
+    sha256: 1d3219492c92edbe7b2866e11e02ca039774fed1c5c9423b8dcc08772d853537
+    bytes: 20975
+    retrieved: '2026-09-24'
+  - id: wiki
+    title: 'Sipeed wiki: Tang Console (v0.3, 2025-09-25)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/tang-console/mega-console.html
+    sha256: 39a528b20007f6d8bd956f56fdcece2ef158a3bec87c19291fa0520f2960dea9
+    bytes: 96744
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/sipeed/wiki/tang-console_mega-console.html
+  - id: wiki_retro
+    title: 'Sipeed wiki: Tang Retro Console (v0.1, 2025-04-17)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/tang-console/retro-console.html
+    sha256: 6f391c1705b7002f431ff174c70331ab61127939446a1b5ef72870452375f8b1
+    bytes: 98370
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/sipeed/wiki/tang-console_retro-console.html
   banks:
     sys_clk:
+      source: {doc: som60, where: 'net BANK7_V22_EMCCLK_50Mhz, 50MHz crystal oscillator Y1100; console sheet SYS_CLOCK "SOM INTERNAL OSC BANK7 (V22) 50MHz"'}
       pins: V22
     onboard_leds:
+      source: {doc: sch60c, where: 'sheet FPAG_CONFIG (page 17) CFG_LED; READY=J0:79, DONE=J0:77, SYS_ACT=J2:88'}
       pins: [G11, U12]
     onboard_uart:
+      source: {doc: sch60c, where: 'sheet USB_JTAG (page 15) U9 BL616C-50-Q2I; FPGA_UART.TX=J2:50, FPGA_UART.RX=J2:54, JTAG.TMS=J0:3, JTAG.TCK=J0:7, JTAG.TDO=J0:5, JTAG.TDI=J0:9'}
       pins:
         rx: V14
         tx: U15
@@ -61,6 +158,7 @@ Board:
       pins:
         pin: T19
     qspi_flash_dq:
+      source: {doc: som60, where: 'nets BANK7_T19_MSPI_CS, BANK3_L12_MSPI_CLK, BANK6_P22_MSPI_D00, BANK6_R22_MSPI_D01, BANK7_P21_MSPI_D02, BANK7_R21_MSPI_D03; U1200 W25Q64'}
       pins: [P22, R22, P21, R21]
     qspi_flash_hold:
       pins:
@@ -91,6 +189,7 @@ Board:
       iostandard: "SSTL15 (cst60: SSTL15_I, BANK_VCCIO=1.5)"
       pins: {"a": ["M1", "K2", "G2", "J4", "J2", "H2", "G3", "J1", "J5", "H5", "L1", "H3", "K4", "K1", "D1", "R1"], "ba": ["P5", "P2", "M6"], "cs_n": "P4", "ras_n": "L5", "cas_n": "L4", "we_n": "M5", "cke": "K6", "odt": "M2", "reset_n": "L6", "ck": "L3,K3", "dq": ["Y4", "AB3", "AA5", "V4", "AA1", "AB2", "AB5", "AB1", "AA8", "Y8", "AB7", "Y7", "AB8", "W9", "AB6", "Y9"], "dm": ["AA4", "V7"], "dqs": ["Y3,AA3", "V9,V8"]}
     onboard_buttons:   # User buttons S1, S2 (EX_KEY)
+      source: {doc: sch60c, where: 'sheet PERIPHERALS (page 7) S1/S2 TS-1009S; EX_KEY.0=J2:60, EX_KEY.1=J2:62, EX_KEY.2=J2:64'}
       device: {"name": "User buttons S1, S2 (EX_KEY)", "kind": "buttons"}
       active: "low"
       pins: {"s1_user_button0": "AA13", "s2_user_button1": "AB13"}
@@ -123,16 +222,20 @@ Board:
       device: {"name": "RGB LCD FPC-40P connector J3 (24-bit DPI, resistive touch, backlight driver)", "kind": "lcd_rgb"}
       pins: {"r": ["J21", "J20", "G18", "G17", "H22", "J22", "K22", "K21"], "g": ["L20", "L14", "K18", "L21", "M21", "M22", "N22", "K19"], "b": ["U8", "L18", "M18", "N19", "N18", "K16", "L16", "M20"], "clk": "L19", "hsync": "N20", "vsync": "L15", "de": "U22", "bl_en": "P20", "touch_xr": "W16", "touch_yd": "U16", "touch_xl": "T16", "touch_yu": "T15"}
     pmod0:   # PMOD0 connector J6 (2x6 horizontal socket)
+      source: {doc: sch60c, where: 'sheet FPGA_EXT_CONN (page 8) J6; PMOD0_IO0=J0:6, PMOD0_IO1=J0:4, PMOD0_IO2=J0:65, PMOD0_IO3=J0:67, PMOD0_IO4=J0:69, PMOD0_IO5=J0:71, PMOD0_IO6=J0:73, PMOD0_IO7=J0:75'}
       device: {"name": "PMOD0 connector J6 (2x6 horizontal socket)", "kind": "pmod"}
       pins: {"io0": "V18", "io1": "V19", "io2": "G21", "io3": "G22", "io4": "F18", "io5": "E18", "io6": "C22", "io7": "B22"}
     pmod1:   # PMOD1 connector J7 (2x6 horizontal socket)
+      source: {doc: sch60c, where: 'sheet FPGA_EXT_CONN (page 8) J7; PMOD1_IO0=J2:21, PMOD1_IO1=J2:19, PMOD1_IO2=J0:68, PMOD1_IO3=J0:70, PMOD1_IO4=J0:74, PMOD1_IO5=J0:76, PMOD1_IO6=J0:78, PMOD1_IO7=J0:80'}
       device: {"name": "PMOD1 connector J7 (2x6 horizontal socket)", "kind": "pmod"}
       pins: {"io0": "W19", "io1": "W20", "io2": "F19", "io3": "F20", "io4": "E22", "io5": "D22", "io6": "E21", "io7": "D21"}
     sdram0_header:   # 2x20 header J9 "SDRAM0 CONN." (MiSTer-style SDRAM module connector)
+      source: {doc: sch60c, where: sheet FPGA_EXT_CONN (page 8) J9 SMD_PIN_2x20_2.54mm; SDRAM0_* nets on BTB J1/J0}
       device: {"name": "2x20 header J9 \"SDRAM0 CONN.\" (MiSTer-style SDRAM module connector)", "kind": "header"}
       shares: ["onboard_sdram0"]   # the board multiplexes these pins
       pins: ["E14", "E13", "C15", "C14", "B13", "C13", "A14", "A13", "B16", "B15", "A16", "A15", "A20", "B20", "A21", "B21", "B18", "B17", "C17", "D17", "A19", "A18", "D15", "D14", "D16", "E16", "F14", "F13", "E17", "F16", "F21", "F15", "C20", "D20", "D19", "E19", "C19", "C18"]
     sdram1_header:   # 2x20 header J10 "SDRAM1 CONN." (SDRAM module or GBA cartridge-slot accessory)
+      source: {doc: sch60c, where: sheet FPGA_EXT_CONN (page 8) J10; SDRAM1_* nets on BTB J0/J2}
       device: {"name": "2x20 header J10 \"SDRAM1 CONN.\" (SDRAM module or GBA cartridge-slot accessory)", "kind": "header"}
       shares: ["onboard_gba_slot", "onboard_sdram1"]   # the board multiplexes these pins
       pins: ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "W17", "V17", "W22", "W21", "P17", "N17", "N14", "N13", "V20", "U20", "Y22", "Y21", "AB22", "AB21", "AA21", "AA20", "AB20", "AA19", "AA18", "AB18", "Y19", "Y18", "T20", "N15", "U18", "U17", "R16", "P15", "R14", "P14"]

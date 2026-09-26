@@ -37,33 +37,62 @@ Board:
   - seven_seg_module_shared
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
+  documents:
+  - id: manual
+    title: DE1 User Manual v1.0.18 (Terasic)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=83&FID=91d2cf46f90973377b1f71bd42040740
+    sha256: b80cf40b384feb7a238198f6fd532c46c7fa084fa75402b9a07f593e081f035b
+    bytes: 2415844
+    retrieved: '2026-09-24'
+  - id: cd_csv
+    title: DE1_pin_assignments.csv (Terasic DE1 System CD pin file, copy in Torlus/FPGAPCE)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Torlus/FPGAPCE/2bcc6980a2e99d3dab21b2d2b8852ae408c012e0/src/DE1_pin_assignments.csv
+    sha256: d1b2a3f48e071e15a28b79533f29cd650517c70d20f3b64e0ab472d558a373fc
+    bytes: 15480
+    retrieved: '2026-09-24'
+  - id: community_qsf
+    title: minimig_de1.qsf (community project for the DE1, rkrajnc/minimig-de1)
+    kind: constraints
+    url: https://raw.githubusercontent.com/rkrajnc/minimig-de1/fe23bb919d7a07fa6169db45bd6ed75f5cad5f2c/fpga/de1/minimig_de1.qsf
+    sha256: d7ceb9e357980e2fab88405652a1cc4936aae8849c7e12ed5bbd1a1dacbdb021
+    bytes: 37851
+    retrieved: '2026-09-24'
   toolchain_options:
     quartus:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk50mhz: { pins: L1, frequency_mhz: 50 }
+    clk50mhz: { pins: L1, frequency_mhz: 50, source: {doc: manual, where: 'Table 4.5, p. 34'} }
     onboard_uart:
+      source: {doc: manual, where: 'Table 4.10, p. 41'}
       pins:
         tx: G12
         rx: F14
     onboard_buttons:
+      source: {doc: manual, where: 'Table 4.2, p. 31'}
       active: low
       pins: [R22, R21, T22, T21]
     onboard_leds:
+      source: {doc: manual, where: 'Table 4.3, p. 31'}
       pins: [R20, R19, U19, Y19, T18, V19, Y18, U18, R18, R17]
     onboard_leds_green:
+      source: {doc: manual, where: 'Table 4.3, p. 31'}
       pins: [U22, U21, V22, V21, W22, W21, Y22, Y21]
     onboard_switches:
+      source: {doc: manual, where: 'Table 4.1, p. 30-31'}
       pins: [L22, L21, M22, V12, W12, U12, U11, M2, M1, L2]
     onboard_7seg:
+      source: {doc: manual, where: 'Table 4.4, p. 33'}
       pins:
         hex0: [J2, J1, H2, H1, F2, F1, E2]
         hex1: [E1, H6, H5, H4, G3, D2, D1]
         hex2: [G5, G6, C2, C1, E3, E4, D3]
         hex3: [F4, D5, D6, J4, L8, F3, D4]
     onboard_vga:
+      source: {doc: manual, where: 'Table 4.8, p. 39-40'}
       pins:
         hs: A11
         vs: B11
@@ -71,6 +100,7 @@ Board:
         g: [B8, C10, B9, A8]
         b: [A9, D11, A10, B10]
     onboard_audio_codec:
+      source: {doc: manual, where: 'Table 4.9, p. 41'}
       pins:
         adc_lrck: A6
         adc_dat: B6
@@ -79,12 +109,15 @@ Board:
         xck: B4
         bclk: A4
     onboard_i2c:
+      source: {doc: manual, where: 'Table 4.9, p. 41'}
       pins:
         sclk: A3
         sdat: B3
     gpio_0:
+      source: {doc: manual, where: 'Table 4.7, p. 35-36'}
       pins: [A13, B13, A14, B14, A15, B15, A16, B16, A17, B17, A18, B18, A19, B19, A20, B20, C21, C22, D21, D22, E21, E22, F21, F22, G21, G22, J21, J22, K21, K22, J19, J20, J18, K20, L19, L18]
     gpio_1:
+      source: {doc: manual, where: 'Table 4.7, p. 36-37'}
       pins: [H12, H13, H14, G15, E14, E15, F15, G16, F12, F13, C14, D14, D15, D16, C17, C18, C19, C20, D19, D20, E20, F20, E19, E18, G20, G18, G17, H17, J15, H18, N22, N21, P15, N15, P17, P18]
     onboard_clk27mhz:   # CLOCK_27 (27 MHz)
       device: {"name": "CLOCK_27 (27 MHz)", "kind": "clock"}
@@ -96,22 +129,28 @@ Board:
       device: {"name": "External clock input (SMA)", "kind": "clock"}
       pins: {"EXT_CLOCK": "M21"}
     onboard_ps2:   # PS/2 port
+      source: {doc: manual, where: 'Table 4.11, p. 42'}
       device: {"name": "PS/2 port", "kind": "ps2"}
       pins: {"PS2_CLK": "H15", "PS2_DAT": "J14"}
     onboard_sdram:   # SDRAM (8 MB, 16-bit)
+      source: {doc: manual, where: 'Table 4.16, p. 44-45'}
       device: {"name": "SDRAM (8 MB, 16-bit)", "kind": "sdram"}
       model_params: {col_bits: 8}
       pins: {"DRAM_ADDR": ["W4", "W5", "Y3", "Y4", "R6", "R5", "P6", "P5", "P3", "N4", "W3", "N6"], "DRAM_DQ": ["U1", "U2", "V1", "V2", "W1", "W2", "Y1", "Y2", "N1", "N2", "P1", "P2", "R1", "R2", "T1", "T2"], "DRAM_BA_": ["U3", "V4"], "DRAM_LDQM": "R7", "DRAM_UDQM": "M5", "DRAM_RAS_N": "T5", "DRAM_CAS_N": "T3", "DRAM_CKE": "N3", "DRAM_CLK": "U4", "DRAM_WE_N": "R8", "DRAM_CS_N": "T6"}
     onboard_sram:   # SRAM (512 KB, 16-bit)
+      source: {doc: manual, where: 'Table 4.17, p. 45-46'}
       device: {"name": "SRAM (512 KB, 16-bit)", "kind": "sram"}
       pins: {"SRAM_ADDR": ["AA3", "AB3", "AA4", "AB4", "AA5", "AB10", "AA11", "AB11", "V11", "W11", "R11", "T11", "Y10", "U10", "R10", "T7", "Y6", "Y5"], "SRAM_DQ": ["AA6", "AB6", "AA7", "AB7", "AA8", "AB8", "AA9", "AB9", "Y9", "W9", "V9", "U9", "R9", "W8", "V8", "U8"], "SRAM_WE_N": "AA10", "SRAM_OE_N": "T8", "SRAM_UB_N": "W7", "SRAM_LB_N": "Y7", "SRAM_CE_N": "AB5"}
     onboard_flash:   # Flash memory (4 MB, 8-bit)
+      source: {doc: manual, where: 'Table 4.18, p. 46-47'}
       device: {"name": "Flash memory (4 MB, 8-bit)", "kind": "flash"}
       pins: {"FL_ADDR": ["AB20", "AA14", "Y16", "R15", "T15", "U15", "V15", "W15", "R14", "Y13", "R12", "T12", "AB14", "AA13", "AB13", "AA12", "AB12", "AA20", "U14", "V14", "U13", "R13"], "FL_DQ": ["AB16", "AA16", "AB17", "AA17", "AB18", "AA18", "AB19", "AA19"], "FL_OE_N": "AA15", "FL_RST_N": "W14", "FL_WE_N": "Y14"}
     onboard_usb_blaster_jtag:   # USB-Blaster JTAG link to FPGA (Control Panel)
+      source: {doc: cd_csv, where: DE1_pin_assignments.csv}
       device: {"name": "USB-Blaster JTAG link to FPGA (Control Panel)", "kind": "other"}
       pins: {"TDI": "E8", "TCS": "D8", "TCK": "C7", "TDO": "D7"}
     onboard_sdcard:   # SD card socket
+      source: {doc: community_qsf, where: minimig_de1.qsf}
       device: {"name": "SD card socket", "kind": "sdcard"}
       pins: {"SD_CLK": "V20", "SD_CMD": "Y20", "SD_DAT": "W20", "SD_DAT3": "U20"}
   # ---- drawn: headers and parts; ./unifpga layout draft de1 regenerates from here on ----

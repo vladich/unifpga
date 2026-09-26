@@ -29,6 +29,21 @@ Board:
   - micron_mt47h64m16
   - marvell_88e1111
   - intel_strataflash_p30
+  documents:
+  - id: manual
+    title: Cyclone III Development Board Reference Manual (Altera; copy of the kit installation in mopplayer/Cyclone-III-Embedded-Kit-Dev-Board)
+    kind: manual
+    url: https://raw.githubusercontent.com/mopplayer/Cyclone-III-Embedded-Kit-Dev-Board/2883c75bb99e498533d86c6672a4e0a3ad29e639/cycloneIII_3c120_dev/documents/cycloneIII_3c120_dev_reference_manual.pdf
+    sha256: bc0d926a9ad1b1c4abf454673cc9b998ad8b4d027c27ef579956fd2f13920d97
+    bytes: 2145932
+    retrieved: '2026-09-24'
+  - id: golden_qsf
+    title: cycloneIII_3c120_dev_golden_top.qsf (Altera kit golden top, same repository)
+    kind: constraints
+    url: https://raw.githubusercontent.com/mopplayer/Cyclone-III-Embedded-Kit-Dev-Board/2883c75bb99e498533d86c6672a4e0a3ad29e639/cycloneIII_3c120_dev/examples/cycloneIII_3c120_dev_golden_top/cycloneIII_3c120_dev_golden_top.qsf
+    sha256: 7dad1b91e43478dab78ca88496e16f47e483a032240b9e293e76c437eb765ac3
+    bytes: 36095
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 2.5 V
 
@@ -47,11 +62,11 @@ Board:
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
         - "RESERVE_DATA0_AFTER_CONFIGURATION \"AS INPUT TRI-STATED\""
   banks:
-    clk50mhz: { pins: AH15, frequency_mhz: 50, iostandard: 1.8 V }
-    clk125mhz: { pins: A14, frequency_mhz: 125, iostandard: 1.8 V }
-    clkin_sma: { pins: AH14, iostandard: 1.8 V }
-    clkout_sma: { pins: AE23, iostandard: 1.8 V }
-    altera_config_dclk: { pins: P3 }
+    clk50mhz: { pins: AH15, frequency_mhz: 50, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
+    clk125mhz: { pins: A14, frequency_mhz: 125, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
+    clkin_sma: { pins: AH14, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
+    clkout_sma: { pins: AE23, iostandard: 1.8 V, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
+    altera_config_dclk: { pins: P3, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
     altera_config_data0: { pins: N7 }
     termination_blk0:
       pins:
@@ -66,10 +81,12 @@ Board:
         rup: U7
         rdn: U8
     termination_blk3:
+      source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf}
       pins:
         rup: AA22
         rdn: AB23
     onboard_ddr2_top:
+      source: {doc: manual, where: 'Table 2–51, p. 62-63'}
       pins:
         wen: A10
         rasn: F8
@@ -146,6 +163,7 @@ Board:
         "Y13": SSTL-18 CLASS I
         "Y14": SSTL-18 CLASS I
     onboard_ddr2:
+      source: {doc: manual, where: 'Table 2–51, p. 59-63'}
       iostandard: SSTL-18 CLASS I
       pins:
         dq: [AG22, AH21, AH22, AG21, AD17, AH23, AE19, AF24, AG18, AG17, AH18, AH17, AF15, AE17, AF16, AB16, AE11, AG11, AG10, AH11, AE9, AE12, AF10, AE13, AC8, AH7, AG8, AH8, AG7, AA10, AF7, AD10, A12, C14, A11, C13, D15, C12, E14, D13, B7, C11, A7, C10, E11, B6, H13, D10, C17, B19, B18, C19, D20, C16, A19, E17, C21, C22, A21, A22, C24, B21, D21, E18, E22, C25, A23, B25, A26, F21, B26, D22]
@@ -189,6 +207,7 @@ Board:
       pins:
         d: [G3, G4, H3, H4, J5, J6, K1, K2, L1, L2, L3, L4, N3, N4]
     onboard_ethernet_phy:
+      source: {doc: manual, where: 'Table 2–44, p. 50-51'}
       pins:
         mdc: N8
         mdio: L5
@@ -203,6 +222,7 @@ Board:
       overrides:
         "B14": 1.8 V
     onboard_parallel_flash:
+      source: {doc: manual, where: 'Table 2–56, p. 68'}
       iostandard: 1.8 V
       pins:
         oen: Y17
@@ -211,6 +231,7 @@ Board:
         rdybsyn: AG25
         resetn: AB20
     onboard_sram:
+      source: {doc: manual, where: 'Table 2–53, p. 64'}
       iostandard: 1.8 V
       pins:
         ben: [AF20, AH26, AE22, AB21]
@@ -222,11 +243,13 @@ Board:
         psn: B4
         advn: AA19
     onboard_flash_sram:
+      source: {doc: manual, where: 'Table 2–53, p. 64-66; Table 2–56, p. 68-69'}
       iostandard: 1.8 V
       pins:
         a: [AC11, AH10, AA13, AC10, Y15, AF22, AF26, AF4, AD8, AG26, AH6, AD24, AF9, AA8, AC22, AE8, AF13, AB14, AF23, AG12, AB18, Y19, AG3, AE16, AB7]
         d: [J14, D6, J17, G7, F18, C6, H17, C18, D18, G16, G22, F12, D11, E24, H21, G9, A4, G13, H14, B8, C8, F7, B11, B22, A18, G8, J12, D9, C9, E7, H10, J10]
     hsma:
+      source: {doc: manual, where: 'Table 2–47, p. 53-55'}
       index_origin: {clk_in_p: 1, clk_out_p: 1, clk_in_n: 1, clk_out_n: 1}
       pins:
         clk_in0: AG14
@@ -251,6 +274,7 @@ Board:
         "G5": SSTL-2 CLASS II
         "G6": SSTL-2 CLASS II
     hsmb:
+      source: {doc: manual, where: 'Table 2–29, p. 38; Table 2–47, p. 55; Table 2–48, p. 58'}
       index_origin: {clk_in_n: 1, clk_in_p: 1, clk_out_n: 1, clk_out_p: 1}
       pins:
         clk_in0: A15
@@ -282,18 +306,21 @@ Board:
       pins:
         de: AC24
     onboard_leds:
+      source: {doc: manual, where: 'Table 2–27, p. 38'}
       active: low
       iostandard: 1.8 V
       pins: [AD15, AE20, AF18, AD19, AE15, AC17, AG19, AF19]
     onboard_max_ctrl:
+      source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf}
       iostandard: 1.8 V
       pins:
         csn: D23
         oen: E25
         wen: C15
         clk: D14
-    cpu_resetn: { pins: T21, active: low }
+    cpu_resetn: { pins: T21, active: low, source: {doc: manual, where: 'Table 2–14, p. 31; Table 2–23, p. 36'} }
     onboard_7seg:
+      source: {doc: manual, where: 'Table 2–33, p. 40'}
       iostandard: 1.8 V
       index_origin: {anodes: 1}
       pins:
@@ -307,15 +334,18 @@ Board:
         dp: AD4
         minus: G19
         anodes: [B3, C5, E4, C3]
-    onboard_speaker: { pins: H22 }
+    onboard_speaker: { pins: H22, source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf} }
     onboard_buttons:
+      source: {doc: manual, where: 'Table 2–23, p. 36'}
       active: low
       iostandard: 1.8 V
       pins: [AD7, AC12, AH3, AA12]
     onboard_switches:
+      source: {doc: manual, where: 'Table 2–25, p. 37'}
       iostandard: 1.8 V
       pins: [AC14, AD18, AG23, AC19, AD14, G20, AB15, AF25]
     onboard_usb:
+      source: {doc: golden_qsf, where: cycloneIII_3c120_dev_golden_top.qsf}
       pins:
         ifclk: B15
         cmd_data: C27

@@ -15,6 +15,49 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  documents:
+  - id: sch
+    title: Marsohod3GW2 schematic (KiCad, mbftdi.kicad_sch, 1 sheet)
+    kind: schematic
+    url: https://raw.githubusercontent.com/marsohod4you/Marsohod3GW/Marsohod3GW2_GW1NR-LV9QN88PC6I5/schematics/Marsohod3GW2.pdf
+    sha256: 2007b6a85b5fe60fc0b230b5ee36713cb66ff553e2f4160f72b4b3d3f7a972d0
+    bytes: 212373
+    retrieved: '2026-09-24'
+  - id: cst_hyperram
+    title: Marsohod3GW _hyperram/src/board.cst (full board cst incl. commented FTC bus)
+    kind: constraints
+    url: https://raw.githubusercontent.com/marsohod4you/Marsohod3GW/Marsohod3GW2_GW1NR-LV9QN88PC6I5/_hyperram/src/board.cst
+    sha256: 0c724f85e90203b39af4b6ef71fb09586a75fb4e43785278dd09663f2cfedd60
+    bytes: 4553
+    retrieved: '2026-09-24'
+  - id: cst_fifo
+    title: Marsohod3GW _ftdi_sync_fifo/src/board.cst (FT245 sync FIFO control pins)
+    kind: constraints
+    url: https://raw.githubusercontent.com/marsohod4you/Marsohod3GW/Marsohod3GW2_GW1NR-LV9QN88PC6I5/_ftdi_sync_fifo/src/board.cst
+    sha256: 0eb298e7231025c38a35a39d6ea6c032232a57c3139fb01cc315e5592cfe566e
+    bytes: 4650
+    retrieved: '2026-09-24'
+  - id: cst_gige
+    title: Marsohod3GW _gig_eth_test/src/gig_e.cst (Ethernet shield on the expansion headers)
+    kind: constraints
+    url: https://raw.githubusercontent.com/marsohod4you/Marsohod3GW/Marsohod3GW2_GW1NR-LV9QN88PC6I5/_gig_eth_test/src/gig_e.cst
+    sha256: aa159231eadff62dcd5138ce9ecbaf8e1141d74e99783b5d1f806eca0a5127c9
+    bytes: 833
+    retrieved: '2026-09-24'
+  - id: page
+    title: 'marsohod.org: Марсоход3GW2, Gowin (project page)'
+    kind: wiki
+    url: https://marsohod.org/projects/marsohod3gw-prj
+    sha256: d79fc06408cf3a6236ff2f0985e751b95ec15a2251943c8677ede8b2db283c97
+    bytes: 70079
+    retrieved: '2026-09-24'
+  - id: bgm
+    title: BGM boards/marsohod3gw2 board_specific_top.sv (7-seg shield mapping)
+    kind: constraints
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/main/boards/marsohod3gw2/board_specific_top.sv
+    sha256: 2e0ef3261e2b5b7f55f1d7145e24c24f75c53aa6b5106eaceb6d1cc42e96f772
+    bytes: 4973
+    retrieved: '2026-09-24'
   toolchain_options:
     gowin:
       set_device: "GW1NR-LV9QN88PC6/I5 -name GW1NR-9 -device_version C"
@@ -22,6 +65,7 @@ Board:
       gprj_device: '<Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>'
   banks:
     onboard_hdmi:
+      source: {doc: sch, where: 'U4 pins 41,42,48,49,51..54 via 33R R64..R71; J4 HDMI_A'}
       # ELVDS_OBUF pairs with IO_TYPE=LVCMOS18D (1.8 V bank)
       pins:
         d_p: ["49,48", "52,51", "54,53"]
@@ -34,23 +78,28 @@ Board:
         "52,51": LVCMOS18D
         "54,53": LVCMOS18D
     gpio:
+      source: {doc: sch, where: 'J2 Conn_02x07: IO0..IO7 at pins 5..12; U4 IO0..IO7 -> 17,18,19,20,25,26,27,28'}
       active: low
       pins: ["17", "18", "19", "20", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"]
     onboard_leds:
+      source: {doc: sch, where: 'U4 pins 16,15,14,13,11,10 (led0..led5), 88 led6, 87 led7; LED block bottom-left'}
       pins: ["16", "15", "14", "13", "11", "10", "88", "87"]
     onboard_ft_bridge:
+      source: {doc: sch, where: 'U4 right side pins 50,55..57,59..63,68..76 FTDI_* nets; cst_hyperram commented FTC[]; cst_fifo'}
       pins:
         b0: "60"
         b1: "59"
         d: ["50", "57", "55", "56", "76", "75", "74", "73"]
     onboard_adc:
+      source: {doc: sch, where: 'U5 D0..D7 via R33..R40; nets D0->pin4, D1->pin3, D2..D7 -> pins 86..81; CLK -> pin 77'}
       pins:
         d: ["4", "3", "86", "85", "84", "83", "82", "81"]
         clk: "77"
     onboard_buttons:
+      source: {doc: sch, where: 'U4 pin 80 KEY0, pin 79 KEY1; SW1/SW2 to GND'}
       pins: ["80", "79"]
       active: low            # KEY0 / KEY1 pull up (key_rst_n = KEY0 & KEY1)
-    clk: { pins: "47", frequency_mhz: 100 }
+    clk: { pins: "47", frequency_mhz: 100, source: {doc: sch, where: X1 OUT -> R72 -> net clk -> U4 pin 47 (IOB43B); 100 MHz per page text} }
     onboard_other:   # JTAG (FPGA dedicated) + JTAG2 external header
       device: {"name": "JTAG (FPGA dedicated) + JTAG2 external header", "kind": "other"}
       pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8", "reconfig_n": "9"}

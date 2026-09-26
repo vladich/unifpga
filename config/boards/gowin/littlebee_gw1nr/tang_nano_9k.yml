@@ -21,6 +21,98 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  documents:
+  - id: sch3674
+    title: Tang_nano_9K_3674 schematics (KiCad 9, 2024-03-11)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Nano%209K/2_Schematic/Tang_nano_9K_3674_schematics.pdf
+    sha256: 5e720b0d128dab277896290ca41bb290c5a533adf04b4c4baa4546844be8f3d8
+    bytes: 1317120
+    retrieved: '2026-09-24'
+  - id: sch3672
+    title: Tang_Nano_9k_3672 schematic (KiCad 6, 2021-09-22)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Nano%209K/2_Schematic/Tang_Nano_9k_3672_Schematic.pdf
+    sha256: 71ccf1b7731589c8bc5b4c1dcf0c8906f52831785c703732d43a70f01ec574ec
+    bytes: 637779
+    retrieved: '2026-09-24'
+  - id: ds
+    title: Sipeed Tang Nano 9K Datasheet EN V1.0
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Nano%209K/1_Specification/Sipeed_Tang_nano_9K_Datasheet_ENV1.0.pdf
+    sha256: c7e312507564cba21a47bc0937d2a8a58107f733e004d54db135588ea759c038
+    bytes: 2671581
+    retrieved: '2026-09-24'
+  - id: wiki
+    title: Sipeed wiki Tang Nano 9K (page dated 2026-04-15)
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-9K/Nano-9K.html
+    sha256: b498ae97d41a1a1ead61f7183bee2792d7f61dba17c3a8867948e5e877ec2fd1
+    bytes: 89311
+    retrieved: '2026-09-24'
+  - id: ex_uart
+    title: TangNano-9K-example uart/src/top.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-9K-example/blob/c3b795799f23de91982be52db4273a8eea100cdb/uart/src/top.cst
+    sha256: 0a3a19f05f4a442a36224ecf3c6870859114789fb0cd5abda81469f233fb9e76
+    bytes: 465
+    retrieved: '2026-09-24'
+  - id: ex_led
+    title: TangNano-9K-example led/src/9K_LED_project.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-9K-example/blob/c3b795799f23de91982be52db4273a8eea100cdb/led/src/9K_LED_project.cst
+    sha256: d3bfd12feaec49396a9e35ecc804582f630990e7987452c98fa592b822d30c7f
+    bytes: 480
+    retrieved: '2026-09-24'
+  - id: ex_lcd43
+    title: TangNano-9K-example lcd_4.3/src/Tang_nano_9K_LCD.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-9K-example/blob/c3b795799f23de91982be52db4273a8eea100cdb/lcd_4.3/src/Tang_nano_9K_LCD.cst
+    sha256: ec99c686b695181774c5ac8989a36e6abd05c1a83213fc04bb5681fd69c389db
+    bytes: 1751
+    retrieved: '2026-09-24'
+  - id: ex_lcdled
+    title: TangNano-9K-example lcd_led/src/Tang_nano_9K_LCD.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-9K-example/blob/c3b795799f23de91982be52db4273a8eea100cdb/lcd_led/src/Tang_nano_9K_LCD.cst
+    sha256: 096628ee976f054639854da9db699b83dff4b156e06275b5569e5b377b101799
+    bytes: 1646
+    retrieved: '2026-09-24'
+  - id: ex_hdmi
+    title: TangNano-9K-example hdmi/src/hdmi.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-9K-example/blob/c3b795799f23de91982be52db4273a8eea100cdb/hdmi/src/hdmi.cst
+    sha256: 22fa56659bb54862062f52fd8bb94384ba7423cd8786f3e0ee22c287c2795924
+    bytes: 407
+    retrieved: '2026-09-24'
+  - id: ex_spilcd
+    title: TangNano-9K-example spi_lcd/src/lcd114_test.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-9K-example/blob/c3b795799f23de91982be52db4273a8eea100cdb/spi_lcd/src/lcd114_test.cst
+    sha256: b7cd5111133ac46f4369d707806042bd4efbac70e155c07971d3c6928a99d691
+    bytes: 515
+    retrieved: '2026-09-24'
+  - id: ex_picotiny
+    title: TangNano-9K-example picotiny/project/picotiny.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangNano-9K-example/blob/c3b795799f23de91982be52db4273a8eea100cdb/picotiny/project/picotiny.cst
+    sha256: e57845e42a79d45a29b5b4aaaa149b867e33b8ef67dfb2c22aff31564b83d9b6
+    bytes: 1548
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards sipeed_tang_nano_9k.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_nano_9k.py
+    sha256: d24756eef7feb3e04b49f987496d52e8c752ee60d3e956f0ed09991ec197d1e0
+    bytes: 4185
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards tang_nano_9k.py
+    kind: platform
+    url: https://github.com/amaranth-lang/amaranth-boards/blob/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/tang_nano_9k.py
+    sha256: d9238625e7c8fe69f15a502f419954e9a8d4d281b853ec22a52de2ff7243f9b0
+    bytes: 2533
+    retrieved: '2026-09-24'
   toolchain_options:
     yosys:
       synth_options: []
@@ -35,14 +127,17 @@ Board:
     apicula:
       rpll_device: GW1NR-9      # nextpnr-gowin: "wrong PLL device: GW1N-9C instead of GW1NR-9" (mercury 2026-09-22)
   banks:
-    clk: { pins: "52", frequency_mhz: 27 }
+    clk: { pins: "52", frequency_mhz: 27, source: {doc: sch3674, where: 'PDF p.2 (GW1NR 9K sheet): 27MHz U16 OUT -> R26 22R -> net PIN52_XTAL_IN = ball 52 (IOR17A/GCLKT_3)'} }
     onboard_buttons:
+      source: {doc: sch3674, where: 'PDF p.2 "Button x 2": net PIN3_IOT2A_BUTTON_S1_1V8 (ball 3, IOT2A), PIN4_IOL5A_JTAG_SEL_S2_1V8 (ball 4, IOL5A/JTAGSEL_N/LPLL_T); 10K pull-up to VCCO3_1V8, switch to GND; ex_lcdled User_Button 3 / Reset_Button 4'}
       active: low
       pins: ["4", "3"]
     onboard_leds:
+      source: {doc: sch3674, where: 'PDF p.2 "LED x 7": PIN10_IOL15A_LED1, PIN11_IOL16B_LED2, PIN13_IOL21B_LED3, PIN14_IOL22B_LED4, PIN15_IOL25B_LED5, PIN16_IOL26B_LED6; anodes on VCCO3_1V8 (cathode to the FPGA); Amaranth invert=True; ex_led led[0..5]=10,11,13,14,15,16'}
       active: low
       pins: ["10", "11", "13", "14", "15", "16"]
     onboard_lcd:
+      source: {doc: sch3674, where: 'PDF p.2 "RGB LCD" J4: pin8..12 R3..R7 = nets PIN75/74/73/72/71 (HDMI_D2_P/D2_N/D1_P/D1_N/D0_P), pin15..17 G2..G4 = PIN70/69/68 (HDMI_D0_N/CK_P/CK_N), pin18..20 G5..G7 = PIN57_IOR13A_RGB_G5/PIN56/PIN55, pin24..28 B3..B7 = PIN54/53/51/42/41, pin30 CLK = PIN35_IOB29A_RGB_CK, pin32 HSYNC = PIN40_IOB33B_RGB_HS, pin33 VSYNC = PIN34_IOB23B_RGB_VS, pin34 DEN = PIN33_IOB23A_RGB_DE, pin31 DISP tied to +3V3, pin37..40 XR/YD/XL/YU = PIN32_IOB15B/PIN31_IOB15A/PIN63_IOR5A/PIN50_IOR22B _RGBINIT; R0..R2, G0..G1, B0..B2 tied to GND; backlight LP3320 U11 enable net PIN86_IOT8A_BL_PWM_1V8; ex_lcd43 LCD_R/G/B/DEN/SYNC/HYNC/CLK agree; LiteX/Amaranth lcd agree'}
       index_origin: {r: 3, g: 2, b: 3}
       pins:
         de: "33"
@@ -55,10 +150,12 @@ Board:
         g: ["70", "69", "68", "57", "56", "55"]
         b: ["54", "53", "51", "42", "41"]
     onboard_uart:
+      source: {doc: sch3674, where: 'PDF p.1 (top) / p.4 (BL702): BL702 GPIO26=UART1_TXD -> BL_UART1_TX# -> FPGA_RX = PIN18_IOB2B_FPGA_RX (ball 18); GPIO27=UART1_RXD <- BL_UART1_RX# <- FPGA_TX = PIN17_IOB2A_FPGA_TX (ball 17); ex_uart uart_tx 17 / uart_rx 18'}
       pins:
         rx: "18"
         tx: "17"
     onboard_microsd:
+      source: {doc: sch3674, where: 'PDF p.2 "TF CARD": DAT3/CS = PIN38_IOB31B_TF_CS, CMD/MOSI = PIN37_IOB31A_TF_MOSI, CLK = PIN36_IOB29B_TF_SCLK (via R21 0R), DAT0/MISO = PIN39_IOB33A_TF_MISO; DAT1, DAT2 not connected to the FPGA; 10K pull-ups R20/R22; LiteX spisdcard; Amaranth SDCardResources clk 36 cmd 37 dat0 39 dat3 38'}
       pins:
         cs: "38"
         mosi: "37"
@@ -67,6 +164,7 @@ Board:
     gpio:
       pins: ["25", "26", "27", "28", "29", "30"]
     onboard_small_lcd:
+      source: {doc: sch3674, where: 'PDF p.2 "1.14inch LCD": pin3 RESET = LCD_RESET via R9 0R from PIN47_IOB43B_SPILCD_EN, pin4 RS = PIN49_IOR24A_SPILCD_RS, pin5 SDA = PIN77_IOT37A_SPILCD_MO, pin6 SCL = PIN76_IOT37B_SPILCD_MCLK, pin8 CS = PIN48_IOR24B_SPILCD_CS, pin1 LEDA via 5.1R to +3V3 (backlight always on); ex_spilcd lcd_data 77 lcd_clk 76 lcd_rs 49 lcd_cs 48 lcd_resetn 47'}
       pins:
         data: "77"
         clk: "76"
@@ -74,12 +172,14 @@ Board:
         cs: "48"
         rs: "49"
     onboard_serial_flash:
+      source: {doc: sch3674, where: 'PDF p.2 "SPI FLASH": U3 P25Q32U CS# = PIN60_IOR12A_MCS, SCLK = PIN59_IOR12B_MCLK, SI/SIO0 = PIN61_IOR11B_MOSI, SO/SIO1 = PIN62_IOR11A_MISO; WP#/SIO2 and RESET#/SIO3 pulled up 4.7K (not FPGA-connected); LiteX spiflash cs_n 60 clk 59 mosi 61 miso 62; ex_picotiny flash_*'}
       pins:
         clk: "59"
         csb: "60"
         mosi: "61"
         miso: "62"
     onboard_hdmi:
+      source: {doc: sch3674, where: 'PDF p.1 (top) / p.5 FPGA_HDMI: HDMI_D0_P/N = balls 71/70, D1_P/N = 73/72, D2_P/N = 75/74, CK_P/N = 69/68 (nets PIN71_RGB_R7/HDMI_D0_P ... PIN68_RGB_G4/HDMI_CK_N) -> C 100nF -> connector; SCL/SDA pulled to +5VD (R12/R13), HPD and CEC not wired to the FPGA; ex_hdmi tmds_d_p[0..2] 71,70 / 73,72 / 75,74, tmds_clk_p 69,68; LiteX hdmi; Amaranth DiffPairs'}
       pins:
         clk_p: "69,68"
         clk_n: "68"
@@ -90,11 +190,13 @@ Board:
       shares: ["onboard_buttons"]   # the board multiplexes these pins
       pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8", "reconfig_n": "9", "mode0": "88", "mode1": "87", "jtagsel_n": "4"}
     header_j5:   # 2x24 pin header J5 (2.54 mm pads, one side of the board)
+      source: {doc: sch3674, where: 'PDF p.2 Conn_01x24 J5: 1..4 TF_CS/MOSI/SCLK/MISO, 5..10 PIN25_IOB8A..PIN30_IOB13B, 11..22 RGB DE/VS/HS/CK/B7/B6/B5/B4/B3/G7/G6/G5, 23 HDMI_CK_N, 24 HDMI_CK_P; LiteX connector "J6" has the same list'}
       device: {"name": "2x24 pin header J5 (2.54 mm pads, one side of the board)", "kind": "header"}
       iostandard: "LVCMOS33"
       shares: ["gpio", "onboard_hdmi", "onboard_lcd", "onboard_microsd"]   # the board multiplexes these pins
       pins: ["38", "37", "36", "39", "25", "26", "27", "28", "29", "30", "33", "34", "40", "35", "41", "42", "51", "53", "54", "55", "56", "57", "68", "69"]
     header_j6:   # 2x24 pin header J6 (2.54 mm pads, other side of the board)
+      source: {doc: sch3674, where: 'PDF p.2 Conn_01x24 J6: 1 PIN63_IOR5A_RGBINIT, 2 PIN86_IOT8A_BL_PWM_1V8, 3..9 PIN85_IOT8B..PIN79_IOT12B _1V8, 10 PIN77 SPILCD_MO, 11 PIN76 SPILCD_MCLK, 12..17 HDMI_D2_P/D2_N/D1_P/D1_N/D0_P/D0_N, 18 +5V, 19 PIN48 SPILCD_CS, 20 PIN49 SPILCD_RS, 21 PIN31_IOB15A_RGBINIT, 22 PIN32_IOB15B_RGBINIT, 23 GND, 24 +3V3; LiteX connector "J7" has the same list with "-" at 18, 23, 24'}
       device: {"name": "2x24 pin header J6 (2.54 mm pads, other side of the board)", "kind": "header"}
       shares: ["onboard_hdmi", "onboard_lcd", "onboard_small_lcd"]   # the board multiplexes these pins
       pins: ["63", "86", "85", "84", "83", "82", "81", "80", "79", "77", "76", "75", "74", "73", "72", "71", "70", "48", "49", "31", "32"]

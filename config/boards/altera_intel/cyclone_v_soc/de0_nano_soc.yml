@@ -36,6 +36,14 @@ Board:
   - dip_switch_generic
   - adi_adxl345
   - ti_adc128s022
+  documents:
+  - id: manual
+    title: DE0-Nano-SoC User Manual rev. D0 board (Terasic)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=941&FID=b3890b02dd98aa5e787665916589d20b
+    sha256: 1ed083522d35a434df5f4b71dccceda06c2378262ec67f75ff7931c6a1d4cabf
+    bytes: 5713182
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -47,17 +55,22 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    fpga_clk1_50mhz: { pins: V11, frequency_mhz: 50 }
+    fpga_clk1_50mhz: { pins: V11, frequency_mhz: 50, source: {doc: manual, where: 'Table 3-5, p. 23'} }
     onboard_buttons:
+      source: {doc: manual, where: 'Table 3-7, p. 26'}
       active: low
       pins: [AH17, AH16]
     onboard_switches:
+      source: {doc: manual, where: 'Table 3-6, p. 26'}
       pins: [L10, L9, H6, H5]
     onboard_leds:
+      source: {doc: manual, where: 'Table 3-8, p. 26'}
       pins: [W15, AA24, V16, V15, AF26, AE26, Y16, AA23]
     gpio_0:
+      source: {doc: manual, where: 'Table 3-10, p. 28'}
       pins: [V12, AF7, W12, AF8, Y8, AB4, W8, Y4, Y5, U11, T8, T12, AH5, AH6, AH4, AG5, AH3, AH2, AF4, AG6, AF5, AE4, T13, T11, AE7, AF6, AF9, AE8, AD10, AE9, AD11, AF10, AD12, AE11, AF11, AE12]
     gpio_1:
+      source: {doc: manual, where: 'Table 3-10, p. 29'}
       pins: [Y15, AG28, AA15, AH27, AG26, AH24, AF23, AE22, AF21, AG20, AG19, AF20, AC23, AG18, AH26, AA19, AG24, AF25, AH23, AG23, AE19, AF18, AD19, AE20, AE24, AD20, AF22, AH22, AH19, AH21, AG21, AH18, AD23, AE23, AA18, AC22]
     onboard_fpga_clk2_50mhz:   # FPGA_CLK2_50 (50 MHz)
       device: {"name": "FPGA_CLK2_50 (50 MHz)", "kind": "clock"}
@@ -78,10 +91,12 @@ Board:
       iostandard: "3.3V"
       pins: {"HPS_CLK2_25": "D20"}
     arduino_io:   # Arduino Uno R3 expansion header
+      source: {doc: manual, where: 'Table 3-11, p. 31'}
       device: {"name": "Arduino Uno R3 expansion header", "kind": "header"}
       iostandard: "3.3-V"
       pins: {"Arduino_IO": ["AG13", "AF13", "AG10", "AG9", "U14", "U13", "AG8", "AH8", "AF17", "AE15", "AF15", "AG16", "AH11", "AH12", "AH9", "AG11"], "Arduino_Reset_n": "AH7"}
     onboard_adc:   # A/D converter (LTC2308, SPI, 2x5 analog header)
+      source: {doc: manual, where: 'Table 3-12, p. 33'}
       device: {"name": "A/D converter (LTC2308, SPI, 2x5 analog header)", "kind": "adc"}
       iostandard: "3.3V"
       pins: {"ADC_CONVST": "U9", "ADC_SCK": "V10", "ADC_SDI": "AC4", "ADC_SDO": "AD4"}
@@ -125,6 +140,7 @@ Board:
       iostandard: "3.3V"
       pins: {"HPS_GSENSOR_INT": "A17", "HPS_I2C0_SCLK": "C18", "HPS_I2C0_SDAT": "A19"}
     hps_ltc_header:   # HPS LTC connector (2x7, SPI/I2C/GPIO)
+      source: {doc: manual, where: 'Table 3-21, p. 42'}
       device: {"name": "HPS LTC connector (2x7, SPI/I2C/GPIO)", "kind": "header"}
       iostandard: "3.3V"
       shares: ["onboard_hps_uart"]   # the board multiplexes these pins

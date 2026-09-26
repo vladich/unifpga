@@ -32,6 +32,35 @@ Board:
   features:
   - spi_flash
   - pmod_connector
+  documents:
+  - id: ds
+    title: DS1003 GateMate FPGA Evaluation Board Datasheet (January 2024)
+    kind: manual
+    url: https://colognechip.com/docs/ds1003-gatemate1-evalboard-latest.pdf
+    sha256: 9e371b4464fb2dc264f10bc6ec94860b61dc83a030584d8a9f9b2a8a27c13e71
+    bytes: 6807874
+    retrieved: '2026-09-24'
+  - id: sch32
+    title: DS1003 Evaluation Board Version 3.2 / CCGM1A1 Schematics (January 2024)
+    kind: schematic
+    url: https://colognechip.com/docs/ds1003-gatemate1-evb-3v2-a1-schematics-latest.pdf
+    sha256: b95d5765cd651446efb8beac38bb53fa2d048afaab34de2bfff33987f9c2df55
+    bytes: 9404689
+    retrieved: '2026-09-24'
+  - id: ds31
+    title: DS1003 Evaluation Board Version 3.1 datasheet incl. schematics (August 2022)
+    kind: manual
+    url: https://colognechip.com/docs/ds1003-gatemate1-evalboard-3v1-latest.pdf
+    sha256: c2e34c3f8edb2f83d5ac2251df1f452b4e2cdf057ad2e503f073012f7ce15a07
+    bytes: 13027032
+    retrieved: '2026-09-24'
+  - id: litex
+    title: litex-boards platforms/colognechip_gatemate_evb.py (a05e31e, 2026-09-23)
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/master/litex_boards/platforms/colognechip_gatemate_evb.py
+    sha256: 0a6894691e7c88264a0d342549053f24b29d6666b9a828aa1ca36d4da0c9e86f
+    bytes: 325339
+    retrieved: '2026-09-25'
   verification:
     status: placeholder
   defaults:
@@ -41,11 +70,13 @@ Board:
     # Cologne Chip DS1003 (GateMate A1 Evaluation Board), Table 3.3. The
     # reset button SW2 drives RST_N, not a GPIO, and the FT2232HQ carries
     # JTAG / SPI only: a UART needs a Pmod adapter.
-    clk:              { pins: "IO_SB_A8", frequency_mhz: 10 }   # X1 10.000 MHz
+    clk:              { pins: "IO_SB_A8", frequency_mhz: 10, source: {doc: ds, where: '3.5, Figure 3.13 (p. 32)'} }   # X1 10.000 MHz
     onboard_buttons:                          # user button SW3
+      source: {doc: ds, where: Table 3.3 (p. 25)}
       active: low
       pins: ["IO_EB_B0"]
     onboard_leds:                             # D1..D8, enabled by JP4, lit when driven low
+      source: {doc: ds, where: Table 3.3 (p. 25)}
       active: low
       pins: ["IO_EB_B1", "IO_EB_B2", "IO_EB_B3", "IO_EB_B4",
              "IO_EB_B5", "IO_EB_B6", "IO_EB_B7", "IO_EB_B8"]
@@ -54,10 +85,12 @@ Board:
       shares: ["io_sb"]   # the board multiplexes these pins
       pins: {"clock1_in": "IO_SB_A7", "clock2_in": "IO_SB_A6", "clock3_in": "IO_SB_A5"}
     onboard_hyperram:   # U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)
+      source: {doc: ds, where: '3.8, Table 3.10 (p. 38)'}
       device: {"name": "U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)", "kind": "other"}
       iostandard: "1.8 V"
       pins: {"cs_n": "IO_WB_B0", "rst_n": "IO_WB_A2", "ck": "IO_WB_A3", "ck_n": "IO_WB_B3", "rwds": "IO_WB_B4", "dq": ["IO_WB_A5", "IO_WB_B5", "IO_WB_A6", "IO_WB_B6", "IO_WB_A7", "IO_WB_B7", "IO_WB_A8", "IO_WB_B8"]}
     onboard_serial_flash:   # U5 MX25R6435F SPI flash (config bank WA)
+      source: {doc: sch32, where: U1E GPIO BANK CONFIG WA symbol}
       device: {"name": "U5 MX25R6435F SPI flash (config bank WA)", "kind": "flash"}
       iostandard: "2.5 V (VDD_WA)"
       pins: {"cs_n": "IO_WA_A8", "clk": "IO_WA_B8", "d0_mosi": "IO_WA_B7", "d1_miso": "IO_WA_A7", "d2_wp": "IO_WA_B6", "d3_hold": "IO_WA_A6"}
@@ -65,34 +98,42 @@ Board:
       device: {"name": "U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI", "kind": "usb"}
       pins: {"jtag_tdo": "IO_WA_B3", "jtag_tdi": "IO_WA_A4", "jtag_tms": "IO_WA_B4", "jtag_tck": "IO_WA_A5", "spi_fwd": "IO_WA_B5"}
     pmod_a:   # Pmod A J17A (bank NB via SN74CB3T3245 level shifter)
+      source: {doc: ds, where: '3.7, Table 3.9 (p. 37)'}
       device: {"name": "Pmod A J17A (bank NB via SN74CB3T3245 level shifter)", "kind": "pmod"}
       shares: ["onboard_buttons", "onboard_reset"]   # the board multiplexes these pins
       pins: ["IO_NB_A0", "IO_NB_A1", "IO_NB_A2", "IO_NB_A3", "IO_NB_B0", "IO_NB_B1", "IO_NB_B2", "IO_NB_B3"]
     pmod_b:   # Pmod B J17B (bank NB via SN74CB3T3245 level shifter)
+      source: {doc: ds, where: '3.7, Table 3.9 (p. 37)'}
       device: {"name": "Pmod B J17B (bank NB via SN74CB3T3245 level shifter)", "kind": "pmod"}
       shares: ["onboard_buttons"]   # the board multiplexes these pins
       pins: ["IO_NB_A4", "IO_NB_A5", "IO_NB_A6", "IO_NB_A7", "IO_NB_B4", "IO_NB_B5", "IO_NB_B6", "IO_NB_B7"]
     io_ea:   # J1 GPIO bank EA connector (2x23, 1.27 mm)
+      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
       device: {"name": "J1 GPIO bank EA connector (2x23, 1.27 mm)", "kind": "header"}
       shares: ["io_eb", "io_na", "io_sa", "io_sb", "io_wc"]   # the board multiplexes these pins
       pins: ["IO_EA_A8", "IO_EA_B8", "IO_EA_A7", "IO_EA_B7", "IO_EA_A6", "IO_EA_B6", "IO_EA_A5", "IO_EA_B5", "IO_EA_A4", "IO_EA_B4", "IO_EA_A3", "IO_EA_B3", "IO_EA_A2", "IO_EA_B2", "IO_EA_A1", "IO_EA_B1", "IO_EA_A0", "IO_EA_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
     io_eb:   # J2 GPIO bank EB connector (2x23, 1.27 mm)
+      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
       device: {"name": "J2 GPIO bank EB connector (2x23, 1.27 mm)", "kind": "header"}
       shares: ["io_ea", "io_na", "io_sa", "io_sb", "io_wc", "onboard_leds"]   # the board multiplexes these pins
       pins: ["IO_EB_A8", "IO_EB_B8", "IO_EB_A7", "IO_EB_B7", "IO_EB_A6", "IO_EB_B6", "IO_EB_A5", "IO_EB_B5", "IO_EB_A4", "IO_EB_B4", "IO_EB_A3", "IO_EB_B3", "IO_EB_A2", "IO_EB_B2", "IO_EB_A1", "IO_EB_B1", "IO_EB_A0", "IO_EB_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
     io_sa:   # J9 GPIO bank SA connector (2x23, 1.27 mm)
+      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
       device: {"name": "J9 GPIO bank SA connector (2x23, 1.27 mm)", "kind": "header"}
       shares: ["io_ea", "io_eb", "io_na", "io_sb", "io_wc"]   # the board multiplexes these pins
       pins: ["IO_SA_A8", "IO_SA_B8", "IO_SA_A7", "IO_SA_B7", "IO_SA_A6", "IO_SA_B6", "IO_SA_A5", "IO_SA_B5", "IO_SA_A4", "IO_SA_B4", "IO_SA_A3", "IO_SA_B3", "IO_SA_A2", "IO_SA_B2", "IO_SA_A1", "IO_SA_B1", "IO_SA_A0", "IO_SA_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
     io_sb:   # J10 GPIO bank SB connector (2x23, 1.27 mm)
+      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
       device: {"name": "J10 GPIO bank SB connector (2x23, 1.27 mm)", "kind": "header"}
       shares: ["clk", "io_ea", "io_eb", "io_na", "io_sa", "io_wc", "onboard_clock"]   # the board multiplexes these pins
       pins: ["IO_SB_A8", "IO_SB_B8", "IO_SB_A7", "IO_SB_B7", "IO_SB_A6", "IO_SB_B6", "IO_SB_A5", "IO_SB_B5", "IO_SB_A4", "IO_SB_B4", "IO_SB_A3", "IO_SB_B3", "IO_SB_A2", "IO_SB_B2", "IO_SB_A1", "IO_SB_B1", "IO_SB_A0", "IO_SB_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
     io_wc:   # J18 GPIO bank WC connector (2x23, 1.27 mm)
+      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
       device: {"name": "J18 GPIO bank WC connector (2x23, 1.27 mm)", "kind": "header"}
       shares: ["io_ea", "io_eb", "io_na", "io_sa", "io_sb"]   # the board multiplexes these pins
       pins: ["IO_WC_A0", "IO_WC_B0", "IO_WC_A1", "IO_WC_B1", "IO_WC_A2", "IO_WC_B2", "IO_WC_A3", "IO_WC_B3", "IO_WC_A4", "IO_WC_B4", "IO_WC_A5", "IO_WC_B5", "IO_WC_A6", "IO_WC_B6", "IO_WC_A7", "IO_WC_B7", "IO_WC_A8", "IO_WC_B8", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
     io_na:   # J19 GPIO bank NA connector (2x23, 1.27 mm)
+      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
       device: {"name": "J19 GPIO bank NA connector (2x23, 1.27 mm)", "kind": "header"}
       shares: ["io_ea", "io_eb", "io_sa", "io_sb", "io_wc"]   # the board multiplexes these pins
       pins: ["IO_NA_A0", "IO_NA_B0", "IO_NA_A1", "IO_NA_B1", "IO_NA_A2", "IO_NA_B2", "IO_NA_A3", "IO_NA_B3", "IO_NA_A4", "IO_NA_B4", "IO_NA_A5", "IO_NA_B5", "IO_NA_A6", "IO_NA_B6", "IO_NA_A7", "IO_NA_B7", "IO_NA_A8", "IO_NA_B8", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]

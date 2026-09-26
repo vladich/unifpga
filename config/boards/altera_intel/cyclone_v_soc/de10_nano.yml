@@ -33,6 +33,35 @@ Board:
   - pushbutton_smd_generic
   - dip_switch_generic
   - ti_adc128s022
+  documents:
+  - id: manual
+    title: DE10-Nano User Manual (Terasic, 2023)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=1046&FID=ee6469cf97af76af334e2b2f82f93268
+    sha256: d04eebe56a3a8996d547271ca8bd2c0eb23c676eabb4e30fd900eed7ab31fae7
+    bytes: 10694907
+    retrieved: '2026-09-24'
+  - id: manual_ab
+    title: DE10-Nano User Manual for board rev. A/B (Terasic)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=1046&FID=f1f656bb5f040121c36f2f93f6b107ff
+    sha256: 3911ff2aaa0b90c86ff1744314277c0940cd96622f0c24c4230ec6012346e1d9
+    bytes: 4511116
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards platform terasic_de10nano.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/terasic_de10nano.py
+    sha256: 98c00396146eaf9a90598e9499290cba9f672f674d46fb55e54a1969075ce775
+    bytes: 7195
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards platform de10_nano.py
+    kind: platform
+    url: https://raw.githubusercontent.com/amaranth-lang/amaranth-boards/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/de10_nano.py
+    sha256: be3a8739f817ba3da3c4b777d52ca3f1a2a6fb6fc17ebd92f5d9ce0f5d69635b
+    bytes: 4213
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -45,8 +74,9 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    fpga_clk1_50mhz: { pins: V11, frequency_mhz: 50 }
+    fpga_clk1_50mhz: { pins: V11, frequency_mhz: 50, source: {doc: manual, where: 'Table 3-5, p. 22'} }
     onboard_hdmi_tx:
+      source: {doc: manual, where: 'Table 3-13, p. 33-34'}
       pins:
         i2c_scl: U10
         i2c_sda: AA4
@@ -61,15 +91,19 @@ Board:
         int: AF11
         vs: V13
     onboard_buttons:
+      source: {doc: manual, where: 'Table 3-7, p. 25'}
       active: low
       pins: [AH17, AH16]
     onboard_switches:
+      source: {doc: manual, where: 'Table 3-6, p. 25'}
       pins: [Y24, W24, W21, W20]
     onboard_leds:
       pins: [W15, AA24, V16, V15, AF26, AE26, Y16, AA23]
     gpio_0:
+      source: {doc: manual, where: 'Table 3-10, p. 27-28'}
       pins: [V12, E8, W12, D11, D8, AH13, AF7, AH14, AF4, AH3, AD5, AG14, AE23, AE6, AD23, AE24, D12, AD20, C12, AD17, AC23, AC22, Y19, AB23, AA19, W11, AA18, W14, Y18, Y17, AB25, AB26, Y11, AA26, AA13, AA11]
     gpio_1:
+      source: {doc: manual, where: 'Table 3-10, p. 28'}
       pins: [Y15, AC24, AA15, AD26, AG28, AF28, AE25, AF27, AG26, AH27, AG25, AH26, AH24, AF25, AG23, AF23, AG24, AH22, AH21, AG21, AH23, AA20, AF22, AE22, AG20, AF21, AG19, AH19, AG18, AH18, AF18, AF20, AG15, AE20, AE19, AE17]
     onboard_fpga_clk2_50mhz:   # FPGA_CLK2_50 (50 MHz)
       device: {"name": "FPGA_CLK2_50 (50 MHz)", "kind": "clock"}
@@ -90,10 +124,12 @@ Board:
       iostandard: "3.3V"
       pins: {"HPS_CLK2_25": "D20"}
     arduino_io:   # Arduino Uno R3 expansion header
+      source: {doc: manual, where: 'Table 3-11, p. 30'}
       device: {"name": "Arduino Uno R3 expansion header", "kind": "header"}
       iostandard: "3.3-V"
       pins: {"Arduino_IO": ["AG13", "AF13", "AG10", "AG9", "U14", "U13", "AG8", "AH8", "AF17", "AE15", "AF15", "AG16", "AH11", "AH12", "AH9", "AG11"], "Arduino_Reset_n": "AH7"}
     onboard_adc:   # A/D converter (LTC2308, SPI, 2x5 analog header)
+      source: {doc: manual, where: 'Table 3-12, p. 32'}
       device: {"name": "A/D converter (LTC2308, SPI, 2x5 analog header)", "kind": "adc"}
       iostandard: "3.3V"
       pins: {"ADC_CONVST": "U9", "ADC_SCK": "V10", "ADC_SDI": "AC4", "ADC_SDO": "AD4"}
@@ -136,6 +172,7 @@ Board:
       iostandard: "3.3V"
       pins: {"HPS_GSENSOR_INT": "A17", "HPS_I2C0_SCLK": "C18", "HPS_I2C0_SDAT": "A19"}
     hps_ltc_header:   # HPS LTC connector (2x7, SPI/I2C/GPIO)
+      source: {doc: manual, where: 'Table 3-22, p. 43'}
       device: {"name": "HPS LTC connector (2x7, SPI/I2C/GPIO)", "kind": "header"}
       iostandard: "3.3V"
       pins: {"HPS_LTC_GPIO": "H13", "HPS_I2C1_SCLK": "K18", "HPS_I2C1_SDAT": "A21", "HPS_SPIM_CLK": "C19", "HPS_SPIM_MISO": "B19", "HPS_SPIM_MOSI": "B16", "HPS_SPIM_SS": "C16"}

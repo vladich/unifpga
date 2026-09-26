@@ -43,34 +43,85 @@ Board:
   - led_discrete_generic
   - rgb_led_common_anode
   - ti_txs02612
+  documents:
+  - id: xdc
+    title: Zybo-Z7-Master.xdc (Digilent master XDC, Zybo Z7-10 and Z7-20)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Zybo-Z7-Master.xdc
+    sha256: 63a843355f360ce2594cec40952c46fd9498002e0044a18a8b711ee1bdced478
+    bytes: 17384
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/zybo_z7/xdc.xdc
+  - id: preset
+    title: Digilent Vivado board files zybo-z7-20 A.0 preset.xml (PS7 MIO configuration)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/zybo-z7-20/A.0/preset.xml
+    sha256: f1da413772d4be2d6c2a703ceb54502304840e11fe8fd8c2b02dc450c86335e6
+    bytes: 44338
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/zybo_z7/preset.xml
+  - id: board_xml
+    title: Digilent Vivado board files zybo-z7-20 A.0 board.xml
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/zybo-z7-20/A.0/board.xml
+    sha256: 650c4ca19979c156f059eee2b2f9a1862cbc1eb25927f2ab1d1904968ab342cc
+    bytes: 40818
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/zybo_z7/board.xml
+  - id: board_pins
+    title: Digilent Vivado board files zybo-z7-20 A.0 part0_pins.xml
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/zybo-z7-20/A.0/part0_pins.xml
+    sha256: 62a5f2d025828c3a400734e457e75584db43e40e6065a26a4e5351cd50989ad3
+    bytes: 6788
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/zybo_z7/part0_pins.xml
+  - id: litex
+    title: LiteX-Boards platform digilent_zybo_z7.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/digilent_zybo_z7.py
+    sha256: 21cd2ed7408b48c3bb2384ebc388d13cb8bc521e9fd40fecd10aa911a66f6285
+    bytes: 10487
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/zybo_z7/litex.py
   defaults:
     iostandard: LVCMOS33
 
   banks:
-    clk125mhz: { pins: K17, frequency_mhz: 125 }
+    clk125mhz: { pins: K17, frequency_mhz: 125, source: {doc: xdc, where: '"Clock signal", line 8'} }
     onboard_switches:
+      source: {doc: xdc, where: '"Switches", lines 13-16'}
       pins: [G15, P15, W13, T16]
     onboard_buttons:
+      source: {doc: xdc, where: '"Buttons", lines 20-23'}
       pins: [K18, P16, K19, Y16]
     onboard_leds:
+      source: {doc: xdc, where: '"LEDs", lines 27-30'}
       pins: [M14, M15, G14, D18]
     pmod_jb:
+      source: {doc: xdc, where: '"Pmod Header JB (Zybo Z7-20 only)", lines 115-122; keyed by Pmod pin number'}
       pins: [V8, W8, U7, V7, Y7, Y6, V6, W6]
     pmod_jc:
+      source: {doc: xdc, where: '"Pmod Header JC", lines 126-133; keyed by Pmod pin number'}
       pins: [V15, W15, T11, T10, W14, Y14, T12, U12]
     pmod_jd:
+      source: {doc: xdc, where: '"Pmod Header JD", lines 137-144; keyed by Pmod pin number'}
       pins: [T14, T15, P14, R14, U14, U15, V17, V18]
     pmod_je:
+      source: {doc: xdc, where: '"Pmod Header JE", lines 148-155; keyed by Pmod pin number'}
       pins: [V12, W16, J15, H15, V13, U17, T17, Y17]
     onboard_rgb_led_5:   # RGB LED LD5 (Zybo Z7-20 only)
+      source: {doc: xdc, where: '"RGB LED 5 (Zybo Z7-20 only)", lines 34-36'}
       device: {"name": "RGB LED LD5 (Zybo Z7-20 only)", "kind": "rgb_leds"}
       iostandard: "LVCMOS33"
       pins: {"r": "Y11", "g": "T5", "b": "Y12"}
     onboard_rgb_led_6:   # RGB LED LD6
+      source: {doc: xdc, where: '"RGB LED 6", lines 39-41'}
       device: {"name": "RGB LED LD6", "kind": "rgb_leds"}
       iostandard: "LVCMOS33"
       pins: {"r": "V16", "g": "F17", "b": "M17"}
     onboard_audio_codec:   # Audio codec (I2S-style playback/record data + I2C control)
+      source: {doc: xdc, where: '"Audio Codec", lines 45-53'}
       device: {"name": "Audio codec (I2S-style playback/record data + I2C control)", "kind": "audio"}
       iostandard: "LVCMOS33"
       pins: {"bclk": "R19", "mclk": "R17", "muten": "P18", "pbdat": "R18", "pblrc": "T19", "recdat": "R16", "reclrc": "Y18", "scl": "N18", "sda": "N17"}
@@ -87,14 +138,17 @@ Board:
       iostandard: "LVCMOS33"
       pins: {"fb": "Y13"}
     onboard_hdmi_rx:   # HDMI input (sink; J10, direct TMDS to FPGA)
+      source: {doc: xdc, where: '"HDMI RX", lines 70-83; cec is Zybo Z7-20 only'}
       device: {"name": "HDMI input (sink; J10, direct TMDS to FPGA)", "kind": "hdmi_rx"}
       iostandard: {"default": "TMDS_33", "W19": "LVCMOS33", "W18": "LVCMOS33", "Y19": "LVCMOS33", "Y8": "LVCMOS33"}
       pins: {"hpd": "W19", "scl": "W18", "sda": "Y19", "clk_n": "U19", "clk_p": "U18", "n": ["W20", "U20", "P20"], "p": ["V20", "T20", "N20"], "cec": "Y8"}
     onboard_hdmi_tx:   # HDMI output (source; direct TMDS from FPGA)
+      source: {doc: xdc, where: '"HDMI TX", lines 87-100'}
       device: {"name": "HDMI output (source; direct TMDS from FPGA)", "kind": "hdmi_tx"}
       iostandard: {"default": "TMDS_33", "E18": "LVCMOS33", "G17": "LVCMOS33", "G18": "LVCMOS33", "E19": "LVCMOS33"}
       pins: {"hpd": "E18", "scl": "G17", "sda": "G18", "clk_n": "H17", "clk_p": "H16", "n": ["D20", "B20", "A20"], "p": ["D19", "C20", "B19"], "cec": "E19"}
     pmod_ja:   # Pmod header JA (XADC; pairs JA1/JA7, JA2/JA8, JA3/JA9, JA4/JA10)
+      source: {doc: xdc, where: '"Pmod Header JA (XADC)", lines 104-111; keyed by Pmod pin number'}
       device: {"name": "Pmod header JA (XADC; pairs JA1/JA7, JA2/JA8, JA3/JA9, JA4/JA10)", "kind": "pmod"}
       iostandard: "LVCMOS33"
       pins: ["N15", "L14", "K16", "K14", "N16", "L15", "J16", "J14"]

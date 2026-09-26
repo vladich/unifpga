@@ -31,6 +31,28 @@ Board:
   - dip_switch_generic
   - adi_adxl345
   - ti_adc128s022
+  documents:
+  - id: manual
+    title: DE0-Nano User Manual (Terasic)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=593&FID=75023fa36c9bf8639384f942e65a46f3
+    sha256: 3afa352a30af8cc980557197ed277c6997b09f305afd186e8b21e3e7b49a21bf
+    bytes: 9620034
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards platform terasic_de0nano.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/terasic_de0nano.py
+    sha256: 9ccafac9835a113b6e6772d7b812c4745c4d769b9754c68a7b622aa1757fe067
+    bytes: 5015
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards platform de0nano.py
+    kind: platform
+    url: https://raw.githubusercontent.com/amaranth-lang/amaranth-boards/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/de0nano.py
+    sha256: 5b26b1be8ebb28096344da4de949bf3f52e31de2657412203b7e2f426d8a6dfc
+    bytes: 2990
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -42,41 +64,52 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk50mhz: { pins: R8, frequency_mhz: 50 }
+    clk50mhz: { pins: R8, frequency_mhz: 50, source: {doc: manual, where: 'Table 6-1, p. 72'} }
     onboard_buttons:
+      source: {doc: manual, where: 'Table 3-1, p. 14'}
       active: low
       pins: [J15, E1]
     onboard_switches:
+      source: {doc: manual, where: 'Table 3-3, p. 15'}
       pins: [M1, T8, B9, M15]
     onboard_leds:
+      source: {doc: manual, where: 'Table 3-2, p. 14'}
       pins: [A15, A13, B13, A11, D1, F3, B1, L3]
     gpio_0:
+      source: {doc: manual, where: 'Table 3-6, p. 18-19'}
       pins: [D3, C3, A2, A3, B3, B4, A4, B5, A5, D5, B6, A6, B7, D6, A7, C6, C8, E6, E7, D8, E8, F8, F9, E9, C9, D9, E11, E10, C11, B11, A12, D11, D12, B12]
     gpio_1:
+      source: {doc: manual, where: 'Table 3-7, p. 19-20'}
       pins: [F13, T15, T14, T13, R13, T12, R12, T11, T10, R11, P11, R10, N12, P9, N9, N11, L16, K16, R16, L15, P15, P16, R14, N16, N15, P14, L14, N14, M10, L13, J16, K15, J13, J14]
     onboard_sdram:   # SDRAM (32 MB, 16-bit)
+      source: {doc: manual, where: 'Table 3-4, p. 15-16'}
       device: {"name": "SDRAM (32 MB, 16-bit)", "kind": "sdram"}
       iostandard: "3.3V"
       model_params: {col_bits: 9}
       pins: {"DRAM_ADDR": ["P2", "N5", "N6", "M8", "P8", "T7", "N8", "T6", "R1", "P1", "N2", "N1", "L4"], "DRAM_DQ": ["G2", "G1", "L8", "K5", "K2", "J2", "J1", "R7", "T4", "T2", "T3", "R3", "R5", "P3", "N3", "K1"], "DRAM_BA": ["M7", "M6"], "DRAM_DQM": ["R6", "T5"], "DRAM_RAS_N": "L2", "DRAM_CAS_N": "L1", "DRAM_CKE": "L7", "DRAM_CLK": "R4", "DRAM_WE_N": "C2", "DRAM_CS_N": "P6"}
     onboard_i2c:   # I2C bus (EEPROM, ADXL345)
+      source: {doc: manual, where: 'Table 3-5, p. 17; Table 3-10, p. 23'}
       device: {"name": "I2C bus (EEPROM, ADXL345)", "kind": "other"}
       iostandard: "3.3V"
       pins: {"I2C_SCLK": "F2", "I2C_SDAT": "F1"}
     gpio_2:   # 2x13 header (JP3: GPIO_2, analog inputs)
+      source: {doc: manual, where: 'Table 3-8, p. 22'}
       device: {"name": "2x13 header (JP3: GPIO_2, analog inputs)", "kind": "header"}
       iostandard: "3.3V"
       pins: {"GPIO_2": ["A14", "B16", "C14", "C16", "C15", "D16", "D15", "D14", "F15", "F16", "F14", "G16", "G15"], "GPIO_2_IN": ["E15", "E16", "M16"]}
     onboard_adc:   # A/D converter (ADC128S022, SPI)
+      source: {doc: manual, where: 'Table 3-9, p. 22'}
       device: {"name": "A/D converter (ADC128S022, SPI)", "kind": "adc"}
       iostandard: "3.3V"
       pins: {"ADC_CS_N": "A10", "ADC_SADDR": "B10", "ADC_SDAT": "A9", "ADC_SCLK": "B14"}
     onboard_accelerometer:   # Accelerometer (ADXL345): on the I2C bus it shares with the EEPROM
+      source: {doc: manual, where: 'Table 3-10, p. 23'}
       device: {"name": "Accelerometer (ADXL345)", "kind": "accelerometer"}
       iostandard: "3.3V"
       shares: ["onboard_i2c"]   # the board multiplexes these pins
       pins: {"G_SENSOR_INT": "M2", "G_SENSOR_CS_N": "G5", "I2C_SCLK": "F2", "I2C_SDAT": "F1"}
     onboard_epcs:   # Serial configuration flash (EPCS64)
+      source: {doc: litex, where: 'epcs (data0, dclk, ncs0, asd0)'}
       device: {"name": "Serial configuration flash (EPCS64)", "kind": "flash"}
       iostandard: "3.3-V LVTTL"
       pins: {"EPCS_DATA0": "H2", "EPCS_DCLK": "H1", "EPCS_NCSO": "D2", "EPCS_ASDO": "C1"}

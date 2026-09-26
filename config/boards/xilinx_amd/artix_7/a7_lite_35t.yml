@@ -18,22 +18,75 @@ Board:
   - microsd_socket
   - ddr3_memory
   - ethernet_phy_gigabit
+  documents:
+  - id: xdc
+    title: a7_lite_master.xdc (A. Orlando, community master XDC, AGPL-3.0; cross-checked by its author against the R1.1 schematic)
+    kind: constraints
+    url: https://raw.githubusercontent.com/aleiei/A7-LITE-xdc/5ad2a178db0833762e4586d8dbd6178e016b4219/a7_lite_master.xdc
+    sha256: f30774f3267c4b2529a0fcc37374295cbd7788ce5f5abdde9afbe3fca9c74c03
+    bytes: 17072
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/a7_lite_35t/master.xdc
+  - id: sch
+    title: A7-LITE schematic Rev 1.1 (MicroPhase, 2022-06-22), as mirrored in aleiei/A7-LITE-xdc
+    kind: schematic
+    url: https://raw.githubusercontent.com/aleiei/A7-LITE-xdc/5ad2a178db0833762e4586d8dbd6178e016b4219/A7-LITE_R11.pdf
+    sha256: 8d597402111c00f1e182e629cc287178011f90849745b365a336fd07b8201a99
+    bytes: 207727
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/a7_lite_35t/schematic.pdf
+  - id: headers
+    title: Header_pin_JP1_JP2_Description.md (JP1/JP2 pin tables)
+    kind: manual
+    url: https://raw.githubusercontent.com/aleiei/A7-LITE-xdc/5ad2a178db0833762e4586d8dbd6178e016b4219/Header_pin_JP1_JP2_Description.md
+    sha256: 709a56b260023ad886acdcc74a5e247f56b7a49cd4ef6d7930f333ef5ebaeb44
+    bytes: 2650
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/a7_lite_35t/headers.md
+  - id: litex
+    title: LiteX-Boards platform microphase_a7_lite.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/microphase_a7_lite.py
+    sha256: e0766286e3983897d9d29632bb0af149025f6c25e43412f2a8ff431e7cce0347
+    bytes: 6018
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/a7_lite_35t/litex.py
+  - id: a7la_eth
+    title: LHX369963/a7la hw/ethernet/ethernet.xdc (working Ethernet logic-analyzer design for the A7-LITE 35T)
+    kind: constraints
+    url: https://raw.githubusercontent.com/LHX369963/a7la/a05de8a0bc2e6182f64756e47297905b1497922d/hw/ethernet/ethernet.xdc
+    sha256: 839e95adaab930d8d41dc320eae32996e6f8ce0b87c03434a4c90cf1ee8c0731
+    bytes: 3774
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/a7_lite_35t/a7la_ethernet.xdc
+  - id: kisek_hdmi
+    title: kisek/fpga_a7-lite_hdmi main.xdc (HDMI example)
+    kind: constraints
+    url: https://raw.githubusercontent.com/kisek/fpga_a7-lite_hdmi/f91cf0fbb38d16aedb2db758548083c792bbc0c2/main.xdc
+    sha256: 9044a5e79ef3ba95c45dd06e7e10dabdac82808b8f424eb55e3b3e11280f31f8
+    bytes: 1724
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/a7_lite_35t/kisek_hdmi.xdc
   defaults:
     iostandard: LVCMOS33
 
   banks:
-    clk50mhz: { pins: J19, frequency_mhz: 50 }
-    cpu_resetn: { pins: L18, active: low }
+    clk50mhz: { pins: J19, frequency_mhz: 50, source: {doc: xdc, where: line 59} }
+    cpu_resetn: { pins: L18, active: low, source: {doc: xdc, where: line 76} }
     onboard_buttons:
+      source: {doc: xdc, where: lines 70-71}
       pins: [AA1, W1]
     onboard_leds:
+      source: {doc: xdc, where: lines 66-67}
       active: low
       pins: [M18, N18]
     onboard_uart:
+      source: {doc: xdc, where: lines 83-84}
       pins:
         rx: U2
         tx: V2
     onboard_hdmi:
+      source: {doc: xdc, where: lines 103-115}
       # TMDS pairs from the FGG484 package (IO_L14P/N_T2_SRCC_15, L9P/N, L11P/N,
       # L4P/N); the XDC constrains the P pins only, Vivado places the N halves.
       iostandard: TMDS_33
@@ -43,25 +96,32 @@ Board:
         d_p: ["K21,K22", "J20,J21", "G17,G18"]
         d_n: [K22, J21, G18]
     gpio:
+      source: {doc: xdc, where: lines 232-275}
       pins: [F13, F14, E13, E14, D14, D15, E16, D16, D17, D21, G21, C22, B22]
     onboard_qspi_flash:   # QSPI flash
+      source: {doc: xdc, where: lines 91-96}
       device: {"name": "QSPI flash", "kind": "flash"}
       pins: {"clk": "L12", "cs": "P20", "dq0": "P22", "dq1": "R22", "dq2": "P21", "dq3": "R21"}
     onboard_eeprom:   # I2C EEPROM
+      source: {doc: xdc, where: lines 122-123}
       device: {"name": "I2C EEPROM", "kind": "other"}
       pins: {"scl": "H15", "sda": "H17"}
     onboard_sdcard:   # microSD card slot
+      source: {doc: xdc, where: lines 130-135}
       device: {"name": "microSD card slot", "kind": "sdcard"}
       pins: {"clk": "U7", "cmd": "AA8", "data0": "Y7", "data1": "W9", "data2": "Y8", "data3": "AB8"}
     onboard_ddr3:   # DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
+      source: {doc: xdc, where: lines 146-199}
       device: {"name": "DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)", "kind": "ddr"}
       iostandard: "SSTL15 / DIFF_SSTL15 (XDC)"
       pins: {"A0": "P1", "A1": "M6", "A2": "K3", "A3": "K4", "A4": "M5", "A5": "J6", "A6": "N2", "A7": "K6", "A8": "P2", "A9": "L1", "A10": "M2", "A11": "P6", "A12": "L4", "A13": "L5", "A14": "N5", "BA0": "J4", "BA1": "R1", "BA2": "M1", "nCAS": "N3", "nRAS": "M3", "nWE": "L6", "CKE": "N4", "ODT": "L3", "nRST": "F4", "CK_P": "P5", "CK_N": "P4", "D0": "B2", "D1": "F1", "D2": "B1", "D3": "D2", "D4": "C2", "D5": "F3", "D6": "A1", "D7": "G1", "D8": "J5", "D9": "G2", "D10": "K1", "D11": "G3", "D12": "H2", "D13": "H5", "D14": "J1", "D15": "H4", "DM0": "E2", "DM1": "H3", "DQS_P0": "E1", "DQS_N0": "D1", "DQS_P1": "K2", "DQS_N1": "J2"}
     onboard_ethernet:   # Gigabit Ethernet PHY (RTL8211, RGMII)
+      source: {doc: litex, where: 'resources ("eth_clocks", 0) line 99, ("eth", 0) line 104; agrees with a7la ethernet.xdc lines 56-70'}
       device: {"name": "Gigabit Ethernet PHY (RTL8211, RGMII)", "kind": "ethernet"}
       iostandard: "LVCMOS33"
       pins: {"rst_n": "N22", "mdc": "M22", "mdio": "M20", "rx_clk": "K18", "rx_ctl": "K19", "rxd": ["L14", "M15", "L16", "M16"], "tx_clk": "K17", "tx_ctl": "N20", "txd": ["K16", "L15", "L13", "M13"]}
     gpio_jp2:   # GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)
+      source: {doc: xdc, where: lines 289-332}
       device: {"name": "GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)", "kind": "header"}
       pins: {"GPIO2_0P": "W21", "GPIO2_0N": "W22", "GPIO2_1P": "N17", "GPIO2_1N": "P17", "GPIO2_2P": "P19", "GPIO2_2N": "R19", "GPIO2_3P": "R18", "GPIO2_3N": "T18", "GPIO2_4P": "T21", "GPIO2_4N": "U21", "GPIO2_5P": "U22", "GPIO2_5N": "V22", "GPIO2_6P": "Y21", "GPIO2_6N": "Y22", "GPIO2_7P": "AA20", "GPIO2_7N": "AA21", "GPIO2_8P": "AB21", "GPIO2_8N": "AB22", "GPIO2_9P": "AA19", "GPIO2_9N": "AB20", "GPIO2_10P": "U20", "GPIO2_10N": "V20", "GPIO2_11P": "Y18", "GPIO2_11N": "Y19", "GPIO2_12P": "W19", "GPIO2_12N": "W20", "GPIO2_13P": "AA18", "GPIO2_13N": "AB18", "GPIO2_14P": "V18", "GPIO2_14N": "V19", "GPIO2_15P": "V17", "GPIO2_15N": "W17", "GPIO2_16P": "U17", "GPIO2_16N": "U18", "GPIO2_17P": "P14", "GPIO2_17N": "R14", "GPIO2_18P": "P16", "GPIO2_18N": "R17", "GPIO2_19P": "N13", "GPIO2_19N": "N14", "GPIO2_20P": "P15", "GPIO2_20N": "R16", "GPIO2_21P": "AB7", "GPIO2_21N": "AB6"}
   # ---- drawn: headers and parts; ./unifpga layout draft a7_lite_35t regenerates from here on ----

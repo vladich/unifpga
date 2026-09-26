@@ -19,6 +19,21 @@ Board:
   - temperature_sensor_external
   - sdr_sdram
   - spi_flash
+  documents:
+  - id: sch
+    title: PS06.pdf — RFB-D V2.0 schematic (p1), PCB outline (p2), bill of materials (p3)
+    kind: schematic
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/57ff8336dd67a557a03b6866d978e90d354f57a4/boards/piswords6/PS06.pdf
+    sha256: 72aa716a9d54553d9e88cc8e661506a763b91c44a82dd1ee0c978932ff3bd014
+    bytes: 1690043
+    retrieved: '2026-09-24'
+  - id: bgm_qsf
+    title: BGM boards/piswords6/board_specific.qsf
+    kind: constraints
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/57ff8336dd67a557a03b6866d978e90d354f57a4/boards/piswords6/board_specific.qsf
+    sha256: b208b3fc22b73ed4bb96215621767fff8950ce1e3b11ee093fb371f753d8d5d2
+    bytes: 3458
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -30,30 +45,37 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk: { pins: "23", frequency_mhz: 50 }
+    clk: { pins: "23", frequency_mhz: 50, source: {doc: sch, where: 'p1 centre-left, Y1 OUT -> net 23 (schematic rule: a pure-number net = FPGA pin)'} }
     onboard_buttons:
+      source: {doc: sch, where: 'p1 独立按键 block: RP8 4.7K pull-ups, key to GND (active low)'}
       active: low
       pins: ["3", "7", "10", "11"]
     onboard_switches:
+      source: {doc: sch, where: 'p1 拨码开关 block: RP4 4.7K pull-ups, switch to GND (ON = low); nets 31..34'}
       active: low
       pins: ["34", "33", "32", "31"]
     onboard_leds:
+      source: {doc: sch, where: 'p1 独立LED block: anodes to +3.3V, cathodes via RP9/RP12 220R to nets 38..50 (active low)'}
       active: low
       pins: ["50", "49", "46", "44", "43", "42", "39", "38"]
     onboard_7seg:
+      source: {doc: sch, where: 'p1 数码管 block: RP3/RP5 220R segment resistors (a=98 traced; order per BGM qsf), RP6/RP7 4.7K to PNP bases; 114 -> Q3 -> DP1.D1 traced; other digit order per BGM qsf (active low)'}
       pins:
         segments: ["80", "72", "71", "70", "101", "100", "99", "98"]
         anodes: ["86", "85", "84", "83", "120", "119", "115", "114"]
     onboard_vga:
+      source: {doc: sch, where: 'p1 VGA block: RP10 220R: 55 -> VSYNC, 1 -> HSYNC; RP11: 54 VGA_R, 53 VGA_G, 52 VGA_B'}
       pins:
         hs: "1"
         vs: "55"
         rgb: ["52", "53", "54"]
     onboard_uart:
+      source: {doc: sch, where: 'p1 RS232 block: UART_TXD 68 -> T1IN, R1OUT -> UART_RXD 69'}
       pins:
         tx: "68"
         rx: "69"
     gpio:
+      source: {doc: sch, where: p1 扩展GPIO block}
       pins: ["144", "143", "142", "141", "138", "137", "136", "135", "133", "132", "129", "128", "127", "126", "125", "124"]
     onboard_buzzer:   # BUZZER SP1 (S8550 Q1)
       device: {"name": "BUZZER SP1 (S8550 Q1)", "kind": "buzzer"}

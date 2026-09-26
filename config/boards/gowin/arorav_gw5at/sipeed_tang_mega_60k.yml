@@ -50,14 +50,144 @@ Board:
   - fan_header
   devices:
   - microsd_socket_generic
+  documents:
+  - id: dock31005
+    title: Tang Mega NEO Dock 31005 schematic (Rev 1.3/1.4, KiCad, current)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/Tang_Mega_NEO_Dock-138K_31005_Schematics.pdf
+    sha256: ade025e2c30b23d9fa820346cabd5ee3f90e6b9bfbc083d48bc691e1d3977d1e
+    bytes: 5804656
+    retrieved: '2026-09-24'
+  - id: dock31004_138
+    title: Tang Mega NEO Dock-138K 31004 schematic
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/Tang_Mega_NEO_Dock-138K_31004_Schematics.pdf
+    sha256: 6d563deaec5784c2ae30326dfc72ce0c792958b32f4929038b8f54fa83cb8b60
+    bytes: 5499737
+    retrieved: '2026-09-24'
+  - id: dock31004_60
+    title: Tang Mega NEO Dock-60K 31004 schematic
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/Tang_Mega_NEO_Dock-60K_31004_Schematics.pdf
+    sha256: 5ca6049ed80bab57bcaa87cc5e58926f569f2ca2aa11b984d52da1782633f976
+    bytes: 5559992
+    retrieved: '2026-09-24'
+  - id: dock31002
+    title: Tang Mega 138K Dock 31002 schematic (archived, 138K only)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/archived/Tang_Mega_138K_Dock_31002_Schematics.PDF
+    sha256: f2b0d321e0ff3d986c13754b65afa4ecdea8334e79366d8fa4f3a4397a4ddc8b
+    bytes: 5710329
+    retrieved: '2026-09-24'
+  - id: dock_readme
+    title: DOCK schematic folder readme.txt
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/readme.txt
+    sha256: 6b3be8b1024603300fa43e758bbe8ed87509f41337a0e9245c0d262190571ed4
+    bytes: 321
+    retrieved: '2026-09-24'
+  - id: som_readme
+    title: SOM schematic folder readme.txt
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/readme.txt
+    sha256: 29ca8533f2c8a48633aa5a4325a4b756766038f38c98446c3abc9d3be3588c7a
+    bytes: 368
+    retrieved: '2026-09-24'
+  - id: etch_csv
+    title: TANG_138K_60K PCB etch length table (SOM ball/net list)
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/09_Pinout_Length_table/TANG_138K_60K_PCB_etch_length.csv
+    sha256: df2e75c038e73bd7dad35b4ae9f2ad6d45e17e1c5fec21f1021fe73b4ae0c7e1
+    bytes: 8307
+    retrieved: '2026-09-24'
+  - id: cst60
+    title: tang_mega_60K_pins.cst (vendor all-pin constraints)
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/08_Misc/tang_mega_60K_pins.cst
+    sha256: dcaced4a5d15d60a3615190138ad3522b562c82748e35ffd150139bc7542ff4c
+    bytes: 22738
+    retrieved: '2026-09-24'
+  - id: som60_30353
+    title: Tang Mega 60K SOM 30353 schematic (Rev 1.0, 2024-10/2025-06)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/tang_mega_60k_30353_schematics.pdf
+    sha256: f9a1a01862fe8c48cb5461e88f84d61e37d03f2d032e0baee7ef03fb951f6157
+    bytes: 725936
+    retrieved: '2026-09-24'
+  - id: som60_30354
+    title: Tang Mega 60K SOM 30354 schematic (2026-06; text layer not extractable, read as image)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/tang_mega_60k_30354_schematics..pdf
+    sha256: e457547f08ca37250b27ccfd4c8e29e3ce44cf309b24324623932fd2626002be
+    bytes: 819963
+    retrieved: '2026-09-24'
+  - id: som138_30353
+    title: Tang Mega 138K SOM 30353 schematic (same BTB ball set as the 60K SOM; used to cross-check)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/tang_mega_138k_30353_Schematics..pdf
+    sha256: 214d9ccf71d6ee78ab54c22c437f3d61eac5c11c0b7832609a378a4a5db48065
+    bytes: 733237
+    retrieved: '2026-09-24'
+  - id: wiki60
+    title: 'Sipeed wiki: Tang Mega 60K Dock (v0.31, 2025-09-25)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/tang-mega-60k/mega-60k.html
+    sha256: e830629ab1cdba5f0d50f0cf4d8a39fa5f93e0134689a301641171fe9bae4670
+    bytes: 103550
+    retrieved: '2026-09-24'
+  - id: litex60
+    title: LiteX-Boards sipeed_tang_mega_60k.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_mega_60k.py
+    sha256: 449e9d81f7afceab2960f556200a3903fd98cefd0559032f90cb6ff911148288
+    bytes: 5947
+    retrieved: '2026-09-24'
+  - id: litex138
+    title: LiteX-Boards sipeed_tang_mega_138k.py (NEO dock connector tables, cross-check)
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_mega_138k.py
+    sha256: 2b59e3b81b7438e08313e7b3fa5dd8b107c81f1f3f55a796d67e17ec130a9481
+    bytes: 17036
+    retrieved: '2026-09-24'
+  - id: ex60_camdvi
+    title: TangMega-60K-example cam_dvi NEO_DOCK.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-60K-example/blob/f0347d830305ef3efb921f47bb51701e569beefd/cam_dvi/src/NEO_DOCK.cst
+    sha256: 054e4701f733f5d31fb1689b8e2717fbe127cddf3e5123c994580f8316a357ba
+    bytes: 8275
+    retrieved: '2026-09-24'
+  - id: ex60_sdram
+    title: TangMega-60K-example sdram_neo sdram.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-60K-example/blob/f0347d830305ef3efb921f47bb51701e569beefd/sdram_neo/src/sdram.cst
+    sha256: 31e71232858892f544e4eedf1f30b5c1fc75b37e3fa95f1f94679a349abdf62c
+    bytes: 4763
+    retrieved: '2026-09-24'
+  - id: ex60_pmodled
+    title: TangMega-60K-example pmod_led_neo pmod_led.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-60K-example/blob/f0347d830305ef3efb921f47bb51701e569beefd/pmod_led_neo/src/pmod_led.cst
+    sha256: a9412711d24cf9c4aff2e00553a915899aa49c6720d20763d9b8147dbd76063e
+    bytes: 2983
+    retrieved: '2026-09-24'
+  - id: ex60_pcie
+    title: TangMega-60K-example pcie_dma_demo Pins.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-60K-example/blob/f0347d830305ef3efb921f47bb51701e569beefd/pcie_dma_demo/src/Pins.cst
+    sha256: 12c8b13fb6699c66359819edcaf98e1fcac2c0866578976c6a40c686887ab597
+    bytes: 573
+    retrieved: '2026-09-24'
   banks:
     sys_clk:
+      source: {doc: som60_30353, where: SOM "Crystal oscillator" Y1100 50MHz -> BANK4_V22_EMCCLK_50Mhz}
       pins: V22
     onboard_buttons:    # S4, S2, S1 = EX_KEY.0/1/2 (Y12 is key S1, not the reset: the SOM's reset key is F4)
+      source: {doc: dock31005, where: 'p9 BUTTON: EX_KEY.0 S4 USER_BUTTON0, EX_KEY.1 S2, EX_KEY.2 S1 to GND, "requires enable internal pull-up"; BTB J2.60/62/64 = BANK5_AA13/AB13/Y12'}
       active: low
       iostandard: LVCMOS15   # bank 9 is 1.5 V on the 60K SOM
       pins: [AA13, AB13, Y12]
     onboard_leds:
+      source: {doc: cst60, where: '//====== LEDS ======: LEDs[0..7] = T18 R18 R17 P16 U21 T21 R19 P19; wiki Dock parameters "LEDs 4+8: 4x Battery-Indicator + 8x PMOD_LED"'}
       pins: [T18, R17, U21, R19]
     pcie_perst:
       pins: W11
@@ -72,6 +202,7 @@ Board:
       device: {"name": "SOM keys: CPU_RESET (U1304) and RECONFIG (U1303, also dock SW7)", "kind": "reset"}
       pins: {"cpu_reset": "F4", "reconfig_n": "N12"}
     som_debug:   # SOM debug connector U1201 (JST SH1.0 8-pin: JTAG + UART)
+      source: {doc: som60_30353, where: 'SOM "JTAG Connector" U1201: 1 5V0, 2 TMS BANK10_T13, 3 TDO U13, 4 TCK V12, 5 TDI R13, 6 RX BANK5_V14, 7 TX BANK5_U15, 8 GND'}
       device: {"name": "SOM debug connector U1201 (JST SH1.0 8-pin: JTAG + UART)", "kind": "header"}
       shares: ["onboard_uart"]   # the board multiplexes these pins
       pins: {"2_tms": "T13", "3_tdo": "U13", "4_tck": "V12", "5_tdi": "R13", "6_rx": "V14", "7_tx": "U15"}
@@ -108,6 +239,7 @@ Board:
       shares: ["som_debug"]   # the board multiplexes these pins
       pins: {"tx": "U15", "rx": "V14", "jtag_tms": "T13", "jtag_tck": "V12", "jtag_tdi": "R13", "jtag_tdo": "U13"}
     onboard_hdmi_0:   # HDMI (DVI) connector J29, transmit
+      source: {doc: dock31005, where: 'p15 FPGA_TMDS (DVI): TMDS via 100nF to J29; DVI-A_HPD via R169; DVI_TWI1 SCL/SDA via 2N7002 to EDID; DVI-A_ALT -> DVI_DIR_SEL (1=TX, 0=RX, pulled up); BTB J1.50-64 (J17/K17 D2, H15/J15 D1, H14/J14 D0, G16/G15 CK), J2.61 K14 DVI-A_ALT, J2.63 K13 DVI-A_HPD, J2.32/34 M13/L13'}
       device: {"name": "HDMI (DVI) connector J29, transmit", "kind": "hdmi_tx"}
       iostandard: "LVCMOS33D (TMDS emulated; vendor CST DRIVE=3.5)"
       shares: ["onboard_hdmi_rx"]   # the board multiplexes these pins
@@ -127,6 +259,7 @@ Board:
       shares: ["sdio_header"]   # the board multiplexes these pins
       pins: {"clk": "V15", "cmd_mosi": "Y16", "d0_miso": "AA15", "d1": "AB15", "d2": "W14", "d3_cs": "W15"}
     sdio_header:   # SDIO header J10 (2x4 2.54 mm)
+      source: {doc: dock31005, where: 'p16 J10 PinHeader_2x04: 1 FPGA_SDIO_D0|SPI_MISO, 2 CMD|SPI_MOSI, 3 D1, 4 CLK|SPI_SCK, 5 D3|SPI_CS, 6 D2, 7 GND, 8 5V'}
       device: {"name": "SDIO header J10 (2x4 2.54 mm)", "kind": "header"}
       shares: ["onboard_sdcard"]   # the board multiplexes these pins
       pins: {"1_d0_miso": "AA15", "2_cmd_mosi": "Y16", "3_d1": "AB15", "4_clk": "V15", "5_d3_cs": "W15", "6_d2": "W14"}
@@ -139,10 +272,12 @@ Board:
       device: {"name": "WS2812B-2020 RGB LED (U15) + aRGB strip connector J24", "kind": "ws2812"}
       pins: {"din": "J16"}
     pmod_0:   # PMOD0 socket J9 (2x6 horizontal)
+      source: {doc: dock31005, where: 'p19 EX CONN. J9: 11 PMOD0_IO0, 12 IO1, 9 IO2, 10 IO3, 7 IO4, 8 IO5, 5 IO6, 6 IO7, 3/4 GND, 1/2 +3V3; BTB J0.25/23/15/13/20/18/14/12 = P19/R19/T21/U21/P16/R17/R18/T18'}
       device: {"name": "PMOD0 socket J9 (2x6 horizontal)", "kind": "pmod"}
       shares: ["onboard_leds", "onboard_sdram_1"]   # the board multiplexes these pins
       pins: {"io0": "P19", "io1": "R19", "io2": "T21", "io3": "U21", "io4": "P16", "io5": "R17", "io6": "R18", "io7": "T18"}
     pmod_1:   # PMOD1 socket J8 (2x6 horizontal)
+      source: {doc: dock31005, where: 'p19 EX CONN. J8: 11 PMOD1_IO0 ... 6 PMOD1_IO7 (same layout as J9); BTB J2.5/3/9/7/13/11/17/15 = Y21/Y22/AB21/AB22/AA20/AA21/AA19/AB20'}
       device: {"name": "PMOD1 socket J8 (2x6 horizontal)", "kind": "pmod"}
       shares: ["onboard_camera", "onboard_sdram_1"]   # the board multiplexes these pins
       pins: {"io0": "Y21", "io1": "Y22", "io2": "AB21", "io3": "AB22", "io4": "AA20", "io5": "AA21", "io6": "AA19", "io7": "AB20"}
@@ -163,6 +298,7 @@ Board:
       model_params: {col_bits: 9}
       pins: {"dq": ["R19", "P19", "U21", "T21", "R17", "P16", "T18", "R18", "N13", "N14", "N17", "P17", "W21", "W22", "V17", "W17"], "a": ["R16", "P15", "R14", "P14", "AA19", "AA21", "AA20", "AB22", "AB21", "Y22", "U17", "Y21", "V20"], "ba": ["N15", "U18"], "clk": "U20", "cs_n": "T20", "ras_n": "Y18", "cas_n": "Y19", "we_n": "AB20", "dqm": ["AA18", "AB18"]}
     onboard_lcd:   # RGB LCD FPC J5 (40-pin 0.5 mm, RGB666 on R2-R7/G2-G7/B2-B7)
+      source: {doc: dock31005, where: 'p12 RGB LCD Display J5: R2 HRVLD, R3 HD0, R4 HD1, R5 HTRDY, R6 HD3, R7 HD4, G2-G7 HD5-HD10, B2-B6 HD11-HD15, B7 HCTS, CLK HTACK, HSYNC HTREQ, VSYNC HTVLD, DEN HD2 (R0/R1/G0/G1/B0/B1 grounded, DISP tied +3V3); balls from BTB J0'}
       device: {"name": "RGB LCD FPC J5 (40-pin 0.5 mm, RGB666 on R2-R7/G2-G7/B2-B7)", "kind": "lcd_rgb"}
       iostandard: "LVCMOS33"
       shares: ["onboard_ch569_hspi"]   # the board multiplexes these pins

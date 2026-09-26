@@ -31,29 +31,62 @@ Board:
   - vga666_resistor_dac
   - cypress_s25fl032
   - microchip_pic24fj128_usb_host
+  documents:
+  - id: xdc
+    title: Basys-3-Master.xdc (Digilent master XDC)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Basys-3-Master.xdc
+    sha256: f6f289e967f1dab96349a8c7aaee9c7e9db1c0a5346848635ec2f056b922d89c
+    bytes: 10311
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/basys3/xdc.xdc
+  - id: board_pins
+    title: Digilent Vivado board files basys3 C.0 part0_pins.xml
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/basys3/C.0/part0_pins.xml
+    sha256: 606a134599d0c57096b8cf5b453036009cdf049083f1d7e9f95f545926db5c10
+    bytes: 7953
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/basys3/part0_pins.xml
+  - id: litex
+    title: LiteX-Boards platform digilent_basys3.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/digilent_basys3.py
+    sha256: 8222d5af4c495ff73bd148c0f5db39025a20651d76bf2d55c4cbf1b60f8dce23
+    bytes: 6527
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/basys3/litex.py
   defaults:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: W5, frequency_mhz: 100 }
+    clk: { pins: W5, frequency_mhz: 100, source: {doc: xdc, where: '"Clock signal", line 7'} }
     onboard_switches:
+      source: {doc: xdc, where: '"Switches", lines 12-27'}
       pins: [V17, V16, W16, W17, W15, V15, W14, W13, V2, T3, T2, R3, W2, U1, T1, R2]
     onboard_leds:
+      source: {doc: xdc, where: '"LEDs", lines 31-46'}
       pins: [U16, E19, U19, V19, W18, U15, U14, V14, V13, V3, W3, U3, P3, N3, P1, L1]
     onboard_7seg:
+      source: {doc: xdc, where: '"7 Segment Display", lines 50-63; seg[0..6] = CA..CG; active-low (Digilent convention, inference)'}
       pins:
         segments: [W7, W6, U8, V8, U5, V5, U7]
         dp: V7
         anodes: [U2, U4, V4, W4]
     onboard_buttons:
+      source: {doc: xdc, where: '"Buttons", lines 67-71'}
       pins: [U18, T18, W19, T17, U17]
     pmod_ja:
+      source: {doc: xdc, where: '"Pmod Header JA", lines 75-82; keyed by Pmod pin number (Sch names JA1-4, JA7-10)'}
       pins: [J1, L2, J2, G2, H1, K2, H2, G3]
     pmod_jb:
+      source: {doc: xdc, where: '"Pmod Header JB", lines 85-92; keyed by Pmod pin number (Sch names JB1-4, JB7-10)'}
       pins: [A14, A16, B15, B16, A15, A17, C15, C16]
     pmod_jc:
+      source: {doc: xdc, where: '"Pmod Header JC", lines 95-102; keyed by Pmod pin number (Sch names JC1-4, JC7-10)'}
       pins: [K17, M18, N17, P18, L17, M19, P17, R18]
     onboard_vga:
+      source: {doc: xdc, where: '"VGA Connector", lines 116-129'}
       pins:
         r: [G19, H19, J19, N19]
         b: [N18, L18, K18, J18]
@@ -61,6 +94,7 @@ Board:
         hs: P19
         vs: R19
     onboard_uart:
+      source: {doc: xdc, where: '"USB-RS232 Interface", lines 133-134; port names RsRx (FPGA input) / RsTx (FPGA output)'}
       pins:
         rx: B18
         tx: A18
@@ -70,11 +104,13 @@ Board:
       model_params: {channels: [6, 14, 7, 15]}
       pins: {"xa_p": ["J3", "L3", "M2", "N2"], "xa_n": ["K3", "M3", "M1", "N1"]}
     onboard_usb_hid:   # USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
+      source: {doc: xdc, where: '"USB HID (PS/2)", lines 138-139'}
       device: {"name": "USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)", "kind": "usb_hid"}
       iostandard: "LVCMOS33"
       pull: "up"   # the PIC24 bridge leaves the pair to the FPGA's pull-ups (Digilent master XDC: PULLUP true)
       pins: {"clk": "C17", "data": "B17"}
     onboard_qspi_flash:   # Quad-SPI flash (configuration + user)
+      source: {doc: xdc, where: 'lines 145-149; the clock is CCLK_0, reachable only through STARTUPE2 (XDC note lines 143-144)'}
       device: {"name": "Quad-SPI flash (configuration + user)", "kind": "flash"}
       iostandard: "LVCMOS33"
       pins: {"dq": ["D18", "D19", "G18", "F18"], "cs_n": "K19"}

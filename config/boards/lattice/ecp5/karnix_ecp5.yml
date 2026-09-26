@@ -22,6 +22,56 @@ Board:
   - audio_codec
   - eeprom_chip
   - spi_flash
+  documents:
+  - id: readme
+    title: Fabmicro-LLC/Karnix_ASB-254 README.md
+    kind: wiki
+    url: https://raw.githubusercontent.com/Fabmicro-LLC/Karnix_ASB-254/master/README.md
+    sha256: 0efe35ce0e892e0930d456ec255e52d3c31a73ef55f163e95fef01f51f84867e
+    bytes: 1192
+    retrieved: '2026-09-24'
+  - id: pcb12
+    title: Karnix_ASB-254-v1.2/Karnix_ASB.kicad_pcb (pad-to-net netlist of U5 and connectors)
+    kind: schematic
+    url: https://raw.githubusercontent.com/Fabmicro-LLC/Karnix_ASB-254/master/Karnix_ASB-254-v1.2/Karnix_ASB.kicad_pcb
+    sha256: f19042e3da73200cbefe88ca554930b46d6d4c9efcca4a96804839d8ea12f531
+    bytes: 6462888
+    retrieved: '2026-09-24'
+  - id: pcb10
+    title: Karnix_ASB-254-v1.0/Karnix_ASB.kicad_pcb (FPGA nets identical to v1.2)
+    kind: schematic
+    url: https://raw.githubusercontent.com/Fabmicro-LLC/Karnix_ASB-254/master/Karnix_ASB-254-v1.0/Karnix_ASB.kicad_pcb
+    sha256: d50a8a13a4507ebc62d5cfbc6e39440103ec2cb182ccf8ce75c93ea49ab1df59
+    bytes: 6401138
+    retrieved: '2026-09-24'
+  - id: pcb11
+    title: Karnix_ASB-254-v1.1/Karnix_ASB.kicad_pcb (FPGA nets identical to v1.2)
+    kind: schematic
+    url: https://raw.githubusercontent.com/Fabmicro-LLC/Karnix_ASB-254/master/Karnix_ASB-254-v1.1/Karnix_ASB.kicad_pcb
+    sha256: 12419c6b64a7c5c79a394ae657868ea47e827bfd5d67bf651856ff96cd4956b3
+    bytes: 6460948
+    retrieved: '2026-09-24'
+  - id: sch12
+    title: Karnix_ASB-254-v1.2 schematics/Karnix_ASB.pdf
+    kind: schematic
+    url: https://raw.githubusercontent.com/Fabmicro-LLC/Karnix_ASB-254/master/Karnix_ASB-254-v1.2/schematics/Karnix_ASB.pdf
+    sha256: ee0f02e91b8c341d7cbbf656b365bae6c739437f2609f0221a8020aa218e76f3
+    bytes: 13546941
+    retrieved: '2026-09-24'
+  - id: passport
+    title: Karnix_ASB-254_passport.pdf (ПИР СЦХ-254 «Карно» вер. 1.x, паспорт, ред. 03.02.2024)
+    kind: manual
+    url: https://raw.githubusercontent.com/Fabmicro-LLC/Karnix_ASB-254/master/docs/Karnix_ASB-254_passport.pdf
+    sha256: 80d2f88e77029ba2957ecdbac1a84ea75a8569831b427c262ba2c5602f88c3f0
+    bytes: 616077
+    retrieved: '2026-09-24'
+  - id: pcb20
+    title: Karnix_ASB-v2.0/Karnix_ASB.kicad_pcb (next revision, different pinout)
+    kind: schematic
+    url: https://raw.githubusercontent.com/Fabmicro-LLC/Karnix_ASB-254/master/Karnix_ASB-v2.0/Karnix_ASB.kicad_pcb
+    sha256: a4ad5e185871b7379de7f760f3224b78ebfb6aa93dcf1a471e4816f6e3ff8385
+    bytes: 7260450
+    retrieved: '2026-09-24'
   defaults:
     iostandard: LVCMOS33
 
@@ -34,14 +84,18 @@ Board:
       device_pack: "CABGA256"
       speed: "6"
   banks:
-    clk: { pins: B9, frequency_mhz: 25 }
+    clk: { pins: B9, frequency_mhz: 25, source: {doc: pcb12, where: 'net CLK: Y2.3, R55, R76; Net-(U5B-PT38A)=B9'} }
     onboard_leds:
+      source: {doc: pcb12, where: 'nets LED0..LED3, R1/R20 220R to D1..D4 anode'}
       pins: [A13, A14, A15, B14]
     onboard_buttons:
+      source: {doc: pcb12, where: nets KEY0..KEY3; SW1 1=+3V3 2=KEY0; R2 10K to GND}
       pins: [B13, C13, D13, E13]
     gpio:
+      source: {doc: pcb12, where: XS5 pads -> R3..R36 51R -> GPIO_nn -> U5}
       pins: [L1, L2, M1, M2, K4, K5, L4, L5, N1, P2, L3, M3, P1, R1]
     onboard_vga:
+      source: {doc: pcb12, where: GPIO_14..27 nets; BGM lpf comments 'Connected to GPIO_nn'}
       pins:
         r: [M4, N3, N4, D16]
         g: [R2, T2, P4, R3]
@@ -51,6 +105,7 @@ Board:
     onboard_switches:
       pins: [A7, A8]
     onboard_uart:
+      source: {doc: pcb12, where: nets UART_DEBUG_RXD/TXD}
       pins:
         rx: D12
         tx: E12
@@ -58,28 +113,36 @@ Board:
       device: {"name": "RESET button SW5 (FPGA_RESET)", "kind": "reset"}
       pins: {"fpga_reset": ["R8", "R9"]}
     onboard_sram:   # U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)
+      source: {doc: pcb12, where: 'nets SRAM_A00..A17, SRAM_D00..D15, SRAM_#CS/#OE/#WE/#BLE/#BHE'}
       device: {"name": "U21 K6R4016V1D-TC10 256Kx16 async SRAM (512 KB)", "kind": "sram"}
       pins: {"a": ["N13", "P14", "R15", "T15", "P13", "R14", "R13", "T14", "R12", "T13", "M12", "N12", "M11", "N11", "P11", "P12", "K16", "K15"], "d": ["L16", "L15", "M16", "M15", "K13", "K12", "L13", "L12", "N16", "P15", "L14", "M14", "P16", "R16", "M13", "N14"], "cs_n": "H15", "oe_n": "J14", "we_n": "K14", "ble_n": "J15", "bhe_n": "J16"}
     onboard_ethernet:   # U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
+      source: {doc: pcb12, where: nets LAN_*}
       device: {"name": "U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)", "kind": "ethernet"}
       pins: {"tx_clk": "B4", "tx_en": "A4", "txd": ["B5", "A5", "B6", "A6"], "rx_clk": "F1", "rx_dv": "B7", "rx_er": "C2", "rxd": ["D1", "E2", "E1", "F2"], "col": "B2", "crs": "C1", "mdc": "A2", "mdio": "B1", "int_n": "B3", "rst_n": "A3"}
     onboard_rs485:   # U9 MAX487 RS-485 transceiver (XS3)
+      source: {doc: pcb12, where: nets RS485_RO/DI/DE}
       device: {"name": "U9 MAX487 RS-485 transceiver (XS3)", "kind": "other"}
       shares: ["onboard_switches"]   # the board multiplexes these pins
       pins: {"ro": "A7", "di": "A8", "de_re": "C7"}
     onboard_hdmi:   # J3 HDMI connector (direct from FPGA, series capacitors)
+      source: {doc: pcb12, where: nets HDMI_*}
       device: {"name": "J3 HDMI connector (direct from FPGA, series capacitors)", "kind": "hdmi_tx"}
       pins: {"d0_p": "A11", "d0_n": "A12", "d1_p": "D11", "d1_n": "E11", "d2_p": "B11", "d2_n": "C11", "clk_p": "B12", "clk_n": "C12", "scl": "E9", "sda": "D9", "cec": "C9", "hpd": "B8"}
     onboard_adc:   # U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)
+      source: {doc: pcb12, where: nets ADC_SPI_*}
       device: {"name": "U10 ADC128S052 SPI ADC (XS6..XS9 inputs, mic via audio jack)", "kind": "adc"}
       pins: {"sclk": "F15", "cs_n": "F16", "mosi": "E16", "miso": "G16"}
     onboard_dac:   # U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)
+      source: {doc: pcb12, where: nets DAC_SPI_*}
       device: {"name": "U11 AD5328 SPI DAC (XS10/XS11 outputs, XS12 audio L/R)", "kind": "audio"}
       pins: {"sclk": "C16", "cs_n": "C15", "mosi": "B15", "miso": "B16"}
     onboard_eeprom:   # U6 AT24C01C I2C EEPROM (1 kbit) + J2 EEPROM RESET jumper
+      source: {doc: pcb12, where: 'nets EEPROM_I2C_SCK/SDA, EEPROM_WP, EEPROM_RESET'}
       device: {"name": "U6 AT24C01C I2C EEPROM (1 kbit) + J2 EEPROM RESET jumper", "kind": "eeprom"}
       pins: {"scl": "R7", "sda": "P7", "wp": "R6", "reset": "T6"}
     onboard_serial_flash:   # U7 W25Q128JVPIQ SPI config flash (quad)
+      source: {doc: pcb12, where: 'U7 pads; nets SPI_CONFIG_*, QSPI_D2/D3'}
       device: {"name": "U7 W25Q128JVPIQ SPI config flash (quad)", "kind": "flash"}
       pins: {"cs_n": "N8", "mosi_io0": "T8", "miso_io1": "T7", "io2": "M7", "io3": "N7", "sck": "N9"}
     onboard_other:   # U20 FT2232D channel A — JTAG (+ J4 external JTAG header)

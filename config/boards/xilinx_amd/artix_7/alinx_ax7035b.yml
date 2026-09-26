@@ -32,59 +32,89 @@ Board:
   - microsd_socket_generic
   - led_discrete_generic
   - pushbutton_smd_generic
+  documents:
+  - id: litex
+    title: LiteX-Boards platform alinx_ax7035.py (AX7035B; comments cite the AX7035B user manual parts/tables)
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/alinx_ax7035.py
+    sha256: 303ad29fa1c1dc8354ce8ed4c3a035fe3c426e888c39ded0b6fdb2e1c9bbf340
+    bytes: 16847
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/alinx_ax7035b/litex_ax7035.py
+  - id: product
+    title: ALINX AX7035B product page (feature list; the user manual download is behind an e-mail form and was not fetched)
+    kind: manual
+    url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Artix-7/AX7035B.html
+    sha256: 848d144fb858af82fe58ab4efb30a8ec814c6036222cfb48c1d4c14179310b8d
+    bytes: 49891
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/alinx_ax7035b/product_page.html
   defaults:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: Y18, frequency_mhz: 50 }
-    cpu_resetn: { pins: F20, active: low }
+    clk: { pins: Y18, frequency_mhz: 50, source: {doc: litex, where: 'resource ("clk50", 0), line 25'} }
+    cpu_resetn: { pins: F20, active: low, source: {doc: litex, where: 'resource ("cpu_reset_n", 0), line 266'} }
     onboard_buttons:
+      source: {doc: litex, where: 'resources ("user_btn", 0..3), lines 261-264'}
       active: low
       pins: [M13, K14, K13, L13]
     onboard_leds:
+      source: {doc: litex, where: 'resources ("user_led", 0..3), lines 269-272'}
       active: low
       pins: [F19, E21, D20, C20]
     onboard_7seg:
+      source: {doc: litex, where: 'resource ("seven_seg", 0), line 222'}
       pins:
         segments: [J5, M3, J6, H5, G4, K6, K3, H4]
         anodes: [M2, N4, L5, L4, M16, M17]
     onboard_uart:
+      source: {doc: litex, where: 'resource ("serial", 0), line 145'}
       pins:
         rx: G15
         tx: G16
     onboard_ddr3:   # DDR3 SDRAM
+      source: {doc: litex, where: 'resource ("ddram", 0), line 28'}
       device: {"name": "DDR3 SDRAM", "kind": "ddr"}
       iostandard: ["DIFF_SSTL15", "LVCMOS15", "SSTL15"]
       pins: {"a": ["AA8", "U5", "Y9", "Y8", "V5", "W7", "U6", "V7", "T5", "W9", "AA6", "T6", "Y6", "R6"], "ba": ["AB8", "W5", "Y7"], "ras_n": "AB7", "cas_n": "T4", "we_n": "W6", "dm": ["AB1", "W2"], "dq": ["V4", "AB2", "AB3", "AA1", "AA5", "Y4", "AB5", "AA4", "V2", "Y1", "U1", "Y2", "T1", "W1", "U2", "U3"], "dqs_p": ["Y3", "R3"], "dqs_n": ["AA3", "R2"], "clk_p": "V9", "clk_n": "V8", "cke": "R4", "odt": "AB6", "reset_n": "T3", "cs_n": "U7"}
     onboard_ethernet_clocks:   # Gigabit Ethernet PHY clocks (RGMII)
+      source: {doc: litex, where: 'resource ("eth_clocks", 0), line 51'}
       device: {"name": "Gigabit Ethernet PHY clocks (RGMII)", "kind": "ethernet"}
       iostandard: "LVCMOS33"
       pins: {"tx": "L14", "rx": "K18"}
     onboard_ethernet:   # Gigabit Ethernet PHY (RGMII, MDIO)
+      source: {doc: litex, where: 'resource ("eth", 0), line 56'}
       device: {"name": "Gigabit Ethernet PHY (RGMII, MDIO)", "kind": "ethernet"}
       iostandard: "LVCMOS33"
       pins: {"rst_n": "L15", "mdio": "K16", "mdc": "K17", "rx_ctl": "M21", "rx_data": ["K19", "M15", "J17", "J20"], "tx_ctl": "L19", "tx_data": ["J21", "M20", "L18", "L20"]}
     onboard_hdmi_tx:   # HDMI output (J6; direct FPGA TMDS, HDMI_5V switch out_en)
+      source: {doc: litex, where: 'resource ("hdmi_out", 0), line 95'}
       device: {"name": "HDMI output (J6; direct FPGA TMDS, HDMI_5V switch out_en)", "kind": "hdmi_tx"}
       iostandard: ["LVCMOS33", "TMDS_33"]
       pins: {"clk_p": "E1", "clk_n": "D1", "data0_p": "G1", "data0_n": "F1", "data1_p": "H2", "data1_n": "G2", "data2_p": "K1", "data2_n": "J1", "scl": "P4", "sda": "N3", "out_en": "M6", "hpd": "P5"}
     onboard_sdcard:   # microSD card slot (SD mode)
+      source: {doc: litex, where: 'resource ("sdcard", 0), line 135'}
       device: {"name": "microSD card slot (SD mode)", "kind": "sdcard"}
       iostandard: "LVCMOS33"
       pins: {"data": ["P16", "R17", "N14", "N13"], "cmd": "P15", "clk": "N15", "cd_n": "R16"}
     onboard_qspi_flash:   # QSPI flash (Micron N25Q128, 16 MB)
+      source: {doc: litex, where: 'resource ("spiflash4x", 0), line 166'}
       device: {"name": "QSPI flash (Micron N25Q128, 16 MB)", "kind": "flash"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "T19", "dq": ["P22", "R22", "P21", "R21"]}
     onboard_eeprom:   # I2C EEPROM 24LC04
+      source: {doc: litex, where: 'resource ("i2c_eeprom", 0), line 178'}
       device: {"name": "I2C EEPROM 24LC04", "kind": "other"}
       iostandard: "LVCMOS33"
       pins: {"sda": "N19", "scl": "N18"}
     onboard_temp_sensor:   # Temperature sensor LM75 (I2C)
+      source: {doc: litex, where: 'resource ("i2c_tmp", 0), line 193'}
       device: {"name": "Temperature sensor LM75 (I2C)", "kind": "temperature"}
       iostandard: "LVCMOS33"
       pins: {"sda": "N22", "scl": "M22"}
     onboard_hdmi_rx:   # HDMI input (commented out in LiteX: "UNVERIFIED")
+      source: {doc: litex, where: commented-out block starting line 69 (read from the comments)}
       device: {"name": "HDMI input (commented out in LiteX: \"UNVERIFIED\")", "kind": "hdmi_rx"}
       pins: {"clk_p": "K4", "clk_n": "J4", "data0_p": "M1", "data0_n": "L1", "data1_p": "P2", "data1_n": "N2", "data2_p": "R1", "data2_n": "P1", "scl": "N5", "sda": "L6", "hpd_en": "P6", "cec": "M5"}
     onboard_mipi_camera:   # MIPI CSI-2 camera FPC (commented out in LiteX; pins per manual "FPC Expansion Ports Pin Assignment")
@@ -94,9 +124,11 @@ Board:
       device: {"name": "USB FIFO (commented out in LiteX; not on the product feature list: unverified)", "kind": "other"}
       pins: {"data": ["K22", "K21", "J22", "H18", "H22", "J15", "H20", "G20"], "rxf_n": "H19", "txe_n": "H15", "rd_n": "L21", "wr_n": "G17", "siwua": "H17", "clkout": "J19", "oe_n": "G18"}
     expansion_j9:   # Expansion header J9 (40-pin, 34 IO)
+      source: {doc: litex, where: '_connectors ("J9"), line 288'}
       device: {"name": "Expansion header J9 (40-pin, 34 IO)", "kind": "header"}
       pins: ["D16", "E16", "F14", "F13", "E14", "E13", "D15", "D14", "B13", "C13", "A14", "A13", "C15", "C14", "A16", "A15", "B16", "B15", "B18", "B17", "A19", "A18", "C19", "C18", "A20", "B20", "C17", "D17", "D19", "E19", "E18", "F18", "E17", "F16"]
     expansion_j10:   # Expansion header J10 (40-pin, 34 IO)
+      source: {doc: litex, where: '_connectors ("J10"), line 307'}
       device: {"name": "Expansion header J10 (40-pin, 34 IO)", "kind": "header"}
       pins: ["P17", "N17", "R19", "P19", "T18", "R18", "U21", "T21", "V22", "U22", "V20", "U20", "W22", "W21", "Y22", "Y21", "AA21", "AA20", "AB22", "AB21", "AB20", "AA19", "W20", "W19", "AB18", "AA18", "V19", "V18", "W17", "V17", "U18", "U17", "R14", "P14"]
   # ---- drawn: headers and parts; ./unifpga layout draft alinx_ax7035b regenerates from here on ----

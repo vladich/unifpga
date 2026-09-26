@@ -19,6 +19,21 @@ Board:
   - eeprom_chip
   - sdr_sdram
   - spi_flash
+  documents:
+  - id: sch
+    title: PIAX301-V2 SCH.pdf — 10-page schematic (power/USB, FPGA banks, clock/config, SDRAM, EEPROM/RTC/LED/headers, VGA/keys/SD/buzzer/camera, 7-segment)
+    kind: schematic
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/57ff8336dd67a557a03b6866d978e90d354f57a4/boards/saylinx/PIAX301-V2%20SCH.pdf
+    sha256: 6f055e8d5c26a3387f94659ab779388ddb942167c8f4f17e0135ff9880a0cd78
+    bytes: 3739408
+    retrieved: '2026-09-24'
+  - id: bgm_qsf
+    title: BGM boards/saylinx/board_specific.qsf
+    kind: constraints
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/57ff8336dd67a557a03b6866d978e90d354f57a4/boards/saylinx/board_specific.qsf
+    sha256: 9080403e17661b2bd042e99d73d5a93a9b0a6e2f38cd67ce4b8a10303ff5c4ff
+    bytes: 9091
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -30,19 +45,23 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk: { pins: E1, frequency_mhz: 50 }
-    cpu_resetn: { pins: N13, active: low }
+    clk: { pins: E1, frequency_mhz: 50, source: {doc: sch, where: 'p4 50M晶振 block (X1 -> R3 33R -> CLK) and U3I: CLK = E1'} }
+    cpu_resetn: { pins: N13, active: low, source: {doc: sch, where: 'p7 四个独立按键: K1 -> RESET via R46 220R, 10K pull-up (active low); p3 bank 5: N13 = RESET'} }
     onboard_buttons:
+      source: {doc: sch, where: 'p7 四个独立按键 (active low, 10K pull-ups) and p4 U3I: KEY1 = M15, KEY2 = M16, KEY3 = E16'}
       active: low
       index_origin: 2
       pins: [M15, M16, E16]
     onboard_leds:
+      source: {doc: sch, where: 'p6 四个LED: FPGA -> RN34 220R -> LED -> GND (active high); p3 bank 8: E10 LED0, F9 LED1, C9 LED2, D9 LED3'}
       pins: [D9, C9, F9, E10]
     onboard_7seg:
+      source: {doc: sch, where: 'p8: DIG0..DIG7 = R14,N16,P16,T15,P15,N12,N15,R16 -> a..g,dp via RN14/RN10 220R; SEL0..SEL7 = N9,P9,M10,N11,P11,M11,E6,D1 via RN16/RN19 to PNP bases; SEL0 -> Q9 -> DP1.D1 (leftmost), SEL7 -> Q1 -> DP2.D4 (active low)'}
       pins:
         segments: [R16, N15, N12, P15, T15, P16, N16, R14]
         anodes: [D1, E6, M11, P11, N11, M10, P9, N9]
     onboard_vga:
+      source: {doc: sch, where: 'p7 VGA block: VGAD15..11 -> RED, VGAD10..5 -> GREEN, VGAD4..0 -> BLUE (0.5K..8K/16K ladders); p2/p3 banks: VGAD0..15 = C3,D4,D3,E5,F6,F5,G5,F7,K8,L8,J6,K6,K5,L7,L3,L4; VGA_HSYNC L6, VGA_VSYNC N3 (R30/R31 22R). Lists are LSB first.'}
       pins:
         hs: L6
         vs: N3
@@ -50,12 +69,15 @@ Board:
         g: [F5, G5, F7, K8, L8, J6]
         b: [C3, D4, D3, E5, F6]
     onboard_uart:
+      source: {doc: sch, where: 'p1: CH340C TXD (pin2) -> net RXD, RXD (pin3) <- net TXD; p2 bank 2: N1 = TXD; p4 U3I: M2 = RXD'}
       pins:
         rx: M2
         tx: N1
     gpio_0:
+      source: {doc: sch, where: p6 40针扩展口一 block (net label sits above its line)}
       pins: [N2, P1, P2, R1, P8, K9, L9, L10, M9, T2, P3, T3, R3, T4, R4, T5, R5, T6, R6, T7, R7, T8, R8, T9, R9, T10, R10, T11, R11, T12, R12, T13, R13, T14]
     gpio_1:
+      source: {doc: sch, where: p6 40针扩展口二 block}
       pins: [B1, C2, B3, A2, B4, A3, B5, A4, B6, A5, B7, A6, B8, A7, B9, A8, B10, A9, B11, A10, B12, A11, B13, A12, D5, A13, C6, D6, F8, E7, D8, C8, E9, E8]
     onboard_buzzer:   # 蜂鸣器 LS1 (S8550 Q7)
       device: {"name": "蜂鸣器 LS1 (S8550 Q7)", "kind": "buzzer"}
@@ -75,6 +97,7 @@ Board:
       model_params: {col_bits: 9}
       pins: {"a": ["F11", "E11", "D14", "C14", "A14", "A15", "B16", "C15", "C16", "D15", "F14", "D16", "F15"], "ba": ["G11", "F13"], "dq": ["P14", "M12", "N14", "L12", "L13", "L14", "L11", "K12", "G16", "J11", "J16", "J15", "K16", "K15", "L16", "L15"], "clk": "B14", "cke": "F16", "cs_n": "K10", "ras_n": "K11", "cas_n": "J12", "we_n": "J13", "dqm": ["J14", "G15"]}
     camera:   # 摄像头接口 J5 (Header 9X2)
+      source: {doc: sch, where: 'p7 摄像头接口 block; M1 is a dedicated clock input (CLK3/DIFFCLK_1n per p4 U3I), suited to the camera pixel clock'}
       device: {"name": "摄像头接口 J5 (Header 9X2)", "kind": "header"}
       pins: ["D3V3", "F1", "F3", "G1", "F2", "M1", "G2", "J2", "J1", "K2", "K1", "L2", "L1", "N5", "M6", "N6", "M7"]
     onboard_flash:   # M25P16 (EPCS16) serial configuration flash U8

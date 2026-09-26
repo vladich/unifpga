@@ -37,6 +37,126 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  documents:
+  - id: dock31005
+    title: Tang Mega NEO Dock 31005 schematic (Rev 1.3/1.4, KiCad, current)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/Tang_Mega_NEO_Dock-138K_31005_Schematics.pdf
+    sha256: ade025e2c30b23d9fa820346cabd5ee3f90e6b9bfbc083d48bc691e1d3977d1e
+    bytes: 5804656
+    retrieved: '2026-09-24'
+  - id: dock31004_138
+    title: Tang Mega NEO Dock-138K 31004 schematic
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/Tang_Mega_NEO_Dock-138K_31004_Schematics.pdf
+    sha256: 6d563deaec5784c2ae30326dfc72ce0c792958b32f4929038b8f54fa83cb8b60
+    bytes: 5499737
+    retrieved: '2026-09-24'
+  - id: dock31004_60
+    title: Tang Mega NEO Dock-60K 31004 schematic
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/Tang_Mega_NEO_Dock-60K_31004_Schematics.pdf
+    sha256: 5ca6049ed80bab57bcaa87cc5e58926f569f2ca2aa11b984d52da1782633f976
+    bytes: 5559992
+    retrieved: '2026-09-24'
+  - id: dock31002
+    title: Tang Mega 138K Dock 31002 schematic (archived, 138K only)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/archived/Tang_Mega_138K_Dock_31002_Schematics.PDF
+    sha256: f2b0d321e0ff3d986c13754b65afa4ecdea8334e79366d8fa4f3a4397a4ddc8b
+    bytes: 5710329
+    retrieved: '2026-09-24'
+  - id: dock_readme
+    title: DOCK schematic folder readme.txt
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/DOCK/readme.txt
+    sha256: 6b3be8b1024603300fa43e758bbe8ed87509f41337a0e9245c0d262190571ed4
+    bytes: 321
+    retrieved: '2026-09-24'
+  - id: som_readme
+    title: SOM schematic folder readme.txt
+    kind: wiki
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/readme.txt
+    sha256: 29ca8533f2c8a48633aa5a4325a4b756766038f38c98446c3abc9d3be3588c7a
+    bytes: 368
+    retrieved: '2026-09-24'
+  - id: etch_csv
+    title: TANG_138K_60K PCB etch length table (SOM ball/net list)
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/09_Pinout_Length_table/TANG_138K_60K_PCB_etch_length.csv
+    sha256: df2e75c038e73bd7dad35b4ae9f2ad6d45e17e1c5fec21f1021fe73b4ae0c7e1
+    bytes: 8307
+    retrieved: '2026-09-24'
+  - id: cst138
+    title: tang_mega_138K_pins.cst (vendor all-pin constraints)
+    kind: constraints
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/08_Misc/tang_mega_138K_pins.cst
+    sha256: ab24e1876c36b01721e31d8dcf3a2838b873b0f1903d8aeeeccaeec6b82efa9d
+    bytes: 20166
+    retrieved: '2026-09-24'
+  - id: som138_30353
+    title: Tang Mega 138K SOM 30353 schematic (2023/2024, MT41J128M16 DDR3)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/tang_mega_138k_30353_Schematics..pdf
+    sha256: 214d9ccf71d6ee78ab54c22c437f3d61eac5c11c0b7832609a378a4a5db48065
+    bytes: 733237
+    retrieved: '2026-09-24'
+  - id: som138_30354
+    title: Tang Mega 138K SOM 30354 schematic (2026-06, H5TQ4G63EFR DDR3; text layer not extractable, read as image)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Mega_138K_60K/02_Schematic/SOM/tang_mega_138k_30354_Schematics..pdf
+    sha256: 326c45a7ae05e990d5f885fba6ec9b589d966941aa3c00f7d43122d99c068af7
+    bytes: 786950
+    retrieved: '2026-09-24'
+  - id: wiki138
+    title: 'Sipeed wiki: Tang Mega 138K Dock (v0.4, 2025-09-30)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/tang-mega-138k/mega-138k.html
+    sha256: c2c4fbc21a68ceb45b25922a5fbe81e3514745cbac24b94d3c99306ae19159cb
+    bytes: 101206
+    retrieved: '2026-09-24'
+  - id: litex138
+    title: LiteX-Boards sipeed_tang_mega_138k.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_mega_138k.py
+    sha256: 2b59e3b81b7438e08313e7b3fa5dd8b107c81f1f3f55a796d67e17ec130a9481
+    bytes: 17036
+    retrieved: '2026-09-24'
+  - id: ex138_lcd
+    title: TangMega-138K-example lcd_rgb666_screen eda_proj.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138K-example/blob/06e7d8b118d345915ab6f257b7c22226f81575cd/lcd_rgb666_screen/eda_proj/src/eda_proj.cst
+    sha256: f94df5322ed072bc3b0b3001166b2d970694f27cf9387e48d1088054f908a85a
+    bytes: 2517
+    retrieved: '2026-09-24'
+  - id: ex138_fan
+    title: TangMega-138K-example pwm_fan eda_proj.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138K-example/blob/06e7d8b118d345915ab6f257b7c22226f81575cd/pwm_fan/eda_proj/src/eda_proj.cst
+    sha256: 6cc3b61ceda79cb9b6f251d64d173d3df1603841834b330cc6a1871610c2280a
+    bytes: 539
+    retrieved: '2026-09-24'
+  - id: ex138_joycon
+    title: TangMega-138K-example joycon Joycon.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138K-example/blob/06e7d8b118d345915ab6f257b7c22226f81575cd/joycon/src/Joycon.cst
+    sha256: 0987465a0761a56fe00f316fb4df8254494f071df2e72cb154693ad134b66e01
+    bytes: 1841
+    retrieved: '2026-09-24'
+  - id: ex138_pcie
+    title: TangMega-138K-example pcie_dma_demo gen2 Pins.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138K-example/blob/06e7d8b118d345915ab6f257b7c22226f81575cd/pcie_dma_demo/pcie_gen2(5G)/src/Pins.cst
+    sha256: 12c8b13fb6699c66359819edcaf98e1fcac2c0866578976c6a40c686887ab597
+    bytes: 573
+    retrieved: '2026-09-24'
+  - id: ex138_audio
+    title: TangMega-138K-example audio_i2s audio.cst
+    kind: example
+    url: https://github.com/sipeed/TangMega-138K-example/blob/06e7d8b118d345915ab6f257b7c22226f81575cd/audio_i2s/eda_proj/src/audio.cst
+    sha256: b8c622d1f86d05f1053d3cb1b5a7070ccc0c1c8efd30d11c77569b44802fabbb
+    bytes: 812
+    retrieved: '2026-09-24'
   toolchain_options:
     yosys:
       loader_board: "tangmega138k"          # openFPGALoader -b
@@ -46,11 +166,13 @@ Board:
       options: [use_sspi_as_gpio, use_cpu_as_gpio]
       gprj_device: '<Device name="GW5AST-138C" pn="GW5AST-LV138PG484AC1/I0">gw5ast138c-007</Device>'
   banks:
-    clk: { pins: V22, frequency_mhz: 50, iostandard: LVCMOS33 }
+    clk: { pins: V22, frequency_mhz: 50, iostandard: LVCMOS33, source: {doc: som138_30353, where: SOM "Crystal oscillator" Y1100 50MHz -> BANK4_V22_EMCCLK_50Mhz} }
     onboard_buttons:
+      source: {doc: dock31005, where: 'p9 BUTTON: EX_KEY.0 S4 USER_BUTTON0, EX_KEY.1 S2, EX_KEY.2 S1 to GND, "requires enable internal pull-up"; BTB J2.60/62/64 = BANK5_AA13/AB13/Y12'}
       iostandard: LVCMOS33
       pins: [AA13, AB13, Y12]
     onboard_lcd:
+      source: {doc: dock31005, where: 'p12 RGB LCD Display J5: R2 HRVLD, R3 HD0, R4 HD1, R5 HTRDY, R6 HD3, R7 HD4, G2-G7 HD5-HD10, B2-B6 HD11-HD15, B7 HCTS, CLK HTACK, HSYNC HTREQ, VSYNC HTVLD, DEN HD2 (R0/R1/G0/G1/B0/B1 grounded, DISP tied +3V3); balls from BTB J0'}
       iostandard: LVCMOS33
       pins:
         ck: L19
@@ -61,14 +183,17 @@ Board:
         g: [K18, L21, M21, M22, N22, L18]
         b: [M18, N19, N18, K16, L16, M20]
     onboard_hdmi_0:
+      source: {doc: dock31005, where: 'p15 FPGA_TMDS (DVI): TMDS via 100nF to J29; DVI-A_HPD via R169; DVI_TWI1 SCL/SDA via 2N7002 to EDID; DVI-A_ALT -> DVI_DIR_SEL (1=TX, 0=RX, pulled up); BTB J1.50-64 (J17/K17 D2, H15/J15 D1, H14/J14 D0, G16/G15 CK), J2.61 K14 DVI-A_ALT, J2.63 K13 DVI-A_HPD, J2.32/34 M13/L13'}
       iostandard: LVCMOS33D
       pins:
         clk_p: "G15,G16"
         d_p: ["J14,H14", "J15,H15", "K17,J17"]
     pmod_0:
+      source: {doc: dock31005, where: 'p19 EX CONN. J9: 11 PMOD0_IO0, 12 IO1, 9 IO2, 10 IO3, 7 IO4, 8 IO5, 5 IO6, 6 IO7, 3/4 GND, 1/2 +3V3; BTB J0.25/23/15/13/20/18/14/12 = P19/R19/T21/U21/P16/R17/R18/T18'}
       iostandard: LVCMOS33
       pins: [P19, R19, T21, U21, P16, R17, R18, T18]
     pmod_1:
+      source: {doc: dock31005, where: 'p19 EX CONN. J8: 11 PMOD1_IO0 ... 6 PMOD1_IO7 (same layout as J9); BTB J2.5/3/9/7/13/11/17/15 = Y21/Y22/AB21/AB22/AA20/AA21/AA19/AB20'}
       iostandard: LVCMOS33
       pins: [Y21, Y22, AB21, AB22, AA20, AA21, AA19, AB20]
     onboard_spi_flash:   # SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)
@@ -82,6 +207,7 @@ Board:
       device: {"name": "SOM keys: CPU_RESET (U1304) and RECONFIG (U1303, also dock SW7)", "kind": "reset"}
       pins: {"cpu_reset": "F4", "reconfig_n": "N12"}
     som_debug:   # SOM debug connector U1201 (JST SH1.0 8-pin: JTAG + UART)
+      source: {doc: som138_30353, where: 'SOM "JTAG Connector" U1201: 1 5V0, 2 TMS BANK10_T13, 3 TDO U13, 4 TCK V12, 5 TDI R13, 6 RX BANK5_V14, 7 TX BANK5_U15, 8 GND'}
       device: {"name": "SOM debug connector U1201 (JST SH1.0 8-pin: JTAG + UART)", "kind": "header"}
       shares: ["onboard_uart"]   # the board multiplexes these pins
       pins: {"2_tms": "T13", "3_tdo": "U13", "4_tck": "V12", "5_tdi": "R13", "6_rx": "V14", "7_tx": "U15"}
@@ -132,6 +258,7 @@ Board:
       shares: ["sdio_header"]   # the board multiplexes these pins
       pins: {"clk": "V15", "cmd_mosi": "Y16", "d0_miso": "AA15", "d1": "AB15", "d2": "W14", "d3_cs": "W15"}
     sdio_header:   # SDIO header J10 (2x4 2.54 mm)
+      source: {doc: dock31005, where: 'p16 J10 PinHeader_2x04: 1 FPGA_SDIO_D0|SPI_MISO, 2 CMD|SPI_MOSI, 3 D1, 4 CLK|SPI_SCK, 5 D3|SPI_CS, 6 D2, 7 GND, 8 5V'}
       device: {"name": "SDIO header J10 (2x4 2.54 mm)", "kind": "header"}
       shares: ["onboard_sdcard"]   # the board multiplexes these pins
       pins: ["AA15", "Y16", "AB15", "V15", "W15", "W14"]   # header pins 1-6: D0/MISO, CMD/MOSI, D1, CLK, D3/CS, D2
@@ -228,26 +355,31 @@ Board:
       label: PMOD0 (J9)
       bank: pmod_0
       pins: {'5': 'pmod_0[6]', '6': 'pmod_0[7]', '7': 'pmod_0[4]', '8': 'pmod_0[5]', '9': 'pmod_0[2]', '10': 'pmod_0[3]', '11': 'pmod_0[0]', '12': 'pmod_0[1]'}
+      source: {doc: dock31005, where: 'p19 EX CONN. J9: 11 PMOD0_IO0, 12 IO1, 9 IO2, 10 IO3, 7 IO4, 8 IO5, 5 IO6, 6 IO7, 3/4 GND, 1/2 +3V3; BTB J0.25/23/15/13/20/18/14/12 = P19/R19/T21/U21/P16/R17/R18/T18'}
     - id: pmod_1
       type: sipeed_2x6
       label: PMOD1 (J8)
       bank: pmod_1
       pins: {'5': 'pmod_1[6]', '6': 'pmod_1[7]', '7': 'pmod_1[4]', '8': 'pmod_1[5]', '9': 'pmod_1[2]', '10': 'pmod_1[3]', '11': 'pmod_1[0]', '12': 'pmod_1[1]'}
+      source: {doc: dock31005, where: 'p19 EX CONN. J8: 11 PMOD1_IO0 ... 6 PMOD1_IO7 (same layout as J9); BTB J2.5/3/9/7/13/11/17/15 = Y21/Y22/AB21/AB22/AA20/AA21/AA19/AB20'}
     - id: j10
       type: sipeed_2x4_sdio
       label: J10 (SDIO)
       bank: sdio_header
       pins: {'1': 'sdio_header[0]', '2': 'sdio_header[1]', '3': 'sdio_header[2]', '4': 'sdio_header[3]', '5': 'sdio_header[4]', '6': 'sdio_header[5]'}
+      source: {doc: dock31005, where: 'p16 J10 PinHeader_2x04: 1 FPGA_SDIO_D0|SPI_MISO, 2 CMD|SPI_MOSI, 3 D1, 4 CLK|SPI_SCK, 5 D3|SPI_CS, 6 D2, 7 GND, 8 5V'}
     - id: j13
       type: sipeed_2x20_sdram
       label: J13 (SDRAM0)
       bank: header_j13
       pins: {'1': 'header_j13[0]', '2': 'header_j13[1]', '3': 'header_j13[2]', '4': 'header_j13[3]', '5': 'header_j13[4]', '6': 'header_j13[5]', '7': 'header_j13[6]', '8': 'header_j13[7]', '9': 'header_j13[8]', '10': 'header_j13[9]', '13': 'header_j13[10]', '14': 'header_j13[11]', '15': 'header_j13[12]', '16': 'header_j13[13]', '17': 'header_j13[14]', '18': 'header_j13[15]', '19': 'header_j13[16]', '20': 'header_j13[17]', '21': 'header_j13[18]', '22': 'header_j13[19]', '23': 'header_j13[20]', '24': 'header_j13[21]', '25': 'header_j13[22]', '26': 'header_j13[23]', '27': 'header_j13[24]', '28': 'header_j13[25]', '29': 'header_j13[26]', '30': 'header_j13[27]', '31': 'header_j13[28]', '32': 'header_j13[29]', '33': 'header_j13[30]', '34': 'header_j13[31]', '35': 'header_j13[32]', '36': 'header_j13[33]', '37': 'header_j13[34]', '38': 'header_j13[35]', '39': 'header_j13[36]', '40': 'header_j13[37]'}
+      source: {doc: dock31005, where: p19 "SDRAM0 CONN." J13 TH_PIN_2x20_2.54mm (pin -> SDRAM0_* net) and BTB J1/J0.68 (BANK2 balls); vendor CST //====== SDRAM ====== matches}
     - id: j14
       type: sipeed_2x20_sdram
       label: J14 (SDRAM1)
       bank: header_j14
       pins: {'1': 'header_j14[0]', '2': 'pmod_0[0]', '3': 'header_j14[2]', '4': 'pmod_0[2]', '5': 'header_j14[4]', '6': 'pmod_0[4]', '7': 'header_j14[6]', '8': 'header_j14[7]', '9': 'header_j14[8]', '10': 'header_j14[9]', '13': 'header_j14[10]', '14': 'header_j14[11]', '15': 'header_j14[12]', '16': 'header_j14[13]', '17': 'header_j14[14]', '18': 'header_j14[15]', '19': 'header_j14[16]', '20': 'header_j14[17]', '21': 'pmod_1[1]', '22': 'pmod_1[0]', '23': 'pmod_1[3]', '24': 'pmod_1[2]', '25': 'pmod_1[5]', '26': 'pmod_1[4]', '27': 'pmod_1[7]', '28': 'pmod_1[6]', '29': 'header_j14[26]', '30': 'header_j14[27]', '31': 'header_j14[28]', '32': 'header_j14[29]', '33': 'header_j14[30]', '34': 'header_j14[31]', '35': 'header_j14[32]', '36': 'header_j14[33]', '37': 'header_j14[34]', '38': 'header_j14[35]', '39': 'header_j14[36]', '40': 'header_j14[37]'}
+      source: {doc: dock31005, where: p19 "SDRAM1 CONN." J14 (same pinout as J13) and BTB J0/J2 SDRAM1_* nets}
   parts:
     - id: clk
       label: clk

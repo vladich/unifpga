@@ -31,28 +31,47 @@ Board:
   devices:
   - ftdi_ft2232h
   - microsd_socket_generic
+  documents:
+  - id: xnx_ug
+    title: CrossLink-NX Evaluation Board User Guide FPGA-EB-02028-1.7 (July 2026)
+    kind: manual
+    url: https://www.latticesemi.com/view_document?document_id=52807
+    sha256: 11cb439148fa03c7ffdd7936cbd37a90f057a8c6b0447317746ab24047805523
+    bytes: 5659506
+    retrieved: '2026-09-24'
+  - id: litex_xnx
+    title: LiteX-Boards lattice_crosslink_nx_evn.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/lattice_crosslink_nx_evn.py
+    sha256: f2e5b4a3bdcd6ced19594447b987d0de46b99e50d62ecef4a7916ff6af71c602
+    bytes: 16009
+    retrieved: '2026-09-24'
   defaults:
     iostandard: LVCMOS33
 
   banks:
     # 12 MHz oscillator on JP2 (default fitted). 125 MHz LVDS pair (C12/C11)
     # is also available but uses a different clk_input peripheral.
-    clk:              { pins: "L13", frequency_mhz: 12 }
-    onboard_reset:    { pins: "G19" }                # SW4 (gsrn)
+    clk:              { pins: "L13", frequency_mhz: 12, source: {doc: xnx_ug, where: Table 5.1 Clock Sources} }
+    onboard_reset:    { pins: "G19", source: {doc: xnx_ug, where: 'Table 7.2: GSRN G19 SW4, logic 0 when pressed'} }   # SW4 (gsrn)
     onboard_buttons:                                  # SW2, SW3 (FPGA-EB-02028 7.2)
+      source: {doc: xnx_ug, where: Table 7.2}
       active: low
       pins: ["G14", "G15"]
     onboard_switches:                                 # 8-pin DIP SW1: pulled up, ON grounds the pin (FPGA-EB-02028 7.1)
+      source: {doc: xnx_ug, where: Table 7.1 (bank 2); ON = grounded = logic 0}
       active: low
       pins: ["N14", "M14", "M16", "M15",
              "N15", "N16", "M17", "M18"]
     onboard_leds:                                     # 14 user LEDs, lit when driven low (FPGA-EB-02028 7.3)
+      source: {doc: xnx_ug, where: Table 7.3; "lighted when the output is driven LOW"}
       active: low
       pins: ["E17", "F13", "G13", "F14",
              "L16", "L15", "L20", "L19",
              "R17", "R18", "U20", "T20",
              "W20", "V20"]
     onboard_uart:
+      source: {doc: xnx_ug, where: 'Section 6.2: PR8A/F16 and PR10A/F18 bank 6; Table 7.4 D1 UART_ACT on F18; direction per LiteX serial rx F16 / tx F18'}
       pins:
         rx: "F16"
         tx: "F18"
@@ -62,10 +81,12 @@ Board:
       frequency_mhz: 125
       pins: {"p": "C12", "n": "C11"}
     onboard_programn:   # PROGRAMN push button SW5
+      source: {doc: xnx_ug, where: 'Table 4.2 / 7.2: PROGRAMN E11 SW5'}
       device: {"name": "PROGRAMN push button SW5", "kind": "reset"}
       active: "low"
       pins: {"programn": "E11"}
     onboard_serial_flash:   # Macronix MX25L12833F SPI flash (config) / Parallel Configuration header J27
+      source: {doc: xnx_ug, where: Table 6.2 CrossLink-NX SPI Connections; section 4.4 flash part}
       device: {"name": "Macronix MX25L12833F SPI flash (config) / Parallel Configuration header J27", "kind": "flash"}
       pins: {"clk": "E12", "cs_n": "E13", "dq": ["D13", "D15", "D14", "D16"], "mcsno": "E16"}
     onboard_config_status:   # Config status: INITN (D17 red LED, TP10) and DONE (D18 green LED, TP12)
@@ -75,27 +96,34 @@ Board:
       device: {"name": "JTAG header J1", "kind": "other"}
       pins: {"tdo": "F19", "tdi": "F17", "tms": "F15", "tck": "G18"}
     fmc:   # FMC LPC connector U9 (68 LA single-ended / 34 pairs + 2 clock pairs + VREF)
+      source: {doc: xnx_ug, where: Table 8.1 FMC LPC Header Pin Connections (H1 FMC_VREF -> T6 and Y18); SerDes pins C2/C3/C6/C7/D4/D5 have no FPGA ball listed}
       device: {"name": "FMC LPC connector U9 (68 LA single-ended / 34 pairs + 2 clock pairs + VREF)", "kind": "header"}
       pins: {"LA00_CC_p": "V11", "LA01_CC_p": "W13", "LA02_p": "Y2", "LA03_p": "W6", "LA04_p": "V1", "LA05_p": "R5", "LA06_p": "W9", "LA07_p": "W7", "LA08_p": "Y7", "LA09_p": "V6", "LA10_p": "W10", "LA11_p": "P10", "LA12_p": "U1", "LA13_p": "R9", "LA14_p": "W11", "LA15_p": "W8", "LA16_p": "P7", "LA17_p": "U10", "LA18_CC_p": "R8", "LA19_p": "U12", "LA20_p": "T10", "LA21_p": "P13", "LA22_p": "V14", "LA23_p": "P11", "LA24_p": "W14", "LA25_p": "R12", "LA26_p": "T13", "LA27_p": "Y13", "LA28_p": "U15", "LA29_p": "Y15", "LA30_p": "V17", "LA31_p": "Y17", "CLK0_p": "Y12", "CLK1_p": "R7", "LA00_CC_n": "U11", "LA01_CC_n": "V12", "LA02_n": "Y3", "LA03_n": "Y6", "LA04_n": "W1", "LA05_n": "R6", "LA06_n": "Y9", "LA07_n": "V7", "LA08_n": "Y8", "LA09_n": "U7", "LA10_n": "Y10", "LA11_n": "R10", "LA12_n": "T1", "LA13_n": "P9", "LA14_n": "Y11", "LA15_n": "V9", "LA16_n": "P8", "LA17_n": "V10", "LA18_CC_n": "T8", "LA19_n": "T12", "LA20_n": "T11", "LA21_n": "R13", "LA22_n": "U14", "LA23_n": "R11", "LA24_n": "W15", "LA25_n": "P12", "LA26_n": "T14", "LA27_n": "Y14", "LA28_n": "V16", "LA29_n": "Y16", "LA30_n": "U16", "LA31_n": "W17", "CLK0_n": "W12", "CLK1_n": "T7", "vref": ["T6", "Y18"]}
     fmc_config:   # FMC configuration / sideband header J27 (JTAG, I2C, PRSNT, PS_POR_B)
+      source: {doc: xnx_ug, where: 'Table 8.2 / 8.8 (J27 pins 3,4,7,8,9,10,13,14)'}
       device: {"name": "FMC configuration / sideband header J27 (JTAG, I2C, PRSNT, PS_POR_B)", "kind": "header"}
       pins: {"fmc_tck": "P19", "ps_por_b": "N19", "fmc_tdi": "P20", "fmc_prsnt": "N20", "fmc_tdo": "P17", "fmc_scl": "M20", "fmc_tms": "P18", "fmc_sda": "M19"}
     rpi_header:   # Raspberry Pi 40-pin header JP5 (RASP_IOxx, ID_SD/ID_SC)
+      source: {doc: xnx_ug, where: 'Table 8.3 (header pin -> ball); pins 27/28 are RASP_ID_SD/SC (local I2C, optional link to global I2C via DNI R39/R40)'}
       device: {"name": "Raspberry Pi 40-pin header JP5 (RASP_IOxx, ID_SD/ID_SC)", "kind": "header"}
       pins: ["L6", "L5", "M3", "M2", "L1", "L2", "R2", "R1", "P2", "P1", "K7", "N4", "K6", "K5", "N7", "P6", "N5", "M7", "M4", "K8", "L7", "L8", "M5", "M6", "N6", "P5", "R3", "R4"]
     onboard_camera:   # Camera connector CN1 (MIPI CSI-2 4-lane on D-PHY0 + I2C + reset)
       device: {"name": "Camera connector CN1 (MIPI CSI-2 4-lane on D-PHY0 + I2C + reset)", "kind": "other"}
       pins: {"clk_p": "A2", "clk_n": "B1", "d0_p": "B2", "d0_n": "C1", "d1_p": "A3", "d1_n": "B3", "d2_p": "C2", "d2_n": "D1", "d3_p": "A4", "d3_n": "B4", "sda": "W5", "scl": "Y5", "reset": "W18"}
     dphy1:   # D-PHY1 header J6 (4 lanes + clock, hard D-PHY)
+      source: {doc: xnx_ug, where: Table 8.5}
       device: {"name": "D-PHY1 header J6 (4 lanes + clock, hard D-PHY)", "kind": "header"}
       pins: {"clk_p": "A8", "clk_n": "B8", "d0_p": "A7", "d0_n": "B7", "d1_p": "A9", "d1_n": "B9", "d2_p": "A6", "d2_n": "B6", "d3_p": "A10", "d3_n": "B10"}
     pmod0:   # PMOD header J17 (PMOD0)
+      source: {doc: xnx_ug, where: Table 8.6}
       device: {"name": "PMOD header J17 (PMOD0)", "kind": "pmod"}
       pins: ["D10", "D9", "D7", "D8", "D6", "D5", "D4", "D3"]
     pmod1:   # PMOD header J18 (PMOD1)
+      source: {doc: xnx_ug, where: Table 8.6}
       device: {"name": "PMOD header J18 (PMOD1)", "kind": "pmod"}
       pins: ["E10", "E9", "E7", "E8", "E4", "E3", "E2", "F1"]
     pmod2:   # PMOD header J19 (PMOD2)
+      source: {doc: xnx_ug, where: Table 8.6}
       device: {"name": "PMOD header J19 (PMOD2)", "kind": "pmod"}
       pins: ["J2", "J1", "K2", "K1", "K3", "K4", "D17", "E18"]
     onboard_adc:   # ADC test header J26 (hard ADC input 1)

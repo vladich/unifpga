@@ -16,6 +16,21 @@ Board:
   features:
   - sdr_sdram
   - ethernet_phy_gigabit
+  documents:
+  - id: ch75_v8
+    title: chubby75 5a-75b hardware_V8.0.md
+    kind: wiki
+    url: https://raw.githubusercontent.com/q3k/chubby75/master/5a-75b/hardware_V8.0.md
+    sha256: a69fb75cff525f738b499e0e60f9d99003ff4dd581116f389e0b46b3578242b7
+    bytes: 20660
+    retrieved: '2026-09-24'
+  - id: litex_cl
+    title: LiteX-Boards colorlight_5a_75b.py (_io_v8_0, _connectors_v8_0)
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/colorlight_5a_75b.py
+    sha256: 5f2c4927f2ef93d7ee7efdf5b239c77b9d6846211c7dfcb805531b74e9e5b566
+    bytes: 11869
+    retrieved: '2026-09-24'
   defaults:
     iostandard: LVCMOS33
 
@@ -27,11 +42,13 @@ Board:
       device_pack: "CABGA256"
       speed: "6"
   banks:
-    clk: { pins: P6, frequency_mhz: 25 }
+    clk: { pins: P6, frequency_mhz: 25, source: {doc: ch75_v8, where: 'Connections > Clock: "distributed to ... FPGA (U33) pin P6"'} }
     onboard_leds:
+      source: {doc: ch75_v8, where: 'LED, Button: T6 active low (open drain)'}
       active: low
       pins: [T6]
     onboard_buttons:
+      source: {doc: ch75_v8, where: 'LED, Button: R7 (KEY+); LiteX user_btn_n (active low)'}
       pins: [R7]
     gpio:
       pins: [R12, T14]
@@ -42,15 +59,18 @@ Board:
         d_n: [T15, P14, H15]
         clk_n: H14
     onboard_sdram:   # ESMT M12L64322A SDRAM (2M x 32, 8 MB)
+      source: {doc: ch75_v8, where: 'SDRAM U29 table; CS#, DQM0-3 tied to GND, CKE to 3V3'}
       device: {"name": "ESMT M12L64322A SDRAM (2M x 32, 8 MB)", "kind": "sdram"}
       iostandard: "LVCMOS33"
       model_params: {col_bits: 8}
       pins: {"clk": "C8", "a": ["A9", "B9", "B10", "C10", "D9", "C9", "E9", "D8", "E8", "C7", "B8"], "ba": ["B7", "A8"], "we_n": "B5", "cas_n": "A6", "ras_n": "B6", "dq": ["B2", "A2", "C3", "A3", "B3", "A4", "B4", "A5", "E7", "C6", "D7", "D6", "E6", "D5", "C5", "E5", "A11", "B11", "B12", "A13", "B13", "A14", "B14", "D14", "D13", "E11", "C13", "D11", "C12", "E10", "C11", "D10"]}
     onboard_eth0:   # Ethernet PHY U11 (RTL8211FD, RGMII, port 0)
+      source: {doc: ch75_v8, where: Gigabit PHYs table (U11 column); rst/mdc/mdio shared with U13}
       device: {"name": "Ethernet PHY U11 (RTL8211FD, RGMII, port 0)", "kind": "ethernet"}
       shares: ["onboard_eth1"]   # the board multiplexes these pins
       pins: {"rst_n": "R6", "mdc": "R5", "mdio": "T4", "txc": "L1", "tx_ctl": "L2", "txd": ["M2", "M1", "P1", "R1"], "rxc": "J1", "rx_ctl": "J2", "rxd": ["K2", "J3", "K1", "K3"]}
     onboard_eth1:   # Ethernet PHY U13 (RTL8211FD, RGMII, port 1)
+      source: {doc: ch75_v8, where: Gigabit PHYs table (U13 column); U13 also sources the 25 MHz clock - do not hold it in reset}
       device: {"name": "Ethernet PHY U13 (RTL8211FD, RGMII, port 1)", "kind": "ethernet"}
       shares: ["onboard_eth0"]   # the board multiplexes these pins
       pins: {"rst_n": "R6", "mdc": "R5", "mdio": "T4", "txc": "J16", "tx_ctl": "K14", "txd": ["K16", "J15", "J14", "K15"], "rxc": "M16", "rx_ctl": "P16", "rxd": ["M15", "R16", "L15", "L16"]}
@@ -61,34 +81,42 @@ Board:
       device: {"name": "Spare pads R26 (N16), R107 (D12), R109 (A12)", "kind": "other"}
       pins: {"r26": "N16", "r107": "D12", "r109": "A12"}
     hub75_j1:   # HUB75 connector J1 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J1 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J1 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j2", "hub75_j3", "hub75_j4", "hub75_j5", "hub75_j6", "hub75_j7", "hub75_j8"]   # the board multiplexes these pins
       pins: {"r0": "C4", "g0": "D4", "b0": "E4", "r1": "D3", "g1": "F5", "b1": "E3", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
     hub75_j2:   # HUB75 connector J2 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J2 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J2 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j1", "hub75_j3", "hub75_j4", "hub75_j5", "hub75_j6", "hub75_j7", "hub75_j8"]   # the board multiplexes these pins
       pins: {"r0": "F1", "g0": "F2", "b0": "G2", "r1": "G1", "g1": "H2", "b1": "H3", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
     hub75_j3:   # HUB75 connector J3 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J3 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J3 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j1", "hub75_j2", "hub75_j4", "hub75_j5", "hub75_j6", "hub75_j7", "hub75_j8"]   # the board multiplexes these pins
       pins: {"r0": "B1", "g0": "C2", "b0": "C1", "r1": "D1", "g1": "E2", "b1": "E1", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
     hub75_j4:   # HUB75 connector J4 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J4 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J4 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j1", "hub75_j2", "hub75_j3", "hub75_j5", "hub75_j6", "hub75_j7", "hub75_j8"]   # the board multiplexes these pins
       pins: {"r0": "P5", "g0": "R3", "b0": "P2", "r1": "R2", "g1": "T2", "b1": "N6", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
     hub75_j5:   # HUB75 connector J5 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J5 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J5 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["gpio", "hub75_j1", "hub75_j2", "hub75_j3", "hub75_j4", "hub75_j6", "hub75_j7", "hub75_j8"]   # the board multiplexes these pins
       pins: {"r0": "T13", "g0": "R12", "b0": "R13", "r1": "R14", "g1": "T14", "b1": "P12", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
     hub75_j6:   # HUB75 connector J6 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J6 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J6 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j1", "hub75_j2", "hub75_j3", "hub75_j4", "hub75_j5", "hub75_j7", "hub75_j8", "onboard_hdmi"]   # the board multiplexes these pins
       pins: {"r0": "R15", "g0": "T15", "b0": "P13", "r1": "P14", "g1": "N14", "b1": "H15", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
     hub75_j7:   # HUB75 connector J7 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J7 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J7 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j1", "hub75_j2", "hub75_j3", "hub75_j4", "hub75_j5", "hub75_j6", "hub75_j8", "onboard_hdmi"]   # the board multiplexes these pins
       pins: {"r0": "G16", "g0": "H14", "b0": "G15", "r1": "F15", "g1": "F16", "b1": "E16", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}
     hub75_j8:   # HUB75 connector J8 (outputs through 74HC245T 5 V buffers)
+      source: {doc: ch75_v8, where: Connector J8 table; E/A/B/C/D/CLK/STB/OE are shared by all eight connectors}
       device: {"name": "HUB75 connector J8 (outputs through 74HC245T 5 V buffers)", "kind": "header"}
       shares: ["hub75_j1", "hub75_j2", "hub75_j3", "hub75_j4", "hub75_j5", "hub75_j6", "hub75_j7"]   # the board multiplexes these pins
       pins: {"r0": "D16", "g0": "E15", "b0": "C16", "r1": "B16", "g1": "C15", "b1": "B15", "e": "N4", "a": "N5", "b": "N3", "c": "P3", "d": "P4", "clk": "M3", "stb": "N1", "oe": "M4"}

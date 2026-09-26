@@ -32,11 +32,60 @@ Board:
   - led_discrete_generic
   - pushbutton_smd_generic
   - dip_switch_generic
+  documents:
+  - id: core_manual
+    title: QMTECH XC7K325T Core Board User Manual (Hardware) V01
+    kind: manual
+    url: https://raw.githubusercontent.com/ChinaQMTECH/QMTECH_XC7K325T_CORE_BOARD/6528435dc3acfba953ebe2a996d06ab7bc884e8a/QMTECH_Kintex-7_XC7K325T_Core_Board_User_Manual%28Hardware%29_V01.pdf
+    sha256: 2489ae31d8004d895d34dcadeba70b2571a207a4e74d958a380d8d1a78068b2c
+    bytes: 885595
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/qmtech_kintex_7/core_manual.pdf
+  - id: core_sch
+    title: QMTECH-XC7K325T-CORE-BOARD-V2-20211104 schematic
+    kind: schematic
+    url: https://raw.githubusercontent.com/ChinaQMTECH/QMTECH_XC7K325T_CORE_BOARD/6528435dc3acfba953ebe2a996d06ab7bc884e8a/Schematic/QMTECH-XC7K325T-CORE-BOARD-V2-20211104.pdf
+    sha256: dd0a892bcbffac31ac8f8f2344e2947c49274d2d73a528dc17a50c903d220403
+    bytes: 114163
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/qmtech_kintex_7/core_schematic.pdf
+  - id: db_sch
+    title: QMTECH_DB_For_FPGA_V04 daughterboard schematic (title block QMTECH_DB_FPGA_V02)
+    kind: schematic
+    url: https://raw.githubusercontent.com/ChinaQMTECH/DB_FPGA/70e812315d270239c1d362fc90be23fafc4341bd/QMTECH_DB_For_FPGA_V04.pdf
+    sha256: f6c374165d86fc6ee41564ea000de3f67b23a96f488b80409a3cea46b866539a
+    bytes: 80641
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/qmtech_kintex_7/db_schematic.pdf
+  - id: litex_core
+    title: LiteX-Boards platform qmtech_xc7k325t.py (core board + connector map)
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/qmtech_xc7k325t.py
+    sha256: 4f8eca6509125980a7d23825fffb43a167aa5bb747bec756ea729b96ad015915
+    bytes: 6783
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/qmtech_kintex_7/litex_core.py
+  - id: litex_db
+    title: LiteX-Boards qmtech_daughterboard.py (DB_FPGA devices by header pin)
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/qmtech_daughterboard.py
+    sha256: 3111fc910a03f946c563a03930ec3ea6fee4b7fc34e8f7b15a09d62ef70139b4
+    bytes: 5877
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/qmtech_kintex_7/litex_daughterboard.py
+  - id: litex_devboard
+    title: LiteX-Boards platform qmtech_kintex7_devboard.py (a different QMTECH board, for reference only)
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/qmtech_kintex7_devboard.py
+    sha256: 32d8551b4bc3901e07f5fea4e1972c11be887095ea1628531c9ab8d5e338bad5
+    bytes: 6052
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/qmtech_kintex_7/litex_kintex7_devboard.py
   defaults:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: F22, frequency_mhz: 50 }
+    clk: { pins: F22, frequency_mhz: 50, source: {doc: litex_core, where: 'resource ("clk50", 0), line 17'} }
     cpu_resetn: { pins: AF9, active: low }
     onboard_leds:
       pins: [D10, A10, B9, A8, J26, H26]
@@ -68,18 +117,22 @@ Board:
       shares: ["onboard_leds"]   # the board multiplexes these pins
       pins: {"led": ["J26", "H26"]}
     onboard_spi_flash:   # SPI flash S25FL256L (32 MB, quad)
+      source: {doc: litex_core, where: 'resource ("spiflash4x", 0), line 34'}
       device: {"name": "SPI flash S25FL256L (32 MB, quad)", "kind": "flash"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "C23", "dq": ["B24", "A25", "B22", "A22"]}
     onboard_ddr3:   # DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)
+      source: {doc: litex_core, where: 'resource ("ddram", 0), line 43'}
       device: {"name": "DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)", "kind": "ddr"}
       iostandard: ["DIFF_SSTL15", "LVCMOS15", "SSTL15"]
       pins: {"a": ["AF5", "AF2", "AD6", "AC6", "AD4", "AB6", "AE2", "Y5", "AA4", "AE6", "AE3", "AD5", "AB4", "Y6"], "ba": ["AD3", "AE1", "AE5"], "ras_n": "AC3", "cas_n": "AC4", "we_n": "AF4", "dm": ["V1", "V3"], "dq": ["W1", "V2", "Y1", "Y3", "AC2", "Y2", "AB2", "AA3", "U1", "V4", "U6", "W3", "V6", "U2", "U7", "U5"], "dqs_p": ["AB1", "W6"], "dqs_n": ["AC1", "W5"], "clk_p": "AA5", "clk_n": "AB5", "cke": "AD1", "odt": "AF3", "reset_n": "W4"}
     header_j2:   # Core-board 64-pin header U5 (LiteX/daughterboard name J2)
+      source: {doc: litex_core, where: '_connectors ("J2"), line 76'}
       device: {"name": "Core-board 64-pin header U5 (LiteX/daughterboard name J2)", "kind": "header"}
       shares: ["db_header_j1", "db_pmod_j10", "db_pmod_j11", "onboard_7seg", "onboard_buttons", "onboard_db_7seg", "onboard_db_buttons", "onboard_db_leds", "onboard_db_uart", "onboard_leds"]   # the board multiplexes these pins
       pins: ["A8", "A9", "B9", "C9", "A10", "B10", "D10", "E10", "B11", "B12", "C11", "C12", "A12", "A13", "D13", "D14", "A14", "B14", "C13", "C14", "A15", "B15", "D16", "D15", "B16", "C16", "A17", "B17", "D18", "E18", "C18", "C17", "A19", "A18", "B19", "C19", "A20", "B20", "D20", "D19", "A24", "A23", "E22", "E21", "D24", "D23", "D25", "E25", "E26", "F25", "B26", "B25", "C26", "D26"]
     header_j3:   # Core-board 64-pin header U4 (LiteX/daughterboard name J3)
+      source: {doc: litex_core, where: '_connectors ("J3"), line 106'}
       device: {"name": "Core-board 64-pin header U4 (LiteX/daughterboard name J3)", "kind": "header"}
       shares: ["onboard_db_buttons", "onboard_db_ethernet", "onboard_db_ethernet_clocks", "onboard_db_sdcard", "onboard_db_vga"]   # the board multiplexes these pins
       pins: ["AD21", "AE21", "AE22", "AF22", "AE23", "AF23", "V21", "W21", "Y22", "AA22", "AF24", "AF25", "AB21", "AC21", "AB22", "AC22", "AD23", "AD24", "AC23", "AC24", "AD25", "AE25", "AA23", "AB24", "AA25", "AB25", "Y23", "AA24", "AD26", "AE26", "AB26", "AC26", "W23", "W24", "Y25", "Y26", "W25", "W26", "U26", "V26", "V23", "V24", "U24", "U25", "T22", "T23", "R22", "R23", "R25", "P25", "P23", "N23", "N26", "M26"]
@@ -124,14 +177,17 @@ Board:
       shares: ["header_j3"]   # the board multiplexes these pins
       pins: {"data": ["AF22", "AE22", "W21", "V21"], "cmd": "AF23", "clk": "AE23", "cd": "AE21"}
     db_pmod_j10:   # Daughterboard Pmod J10 (pmoda)
+      source: {doc: litex_db, where: 'connectors ("pmoda"), line 144; keyed by Pmod pin (LiteX order = pins 1-4, 7-10, inference from the LiteX pmod convention)'}
       device: {"name": "Daughterboard Pmod J10 (pmoda)", "kind": "pmod"}
       shares: ["header_j2", "onboard_7seg", "onboard_buttons"]   # the board multiplexes these pins
       pins: ["C11", "A12", "D13", "A14", "C12", "A13", "D14", "B14"]
     db_pmod_j11:   # Daughterboard Pmod J11 (pmodb)
+      source: {doc: litex_db, where: 'connectors ("pmodb"), line 145; keyed by Pmod pin (LiteX order = pins 1-4, 7-10, inference from the LiteX pmod convention)'}
       device: {"name": "Daughterboard Pmod J11 (pmodb)", "kind": "pmod"}
       shares: ["header_j2", "onboard_7seg", "onboard_leds"]   # the board multiplexes these pins
       pins: ["A8", "B9", "A10", "D10", "A9", "C9", "B10", "E10"]
     db_header_j1:   # Daughterboard header J1 (16 IO, JP1 HDR_9X2 on the schematic?)
+      source: {doc: litex_db, where: 'connectors ("J1"), line 146'}
       device: {"name": "Daughterboard header J1 (16 IO, JP1 HDR_9X2 on the schematic?)", "kind": "header"}
       shares: ["header_j2"]   # the board multiplexes these pins
       pins: ["D26", "C26", "B25", "B26", "F25", "E26", "E25", "D25", "D23", "D24", "E21", "E22", "A23", "A24", "D19", "D20"]

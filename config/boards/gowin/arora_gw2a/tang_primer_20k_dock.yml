@@ -27,6 +27,175 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  documents:
+  - id: som
+    title: Tang Primer 20K SOM 3961 schematic (KiCad title Tang_primer_20K_3691, Rev 1.2, 2022-09-01, 1 sheet)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/Tang_Primer_20K_SOM-3961_Schematic.pdf
+    sha256: b5110caa0508d1d80513ca28978b0836e9b2aec92fc889f850a5a43ec03e6ce8
+    bytes: 972793
+    retrieved: '2026-09-24'
+  - id: core3690
+    title: Tang Primer 20K core board 3690 schematic (Rev 0.02, 2022-04-28; old)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/old/Tang_Primer_20K_Core_board_3690_Schematic.pdf
+    sha256: 0ee806fc8d21c9a33e25ce2c719fe2a9928122f01526f57453e13508489d1bbd
+    bytes: 471642
+    retrieved: '2026-09-24'
+  - id: dock3714
+    title: Tang Primer 20K Dock 3714 schematics (sheet 1 Rev 1.3 2026-05-20, sheets 2-9 Rev 1.1 3713)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/Tang_Primer_20K_Dock_3714_Schematics.pdf
+    sha256: 284aed9a243dcbe4cf5e6dbb2366faa17936a62c922f378cbda347c285925188
+    bytes: 2480479
+    retrieved: '2026-09-24'
+  - id: dock3713
+    title: Tang Primer 20K Dock 3713 schematics (Rev 1.1, 2023-09-12)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/Tang_Primer_20K_Dock-3713_Schematics.pdf
+    sha256: 17c2d75551e59294937f362d6c7a04a7a752ead754465a4be8ddabbd1f7cf2ae
+    bytes: 2474939
+    retrieved: '2026-09-24'
+  - id: dock3709
+    title: Tang Primer 20K Dock 3709 schematics (old)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/old/Tang_Primer_20K_Dock_3709_Schematics.pdf
+    sha256: 6d8a03770e042288956c3c43c8340f4cf54d1e1a08f93011eb2936279060d18e
+    bytes: 1260142
+    retrieved: '2026-09-24'
+  - id: dock3708
+    title: Tang Primer 20K Dock 3708 schematic (old, first release)
+    kind: schematic
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/02_Schematic/old/Tang_Primer_20K_Dock_3708_Schematic.pdf
+    sha256: dcf14678b39c78a0afc09f6e6512caadf9bbd0a7f0fc78387c2dcf84e7fecfb4
+    bytes: 1144854
+    retrieved: '2026-09-24'
+  - id: wiki
+    title: 'Sipeed wiki: Tang Primer 20K (en)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html
+    sha256: 1606d6d98dea59fe1748412242c666e26a2ed380f9289f261dc8f04f53fd4ada
+    bytes: 92829
+    retrieved: '2026-09-24'
+  - id: wiki_zh
+    title: 'Sipeed wiki: Tang Primer 20K (zh)'
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/zh/tang/tang-primer-20k/primer-20k.html
+    sha256: 895dc8153de9acc9ae5806d6616f9d590c5dc44e91e9b88f38a1bb8e0ea722df
+    bytes: 94043
+    retrieved: '2026-09-24'
+  - id: photo
+    title: Sipeed wiki photo dock-back.png (Dock silkscreen with Pmod/DIP/LED ball labels)
+    kind: wiki
+    url: https://wiki.sipeed.com/hardware/zh/tang/tang-primer-20k/assets/dock-back.png
+    sha256: b0e74ef055cd4782bee17db31bfe53cf9441f0bdee3d9359d163cdd2dc3e3f81
+    bytes: 180516
+    retrieved: '2026-09-24'
+  - id: gowin
+    title: Gowin UG110-1.5E GW2A-18 Pinout (xlsx, from Sipeed Primer_20K/07_Chip_manual)
+    kind: other
+    url: https://dl.sipeed.com/fileList/TANG/Primer_20K/07_Chip_manual/EN/UG110-1.5E_GW2A-18%20Pinout.xlsx
+    sha256: 77a890773c40960cdc9982b6ffe9986b19e22a35906f5a6850cad80439244683
+    bytes: 266233
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards sipeed_tang_primer_20k.py
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/sipeed_tang_primer_20k.py
+    sha256: 656c7d8ed147a457f6217491d710db30a93f4980a293e7a3fb053b06f032465e
+    bytes: 11762
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth boards tang_primer_20k.py
+    kind: platform
+    url: https://github.com/amaranth-lang/amaranth-boards/blob/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/tang_primer_20k.py
+    sha256: 4b5c8eb41fb17ec871b588bb3ad0ab231bb960e98ef3e28c99dac6be817ab661
+    bytes: 12591
+    retrieved: '2026-09-24'
+  - id: cst_litex
+    title: TangPrimer-20K-example Litex/sipeed_tang_primer_20k/src/sipeed_tang_primer_20k.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/Litex/sipeed_tang_primer_20k/src/sipeed_tang_primer_20k.cst
+    sha256: e4faf2f54a23b0dde919445306936f9111a35cf6bdfb6e8877f27618ba7a7d93
+    bytes: 3832
+    retrieved: '2026-09-24'
+  - id: cst_uart
+    title: TangPrimer-20K-example UART/UART_HELLO/src/uart_Hello.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/UART/UART_HELLO/src/uart_Hello.cst
+    sha256: 56011947d003e2a78efc3a61958b07326bbf19cdaa64a6bd181ee23cd743a190
+    bytes: 613
+    retrieved: '2026-09-24'
+  - id: cst_hdmi
+    title: TangPrimer-20K-example HDMI/src/dk_video.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/HDMI/src/dk_video.cst
+    sha256: 259749d37561f8c350e392eeaf05e48e90791d2ba61b011c4e4fcd12ec9f078e
+    bytes: 1049
+    retrieved: '2026-09-24'
+  - id: cst_pt8211
+    title: TangPrimer-20K-example PT8211/src/pinmap.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/PT8211/src/pinmap.cst
+    sha256: 5005b2d71d32092cbb08f464db516b1051c272ec903d9fe2620f0cc411db7e3e
+    bytes: 380
+    retrieved: '2026-09-24'
+  - id: cst_usb
+    title: TangPrimer-20K-example USB/usb_serial/src/usb_example.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/USB/usb_serial/src/usb_example.cst
+    sha256: c1cc60ecd315fc1d67e69a6f0657760452beb8c8025952b71c4d269af23a19f7
+    bytes: 1250
+    retrieved: '2026-09-24'
+  - id: cst_cam
+    title: TangPrimer-20K-example Cam2HDMI/OV5640_HDMI720P_DDR3/src/OV5640_HDMI720P.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/Cam2HDMI/OV5640_HDMI720P_DDR3/src/OV5640_HDMI720P.cst
+    sha256: 2981d4b449e03230947278394213445eae35b84cb4e3960e91c4effe4c3350ff
+    bytes: 7663
+    retrieved: '2026-09-24'
+  - id: cst_rgblcd
+    title: TangPrimer-20K-example RGB_lcd/rgb_lcd_5inch_colorbar/src/rgb_lcd.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/RGB_lcd/rgb_lcd_5inch_colorbar/src/rgb_lcd.cst
+    sha256: 1f1af88d4bf7657c86392a003580e1da7e3b41356402e914c83fc099b5b1d4f7
+    bytes: 1620
+    retrieved: '2026-09-24'
+  - id: cst_spilcd
+    title: TangPrimer-20K-example SPI_lcd/spi_lcd/src/lcd114_test.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/SPI_lcd/spi_lcd/src/lcd114_test.cst
+    sha256: 13f709a89b22f66cae35301ba188baafc6c67d81f69de2c0f4cf45d88e95f443
+    bytes: 420
+    retrieved: '2026-09-24'
+  - id: cst_eth
+    title: TangPrimer-20K-example Ethernet/verilog_UDP/udp_18k/src/ddr_18k.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/Ethernet/verilog_UDP/udp_18k/src/ddr_18k.cst
+    sha256: ce90ecbd27755be867495b5d36d7e20d1756aa8c0ae211a2714a3eb32d9a7386
+    bytes: 1714
+    retrieved: '2026-09-24'
+  - id: cst_micled
+    title: TangPrimer-20K-example Micarray/SK9822_RGB_LED/src/top.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/Micarray/SK9822_RGB_LED/src/top.cst
+    sha256: 990a6cca912f4b5fb09ce9634265eaa0cbe51f0f24072742ba8eab1ebcafb941
+    bytes: 173
+    retrieved: '2026-09-24'
+  - id: cst_ws2812
+    title: TangPrimer-20K-example WS2812/src/top.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/WS2812/src/top.cst
+    sha256: f24e8af748b525f4825d1c758900b4dd8f4bb85424fd5c9f0257f648432343bd
+    bytes: 106
+    retrieved: '2026-09-24'
+  - id: cst_ddr
+    title: TangPrimer-20K-example DDR-test/LicheeTang20K_DDR_Test/src/ddr3.cst
+    kind: constraints
+    url: https://github.com/sipeed/TangPrimer-20K-example/blob/e469df4c0c9c41824f405a8515decf24ef1e8e6f/DDR-test/LicheeTang20K_DDR_Test/src/ddr3.cst
+    sha256: 2ee91cb3984fad3b352138ea9c65ce3f9e82a5be69bd7135168f09a617771cd6
+    bytes: 5050
+    retrieved: '2026-09-24'
   toolchain_options:
     yosys:
       synth_options: []
@@ -43,41 +212,52 @@ Board:
     apicula:
       rpll_device: GW2A-18
   banks:
-    clk: { pins: H11, frequency_mhz: 27 }
+    clk: { pins: H11, frequency_mhz: 27, source: {doc: som, where: U10 27MHz Oscillator OUT -> R20 22R -> H11_IOT27A_OSC_CK (IOT27A/GCLKT_0)} }
     onboard_leds:
+      source: {doc: dock3714, where: 'sheet 1 P007_Things: Orange_LED0 C13 (DONE), LED1 A13 (READY), LED2 N16, LED3 N14, LED4 L14, LED5 L16; sheet 9 "LED x 6": +3V3 -> LED -> 510R -> Orange_LEDx'}
       active: low
       pins: [C13, A13, N16, N14, L14, L16]
     onboard_uart:
+      source: {doc: dock3714, where: 'sheet 1 P001_Bl702: BL702_UART1_RX <- M11_IOR27B_FPGA_TXO, BL702_UART1_TX -> T13_IOR8B_FPGA_RXO; sheet 2 RN1 0R'}
       pins:
         tx: M11
         rx: T13
     onboard_switches:
+      source: {doc: dock3714, where: 'sheet 1 P007_Things: SW0 C7_1V5, SW1 E9_1V5, SW2 E8_1V5, SW3 T4_1V5, SW4 T5_1V5; sheet 9: switch to +1V5 via 1.5K, 13K to GND'}
       active: high    # ON pulls the pin to +1V5 (schematic 3713); BGM's ~SW inverted them
       pins: [E9, E8, T4, T5]
     onboard_buttons:
+      source: {doc: dock3714, where: 'sheet 1 P007_Things: Key_0 T10_FPGA_~RST, Key_1 T3_1V5, Key_2 T2_1V5, Key_3 D7_1V5, Key_4 B10_~RECFG; sheet 9: 10K pull-ups (+3V3 on Key_0/Key_4, +1V5 on Key_1..3), key to GND'}
       active: low
       pins: [T10, T3, T2, D7, C7]
     gpio_3:
+      source: {doc: dock3714, where: 'sheet 4 J5 Conn_02x06: 5 RGB_LCD_R0, 6 R1, 7 R2, 8 R3, 9 R4, 10 G0, 11 G1, 12 G2'}
       pins: [A11, N6, N9, L9, B11, D11, N7, N8]
     gpio_2:
+      source: {doc: dock3714, where: 'sheet 4 J6 Conn_02x06: 5 RGB_LCD_B0, 6 B1, 7 B2, 8 B3, 9 B4, 10 HSYNC, 11 VSYNC, 12 DE'}
       pins: [D14, B14, B13, B12, E15, A15, A14, C12]
     gpio_1:
+      source: {doc: dock3714, where: 'sheet 8 J12 Conn_02x06: 5 DVP_D7, 6 D6, 7 D5, 8 D4, 9 D0, 10 D3, 11 D1, 12 D2'}
       pins: [P11, R11, M15, J16, T11, T12, M14, J14]
     gpio_0:
+      source: {doc: dock3714, where: 'sheet 9 J14 Conn_02x06: 1/2 +3V3, 3/4 GND, 5 MIC_LED_CLK, 6 MIC_LED_DAT, 7 MIC_DAT1, 8 MIC_DAT0, 9 MIC_DAT2, 10 MIC_DAT3, 11 MIC_BCK, 12 MIC_WS'}
       pins: [P6, T7, P8, T9, T6, R8, T8, P9]
-    onboard_pa_enable: { pins: R16 }
+    onboard_pa_enable: { pins: R16, source: {doc: dock3714, where: sheet 1 003_Audio PA_EN R16; sheet 7 U13 EN} }
     onboard_headphone:
+      source: {doc: dock3714, where: 'sheet 1 003_Audio: HP_BCK N15, HP_DIN P15, HP_WS P16; sheet 7 U10 PT8211-S, LMV321 filters'}
       pins:
         din: P15
         ws: P16
         bck: N15
     onboard_hdmi:
+      source: {doc: dock3714, where: 'sheet 1 P004_HDMI: TX0 H14/H16, TX1 J15/K16, TX2 K14/K15, TXC G16/H15, HPD J11, CEC L12, SDA F14, SCL F16; sheet 3 RCLAMP0524P, 100nF series caps, 499R pull-downs, 2N7002 DDC/CEC level shifters'}
       pins:
         clk_p: "G16,H15"
         d_p: ["H14,H16", "J15,K16", "K14,K15"]
         clk_n: H15
         d_n: [H16, K16, K15]
     onboard_lcd:
+      source: {doc: dock3714, where: 'sheet 1 P006_LCD: RGB_LCD_R0..R4, G0..G5, B0..B4, CLK R9, HSYNC A15, VSYNC D14, DE E15, BL E10; sheet 4 J7 FPC 40P'}
       pins:
         bl: E10
         ck: R9
@@ -88,28 +268,34 @@ Board:
         g: [D11, A11, B11, P7, R7, D10]
         b: [B12, C12, B13, A14, B14]
     onboard_ddr3:   # DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)
+      source: {doc: som, where: 'FPGA banks 4/5/6 symbol: DDR3_A0..A13, DDR3_BA0..2, DDR3_~RAS/~CAS/~WE/~CS0, DDR3_LDM/UDM, DDR3_DQ0..15, DDR3_DQSL_P/N, DDR3_DQSU_P/N, DDR3_CK_P/N, DDR3_CKEN, DDR3_ODT0, DDR3_~RST'}
       device: {"name": "DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)", "kind": "ddr3"}
       iostandard: "SSTL15 (SSTL15D for dqs/ck; LiteX)"
       pins: {"a": ["F7", "A4", "D6", "F8", "C4", "E6", "B1", "D8", "A5", "F9", "K3", "B7", "A3", "C8"], "ba": ["H4", "D3", "H5"], "ras_n": "R4", "cas_n": "R6", "we_n": "L2", "cs_n": "P5", "dm": ["G1", "K5"], "dq": ["G5", "F5", "F4", "F3", "E2", "C1", "E1", "B3", "M3", "K4", "N2", "L1", "P4", "H3", "R1", "M2"], "dqs": ["G2,G3", "J5,K6"], "ck": "J1,J3", "cke": "J2", "odt": "R3", "reset_n": "B9"}
     onboard_flash:   # SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)
+      source: {doc: som, where: 'U9 XT25B32: ~CS <- M9_IOR34A_FLASH_SPI_~CS (MCS_N), CLK <- L10_IOR34B (MCLK), IO1/DO -> P10_IOR33A (MI), IO0/DI <- R10_IOR33B (MO); WP/HOLD pulled up 4.7K'}
       device: {"name": "SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)", "kind": "flash"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "M9", "clk": "L10", "miso": "P10", "mosi": "R10"}
     onboard_sdcard:   # microSD card slot J2 (SDIO, push-pull)
+      source: {doc: som, where: 'J2 MOLEX 1040310811: DAT0 M8_IOR36A_SDIO_D0, DAT1 M7_IOR47A_SDIO_D1, DAT2 M10_IOR22A_SDIO_D2, DAT3/CD N11_IOR22B_SDIO_D3, CMD R14_IOR7B_SDIO_CMD, CLK N10_IOR27A_SDIO_CLK, DET_A D15_IOR5B_SDIO_DET (4.7K pull-up)'}
       device: {"name": "microSD card slot J2 (SDIO, push-pull)", "kind": "sdcard"}
       iostandard: "LVCMOS33"
       pins: {"clk": "N10", "cmd": "R14", "d": ["M8", "M7", "M10", "N11"], "cd": "D15"}
     onboard_spi_lcd:   # SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14" ST7789)
+      source: {doc: som, where: 'J3 Conn_FPC_8P: LEDA via Q1 Si2301 gate P12_IOR8A_LCD_~BL, RESET G13_IOT12B_LCD_~RST, RS J13_IOT27B_LCD_RS, SDA L15_IOT2A_LCD_SDA, SCL F12_IOT12A_LCD_SCL (R26 22R), CS C16_IOT5A_LCD_~CS'}
       device: {"name": "SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14\" ST7789)", "kind": "lcd_spi"}
       iostandard: "LVCMOS33"
       pins: {"bl_n": "P12", "rst_n": "G13", "rs": "J13", "sda": "L15", "scl": "F12", "cs_n": "C16"}
     onboard_reset:   # Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST
+      source: {doc: som, where: U4 SGM803 ~RESET -> T10_IOR35B_FPGA_~RST (150K pull-up); T10 also on CARD1 pin 15}
       device: {"name": "Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST", "kind": "reset"}
       active: "low"
       iostandard: "LVCMOS33"
       shares: ["onboard_buttons"]   # the board multiplexes these pins
       pins: {"rst_n": "T10"}
     onboard_jtag:   # JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)
+      source: {doc: som, where: 'J1 JST_SHL_SM08B: 1 +5V, 2 B8_IOR25B_JTAG_TMS, 3 C6_IOR25A_JTAG_TDO, 4 A7_IOR26A_JTAG_TCK, 5 A6_IOR26B_JTAG_TDI, 6 T13_IOR8B_FPGA_RXO (FPGA RX), 7 M11_IOR27B_FPGA_TXO (FPGA TX), 8 GND'}
       device: {"name": "JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)", "kind": "header"}
       shares: ["onboard_other_2", "onboard_uart"]   # the board multiplexes these pins
       pins: ["B8", "C6", "A7", "A6", "T13", "M11"]
@@ -125,26 +311,31 @@ Board:
       shares: ["onboard_jtag"]   # the board multiplexes these pins
       pins: {"tck": "A7", "tms": "B8", "tdi": "A6", "tdo": "C6"}
     onboard_ws2812:   # WS2812B RGB LED U17
+      source: {doc: dock3714, where: sheet 1 P007_Things WS2812-DAT <- T9 (DFP_IOR38_P); sheet 9 U17 DIN via R91 100R}
       device: {"name": "WS2812B RGB LED U17", "kind": "ws2812"}
       iostandard: "LVCMOS33"
       shares: ["gpio_0"]   # the board multiplexes these pins
       pins: {"din": "T9"}
     onboard_touch:   # Capacitive touch panel FPC J4 (6P)
+      source: {doc: dock3714, where: 'sheet 1 P006_LCD: TP_SDA F14, TP_SCK F16, TP_INT C11, TP_RST A12; sheet 4 J4'}
       device: {"name": "Capacitive touch panel FPC J4 (6P)", "kind": "other"}
       iostandard: "LVCMOS33"
       shares: ["onboard_camera", "onboard_ethernet"]   # the board multiplexes these pins
       pins: {"sda": "F14", "scl": "F16", "int": "C11", "rst": "A12"}
     onboard_camera:   # DVP camera FPC J11 (24P, e.g. OV5640/OV2640)
+      source: {doc: dock3714, where: 'sheet 1 P008_Carmera: DVP_D0..D7, SCL F14, SDA F16, PCLK F13, XCLK G12, RST L13, VSYNC G15, PWDN C10, HSYNC G14; sheet 8 J11, Q4 2N7002KD SCCB level converter, U20 74LVC1T45 XCLK buffer'}
       device: {"name": "DVP camera FPC J11 (24P, e.g. OV5640/OV2640)", "kind": "camera_dvp"}
       iostandard: "LVCMOS33"
       shares: ["gpio_1", "onboard_ethernet", "onboard_touch"]   # the board multiplexes these pins
       pins: {"d": ["T12", "T11", "P11", "R11", "M15", "M14", "J16", "J14"], "pclk": "F13", "xclk": "G12", "vsync": "G15", "hsync": "G14", "rst_n": "L13", "pwdn": "C10", "scl": "F14", "sda": "F16"}
     onboard_ethernet:   # Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)
+      source: {doc: dock3714, where: 'sheet 1 P005 Ethernet: RTL_PHY_TXD0 D16, TXD1 E14, TXEN E16, ~RST F10, MDC F14, MDIO F16, RXD0 F15, RXD1 C9, CRS M6, RXER L8, TXCLK A9; sheet 6 RTL8201F'}
       device: {"name": "Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)", "kind": "ethernet"}
       iostandard: "LVCMOS33"
       shares: ["onboard_camera", "onboard_touch", "onboard_usb_ulpi"]   # the board multiplexes these pins
       pins: {"ref_clk": "A9", "tx_en": "E16", "txd": ["D16", "E14"], "rxd": ["F15", "C9"], "crs_dv": "M6", "rx_er": "L8", "mdc": "F14", "mdio": "F16", "rst_n": "F10"}
     onboard_usb_ulpi:   # USB 2.0 ULPI PHY U6 USB3317 (USB-C "OTG" J8, SW2 selects device/host)
+      source: {doc: dock3714, where: 'sheet 1 P002_USB PHY: USB_DATA0..7, USB_RESET F10, USB_NXT K13, USB_DIR K12, USB_STP K11, USB_CLKOUT T15; sheet 5 U6 USB3317 (RN3..RN5 22R), 26 MHz U7'}
       device: {"name": "USB 2.0 ULPI PHY U6 USB3317 (USB-C \"OTG\" J8, SW2 selects device/host)", "kind": "usb"}
       iostandard: "LVCMOS33"
       shares: ["onboard_ethernet"]   # the board multiplexes these pins

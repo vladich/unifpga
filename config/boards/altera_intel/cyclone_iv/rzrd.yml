@@ -21,6 +21,49 @@ Board:
   - temperature_sensor_external
   - sdr_sdram
   - spi_flash
+  documents:
+  - id: sch_v21
+    title: Development board schematic diagram V2.1 (OurFPGA.com 助学FPGA开发板, dated 2014/12/9)
+    kind: schematic
+    url: https://raw.githubusercontent.com/microCore-VHDL/uCore-for-Cyclone-IV/3c407bbdcbaa8cb3e8a038d512943dfa7d86b1d3/documents/board/Development%20board%20schematic%20diagram%20V2.1.pdf
+    sha256: 2c922a654eee2fc98327e82aaf2ea5fab46c42412edacbca6f288e19b54e2c3e
+    bytes: 1168493
+    retrieved: '2026-09-24'
+  - id: pininfo
+    title: Development board pin information (vendor pin allocation table)
+    kind: manual
+    url: https://raw.githubusercontent.com/microCore-VHDL/uCore-for-Cyclone-IV/3c407bbdcbaa8cb3e8a038d512943dfa7d86b1d3/documents/board/Development%20board%20pin%20information.pdf
+    sha256: 065733ba6093c2a15d8befcac728e28919f77e848c418ada21c475c247e239f1
+    bytes: 359963
+    retrieved: '2026-09-24'
+  - id: manual
+    title: Dev Board Manual (power, AS/JTAG, unused-pin setting)
+    kind: manual
+    url: https://raw.githubusercontent.com/microCore-VHDL/uCore-for-Cyclone-IV/3c407bbdcbaa8cb3e8a038d512943dfa7d86b1d3/documents/board/Dev%20Board%20Manual.pdf
+    sha256: ebe54a53c9562d880334eab8bf55f7be0f2c63b9c9f29f7bd59f5c8a525e5696
+    bytes: 174173
+    retrieved: '2026-09-24'
+  - id: sch_rz
+    title: Diagrama Esquematico RZ-EasyFPGA (Portuguese-relabelled copy of the OurFPGA V2.1 schematic)
+    kind: schematic
+    url: https://raw.githubusercontent.com/dualvim/KitEasyFPGA_EP4CE6/23e46f7f41e168f1a87a4be76c719252fa901c45/Docs_Kit/EsquemaEletrico_e_Pinagem/Diagrama_Esquematico_RZ-EasyFPGA.pdf
+    sha256: 9d089b23a5b56850ad74a8ffe969aba67a66473dc13d7c53100ceeca2906f44c
+    bytes: 2163420
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards platform rz_easyfpga.py (commit a05e31e6)
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/rz_easyfpga.py
+    sha256: 06565b02bfe73ac9a9e90d5de9295a33f88d22eb32712fd734cacea1217caf02
+    bytes: 4304
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: amaranth-boards rz_easyfpga_a2_2.py (commit f270d210)
+    kind: platform
+    url: https://github.com/amaranth-lang/amaranth-boards/blob/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/rz_easyfpga_a2_2.py
+    sha256: 9891d3476c359d0932509e2b68e6ae2368bd0a342f27c5e25620f2e6bb3cef6a
+    bytes: 4411
+    retrieved: '2026-09-24'
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -32,19 +75,23 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk: { pins: "23", frequency_mhz: 50 }
-    cpu_reset: { pins: "25", active: low }
+    clk: { pins: "23", frequency_mhz: 50, source: {doc: sch_v21, where: crystal/reset block; FPGA CLK1 pin 23 net FPGA_CLK} }
+    cpu_reset: { pins: "25", active: low, source: {doc: sch_v21, where: 'reset block, net RESET on CLK3/pin 25; pininfo p.1 "RESET button 25"'} }
     onboard_buttons:
+      source: {doc: sch_v21, where: button/LED block; FPGA CLK7..CLK4 pins 88..91; pininfo p.1 KEY1..KEY4=88..91}
       active: low
       pins: ["91", "90", "89", "88"]
     onboard_leds:
+      source: {doc: sch_v21, where: 'FPGA symbol / P3 header: LED1=84, LED2=85, LED3=86, LED4=87'}
       active: low
       pins: ["84", "85", "86", "87"]
     onboard_7seg:
+      source: {doc: sch_v21, where: 'digital tube block: SEG0..SEG7 -> display pins a,b,c,d,e,f,g,dp; pininfo p.2 SEG0..7 and DIG1..4'}
       pins:
         segments: ["127", "124", "126", "132", "129", "125", "121", "128"]
         anodes: ["133", "135", "136", "137"]
     onboard_vga:
+      source: {doc: sch_v21, where: 'VGA block; pininfo p.2 VGA_HSYNC 101, VGA_VSYNC 103, VGA_B 104, VGA_G 105, VGA_R 106'}
       pins:
         hs: "101"
         vs: "103"
@@ -52,54 +99,66 @@ Board:
         g: "105"
         b: "104"
     onboard_uart:
+      source: {doc: sch_v21, where: 'RS232 block: UART_TXD -> T1IN, R1OUT -> UART_RXD; pininfo p.1 UART_TXD 114, UART_RXD 115'}
       pins:
         rx: "115"
     gpio_pseudo_sdram:
       pins: ["64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77"]
     onboard_char_lcd:
+      source: {doc: sch_v21, where: 'LCD block: LCD1..LCD11 -> connector pins 4..14; pininfo p.2 LCD1 RS 141 ... LCD11 D7 11'}
       pins:
         rs: "141"
         rw: "138"
         e: "143"
         d: ["142", "1", "144", "3", "2", "10", "7", "11"]
     onboard_buzzer:   # Buzzer (BEEP, PNP driver)
+      source: {doc: sch_v21, where: buzzer block; pininfo p.1 beep 110}
       device: {"name": "Buzzer (BEEP, PNP driver)", "kind": "buzzer"}
       active: "low (PNP transistor, inferred)"
       shares: ["gpio_p1"]   # the board multiplexes these pins
       pins: {"beep": "110"}
     onboard_ps2:   # PS/2 connector
+      source: {doc: sch_v21, where: 'PS2 block; pininfo p.1 PS_CLOCK 119, PS_DATA 120'}
       device: {"name": "PS/2 connector", "kind": "ps2"}
       shares: ["gpio_p1"]   # the board multiplexes these pins
       pins: {"clk": "119", "data": "120"}
     onboard_ir:   # Infrared receiver
+      source: {doc: sch_v21, where: infrared receiver block; pininfo p.2 IR 100}
       device: {"name": "Infrared receiver", "kind": "ir"}
       shares: ["gpio_p3"]   # the board multiplexes these pins
       pins: {"ir": "100"}
     onboard_eeprom:   # AT24C08 I2C EEPROM
+      source: {doc: sch_v21, where: 'AT24C08 block: SCL=I2C_SCL, SDA=I2C_SDA; pininfo p.1 I2C_SCL 99, I2C_SDA 98'}
       device: {"name": "AT24C08 I2C EEPROM", "kind": "eeprom"}
       shares: ["gpio_p3"]   # the board multiplexes these pins
       pins: {"scl": "99", "sda": "98"}
     onboard_temp_sensor:   # LM75(A) I2C temperature sensor
+      source: {doc: sch_v21, where: 'temperature sensor block: SCL/SDA nets; pininfo p.1 IIC SCL 112, SDA 113'}
       device: {"name": "LM75(A) I2C temperature sensor", "kind": "temperature"}
       shares: ["gpio_p1"]   # the board multiplexes these pins
       pins: {"scl": "112", "sda": "113"}
     onboard_sdram:   # HY57V641620 SDRAM (x16)
+      source: {doc: sch_v21, where: 'SDRAM block; pininfo p.3 S DQ0..15, S A0..11, BS0/1, LDQM/UDQM, CKE, CLK, CS, RAS, CAS, WE'}
       device: {"name": "HY57V641620 SDRAM (x16)", "kind": "sdram"}
       shares: ["gpio_p2", "gpio_pseudo_sdram"]   # the board multiplexes these pins
       model_params: {col_bits: 8}
       pins: {"clk": "43", "cke": "58", "cs_n": "72", "ras_n": "71", "cas_n": "70", "we_n": "69", "ba": ["73", "74"], "a": ["76", "77", "80", "83", "68", "67", "66", "65", "64", "60", "75", "59"], "dq": ["28", "30", "31", "32", "33", "34", "38", "39", "54", "53", "52", "51", "50", "49", "46", "44"], "dqm": ["42", "55"]}
     onboard_config_flash:   # EPCS serial configuration flash (AS)
+      source: {doc: sch_v21, where: 'JTAG/AS block and FPGA U1A: DCLK 12, DATA0 13, ASDO 6, nCSO 8'}
       device: {"name": "EPCS serial configuration flash (AS)", "kind": "flash"}
       pins: {"dclk": "12", "data0": "13", "asdo": "6", "ncso": "8"}
     gpio_p1:   # P1 header (2x19)
+      source: {doc: sch_v21, where: 'IO interface block, P1 HEADER_2X19'}
       device: {"name": "P1 header (2x19)", "kind": "header"}
       shares: ["onboard_7seg", "onboard_buzzer", "onboard_char_lcd", "onboard_ps2", "onboard_temp_sensor", "onboard_uart"]   # the board multiplexes these pins
       pins: {"p3": "110", "p4": "111", "p5": "112", "p6": "113", "p7": "114", "p8": "115", "p9": "119", "p10": "120", "p11": "121", "p12": "124", "p13": "125", "p14": "126", "p15": "127", "p16": "128", "p17": "129", "p18": "132", "p19": "133", "p20": "135", "p21": "136", "p22": "137", "p23": "138", "p24": "141", "p25": "142", "p26": "143", "p27": "144", "p28": "1", "p29": "2", "p30": "3", "p31": "7", "p32": "10", "p33": "11", "p34": "24"}
     gpio_p2:   # P2 header (2x22)
+      source: {doc: sch_v21, where: 'IO interface block, P2 HEADER_2X22'}
       device: {"name": "P2 header (2x22)", "kind": "header"}
       shares: ["gpio_pseudo_sdram", "onboard_sdram"]   # the board multiplexes these pins
       pins: {"p7": "83", "p8": "80", "p9": "77", "p10": "76", "p11": "75", "p12": "74", "p13": "73", "p14": "72", "p15": "71", "p16": "70", "p17": "69", "p18": "68", "p19": "67", "p20": "66", "p21": "65", "p22": "64", "p23": "60", "p24": "59", "p25": "58", "p26": "55", "p27": "54", "p28": "53", "p29": "52", "p30": "51", "p31": "50", "p32": "49", "p33": "46", "p34": "44", "p35": "43", "p36": "42", "p37": "39", "p38": "38", "p39": "34", "p40": "33", "p41": "32", "p42": "31", "p43": "30", "p44": "28"}
     gpio_p3:   # P3 header (2x10)
+      source: {doc: sch_v21, where: 'IO interface block, P3 HEADER_2X10'}
       device: {"name": "P3 header (2x10)", "kind": "header"}
       shares: ["onboard_buttons", "onboard_eeprom", "onboard_ir", "onboard_leds", "onboard_vga"]   # the board multiplexes these pins
       pins: {"p3": "84", "p4": "85", "p5": "86", "p6": "87", "p7": "88", "p8": "89", "p9": "90", "p10": "91", "p11": "98", "p12": "99", "p13": "100", "p14": "101", "p15": "103", "p16": "104", "p17": "105", "p18": "106"}

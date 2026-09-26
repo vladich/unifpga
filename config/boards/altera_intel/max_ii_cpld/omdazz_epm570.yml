@@ -17,18 +17,28 @@ Board:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   features:
   - buzzer
+  documents:
+  - id: yanshan
+    title: Yanshan University EDA tigger_game.qsf (EPM570T100C5 teaching board, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/qfpqhyl/Yanshan-University-learning-materials-sharing/8318a6c155b80aa42e684929b68cbafd3a8a0ea7/EDA_tiggerGame/tigger_game/tigger_game.qsf
+    sha256: 8a91117833a0b2fed85a8e6ef254352a4abe373c1678c285865534307c8358dd
+    bytes: 5295
+    retrieved: '2026-09-24'
   toolchain_options:
     quartus:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS \"AS INPUT TRI-STATED\""
   banks:
-    clk: { pins: "12", frequency_mhz: 50 }
+    clk: { pins: "12", frequency_mhz: 50, source: {doc: yanshan, where: CLK_Scan PIN_12} }
     cpu_resetn: { pins: "41", active: low }
     onboard_leds:
+      source: {doc: yanshan, where: 'LED[1..8] = 67,61,57,55,66,58,56,54 (student numbering, not board order)'}
       active: low
       index_origin: 1
       pins: ["67", "66", "61", "58", "57", "56", "55", "54"]
     onboard_buttons:              # KEY[6:1] (key = ~ KEY): KEY[1] first
+      source: {doc: yanshan, where: 'RESET 42, Fake 43, Start 44'}
       active: low
       index_origin: 1
       pins: ["49", "48", "47", "44", "43", "42"]
@@ -37,6 +47,7 @@ Board:
       index_origin: 1
       pins: ["53", "52", "51", "50"]
     onboard_7seg:
+      source: {doc: yanshan, where: 'SEG[0..6] = 76,83,81,75,74,78,82; DP 77; DIG[0..7] = 87,86,85,84,95,92,91,89'}
       pins:
         anodes: ["87", "86", "85", "84", "95", "92", "91", "89"]
         segments: ["76", "83", "81", "75", "74", "78", "82", "77"]
@@ -56,6 +67,7 @@ Board:
         r: "17"
         g: "16"
     onboard_buzzer:   # Buzzer
+      source: {doc: yanshan, where: BEEP PIN_73}
       device: {"name": "Buzzer", "kind": "buzzer"}
       pins: {"beep": "73"}
   # ---- drawn: headers and parts; ./unifpga layout draft omdazz_epm570 regenerates from here on ----

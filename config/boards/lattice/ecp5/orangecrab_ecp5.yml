@@ -21,6 +21,42 @@ Board:
   features:
   - ddr3_memory
   - microsd_socket
+  documents:
+  - id: oc_pcf
+    title: OrangeCrab r0.2 constraints (orangecrab-examples verilog/orangecrab_r0.2.pcf)
+    kind: constraints
+    url: https://raw.githubusercontent.com/orangecrab-fpga/orangecrab-examples/main/verilog/orangecrab_r0.2.pcf
+    sha256: ff60f0c15063b438f7f97f33082289542b258ef8ea5658f90ba8c1025018a8f6
+    bytes: 10160
+    retrieved: '2026-09-24'
+  - id: oc_sch
+    title: OrangeCrab r0.2.1 schematic
+    kind: schematic
+    url: https://raw.githubusercontent.com/orangecrab-fpga/orangecrab-hardware/main/hardware/orangecrab_r0.2.1/Production/OrangeCrab_r0.2.1_sch.pdf
+    sha256: 28c677396f177f975a2d209f26d73fd0d37bda771dabcbb38d28773b6ae321d3
+    bytes: 355753
+    retrieved: '2026-09-24'
+  - id: oc_ds
+    title: OrangeCrab r0.2 datasheet
+    kind: manual
+    url: https://raw.githubusercontent.com/orangecrab-fpga/orangecrab-hardware/main/documentation/datasheet/datasheet-r0.2.pdf
+    sha256: bf0e392a52c3df4a8c77db105aef8a81a376bb766710b9d42cb9fea9e75c9260
+    bytes: 124165
+    retrieved: '2026-09-24'
+  - id: litex_oc
+    title: LiteX-Boards gsd_orangecrab.py (_io_r0_2, _connectors_r0_2)
+    kind: platform
+    url: https://github.com/litex-hub/litex-boards/blob/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/gsd_orangecrab.py
+    sha256: 2f74f11bc1461e54885a90c3432b48c173b64fb9557198857565726c5b752fa6
+    bytes: 9483
+    retrieved: '2026-09-24'
+  - id: ama_oc
+    title: Amaranth-boards orangecrab_r0_2.py
+    kind: platform
+    url: https://github.com/amaranth-lang/amaranth-boards/blob/main/amaranth_boards/orangecrab_r0_2.py
+    sha256: 0680e06ba394c61a2ccdba7ad30c893bcc56e1e07d1376b726e36e1a9f6556bd
+    bytes: 5145
+    retrieved: '2026-09-24'
   defaults:
     iostandard: LVCMOS33
 
@@ -33,11 +69,13 @@ Board:
       device_pack: "CSFBGA285"
       speed: "8"
   banks:
-    clk: { pins: A9, frequency_mhz: 48 }
+    clk: { pins: A9, frequency_mhz: 48, source: {doc: oc_pcf, where: 'clk48 A9, FREQUENCY 48 MHz'} }
     onboard_leds:
+      source: {doc: oc_pcf, where: 'rgb_led0_r K4, _g M3, _b J3; active low per Amaranth RGBLEDResource invert=True'}
       active: low
       pins: [K4, M3, J3]
     onboard_buttons:  # the one user button SW0; V17 is FPGA_RESET (drives PROGRAMN), not a button (r0.2 schematic)
+      source: {doc: oc_pcf, where: 'usr_btn J17, IO_TYPE=SSTL135_I (J17 sits in the 1.35 V DDR bank); active low per Amaranth ButtonResources invert=True'}
       active: low
       pins: [J17]
       overrides:
@@ -58,28 +96,34 @@ Board:
         rx: J1
         tx: K3
     onboard_program:   # FPGA_RESET (drives PROGRAMN to reboot into the DFU bootloader)
+      source: {doc: oc_pcf, where: 'rst_n V17 LVCMOS33; Amaranth names it "program" (PinsN, output); schematic net FPGA_RESET'}
       device: {"name": "FPGA_RESET (drives PROGRAMN to reboot into the DFU bootloader)", "kind": "reset"}
       iostandard: "LVCMOS33"
       shares: ["onboard_buttons"]   # the board multiplexes these pins
       pins: {"rst_n": "V17"}
     onboard_ddr3:   # DDR3L SDRAM (MT41K64M16TW 128 MiB on -25F / MT41K256M16TW 512 MiB on -85F)
+      source: {doc: oc_pcf, where: ddram_* LOCATE lines (SSTL135_I / SSTL135D_I for dqs/clk); vccio/gnd "virtual" pins are driven high/low to strengthen the bank supply}
       device: {"name": "DDR3L SDRAM (MT41K64M16TW 128 MiB on -25F / MT41K256M16TW 512 MiB on -85F)", "kind": "ddr"}
       iostandard: "SSTL135_I"
       pins: {"a": ["C4", "D2", "D3", "A3", "A4", "D4", "C3", "B2", "B1", "D1", "A7", "C2", "B6", "C1", "A2", "C7"], "ba": ["D6", "B7", "A6"], "ras_n": "C12", "cas_n": "D13", "we_n": "B12", "cs_n": "A12", "dm": ["D16", "G16"], "dq": ["C17", "D15", "B17", "C16", "A15", "B13", "A17", "A13", "F17", "F16", "G15", "F15", "J16", "C18", "H16", "F18"], "dqs_p": ["B15", "G18"], "clk_p": "J18", "cke": "D18", "odt": "C13", "reset_n": "L18", "vccio_virtual": ["K16", "D17", "K15", "K17", "B18", "C6"], "gnd_virtual": ["L15", "L16"]}
     onboard_sdcard:   # MicroSD socket
+      source: {doc: litex_oc, where: _io_r0_2 "sdcard" (schematic nets SD0_CLK/CMD/DAT0..3/CD)}
       device: {"name": "MicroSD socket", "kind": "sdcard"}
       iostandard: "LVCMOS33"
       shares: ["gpio", "onboard_switches", "onboard_uart"]   # the board multiplexes these pins
       pins: {"clk": "K1", "cmd": "K2", "dat": ["J1", "K3", "L3", "M1"], "cd": "L1"}
     onboard_usb:   # USB-C full-speed device (direct FPGA USB)
+      source: {doc: oc_pcf, where: 'usb_d_p N1, usb_d_n M2, usb_pullup N2'}
       device: {"name": "USB-C full-speed device (direct FPGA USB)", "kind": "usb"}
       iostandard: "LVCMOS33"
       pins: {"d_p": "N1", "d_n": "M2", "pullup": "N2"}
     onboard_adc:   # Analog front-end (ADC_CTRL, analog mux, sense comparator)
+      source: {doc: litex_oc, where: _io_r0_2 "adc" (sense pair LVCMOS33D); Amaranth identical}
       device: {"name": "Analog front-end (ADC_CTRL, analog mux, sense comparator)", "kind": "other"}
       iostandard: "LVCMOS33"
       pins: {"ctrl": ["G1", "F1"], "mux": ["F4", "F3", "F2", "H1"], "sense_p": "H3", "sense_n": "G3"}
     feather:   # Feather header I/O (20 user pins incl. 6 analog-capable A0..A5)
+      source: {doc: litex_oc, where: _connectors_r0_2 GPIO index order N17 M18 C10 C9 - B10 B9 - - C8 B8 A8 H2 J2 N15 R17 N16 - L4 N3 N4 H4 G4 T17; labels from Amaranth connector "io" + schematic IO_A5}
       device: {"name": "Feather header I/O (20 user pins incl. 6 analog-capable A0..A5)", "kind": "header"}
       iostandard: "LVCMOS33"
       shares: ["gpio", "onboard_feather_i2c", "onboard_feather_serial", "onboard_vga"]   # the board multiplexes these pins

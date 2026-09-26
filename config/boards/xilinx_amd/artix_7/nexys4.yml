@@ -48,44 +48,80 @@ Board:
   - adi_adxl362
   - adi_admp421
   - adi_adt7420
+  documents:
+  - id: xdc
+    title: Nexys-4-Master.xdc (Digilent master XDC, Nexys4 rev B)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Nexys-4-Master.xdc
+    sha256: b587f232b2187d5068611a5599964ff31ee3bb5a6652219c645b65586970b8db
+    bytes: 38038
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/nexys4/xdc.xdc
+  - id: board_pins
+    title: Digilent Vivado board files nexys4 B.1 part0_pins.xml
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/vivado-boards/36f34ab687b7fa9c778b779d027f3bce63b3ace9/new/board_files/nexys4/B.1/part0_pins.xml
+    sha256: 98f518d80d06d2bc1722f6ea2a912f9883b6482c7f0d4f7546e10d46e920c3a7
+    bytes: 14837
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/nexys4/part0_pins.xml
+  - id: litex
+    title: LiteX-Boards platform digilent_nexys4.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/digilent_nexys4.py
+    sha256: 88cbdc8e11438f476bf286510d9ea17760b805d2c264f77b3badc8f4bc8c5225
+    bytes: 10554
+    retrieved: '2026-09-24'
+    cache: ~/.cache/unifpga/board_sources/nexys4/litex.py
   defaults:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: E3, frequency_mhz: 100 }
+    clk: { pins: E3, frequency_mhz: 100, source: {doc: xdc, where: '"Clock signal", line 8'} }
     onboard_switches:
+      source: {doc: xdc, where: '"Switches", lines 14-59'}
       pins: [U9, U8, R7, R6, R5, V7, V6, V5, U4, V2, U2, T3, T1, R3, P3, P4]
     onboard_leds:
+      source: {doc: xdc, where: '"LEDs", lines 66-111'}
       pins: [T8, V9, R8, T6, T5, T4, U7, U6, V4, U3, V1, R1, P5, U1, R2, P2]
     onboard_rgb_led_1:
+      source: {doc: xdc, where: '"LEDs", lines 115-121; ports RGB1_Red/Green/Blue, Sch names LED16_R/G/B'}
       pins:
         r: K5
         g: F13
         b: F6
     onboard_rgb_led_2:
+      source: {doc: xdc, where: '"LEDs", lines 124-130; ports RGB2_Red/Green/Blue, Sch names LED17_R/G/B'}
       pins:
         r: K6
         g: H6
         b: L16
     onboard_7seg:
+      source: {doc: xdc, where: '"7 segment display", lines 137-184; segments/dp/anodes all active-low per Digilent convention (inference, not in the XDC)'}
       pins:
         segments: [L3, N1, L5, L4, K3, M2, L6]
         dp: M4
         anodes: [N6, M6, M3, N5, N2, N4, L1, M1]
-    cpu_resetn: { pins: C12, active: low }
+    cpu_resetn: { pins: C12, active: low, source: {doc: xdc, where: '"Buttons", line 191'} }
     onboard_buttons:
+      source: {doc: xdc, where: '"Buttons", lines 194-206'}
       pins: [E16, F15, T16, R10, V10]
     # Pmod banks re-derived from the board's XDC (JA[0..7]);
     # the earlier curation had lost JA[0] and shifted the rest.
     pmod_ja:
+      source: {doc: xdc, where: '"Pmod Header JA", lines 213-234; pins keyed by Pmod pin number (ports JA[0..7] = JA1-4, JA7-10)'}
       pins: [B13, F14, D17, E17, G13, C17, D18, E18]
     pmod_jb:
+      source: {doc: xdc, where: '"Pmod Header JB", lines 241-262; pins keyed by Pmod pin number (ports JB[0..7] = JB1-4, JB7-10)'}
       pins: [G14, P15, V11, V15, K16, R16, T9, U11]
     pmod_jc:
+      source: {doc: xdc, where: '"Pmod Header JC", lines 269-290; pins keyed by Pmod pin number (ports JC[0..7] = JC1-4, JC7-10)'}
       pins: [K2, E7, J3, J4, K1, E6, J2, G6]
     pmod_jd:
+      source: {doc: xdc, where: '"Pmod Header JD", lines 297-318; pins keyed by Pmod pin number (ports JD[0..7] = JD1-4, JD7-10)'}
       pins: [H4, H1, G1, G3, H2, G4, G2, F3]
     onboard_vga:
+      source: {doc: xdc, where: '"VGA Connector", lines 353-392'}
       pins:
         r: [A3, B4, C5, A4]
         b: [B7, C7, D7, D8]
@@ -93,15 +129,18 @@ Board:
         hs: B11
         vs: B12
     onboard_mic:
+      source: {doc: xdc, where: '"Omnidirectional Microphone", lines 465-471'}
       pins:
         clk: J5
         data: H5
         lrsel: F5
     onboard_pwm_amp:
+      source: {doc: xdc, where: '"PWM Audio Amplifier", lines 478-481'}
       pins:
         pwm: A11
         sd: D12
     onboard_uart:
+      source: {doc: xdc, where: '"USB-RS232 Interface", lines 487-496; rx = UART_TXD_IN (FPGA input), tx = UART_RXD_OUT (FPGA output); cts/rts as the XDC names them'}
       pins:
         rx: C4
     onboard_pmod_jxadc:   # Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 3, 10, 2, 11; usable as digital IO)
@@ -110,32 +149,39 @@ Board:
       model_params: {channels: [3, 10, 2, 11]}
       pins: {"xa_p": ["A13", "A15", "B16", "B18"], "xa_n": ["A14", "A16", "B17", "A18"]}
     onboard_sdcard:   # microSD card slot
+      source: {doc: xdc, where: '"Micro SD Connector", lines 399-420'}
       device: {"name": "microSD card slot", "kind": "sdcard"}
       iostandard: "LVCMOS33"
       pins: {"reset": "E2", "cd": "A1", "sck": "B1", "cmd": "C1", "dat": ["C2", "E1", "F1", "D2"]}
     onboard_accelerometer:   # 3-axis accelerometer (SPI)
+      source: {doc: xdc, where: '"Accelerometer", lines 427-442'}
       device: {"name": "3-axis accelerometer (SPI)", "kind": "accelerometer"}
       iostandard: "LVCMOS33"
       pins: {"miso": "D13", "mosi": "B14", "sclk": "D15", "csn": "C15", "int1": "C16", "int2": "E15"}
     onboard_temp_sensor:   # Temperature sensor (I2C)
+      source: {doc: xdc, where: '"Temperature Sensor", lines 449-458'}
       device: {"name": "Temperature sensor (I2C)", "kind": "temperature"}
       iostandard: "LVCMOS33"
       model_params: {shift: 3}   # an ADT7420 (Digilent reference manual): 13-bit reading, 1/16 C at bit 3
       pins: {"scl": "F16", "sda": "G16", "int": "D14", "ct": "C14"}
     onboard_usb_hid:   # USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
+      source: {doc: xdc, where: '"USB HID (PS/2)", lines 503-507'}
       device: {"name": "USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)", "kind": "usb_hid"}
       iostandard: "LVCMOS33"
       pull: "up"   # the PIC24 bridge leaves the pair to the FPGA's pull-ups (Digilent master XDC: PULLUP true)
       pins: {"clk": "F4", "data": "B2"}
     onboard_ethernet:   # 10/100 Ethernet PHY (SMSC, RMII)
+      source: {doc: xdc, where: '"SMSC Ethernet PHY", lines 515-548; the XDC section is titled "SMSC Ethernet PHY"; exact part number not in the sources read; RMII inferred from the signal set (crsdv, rxd[1:0], txd[1:0], refclk)'}
       device: {"name": "10/100 Ethernet PHY (SMSC, RMII)", "kind": "ethernet"}
       iostandard: "LVCMOS33"
       pins: {"mdc": "C9", "mdio": "A9", "rstn": "B3", "crsdv": "D9", "rxerr": "C10", "rxd": ["D10", "C11"], "txen": "B9", "txd": ["A10", "A8"], "refclk": "D5", "intn": "B8"}
     onboard_qspi_flash:   # Quad-SPI flash
+      source: {doc: xdc, where: '"Quad SPI Flash", lines 555-570'}
       device: {"name": "Quad-SPI flash", "kind": "flash"}
       iostandard: "LVCMOS33"
       pins: {"sck": "E9", "dq": ["K17", "K18", "L14", "M14"], "csn": "L13"}
     onboard_cellular_ram:   # Cellular RAM (PSRAM, 16-bit data, 23-bit address)
+      source: {doc: xdc, where: '"Cellular RAM", lines 577-720'}
       device: {"name": "Cellular RAM (PSRAM, 16-bit data, 23-bit address)", "kind": "sram"}
       iostandard: "LVCMOS33"
       model_params: {access_ns: 70}
