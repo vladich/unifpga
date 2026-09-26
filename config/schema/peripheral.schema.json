@@ -48,7 +48,8 @@
         "required": { "type": "boolean" },
         "values": { "description": "The values of an enum", "type": "array", "minItems": 1 },
         "description": { "type": "string" },
-        "from_width": { "description": "Its value is the width of this bus signal as wired", "$ref": "#/$defs/name" }
+        "from_width": { "description": "Its value is the width of this bus signal as wired", "$ref": "#/$defs/name" },
+        "rig": { "description": "A rig's choice about how the design sees the part (keys read as switches, a mirrored screen), not a fact of the hardware: the drafter leaves it to the rig", "type": "boolean" }
       }
     },
     "provides": {

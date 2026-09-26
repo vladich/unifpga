@@ -2226,7 +2226,7 @@ def _emit_driver_instance(resolved, idx, attach, plans, emit):
     out_sigs = {s["name"] for s in perif.get("signals", []) if s.get("direction") == "output"}
     # The Tang Mega 138K / orangepi boards hand the design `screen_width - 1 - x`
     # and `screen_height - 1 - y` (`mirrored_x`): the panel is mounted rotated
-    mirror_screen = bool((attach.get("params") or {}).get("mirror_screen"))
+    mirror_screen = bool((attach.get("params") or {}).get("mirror_screen"))     # RIG_PARAMS
 
     # Driver parameters
     param_decls = []
@@ -2478,6 +2478,11 @@ def _resolve_ref(ref, attach, plans, bind, emit, lhs_context=False, slice_for_id
 
 
 _REF_PREFIXES = ("pin.", "capability.", "context.", "clock.", "const.")
+
+# attach parameters codegen reads that no peripheral declares: a rig's choice
+# about how the design sees a part, never a fact of the hardware (the drafter
+# leaves them to the rig, as it does a peripheral parameter marked `rig: true`)
+RIG_PARAMS = ("mirror_screen",)
 
 
 def _looks_like_ref(v):

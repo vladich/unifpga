@@ -83,9 +83,14 @@ def draft(board_id):
     facts_h = {h["bank"]: h for h in board.get("headers") or [] if h.get("source") and h.get("bank")}
     facts_o = {board_sources.part_bank(o): o for o in board.get("parts") or [] if o.get("source")}
 
-    builds = [config_init.for_target(cfg, toolchain)        # every toolchain's build of each rig
-              for _cid, cfg in sorted(config_init.read_configurations().items()) if cfg["board"] == board_id
+    # every toolchain's build of each rig, as the hardware alone has it: without
+    # the rig's conventions (design_bits, bind overrides, the design section)
+    builds = [config_init.for_target(cfg, toolchain)
+              for _cid, cfg in sorted(config_init.read_configurations(conventions=False).items()) if cfg["board"] == board_id
               for toolchain in config_init.rig_toolchains(cfg)]
+    peripherals = config_init.read_peripherals()
+    rig_params = {pid: {n for n, spec in (p.get("parameters") or {}).items() if isinstance(spec, dict) and spec.get("rig")}
+                  for pid, p in peripherals.items()}
     # the name configurations give each single FPGA pin (a header pin the board also
     # routes to the microSD slot is `onboard_microsd.dat[1]` where a rig uses it so)
     named = {}
@@ -148,16 +153,19 @@ def draft(board_id):
         shared = {b for b, n in bound_by.items() if n > 1}
         for a in cfg.get("attach") or []:
             # (a gpio passthrough on an on-board device's pins is that device handed
-            # to the design's gpio: one of its variants, like any other attach)
-            if set(a) - {"peripheral", "params", "bind"}:
+            # to the design's gpio: one of its variants, like any other attach;
+            # design_bits is the rig's convention, not the part's wiring)
+            if set(a) - {"peripheral", "params", "bind", "design_bits"}:
                 continue
             banks = _banks_of(list((a.get("bind") or {}).values()))
             if not banks or banks & set(headers):
                 continue                              # a part on a header: a module or a raw use
             main = sorted(banks)[0]
             attach = {"peripheral": a["peripheral"]}
-            if a.get("params") is not None:
-                attach["params"] = a["params"]
+            params = {k: v for k, v in (a.get("params") or {}).items()
+                      if k not in rig_params.get(a["peripheral"], ()) and k not in codegen.RIG_PARAMS}
+            if a.get("params") is not None and params:
+                attach["params"] = params
             attach["bind"] = _whole_bank(a.get("bind") or {}, attach.get("params"), pinmap, shared)
             if main not in parts:
                 parts[main] = []
