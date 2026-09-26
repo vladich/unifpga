@@ -276,3 +276,24 @@ def test_a_missing_library_is_one_clear_error(monkeypatch):
     monkeypatch.setattr(builtins, "__import__", no_jsonschema)
     with pytest.raises(check.CheckError, match="jsonschema is not installed"):
         check.check()
+
+
+def test_a_model_names_the_peripherals_own_signals():
+    """A peripheral's models table (how the drafter attaches it to a bank of a
+    device kind) binds the peripheral's own signals, and is one shape: `signal`
+    or `pins`, not both."""
+    documents = _catalogue()
+    led = documents["peripherals/led.yml"]["Peripheral"]
+    led["models"] = {"kind": "leds", "signal": "lamp"}
+    found = _details(_run(documents), "peripheral_refs")
+    assert len(found) == 1 and "models: signal 'lamp' is not one of its signals" in found[0], found
+    led["models"] = {"kind": "leds", "pins": {"glow": ["LED", "led[0:2]", ["l0", "l1"]]}}
+    found = _details(_run(documents), "peripheral_refs")
+    assert len(found) == 1 and "models: pins.glow is not one of its signals" in found[0], found
+    led["models"] = {"kind": "leds", "pins": {"led": ["LED", ["l0", "l1"]]}}
+    assert _codes(_run(documents)) == set()
+    led["models"] = {"kind": "leds", "signal": "led", "pins": {"led": ["led"]}}
+    assert _codes(_run(documents)) == {"schema"}
+    led["models"] = {"kind": "mystery", "signal": "led"}
+    assert "kind 'mystery'" in _details(_run(documents), "peripheral_refs")[0]
+

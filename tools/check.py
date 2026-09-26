@@ -480,6 +480,12 @@ def _peripheral_refs(ctx, entity, rec_id, record, path):
     for kind in (model_kinds if isinstance(model_kinds, list) else [model_kinds] if model_kinds else []):
         if kinds and kind not in kinds:
             bad("models: kind {!r} is not one of config/kinds.yml".format(kind))
+    if isinstance(models, dict):
+        if models.get("signal") and models["signal"] not in names:
+            bad("models: signal {!r} is not one of its signals".format(models["signal"]))
+        for sig in models.get("pins") or {}:
+            if sig not in names:
+                bad("models: pins.{} is not one of its signals".format(sig))
     for clock in record.get("clocks") or []:
         if clock.get("from") and clock["from"] not in clocks:
             bad("clock {}: from {} is not one of its clocks".format(clock.get("name"), clock["from"]))

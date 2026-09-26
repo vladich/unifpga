@@ -50,7 +50,7 @@ Entities:
     schema: peripheral.schema.json
     relations:
       - {from: provides.*.capability, to: capability, why: "the design-facing contract each provider fills"}
-      - {rule: peripheral_refs, why: "port map, pin assigns, provides, signal widths, serves and pin_fit name this peripheral's signals, parameters and clocks and the provided capabilities' signals and parameters; the models' kinds are of config/kinds.yml"}
+      - {rule: peripheral_refs, why: "port map, pin assigns, provides, signal widths, serves, pin_fit and models name this peripheral's signals, parameters and clocks and the provided capabilities' signals and parameters; the models' kinds are of config/kinds.yml"}
       - {rule: peripheral_driver_files, why: "the driver's RTL files exist"}
 
   capability:
