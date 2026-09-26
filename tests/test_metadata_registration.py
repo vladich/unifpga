@@ -61,16 +61,16 @@ def test_missing_setup_directory_still_returns_empty(tmp_path, monkeypatch):
 
 
 def test_single_file_registry_rejects_duplicate_ids(tmp_path, monkeypatch):
-    _write(tmp_path, "features.yml", "Features:\n  - Id: repeated\n  - Id: repeated\n")
+    _write(tmp_path, "features.yml", "Features:\n  - id: repeated\n  - id: repeated\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="duplicate Feature Id 'repeated'"):
+    with pytest.raises(config_init.ConfigError, match="duplicate feature id 'repeated'"):
         config_init.read_features()
 
 
 def test_single_file_registry_rejects_blank_id(tmp_path, monkeypatch):
-    _write(tmp_path, "features.yml", "Features:\n  - Id: '  '\n")
+    _write(tmp_path, "features.yml", "Features:\n  - id: '  '\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="nonempty string Id"):
+    with pytest.raises(config_init.ConfigError, match="nonempty string id"):
         config_init.read_features()
 
 
