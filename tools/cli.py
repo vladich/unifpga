@@ -37,10 +37,10 @@ import textwrap
 
 try:
     import yaml
-except ImportError:                         # the one dependency (requirements.txt)
+except ImportError:                         # requirements.txt; the ./unifpga launcher makes .venv with it
     sys.exit("unifpga: PyYAML is not installed for {py}.\n"
-             "Install it ({py} -m pip install pyyaml) or run the launcher with a Python that has it."
-             .format(py=sys.executable))
+             "Run ./unifpga (it makes .venv with requirements.txt and runs with it), or install the requirements for "
+             "this Python ({py} -m pip install -r requirements.txt).".format(py=sys.executable))
 
 REPO = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if REPO not in sys.path:                    # `python3 tools/cli.py` without the launcher
@@ -821,11 +821,31 @@ def cmd_view(args):
     return 0
 
 
+def free_port(first=8765, last=8789, host="127.0.0.1"):
+    """The editor's port: `first` unless it is taken (an editor already running?),
+    then the next free one, said so on stderr; None when none is free."""
+    import socket
+    for port in range(first, last + 1):
+        try:
+            with socket.socket() as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)   # as the server binds
+                s.bind((host, port))
+        except OSError:
+            continue
+        if port != first:
+            sys.stderr.write("unifpga: port {0} is in use (an editor already running? http://{2}:{0}/) — using {1}\n".format(first, port, host))
+        return port
+    return None
+
+
 def cmd_serve(args):
     from tools import studio
     from tools import setup as su
+    port = args.port if args.port is not None else free_port()
+    if port is None:
+        raise CliError("no free port between 8765 and 8789; name one with --port")
     try:
-        studio.serve(port=args.port)
+        studio.serve(port=port)
     except su.SetupError as exc:
         raise CliError(str(exc))
     return 0
@@ -1065,8 +1085,8 @@ def build_parser():
     vw.add_argument("--board", action="store_true", help="the id is a board: draw its layout")
     vw.add_argument("-o", "--output", help="output file (default: <id>.html)")
 
-    sv = sub.add_parser("serve", help="the board editor on a local web page (http://127.0.0.1:8765/)")
-    sv.add_argument("--port", type=int, default=8765)
+    sv = sub.add_parser("serve", help="the board editor on a local web page (http://127.0.0.1:8765/, or the next free port)")
+    sv.add_argument("--port", type=int, default=None, help="the port (default: 8765, else the next free one up to 8789)")
     return p
 
 

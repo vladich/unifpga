@@ -12,6 +12,12 @@ which catalog entries are currently eligible for a build or programming run.
 
 ## Quick start
 
+`./unifpga` needs Python 3 with the packages of `requirements.txt` (PyYAML,
+jsonschema). It runs with the `python3` that has them; otherwise it makes the
+repository's `.venv` with them on first use and runs with that (nothing is
+installed into a Python of yours; `UNIFPGA_PYTHON=<interpreter>` names one to
+use instead).
+
 ```bash
 ./unifpga board          # pick your board once (remembered in settings.yml)
 cd designs/1_06_binary_counter
@@ -211,7 +217,7 @@ still builds `arty_a7_pmod_mic3` with nextpnr_openxc7 for the 35T); any other
 build is `<rig>@<toolchain>[@<part>]`, or `synthesize.py -t <toolchain> --part <part>`.
 
 ```bash
-./serve.sh                     # the board editor: http://127.0.0.1:8765/ (makes .venv with requirements.txt when python3 lacks them)
+./serve.sh                     # the board editor: http://127.0.0.1:8765/ (= ./unifpga serve; the next free port when 8765 is taken)
 ./unifpga serve                # the same, with a Python that has PyYAML (--port for another port)
 ./unifpga setup check [id]     # each rig expands and resolves; rig errors (pins used twice, unwired signals, ...)
 ./unifpga setup show <id>      # the configuration a rig expands to (what the build reads; not a file)
