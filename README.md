@@ -216,6 +216,10 @@ default. The Slang, LiteX and FuseSoC probes under `experiments/` each use a
 separate locked Python environment and have their own test commands in their
 READMEs. Run those explicitly when changing a probe or its integration; they
 are not part of the project's default pytest collection.
+A trusted local SystemVerilog fileset can now produce a review-only import
+candidate with `python -m tools.sv_import_candidate --root <source-root> --request <request.json>`
+in the locked Slang environment; `experiments/slang/README.md` describes its
+evidence and limits.
 
 The board editor draws three columns: the virtual device `design_top` sees
 (its ports and bits), the board (on-board devices, connectors with numbered

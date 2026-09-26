@@ -58,11 +58,29 @@ Exceeding a bound fails the probe rather than emitting a truncated graph.
 The format is experiment-owned and does not define the project configuration
 schema or an import-service contract.
 
+`python -m tools.sv_import_candidate --root <source-root> --request <request.json>`
+uses this pinned frontend to produce a nonpublishing, content-addressed import
+candidate. It includes the exact files read, the elaborated top interface and
+parameters, hierarchy counts, and structural blockers. Every port's semantic
+role is unset, and review topics explicitly cover clock/reset, protocol,
+timing, virtual-device mapping, electrical constraints, and external IP. A
+candidate with `needs_semantic_review` has passed only structural projection;
+an evaluated fixed width does not imply that a packed structure or array can
+be connected directly. The candidate is not an accepted component or proof
+that the design can be converted. `source_scope: frontend_read_files_only`
+also means assets loaded at runtime, such as `$readmemh` files, are outside
+the candidate; they need separate inventory and review.
+`candidate_sha256` covers the canonical report without that digest field, so
+warning or blocker changes produce a different candidate identity.
+The command is for trusted local sources and requires the locked Slang
+environment described above. External repositories still need isolation and
+admission before this command can serve a public import service.
+
 `test_rtl_corpus.py` also elaborates the existing APS CPU/control design from
 its `fileset.yml` with the testbench's top-level parameters and the simulation
 clock-buffer helper. The current corpus has 40 HDL sources and yields 44
 instances, including CPU, instruction/data memory, UART, timer, and interrupt
-control. Slang reports no errors but 115 warnings, including width conversions,
+control. Slang reports no errors but 114 warnings, including width conversions,
 unnamed generate scopes, and a dangling `else`. The fileset declares four
 memory/firmware assets; this frontend check does not validate their runtime
 loading or execute firmware. It establishes a reproducible starting point for
