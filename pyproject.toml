@@ -19,3 +19,6 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = ["config*", "toolchains*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
