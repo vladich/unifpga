@@ -55,7 +55,7 @@ Devices:
     name: ADI ADV7180 NTSC/PAL Video Decoder
     manufacturer: Analog Devices
     part: ADV7180
-    feature: hdmi_input
+    feature: analog_video_decoder
     interface: parallel+i2c
     peripherals: []
     notes: DE2-115, DE2-70 composite/SDTV decode.

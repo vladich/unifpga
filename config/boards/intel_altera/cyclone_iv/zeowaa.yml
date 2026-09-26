@@ -1,0 +1,153 @@
+# zeowaa pin map.
+
+
+Board:
+  id: zeowaa
+  name: Zeowaa A-C4E6
+  product: ALTERA Cyclone IV Board (A-C4E6, EP4CE6E22C8N / EP4CE10E22C8N), www.21eda.net design sold as Zeowaa
+  summary: Cyclone IV E EP4CE6E22C8N (6272 LE; EP4CE10E22C8N option), EQFP-144; M25P16 config flash, AT24C04 EEPROM;
+    12 LEDs, 4 user keys + nCONFIG key, 8-way DIP switch, 8-digit 7-segment (2x4, common anode), 3-bit VGA, RS232
+    (MAX232, DB9), PS/2, LCD1602/12864 socket, buzzer, 28-pin GPIO header, 50 MHz + socketed user oscillator
+  producer: zeowaa
+  chip: EP4CE6E22C8
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ps2_port
+  - buzzer
+  - eeprom_chip
+  - spi_flash
+  devices:
+  - micron_m25p16
+  documents:
+  - id: sch
+    title: A-C4E6 schematic with MAX232 (SP6-X9-SCH, dated 27-Sep-2015, www.21eda.net 'ALTERA Cyclone IV Board')
+    kind: schematic
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/57ff8336dd67a557a03b6866d978e90d354f57a4/boards/zeowaa/A-C4E6-SCH_withMAX232.pdf
+    sha256: 717ddcbb6698efd6327756036598adc573aa5bf7dfb327950ae662310ba39a93
+    bytes: 69047
+    retrieved: '2026-09-24'
+  - id: bgm_qsf
+    title: BGM boards/zeowaa/board_specific.qsf
+    kind: constraints
+    url: https://github.com/yuri-panchul/basics-graphics-music/blob/57ff8336dd67a557a03b6866d978e90d354f57a4/boards/zeowaa/board_specific.qsf
+    sha256: ef66ef25d88c36339c909859430e6b3d14d0a6e51e31848a1b4be3b1b0b7dcb0
+    bytes: 4838
+    retrieved: '2026-09-24'
+  defaults:
+    iostandard: 3.3-V LVTTL
+
+  # Quartus project settings:
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
+  banks:
+    clk: { pins: "23", frequency_mhz: 50, source: {doc: sch, where: 'CLK block: 50M osc -> R59 27R -> CLK_50M PIN_23'} }
+    onboard_buttons:
+      source: {doc: sch, where: 'KEY block: 4.7K pull-ups to 3.3V, key to GND (active low): K2=I/O_90, K3=I/O_91, K4=I/O_87, K5=I/O_86'}
+      active: low
+      pins: ["86", "87", "91", "90"]
+    onboard_switches:
+      source: {doc: sch, where: 'SW block: RP6/RP7 4.7K pull-ups, switch to GND (ON = low)'}
+      active: low
+      pins: ["68", "67", "66", "65", "64", "60", "59", "58"]
+    onboard_leds:
+      source: {doc: sch, where: 'LED block: anode via 680R to VCC3.3V, cathode to I/O (active low)'}
+      active: low
+      pins: ["69", "70", "71", "75", "76", "77", "84", "83", "80", "74", "73", "72"]
+    onboard_7seg:
+      source: {doc: sch, where: 'Digital tube block: LEDA..LEDDP via R50-R57 from I/O127..I/O115; BIT0..BIT7 = I/O128,129,132,133,135,136,137,138 via RP1/RP2 to PNP bases (active low)'}
+      pins:
+        segments: ["115", "119", "120", "121", "124", "125", "126", "127"]
+        anodes: ["128", "129", "132", "133", "135", "136", "137", "138"]
+    onboard_vga:
+      source: {doc: sch, where: 'VGA block: R4 22R I/O2 -> R (pin1), R5 I/O1 -> G (pin2), R6 I/O144 -> B (pin3), R8 I/O142 -> HS (pin13), R7 I/O143 -> VS (pin14)'}
+      pins:
+        vs: "143"
+        hs: "142"
+        rgb: ["144", "1", "2"]
+    gpio:
+      source: {doc: sch, where: 'header block right of Digital tube: odd row I/O30,32,34,39,GND,42,44,49,GND,52,54,58,GND,89; even row I/O28,31,33,38,GND,43,46,50,(blank),51,53,55,GND,88; pin 23 = I/O58 is also SW1'}
+      pins: ["30", "28", "32", "31", "34", "33", "39", "38", "42", "43", "44", "46", "49", "50", "52", "51", "54", "53", "55"]
+    onboard_uart:
+      source: {doc: sch, where: 'RS232 block: I/O113 -> T2IN (pin10), R2OUT (pin9) -> I/O114'}
+      pins:
+        rx: "114"
+        tx: "113"
+    onboard_clk_user:   # USER oscillator socket (CLK_USER)
+      device: {"name": "USER oscillator socket (CLK_USER)", "kind": "clock"}
+      pins: {"clk": "24"}
+    onboard_ps2:   # PS/2 connector
+      device: {"name": "PS/2 connector", "kind": "ps2"}
+      pins: {"data": "10", "clk": "11"}
+    onboard_lcd:   # LCD1602 / LCD12864 socket (20-pin)
+      device: {"name": "LCD1602 / LCD12864 socket (20-pin)", "kind": "lcd"}
+      pins: {"rs": "85", "rw": "99", "en": "100", "d": ["101", "103", "104", "105", "106", "110", "111", "112"]}
+    onboard_buzzer:   # BELL buzzer (PNP Q70)
+      device: {"name": "BELL buzzer (PNP Q70)", "kind": "buzzer"}
+      pins: {"buzzer": "141"}
+    onboard_eeprom:   # AT24C04 EEPROM U4A
+      device: {"name": "AT24C04 EEPROM U4A", "kind": "eeprom"}
+      pins: {"scl": "7", "sda": "3"}
+    onboard_flash:   # M25P16 serial configuration flash U4
+      device: {"name": "M25P16 serial configuration flash U4", "kind": "flash", "id": "micron_m25p16"}
+      pins: {"dclk": "12", "data0": "13", "asdo": "6", "ncso": "8"}
+  # ---- drawn: headers and parts; ./unifpga layout draft zeowaa regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 8}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 12}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      variants:
+        - id: seven_segment_8digit_shared
+          label: seven_segment_8digit_shared (digits=8)
+          attach: {peripheral: seven_segment_8digit_shared, params: {digits: 8, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+        - id: seven_segment_8digit_shared_2
+          label: seven_segment_8digit_shared (digits=7)
+          attach: {peripheral: seven_segment_8digit_shared, params: {digits: 7, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 1, pin_bits_g: 1, pin_bits_b: 1, color_depth: 444}, bind: {r: ['onboard_vga.rgb[2]'], g: ['onboard_vga.rgb[1]'], b: ['onboard_vga.rgb[0]'], hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: buzzer
+      label: BELL buzzer (PNP Q70)
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
+    - id: ps2
+      label: PS/2 connector
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.clk, data: onboard_ps2.data}}
+    - id: clk_user
+      label: USER oscillator socket (CLK_USER)
+      device: {kind: clock, bank: onboard_clk_user}   # no peripheral model yet
+    - id: lcd
+      label: LCD1602 / LCD12864 socket (20-pin)
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.rs, e: onboard_lcd.en, d: ['onboard_lcd.d[4]', 'onboard_lcd.d[5]', 'onboard_lcd.d[6]', 'onboard_lcd.d[7]'], rw: onboard_lcd.rw}}
+    - id: eeprom
+      label: AT24C04 EEPROM U4A
+      device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
+    - id: flash
+      label: M25P16 serial configuration flash U4
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

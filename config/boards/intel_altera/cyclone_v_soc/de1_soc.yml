@@ -1,0 +1,342 @@
+# de1_soc pin map.
+
+
+Board:
+  id: de1_soc
+  name: DE1-SoC
+  product: DE1-SoC Board
+  summary: Cyclone V SE SoC 5CSEMA5F31C6N (85K LEs, dual Cortex-A9 HPS); 64 MB SDRAM (FPGA) + 1 GB DDR3 (HPS); VGA
+    (ADV7123), WM8731 audio, ADV7180 TV decoder, PS/2, IR, LTC2308 ADC (AD7928 before rev. F), 2x 2x20 GPIO, 6x 7-seg,
+    10 SW, 4 KEY, 10 LEDs; HPS Ethernet, USB OTG, micro SD
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=165&No=836
+  producer: terasic
+  chip: 5CSEMA5F31C6N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - accelerometer
+  - adc_chip
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - micron_mt41k128m16
+  - winbond_w9825g6kh
+  - wolfson_wm8731
+  - adi_adv7123
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - adi_adxl345
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - ti_adc128s022
+  # Quartus project settings:
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  documents:
+  - id: manual
+    title: DE1-SoC User Manual for board rev. F and later (Terasic, DE1-SoC_User_manual_revf.pdf)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=836&FID=3a3708b0790bb9c721f94909c5ac96d6
+    sha256: 49a5d94cd8990bd10b9579b3cb83fdf98fe0056da7ac3f11a3a615e6472d19ae
+    bytes: 7444645
+    retrieved: '2026-09-24'
+  - id: manual_old
+    title: DE1-SoC User Manual for earlier boards (Terasic, DE1-SoC_User_manual.pdf, March 2014; AD7928 ADC)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=836&FID=fb723f964a1d785b94cd7880d8f210e5
+    sha256: c888bdb2435f4b3f3022495fc5484e72553aa59df63b958ff5da4e15178abba8
+    bytes: 10065034
+    retrieved: '2026-09-24'
+  - id: up_qsf
+    title: DE1_SoC.qsf (Intel FPGA University Program board settings, copy in cameronshinn/tiny-tpu)
+    kind: constraints
+    url: https://raw.githubusercontent.com/cameronshinn/tiny-tpu/8218140654667caebd24d4f2b671915d2cf974cf/hardware/synthesis/DE1_SoC.qsf
+    sha256: bfa089b3168205413f30e8e4bd5e249b3f4a5a2f51b24e5297986c37f1e9129f
+    bytes: 61015
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards platform terasic_de1soc.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/terasic_de1soc.py
+    sha256: 3e61aab8cb52a625838420d29547e683c5a72e71e3c1434ce01eeba7c589cba8
+    bytes: 5964
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards platform de1_soc.py
+    kind: platform
+    url: https://raw.githubusercontent.com/amaranth-lang/amaranth-boards/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/de1_soc.py
+    sha256: 1bb0579137620d1c7e7a7113fbc15d82b88928a42e8e15e9d77942a463748423
+    bytes: 3645
+    retrieved: '2026-09-24'
+  toolchain_options:
+    quartus:
+      jtag_device_index: 2   # FPGA behind the HPS in the JTAG chain (quartus_pgm: P;file@2)
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
+  banks:
+    clk50mhz: { pins: AF14, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
+    clk2_50mhz: { pins: AA16, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
+    clk3_50mhz: { pins: Y26, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
+    clk4_50mhz: { pins: K14, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 3-5, p. 23'} }
+    onboard_buttons:
+      source: {doc: manual, where: 'Table 3-7, p. 26'}
+      iostandard: 3.3-V LVTTL
+      active: low
+      pins: [AA14, AA15, W15, Y16]
+    onboard_switches:
+      source: {doc: manual, where: 'Table 3-6, p. 26'}
+      iostandard: 3.3-V LVTTL
+      pins: [AB12, AC12, AF9, AF10, AD11, AD12, AE11, AC9, AD10, AE12]
+    onboard_leds:
+      source: {doc: manual, where: 'Table 3-8, p. 27'}
+      iostandard: 3.3-V LVTTL
+      pins: [V16, W16, V17, V18, W17, W19, Y19, W20, W21, Y21]
+    onboard_7seg:
+      source: {doc: manual, where: 'Table 3-9, p. 28'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        hex0: [AE26, AE27, AE28, AG27, AF28, AG28, AH28]
+        hex1: [AJ29, AH29, AH30, AG30, AF29, AF30, AD27]
+        hex2: [AB23, AE29, AD29, AC28, AD30, AC29, AC30]
+        hex3: [AD26, AC27, AD25, AC25, AB28, AB25, AB22]
+        hex4: [AA24, Y23, Y24, W22, W24, V23, W25]
+        hex5: [V25, AA28, Y27, AB27, AB26, AA26, AA25]
+    onboard_vga:
+      source: {doc: manual, where: 'Table 3-16, p. 36'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        b: [B13, G13, H13, F14, H14, F15, G15, J14]
+        g: [J9, J10, H12, G10, G11, G12, F11, E11]
+        r: [A13, C13, E13, B12, C12, D12, E12, F13]
+        vs: D11
+        hs: B11
+        sync_n: C10
+        blank_n: F10
+        clk: A11
+    gpio_0:
+      source: {doc: manual, where: 'Table 3-11, p. 29-30'}
+      iostandard: 3.3-V LVTTL
+      pins: [AC18, Y17, AD17, Y18, AK16, AK18, AK19, AJ19, AJ17, AJ16, AH18, AH17, AG16, AE16, AF16, AG17, AA18, AA19, AE17, AC20, AH19, AJ20, AH20, AK21, AD19, AD20, AE18, AE19, AF20, AF21, AF19, AG21, AF18, AG20, AG18, AJ21]
+    gpio_1:
+      source: {doc: manual, where: 'Table 3-11, p. 30-31'}
+      iostandard: 3.3-V LVTTL
+      pins: [AB17, AA21, AB21, AC23, AD24, AE23, AE24, AF25, AF26, AG25, AG26, AH24, AH27, AJ27, AK29, AK28, AK27, AJ26, AK26, AH25, AJ25, AJ24, AK24, AG23, AK23, AH23, AK22, AJ22, AH22, AG22, AF24, AF23, AE22, AD21, AA20, AC22]
+    onboard_adc:
+      source: {doc: manual, where: 'Table 3-22, p. 44'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        cs_n: AJ4
+        din: AK4
+        dout: AK3
+        sclk: AK2
+    onboard_audio_codec:
+      source: {doc: manual, where: 'Table 3-12, p. 32'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        adc_dat: K7
+        adc_lrck: K8
+        bclk: H7
+        dac_dat: J7
+        dac_lrck: H8
+        xck: G7
+    onboard_sdram:
+      source: {doc: manual, where: 'Table 3-20, p. 40-41'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        addr: [AK14, AH14, AG15, AE14, AB15, AC14, AD14, AF15, AH15, AG13, AG12, AH13, AJ14]
+        ba: [AF13, AJ12]
+        cas_n: AF11
+        cke: AK13
+        clk: AH12
+        cs_n: AG11
+        dq: [AK6, AJ7, AK7, AK8, AK9, AG10, AK11, AJ11, AH10, AJ10, AJ9, AH9, AH8, AH7, AJ6, AJ5]
+        ldqm: AB13
+        ras_n: AE13
+        udqm: AK12
+        we_n: AA13
+    onboard_fan_ctrl: { pins: AA12, iostandard: 3.3-V LVTTL, source: {doc: up_qsf, where: DE1_SoC.qsf} }
+    onboard_fpga_i2c:
+      source: {doc: manual, where: 'Table 3-12, p. 32; Table 3-13, p. 33; Table 3-17, p. 37'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        sclk: J12
+        sdat: K12
+    onboard_irda:
+      source: {doc: manual, where: 'Table 3-18, p. 38'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        rxd: AA30
+        txd: AB30
+    onboard_ps2:        # one PS/2 port (manual: PS2_CLK AD7, PS2_DAT AE7); the board has no USB HID host
+      source: {doc: manual, where: 'Table 3-21, p. 42'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        clk: AD7
+        data: AE7
+    onboard_ps2_secondary:
+      source: {doc: manual, where: 'Table 3-21, p. 42'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        clk: AD9
+        data: AE9
+    onboard_tv_decoder:
+      source: {doc: manual, where: 'Table 3-17, p. 37'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        clk27: H15
+        data: [D2, B1, E2, B2, D1, E1, C2, B3]
+        hs: A5
+        reset_n: F6
+        vs: A3
+    onboard_usb:
+      source: {doc: up_qsf, where: DE1_SoC.qsf}
+      iostandard: 3.3-V LVTTL
+      pins:
+        clk: AF4
+        data: [AH4, AH3, AJ2, AJ1, AH2, AG3, AG2, AG1]
+        empty: AF5
+        full: AG5
+        oe_n: AF6
+        rd_n: AG6
+        reset_n: AG7
+        scl: AG8
+        sda: AF8
+        wr_n: AH5
+    onboard_hps_clk1_25mhz:   # HPS_CLOCK1_25 (25 MHz)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS_CLOCK1_25 (25 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"HPS_CLOCK1_25": "D25"}
+    onboard_hps_clk2_25mhz:   # HPS_CLOCK2_25 (25 MHz)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS_CLOCK2_25 (25 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"HPS_CLOCK2_25": "F25"}
+    onboard_hps_i2c1:   # HPS I2C1 bus (G-sensor, I2C mux)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS I2C1 bus (G-sensor, I2C mux)", "kind": "other"}
+      iostandard: "3.3V"
+      pins: {"HPS_I2C1_SCLK": "E23", "HPS_I2C1_SDAT": "C24"}
+    onboard_hps_i2c2:   # HPS I2C2 bus (LTC connector)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS I2C2 bus (LTC connector)", "kind": "other"}
+      iostandard: "3.3V"
+      pins: {"HPS_I2C2_SCLK": "H23", "HPS_I2C2_SDAT": "A25"}
+    onboard_hps_ethernet:   # HPS Gigabit Ethernet PHY (KSZ9021RN)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS Gigabit Ethernet PHY (KSZ9021RN)", "kind": "ethernet"}
+      iostandard: "3.3V"
+      pins: {"HPS_ENET_TX_EN": "A20", "HPS_ENET_TX_DATA": ["F20", "J19", "F21", "F19"], "HPS_ENET_RX_DV": "K17", "HPS_ENET_RX_DATA": ["A21", "B20", "B18", "D21"], "HPS_ENET_RX_CLK": "G20", "HPS_ENET_RESET_N": "E18", "HPS_ENET_MDIO": "E21", "HPS_ENET_MDC": "B21", "HPS_ENET_INT_N": "C19", "HPS_ENET_GTX_CLK": "H19"}
+    onboard_hps_uart:   # HPS UART to USB (FT232R)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS UART to USB (FT232R)", "kind": "uart"}
+      iostandard: "3.3V"
+      pins: {"HPS_UART_RX": "B25", "HPS_UART_TX": "C25", "HPS_CONV_USB_N": "B15"}
+    onboard_hps_ddr3:   # HPS DDR3 SDRAM (1 GB, 32-bit)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS DDR3 SDRAM (1 GB, 32-bit)", "kind": "ddr3"}
+      iostandard: "SSTL-15 Class I"
+      pins: {"HPS_DDR3_A": ["F26", "G30", "F28", "F30", "J25", "J27", "F29", "E28", "H27", "G26", "D29", "C30", "B30", "C29", "H25"], "HPS_DDR3_BA": ["E29", "J24", "J23"], "HPS_DDR3_CAS_n": "E27", "HPS_DDR3_CKE": "L29", "HPS_DDR3_CK_n": "L23", "HPS_DDR3_CK_p": "M23", "HPS_DDR3_CS_n": "H24", "HPS_DDR3_DM": ["K28", "M28", "R28", "W30"], "HPS_DDR3_DQ": ["K23", "K22", "H30", "G28", "L25", "L24", "J30", "J29", "K26", "L26", "K29", "K27", "M26", "M27", "L28", "M30", "U26", "T26", "N29", "N28", "P26", "P27", "N27", "R29", "P24", "P25", "T29", "T28", "R27", "R26", "V30", "W29"], "HPS_DDR3_DQS_n": ["M19", "N24", "R18", "R21"], "HPS_DDR3_DQS_p": ["N18", "N25", "R19", "R22"], "HPS_DDR3_ODT": "H28", "HPS_DDR3_RAS_n": "D30", "HPS_DDR3_RESET_n": "P30", "HPS_DDR3_WE_n": "C28", "HPS_DDR3_RZQ": "D27"}
+    onboard_hps_sdcard:   # HPS micro SD card socket
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS micro SD card socket", "kind": "sdcard"}
+      iostandard: "3.3V"
+      pins: {"HPS_SD_CLK": "A16", "HPS_SD_CMD": "F18", "HPS_SD_DATA": ["G18", "C17", "D17", "B16"]}
+    onboard_hps_usb_otg:   # HPS USB 2.0 OTG PHY (USB3300)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS USB 2.0 OTG PHY (USB3300)", "kind": "usb"}
+      iostandard: "3.3V"
+      pins: {"HPS_USB_CLKOUT": "N16", "HPS_USB_DATA": ["E16", "G16", "D16", "D14", "A15", "C14", "D15", "M17"], "HPS_USB_DIR": "E14", "HPS_USB_NXT": "A14", "HPS_USB_RESET": "G17", "HPS_USB_STP": "C15"}
+    onboard_hps_gsensor:   # HPS accelerometer (ADXL345 G-sensor)
+      fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
+      device: {"name": "HPS accelerometer (ADXL345 G-sensor)", "kind": "other", "id": "adi_adxl345"}
+      iostandard: "3.3V"
+      pins: {"HPS_GSENSOR_INT": "B22"}
+    hps_ltc_header:   # HPS LTC connector (2x7, SPI/I2C/GPIO)
+      source: {doc: manual, where: 'Table 3-31, p. 53'}
+      device: {"name": "HPS LTC connector (2x7, SPI/I2C/GPIO)", "kind": "header"}
+      iostandard: "3.3V"
+      pins: {"HPS_LTC_GPIO": "H17", "HPS_SPIM_CLK": "C23", "HPS_SPIM_MISO": "E24", "HPS_SPIM_MOSI": "D22", "HPS_SPIM_SS": "D24"}
+  # ---- drawn: headers and parts; ./unifpga layout draft de1_soc regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio_0
+      type: pin_row
+      label: GPIO_0
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_0
+      pins: {'[0]': 'gpio_0[0]', '[1]': 'gpio_0[1]', '[2]': 'gpio_0[2]', '[3]': 'gpio_0[3]', '[4]': 'gpio_0[4]', '[5]': 'gpio_0[5]', '[6]': 'gpio_0[6]', '[7]': 'gpio_0[7]', '[8]': 'gpio_0[8]', '[9]': 'gpio_0[9]', '[10]': 'gpio_0[10]', '[11]': 'gpio_0[11]', '[12]': 'gpio_0[12]', '[13]': 'gpio_0[13]', '[14]': 'gpio_0[14]', '[15]': 'gpio_0[15]', '[16]': 'gpio_0[16]', '[17]': 'gpio_0[17]', '[18]': 'gpio_0[18]', '[19]': 'gpio_0[19]', '[20]': 'gpio_0[20]', '[21]': 'gpio_0[21]', '[22]': 'gpio_0[22]', '[23]': 'gpio_0[23]', '[24]': 'gpio_0[24]', '[25]': 'gpio_0[25]', '[26]': 'gpio_0[26]', '[27]': 'gpio_0[27]', '[28]': 'gpio_0[28]', '[29]': 'gpio_0[29]', '[30]': 'gpio_0[30]', '[31]': 'gpio_0[31]', '[32]': 'gpio_0[32]', '[33]': 'gpio_0[33]', '[34]': 'gpio_0[34]', '[35]': 'gpio_0[35]'}
+    - id: gpio_1
+      type: pin_row
+      label: GPIO_1
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_1
+      pins: {'[0]': 'gpio_1[0]', '[1]': 'gpio_1[1]', '[2]': 'gpio_1[2]', '[3]': 'gpio_1[3]', '[4]': 'gpio_1[4]', '[5]': 'gpio_1[5]', '[6]': 'gpio_1[6]', '[7]': 'gpio_1[7]', '[8]': 'gpio_1[8]', '[9]': 'gpio_1[9]', '[10]': 'gpio_1[10]', '[11]': 'gpio_1[11]', '[12]': 'gpio_1[12]', '[13]': 'gpio_1[13]', '[14]': 'gpio_1[14]', '[15]': 'gpio_1[15]', '[16]': 'gpio_1[16]', '[17]': 'gpio_1[17]', '[18]': 'gpio_1[18]', '[19]': 'gpio_1[19]', '[20]': 'gpio_1[20]', '[21]': 'gpio_1[21]', '[22]': 'gpio_1[22]', '[23]': 'gpio_1[23]', '[24]': 'gpio_1[24]', '[25]': 'gpio_1[25]', '[26]': 'gpio_1[26]', '[27]': 'gpio_1[27]', '[28]': 'gpio_1[28]', '[29]': 'gpio_1[29]', '[30]': 'gpio_1[30]', '[31]': 'gpio_1[31]', '[32]': 'gpio_1[32]', '[33]': 'gpio_1[33]', '[34]': 'gpio_1[34]', '[35]': 'gpio_1[35]'}
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 10}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 10}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_per_digit, params: {digits: 6, segs: 7}, bind: {hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 8, bits_g: 8, bits_b: 8, pin_bits_r: 8, pin_bits_g: 8, pin_bits_b: 8, color_depth: 888, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs, clk: onboard_vga.clk, blank_n: onboard_vga.blank_n}}
+    - id: audio_codec
+      label: audio codec
+      attach: {peripheral: wm8731_i2s_out, bind: {xck: onboard_audio_codec.xck, bclk: onboard_audio_codec.bclk, dac_lrck: onboard_audio_codec.dac_lrck, dac_dat: onboard_audio_codec.dac_dat, i2c_sclk: onboard_fpga_i2c.sclk, i2c_sdat: onboard_fpga_i2c.sdat}}
+    - id: hps_clk1_25mhz
+      label: HPS_CLOCK1_25 (25 MHz)
+      device: {kind: clock, bank: onboard_hps_clk1_25mhz}   # no peripheral model yet
+    - id: hps_clk2_25mhz
+      label: HPS_CLOCK2_25 (25 MHz)
+      device: {kind: clock, bank: onboard_hps_clk2_25mhz}   # no peripheral model yet
+    - id: hps_i2c1
+      label: HPS I2C1 bus (G-sensor, I2C mux)
+      device: {kind: other, bank: onboard_hps_i2c1}   # no peripheral model yet
+    - id: hps_i2c2
+      label: HPS I2C2 bus (LTC connector)
+      device: {kind: other, bank: onboard_hps_i2c2}   # no peripheral model yet
+    - id: hps_ethernet
+      label: HPS Gigabit Ethernet PHY (KSZ9021RN)
+      device: {kind: ethernet, bank: onboard_hps_ethernet}   # no peripheral model yet
+    - id: hps_uart
+      label: HPS UART to USB (FT232R)
+      device: {kind: uart, bank: onboard_hps_uart}   # no peripheral model yet
+    - id: hps_ddr3
+      label: HPS DDR3 SDRAM (1 GB, 32-bit)
+      device: {kind: ddr3, bank: onboard_hps_ddr3}   # no peripheral model yet
+    - id: hps_sdcard
+      label: HPS micro SD card socket
+      device: {kind: sdcard, bank: onboard_hps_sdcard}   # no peripheral model yet
+    - id: hps_usb_otg
+      label: HPS USB 2.0 OTG PHY (USB3300)
+      device: {kind: usb, bank: onboard_hps_usb_otg}   # no peripheral model yet
+    - id: hps_gsensor
+      label: HPS accelerometer (ADXL345 G-sensor)
+      device: {kind: other, bank: onboard_hps_gsensor}   # no peripheral model yet
+    - id: hps_ltc_header
+      label: HPS LTC connector (2x7, SPI/I2C/GPIO)
+      device: {kind: header, bank: hps_ltc_header}   # no peripheral model yet

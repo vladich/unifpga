@@ -18,6 +18,8 @@ Board:
   - microsd_socket
   - ddr3_memory
   - ethernet_phy_gigabit
+  devices:
+  - micron_mt41k256m16
   documents:
   - id: xdc
     title: a7_lite_master.xdc (A. Orlando, community master XDC, AGPL-3.0; cross-checked by its author against the R1.1 schematic)
@@ -112,7 +114,7 @@ Board:
       pins: {"clk": "U7", "cmd": "AA8", "data0": "Y7", "data1": "W9", "data2": "Y8", "data3": "AB8"}
     onboard_ddr3:   # DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
       source: {doc: xdc, where: lines 146-199}
-      device: {"name": "DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)", "kind": "ddr"}
+      device: {"name": "DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)", "kind": "ddr", "id": "micron_mt41k256m16"}
       iostandard: "SSTL15 / DIFF_SSTL15 (XDC)"
       pins: {"A0": "P1", "A1": "M6", "A2": "K3", "A3": "K4", "A4": "M5", "A5": "J6", "A6": "N2", "A7": "K6", "A8": "P2", "A9": "L1", "A10": "M2", "A11": "P6", "A12": "L4", "A13": "L5", "A14": "N5", "BA0": "J4", "BA1": "R1", "BA2": "M1", "nCAS": "N3", "nRAS": "M3", "nWE": "L6", "CKE": "N4", "ODT": "L3", "nRST": "F4", "CK_P": "P5", "CK_N": "P4", "D0": "B2", "D1": "F1", "D2": "B1", "D3": "D2", "D4": "C2", "D5": "F3", "D6": "A1", "D7": "G1", "D8": "J5", "D9": "G2", "D10": "K1", "D11": "G3", "D12": "H2", "D13": "H5", "D14": "J1", "D15": "H4", "DM0": "E2", "DM1": "H3", "DQS_P0": "E1", "DQS_N0": "D1", "DQS_P1": "K2", "DQS_N1": "J2"}
     onboard_ethernet:   # Gigabit Ethernet PHY (RTL8211, RGMII)

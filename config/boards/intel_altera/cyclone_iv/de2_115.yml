@@ -1,0 +1,387 @@
+# de2_115 pin map.
+
+
+Board:
+  id: de2_115
+  name: DE2-115
+  product: DE2-115 Development and Education Board
+  summary: Cyclone IV E EP4CE115F29C7 (114,480 LEs); 128 MB SDRAM, 2 MB SRAM, 8 MB flash, I2C EEPROM; VGA (ADV7123),
+    WM8731 audio, ADV7180 TV decoder, 2x Gigabit Ethernet, CY7C67200 USB, IR, RS-232, PS/2, SD, 16x2 LCD, HSMC, 2x20
+    GPIO, 8x 7-seg, 18 SW, 4 KEY, 27 LEDs
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=139&No=502
+  producer: terasic
+  chip: EP4CE115F29C7
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - audio_codec
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  - character_lcd
+  - ps2_port
+  - analog_video_decoder
+  - ir_receiver
+  - sram
+  - nor_flash
+  - sd_card_socket
+  devices:
+  - winbond_w9825g6kh
+  - wolfson_wm8731
+  - adi_adv7123
+  - adi_adv7611
+  - marvell_88e1111
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - adi_adv7180
+  # Quartus project settings:
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  documents:
+  - id: manual
+    title: DE2-115 User Manual (Terasic)
+    kind: manual
+    url: https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=502&FID=cd9c7c1feaa2467c58c9aa4cc02131af
+    sha256: 6353566bf9bc64119551d6c9a1836c02bad2f197415015286d33469a5c388b38
+    bytes: 14384810
+    retrieved: '2026-09-24'
+  - id: litex
+    title: LiteX-Boards platform terasic_de2_115.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/terasic_de2_115.py
+    sha256: 3c35191d145d3f8543bc655e94e0148630f35fc806835e30292c53beb2389970
+    bytes: 4837
+    retrieved: '2026-09-24'
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
+        - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
+  banks:
+    clk50mhz: { pins: Y2, frequency_mhz: 50, iostandard: 3.3-V LVTTL, source: {doc: manual, where: 'Table 4-5, p. 39'} }
+    onboard_buttons:
+      source: {doc: manual, where: 'Table 4-2, p. 36'}
+      iostandard: 2.5 V
+      active: low
+      pins: [M23, M21, N21, R24]
+    onboard_switches:
+      source: {doc: manual, where: 'Table 4-1, p. 36'}
+      iostandard: 2.5 V
+      pins: [AB28, AC28, AC27, AD27, AB27, AC26, AD26, AB26, AC25, AB25, AC24, AB24, AB23, AA24, AA23, AA22, Y24, Y23]
+    onboard_leds:
+      source: {doc: manual, where: 'Table 4-3, p. 36-37'}
+      iostandard: 2.5 V
+      pins: [G19, F19, E19, F21, F18, E18, J19, H19, J17, G17, J15, H16, J16, H17, F15, G15, G16, H15]
+    onboard_leds_green:
+      source: {doc: manual, where: 'Table 4-3, p. 37'}
+      iostandard: 2.5 V
+      pins: [E21, E22, E25, E24, H21, G20, G22, G21, F17]
+    onboard_7seg:
+      source: {doc: manual, where: 'Table 4-4, p. 37-39'}
+      pins:
+        hex0: [G18, F22, E17, L26, L25, J22, H22]
+        hex1: [M24, Y22, W21, W22, W25, U23, U24]
+        hex2: [AA25, AA26, Y25, W26, Y26, W27, W28]
+        hex3: [V21, U21, AB20, AA21, AD24, AF23, Y19]
+        hex4: [AB19, AA19, AG21, AH21, AE19, AF19, AE18]
+        hex5: [AD18, AC18, AB18, AH19, AG19, AF18, AH18]
+        hex6: [AA17, AB16, AA16, AB17, AB15, AA15, AC17]
+        hex7: [AD17, AE17, AG17, AH17, AF17, AG18, AA14]
+      overrides:
+        "AA14": 3.3-V LVTTL
+        "AA15": 3.3-V LVTTL
+        "AA16": 3.3-V LVTTL
+        "AA17": 3.3-V LVTTL
+        "AA19": 3.3-V LVTTL
+        "AA21": 3.3-V LVTTL
+        "AA25": 2.5 V
+        "AA26": 2.5 V
+        "AB15": 3.3-V LVTTL
+        "AB16": 3.3-V LVTTL
+        "AB17": 3.3-V LVTTL
+        "AB18": 3.3-V LVTTL
+        "AB19": 3.3-V LVTTL
+        "AB20": 3.3-V LVTTL
+        "AC17": 3.3-V LVTTL
+        "AC18": 3.3-V LVTTL
+        "AD17": 3.3-V LVTTL
+        "AD18": 3.3-V LVTTL
+        "AD24": 3.3-V LVTTL
+        "AE17": 3.3-V LVTTL
+        "AE18": 3.3-V LVTTL
+        "AE19": 3.3-V LVTTL
+        "AF17": 3.3-V LVTTL
+        "AF18": 3.3-V LVTTL
+        "AF19": 3.3-V LVTTL
+        "AF23": 3.3-V LVTTL
+        "AG17": 3.3-V LVTTL
+        "AG18": 3.3-V LVTTL
+        "AG19": 3.3-V LVTTL
+        "AG21": 3.3-V LVTTL
+        "AH17": 3.3-V LVTTL
+        "AH18": 3.3-V LVTTL
+        "AH19": 3.3-V LVTTL
+        "AH21": 3.3-V LVTTL
+        "E17": 2.5 V
+        "F22": 2.5 V
+        "G18": 2.5 V
+        "H22": 2.5 V
+        "J22": 2.5 V
+        "L25": 2.5 V
+        "L26": 2.5 V
+        "M24": 2.5 V
+        "U21": 2.5 V
+        "U23": 2.5 V
+        "U24": 2.5 V
+        "V21": 2.5 V
+        "W21": 2.5 V
+        "W22": 2.5 V
+        "W25": 2.5 V
+        "W26": 2.5 V
+        "W27": 2.5 V
+        "W28": 2.5 V
+        "Y19": 3.3-V LVTTL
+        "Y22": 2.5 V
+        "Y25": 2.5 V
+        "Y26": 2.5 V
+    onboard_vga:
+      source: {doc: manual, where: 'Table 4-16, p. 55'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        clk: A12
+        blank_n: F11
+        sync_n: C10
+        hs: G13
+        vs: C13
+        r: [E12, E11, D10, F12, G10, J12, H8, H10]
+        g: [G8, G11, F8, H12, C8, B8, F10, C9]
+        b: [B10, A10, C11, B11, A11, C12, D11, D12]
+    onboard_audio_codec:
+      source: {doc: manual, where: 'Table 4-17, p. 56'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        adc_lrck: C2
+        adc_dat: D2
+        bclk: F2
+        dac_lrck: E3
+        dac_dat: D1
+        xck: E1
+    onboard_i2c:
+      source: {doc: manual, where: 'Table 4-17, p. 56; Table 4-24, p. 62'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        sclk: B7
+        sdat: A8
+    onboard_uart:
+      source: {doc: manual, where: 'Table 4-18, p. 57'}
+      iostandard: 3.3-V LVTTL
+      pins:
+        cts: G14      # manual UART_CTS, an FPGA input (Terasic's golden top names it from the connector side)
+        rts: J13      # manual UART_RTS, an FPGA output
+        rx: G12
+        tx: G9
+    gpio:
+      source: {doc: manual, where: 'Table 4-12, p. 51'}
+      iostandard: 3.3-V LVTTL
+      pins: [AB22, AC15, AB21, Y17, AC21, Y16, AD21, AE16, AD15, AE15, AC19, AF16, AD19, AF15, AF24, AE21, AF25, AC22, AE22, AF21, AF22, AD22, AG25, AD25, AH25, AE25, AG22, AE24, AH22, AF26, AE20, AG23, AF20, AH26, AH23, AG26]
+    onboard_clk2_50mhz:   # CLOCK2_50 (50 MHz)
+      device: {"name": "CLOCK2_50 (50 MHz)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"CLOCK2_50": "AG14"}
+    onboard_clk3_50mhz:   # CLOCK3_50 (50 MHz)
+      device: {"name": "CLOCK3_50 (50 MHz)", "kind": "clock"}
+      iostandard: "Depending on JP6"
+      pins: {"CLOCK3_50": "AG15"}
+    onboard_sma_clkout:   # SMA clock output
+      device: {"name": "SMA clock output", "kind": "clock"}
+      iostandard: "Depending on JP6"
+      pins: {"SMA_CLKOUT": "AE23"}
+    onboard_sma_clkin:   # SMA clock input
+      device: {"name": "SMA clock input", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"SMA_CLKIN": "AH14"}
+    onboard_lcd:   # Character LCD module (16x2)
+      source: {doc: manual, where: 'Table 4-6, p. 40-41'}
+      device: {"name": "Character LCD module (16x2)", "kind": "lcd_char"}
+      iostandard: "3.3V"
+      pins: {"LCD_DATA": ["L3", "L1", "L2", "K7", "K1", "K2", "M3", "M5"], "LCD_EN": "L4", "LCD_RW": "M1", "LCD_RS": "M2", "LCD_ON": "L5", "LCD_BLON": "L6"}
+    hsmc:   # HSMC connector
+      source: {doc: manual, where: 'Table 4-9, p. 43-47'}
+      device: {"name": "HSMC connector", "kind": "header"}
+      pins: {"HSMC_CLKIN0": "AH15", "HSMC_CLKIN_N1": "J28", "HSMC_CLKIN_N2": "Y28", "HSMC_CLKIN_P1": "J27", "HSMC_CLKIN_P2": "Y27", "HSMC_CLKOUT0": "AD28", "HSMC_CLKOUT_N1": "G24", "HSMC_CLKOUT_N2": "V24", "HSMC_CLKOUT_P1": "G23", "HSMC_CLKOUT_P2": "V23", "HSMC_D": ["AE26", "AE28", "AE27", "AF27"], "HSMC_RX_D_N": ["F25", "C27", "E26", "G26", "H26", "K26", "L24", "M26", "R26", "T26", "U26", "L22", "N26", "P26", "R21", "R23", "T22"], "HSMC_RX_D_P": ["F24", "D26", "F26", "G25", "H25", "K25", "L23", "M25", "R25", "T25", "U25", "L21", "N25", "P25", "P21", "R22", "T21"], "HSMC_TX_D_N": ["D28", "E28", "F28", "G28", "K28", "M28", "K22", "H24", "J24", "P28", "J26", "L28", "V26", "R28", "U28", "V28", "V22"], "HSMC_TX_D_P": ["D27", "E27", "F27", "G27", "K27", "M27", "K21", "H23", "J23", "P27", "J25", "L27", "V25", "R27", "U27", "V27", "U22"]}
+    ex_io:   # Extended I/O header (EX_IO, JP4 2x7)
+      source: {doc: manual, where: 'Table 4-13, p. 52'}
+      device: {"name": "Extended I/O header (EX_IO, JP4 2x7)", "kind": "header"}
+      iostandard: "3.3V"
+      pins: {"EX_IO": ["J10", "J14", "H13", "H14", "F14", "E10", "D9"]}
+    onboard_ps2:   # PS/2 port (primary)
+      source: {doc: manual, where: 'Table 4-19, p. 58'}
+      device: {"name": "PS/2 port (primary)", "kind": "ps2"}
+      iostandard: "3.3V"
+      pins: {"PS2_CLK": "G6", "PS2_DAT": "H5"}
+    onboard_ps2_secondary:   # PS/2 port (secondary, via Y-cable)
+      source: {doc: manual, where: 'Table 4-19, p. 58'}
+      device: {"name": "PS/2 port (secondary, via Y-cable)", "kind": "ps2"}
+      iostandard: "3.3V"
+      pins: {"PS2_CLK2": "G5", "PS2_DAT2": "F5"}
+    onboard_ethernet0:   # Gigabit Ethernet PHY 0 (88E1111)
+      source: {doc: manual, where: 'Table 4-23, p. 60'}
+      device: {"name": "Gigabit Ethernet PHY 0 (88E1111)", "kind": "ethernet", "id": "marvell_88e1111"}
+      iostandard: "2.5V"
+      pins: {"ENET0_GTX_CLK": "A17", "ENET0_INT_N": "A21", "ENET0_LINK100": "C14", "ENET0_MDC": "C20", "ENET0_MDIO": "B21", "ENET0_RST_N": "C19", "ENET0_RX_CLK": "A15", "ENET0_RX_COL": "E15", "ENET0_RX_CRS": "D15", "ENET0_RX_DATA": ["C16", "D16", "D17", "C15"], "ENET0_RX_DV": "C17", "ENET0_RX_ER": "D18", "ENET0_TX_CLK": "B17", "ENET0_TX_DATA": ["C18", "D19", "A19", "B19"], "ENET0_TX_EN": "A18", "ENET0_TX_ER": "B18"}
+    onboard_ethernet1:   # Gigabit Ethernet PHY 1 (88E1111)
+      source: {doc: manual, where: 'Table 4-23, p. 60-61'}
+      device: {"name": "Gigabit Ethernet PHY 1 (88E1111)", "kind": "ethernet", "id": "marvell_88e1111"}
+      iostandard: "2.5V"
+      pins: {"ENET1_GTX_CLK": "C23", "ENET1_INT_N": "D24", "ENET1_LINK100": "D13", "ENET1_MDC": "D23", "ENET1_MDIO": "D25", "ENET1_RST_N": "D22", "ENET1_RX_CLK": "B15", "ENET1_RX_COL": "B22", "ENET1_RX_CRS": "D20", "ENET1_RX_DATA": ["B23", "C21", "A23", "D21"], "ENET1_RX_DV": "A22", "ENET1_RX_ER": "C24", "ENET1_TX_CLK": "C22", "ENET1_TX_DATA": ["C25", "A26", "B26", "C26"], "ENET1_TX_EN": "B25", "ENET1_TX_ER": "A25"}
+    onboard_enetclk_25mhz:   # Ethernet 25 MHz clock (ENETCLK_25)
+      device: {"name": "Ethernet 25 MHz clock (ENETCLK_25)", "kind": "clock"}
+      iostandard: "3.3V"
+      pins: {"ENETCLK_25": "A14"}
+    onboard_tv_decoder:   # TV decoder (ADV7180)
+      source: {doc: manual, where: 'Table 4-24, p. 62'}
+      device: {"name": "TV decoder (ADV7180)", "kind": "video_decoder", "id": "adi_adv7180"}
+      iostandard: "3.3V"
+      pins: {"TD_DATA": ["E8", "A7", "D8", "C7", "D7", "D6", "E7", "F7"], "TD_HS": "E5", "TD_VS": "E4", "TD_CLK27": "B14", "TD_RESET_N": "G7"}
+    onboard_usb:   # USB host/device (CY7C67200)
+      source: {doc: manual, where: 'Table 4-25, p. 64'}
+      device: {"name": "USB host/device (CY7C67200)", "kind": "usb"}
+      iostandard: "3.3V"
+      pins: {"OTG_ADDR": ["H7", "C3"], "OTG_DATA": ["J6", "K4", "J5", "K3", "J4", "J3", "J7", "H6", "H3", "H4", "G1", "G2", "G3", "F1", "F3", "G4"], "OTG_CS_N": "A3", "OTG_RD_N": "B3", "OTG_WR_N": "A4", "OTG_RST_N": "C5", "OTG_INT": "D5"}
+    onboard_irda:   # IR receiver
+      source: {doc: manual, where: 'Table 4-26, p. 65'}
+      device: {"name": "IR receiver", "kind": "ir"}
+      iostandard: "3.3V"
+      pins: {"IRDA_RXD": "Y15"}
+    onboard_sram:   # SRAM (2 MB, 16-bit)
+      source: {doc: manual, where: 'Table 4-27, p. 68-69'}
+      device: {"name": "SRAM (2 MB, 16-bit)", "kind": "sram"}
+      iostandard: "3.3V"
+      pins: {"SRAM_ADDR": ["AB7", "AD7", "AE7", "AC7", "AB6", "AE6", "AB5", "AC5", "AF5", "T7", "AF2", "AD3", "AB4", "AC3", "AA4", "AB11", "AC11", "AB9", "AB8", "T8"], "SRAM_DQ": ["AH3", "AF4", "AG4", "AH4", "AF6", "AG6", "AH6", "AF7", "AD1", "AD2", "AE2", "AE1", "AE3", "AE4", "AF3", "AG3"], "SRAM_OE_N": "AD5", "SRAM_WE_N": "AE8", "SRAM_CE_N": "AF8", "SRAM_LB_N": "AD4", "SRAM_UB_N": "AC4"}
+    onboard_sdram:   # SDRAM (128 MB, 32-bit)
+      source: {doc: manual, where: 'Table 4-28, p. 69-70'}
+      device: {"name": "SDRAM (128 MB, 32-bit)", "kind": "sdram"}
+      iostandard: "3.3V"
+      model_params: {col_bits: 10}
+      pins: {"DRAM_ADDR": ["R6", "V8", "U8", "P1", "V5", "W8", "W7", "AA7", "Y5", "Y6", "R5", "AA5", "Y7"], "DRAM_DQ": ["W3", "W2", "V4", "W1", "V3", "V2", "V1", "U3", "Y3", "Y4", "AB1", "AA3", "AB2", "AC1", "AB3", "AC2", "M8", "L8", "P2", "N3", "N4", "M4", "M7", "L7", "U5", "R7", "R1", "R2", "R3", "T3", "U4", "U1"], "DRAM_BA": ["U7", "R4"], "DRAM_DQM": ["U2", "W4", "K8", "N8"], "DRAM_RAS_N": "U6", "DRAM_CAS_N": "V7", "DRAM_CKE": "AA6", "DRAM_CLK": "AE5", "DRAM_WE_N": "V6", "DRAM_CS_N": "T4"}
+    onboard_flash:   # Flash memory (8 MB, 8-bit)
+      source: {doc: manual, where: 'Table 4-29, p. 70-71'}
+      device: {"name": "Flash memory (8 MB, 8-bit)", "kind": "flash"}
+      iostandard: "3.3V"
+      pins: {"FL_ADDR": ["AG12", "AH7", "Y13", "Y14", "Y12", "AA13", "AA12", "AB13", "AB12", "AB10", "AE9", "AF9", "AA10", "AD8", "AC8", "Y10", "AA8", "AH12", "AC12", "AD12", "AE10", "AD10", "AD11"], "FL_DQ": ["AH8", "AF10", "AG10", "AH10", "AF11", "AG11", "AH11", "AF12"], "FL_CE_N": "AG7", "FL_OE_N": "AG8", "FL_RST_N": "AE11", "FL_RY": "Y1", "FL_WE_N": "AC10", "FL_WP_N": "AE12"}
+    onboard_eeprom:   # EEPROM (I2C)
+      source: {doc: manual, where: 'Table 4-30, p. 71'}
+      device: {"name": "EEPROM (I2C)", "kind": "other"}
+      iostandard: "3.3V"
+      pins: {"EEP_I2C_SCLK": "D14", "EEP_I2C_SDAT": "E14"}
+    onboard_sdcard:   # SD card socket
+      source: {doc: manual, where: 'Table 4-31, p. 71-72'}
+      device: {"name": "SD card socket", "kind": "sdcard"}
+      iostandard: "3.3V"
+      pins: {"SD_CLK": "AE13", "SD_CMD": "AD14", "SD_DAT": ["AE14", "AF13", "AB14", "AC14"], "SD_WP_N": "AF14"}
+  # ---- drawn: headers and parts; ./unifpga layout draft de2_115 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]', '[20]': 'gpio[20]', '[21]': 'gpio[21]', '[22]': 'gpio[22]', '[23]': 'gpio[23]', '[24]': 'gpio[24]', '[25]': 'gpio[25]', '[26]': 'gpio[26]', '[27]': 'gpio[27]', '[28]': 'gpio[28]', '[29]': 'gpio[29]', '[30]': 'gpio[30]', '[31]': 'gpio[31]', '[32]': 'gpio[32]', '[33]': 'gpio[33]', '[34]': 'gpio[34]', '[35]': 'gpio[35]'}
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 18}, bind: {sw: onboard_switches}}
+    - id: leds_green
+      label: leds green
+      attach: {peripheral: led_bank, params: {width: 9}, bind: {led: onboard_leds_green}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 18}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_per_digit, params: {digits: 8, segs: 7}, bind: {hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5, onboard_7seg.hex6, onboard_7seg.hex7]}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 8, bits_g: 8, bits_b: 8, pin_bits_r: 8, pin_bits_g: 8, pin_bits_b: 8, color_depth: 888, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs, clk: onboard_vga.clk, blank_n: onboard_vga.blank_n}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: audio_codec
+      label: audio codec
+      attach: {peripheral: wm8731_i2s_out, bind: {xck: onboard_audio_codec.xck, bclk: onboard_audio_codec.bclk, dac_lrck: onboard_audio_codec.dac_lrck, dac_dat: onboard_audio_codec.dac_dat, i2c_sclk: onboard_i2c.sclk, i2c_sdat: onboard_i2c.sdat}}
+    - id: lcd
+      label: Character LCD module (16x2)
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
+    - id: ps2
+      label: PS/2 port (primary)
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
+    - id: irda
+      label: IR receiver
+      attach: {peripheral: ir_receiver, bind: {ir: onboard_irda.IRDA_RXD}}
+    - id: sdram
+      label: SDRAM (128 MB, 32-bit)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 32, col_bits: 10}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: onboard_sdram.DRAM_DQM}}
+    - id: sdcard
+      label: SD card socket
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: 'onboard_sdcard.SD_DAT[0]', dat3: 'onboard_sdcard.SD_DAT[3]'}}
+    - id: clk2_50mhz
+      label: CLOCK2_50 (50 MHz)
+      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
+    - id: clk3_50mhz
+      label: CLOCK3_50 (50 MHz)
+      device: {kind: clock, bank: onboard_clk3_50mhz}   # no peripheral model yet
+    - id: sma_clkout
+      label: SMA clock output
+      device: {kind: clock, bank: onboard_sma_clkout}   # no peripheral model yet
+    - id: sma_clkin
+      label: SMA clock input
+      device: {kind: clock, bank: onboard_sma_clkin}   # no peripheral model yet
+    - id: hsmc
+      label: HSMC connector
+      device: {kind: header, bank: hsmc}   # no peripheral model yet
+    - id: ex_io
+      label: Extended I/O header (EX_IO, JP4 2x7)
+      device: {kind: header, bank: ex_io}   # no peripheral model yet
+    - id: ps2_secondary
+      label: PS/2 port (secondary, via Y-cable)
+      device: {kind: ps2, bank: onboard_ps2_secondary}   # no peripheral model yet
+    - id: ethernet0
+      label: Gigabit Ethernet PHY 0 (88E1111)
+      device: {kind: ethernet, bank: onboard_ethernet0}   # no peripheral model yet
+    - id: ethernet1
+      label: Gigabit Ethernet PHY 1 (88E1111)
+      device: {kind: ethernet, bank: onboard_ethernet1}   # no peripheral model yet
+    - id: enetclk_25mhz
+      label: Ethernet 25 MHz clock (ENETCLK_25)
+      device: {kind: clock, bank: onboard_enetclk_25mhz}   # no peripheral model yet
+    - id: tv_decoder
+      label: TV decoder (ADV7180)
+      device: {kind: video_decoder, bank: onboard_tv_decoder}   # no peripheral model yet
+    - id: usb
+      label: USB host/device (CY7C67200)
+      device: {kind: usb, bank: onboard_usb}   # no peripheral model yet
+    - id: sram
+      label: SRAM (2 MB, 16-bit)
+      attach: {peripheral: async_sram, params: {addr_bits: 20}, bind: {a: onboard_sram.SRAM_ADDR, d: onboard_sram.SRAM_DQ, ce_n: onboard_sram.SRAM_CE_N, oe_n: onboard_sram.SRAM_OE_N, we_n: onboard_sram.SRAM_WE_N, lb_n: onboard_sram.SRAM_LB_N, ub_n: onboard_sram.SRAM_UB_N}}
+    - id: flash
+      label: Flash memory (8 MB, 8-bit)
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet
+    - id: eeprom
+      label: EEPROM (I2C)
+      device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
