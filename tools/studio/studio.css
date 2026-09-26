@@ -105,6 +105,7 @@ svg text { font-family: system-ui, sans-serif; }
 #d-bar select { font: inherit; }
 #d-main { display: flex; gap: 12px; padding: 0 12px 12px; align-items: flex-start; }
 #d-list { flex: 1 1 55%; min-width: 0; max-height: 82vh; overflow: auto; border: 1px solid #dee2e6; border-radius: 6px; }
+#d-progress { display: block; width: calc(100% - 16px); margin: 0 8px 8px; height: 10px; }
 #d-detail { flex: 1 1 45%; min-width: 0; max-height: 82vh; overflow: auto; }
 .d-group { position: sticky; top: 0; background: var(--panel); font-weight: 600; padding: 4px 10px; border-bottom: 1px solid #dee2e6; }
 .d-row { display: grid; grid-template-columns: minmax(180px, 1.3fr) 2fr 150px; gap: 8px; padding: 4px 10px; border-bottom: 1px solid #f1f3f5; cursor: pointer; align-items: center; }

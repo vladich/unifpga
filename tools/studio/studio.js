@@ -1071,9 +1071,21 @@ function highlight() {
 async function loadDesigns() {
   if (STATIC || S.dt || S.dtLoading) return;
   S.dtLoading = true;
+  // the table takes a while the first time (every rig resolved, every design
+  // checked on it): show how far the server has got, so a slow load is not a stuck one
+  const text = h("span", {}, "Checking every design against every configuration…"), bar = h("progress", {id: "d-progress"});
+  $("d-list").replaceChildren(h("p", {class: "muted"}, text), bar);
+  const poll = setInterval(async () => {
+    try {
+      const p = await api("/api/progress");
+      if (!p.total || p.ready) return;
+      bar.max = p.total; bar.value = p.done;
+      text.textContent = p.stage + ": " + p.done + " of " + p.total + "…";
+    } catch (e) { /* the table request reports its own failure */ }
+  }, 300);
   try { S.dt = await api("/api/designs"); }
   catch (e) { $("d-list").replaceChildren(h("p", {class: "note"}, e.message)); return; }
-  finally { S.dtLoading = false; }
+  finally { clearInterval(poll); S.dtLoading = false; }
   const boards = [...new Map(S.dt.configurations.map((c) => [c.board, c.board_name])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
   $("d-board").replaceChildren(h("option", {value: ""}, "all boards (" + boards.length + ")"),
                                ...boards.map(([id, name]) => h("option", {value: id}, name + " (" + id + ")")));

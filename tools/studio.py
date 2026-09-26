@@ -197,6 +197,7 @@ def requires_lines(design):
 
 _TABLE = {"key": None, "data": None}
 _TABLE_LOCK = threading.Lock()
+_PROGRESS = {"stage": None, "done": 0, "total": 0}     # how far design_table has got (table_progress)
 
 
 def _table_key():
@@ -226,7 +227,9 @@ def design_table():
         setups, layouts = su.read_setups(), su.drawn_boards()
         caps = config_init.read_capabilities()
         configurations, resolved = [], []
+        _PROGRESS.update(stage="resolving the configurations", done=0, total=len(cfgs))
         for cid in sorted(cfgs):
+            _PROGRESS["done"] += 1
             c = cfgs[cid]
             entry = {"id": cid, "board": c["board"], "board_name": c["board"], "toolchain": c.get("toolchain"),
                      "setup": cid in setups, "layout": c["board"] in layouts}
@@ -239,7 +242,10 @@ def design_table():
                 resolved.append(None)
             configurations.append(entry)
         designs = []
-        for d in list_designs():
+        names = list_designs()
+        _PROGRESS.update(stage="checking the designs", done=0, total=len(names))
+        for d in names:
+            _PROGRESS["done"] += 1
             reqs = design_requirements(d)
             unmet = {}
             for k, x in enumerate(resolved):
@@ -253,7 +259,16 @@ def design_table():
                             "fits": [k for k in range(len(resolved)) if k not in unmet],
                             "unmet": {str(k): v for k, v in unmet.items()}})
         _TABLE.update(key=key, data={"configurations": configurations, "designs": designs})
+        _PROGRESS.update(stage=None)
         return _TABLE["data"]
+
+
+def table_progress():
+    """How far design_table has got, for the page's progress bar while the
+    table request is in flight: {ready, stage, done, total}. Read without the
+    table's lock: the counters are plain ints written by the computing thread."""
+    return {"ready": _PROGRESS["stage"] is None and _TABLE["data"] is not None,
+            "stage": _PROGRESS["stage"], "done": _PROGRESS["done"], "total": _PROGRESS["total"]}
 
 
 def design_fit(resolved):
@@ -784,6 +799,8 @@ def make_server(port=8765, host="127.0.0.1"):
                     return self._static(parts[0])
                 if parts[:2] == ["api", "designs"] and len(parts) == 2:
                     return self._send(200, design_table())
+                if parts[:2] == ["api", "progress"] and len(parts) == 2:
+                    return self._send(200, table_progress())
                 if parts[:2] == ["api", "boards"]:
                     return self._send(200, sorted(su.drawn_boards()))
                 if parts[:2] == ["api", "board"] and len(parts) == 3:

@@ -2,6 +2,7 @@
 (tools/viewer.py)."""
 
 import copy
+import json
 import os
 import sys
 import threading
@@ -257,6 +258,8 @@ def test_editor_server_and_its_write_guard():
         assert js.headers["Cache-Control"] == "no-store"
         assert urllib.request.urlopen(base + "/").headers["Cache-Control"] == "no-store"
         assert "arty_a7" in urllib.request.urlopen(base + "/api/boards").read().decode()
+        progress = json.loads(urllib.request.urlopen(base + "/api/progress").read().decode())
+        assert set(progress) == {"ready", "stage", "done", "total"}     # the page's progress bar polls it
         setup = su.read_setup("arty_a7")
         ok = _post(base + "/api/evaluate", {"setup": setup}, {"X-Unifpga-Studio": "1"})
         assert b'"trace"' in ok.read()
@@ -609,6 +612,8 @@ def test_design_table_covers_every_design_and_configuration():
         assert set(d["fits"]).isdisjoint(int(x) for x in d["unmet"]) and \
             len(d["fits"]) + len(d["unmet"]) == len(t["configurations"])
     assert studio.design_table() is t                     # cached until a file changes
+    p = studio.table_progress()                           # what the page's progress bar reads
+    assert p["ready"] and p["done"] == p["total"] == len(t["designs"]) and p["stage"] is None
 
 
 def test_the_pinned_design_saves_only_over_what_the_page_loaded(tmp_path, monkeypatch):
