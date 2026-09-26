@@ -50,6 +50,36 @@ class GeneratedRTLTests(unittest.TestCase):
                 self.assertEqual(snapshots[0].read_bytes(), (export / "litex_sync_fifo.v").read_bytes())
                 self.assertIn(str(snapshots[0]), (scratch / top / "log.txt").read_text())
 
+            uart_export = scratch / "uart-export"
+            uart = subprocess.run(
+                [sys.executable, str(EXPERIMENT / "probe.py"),
+                 "--litex-root", LITEX_ROOT, "--output-root", str(uart_export),
+                 "--component", "rs232-phy", "--clk-freq", "24000000",
+                 "--baudrate", "115200"],
+                text=True, capture_output=True, timeout=30, check=False)
+            self.assertEqual(uart.returncode, 0, uart.stderr)
+            for top, expected in (
+                    ("tb_packetizer", "PASS native sample-to-UART packetizer backpressure and reset"),
+                    ("tb_pdm_uart", "PASS PDM decoder + LiteX FIFO + native packetizer + LiteX UART")):
+                simulation = subprocess.run(
+                    [sys.executable, str(ROOT / "unifpga"), "sim",
+                     str(EXPERIMENT / "design"),
+                     "--component-export", str(export / "manifest.json"),
+                     "--component-export", str(uart_export / "manifest.json"),
+                     "--tb-top", top, "--output-dir", str(scratch / top),
+                     "--no-wave"],
+                    text=True, capture_output=True, timeout=60, check=False,
+                    env=env)
+                self.assertEqual(simulation.returncode, 0, simulation.stdout + simulation.stderr)
+                self.assertIn(expected, simulation.stdout)
+                for index, (name, source) in enumerate((
+                        ("litex_sync_fifo.v", export),
+                        ("litex_rs232_phy.v", uart_export))):
+                    snapshots = list((scratch / top).glob(
+                        "component-exports-*/{}/{}".format(index, name)))
+                    self.assertEqual(len(snapshots), 1)
+                    self.assertEqual(snapshots[0].read_bytes(), (source / name).read_bytes())
+
             design = scratch / "design"
             design.mkdir()
             for name in ("design_top.sv", "tb.sv", "fileset.yml"):
@@ -57,17 +87,25 @@ class GeneratedRTLTests(unittest.TestCase):
             cfg = "tang_nano_9k_hdmi_no_tm1638"
             prepared = subprocess.run(
                 [sys.executable, str(ROOT / "unifpga"), "prepare", str(design),
-                 "-b", cfg, "--component-export", str(export / "manifest.json")],
+                 "-b", cfg,
+                 "--component-export", str(export / "manifest.json"),
+                 "--component-export", str(uart_export / "manifest.json")],
                 text=True, capture_output=True, timeout=60, check=False, env=env)
             self.assertEqual(prepared.returncode, 0, prepared.stdout + prepared.stderr)
             output = design / "run" / cfg
             script = (output / "build.tcl").read_text()
             self.assertIn("litex_sync_fifo.v", script)
             self.assertLess(script.index("litex_sync_fifo.v"), script.index("design_top.sv"))
+            self.assertIn("litex_rs232_phy.v", script)
+            self.assertLess(script.index("litex_rs232_phy.v"), script.index("design_top.sv"))
             self.assertIn("pdm_mic_decoder.sv", script)
             snapshots = list(output.glob("component-exports-*/0/manifest.json"))
             self.assertEqual(len(snapshots), 1)
             self.assertEqual(snapshots[0].read_bytes(), (export / "manifest.json").read_bytes())
+            uart_snapshots = list(output.glob("component-exports-*/1/manifest.json"))
+            self.assertEqual(len(uart_snapshots), 1)
+            self.assertEqual(uart_snapshots[0].read_bytes(),
+                             (uart_export / "manifest.json").read_bytes())
 
             # Elaborate the exact sources our Gowin project lists. The vendor
             # primitives are simulation-only stand-ins; LiteX is not the builder.

@@ -89,3 +89,17 @@ framing detection. Both tests use the ordinary component-export snapshot path,
 not LiteX's build or simulation runner. This is a second reusable component
 boundary and a small mixed-source adapter. It is not the required CPU/control
 system, a validated virtual-device UART mapping, or a catalog admission.
+
+`pdm_uart_stream` is the next stream-system candidate: authored PDM decoder →
+pinned LiteX 16-bit FIFO → authored two-byte, big-endian packetizer → pinned
+LiteX UART PHY. Its recipe assumes a real 24 MHz system clock, which gives a
+3 MHz PDM clock. Decimation by 1024 yields about 2,930 samples/s, below the
+UART's 5,760 two-byte samples/s ceiling at 115200 baud and 8N1 framing. The
+packetizer holds each byte through the UART's late acknowledgement; the FIFO
+still counts dropped PDM samples if a consumer falls behind. `test_rtl.py`
+passes **both** component manifests to `unifpga sim`, checks packetizer stalls
+and reset independently, then checks two positive and one negative PDM sample
+over the serial wire, sample cadence, and zero loss in that bounded run.
+The pilot has no frame synchronization or error recovery on the serial wire,
+no microphone waveform or sound-quality validation, no clock/baud binding in
+the catalog, and no synthesis or board test. It is not yet a P2a acceptance.

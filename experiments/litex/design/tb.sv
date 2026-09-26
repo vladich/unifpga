@@ -144,3 +144,136 @@ module tb_virtual;
         $finish;
     end
 endmodule
+
+module tb_packetizer;
+    reg clk = 0;
+    always #50 clk = ~clk;
+    reg rst = 1;
+    reg sample_valid = 0;
+    wire sample_ready, byte_valid;
+    reg [15:0] sample_data = 0;
+    reg byte_ready = 0;
+    wire [7:0] byte_data;
+
+    sample_to_uart_bytes dut (
+        .clk(clk), .rst(rst),
+        .sample_valid(sample_valid), .sample_ready(sample_ready),
+        .sample_data(sample_data),
+        .byte_valid(byte_valid), .byte_ready(byte_ready),
+        .byte_data(byte_data)
+    );
+
+    initial begin
+        repeat (3) @(negedge clk);
+        rst = 0;
+        sample_valid = 1;
+        sample_data = 16'h12ab;
+        @(negedge clk);
+        sample_valid = 0;
+        sample_data = 16'hffff;
+        repeat (5) begin
+            if (!byte_valid || byte_data !== 8'h12 || sample_ready)
+                $fatal(1, "high byte changed while UART stalled");
+            @(negedge clk);
+        end
+        byte_ready = 1;
+        @(negedge clk);
+        byte_ready = 0;
+        if (!byte_valid || byte_data !== 8'hab || sample_ready)
+            $fatal(1, "packetizer lost or reordered low byte");
+        repeat (3) @(negedge clk);
+        if (byte_data !== 8'hab) $fatal(1, "low byte changed while stalled");
+        byte_ready = 1;
+        @(negedge clk);
+        byte_ready = 0;
+        if (byte_valid || !sample_ready)
+            $fatal(1, "packetizer did not release sample after both bytes");
+        sample_valid = 1;
+        sample_data = 16'h3456;
+        @(negedge clk);
+        rst = 1;
+        sample_valid = 0;
+        @(negedge clk);
+        if (byte_valid || !sample_ready)
+            $fatal(1, "reset did not discard a partial sample");
+        $display("PASS native sample-to-UART packetizer backpressure and reset");
+        $finish;
+    end
+endmodule
+
+module tb_pdm_uart;
+    localparam integer BIT_NS = 8680; // Rounded 24 MHz / 115200 baud period.
+    reg clk = 0;
+    always #20.833 clk = ~clk; // 24 MHz within 0.002%.
+    reg rst = 1;
+    reg pdm_data = 1;
+    wire pdm_clk, pdm_lrsel, uart_tx;
+    wire [2:0] level;
+    wire [15:0] dropped_samples;
+    reg [7:0] high_byte, low_byte;
+    integer pdm_edges = 0;
+    time first_packet_done, second_packet_done;
+
+    always @(posedge pdm_clk) pdm_edges = pdm_edges + 1;
+
+    pdm_uart_stream dut (
+        .clk(clk), .rst(rst), .pdm_data(pdm_data),
+        .pdm_clk(pdm_clk), .pdm_lrsel(pdm_lrsel),
+        .uart_tx(uart_tx), .level(level), .dropped_samples(dropped_samples)
+    );
+
+    task automatic receive_byte(output reg [7:0] value);
+        @(negedge uart_tx);
+        #(BIT_NS / 2);
+        if (uart_tx !== 1'b0) $fatal(1, "UART start bit missing");
+        for (integer bit_index = 0; bit_index < 8; bit_index = bit_index + 1) begin
+            #(BIT_NS);
+            value[bit_index] = uart_tx;
+        end
+        #(BIT_NS);
+        if (uart_tx !== 1'b1) $fatal(1, "UART stop bit missing");
+    endtask
+
+    initial begin
+        repeat (4) @(negedge clk);
+        rst = 0;
+        receive_byte(high_byte);
+        receive_byte(low_byte);
+        if ({high_byte, low_byte} !== 16'h2000)
+            $fatal(1, "positive PDM sample changed over FIFO/UART: %h%h",
+                   high_byte, low_byte);
+        first_packet_done = $time;
+        receive_byte(high_byte);
+        receive_byte(low_byte);
+        second_packet_done = $time;
+        if ({high_byte, low_byte} !== 16'h2000)
+            $fatal(1, "second PDM sample changed over FIFO/UART: %h%h",
+                   high_byte, low_byte);
+        if (second_packet_done - first_packet_done < 300000 ||
+            second_packet_done - first_packet_done > 390000)
+            $fatal(1, "unexpected serial sample cadence: %0t ns",
+                   second_packet_done - first_packet_done);
+        if (pdm_edges == 0 || pdm_lrsel !== 1'b0 || dropped_samples !== 16'd0)
+            $fatal(1, "PDM source or matched-rate loss accounting failed");
+
+        // Abort the next frame, clear the queue, then check a negative sample.
+        rst = 1;
+        pdm_data = 0;
+        repeat (4) @(negedge clk);
+        if (level !== 3'd0 || dropped_samples !== 16'd0)
+            $fatal(1, "reset did not clear queued PDM samples and loss count");
+        rst = 0;
+        receive_byte(high_byte);
+        receive_byte(low_byte);
+        if ({high_byte, low_byte} !== 16'he000)
+            $fatal(1, "negative PDM sample changed over FIFO/UART: %h%h",
+                   high_byte, low_byte);
+        $display("PASS PDM decoder + LiteX FIFO + native packetizer + LiteX UART");
+        $finish;
+    end
+
+    initial begin
+        #3000000;
+        $fatal(1, "PDM/UART composed simulation timed out");
+    end
+endmodule
