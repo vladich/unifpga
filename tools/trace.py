@@ -119,6 +119,52 @@ def _pins(pinmap, ref):
     return [{"ref": bit, "pin": pin} for bit, pin in codegen._bind_pins(pinmap, ref)]
 
 
+def pin_sources(resolved, idx, clocks):
+    """{pin signal: {"kind", "text"}} — the pins of attach `idx` the FPGA drives
+    from something other than a design bit: its clock tree (`pin.ck:
+    clock.pixel`), a level (`pin.reset: const.0`), the design's reset or the
+    board clock (`context.rst`, `context.clk`), or a parameter whose value is
+    one of those (`pin.bl: $bl`). `clocks` is collect_clock_requirements()."""
+    a = resolved["peripherals"][idx]
+    perif, params = a["peripheral"], a.get("params") or {}
+    out = {}
+    for lhs, rhs in (perif.get("pin_assigns") or {}).items():
+        if not str(lhs).startswith("pin."):
+            continue
+        sig = re.sub(r"\[\d+\]$", "", lhs[4:])
+        if sig not in (a.get("bind") or {}):
+            continue
+        value = rhs
+        if isinstance(value, str) and value.startswith("$"):
+            value = codegen._eval_param(value, params, perif)
+            if value is None:
+                continue
+        inverted = isinstance(value, str) and value.strip().startswith("~")
+        text = str(value).strip().lstrip("~ ").strip() if isinstance(value, str) else value
+        if isinstance(text, str) and text.startswith("capability."):
+            continue                                   # a design bit: an edge, not a source
+        if isinstance(text, str) and text.startswith("clock."):
+            name = text[len("clock."):].split(".")[0]
+            req = clocks.get(name) or {}
+            mhz = req.get("mhz")
+            how = "{:g} MHz from the PLL".format(mhz) if mhz else ("{} / {}".format(req["from"], req["divide"]) if req.get("from") else "from the PLL")
+            src = {"kind": "clock", "text": "the {} clock, {}".format(name, how)}
+        elif isinstance(text, str) and text.startswith("const."):
+            src = {"kind": "tied", "text": "tied to {}".format(text[len("const."):])}
+        elif isinstance(text, str) and text.startswith("context."):
+            name = text[len("context."):]
+            src = {"kind": "reset" if name.startswith("rst") else "clock",
+                   "text": {"rst": "the design's reset", "rst_n": "the design's reset (active low)", "clk": "the board clock"}.get(name, name)}
+        elif isinstance(text, (bool, int)) and not isinstance(text, str):
+            src = {"kind": "tied", "text": "tied to {}".format(int(text))}
+        else:
+            continue
+        if inverted:
+            src["text"] += ", inverted"
+        out[sig] = src
+    return out
+
+
 def trace(resolved):
     """{"ports": [...], "attaches": [...]} — see the module docstring.
 
@@ -126,19 +172,22 @@ def trace(resolved):
             direction, providers: [{attach_index, peripheral,
             bits: [{design_bit, provider_bit, ref, pin}] | None, via, pins}]}
     attaches: per resolved attach, {attach_index, peripheral, pins: {signal: [{ref, pin}]},
-               links: {signal: pin_links() entries}}.
+               links: {signal: pin_links() entries}, sources: pin_sources() (pins the
+               FPGA drives from its clock tree, a level or the reset, not a design bit)}.
     edges: design bit <-> pin, see edges().
     """
     plans = codegen.build_capability_plans(resolved)
     pinmap = resolved["board_pinmap"]
     attaches = []
-    for a in resolved["peripherals"]:
+    clocks = codegen.collect_clock_requirements(resolved)
+    for idx, a in enumerate(resolved["peripherals"]):
         links = pin_links(a["peripheral"])
         attaches.append({"attach_index": a.get("attach_index"), "peripheral": a["peripheral_id"],
                          "params": a.get("params") or {},
                          "pin_fit": a["peripheral"].get("pin_fit") or {},
                          "pins": {sig: _pins(pinmap, ref) for sig, ref in (a.get("bind") or {}).items()},
-                         "links": {sig: links.get(sig, []) for sig in (a.get("bind") or {})}})
+                         "links": {sig: links.get(sig, []) for sig in (a.get("bind") or {})},
+                         "sources": pin_sources(resolved, idx, clocks)})
     # a gpio bit whose pin another part uses dangles (codegen): no edge to the pin
     gpio_plan = plans.get("gpio")
     gpio_indices = {pidx for pidx, _p, _q in gpio_plan.providers} if gpio_plan else set()
