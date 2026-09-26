@@ -26,8 +26,8 @@ class RtlCorpusTests(unittest.TestCase):
         source_paths = [pathlib.Path(path).relative_to(ROOT).as_posix()
                         for path in sources]
         source_paths.append("rtl/sim/global_clock_buffer.sv")
-        self.assertEqual(len(source_paths), 40)
-        self.assertEqual(len(assets), 4)
+        self.assertEqual(len(source_paths), 41)
+        self.assertEqual(len(assets), 5)
         request = {
             "schema": probe.SCHEMA_V2,
             "sources": source_paths,

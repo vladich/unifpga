@@ -82,10 +82,10 @@ admission before this command can serve a public import service.
 
 `test_rtl_corpus.py` also elaborates the existing APS CPU/control design from
 its `fileset.yml` with the testbench's top-level parameters and the simulation
-clock-buffer helper. The current corpus has 40 HDL sources and yields 44
+clock-buffer helper. The current corpus has 41 HDL sources and yields 44
 instances, including CPU, instruction/data memory, UART, timer, and interrupt
-control. Slang reports no errors but 114 warnings, including width conversions,
-unnamed generate scopes, and a dangling `else`. The fileset declares four
+control. Slang reports no errors but 113 warnings, including width conversions,
+unnamed generate scopes, and a dangling `else`. The fileset declares five
 memory/firmware assets; this frontend check does not validate their runtime
 loading or execute firmware. It establishes a reproducible starting point for
 the mixed-source CPU PoC, not a working SoC or a virtual-device conversion.
