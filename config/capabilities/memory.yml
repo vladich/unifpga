@@ -9,17 +9,47 @@ Capability:
   id: memory
   description: The board's RAM, word by word — a request while ready, its answer with ack.
   parameters:
-    addr_bits:  { type: int, required: true, description: "Word address bits: 2^addr_bits words" }
-    data_bytes: { type: int, default: 2, description: "Bytes per word" }
+    addr_bits:
+      type: int
+      required: true
+      description: 'Word address bits: 2^addr_bits words'
+    data_bytes:
+      type: int
+      default: 2
+      description: Bytes per word
   signals:
-    - { name: req,   type: scalar, direction: user_to_hw, comment: "A request, this clock (while ready)" }
-    - { name: we,    type: scalar, direction: user_to_hw, comment: "1: write wdata's enabled bytes; 0: read" }
-    - { name: addr,  type: bus,    direction: user_to_hw, comment: "Word address; width = addr_bits" }
-    - { name: wdata, type: bus,    direction: user_to_hw, comment: "The word to write; width = 8 * data_bytes" }
-    - { name: be,    type: bus,    direction: user_to_hw, comment: "Byte enables of a write; width = data_bytes" }
-    - { name: ready, type: scalar, direction: hw_to_user, comment: "The memory takes a request this clock" }
-    - { name: ack,   type: scalar, direction: hw_to_user, comment: "One clock: the request is done; rdata holds a read's word" }
-    - { name: rdata, type: bus,    direction: hw_to_user, comment: "The word read; width = 8 * data_bytes" }
+    - name: req
+      type: scalar
+      direction: user_to_hw
+      comment: A request, this clock (while ready)
+    - name: we
+      type: scalar
+      direction: user_to_hw
+      comment: '1: write wdata''s enabled bytes; 0: read'
+    - name: addr
+      type: bus
+      direction: user_to_hw
+      comment: Word address; width = addr_bits
+    - name: wdata
+      type: bus
+      direction: user_to_hw
+      comment: The word to write; width = 8 * data_bytes
+    - name: be
+      type: bus
+      direction: user_to_hw
+      comment: Byte enables of a write; width = data_bytes
+    - name: ready
+      type: scalar
+      direction: hw_to_user
+      comment: The memory takes a request this clock
+    - name: ack
+      type: scalar
+      direction: hw_to_user
+      comment: 'One clock: the request is done; rdata holds a read''s word'
+    - name: rdata
+      type: bus
+      direction: hw_to_user
+      comment: The word read; width = 8 * data_bytes
   aggregation: exclusive
   primary: addr_bits       # what `memory >= N` compares
 
@@ -28,17 +58,39 @@ Capability:
   design:
     comment: 'Memory (optional): the board''s RAM, 2^w_mem_addr words of mem_bytes bytes; a request (mem_req; mem_we and mem_be for a write) while mem_ready, one clock of mem_ack when it is done, mem_rdata a read''s word'
     parameters:
-      w_mem_addr: {value: addr_bits, absent: 0, description: 'Memory (the board''s RAM): word address bits'}
-      mem_bytes: {value: data_bytes, absent: 0, description: Bytes per memory word
-}
+      w_mem_addr:
+        value: addr_bits
+        absent: 0
+        description: 'Memory (the board''s RAM): word address bits'
+      mem_bytes:
+        value: data_bytes
+        absent: 0
+        description: Bytes per memory word
     derived:
-      w_mem_data: {multiply: [mem_bytes, 8]}
+      w_mem_data:
+        multiply: [mem_bytes, 8]
     ports:
-      mem_req: {signal: req, width: 1}
-      mem_we: {signal: we, width: 1}
-      mem_addr: {signal: addr, width: w_mem_addr}
-      mem_wdata: {signal: wdata, width: w_mem_data}
-      mem_be: {signal: be, width: mem_bytes}
-      mem_ready: {signal: ready, width: 1}
-      mem_ack: {signal: ack, width: 1}
-      mem_rdata: {signal: rdata, width: w_mem_data}
+      mem_req:
+        signal: req
+        width: 1
+      mem_we:
+        signal: we
+        width: 1
+      mem_addr:
+        signal: addr
+        width: w_mem_addr
+      mem_wdata:
+        signal: wdata
+        width: w_mem_data
+      mem_be:
+        signal: be
+        width: mem_bytes
+      mem_ready:
+        signal: ready
+        width: 1
+      mem_ack:
+        signal: ack
+        width: 1
+      mem_rdata:
+        signal: rdata
+        width: w_mem_data

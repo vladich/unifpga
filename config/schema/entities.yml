@@ -24,19 +24,42 @@ Entities:
     file_named_after_id: true
     schema: rig.schema.json
     relations:
-      - {from: board, to: board, why: "the board it is built on"}
-      - {from: toolchain, to: toolchain, why: "the default build"}
-      - {from: toolchains.*, to: toolchain, why: "every build the rig is checked with"}
-      - {from: aliases.*.toolchain, to: toolchain, why: "an alias is a toolchain / chip choice"}
-      - {from: for_toolchain.*keys, to: toolchain, why: "a per-toolchain patch"}
-      - {from: use.*.for_toolchain.*keys, to: toolchain, why: "a per-toolchain patch of one use"}
-      - {from: use.*.module, to: module, why: "a module plugged in or wired"}
-      - {from: use.*.raw.peripheral, to: peripheral, why: "a raw attach names its driver"}
-      - {from: design.width.*keys, to: capability, why: "the bus width the design declares"}
-      - {from: use.*.design_bits.*keys, to: capability, why: "which design bit each pin is"}
-      - {rule: rig_expands, why: "on-board parts, connectors, plugs, wires, variants and pins resolve on the board's layout and the rig expands to a configuration (tools/setup.py validate + generate)"}
-      - {rule: rig_chip_variant, why: "part / parts / alias parts are chips of the board"}
-      - {rule: rig_reset_sources, why: "reset sources are the reset capability's (plus power_up, pll_lock, bank, pin)"}
+      - from: board
+        to: board
+        why: the board it is built on
+      - from: toolchain
+        to: toolchain
+        why: the default build
+      - from: toolchains.*
+        to: toolchain
+        why: every build the rig is checked with
+      - from: aliases.*.toolchain
+        to: toolchain
+        why: an alias is a toolchain / chip choice
+      - from: for_toolchain.*keys
+        to: toolchain
+        why: a per-toolchain patch
+      - from: use.*.for_toolchain.*keys
+        to: toolchain
+        why: a per-toolchain patch of one use
+      - from: use.*.module
+        to: module
+        why: a module plugged in or wired
+      - from: use.*.raw.peripheral
+        to: peripheral
+        why: a raw attach names its driver
+      - from: design.width.*keys
+        to: capability
+        why: the bus width the design declares
+      - from: use.*.design_bits.*keys
+        to: capability
+        why: which design bit each pin is
+      - rule: rig_expands
+        why: on-board parts, connectors, plugs, wires, variants and pins resolve on the board's layout and the rig expands to a configuration (tools/setup.py validate + generate)
+      - rule: rig_chip_variant
+        why: part / parts / alias parts are chips of the board
+      - rule: rig_reset_sources
+        why: reset sources are the reset capability's (plus power_up, pll_lock, bank, pin)
 
   peripheral:
     why: >-
@@ -49,9 +72,13 @@ Entities:
     file_named_after_id: true
     schema: peripheral.schema.json
     relations:
-      - {from: provides.*.capability, to: capability, why: "the design-facing contract each provider fills"}
-      - {rule: peripheral_refs, why: "port map, pin assigns, provides, signal widths, serves, pin_fit and models name this peripheral's signals, parameters and clocks and the provided capabilities' signals and parameters; the models' kinds are of config/kinds.yml"}
-      - {rule: peripheral_driver_files, why: "the driver's RTL files exist"}
+      - from: provides.*.capability
+        to: capability
+        why: the design-facing contract each provider fills
+      - rule: peripheral_refs
+        why: port map, pin assigns, provides, signal widths, serves, pin_fit and models name this peripheral's signals, parameters and clocks and the provided capabilities' signals and parameters; the models' kinds are of config/kinds.yml
+      - rule: peripheral_driver_files
+        why: the driver's RTL files exist
 
   capability:
     why: >-
@@ -65,9 +92,14 @@ Entities:
     file_named_after_id: true
     schema: capability.schema.json
     relations:
-      - {from: passthrough, to: peripheral, why: "the peripheral a gpio use attaches"}
-      - {from: sources.*.capability, to: capability, why: "a reset source reads another capability's signal"}
-      - {rule: capability_refs, why: "ports name its signals; primary / size / depth / extent / design values name its parameters; port widths and derived operands name design parameters; a reset source names a signal of its capability"}
+      - from: passthrough
+        to: peripheral
+        why: the peripheral a gpio use attaches
+      - from: sources.*.capability
+        to: capability
+        why: a reset source reads another capability's signal
+      - rule: capability_refs
+        why: ports name its signals; primary / size / depth / extent / design values name its parameters; port widths and derived operands name design parameters; a reset source names a signal of its capability
 
   module:
     why: >-
@@ -81,8 +113,11 @@ Entities:
     file_named_after_id: true
     schema: module.schema.json
     relations:
-      - {from: peripheral, to: peripheral, why: "the driver of the module"}
-      - {rule: module_pins, why: "pins carry the peripheral's signals, params are its parameters, unwired notes name the module's pins"}
+      - from: peripheral
+        to: peripheral
+        why: the driver of the module
+      - rule: module_pins
+        why: pins carry the peripheral's signals, params are its parameters, unwired notes name the module's pins
 
   connector_type:
     why: >-
@@ -108,9 +143,15 @@ Entities:
     file_named_after_id: true
     schema: family.schema.json
     relations:
-      - {from: producer, to: producer, why: "whose family"}
-      - {from: default_toolchains.*, to: toolchain, format: versioned, why: "the builds every chip of the family accepts"}
-      - {rule: family_directory, why: "the file sits in the directory named after its producer's id"}
+      - from: producer
+        to: producer
+        why: whose family
+      - from: default_toolchains.*
+        to: toolchain
+        format: versioned
+        why: the builds every chip of the family accepts
+      - rule: family_directory
+        why: the file sits in the directory named after its producer's id
 
   chip:
     why: >-
@@ -123,7 +164,10 @@ Entities:
     id: id
     record_schema: chip.schema.json
     relations:
-      - {from: toolchains.*, to: toolchain, format: versioned, why: "a chip's own builds"}
+      - from: toolchains.*
+        to: toolchain
+        format: versioned
+        why: a chip's own builds
 
   producer:
     why: >-
@@ -135,7 +179,8 @@ Entities:
     id: id
     schema: producer.schema.json
     relations:
-      - {rule: producer_names_unique, why: "a name or an aka names one producer"}
+      - rule: producer_names_unique
+        why: a name or an aka names one producer
 
   toolchain:
     why: >-
@@ -148,7 +193,8 @@ Entities:
     id: id
     schema: toolchain.schema.json
     relations:
-      - {rule: toolchain_driver, why: "a toolchain with operations has its driver module"}
+      - rule: toolchain_driver
+        why: a toolchain with operations has its driver module
 
   programmer:
     why: >-
@@ -161,8 +207,12 @@ Entities:
     id: id
     schema: programmer.schema.json
     relations:
-      - {from: bundled, to: toolchain, why: "applies wherever the toolchain does"}
-      - {from: families.*, to: family, why: "the chip families a third-party tool loads"}
+      - from: bundled
+        to: toolchain
+        why: applies wherever the toolchain does
+      - from: families.*
+        to: family
+        why: the chip families a third-party tool loads
 
   design:
     why: >-
@@ -172,7 +222,8 @@ Entities:
     files: designs/*/fileset.yml
     schema: design.schema.json
     relations:
-      - {rule: design_fileset, why: "the files exist, design_top.sv once among the sources, tb.sv in simulation"}
+      - rule: design_fileset
+        why: the files exist, design_top.sv once among the sources, tb.sv in simulation
 
   design_top:
     why: >-
@@ -184,9 +235,13 @@ Entities:
     root: DesignTop
     schema: design_top.schema.json
     relations:
-      - {from: sections.*.capabilities.*, to: capability, why: "the capabilities on the device, in order"}
-      - {rule: design_top_sections, why: "every capability with a design block is in exactly one section"}
-      - {rule: design_top_interface, why: "rtl/peripherals/design_top_interface.sv is what the capabilities render to, and every design takes its module header from the include rendered beside it (design_top_interface.svh: the device without the optional capabilities its // requires: does not name), never from a copy"}
+      - from: sections.*.capabilities.*
+        to: capability
+        why: the capabilities on the device, in order
+      - rule: design_top_sections
+        why: every capability with a design block is in exactly one section
+      - rule: design_top_interface
+        why: 'rtl/peripherals/design_top_interface.sv is what the capabilities render to, and every design takes its module header from the include rendered beside it (design_top_interface.svh: the device without the optional capabilities its // requires: does not name), never from a copy'
 
   entity_registry:
     why: This file.
@@ -212,21 +267,48 @@ Entities:
     file_named_after_id: true
     schema: board.schema.json
     relations:
-      - {from: chip, to: chip, why: "the part"}
-      - {from: chips.*, to: chip, format: record_id, why: "the part variants"}
-      - {from: producer, to: producer, why: "whose board"}
-      - {from: programmer, to: programmer, why: "the default programmer"}
-      - {from: extra_programmers.*, to: programmer, format: versioned, why: "programmers the board explicitly accepts"}
-      - {from: features.*, to: feature, why: "catalogue browsing"}
-      - {from: devices.*, to: device, why: "catalogue browsing"}
-      - {rule: board_kinds, why: "every bank's device kind is one of config/kinds.yml, and the board lists a feature the kind implies"}
-      - {from: banks.*.device.id, to: device, why: "the catalogued part on the bank"}
-      - {rule: bank_devices, why: "a bank's catalogued device has a feature its kind implies"}
-      - {rule: board_family, why: "the board's directory is the chip family of its chip (its first variant when the variants span families)"}
-      - {from: parts.*.attach.peripheral, to: peripheral, why: "the driver of a part"}
-      - {from: parts.*.variants.*.attach.peripheral, to: peripheral, why: "the driver of a part variant"}
-      - {rule: board_drawn, why: "headers are of a connector type of config/connectors.yml or the board's own and sit on its banks; parts bind its banks"}
-      - {rule: board_provenance, why: "the documents listed are fetched (a digest each); every source of a bank, header or part names one of them and where; a header read from a document puts every bank pin at one position of a known connector type"}
+      - from: chip
+        to: chip
+        why: the part
+      - from: chips.*
+        to: chip
+        format: record_id
+        why: the part variants
+      - from: producer
+        to: producer
+        why: whose board
+      - from: programmer
+        to: programmer
+        why: the default programmer
+      - from: extra_programmers.*
+        to: programmer
+        format: versioned
+        why: programmers the board explicitly accepts
+      - from: features.*
+        to: feature
+        why: catalogue browsing
+      - from: devices.*
+        to: device
+        why: catalogue browsing
+      - rule: board_kinds
+        why: every bank's device kind is one of config/kinds.yml, and the board lists a feature the kind implies
+      - from: banks.*.device.id
+        to: device
+        why: the catalogued part on the bank
+      - rule: bank_devices
+        why: a bank's catalogued device has a feature its kind implies
+      - rule: board_family
+        why: the board's directory is the chip family of its chip (its first variant when the variants span families)
+      - from: parts.*.attach.peripheral
+        to: peripheral
+        why: the driver of a part
+      - from: parts.*.variants.*.attach.peripheral
+        to: peripheral
+        why: the driver of a part variant
+      - rule: board_drawn
+        why: headers are of a connector type of config/connectors.yml or the board's own and sit on its banks; parts bind its banks
+      - rule: board_provenance
+        why: the documents listed are fetched (a digest each); every source of a bank, header or part names one of them and where; a header read from a document puts every bank pin at one position of a known connector type
 
   feature:
     why: >-
@@ -239,7 +321,9 @@ Entities:
     id: id
     schema: feature.schema.json
     relations:
-      - {from: capabilities.*, to: capability, why: "what a device of this class can provide"}
+      - from: capabilities.*
+        to: capability
+        why: what a device of this class can provide
 
   kind:
     why: >-
@@ -253,7 +337,9 @@ Entities:
     id: kind
     schema: kind.schema.json
     relations:
-      - {from: features.*, to: feature, why: "the classes such a bank means"}
+      - from: features.*
+        to: feature
+        why: the classes such a bank means
 
   device:
     why: >-
@@ -265,8 +351,12 @@ Entities:
     id: id
     schema: device.schema.json
     relations:
-      - {from: feature, to: feature, why: "its class"}
-      - {from: peripherals.*, to: peripheral, why: "the drivers that run it"}
+      - from: feature
+        to: feature
+        why: its class
+      - from: peripherals.*
+        to: peripheral
+        why: the drivers that run it
 
   mezzanine:
     why: >-
@@ -278,9 +368,21 @@ Entities:
     id: id
     schema: mezzanine.schema.json
     relations:
-      - {from: producer, to: producer, why: "whose module"}
-      - {from: chip, to: chip, why: "the part on a SoM"}
-      - {from: features.*, to: feature, why: "catalogue browsing"}
-      - {from: devices.*, to: device, why: "catalogue browsing"}
-      - {from: compatible_boards.*, to: board, why: "carriers it fits"}
-      - {from: default_carrier, to: board, why: "the carrier it is sold with"}
+      - from: producer
+        to: producer
+        why: whose module
+      - from: chip
+        to: chip
+        why: the part on a SoM
+      - from: features.*
+        to: feature
+        why: catalogue browsing
+      - from: devices.*
+        to: device
+        why: catalogue browsing
+      - from: compatible_boards.*
+        to: board
+        why: carriers it fits
+      - from: default_carrier
+        to: board
+        why: the carrier it is sold with

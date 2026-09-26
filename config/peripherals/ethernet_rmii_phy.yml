@@ -5,15 +5,47 @@ Peripheral:
   id: ethernet_rmii_phy
   description: RMII Ethernet PHY interface (e.g. SMSC LAN8720)
   signals:
-    - { name: mdc,    type: scalar, direction: output, comment: "MDIO clock" }
-    - { name: mdio,   type: scalar, direction: inout,  comment: "MDIO data" }
-    - { name: rstn,   type: scalar, direction: output, comment: "PHY reset, active low" }
-    - { name: crsdv,  type: scalar, direction: input,  comment: "Carrier-sense / RX data valid" }
-    - { name: rxerr,  type: scalar, direction: input,  comment: "RX error" }
-    - { name: rxd,    type: bus, width: 2, direction: input,  comment: "RX data (RXD[1:0])" }
-    - { name: txen,   type: scalar, direction: output, comment: "TX enable" }
-    - { name: txd,    type: bus, width: 2, direction: output, comment: "TX data (TXD[1:0])" }
-    - { name: refclk, type: scalar, direction: output, comment: "50 MHz reference clock to PHY" }
-    - { name: intn,   type: scalar, direction: input,  comment: "PHY interrupt, active low" }
+    - name: mdc
+      type: scalar
+      direction: output
+      comment: MDIO clock
+    - name: mdio
+      type: scalar
+      direction: inout
+      comment: MDIO data
+    - name: rstn
+      type: scalar
+      direction: output
+      comment: PHY reset, active low
+    - name: crsdv
+      type: scalar
+      direction: input
+      comment: Carrier-sense / RX data valid
+    - name: rxerr
+      type: scalar
+      direction: input
+      comment: RX error
+    - name: rxd
+      type: bus
+      width: 2
+      direction: input
+      comment: RX data (RXD[1:0])
+    - name: txen
+      type: scalar
+      direction: output
+      comment: TX enable
+    - name: txd
+      type: bus
+      width: 2
+      direction: output
+      comment: TX data (TXD[1:0])
+    - name: refclk
+      type: scalar
+      direction: output
+      comment: 50 MHz reference clock to PHY
+    - name: intn
+      type: scalar
+      direction: input
+      comment: PHY interrupt, active low
   provides: []
   driver: null

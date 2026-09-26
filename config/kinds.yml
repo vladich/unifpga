@@ -7,53 +7,153 @@
 # role). Peripherals name the kinds they drive in their `models:`.
 
 Kinds:
-  - {kind: leds,           description: "User LEDs",                          features: [user_leds]}
-  - {kind: rgb_leds,       description: "RGB LEDs (one pin per colour)",      features: [rgb_leds]}
-  - {kind: ws2812,         description: "Addressable LEDs (WS2812 and alike)", features: [addressable_leds]}
-  - {kind: buttons,        description: "Push-buttons",                       features: [user_buttons]}
-  - {kind: switches,       description: "Slide / DIP switches",               features: [dip_switches]}
-  - {kind: seven_segment,  description: "7-segment display",                  features: [seven_segment_display]}
-  - {kind: sdcard,         description: "SD / microSD card slot",             features: [microsd_socket, sd_card_socket]}
-  - {kind: flash,          description: "Configuration or user flash",        features: [qspi_flash, spi_flash, nor_flash]}
-  - {kind: sdram,          description: "SDR SDRAM",                          features: [sdr_sdram]}
-  - {kind: ddr3,           description: "DDR3 SDRAM",                         features: [ddr3_memory]}
-  - {kind: ddr,            description: "DDR SDRAM of a generation the bank does not say", features: [ddr1_memory, ddr2_memory, ddr3_memory, ddr4_memory]}
-  - {kind: sram,           description: "Asynchronous SRAM",                  features: [sram]}
-  - {kind: psram,          description: "PSRAM / HyperRAM",                   features: [hyperram]}
-  - {kind: eeprom,         description: "I2C / SPI EEPROM",                   features: [eeprom_chip]}
-  - {kind: ethernet,       description: "Ethernet PHY (MII / RMII / RGMII)",  features: [ethernet_phy_10_100, ethernet_phy_gigabit]}
-  - {kind: ethernet_rgmii, description: "Gigabit Ethernet PHY on RGMII",      features: [ethernet_phy_gigabit]}
-  - {kind: usb,            description: "USB port or bridge of unknown role",  features: []}
-  - {kind: usb_hid,        description: "USB host port for HID devices",       features: [usb_2_host]}
-  - {kind: uart,           description: "UART pins (a bridge or a header)",    features: []}
-  - {kind: ps2,            description: "PS/2 port",                           features: [ps2_port]}
-  - {kind: adc,            description: "ADC chip",                            features: [adc_chip]}
-  - {kind: xadc,           description: "Analog inputs of the FPGA's own ADC",  features: []}
-  - {kind: temperature,    description: "Temperature sensor",                  features: [temperature_sensor_external]}
-  - {kind: accelerometer,  description: "Accelerometer",                       features: [accelerometer]}
-  - {kind: hdmi_tx,        description: "HDMI / DVI output",                   features: [hdmi_output]}
-  - {kind: hdmi_rx,        description: "HDMI input",                          features: [hdmi_input]}
-  - {kind: vga,            description: "VGA output",                          features: [vga_output]}
-  - {kind: lcd_rgb,        description: "Parallel RGB LCD connector",          features: [parallel_lcd]}
-  - {kind: lcd_char,       description: "Character LCD",                       features: [character_lcd]}
-  - {kind: lcd_spi,        description: "SPI TFT / OLED display",              features: [spi_lcd]}
-  - {kind: lcd,            description: "Display of a kind the bank does not say", features: []}
-  - {kind: camera_dvp,     description: "Parallel (DVP) camera connector",     features: [parallel_camera_input]}
-  - {kind: audio,          description: "Audio codec",                         features: [audio_codec]}
-  - {kind: audio_i2s,      description: "I2S audio device",                    features: [audio_codec, audio_dac, digital_mic_i2s, audio_amp_class_d]}
-  - {kind: audio_dac,      description: "Audio DAC",                           features: [audio_dac]}
-  - {kind: audio_amp,      description: "Audio amplifier driven by a PWM or analog line", features: [audio_amp_class_d]}
-  - {kind: mic,            description: "Microphone, or a connector for a microphone-array module (implies no on-board microphone)", features: []}
-  - {kind: buzzer,         description: "Buzzer",                              features: [buzzer]}
-  - {kind: fan,            description: "Fan header",                          features: [fan_header]}
-  - {kind: ir,             description: "IR receiver",                         features: [ir_receiver]}
-  - {kind: irda,           description: "IrDA transceiver",                    features: [irda_transceiver]}
-  - {kind: joystick,       description: "Joystick / gamepad port",             features: [joystick]}
-  - {kind: pcie,           description: "PCIe connector or endpoint",          features: [pcie_endpoint, pcie_edge_connector]}
-  - {kind: serdes,         description: "High-speed serial lanes",             features: []}
-  - {kind: video_decoder,  description: "Analog video decoder",                features: [analog_video_decoder]}
-  - {kind: pmod,           description: "Pmod connector",                      features: [pmod_connector]}
-  - {kind: header,         description: "Expansion header",                    features: []}
-  - {kind: clock,          description: "Clock source",                        features: []}
-  - {kind: reset,          description: "Reset button or net",                 features: []}
-  - {kind: other,          description: "A device of no kind above",           features: []}
+  - kind: leds
+    description: User LEDs
+    features: [user_leds]
+  - kind: rgb_leds
+    description: RGB LEDs (one pin per colour)
+    features: [rgb_leds]
+  - kind: ws2812
+    description: Addressable LEDs (WS2812 and alike)
+    features: [addressable_leds]
+  - kind: buttons
+    description: Push-buttons
+    features: [user_buttons]
+  - kind: switches
+    description: Slide / DIP switches
+    features: [dip_switches]
+  - kind: seven_segment
+    description: 7-segment display
+    features: [seven_segment_display]
+  - kind: sdcard
+    description: SD / microSD card slot
+    features: [microsd_socket, sd_card_socket]
+  - kind: flash
+    description: Configuration or user flash
+    features: [qspi_flash, spi_flash, nor_flash]
+  - kind: sdram
+    description: SDR SDRAM
+    features: [sdr_sdram]
+  - kind: ddr3
+    description: DDR3 SDRAM
+    features: [ddr3_memory]
+  - kind: ddr
+    description: DDR SDRAM of a generation the bank does not say
+    features: [ddr1_memory, ddr2_memory, ddr3_memory, ddr4_memory]
+  - kind: sram
+    description: Asynchronous SRAM
+    features: [sram]
+  - kind: psram
+    description: PSRAM / HyperRAM
+    features: [hyperram]
+  - kind: eeprom
+    description: I2C / SPI EEPROM
+    features: [eeprom_chip]
+  - kind: ethernet
+    description: Ethernet PHY (MII / RMII / RGMII)
+    features: [ethernet_phy_10_100, ethernet_phy_gigabit]
+  - kind: ethernet_rgmii
+    description: Gigabit Ethernet PHY on RGMII
+    features: [ethernet_phy_gigabit]
+  - kind: usb
+    description: USB port or bridge of unknown role
+    features: []
+  - kind: usb_hid
+    description: USB host port for HID devices
+    features: [usb_2_host]
+  - kind: uart
+    description: UART pins (a bridge or a header)
+    features: []
+  - kind: ps2
+    description: PS/2 port
+    features: [ps2_port]
+  - kind: adc
+    description: ADC chip
+    features: [adc_chip]
+  - kind: xadc
+    description: Analog inputs of the FPGA's own ADC
+    features: []
+  - kind: temperature
+    description: Temperature sensor
+    features: [temperature_sensor_external]
+  - kind: accelerometer
+    description: Accelerometer
+    features: [accelerometer]
+  - kind: hdmi_tx
+    description: HDMI / DVI output
+    features: [hdmi_output]
+  - kind: hdmi_rx
+    description: HDMI input
+    features: [hdmi_input]
+  - kind: vga
+    description: VGA output
+    features: [vga_output]
+  - kind: lcd_rgb
+    description: Parallel RGB LCD connector
+    features: [parallel_lcd]
+  - kind: lcd_char
+    description: Character LCD
+    features: [character_lcd]
+  - kind: lcd_spi
+    description: SPI TFT / OLED display
+    features: [spi_lcd]
+  - kind: lcd
+    description: Display of a kind the bank does not say
+    features: []
+  - kind: camera_dvp
+    description: Parallel (DVP) camera connector
+    features: [parallel_camera_input]
+  - kind: audio
+    description: Audio codec
+    features: [audio_codec]
+  - kind: audio_i2s
+    description: I2S audio device
+    features: [audio_codec, audio_dac, digital_mic_i2s, audio_amp_class_d]
+  - kind: audio_dac
+    description: Audio DAC
+    features: [audio_dac]
+  - kind: audio_amp
+    description: Audio amplifier driven by a PWM or analog line
+    features: [audio_amp_class_d]
+  - kind: mic
+    description: Microphone, or a connector for a microphone-array module (implies no on-board microphone)
+    features: []
+  - kind: buzzer
+    description: Buzzer
+    features: [buzzer]
+  - kind: fan
+    description: Fan header
+    features: [fan_header]
+  - kind: ir
+    description: IR receiver
+    features: [ir_receiver]
+  - kind: irda
+    description: IrDA transceiver
+    features: [irda_transceiver]
+  - kind: joystick
+    description: Joystick / gamepad port
+    features: [joystick]
+  - kind: pcie
+    description: PCIe connector or endpoint
+    features: [pcie_endpoint, pcie_edge_connector]
+  - kind: serdes
+    description: High-speed serial lanes
+    features: []
+  - kind: video_decoder
+    description: Analog video decoder
+    features: [analog_video_decoder]
+  - kind: pmod
+    description: Pmod connector
+    features: [pmod_connector]
+  - kind: header
+    description: Expansion header
+    features: []
+  - kind: clock
+    description: Clock source
+    features: []
+  - kind: reset
+    description: Reset button or net
+    features: []
+  - kind: other
+    description: A device of no kind above
+    features: []

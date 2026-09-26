@@ -13,20 +13,49 @@ Peripheral:
     # Backlight / init pin drivers; they differ per board (`1'b0` on Tang
     # Nano 9K / 20K alt, `~ rst` on Tang Primer 20K Dock) and are set per
     # configuration.
-    bl:   { type: string, default: const.1 }
-    init: { type: string, default: const.0 }
+    bl:
+      type: string
+      default: const.1
+    init:
+      type: string
+      default: const.0
   signals:
-    - { name: r,    type: bus, width: 5, direction: output }
-    - { name: g,    type: bus, width: 6, direction: output }
-    - { name: b,    type: bus, width: 5, direction: output }
+    - name: r
+      type: bus
+      width: 5
+      direction: output
+    - name: g
+      type: bus
+      width: 6
+      direction: output
+    - name: b
+      type: bus
+      width: 5
+      direction: output
     # hs/vs are optional: the Tang Nano 20K runs the panel DE-only (LCD_HS /
     # LCD_VS tied to 0 with the driver's HSYNC / VSYNC unconnected)
-    - { name: hs,   type: scalar, direction: output, optional: true }
-    - { name: vs,   type: scalar, direction: output, optional: true }
-    - { name: de,   type: scalar, direction: output }
-    - { name: ck,   type: scalar, direction: output }
-    - { name: bl,   type: scalar, direction: output, optional: true }
-    - { name: init, type: scalar, direction: output, optional: true }
+    - name: hs
+      type: scalar
+      direction: output
+      optional: true
+    - name: vs
+      type: scalar
+      direction: output
+      optional: true
+    - name: de
+      type: scalar
+      direction: output
+    - name: ck
+      type: scalar
+      direction: output
+    - name: bl
+      type: scalar
+      direction: output
+      optional: true
+    - name: init
+      type: scalar
+      direction: output
+      optional: true
   provides:
     - capability: screen
       params:
@@ -37,7 +66,9 @@ Peripheral:
   # 27 -> 33 MHz on the Tang Nano 20K / Primer 20K Dock, 32.4 or 33.33 MHz on
   # the Tang Nano 9K variants). Codegen exposes it as `clock.pixel`.
   clocks:
-    - { name: pixel, mhz: 33, tolerance_pct: 3 }
+    - name: pixel
+      mhz: 33
+      tolerance_pct: 3
   driver:
     module: lcd_800_480
     file: rtl/peripherals/lcd_800_480.sv

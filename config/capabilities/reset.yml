@@ -5,7 +5,9 @@ Capability:
   id: reset
   description: Synchronous active-high reset for user logic.
   signals:
-    - { name: rst, type: scalar, direction: hw_to_user }
+    - name: rst
+      type: scalar
+      direction: hw_to_user
   # OR-aggregation: any source asserting reset asserts the user's rst signal.
   # On boards without a dedicated reset button, a power-on-reset module can
   # provide this capability without any explicit pin.
@@ -19,14 +21,37 @@ Capability:
   # bit a flag form means (`switch_msb: true`, `any_key: true`), `kind` the
   # source it is a form of.
   sources:
-    switch:     {capability: switches, signal: sw, parts: pins}
-    switch_msb: {capability: switches, signal: sw, parts: pins, index: msb, kind: switch}
-    key:        {capability: buttons, signal: btn, parts: pins}
-    any_key:    {capability: buttons, signal: btn, parts: pins, index: any, kind: key}
-    tm_key:     {capability: buttons, signal: btn, parts: driver}
+    switch:
+      capability: switches
+      signal: sw
+      parts: pins
+    switch_msb:
+      capability: switches
+      signal: sw
+      parts: pins
+      index: msb
+      kind: switch
+    key:
+      capability: buttons
+      signal: btn
+      parts: pins
+    any_key:
+      capability: buttons
+      signal: btn
+      parts: pins
+      index: any
+      kind: key
+    tm_key:
+      capability: buttons
+      signal: btn
+      parts: driver
 
   design:
     comment: Reset (active-high)
 
     ports:
-      rst: {signal: rst, width: 1, net: {source: reset_net}}
+      rst:
+        signal: rst
+        width: 1
+        net:
+          source: reset_net

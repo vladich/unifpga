@@ -5,9 +5,18 @@ Peripheral:
   id: pdm_mic
   description: PDM microphone (1-bit data stream)
   signals:
-    - { name: clk,   type: scalar, direction: output, comment: "Sample clock to mic" }
-    - { name: data,  type: scalar, direction: input,  comment: "PDM data stream from mic" }
-    - { name: lrsel, type: scalar, direction: output, comment: "Left/right channel select (optional, may be tied off)" }
+    - name: clk
+      type: scalar
+      direction: output
+      comment: Sample clock to mic
+    - name: data
+      type: scalar
+      direction: input
+      comment: PDM data stream from mic
+    - name: lrsel
+      type: scalar
+      direction: output
+      comment: Left/right channel select (optional, may be tied off)
   provides:
     - capability: audio_in
   driver:

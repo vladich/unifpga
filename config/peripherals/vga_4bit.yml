@@ -14,12 +14,24 @@ Peripheral:
   id: vga_4bit
   description: VGA output (HSYNC/VSYNC + R/G/B DAC of configurable width)
   parameters:
-    bits_r:     { type: int, default: 4 }
-    bits_g:     { type: int, default: 4 }
-    bits_b:     { type: int, default: 4 }
-    pin_bits_r: { type: int, default: 4 }
-    pin_bits_g: { type: int, default: 4 }
-    pin_bits_b: { type: int, default: 4 }
+    bits_r:
+      type: int
+      default: 4
+    bits_g:
+      type: int
+      default: 4
+    bits_b:
+      type: int
+      default: 4
+    pin_bits_r:
+      type: int
+      default: 4
+    pin_bits_g:
+      type: int
+      default: 4
+    pin_bits_b:
+      type: int
+      default: 4
     color_depth:
       type: enum
       values: [111, 444, 565, 888]
@@ -32,15 +44,36 @@ Peripheral:
       type: bool
       default: false    # colours and syncs through a flop (DE0-Nano: "to remove the glitches")
   signals:
-    - { name: r,  type: bus, width: $pin_bits_r, direction: output }
-    - { name: g,  type: bus, width: $pin_bits_g, direction: output }
-    - { name: b,  type: bus, width: $pin_bits_b, direction: output }
-    - { name: hs, type: scalar, direction: output }
-    - { name: vs, type: scalar, direction: output }
+    - name: r
+      type: bus
+      width: $pin_bits_r
+      direction: output
+    - name: g
+      type: bus
+      width: $pin_bits_g
+      direction: output
+    - name: b
+      type: bus
+      width: $pin_bits_b
+      direction: output
+    - name: hs
+      type: scalar
+      direction: output
+    - name: vs
+      type: scalar
+      direction: output
     # DAC boards (DE2-115, DE1-SoC, SoCKit, DE2): VGA_BLANK_N is driven with
     # display_on and VGA_CLK with the pixel clock; VGA_SYNC_N is a `tie:`.
-    - { name: blank_n, type: scalar, direction: output, optional: true, comment: "ADV7123 BLANK_N = display_on" }
-    - { name: clk,     type: scalar, direction: output, optional: true, comment: "ADV7123 pixel clock" }
+    - name: blank_n
+      type: scalar
+      direction: output
+      optional: true
+      comment: ADV7123 BLANK_N = display_on
+    - name: clk
+      type: scalar
+      direction: output
+      optional: true
+      comment: ADV7123 pixel clock
   provides:
     - capability: screen
       params:

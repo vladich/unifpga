@@ -70,12 +70,12 @@ Board:
 
   banks:
     onboard_buttons:
-      pins: ["D19", "D20", "L20", "L19"]
+      pins: [D19, D20, L20, L19]
     onboard_leds:
-      pins: ["R14", "P14", "N16", "M14"]
+      pins: [R14, P14, N16, M14]
     onboard_pwm_amp:
       pins:
         pwm: "R18"
         sd: "T17"
     onboard_switches:
-      pins: ["M20", "M19"]
+      pins: [M20, M19]

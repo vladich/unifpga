@@ -7,10 +7,21 @@ Peripheral:
   # `tx` is optional: the Cyclone V GX starter kit routes only UART RX to the
   # FPGA.
   # the on-board devices it models: a board inventory's UART, pins named from the FPGA's side
-  models: {kind: uart, pins: {tx: [tx, TXD, uart_tx], rx: [rx, RXD, uart_rx]}}
+  models:
+    kind: uart
+    pins:
+      tx: [tx, TXD, uart_tx]
+      rx: [rx, RXD, uart_rx]
   signals:
-    - { name: tx, type: scalar, direction: output, optional: true, comment: "Transmit (host to peer)" }
-    - { name: rx, type: scalar, direction: input,  comment: "Receive (peer to host)" }
+    - name: tx
+      type: scalar
+      direction: output
+      optional: true
+      comment: Transmit (host to peer)
+    - name: rx
+      type: scalar
+      direction: input
+      comment: Receive (peer to host)
   provides:
     - capability: serial_console
   driver: null   # pin.tx <- capability.serial_console.tx; pin.rx -> capability.serial_console.rx

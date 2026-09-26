@@ -6,35 +6,52 @@ Setup:
   board: eclypse_z7
   toolchain: vivado
   toolchains: [vivado, nextpnr_openxc7]
-  aliases: {eclypse_z7_openxc7: {toolchain: nextpnr_openxc7}}
+  aliases:
+    eclypse_z7_openxc7:
+      toolchain: nextpnr_openxc7
   use:
     - onboard: clk
     - onboard: buttons
-      design_bits: {buttons: []}
+      design_bits:
+        buttons: []
     - module: tm1638_led_key
-      wires: {STB: 'pmod_jb.[7]', CLK: 'pmod_jb.[6]', DIO: 'pmod_jb.[5]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: pmod_jb.[7]
+        CLK: pmod_jb.[6]
+        DIO: pmod_jb.[5]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - onboard: rgb_led_1
       variant: led_bank_3
-      design_bits: {leds: [0]}
+      design_bits:
+        leds: [0]
     - onboard: rgb_led_1
       variant: led_bank_2
-      design_bits: {leds: [1]}
+      design_bits:
+        leds: [1]
     - onboard: rgb_led_1
       variant: led_bank
-      design_bits: {leds: [2]}
+      design_bits:
+        leds: [2]
     - onboard: rgb_led_0
       variant: led_bank_3
-      design_bits: {leds: [3]}
+      design_bits:
+        leds: [3]
     - onboard: rgb_led_0
       variant: led_bank_2
-      design_bits: {leds: [4]}
+      design_bits:
+        leds: [4]
     - onboard: rgb_led_0
       variant: led_bank
-      design_bits: {leds: [5]}
+      design_bits:
+        leds: [5]
   design:
     reset:
       sources:
-      - {key: 0}
+      - key: 0
     uart_rx: 0
-    width: {gpio: 1}
+    width:
+      gpio: 1

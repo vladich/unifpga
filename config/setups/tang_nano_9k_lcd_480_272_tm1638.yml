@@ -6,26 +6,43 @@ Setup:
   board: tang_nano_9k
   toolchain: gowin_eda
   toolchains: [gowin_eda, nextpnr_apicula]
-  aliases: {tang_nano_9k_lcd_480_272_tm1638_yosys: {toolchain: nextpnr_apicula}}
+  aliases:
+    tang_nano_9k_lcd_480_272_tm1638_yosys:
+      toolchain: nextpnr_apicula
   use:
     - onboard: clk
     - onboard: buttons
-      design_bits: {buttons: []}
+      design_bits:
+        buttons: []
     - onboard: leds
-      design_bits: {leds: [0, 1, 2, 3, 4, 5]}
+      design_bits:
+        leds: [0, 1, 2, 3, 4, 5]
     - onboard: uart
     - onboard: lcd
       variant: lcd_480_272
-      for_toolchain: {nextpnr_apicula: {params: {clock_pixel_pll: null}}}
+      for_toolchain:
+        nextpnr_apicula:
+          params:
+            clock_pixel_pll: null
     - module: tm1638_led_key
-      wires: {STB: 'gpio.[2]', CLK: 'gpio.[1]', DIO: 'gpio.[0]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: gpio.[2]
+        CLK: gpio.[1]
+        DIO: gpio.[0]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - onboard: microsd
     - module: i2s_dac_breakout
-      wires: {BCK: 'gpio.[3]', LCK: 'gpio.[5]', DIN: 'gpio.[4]'}
+      wires:
+        BCK: gpio.[3]
+        LCK: gpio.[5]
+        DIN: gpio.[4]
     - onboard: small_lcd
   design:
     reset:
       sources:
-      - {power_up: true}
-      - {any_key: true}
+      - power_up: true
+      - any_key: true

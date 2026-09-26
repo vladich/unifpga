@@ -4,11 +4,27 @@ Peripheral:
   id: microsd_4bit
   description: microSD slot (4-bit SD mode)
   signals:
-    - { name: reset, type: scalar, direction: output, comment: "Power/reset control" }
-    - { name: cd,    type: scalar, direction: input,  comment: "Card detect" }
-    - { name: sck,   type: scalar, direction: output, comment: "Clock" }
-    - { name: cmd,   type: scalar, direction: inout,  comment: "Command/response" }
-    - { name: dat,   type: bus, width: 4, direction: inout, comment: "4-bit data" }
+    - name: reset
+      type: scalar
+      direction: output
+      comment: Power/reset control
+    - name: cd
+      type: scalar
+      direction: input
+      comment: Card detect
+    - name: sck
+      type: scalar
+      direction: output
+      comment: Clock
+    - name: cmd
+      type: scalar
+      direction: inout
+      comment: Command/response
+    - name: dat
+      type: bus
+      width: 4
+      direction: inout
+      comment: 4-bit data
   # No user-level capability defined for storage yet — to be added when an SD
   # controller IP is bundled. For now the pins are reserved at this attachment.
   provides: []

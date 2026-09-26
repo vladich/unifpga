@@ -43,11 +43,12 @@ Board:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: "L17" }
+    clk:
+      pins: L17
     onboard_buttons:
-      pins: ["A18", "B18"]
+      pins: [A18, B18]
     onboard_leds:
-      pins: ["A17", "C16"]
+      pins: [A17, C16]
     onboard_rgb_led_0:
       pins:
         b: "B17"
@@ -58,4 +59,4 @@ Board:
         rx: "J17"
         tx: "J18"
     pmod_ja:
-      pins: ["G17", "G19", "N18", "L18", "H17", "H19", "J19", "K18"]
+      pins: [G17, G19, N18, L18, H17, H19, J19, K18]

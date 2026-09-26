@@ -33,27 +33,68 @@ Peripheral:
       default: 2
   # the on-board devices it models: a board inventory's SDRAM, its pins under
   # Terasic's DRAM_* names or the plain ones (two DQM pins make the dqm bus)
-  models: {kind: sdram, pins: {clk: [DRAM_CLK, clk, sdram_clk],
-                               cke: [DRAM_CKE, cke],
-                               cs_n: [DRAM_CS_N, cs_n],
-                               ras_n: [DRAM_RAS_N, ras_n],
-                               cas_n: [DRAM_CAS_N, cas_n],
-                               we_n: [DRAM_WE_N, we_n],
-                               ba: [DRAM_BA, DRAM_BA_, ba, [ba0, ba1]],
-                               a: [DRAM_ADDR, a, addr],
-                               dq: [DRAM_DQ, dq, d],
-                               dqm: [DRAM_DQM, dqm, dm, [DRAM_LDQM, DRAM_UDQM]]}}
+  models:
+    kind: sdram
+    pins:
+      clk: [DRAM_CLK, clk, sdram_clk]
+      cke: [DRAM_CKE, cke]
+      cs_n: [DRAM_CS_N, cs_n]
+      ras_n: [DRAM_RAS_N, ras_n]
+      cas_n: [DRAM_CAS_N, cas_n]
+      we_n: [DRAM_WE_N, we_n]
+      ba:
+      - DRAM_BA
+      - DRAM_BA_
+      - ba
+      - [ba0, ba1]
+      a: [DRAM_ADDR, a, addr]
+      dq: [DRAM_DQ, dq, d]
+      dqm:
+      - DRAM_DQM
+      - dqm
+      - dm
+      - [DRAM_LDQM, DRAM_UDQM]
   signals:
-    - { name: clk,   type: scalar, direction: output, comment: "The chip's clock (the design clock inverted)" }
-    - { name: cke,   type: scalar, direction: output, optional: true, comment: "Clock enable (a board without the pin ties it high)" }
-    - { name: cs_n,  type: scalar, direction: output, optional: true, comment: "Chip select (a board without the pin ties it low)" }
-    - { name: ras_n, type: scalar, direction: output }
-    - { name: cas_n, type: scalar, direction: output }
-    - { name: we_n,  type: scalar, direction: output }
-    - { name: ba,    type: bus,    direction: output, comment: "Bank address" }
-    - { name: a,     type: bus,    direction: output, comment: "Address: the row, then the column with A10 for auto precharge" }
-    - { name: dq,    type: bus,    direction: inout,  comment: "Data" }
-    - { name: dqm,   type: bus,    direction: output, optional: true, comment: "Data masks, one per byte (a board without them writes whole words)" }
+    - name: clk
+      type: scalar
+      direction: output
+      comment: The chip's clock (the design clock inverted)
+    - name: cke
+      type: scalar
+      direction: output
+      optional: true
+      comment: Clock enable (a board without the pin ties it high)
+    - name: cs_n
+      type: scalar
+      direction: output
+      optional: true
+      comment: Chip select (a board without the pin ties it low)
+    - name: ras_n
+      type: scalar
+      direction: output
+    - name: cas_n
+      type: scalar
+      direction: output
+    - name: we_n
+      type: scalar
+      direction: output
+    - name: ba
+      type: bus
+      direction: output
+      comment: Bank address
+    - name: a
+      type: bus
+      direction: output
+      comment: 'Address: the row, then the column with A10 for auto precharge'
+    - name: dq
+      type: bus
+      direction: inout
+      comment: Data
+    - name: dqm
+      type: bus
+      direction: output
+      optional: true
+      comment: Data masks, one per byte (a board without them writes whole words)
   provides:
     - capability: memory
       params:
@@ -61,8 +102,10 @@ Peripheral:
         data_bytes: $data_bytes
   # derived from the buses: the design's word address is {bank, row, column}
   derive:
-    addr_bits: {sum: [bank_bits, row_bits, col_bits]}
-    data_bytes: {divide: [data_bits, 8]}
+    addr_bits:
+      sum: [bank_bits, row_bits, col_bits]
+    data_bytes:
+      divide: [data_bits, 8]
   driver:
     module: sdram_sdr
     file: rtl/peripherals/sdram_sdr.sv

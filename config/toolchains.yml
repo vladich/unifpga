@@ -52,7 +52,7 @@ Toolchains:
     operations: [synthesize, program]
     # Free edition. Covers MAX 10, Cyclone IV / V / 10 LP, Cyclone V SoC,
     # Arria II GX, MAX V / II CPLDs. Anything beyond needs Standard or Pro.
-    known_versions: ["18.1", "19.1", "20.1", "21.1", "22.1std", "23.1std", "24.1std"]
+    known_versions: ['18.1', '19.1', '20.1', '21.1', 22.1std, 23.1std, 24.1std]
     version: "23.1std"
     install_dir: "~/intelFPGA_lite/23.1std/quartus/"
 
@@ -60,7 +60,7 @@ Toolchains:
     name: "Quartus Prime Standard Edition"
     operations: [synthesize, program]
     # Paid edition. Adds Stratix V, Arria V, Cyclone 10 GX support.
-    known_versions: ["18.1", "19.1", "20.1", "21.1", "22.1", "23.1", "24.1"]
+    known_versions: ['18.1', '19.1', '20.1', '21.1', '22.1', '23.1', '24.1']
     version:
     install_dir:
 
@@ -68,7 +68,7 @@ Toolchains:
     name: "Quartus Prime Pro Edition"
     operations: [synthesize, program]
     # Required for Stratix 10, Agilex 3/5/7/9, Arria 10.
-    known_versions: ["18.1", "19.3", "20.4", "21.4", "22.4", "23.4", "24.3"]
+    known_versions: ['18.1', '19.3', '20.4', '21.4', '22.4', '23.4', '24.3']
     version:
     install_dir:
 
@@ -78,14 +78,14 @@ Toolchains:
     # Quartus II 13.0sp1 is the last version that supports Cyclone II/III
     # (used by DE0/DE1/DE2/dk_dev_3c120n/marsohod_mcy316). Cyclone IV/V/MAX 10
     # still go through quartus_prime_lite.
-    known_versions: ["13.0sp1", "13.1"]
+    known_versions: [13.0sp1, '13.1']
     version: "13.0sp1"
     install_dir: "~/altera/13.0sp1/quartus/"
 
   - id: libero_soc
     name: LiberoSoC
     operations: [synthesize]
-    known_versions: ["2021.3", "2022.2", "2022.3", "2023.1", "2023.2", "2024.1", "2024.2"]
+    known_versions: ['2021.3', '2022.2', '2022.3', '2023.1', '2023.2', '2024.1', '2024.2']
     version: "2024.1"
     install_dir: "/usr/local/microchip/Libero_SoC_v2024.1/Libero/"
 
@@ -94,14 +94,14 @@ Toolchains:
     operations: []
     # Final Libero IDE release was v9.2 (~2014). Covers Actel-era flash:
     # ProASIC3 / IGLOO / SmartFusion / Fusion / Axcelerator.
-    known_versions: ["9.1", "9.2"]
+    known_versions: ['9.1', '9.2']
     version:
     install_dir:
 
   - id: efinity
     name: Efinity
     operations: [synthesize, program]
-    known_versions: ["2022.1", "2022.2", "2023.1", "2023.2", "2024.1", "2024.2"]
+    known_versions: ['2022.1', '2022.2', '2023.1', '2023.2', '2024.1', '2024.2']
     version: "2023.2"
     install_dir: "~/efinity/2023.2/"
 
@@ -109,7 +109,7 @@ Toolchains:
     name: GowinEDA
     operations: [synthesize, program]
     # Educational license (free). Covers GW1N* / GW2A* parts.
-    known_versions: ["1.9.9.03.Education", "1.9.10.02.Educational", "1.9.11.01.Educational", "1.9.11.03.Educational"]
+    known_versions: [1.9.9.03.Education, 1.9.10.02.Educational, 1.9.11.01.Educational, 1.9.11.03.Educational]
     version: "1.9.11.03.Educational"
     install_dir: "~/Gowin/1.9.11.03.Educational/"
 
@@ -117,21 +117,21 @@ Toolchains:
     name: GowinStandard
     operations: [synthesize, program]
     # NODELOCK Standard license required (for AroraV/GW5* parts).
-    known_versions: ["1.9.8.11", "1.9.9.02", "1.9.10"]
+    known_versions: [1.9.8.11, 1.9.9.02, 1.9.10]
     version: "1.9.9.02"
     install_dir: "~/Gowin/1.9.9.02/"
 
   - id: pango_ds
     name: PangoDS
     operations: []
-    known_versions: ["2024.1"]
+    known_versions: ['2024.1']
     version:
     install_dir:
 
   - id: lattice_radiant
     name: LatticeRadiant
     operations: []
-    known_versions: ["2.2", "3.0", "3.1", "3.2", "2023.1", "2023.2", "2024.1"]
+    known_versions: ['2.2', '3.0', '3.1', '3.2', '2023.1', '2023.2', '2024.1']
     version:
     install_dir:
 
@@ -139,7 +139,7 @@ Toolchains:
     name: LatticeDiamond
     operations: []
     # ECP3 / ECP5, MachXO / XO2 / XO3.
-    known_versions: ["3.10", "3.11", "3.12", "3.13"]
+    known_versions: ['3.10', '3.11', '3.12', '3.13']
     version:
     install_dir:
 
@@ -148,7 +148,7 @@ Toolchains:
     operations: []
     # SiliconBlue-heritage flow for original iCE40 LP/HX/LM. Last public
     # release ~2020.12; maintained but not actively developed.
-    known_versions: ["2017.08", "2020.12"]
+    known_versions: ['2017.08', '2020.12']
     version:
     install_dir:
 
@@ -157,7 +157,7 @@ Toolchains:
     operations: []
     # EOL FPGA flow. Covers ECP/ECP2/ECP3 (alt path), XP/XP2, MachXO,
     # ispLSI, LatticeSC/SCM, ORCA.
-    known_versions: ["8.0", "8.1"]
+    known_versions: ['8.0', '8.1']
     version: "8.1"
     install_dir:
 
@@ -165,7 +165,7 @@ Toolchains:
     name: ispLEVER-Classic
     operations: []
     # Still-distributed CPLD-only build. ispMACH 4000 / 5000.
-    known_versions: ["2.0", "2.1"]
+    known_versions: ['2.0', '2.1']
     version: "2.1"
     install_dir:
 
@@ -173,7 +173,7 @@ Toolchains:
     name: MAX+PLUS-II
     operations: []
     # Altera's pre-Quartus flow. Covers FLEX, APEX 20K, ACEX, MAX 7000.
-    known_versions: ["10.2-BL2"]
+    known_versions: [10.2-BL2]
     version: "10.2-BL2"
     install_dir:
 
@@ -181,35 +181,35 @@ Toolchains:
     name: ActelDesigner
     operations: []
     # Pre-Libero Actel flow. ACT 1/2/3, eX, SX, MX, RTSX.
-    known_versions: ["6.2", "7.0"]
+    known_versions: ['6.2', '7.0']
     version:
     install_dir:
 
   - id: ace
     name: AchronixACE
     operations: []
-    known_versions: ["9.1", "10.0", "10.1", "11.0"]
+    known_versions: ['9.1', '10.0', '10.1', '11.0']
     version:
     install_dir:
 
   - id: td
     name: TangDynasty
     operations: []
-    known_versions: ["4.6", "5.0", "5.6"]
+    known_versions: ['4.6', '5.0', '5.6']
     version:
     install_dir:
 
   - id: forge_fpga
     name: ForgeFPGA
     operations: []
-    known_versions: ["5.0", "6.0"]
+    known_versions: ['5.0', '6.0']
     version:
     install_dir:
 
   - id: nanoxmap
     name: NanoXmap
     operations: []
-    known_versions: ["3.5", "4.0", "4.5"]
+    known_versions: ['3.5', '4.0', '4.5']
     version:
     install_dir:
 
@@ -217,7 +217,7 @@ Toolchains:
     name: QuickWorks
     operations: []
     # Legacy QuickLogic IDE for pre-EOS-S3 parts.
-    known_versions: ["10.0", "11.0", "14.4"]
+    known_versions: ['10.0', '11.0', '14.4']
     version:
     install_dir:
 

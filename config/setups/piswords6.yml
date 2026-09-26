@@ -8,7 +8,8 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
-      design_bits: {buttons: [0, 1, 2, null]}
+      design_bits:
+        buttons: [0, 1, 2, null]
     - onboard: switches
     - onboard: leds
       pins: [0, 1, 2, 4, 5, 6, 7]   # LED 4 (pin 44) is the DS18B20's data line
@@ -16,16 +17,27 @@ Setup:
     - onboard: vga
     - onboard: uart
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[4]', WS: 'gpio.[2]', SD: 'gpio.[5]', L/R: 'gpio.[0]'}
+      wires:
+        SCK: gpio.[4]
+        WS: gpio.[2]
+        SD: gpio.[5]
+        L/R: gpio.[0]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio.[12]', BCK: 'gpio.[10]', LCK: 'gpio.[6]', DIN: 'gpio.[8]'}
+      wires:
+        SCK: gpio.[12]
+        BCK: gpio.[10]
+        LCK: gpio.[6]
+        DIN: gpio.[8]
     - gpio: gpio
-      params: {width: 16}
+      params:
+        width: 16
     - onboard: buzzer
     - onboard: temperature
   design:
     reset:
       sources:
-      - {key: msb}
+      - key: msb
   extra:
-    tie: {'gpio[1]': 0, 'gpio[3]': 1}
+    tie:
+      gpio[1]: 0
+      gpio[3]: 1

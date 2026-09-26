@@ -38,13 +38,13 @@ Board:
 
   banks:
     onboard_buttons:
-      pins: ["D2", "D1"]
+      pins: [D2, D1]
     onboard_leds:
-      pins: ["E2", "K1", "J1", "E1"]
+      pins: [E2, K1, J1, E1]
     onboard_rgb_led_0:
       pins:
         b: "F1"
         g: "D3"
         r: "F2"
     pmod_ja:
-      pins: ["J2", "H2", "H4", "F3", "H3", "H1", "G1", "F4"]
+      pins: [J2, H2, H4, F3, H3, H1, G1, F4]

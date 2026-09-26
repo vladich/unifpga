@@ -13,15 +13,26 @@ Setup:
     - onboard: buttons
     - onboard: lcd
     - module: inmp441_breakout
-      wires: {SCK: j14.10, WS: j14.6, SD: j14.12, L/R: j14.8}
+      wires:
+        SCK: j14.10
+        WS: j14.6
+        SD: j14.12
+        L/R: j14.8
     - onboard: headphone
     - module: i2s_dac_breakout
-      wires: {SCK: j12.11, BCK: j12.9, LCK: j12.5, DIN: j12.7}
-      params: {align_right: 0, offset_by_one_cycle: 1}
+      wires:
+        SCK: j12.11
+        BCK: j12.9
+        LCK: j12.5
+        DIN: j12.7
+      params:
+        align_right: 0
+        offset_by_one_cycle: 1
     - onboard: sdcard
   design:
     reset:
       sources:
-      - {key: msb}
+      - key: msb
     clock: pixel
-    width: {gpio: 32}
+    width:
+      gpio: 32

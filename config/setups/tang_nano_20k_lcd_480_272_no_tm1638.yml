@@ -8,21 +8,32 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {switches: [0, 1]}
+      params:
+        as_switches: true
+      design_bits:
+        switches: [0, 1]
     - onboard: leds
     - onboard: uart
     - onboard: lcd
       variant: lcd_480_272
-      bind: {hs: null, vs: null}
+      bind:
+        hs: null
+        vs: null
     - module: inmp441_breakout
-      wires: {L/R: header_j6.1, WS: header_j6.2, SCK: header_j6.3, SD: header_j6.4}
+      wires:
+        L/R: header_j6.1
+        WS: header_j6.2
+        SCK: header_j6.3
+        SD: header_j6.4
     - onboard: headphone
     - gpio: gpio
-      params: {width: 5}
+      params:
+        width: 5
     - onboard: ws2812
   design:
     reset:
       sources:
-      - {power_up: true}
-    tie: {onboard_lcd.hs: 0, onboard_lcd.vs: 0}
+      - power_up: true
+    tie:
+      onboard_lcd.hs: 0
+      onboard_lcd.vs: 0

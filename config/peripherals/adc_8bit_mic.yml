@@ -8,10 +8,20 @@ Peripheral:
   parameters:
     # The clock the sampler runs on (the ADC runs at a quarter of it): the design
     # clock, or another (marsohod3gw2: the HDMI pixel clock, profile)
-    clock: { type: string, default: context.clk, rig: true }
+    clock:
+      type: string
+      default: context.clk
+      rig: true
   signals:
-    - { name: d,   type: bus, width: 8, direction: input,  comment: "ADC data" }
-    - { name: clk, type: scalar,        direction: output, comment: "ADC conversion clock" }
+    - name: d
+      type: bus
+      width: 8
+      direction: input
+      comment: ADC data
+    - name: clk
+      type: scalar
+      direction: output
+      comment: ADC conversion clock
   provides:
     - capability: audio_in
   driver:

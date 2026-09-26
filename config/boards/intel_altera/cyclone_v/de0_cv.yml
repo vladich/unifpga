@@ -58,20 +58,38 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
   banks:
-    clk50mhz: { pins: M9, frequency_mhz: 50, source: {doc: manual, where: 'Table 3-6, p. 28'} }
+    clk50mhz:
+      pins: M9
+      frequency_mhz: 50
+      source:
+        doc: manual
+        where: Table 3-6, p. 28
     onboard_buttons:
-      source: {doc: manual, where: 'Table 3-2, p. 25'}
+      source:
+        doc: manual
+        where: Table 3-2, p. 25
       active: low
       pins: [U7, W9, M7, M6]
-    cpu_resetn: { pins: P22, active: low, source: {doc: manual, where: 'Table 3-2, p. 25'} }
+    cpu_resetn:
+      pins: P22
+      active: low
+      source:
+        doc: manual
+        where: Table 3-2, p. 25
     onboard_switches:
-      source: {doc: manual, where: 'Table 3-3, p. 25'}
+      source:
+        doc: manual
+        where: Table 3-3, p. 25
       pins: [U13, V13, T13, T12, AA15, AB15, AA14, AA13, AB13, AB12]
     onboard_leds:
-      source: {doc: manual, where: 'Table 3-4, p. 26'}
+      source:
+        doc: manual
+        where: Table 3-4, p. 26
       pins: [AA2, AA1, W2, Y3, N2, N1, U2, U1, L2, L1]
     onboard_7seg:
-      source: {doc: manual, where: 'Table 3-5, p. 26-27'}
+      source:
+        doc: manual
+        where: Table 3-5, p. 26-27
       pins:
         hex0: [U21, V21, W22, W21, Y22, Y21, AA22]
         hex1: [AA20, AB20, AA19, AA18, AB18, AA17, U22]
@@ -80,7 +98,9 @@ Board:
         hex4: [U20, Y20, V20, U16, U15, Y15, P9]
         hex5: [N9, M8, T14, P14, C1, C2, W19]
     onboard_vga:
-      source: {doc: manual, where: 'Table 3-10, p. 33'}
+      source:
+        doc: manual
+        where: Table 3-10, p. 33
       pins:
         hs: H8
         vs: G8
@@ -88,92 +108,292 @@ Board:
         g: [L7, K7, J7, J8]
         r: [A9, B10, C9, A5]
     gpio_0:
-      source: {doc: manual, where: 'Table 3-7, p. 29-30'}
+      source:
+        doc: manual
+        where: Table 3-7, p. 29-30
       pins: [N16, B16, M16, C16, D17, K20, K21, K22, M20, M21, N21, R22, R21, T22, N20, N19, M22, P19, L22, P17, P16, M18, L18, L17, L19, K17, K19, P18, R15, R17, R16, T20, T19, T18, T17, T15]
     gpio_1:
-      source: {doc: manual, where: 'Table 3-7, p. 30-31'}
+      source:
+        doc: manual
+        where: Table 3-7, p. 30-31
       pins: [H16, A12, H15, B12, A13, B13, C13, D13, G18, G17, H18, J18, J19, G11, H10, J11, H14, A15, J13, L8, A14, B15, C15, E14, E15, E16, F14, F15, F13, F12, G16, G15, G13, G12, J17, K16]
     onboard_clk2_50mhz:   # CLOCK2_50 (50 MHz)
-      device: {"name": "CLOCK2_50 (50 MHz)", "kind": "clock"}
-      pins: {"CLOCK2_50": "H13"}
+      device:
+        name: CLOCK2_50 (50 MHz)
+        kind: clock
+      pins:
+        CLOCK2_50: H13
     onboard_clk3_50mhz:   # CLOCK3_50 (50 MHz)
-      device: {"name": "CLOCK3_50 (50 MHz)", "kind": "clock"}
-      pins: {"CLOCK3_50": "E10"}
+      device:
+        name: CLOCK3_50 (50 MHz)
+        kind: clock
+      pins:
+        CLOCK3_50: E10
     onboard_clk4_50mhz:   # CLOCK4_50 (50 MHz)
-      device: {"name": "CLOCK4_50 (50 MHz)", "kind": "clock"}
-      pins: {"CLOCK4_50": "V15"}
+      device:
+        name: CLOCK4_50 (50 MHz)
+        kind: clock
+      pins:
+        CLOCK4_50: V15
     onboard_ps2:   # PS/2 port (primary)
-      source: {doc: manual, where: 'Table 3-11, p. 34'}
-      device: {"name": "PS/2 port (primary)", "kind": "ps2"}
-      pins: {"PS2_CLK": "D3", "PS2_DAT": "G2"}
+      source:
+        doc: manual
+        where: Table 3-11, p. 34
+      device:
+        name: PS/2 port (primary)
+        kind: ps2
+      pins:
+        PS2_CLK: D3
+        PS2_DAT: G2
     onboard_ps2_secondary:   # PS/2 port (secondary, via Y-cable)
-      source: {doc: manual, where: 'Table 3-11, p. 34'}
-      device: {"name": "PS/2 port (secondary, via Y-cable)", "kind": "ps2"}
-      pins: {"PS2_CLK2": "E2", "PS2_DAT2": "G1"}
+      source:
+        doc: manual
+        where: Table 3-11, p. 34
+      device:
+        name: PS/2 port (secondary, via Y-cable)
+        kind: ps2
+      pins:
+        PS2_CLK2: E2
+        PS2_DAT2: G1
     onboard_sdcard:   # Micro SD card socket
-      source: {doc: manual, where: 'Table 3-12, p. 35'}
-      device: {"name": "Micro SD card socket", "kind": "sdcard"}
-      pins: {"SD_CLK": "H11", "SD_CMD": "B11", "SD_DATA": ["K9", "D12", "E12", "C11"]}
+      source:
+        doc: manual
+        where: Table 3-12, p. 35
+      device:
+        name: Micro SD card socket
+        kind: sdcard
+      pins:
+        SD_CLK: H11
+        SD_CMD: B11
+        SD_DATA: [K9, D12, E12, C11]
     onboard_sdram:   # SDRAM (64 MB, 16-bit)
-      source: {doc: manual, where: 'Table 3-13, p. 36-37'}
-      device: {"name": "SDRAM (64 MB, 16-bit)", "kind": "sdram"}
-      model_params: {col_bits: 10}
-      pins: {"DRAM_ADDR": ["W8", "T8", "U11", "Y10", "N6", "AB10", "P12", "P7", "P8", "R5", "U8", "P6", "R7"], "DRAM_DQ": ["Y9", "T10", "R9", "Y11", "R10", "R11", "R12", "AA12", "AA9", "AB8", "AA8", "AA7", "V10", "V9", "U10", "T9"], "DRAM_BA": ["T7", "AB7"], "DRAM_LDQM": "U12", "DRAM_UDQM": "N8", "DRAM_RAS_N": "AB6", "DRAM_CAS_N": "V6", "DRAM_CKE": "R6", "DRAM_CLK": "AB11", "DRAM_WE_N": "AB5", "DRAM_CS_N": "U6"}
+      source:
+        doc: manual
+        where: Table 3-13, p. 36-37
+      device:
+        name: SDRAM (64 MB, 16-bit)
+        kind: sdram
+      model_params:
+        col_bits: 10
+      pins:
+        DRAM_ADDR: [W8, T8, U11, Y10, N6, AB10, P12, P7, P8, R5, U8, P6, R7]
+        DRAM_DQ: [Y9, T10, R9, Y11, R10, R11, R12, AA12, AA9, AB8, AA8, AA7, V10, V9, U10, T9]
+        DRAM_BA: [T7, AB7]
+        DRAM_LDQM: U12
+        DRAM_UDQM: N8
+        DRAM_RAS_N: AB6
+        DRAM_CAS_N: V6
+        DRAM_CKE: R6
+        DRAM_CLK: AB11
+        DRAM_WE_N: AB5
+        DRAM_CS_N: U6
   # ---- drawn: headers and parts; ./unifpga layout draft de0_cv regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: gpio_0
       type: pin_row
       label: GPIO_0
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_0
-      pins: {'[0]': 'gpio_0[0]', '[1]': 'gpio_0[1]', '[2]': 'gpio_0[2]', '[3]': 'gpio_0[3]', '[4]': 'gpio_0[4]', '[5]': 'gpio_0[5]', '[6]': 'gpio_0[6]', '[7]': 'gpio_0[7]', '[8]': 'gpio_0[8]', '[9]': 'gpio_0[9]', '[10]': 'gpio_0[10]', '[11]': 'gpio_0[11]', '[12]': 'gpio_0[12]', '[13]': 'gpio_0[13]', '[14]': 'gpio_0[14]', '[15]': 'gpio_0[15]', '[16]': 'gpio_0[16]', '[17]': 'gpio_0[17]', '[18]': 'gpio_0[18]', '[19]': 'gpio_0[19]', '[20]': 'gpio_0[20]', '[21]': 'gpio_0[21]', '[22]': 'gpio_0[22]', '[23]': 'gpio_0[23]', '[24]': 'gpio_0[24]', '[25]': 'gpio_0[25]', '[26]': 'gpio_0[26]', '[27]': 'gpio_0[27]', '[28]': 'gpio_0[28]', '[29]': 'gpio_0[29]', '[30]': 'gpio_0[30]', '[31]': 'gpio_0[31]', '[32]': 'gpio_0[32]', '[33]': 'gpio_0[33]', '[34]': 'gpio_0[34]', '[35]': 'gpio_0[35]'}
+      pins:
+        '[0]': gpio_0[0]
+        '[1]': gpio_0[1]
+        '[2]': gpio_0[2]
+        '[3]': gpio_0[3]
+        '[4]': gpio_0[4]
+        '[5]': gpio_0[5]
+        '[6]': gpio_0[6]
+        '[7]': gpio_0[7]
+        '[8]': gpio_0[8]
+        '[9]': gpio_0[9]
+        '[10]': gpio_0[10]
+        '[11]': gpio_0[11]
+        '[12]': gpio_0[12]
+        '[13]': gpio_0[13]
+        '[14]': gpio_0[14]
+        '[15]': gpio_0[15]
+        '[16]': gpio_0[16]
+        '[17]': gpio_0[17]
+        '[18]': gpio_0[18]
+        '[19]': gpio_0[19]
+        '[20]': gpio_0[20]
+        '[21]': gpio_0[21]
+        '[22]': gpio_0[22]
+        '[23]': gpio_0[23]
+        '[24]': gpio_0[24]
+        '[25]': gpio_0[25]
+        '[26]': gpio_0[26]
+        '[27]': gpio_0[27]
+        '[28]': gpio_0[28]
+        '[29]': gpio_0[29]
+        '[30]': gpio_0[30]
+        '[31]': gpio_0[31]
+        '[32]': gpio_0[32]
+        '[33]': gpio_0[33]
+        '[34]': gpio_0[34]
+        '[35]': gpio_0[35]
     - id: gpio_1
       type: pin_row
       label: GPIO_1
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_1
-      pins: {'[0]': 'gpio_1[0]', '[1]': 'gpio_1[1]', '[2]': 'gpio_1[2]', '[3]': 'gpio_1[3]', '[4]': 'gpio_1[4]', '[5]': 'gpio_1[5]', '[6]': 'gpio_1[6]', '[7]': 'gpio_1[7]', '[8]': 'gpio_1[8]', '[9]': 'gpio_1[9]', '[10]': 'gpio_1[10]', '[11]': 'gpio_1[11]', '[12]': 'gpio_1[12]', '[13]': 'gpio_1[13]', '[14]': 'gpio_1[14]', '[15]': 'gpio_1[15]', '[16]': 'gpio_1[16]', '[17]': 'gpio_1[17]', '[18]': 'gpio_1[18]', '[19]': 'gpio_1[19]', '[20]': 'gpio_1[20]', '[21]': 'gpio_1[21]', '[22]': 'gpio_1[22]', '[23]': 'gpio_1[23]', '[24]': 'gpio_1[24]', '[25]': 'gpio_1[25]', '[26]': 'gpio_1[26]', '[27]': 'gpio_1[27]', '[28]': 'gpio_1[28]', '[29]': 'gpio_1[29]', '[30]': 'gpio_1[30]', '[31]': 'gpio_1[31]', '[32]': 'gpio_1[32]', '[33]': 'gpio_1[33]', '[34]': 'gpio_1[34]', '[35]': 'gpio_1[35]'}
+      pins:
+        '[0]': gpio_1[0]
+        '[1]': gpio_1[1]
+        '[2]': gpio_1[2]
+        '[3]': gpio_1[3]
+        '[4]': gpio_1[4]
+        '[5]': gpio_1[5]
+        '[6]': gpio_1[6]
+        '[7]': gpio_1[7]
+        '[8]': gpio_1[8]
+        '[9]': gpio_1[9]
+        '[10]': gpio_1[10]
+        '[11]': gpio_1[11]
+        '[12]': gpio_1[12]
+        '[13]': gpio_1[13]
+        '[14]': gpio_1[14]
+        '[15]': gpio_1[15]
+        '[16]': gpio_1[16]
+        '[17]': gpio_1[17]
+        '[18]': gpio_1[18]
+        '[19]': gpio_1[19]
+        '[20]': gpio_1[20]
+        '[21]': gpio_1[21]
+        '[22]': gpio_1[22]
+        '[23]': gpio_1[23]
+        '[24]': gpio_1[24]
+        '[25]': gpio_1[25]
+        '[26]': gpio_1[26]
+        '[27]': gpio_1[27]
+        '[28]': gpio_1[28]
+        '[29]': gpio_1[29]
+        '[30]': gpio_1[30]
+        '[31]': gpio_1[31]
+        '[32]': gpio_1[32]
+        '[33]': gpio_1[33]
+        '[34]': gpio_1[34]
+        '[35]': gpio_1[35]
   parts:
     - id: clk50mhz
       label: clk50mhz
-      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+      attach:
+        peripheral: clock_input
+        params:
+          frequency_mhz: 50
+        bind:
+          clk: clk50mhz
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 4
+        bind:
+          btn: onboard_buttons
     - id: cpu_resetn
       label: cpu resetn
-      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+      attach:
+        peripheral: reset_button
+        bind:
+          rst: cpu_resetn
     - id: switches
       label: switches
-      attach: {peripheral: sw_bank, params: {width: 10}, bind: {sw: onboard_switches}}
+      attach:
+        peripheral: sw_bank
+        params:
+          width: 10
+        bind:
+          sw: onboard_switches
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 10}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 10
+        bind:
+          led: onboard_leds
     - id: 7seg
       label: 7seg
-      attach: {peripheral: seven_segment_per_digit, params: {digits: 6, segs: 7}, bind: {hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]}}
+      attach:
+        peripheral: seven_segment_per_digit
+        params:
+          digits: 6
+          segs: 7
+        bind:
+          hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]
     - id: vga
       label: vga
-      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+      attach:
+        peripheral: vga_4bit
+        params:
+          bits_r: 4
+          bits_g: 4
+          bits_b: 4
+          pin_bits_r: 4
+          pin_bits_g: 4
+          pin_bits_b: 4
+          color_depth: 444
+        bind:
+          r: onboard_vga.r
+          g: onboard_vga.g
+          b: onboard_vga.b
+          hs: onboard_vga.hs
+          vs: onboard_vga.vs
     - id: ps2
       label: PS/2 port (primary)
-      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
+      attach:
+        peripheral: ps2_keyboard
+        bind:
+          clk: onboard_ps2.PS2_CLK
+          data: onboard_ps2.PS2_DAT
     - id: sdram
       label: SDRAM (64 MB, 16-bit)
-      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 10}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
+      attach:
+        peripheral: sdram_sdr
+        params:
+          row_bits: 13
+          data_bits: 16
+          col_bits: 10
+        bind:
+          clk: onboard_sdram.DRAM_CLK
+          cke: onboard_sdram.DRAM_CKE
+          cs_n: onboard_sdram.DRAM_CS_N
+          ras_n: onboard_sdram.DRAM_RAS_N
+          cas_n: onboard_sdram.DRAM_CAS_N
+          we_n: onboard_sdram.DRAM_WE_N
+          ba: onboard_sdram.DRAM_BA
+          a: onboard_sdram.DRAM_ADDR
+          dq: onboard_sdram.DRAM_DQ
+          dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]
     - id: sdcard
       label: Micro SD card socket
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: 'onboard_sdcard.SD_DATA[0]', dat3: 'onboard_sdcard.SD_DATA[3]'}}
+      attach:
+        peripheral: sdcard_spi
+        bind:
+          clk: onboard_sdcard.SD_CLK
+          cmd: onboard_sdcard.SD_CMD
+          dat0: onboard_sdcard.SD_DATA[0]
+          dat3: onboard_sdcard.SD_DATA[3]
     - id: clk2_50mhz
       label: CLOCK2_50 (50 MHz)
-      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: clock
+        bank: onboard_clk2_50mhz
     - id: clk3_50mhz
       label: CLOCK3_50 (50 MHz)
-      device: {kind: clock, bank: onboard_clk3_50mhz}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: clock
+        bank: onboard_clk3_50mhz
     - id: clk4_50mhz
       label: CLOCK4_50 (50 MHz)
-      device: {kind: clock, bank: onboard_clk4_50mhz}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: clock
+        bank: onboard_clk4_50mhz
     - id: ps2_secondary
       label: PS/2 port (secondary, via Y-cable)
-      device: {kind: ps2, bank: onboard_ps2_secondary}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ps2
+        bank: onboard_ps2_secondary

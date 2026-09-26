@@ -9,13 +9,29 @@ Peripheral:
   description: ADXL345 accelerometer on I2C, readings in milli-g
   # the on-board devices it models: an ADXL345 whose bank has the I2C pins and
   # the chip select (the DE0-Nano's)
-  models: {kind: accelerometer, device: [ADXL345],
-           pins: {scl: [I2C_SCLK, scl], sda: [I2C_SDAT, sda], cs_n: [G_SENSOR_CS_N, cs_n]}}
+  models:
+    kind: accelerometer
+    device: [ADXL345]
+    pins:
+      scl: [I2C_SCLK, scl]
+      sda: [I2C_SDAT, sda]
+      cs_n: [G_SENSOR_CS_N, cs_n]
   signals:
-    - { name: scl,  type: scalar, direction: output }
-    - { name: sda,  type: scalar, direction: inout }
-    - { name: cs_n, type: scalar, direction: output, comment: "Held high: I2C mode" }
-    - { name: int,  type: scalar, direction: input, optional: true, comment: "Interrupt, not used" }
+    - name: scl
+      type: scalar
+      direction: output
+    - name: sda
+      type: scalar
+      direction: inout
+    - name: cs_n
+      type: scalar
+      direction: output
+      comment: 'Held high: I2C mode'
+    - name: int
+      type: scalar
+      direction: input
+      optional: true
+      comment: Interrupt, not used
   provides:
     - capability: accelerometer
   driver:

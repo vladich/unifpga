@@ -6,13 +6,13 @@ Setup:
   board: mojo_v3
   toolchain: ise
   notes:
-    - "Mojo v3 (Embedded Micro / Alchitry, Spartan-6 XC6SLX9) via Xilinx ISE 14.7."
-    - "Minimal pinout — no user buttons or switches on the bare board (they"
-    - "require a shield). Designs that only need `clk` + `led` (or `rst`) will"
-    - "fit; the 06_binary_counter sweep is the canonical smoke-test target."
+    - Mojo v3 (Embedded Micro / Alchitry, Spartan-6 XC6SLX9) via Xilinx ISE 14.7.
+    - Minimal pinout — no user buttons or switches on the bare board (they
+    - require a shield). Designs that only need `clk` + `led` (or `rst`) will
+    - fit; the 06_binary_counter sweep is the canonical smoke-test target.
   use:
     - onboard: clk50mhz
     - onboard: reset
     - onboard: leds
   extra:
-    {manual: true}
+    manual: true

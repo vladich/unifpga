@@ -6,10 +6,12 @@ Setup:
   board: lattice_crosslink_nx_evn
   toolchain: nextpnr_nexus
   toolchains: [nextpnr_nexus, nextpnr_oxide]
-  aliases: {lattice_crosslink_nx_evn_oxide: {toolchain: nextpnr_oxide}}
+  aliases:
+    lattice_crosslink_nx_evn_oxide:
+      toolchain: nextpnr_oxide
   notes:
-    - "lattice_crosslink_nx_evn — CrossLink-NX EVN (LIFCL-40-9BG400C)"
-    - "via the open-source flow: yosys synth_nexus → nextpnr-nexus → prjoxide pack."
+    - lattice_crosslink_nx_evn — CrossLink-NX EVN (LIFCL-40-9BG400C)
+    - 'via the open-source flow: yosys synth_nexus → nextpnr-nexus → prjoxide pack.'
   use:
     - onboard: clk
     - onboard: reset
@@ -18,6 +20,7 @@ Setup:
     - onboard: leds
     - onboard: uart
   extra:
-    {manual: true}
+    manual: true
   for_toolchain:
-    nextpnr_oxide: {extra: null}
+    nextpnr_oxide:
+      extra: null

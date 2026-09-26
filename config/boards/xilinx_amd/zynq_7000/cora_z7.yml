@@ -62,7 +62,7 @@ Board:
 
   banks:
     onboard_buttons:
-      pins: ["D20", "D19"]
+      pins: [D20, D19]
     onboard_rgb_led_0:
       pins:
         b: "L15"
@@ -74,6 +74,6 @@ Board:
         g: "L14"
         r: "M15"
     pmod_ja:
-      pins: ["Y18", "Y19", "Y16", "Y17", "U18", "U19", "W18", "W19"]
+      pins: [Y18, Y19, Y16, Y17, U18, U19, W18, W19]
     pmod_jb:
-      pins: ["W14", "Y14", "T11", "T10", "V16", "W16", "V12", "W13"]
+      pins: [W14, Y14, T11, T10, V16, W16, V12, W13]

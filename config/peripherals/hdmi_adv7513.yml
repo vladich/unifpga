@@ -12,9 +12,15 @@ Peripheral:
   id: hdmi_adv7513
   description: ADV7513 parallel HDMI transmitter (24-bit RGB + I2C setup)
   parameters:
-    bits_r: { type: int, default: 4 }
-    bits_g: { type: int, default: 4 }
-    bits_b: { type: int, default: 4 }
+    bits_r:
+      type: int
+      default: 4
+    bits_g:
+      type: int
+      default: 4
+    bits_b:
+      type: int
+      default: 4
     color_depth:
       type: enum
       values: [111, 444, 565, 888]
@@ -24,14 +30,33 @@ Peripheral:
       values: [de10_nano, c5gx]
       default: de10_nano
   signals:
-    - { name: clk,     type: scalar, direction: output, comment: "HDMI_TX_CLK (pixel clock)" }
-    - { name: de,      type: scalar, direction: output }
-    - { name: hs,      type: scalar, direction: output }
-    - { name: vs,      type: scalar, direction: output }
-    - { name: d,       type: bus, width: 24, direction: output }
-    - { name: i2c_scl, type: scalar, direction: output }
-    - { name: i2c_sda, type: scalar, direction: inout }
-    - { name: int,     type: scalar, direction: input, comment: "HDMI_TX_INT" }
+    - name: clk
+      type: scalar
+      direction: output
+      comment: HDMI_TX_CLK (pixel clock)
+    - name: de
+      type: scalar
+      direction: output
+    - name: hs
+      type: scalar
+      direction: output
+    - name: vs
+      type: scalar
+      direction: output
+    - name: d
+      type: bus
+      width: 24
+      direction: output
+    - name: i2c_scl
+      type: scalar
+      direction: output
+    - name: i2c_sda
+      type: scalar
+      direction: inout
+    - name: int
+      type: scalar
+      direction: input
+      comment: HDMI_TX_INT
   provides:
     - capability: screen
       params:

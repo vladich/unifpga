@@ -39,12 +39,12 @@ Board:
 
   banks:
     onboard_buttons:
-      pins: ["V16", "U17"]
+      pins: [V16, U17]
     onboard_leds:
-      pins: ["R17", "P15", "R15", "T14"]
+      pins: [R17, P15, R15, T14]
     pmod_ja:
-      pins: ["F4", "F3", "E2", "D2", "H2", "G2", "C2", "C1"]
+      pins: [F4, F3, E2, D2, H2, G2, C2, C1]
     pmod_jb:
-      pins: ["C4", "B2", "B3", "B4", "B1", "A1", "A3", "A4"]
+      pins: [C4, B2, B3, B4, B1, A1, A3, A4]
     pmod_jc:
-      pins: ["C5", "C6", "B6", "C7", "A5", "A6", "B7", "D8"]
+      pins: [C5, C6, B6, C7, A5, A6, B7, D8]

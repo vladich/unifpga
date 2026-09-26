@@ -6,26 +6,49 @@ Setup:
   board: a7_lite_35t
   toolchain: vivado
   toolchains: [vivado, nextpnr_openxc7]
-  aliases: {a7_lite_35t_openxc7: {toolchain: nextpnr_openxc7}}
+  aliases:
+    a7_lite_35t_openxc7:
+      toolchain: nextpnr_openxc7
   use:
     - onboard: clk50mhz
     - onboard: cpu_resetn
     - onboard: buttons
-      design_bits: {buttons: []}
+      design_bits:
+        buttons: []
     - onboard: leds
-      design_bits: {leds: [0, 1]}
+      design_bits:
+        leds: [0, 1]
     - onboard: uart
     - module: tm1638_led_key
-      wires: {STB: 'gpio.[2]', CLK: 'gpio.[1]', DIO: 'gpio.[0]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: gpio.[2]
+        CLK: gpio.[1]
+        DIO: gpio.[0]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[6]', WS: 'gpio.[5]', SD: 'gpio.[7]', L/R: 'gpio.[4]'}
+      wires:
+        SCK: gpio.[6]
+        WS: gpio.[5]
+        SD: gpio.[7]
+        L/R: gpio.[4]
     - onboard: hdmi
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio.[9]', BCK: 'gpio.[10]', LCK: 'gpio.[11]', DIN: 'gpio.[12]'}
+      wires:
+        SCK: gpio.[9]
+        BCK: gpio.[10]
+        LCK: gpio.[11]
+        DIN: gpio.[12]
     - gpio: gpio
-      params: {width: 13}
+      params:
+        width: 13
     - onboard: sdcard
   design:
-    reset: {sync: 4}
-    clock: {name: design, mhz: 50}
+    reset:
+      sync: 4
+    clock:
+      name: design
+      mhz: 50

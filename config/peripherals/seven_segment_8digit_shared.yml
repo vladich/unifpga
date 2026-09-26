@@ -18,9 +18,21 @@ Peripheral:
       values: [high, low]
       default: low
   signals:
-    - { name: segments, type: bus, width: 7, direction: output, comment: "CA, CB, CC, CD, CE, CF, CG" }
-    - { name: dp,       type: scalar, direction: output, optional: true, comment: "Decimal point (some boards have none)" }
-    - { name: digits,   type: bus, width: $digits, direction: output, comment: "Anode select, one-hot" }
+    - name: segments
+      type: bus
+      width: 7
+      direction: output
+      comment: CA, CB, CC, CD, CE, CF, CG
+    - name: dp
+      type: scalar
+      direction: output
+      optional: true
+      comment: Decimal point (some boards have none)
+    - name: digits
+      type: bus
+      width: $digits
+      direction: output
+      comment: Anode select, one-hot
   provides:
     - capability: seven_segment
       params:

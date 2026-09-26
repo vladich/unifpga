@@ -128,18 +128,32 @@ Board:
     apicula:
       rpll_device: GW1NR-9      # nextpnr-gowin: "wrong PLL device: GW1N-9C instead of GW1NR-9" (mercury 2026-09-22)
   banks:
-    clk: { pins: "52", frequency_mhz: 27, source: {doc: sch3674, where: 'PDF p.2 (GW1NR 9K sheet): 27MHz U16 OUT -> R26 22R -> net PIN52_XTAL_IN = ball 52 (IOR17A/GCLKT_3)'} }
+    clk:
+      pins: '52'
+      frequency_mhz: 27
+      source:
+        doc: sch3674
+        where: 'PDF p.2 (GW1NR 9K sheet): 27MHz U16 OUT -> R26 22R -> net PIN52_XTAL_IN = ball 52 (IOR17A/GCLKT_3)'
     onboard_buttons:
-      source: {doc: sch3674, where: 'PDF p.2 "Button x 2": net PIN3_IOT2A_BUTTON_S1_1V8 (ball 3, IOT2A), PIN4_IOL5A_JTAG_SEL_S2_1V8 (ball 4, IOL5A/JTAGSEL_N/LPLL_T); 10K pull-up to VCCO3_1V8, switch to GND; ex_lcdled User_Button 3 / Reset_Button 4'}
+      source:
+        doc: sch3674
+        where: 'PDF p.2 "Button x 2": net PIN3_IOT2A_BUTTON_S1_1V8 (ball 3, IOT2A), PIN4_IOL5A_JTAG_SEL_S2_1V8 (ball 4, IOL5A/JTAGSEL_N/LPLL_T); 10K pull-up to VCCO3_1V8, switch to GND; ex_lcdled User_Button 3 / Reset_Button 4'
       active: low
-      pins: ["4", "3"]
+      pins: ['4', '3']
     onboard_leds:
-      source: {doc: sch3674, where: 'PDF p.2 "LED x 7": PIN10_IOL15A_LED1, PIN11_IOL16B_LED2, PIN13_IOL21B_LED3, PIN14_IOL22B_LED4, PIN15_IOL25B_LED5, PIN16_IOL26B_LED6; anodes on VCCO3_1V8 (cathode to the FPGA); Amaranth invert=True; ex_led led[0..5]=10,11,13,14,15,16'}
+      source:
+        doc: sch3674
+        where: 'PDF p.2 "LED x 7": PIN10_IOL15A_LED1, PIN11_IOL16B_LED2, PIN13_IOL21B_LED3, PIN14_IOL22B_LED4, PIN15_IOL25B_LED5, PIN16_IOL26B_LED6; anodes on VCCO3_1V8 (cathode to the FPGA); Amaranth invert=True; ex_led led[0..5]=10,11,13,14,15,16'
       active: low
-      pins: ["10", "11", "13", "14", "15", "16"]
+      pins: ['10', '11', '13', '14', '15', '16']
     onboard_lcd:
-      source: {doc: sch3674, where: 'PDF p.2 "RGB LCD" J4: pin8..12 R3..R7 = nets PIN75/74/73/72/71 (HDMI_D2_P/D2_N/D1_P/D1_N/D0_P), pin15..17 G2..G4 = PIN70/69/68 (HDMI_D0_N/CK_P/CK_N), pin18..20 G5..G7 = PIN57_IOR13A_RGB_G5/PIN56/PIN55, pin24..28 B3..B7 = PIN54/53/51/42/41, pin30 CLK = PIN35_IOB29A_RGB_CK, pin32 HSYNC = PIN40_IOB33B_RGB_HS, pin33 VSYNC = PIN34_IOB23B_RGB_VS, pin34 DEN = PIN33_IOB23A_RGB_DE, pin31 DISP tied to +3V3, pin37..40 XR/YD/XL/YU = PIN32_IOB15B/PIN31_IOB15A/PIN63_IOR5A/PIN50_IOR22B _RGBINIT; R0..R2, G0..G1, B0..B2 tied to GND; backlight LP3320 U11 enable net PIN86_IOT8A_BL_PWM_1V8; ex_lcd43 LCD_R/G/B/DEN/SYNC/HYNC/CLK agree; LiteX/Amaranth lcd agree'}
-      index_origin: {r: 3, g: 2, b: 3}
+      source:
+        doc: sch3674
+        where: 'PDF p.2 "RGB LCD" J4: pin8..12 R3..R7 = nets PIN75/74/73/72/71 (HDMI_D2_P/D2_N/D1_P/D1_N/D0_P), pin15..17 G2..G4 = PIN70/69/68 (HDMI_D0_N/CK_P/CK_N), pin18..20 G5..G7 = PIN57_IOR13A_RGB_G5/PIN56/PIN55, pin24..28 B3..B7 = PIN54/53/51/42/41, pin30 CLK = PIN35_IOB29A_RGB_CK, pin32 HSYNC = PIN40_IOB33B_RGB_HS, pin33 VSYNC = PIN34_IOB23B_RGB_VS, pin34 DEN = PIN33_IOB23A_RGB_DE, pin31 DISP tied to +3V3, pin37..40 XR/YD/XL/YU = PIN32_IOB15B/PIN31_IOB15A/PIN63_IOR5A/PIN50_IOR22B _RGBINIT; R0..R2, G0..G1, B0..B2 tied to GND; backlight LP3320 U11 enable net PIN86_IOT8A_BL_PWM_1V8; ex_lcd43 LCD_R/G/B/DEN/SYNC/HYNC/CLK agree; LiteX/Amaranth lcd agree'
+      index_origin:
+        r: 3
+        g: 2
+        b: 3
       pins:
         de: "33"
         vs: "34"
@@ -147,25 +161,31 @@ Board:
         ck: "35"
         init: "63"
         bl: "86"
-        r: ["75", "74", "73", "72", "71"]
-        g: ["70", "69", "68", "57", "56", "55"]
-        b: ["54", "53", "51", "42", "41"]
+        r: ['75', '74', '73', '72', '71']
+        g: ['70', '69', '68', '57', '56', '55']
+        b: ['54', '53', '51', '42', '41']
     onboard_uart:
-      source: {doc: sch3674, where: 'PDF p.1 (top) / p.4 (BL702): BL702 GPIO26=UART1_TXD -> BL_UART1_TX# -> FPGA_RX = PIN18_IOB2B_FPGA_RX (ball 18); GPIO27=UART1_RXD <- BL_UART1_RX# <- FPGA_TX = PIN17_IOB2A_FPGA_TX (ball 17); ex_uart uart_tx 17 / uart_rx 18'}
+      source:
+        doc: sch3674
+        where: 'PDF p.1 (top) / p.4 (BL702): BL702 GPIO26=UART1_TXD -> BL_UART1_TX# -> FPGA_RX = PIN18_IOB2B_FPGA_RX (ball 18); GPIO27=UART1_RXD <- BL_UART1_RX# <- FPGA_TX = PIN17_IOB2A_FPGA_TX (ball 17); ex_uart uart_tx 17 / uart_rx 18'
       pins:
         rx: "18"
         tx: "17"
     onboard_microsd:
-      source: {doc: sch3674, where: 'PDF p.2 "TF CARD": DAT3/CS = PIN38_IOB31B_TF_CS, CMD/MOSI = PIN37_IOB31A_TF_MOSI, CLK = PIN36_IOB29B_TF_SCLK (via R21 0R), DAT0/MISO = PIN39_IOB33A_TF_MISO; DAT1, DAT2 not connected to the FPGA; 10K pull-ups R20/R22; LiteX spisdcard; Amaranth SDCardResources clk 36 cmd 37 dat0 39 dat3 38'}
+      source:
+        doc: sch3674
+        where: 'PDF p.2 "TF CARD": DAT3/CS = PIN38_IOB31B_TF_CS, CMD/MOSI = PIN37_IOB31A_TF_MOSI, CLK = PIN36_IOB29B_TF_SCLK (via R21 0R), DAT0/MISO = PIN39_IOB33A_TF_MISO; DAT1, DAT2 not connected to the FPGA; 10K pull-ups R20/R22; LiteX spisdcard; Amaranth SDCardResources clk 36 cmd 37 dat0 39 dat3 38'
       pins:
         cs: "38"
         mosi: "37"
         sclk: "36"
         miso: "39"
     gpio:
-      pins: ["25", "26", "27", "28", "29", "30"]
+      pins: ['25', '26', '27', '28', '29', '30']
     onboard_small_lcd:
-      source: {doc: sch3674, where: 'PDF p.2 "1.14inch LCD": pin3 RESET = LCD_RESET via R9 0R from PIN47_IOB43B_SPILCD_EN, pin4 RS = PIN49_IOR24A_SPILCD_RS, pin5 SDA = PIN77_IOT37A_SPILCD_MO, pin6 SCL = PIN76_IOT37B_SPILCD_MCLK, pin8 CS = PIN48_IOR24B_SPILCD_CS, pin1 LEDA via 5.1R to +3V3 (backlight always on); ex_spilcd lcd_data 77 lcd_clk 76 lcd_rs 49 lcd_cs 48 lcd_resetn 47'}
+      source:
+        doc: sch3674
+        where: 'PDF p.2 "1.14inch LCD": pin3 RESET = LCD_RESET via R9 0R from PIN47_IOB43B_SPILCD_EN, pin4 RS = PIN49_IOR24A_SPILCD_RS, pin5 SDA = PIN77_IOT37A_SPILCD_MO, pin6 SCL = PIN76_IOT37B_SPILCD_MCLK, pin8 CS = PIN48_IOR24B_SPILCD_CS, pin1 LEDA via 5.1R to +3V3 (backlight always on); ex_spilcd lcd_data 77 lcd_clk 76 lcd_rs 49 lcd_cs 48 lcd_resetn 47'
       pins:
         data: "77"
         clk: "76"
@@ -173,104 +193,291 @@ Board:
         cs: "48"
         rs: "49"
     onboard_serial_flash:
-      source: {doc: sch3674, where: 'PDF p.2 "SPI FLASH": U3 P25Q32U CS# = PIN60_IOR12A_MCS, SCLK = PIN59_IOR12B_MCLK, SI/SIO0 = PIN61_IOR11B_MOSI, SO/SIO1 = PIN62_IOR11A_MISO; WP#/SIO2 and RESET#/SIO3 pulled up 4.7K (not FPGA-connected); LiteX spiflash cs_n 60 clk 59 mosi 61 miso 62; ex_picotiny flash_*'}
+      source:
+        doc: sch3674
+        where: 'PDF p.2 "SPI FLASH": U3 P25Q32U CS# = PIN60_IOR12A_MCS, SCLK = PIN59_IOR12B_MCLK, SI/SIO0 = PIN61_IOR11B_MOSI, SO/SIO1 = PIN62_IOR11A_MISO; WP#/SIO2 and RESET#/SIO3 pulled up 4.7K (not FPGA-connected); LiteX spiflash cs_n 60 clk 59 mosi 61 miso 62; ex_picotiny flash_*'
       pins:
         clk: "59"
         csb: "60"
         mosi: "61"
         miso: "62"
     onboard_hdmi:
-      source: {doc: sch3674, where: 'PDF p.1 (top) / p.5 FPGA_HDMI: HDMI_D0_P/N = balls 71/70, D1_P/N = 73/72, D2_P/N = 75/74, CK_P/N = 69/68 (nets PIN71_RGB_R7/HDMI_D0_P ... PIN68_RGB_G4/HDMI_CK_N) -> C 100nF -> connector; SCL/SDA pulled to +5VD (R12/R13), HPD and CEC not wired to the FPGA; ex_hdmi tmds_d_p[0..2] 71,70 / 73,72 / 75,74, tmds_clk_p 69,68; LiteX hdmi; Amaranth DiffPairs'}
+      source:
+        doc: sch3674
+        where: 'PDF p.1 (top) / p.5 FPGA_HDMI: HDMI_D0_P/N = balls 71/70, D1_P/N = 73/72, D2_P/N = 75/74, CK_P/N = 69/68 (nets PIN71_RGB_R7/HDMI_D0_P ... PIN68_RGB_G4/HDMI_CK_N) -> C 100nF -> connector; SCL/SDA pulled to +5VD (R12/R13), HPD and CEC not wired to the FPGA; ex_hdmi tmds_d_p[0..2] 71,70 / 73,72 / 75,74, tmds_clk_p 69,68; LiteX hdmi; Amaranth DiffPairs'
       pins:
         clk_p: "69,68"
         clk_n: "68"
-        d_p: ["71,70", "73,72", "75,74"]
-        d_n: ["70", "72", "74"]
+        d_p: ['71,70', '73,72', '75,74']
+        d_n: ['70', '72', '74']
     onboard_fpga_jtag:   # BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)
-      device: {"name": "BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)", "kind": "other", "id": "bouffalo_bl702"}
-      shares: ["onboard_buttons"]   # the board multiplexes these pins
-      pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8", "reconfig_n": "9", "mode0": "88", "mode1": "87", "jtagsel_n": "4"}
+      device:
+        name: BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)
+        kind: other
+        id: bouffalo_bl702
+      shares: [onboard_buttons]   # the board multiplexes these pins
+      pins:
+        tms: '5'
+        tck: '6'
+        tdi: '7'
+        tdo: '8'
+        reconfig_n: '9'
+        mode0: '88'
+        mode1: '87'
+        jtagsel_n: '4'
     header_j5:   # 2x24 pin header J5 (2.54 mm pads, one side of the board)
-      source: {doc: sch3674, where: 'PDF p.2 Conn_01x24 J5: 1..4 TF_CS/MOSI/SCLK/MISO, 5..10 PIN25_IOB8A..PIN30_IOB13B, 11..22 RGB DE/VS/HS/CK/B7/B6/B5/B4/B3/G7/G6/G5, 23 HDMI_CK_N, 24 HDMI_CK_P; LiteX connector "J6" has the same list'}
-      device: {"name": "2x24 pin header J5 (2.54 mm pads, one side of the board)", "kind": "header"}
+      source:
+        doc: sch3674
+        where: 'PDF p.2 Conn_01x24 J5: 1..4 TF_CS/MOSI/SCLK/MISO, 5..10 PIN25_IOB8A..PIN30_IOB13B, 11..22 RGB DE/VS/HS/CK/B7/B6/B5/B4/B3/G7/G6/G5, 23 HDMI_CK_N, 24 HDMI_CK_P; LiteX connector "J6" has the same list'
+      device:
+        name: 2x24 pin header J5 (2.54 mm pads, one side of the board)
+        kind: header
       iostandard: "LVCMOS33"
-      shares: ["gpio", "onboard_hdmi", "onboard_lcd", "onboard_microsd"]   # the board multiplexes these pins
-      pins: ["38", "37", "36", "39", "25", "26", "27", "28", "29", "30", "33", "34", "40", "35", "41", "42", "51", "53", "54", "55", "56", "57", "68", "69"]
+      shares: [gpio, onboard_hdmi, onboard_lcd, onboard_microsd]   # the board multiplexes these pins
+      pins: ['38', '37', '36', '39', '25', '26', '27', '28', '29', '30', '33', '34', '40', '35', '41', '42', '51', '53', '54', '55', '56', '57', '68', '69']
     header_j6:   # 2x24 pin header J6 (2.54 mm pads, other side of the board)
-      source: {doc: sch3674, where: 'PDF p.2 Conn_01x24 J6: 1 PIN63_IOR5A_RGBINIT, 2 PIN86_IOT8A_BL_PWM_1V8, 3..9 PIN85_IOT8B..PIN79_IOT12B _1V8, 10 PIN77 SPILCD_MO, 11 PIN76 SPILCD_MCLK, 12..17 HDMI_D2_P/D2_N/D1_P/D1_N/D0_P/D0_N, 18 +5V, 19 PIN48 SPILCD_CS, 20 PIN49 SPILCD_RS, 21 PIN31_IOB15A_RGBINIT, 22 PIN32_IOB15B_RGBINIT, 23 GND, 24 +3V3; LiteX connector "J7" has the same list with "-" at 18, 23, 24'}
-      device: {"name": "2x24 pin header J6 (2.54 mm pads, other side of the board)", "kind": "header"}
-      shares: ["onboard_hdmi", "onboard_lcd", "onboard_small_lcd"]   # the board multiplexes these pins
-      pins: ["63", "86", "85", "84", "83", "82", "81", "80", "79", "77", "76", "75", "74", "73", "72", "71", "70", "48", "49", "31", "32"]
+      source:
+        doc: sch3674
+        where: 'PDF p.2 Conn_01x24 J6: 1 PIN63_IOR5A_RGBINIT, 2 PIN86_IOT8A_BL_PWM_1V8, 3..9 PIN85_IOT8B..PIN79_IOT12B _1V8, 10 PIN77 SPILCD_MO, 11 PIN76 SPILCD_MCLK, 12..17 HDMI_D2_P/D2_N/D1_P/D1_N/D0_P/D0_N, 18 +5V, 19 PIN48 SPILCD_CS, 20 PIN49 SPILCD_RS, 21 PIN31_IOB15A_RGBINIT, 22 PIN32_IOB15B_RGBINIT, 23 GND, 24 +3V3; LiteX connector "J7" has the same list with "-" at 18, 23, 24'
+      device:
+        name: 2x24 pin header J6 (2.54 mm pads, other side of the board)
+        kind: header
+      shares: [onboard_hdmi, onboard_lcd, onboard_small_lcd]   # the board multiplexes these pins
+      pins: ['63', '86', '85', '84', '83', '82', '81', '80', '79', '77', '76', '75', '74', '73', '72', '71', '70', '48', '49', '31', '32']
     onboard_fpga_unrouted:   # Unconnected-by-name FPGA IO (balls 19, 20)
-      device: {"name": "Unconnected-by-name FPGA IO (balls 19, 20)", "kind": "other"}
-      pins: {"iob4a": "19", "iob4b": "20"}
+      device:
+        name: Unconnected-by-name FPGA IO (balls 19, 20)
+        kind: other
+      pins:
+        iob4a: '19'
+        iob4b: '20'
   # ---- drawn: headers and parts; ./unifpga layout draft tang_nano_9k regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: gpio
       type: pin_row
       label: GPIO
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
-      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]'}
+      pins:
+        '[0]': gpio[0]
+        '[1]': gpio[1]
+        '[2]': gpio[2]
+        '[3]': gpio[3]
+        '[4]': gpio[4]
+        '[5]': gpio[5]
     - id: header_j5
       type: pin_row
       label: HEADER_J5
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_j5
-      pins: {'[0]': 'header_j5[0]', '[1]': 'header_j5[1]', '[2]': 'header_j5[2]', '[3]': 'header_j5[3]', '[4]': 'header_j5[4]', '[5]': 'header_j5[5]', '[6]': 'header_j5[6]', '[7]': 'header_j5[7]', '[8]': 'header_j5[8]', '[9]': 'header_j5[9]', '[10]': 'header_j5[10]', '[11]': 'header_j5[11]', '[12]': 'header_j5[12]', '[13]': 'header_j5[13]', '[14]': 'header_j5[14]', '[15]': 'header_j5[15]', '[16]': 'header_j5[16]', '[17]': 'header_j5[17]', '[18]': 'header_j5[18]', '[19]': 'header_j5[19]', '[20]': 'header_j5[20]', '[21]': 'header_j5[21]', '[22]': 'header_j5[22]', '[23]': 'header_j5[23]'}
+      pins:
+        '[0]': header_j5[0]
+        '[1]': header_j5[1]
+        '[2]': header_j5[2]
+        '[3]': header_j5[3]
+        '[4]': header_j5[4]
+        '[5]': header_j5[5]
+        '[6]': header_j5[6]
+        '[7]': header_j5[7]
+        '[8]': header_j5[8]
+        '[9]': header_j5[9]
+        '[10]': header_j5[10]
+        '[11]': header_j5[11]
+        '[12]': header_j5[12]
+        '[13]': header_j5[13]
+        '[14]': header_j5[14]
+        '[15]': header_j5[15]
+        '[16]': header_j5[16]
+        '[17]': header_j5[17]
+        '[18]': header_j5[18]
+        '[19]': header_j5[19]
+        '[20]': header_j5[20]
+        '[21]': header_j5[21]
+        '[22]': header_j5[22]
+        '[23]': header_j5[23]
     - id: header_j6
       type: pin_row
       label: HEADER_J6
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_j6
-      pins: {'[0]': 'header_j6[0]', '[1]': 'header_j6[1]', '[2]': 'header_j6[2]', '[3]': 'header_j6[3]', '[4]': 'header_j6[4]', '[5]': 'header_j6[5]', '[6]': 'header_j6[6]', '[7]': 'header_j6[7]', '[8]': 'header_j6[8]', '[9]': 'header_j6[9]', '[10]': 'header_j6[10]', '[11]': 'header_j6[11]', '[12]': 'header_j6[12]', '[13]': 'header_j6[13]', '[14]': 'header_j6[14]', '[15]': 'header_j6[15]', '[16]': 'header_j6[16]', '[17]': 'header_j6[17]', '[18]': 'header_j6[18]', '[19]': 'header_j6[19]', '[20]': 'header_j6[20]'}
+      pins:
+        '[0]': header_j6[0]
+        '[1]': header_j6[1]
+        '[2]': header_j6[2]
+        '[3]': header_j6[3]
+        '[4]': header_j6[4]
+        '[5]': header_j6[5]
+        '[6]': header_j6[6]
+        '[7]': header_j6[7]
+        '[8]': header_j6[8]
+        '[9]': header_j6[9]
+        '[10]': header_j6[10]
+        '[11]': header_j6[11]
+        '[12]': header_j6[12]
+        '[13]': header_j6[13]
+        '[14]': header_j6[14]
+        '[15]': header_j6[15]
+        '[16]': header_j6[16]
+        '[17]': header_j6[17]
+        '[18]': header_j6[18]
+        '[19]': header_j6[19]
+        '[20]': header_j6[20]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 6}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 6
+        bind:
+          led: onboard_leds
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: hdmi
       label: hdmi
       variants:
         - id: hdmi_tmds
           label: hdmi_tmds (pins listed in the order clk_p, clk_n, d_p, d_n)
-          attach: {peripheral: hdmi_tmds, bind: {clk_p: onboard_hdmi.clk_p, clk_n: onboard_hdmi.clk_n, d_p: onboard_hdmi.d_p, d_n: onboard_hdmi.d_n}}
+          attach:
+            peripheral: hdmi_tmds
+            bind:
+              clk_p: onboard_hdmi.clk_p
+              clk_n: onboard_hdmi.clk_n
+              d_p: onboard_hdmi.d_p
+              d_n: onboard_hdmi.d_n
         - id: hdmi_tmds_2
           label: hdmi_tmds (pins listed in the order clk_p, d_p, clk_n, d_n)
-          attach: {peripheral: hdmi_tmds, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+          attach:
+            peripheral: hdmi_tmds
+            bind:
+              clk_p: onboard_hdmi.clk_p
+              d_p: onboard_hdmi.d_p
+              clk_n: onboard_hdmi.clk_n
+              d_n: onboard_hdmi.d_n
     - id: microsd
       label: microsd
-      attach: {peripheral: inmp441_i2s_mic, bind: {lr: onboard_microsd.cs, ws: onboard_microsd.mosi, sck: onboard_microsd.sclk, sd: onboard_microsd.miso}}
+      attach:
+        peripheral: inmp441_i2s_mic
+        bind:
+          lr: onboard_microsd.cs
+          ws: onboard_microsd.mosi
+          sck: onboard_microsd.sclk
+          sd: onboard_microsd.miso
     - id: lcd
       label: lcd
       variants:
         - id: i2s_audio_out
           label: i2s_audio_out
-          attach: {peripheral: i2s_audio_out, bind: {bclk: onboard_lcd.vs, lrclk: onboard_lcd.hs, sdata: onboard_lcd.ck}}
+          attach:
+            peripheral: i2s_audio_out
+            bind:
+              bclk: onboard_lcd.vs
+              lrclk: onboard_lcd.hs
+              sdata: onboard_lcd.ck
         - id: lcd_480_272
           label: lcd_480_272
-          attach: {peripheral: lcd_480_272, params: {clock_pixel_pll: {idiv: 2, fbdiv: 0, odiv: 48, sdiv: 2, clkoutd: false}, bl: const.0}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+          attach:
+            peripheral: lcd_480_272
+            params:
+              clock_pixel_pll:
+                idiv: 2
+                fbdiv: 0
+                odiv: 48
+                sdiv: 2
+                clkoutd: false
+              bl: const.0
+            bind:
+              r: onboard_lcd.r
+              g: onboard_lcd.g
+              b: onboard_lcd.b
+              hs: onboard_lcd.hs
+              vs: onboard_lcd.vs
+              de: onboard_lcd.de
+              ck: onboard_lcd.ck
+              bl: onboard_lcd.bl
+              init: onboard_lcd.init
         - id: lcd_800_480
           label: lcd_800_480
-          attach: {peripheral: lcd_800_480, params: {clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}, bl: const.0, clock_pixel_mhz: 32.4}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+          attach:
+            peripheral: lcd_800_480
+            params:
+              clock_pixel_pll:
+                idiv: 4
+                fbdiv: 23
+                odiv: 4
+                sdiv: 4
+                clkoutd: true
+              bl: const.0
+              clock_pixel_mhz: 32.4
+            bind:
+              r: onboard_lcd.r
+              g: onboard_lcd.g
+              b: onboard_lcd.b
+              hs: onboard_lcd.hs
+              vs: onboard_lcd.vs
+              de: onboard_lcd.de
+              ck: onboard_lcd.ck
+              bl: onboard_lcd.bl
+              init: onboard_lcd.init
         - id: lcd_ml6485
           label: lcd_ml6485
-          attach: {peripheral: lcd_ml6485, params: {clock_pixel_pll: {idiv: 4, fbdiv: 23, odiv: 4, sdiv: 4, clkoutd: true}, bl: const.0}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl, init: onboard_lcd.init}}
+          attach:
+            peripheral: lcd_ml6485
+            params:
+              clock_pixel_pll:
+                idiv: 4
+                fbdiv: 23
+                odiv: 4
+                sdiv: 4
+                clkoutd: true
+              bl: const.0
+            bind:
+              r: onboard_lcd.r
+              g: onboard_lcd.g
+              b: onboard_lcd.b
+              hs: onboard_lcd.hs
+              vs: onboard_lcd.vs
+              de: onboard_lcd.de
+              ck: onboard_lcd.ck
+              bl: onboard_lcd.bl
+              init: onboard_lcd.init
     - id: small_lcd
       label: small lcd
-      attach: {peripheral: gpio_header, params: {width: 4}, bind: {io: [onboard_small_lcd.data, onboard_small_lcd.clk, onboard_small_lcd.cs, onboard_small_lcd.rs]}}
+      attach:
+        peripheral: gpio_header
+        params:
+          width: 4
+        bind:
+          io: [onboard_small_lcd.data, onboard_small_lcd.clk, onboard_small_lcd.cs, onboard_small_lcd.rs]
     - id: fpga_jtag
       label: BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)
-      device: {kind: other, bank: onboard_fpga_jtag}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_fpga_jtag
     - id: fpga_unrouted
       label: Unconnected-by-name FPGA IO (balls 19, 20)
-      device: {kind: other, bank: onboard_fpga_unrouted}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_fpga_unrouted

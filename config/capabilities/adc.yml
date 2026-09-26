@@ -8,12 +8,29 @@ Capability:
   id: adc
   description: Analog inputs scanned in turn, 12-bit codes with their channel, one clock pulse per conversion.
   parameters:
-    channels: { type: int, required: true, description: "Channels scanned (0 .. channels - 1)" }
-    full_scale_mv: { type: int, required: true, description: "Millivolts at code 4096" }
+    channels:
+      type: int
+      required: true
+      description: Channels scanned (0 .. channels - 1)
+    full_scale_mv:
+      type: int
+      required: true
+      description: Millivolts at code 4096
   signals:
-    - { name: valid,   type: scalar, direction: hw_to_user, comment: "One-clock pulse: a conversion" }
-    - { name: channel, type: bus, width: 4, direction: hw_to_user, comment: "Its channel" }
-    - { name: value,   type: bus, width: 12, direction: hw_to_user, comment: "Unsigned code, full scale 4096" }
+    - name: valid
+      type: scalar
+      direction: hw_to_user
+      comment: 'One-clock pulse: a conversion'
+    - name: channel
+      type: bus
+      width: 4
+      direction: hw_to_user
+      comment: Its channel
+    - name: value
+      type: bus
+      width: 12
+      direction: hw_to_user
+      comment: Unsigned code, full scale 4096
   aggregation: exclusive
 
   optional: true           # reaches design_top only when the design declares its ports
@@ -21,11 +38,21 @@ Capability:
   design:
     comment: 'Analog inputs (optional): one clock of adc_valid per conversion; adc_value is the 12-bit code of channel adc_channel (mV = value * adc_mv / 4096)'
     parameters:
-      adc_channels: {value: channels, absent: 0, description: Analog inputs (A/D converter channels)
-}
-      adc_mv: {value: full_scale_mv, absent: 0, description: Their full scale in millivolts (code 4096)
-}
+      adc_channels:
+        value: channels
+        absent: 0
+        description: Analog inputs (A/D converter channels)
+      adc_mv:
+        value: full_scale_mv
+        absent: 0
+        description: Their full scale in millivolts (code 4096)
     ports:
-      adc_valid: {signal: valid, width: 1}
-      adc_channel: {signal: channel, width: 4}
-      adc_value: {signal: value, width: 12}
+      adc_valid:
+        signal: valid
+        width: 1
+      adc_channel:
+        signal: channel
+        width: 4
+      adc_value:
+        signal: value
+        width: 12

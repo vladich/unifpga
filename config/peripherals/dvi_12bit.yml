@@ -4,13 +4,30 @@ Peripheral:
   id: dvi_12bit
   description: 12-bit RGB DVI output (4 bits per channel) plus HSYNC/VSYNC/DE/CLK
   signals:
-    - { name: r,  type: bus, width: 4, direction: output }
-    - { name: g,  type: bus, width: 4, direction: output }
-    - { name: b,  type: bus, width: 4, direction: output }
-    - { name: hs, type: scalar, direction: output }
-    - { name: vs, type: scalar, direction: output }
-    - { name: de, type: scalar, direction: output }
-    - { name: ck, type: scalar, direction: output }
+    - name: r
+      type: bus
+      width: 4
+      direction: output
+    - name: g
+      type: bus
+      width: 4
+      direction: output
+    - name: b
+      type: bus
+      width: 4
+      direction: output
+    - name: hs
+      type: scalar
+      direction: output
+    - name: vs
+      type: scalar
+      direction: output
+    - name: de
+      type: scalar
+      direction: output
+    - name: ck
+      type: scalar
+      direction: output
   provides:
     - capability: screen
       params:
@@ -20,7 +37,8 @@ Peripheral:
   # 25.125 MHz pixel clock from the iCE40 PLL (SB_PLL40_PAD 12 -> 25.125 MHz
   # on the iCEBreaker); the timing generator runs on it directly.
   clocks:
-    - { name: pixel, mhz: 25.125 }
+    - name: pixel
+      mhz: 25.125
   driver:
     # iCEBreaker 12b: `vga` + SB_IO PIN_OUTPUT_REGISTERED data +
     # an SB_IO PIN_OUTPUT_DDR clock pin (0 / 1 = inverted pixel clock)

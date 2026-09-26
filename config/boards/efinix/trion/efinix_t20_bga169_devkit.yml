@@ -28,10 +28,14 @@ Board:
   banks:
     # ext_clkin: the 50 MHz reference of PLL_TR1 (conn_type alternate); it
     # reaches the fabric only through that PLL.
-    clk:              { pins: "GPIOR_76", frequency_mhz: 50 }
-    onboard_reset:    { pins: "GPIOL_12", active: low }     # rstn
+    clk:
+      pins: GPIOR_76
+      frequency_mhz: 50
+    onboard_reset:     # rstn
+      pins: GPIOL_12
+      active: low
     onboard_leds:                                           # led[0..3]
-      pins: ["GPIOB_TXP06", "GPIOB_TXN09", "GPIOB_TXP08", "GPIOB_RXN04"]
+      pins: [GPIOB_TXP06, GPIOB_TXN09, GPIOB_TXP08, GPIOB_RXN04]
     spi_flash:
       pins:
         sclk: "GPIOL_01"

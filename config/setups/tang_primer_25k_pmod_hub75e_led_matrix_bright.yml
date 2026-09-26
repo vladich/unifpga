@@ -8,26 +8,64 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {buttons: [0, 1], switches: [0, 1]}
+      params:
+        as_switches: true
+      design_bits:
+        buttons: [0, 1]
+        switches: [0, 1]
     - onboard: uart
     - module: hub75e_led_panel
-      wires: {CLK: 'pmod_0.[6]', OE: 'pmod_0.[7]', LAT: 'pmod_0.[2]', A: 'pmod_0.[4]', B: 'pmod_0.[0]', C: 'pmod_0.[5]', D: 'pmod_0.[1]', E: 'pmod_1.[3]', R1: 'pmod_1.[4]', R2: 'pmod_1.[6]', G1: 'pmod_1.[0]', G2: 'pmod_1.[2]', B1: 'pmod_1.[5]', B2: 'pmod_1.[7]'}
-      params: {rows: 64, brightness: 8}
+      wires:
+        CLK: pmod_0.[6]
+        OE: pmod_0.[7]
+        LAT: pmod_0.[2]
+        A: pmod_0.[4]
+        B: pmod_0.[0]
+        C: pmod_0.[5]
+        D: pmod_0.[1]
+        E: pmod_1.[3]
+        R1: pmod_1.[4]
+        R2: pmod_1.[6]
+        G1: pmod_1.[0]
+        G2: pmod_1.[2]
+        B1: pmod_1.[5]
+        B2: pmod_1.[7]
+      params:
+        rows: 64
+        brightness: 8
     - module: tm1638_led_key
-      wires: {STB: 'pmod_2.[3]', CLK: 'pmod_2.[2]', DIO: 'pmod_2.[1]'}
-      params: {rst: context.rst_on_power_up}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [0, 1, 2, 3, 4, 5, 6, 7], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: pmod_2.[3]
+        CLK: pmod_2.[2]
+        DIO: pmod_2.[1]
+      params:
+        rst: context.rst_on_power_up
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: [0, 1, 2, 3, 4, 5, 6, 7]
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[4]', WS: 'gpio.[2]', SD: 'gpio.[5]', L/R: 'gpio.[0]'}
+      wires:
+        SCK: gpio.[4]
+        WS: gpio.[2]
+        SD: gpio.[5]
+        L/R: gpio.[0]
     - module: i2s_dac_breakout
-      wires: {SCK: 'pmod_2.[4]', BCK: 'pmod_2.[5]', LCK: 'pmod_2.[7]', DIN: 'pmod_2.[6]'}
+      wires:
+        SCK: pmod_2.[4]
+        BCK: pmod_2.[5]
+        LCK: pmod_2.[7]
+        DIN: pmod_2.[6]
     - gpio: gpio
-      params: {width: 38}
+      params:
+        width: 38
   design:
     reset:
       sources:
-      - {power_up: true}
-      - {tm_key: msb}
+      - power_up: true
+      - tm_key: msb
   extra:
-    tie: {'gpio[1]': 0, 'gpio[3]': 1}
+    tie:
+      gpio[1]: 0
+      gpio[3]: 1

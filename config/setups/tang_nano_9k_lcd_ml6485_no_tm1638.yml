@@ -5,22 +5,30 @@ Setup:
   id: tang_nano_9k_lcd_ml6485_no_tm1638
   board: tang_nano_9k
   toolchain: nextpnr_apicula
-  aliases: {tang_nano_9k_lcd_ml6485_no_tm1638_yosys: {}}
+  aliases:
+    tang_nano_9k_lcd_ml6485_no_tm1638_yosys: {}
   use:
     - onboard: clk
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {buttons: [1, 0], switches: [1, 0]}
+      params:
+        as_switches: true
+      design_bits:
+        buttons: [1, 0]
+        switches: [1, 0]
     - onboard: leds
-      design_bits: {leds: [5, 4, 3, 2, 1, 0]}
+      design_bits:
+        leds: [5, 4, 3, 2, 1, 0]
     - onboard: uart
     - onboard: lcd
       variant: lcd_ml6485
     - onboard: microsd
     - module: i2s_dac_breakout
-      wires: {BCK: 'gpio.[3]', LCK: 'gpio.[5]', DIN: 'gpio.[4]'}
+      wires:
+        BCK: gpio.[3]
+        LCK: gpio.[5]
+        DIN: gpio.[4]
     - onboard: small_lcd
   design:
     reset:
       sources:
-      - {power_up: true}
+      - power_up: true

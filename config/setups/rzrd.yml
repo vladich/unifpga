@@ -9,8 +9,10 @@ Setup:
     - onboard: clk
     - onboard: cpu_reset
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {switches: [0, 1, 2, 3]}
+      params:
+        as_switches: true
+      design_bits:
+        switches: [0, 1, 2, 3]
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
@@ -27,4 +29,6 @@ Setup:
     - onboard: ir
     - onboard: sdram
   extra:
-    tie: {'onboard_char_lcd.d[6]': 0, 'onboard_char_lcd.d[4]': 1}
+    tie:
+      onboard_char_lcd.d[6]: 0
+      onboard_char_lcd.d[4]: 1

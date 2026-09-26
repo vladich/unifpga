@@ -12,13 +12,29 @@ Peripheral:
       type: int
       default: 3300
   # the on-board devices it models: a board inventory's ADC with these pins
-  models: {kind: adc, pins: {cs_n: [ADC_CS_N, cs_n], sclk: [ADC_SCLK, sclk],
-                             din: [ADC_SADDR, din, mosi], dout: [ADC_SDAT, dout, miso]}}
+  models:
+    kind: adc
+    pins:
+      cs_n: [ADC_CS_N, cs_n]
+      sclk: [ADC_SCLK, sclk]
+      din: [ADC_SADDR, din, mosi]
+      dout: [ADC_SDAT, dout, miso]
   signals:
-    - { name: cs_n, type: scalar, direction: output, comment: "Chip select, active low" }
-    - { name: sclk, type: scalar, direction: output }
-    - { name: din,  type: scalar, direction: output, comment: "The next channel's address (ADC_SADDR)" }
-    - { name: dout, type: scalar, direction: input,  comment: "The conversion result (ADC_SDAT)" }
+    - name: cs_n
+      type: scalar
+      direction: output
+      comment: Chip select, active low
+    - name: sclk
+      type: scalar
+      direction: output
+    - name: din
+      type: scalar
+      direction: output
+      comment: The next channel's address (ADC_SADDR)
+    - name: dout
+      type: scalar
+      direction: input
+      comment: The conversion result (ADC_SDAT)
   provides:
     - capability: adc
       params:

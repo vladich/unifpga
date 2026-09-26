@@ -154,17 +154,28 @@ Board:
     iostandard: LVCMOS33
     iostandard_reason: tool-required
   banks:
-    clk: { pins: "4", frequency_mhz: 27, source: {doc: sch3923, where: 'sheet 1: U3 OUT -> R10 22R -> PIN04_SYS_CLK -> ball 4 IOL7A/LPLL1_T_in; cst_leds clk 4; litex clk27 4'} }
+    clk:
+      pins: '4'
+      frequency_mhz: 27
+      source:
+        doc: sch3923
+        where: 'sheet 1: U3 OUT -> R10 22R -> PIN04_SYS_CLK -> ball 4 IOL7A/LPLL1_T_in; cst_leds clk 4; litex clk27 4'
     onboard_buttons:
-      source: {doc: sch3923, where: 'sheet 1: PIN88_MODE0_KEY1 (IOR30A/MODE0) -> KEY_S1, PIN87_MODE1_KEY2 (IOR30B/MODE1) -> KEY_S2, each with 1K pull-down (R6, R7); sheet PERIPHERALS: key closes to +3V3 through 330R -> pressed = high'}
+      source:
+        doc: sch3923
+        where: 'sheet 1: PIN88_MODE0_KEY1 (IOR30A/MODE0) -> KEY_S1, PIN87_MODE1_KEY2 (IOR30B/MODE1) -> KEY_S2, each with 1K pull-down (R6, R7); sheet PERIPHERALS: key closes to +3V3 through 330R -> pressed = high'
       active: high    # keys pull the pin high (schematic)
-      pins: ["88", "87"]
+      pins: ['88', '87']
     onboard_leds:
-      source: {doc: sch3923, where: 'sheet PERIPHERALS: PIN15_SYS_LED0..PIN20_SYS_LED5 -> 510R -> LED -> +3V3; wiki: low voltage level enable; cst_leds leds[0..5] 15..20'}
+      source:
+        doc: sch3923
+        where: 'sheet PERIPHERALS: PIN15_SYS_LED0..PIN20_SYS_LED5 -> 510R -> LED -> +3V3; wiki: low voltage level enable; cst_leds leds[0..5] 15..20'
       active: low
-      pins: ["15", "16", "17", "18", "19", "20"]
+      pins: ['15', '16', '17', '18', '19', '20']
     onboard_lcd:
-      source: {doc: sch3923, where: 'sheet DISPLAY: J2 R3..R7 = PIN42..PIN38, G2..G7 = PIN37..PIN32 (G2..G6 also DVI_TX1_P..DVI_TXC_P), B3..B7 = PIN31..PIN27, CLK = PIN77_LCD_CK, HSYNC PIN25, VSYNC PIN26, DEN PIN48; DSI_LCD_BL (PIN49_LCD_BL) -> LP3320 backlight boost EN; cst_lcd lcd_r[0..4] 42..38, g[0..5] 37..32, b[0..4] 31..27, hs 25, vs 26, de 48, dclk 77'}
+      source:
+        doc: sch3923
+        where: 'sheet DISPLAY: J2 R3..R7 = PIN42..PIN38, G2..G7 = PIN37..PIN32 (G2..G6 also DVI_TX1_P..DVI_TXC_P), B3..B7 = PIN31..PIN27, CLK = PIN77_LCD_CK, HSYNC PIN25, VSYNC PIN26, DEN PIN48; DSI_LCD_BL (PIN49_LCD_BL) -> LP3320 backlight boost EN; cst_lcd lcd_r[0..4] 42..38, g[0..5] 37..32, b[0..4] 31..27, hs 25, vs 26, de 48, dclk 77'
       pins:
         ck: "77"
         de: "48"
@@ -175,114 +186,221 @@ Board:
         # (LCD_R[7:3], LCD_G[7:2], LCD_B[7:3]); the `tang_nano_20k_lcd_800_480_49mhz_tm1638`
         # variant's different adapter is expressed with pin_overrides in its
         # configuration, not merged into this bank.
-        r: ["42", "41", "40", "39", "38"]
-        g: ["37", "36", "35", "34", "33", "32"]
-        b: ["31", "30", "29", "28", "27"]
-      index_origin: {r: 3, g: 2, b: 3}
+        r: ['42', '41', '40', '39', '38']
+        g: ['37', '36', '35', '34', '33', '32']
+        b: ['31', '30', '29', '28', '27']
+      index_origin:
+        r: 3
+        g: 2
+        b: 3
     onboard_hdmi_edid:
-      source: {doc: sch3923, where: 'sheet 1: PIN53_DCD_CLK -> DISPLAY DCD_CLK -> Q1A -> DVI_DCD_CLK -> J3 SCL(15); PIN52_DCD_DAT -> Q1B -> J3 SDA(16); rev 3920/3921 name them EDID_CLK/EDID_DAT (same balls)'}
+      source:
+        doc: sch3923
+        where: 'sheet 1: PIN53_DCD_CLK -> DISPLAY DCD_CLK -> Q1A -> DVI_DCD_CLK -> J3 SCL(15); PIN52_DCD_DAT -> Q1B -> J3 SDA(16); rev 3920/3921 name them EDID_CLK/EDID_DAT (same balls)'
       pins:
         clk: "53"
         dat: "52"
     onboard_uart:
-      source: {doc: sch3923, where: 'sheet 1 USB_JTAG block: PIN69_SYS_TX -> BL616_UART_RX (BL616 IO13), PIN70_SYS_RX <- BL616_UART_TX (BL616 IO11); cst_uart uart_tx 69, uart_rx 70; litex serial tx 69 rx 70'}
+      source:
+        doc: sch3923
+        where: 'sheet 1 USB_JTAG block: PIN69_SYS_TX -> BL616_UART_RX (BL616 IO13), PIN70_SYS_RX <- BL616_UART_TX (BL616 IO11); cst_uart uart_tx 69, uart_rx 70; litex serial tx 69 rx 70'
       pins:           # schematic nets PIN69_SYS_TX / PIN70_SYS_RX (Sipeed uart example, LiteX agree)
         tx: "69"
         rx: "70"
     onboard_microsd:
-      source: {doc: sch3923, where: 'sheet 1 PERIPHERALS block: PIN80_SDIO_D2, PIN81_SDIO_D3, PIN82_SDIO_CMD, PIN83_SDIO_CLK (22R R49), PIN84_SDIO_D0, PIN85_SDIO_D1 -> J7; cst_nestang sd_clk 83, cmd 82, dat0..3 84 85 80 81; litex sdcard data 84 85 80 81 cmd 82 clk 83 (spisdcard cs_n 81 mosi 82 miso 84 clk 83)'}
+      source:
+        doc: sch3923
+        where: 'sheet 1 PERIPHERALS block: PIN80_SDIO_D2, PIN81_SDIO_D3, PIN82_SDIO_CMD, PIN83_SDIO_CLK (22R R49), PIN84_SDIO_D0, PIN85_SDIO_D1 -> J7; cst_nestang sd_clk 83, cmd 82, dat0..3 84 85 80 81; litex sdcard data 84 85 80 81 cmd 82 clk 83 (spisdcard cs_n 81 mosi 82 miso 84 clk 83)'
       pins:
         sck: "83"
         cmd: "82"
-        dat: ["84", "85", "80", "81"]
+        dat: ['84', '85', '80', '81']
     onboard_headphone:
-      source: {doc: sch3923, where: 'sheet 1 AUDIO block: PIN56_I2S_BCLK, PIN55_I2S_LRCK, PIN54_I2S_DIN -> IC3 BCLK/LRCLK/DIN; cst_audio HP_BCK 56, HP_WS 55, HP_DIN 54'}
+      source:
+        doc: sch3923
+        where: 'sheet 1 AUDIO block: PIN56_I2S_BCLK, PIN55_I2S_LRCK, PIN54_I2S_DIN -> IC3 BCLK/LRCLK/DIN; cst_audio HP_BCK 56, HP_WS 55, HP_DIN 54'
       pins:
         bck: "56"
         din: "54"
         ws: "55"
-    onboard_pa_enable: { pins: "51", source: {doc: sch3923, where: 'sheet 1: PIN51_PA_SD/EN -> AUDIO PA_SD/EN -> R45 0R -> IC3 SD_MODE (low = shutdown); cst_audio PA_EN 51'} }
+    onboard_pa_enable:
+      pins: '51'
+      source:
+        doc: sch3923
+        where: 'sheet 1: PIN51_PA_SD/EN -> AUDIO PA_SD/EN -> R45 0R -> IC3 SD_MODE (low = shutdown); cst_audio PA_EN 51'
     onboard_ws2812:   # WS2812 RGB LED (Sipeed's TangNano-20K-example ws2812.cst: pin 79)
-      source: {doc: sch3923, where: 'sheet PERIPHERALS: WS2812 -> R60 100R -> U1 DIN; sheet 1 PIN79_WS2812; cst_ws2812 WS2812 79; litex rgb_led 79'}
-      device: {"name": "WS2812 RGB LED", "kind": "ws2812", "id": "worldsemi_ws2812"}
-      pins: {"din": "79"}
+      source:
+        doc: sch3923
+        where: 'sheet PERIPHERALS: WS2812 -> R60 100R -> U1 DIN; sheet 1 PIN79_WS2812; cst_ws2812 WS2812 79; litex rgb_led 79'
+      device:
+        name: WS2812 RGB LED
+        kind: ws2812
+        id: worldsemi_ws2812
+      pins:
+        din: '79'
     onboard_joystick:
-      source: {doc: sch3923, where: 'sheet 1 J5 annotations: 17 Joystick_CS (PIN72), 18 Joystick_MISO (PIN71), 19 Joystick_MOSI (PIN53), 20 Joystick_MCLK (PIN52); cst_nestang joystick_cs2 72, miso2 71, mosi2 53, clk2 52'}
+      source:
+        doc: sch3923
+        where: 'sheet 1 J5 annotations: 17 Joystick_CS (PIN72), 18 Joystick_MISO (PIN71), 19 Joystick_MOSI (PIN53), 20 Joystick_MCLK (PIN52); cst_nestang joystick_cs2 72, miso2 71, mosi2 53, clk2 52'
       pins:
         miso: "71"
         cs: "72"
     gpio:
-      pins: ["86", "73", "74", "75", "76"]
+      pins: ['86', '73', '74', '75', '76']
     onboard_hdmi:
-      source: {doc: sch3923, where: 'sheet 1 FPGA bottom side: 33 DVI_TXC_P, 34 DVI_TXC_N, 35 DVI_TX0_P, 36 DVI_TX0_N, 37 DVI_TX1_P, 38 DVI_TX1_N, 39 DVI_TX2_P, 40 DVI_TX2_N; cst_hdmi O_tmds_clk_p 33,34 / data_p[0..2] 35,36 37,38 39,40 LVDS25'}
+      source:
+        doc: sch3923
+        where: 'sheet 1 FPGA bottom side: 33 DVI_TXC_P, 34 DVI_TXC_N, 35 DVI_TX0_P, 36 DVI_TX0_N, 37 DVI_TX1_P, 38 DVI_TX1_N, 39 DVI_TX2_P, 40 DVI_TX2_N; cst_hdmi O_tmds_clk_p 33,34 / data_p[0..2] 35,36 37,38 39,40 LVDS25'
       pins:
         clk_p: "33,34"
         clk_n: "34"
-        d_p: ["35,36", "37,38", "39,40"]
-        d_n: ["36", "38", "40"]
+        d_p: ['35,36', '37,38', '39,40']
+        d_n: ['36', '38', '40']
     onboard_ms5351_clk:   # MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)
-      source: {doc: sch3923, where: 'sheet PERIPHERALS: U12 CLK0 -> PIN10_5351CKP (SYS_GCLK6_P, ball 10 IOL29A/GCLKT_6), CLK1 -> PIN11_5351CKN (SYS_GCLK6_N, ball 11 IOL29B/GCLKC_6), CLK2 -> PIN13_5351clk2 (SYS_LPLL2_in, ball 13 IOL45A/LPLL2_T_in); wiki_unbox: CLK0->PIN10, CLK1->PIN11, CLK2->PIN13; MS5351 SCL/SDA go to BL616 IO22/IO21, not the FPGA'}
-      device: {"name": "MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)", "kind": "clock", "id": "ruimeng_ms5351m"}
-      shares: ["onboard_bl616_spi"]   # the board multiplexes these pins
-      pins: {"clk0": "10", "clk1": "11", "clk2": "13"}
+      source:
+        doc: sch3923
+        where: 'sheet PERIPHERALS: U12 CLK0 -> PIN10_5351CKP (SYS_GCLK6_P, ball 10 IOL29A/GCLKT_6), CLK1 -> PIN11_5351CKN (SYS_GCLK6_N, ball 11 IOL29B/GCLKC_6), CLK2 -> PIN13_5351clk2 (SYS_LPLL2_in, ball 13 IOL45A/LPLL2_T_in); wiki_unbox: CLK0->PIN10, CLK1->PIN11, CLK2->PIN13; MS5351 SCL/SDA go to BL616 IO22/IO21, not the FPGA'
+      device:
+        name: MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)
+        kind: clock
+        id: ruimeng_ms5351m
+      shares: [onboard_bl616_spi]   # the board multiplexes these pins
+      pins:
+        clk0: '10'
+        clk1: '11'
+        clk2: '13'
     onboard_hdmi_ctrl:   # HDMI HPD and CEC
-      source: {doc: sch3923, where: 'sheet DISPLAY: PIN26_LCD_VS -> R47 2.2K -> J3 HPD(19); PIN25_LCD_HS -> R51 100R -> DVI_CEC -> J3 CEC(13); litex hdmi hdp 26 / cec 25 LVCMOS18'}
-      device: {"name": "HDMI HPD and CEC", "kind": "hdmi_tx"}
-      shares: ["header_j6", "onboard_lcd"]   # the board multiplexes these pins
-      pins: {"hpd": "26", "cec": "25"}
+      source:
+        doc: sch3923
+        where: 'sheet DISPLAY: PIN26_LCD_VS -> R47 2.2K -> J3 HPD(19); PIN25_LCD_HS -> R51 100R -> DVI_CEC -> J3 CEC(13); litex hdmi hdp 26 / cec 25 LVCMOS18'
+      device:
+        name: HDMI HPD and CEC
+        kind: hdmi_tx
+      shares: [header_j6, onboard_lcd]   # the board multiplexes these pins
+      pins:
+        hpd: '26'
+        cec: '25'
     onboard_lcd_touch:   # RGB LCD resistive-touch lines XR/YD/XL/YU (J2 pins 37-40, LCD_INIT0..3)
-      source: {doc: sch3923, where: 'sheet 1 DISPLAY sheet block: PIN18_SYS_LED3 -> LCD_INIT0, PIN19_SYS_LED4 -> LCD_INIT1, PIN20_SYS_LED5 -> LCD_INIT2, PIN17_SYS_LED2 -> LCD_INIT3; sheet DISPLAY: LCD_INIT0..3 -> J2 XR/YD/XL/YU'}
-      device: {"name": "RGB LCD resistive-touch lines XR/YD/XL/YU (J2 pins 37-40, LCD_INIT0..3)", "kind": "lcd_rgb"}
-      shares: ["header_j6", "onboard_joystick1", "onboard_leds"]   # the board multiplexes these pins
-      pins: {"xr": "18", "yd": "19", "xl": "20", "yu": "17"}
+      source:
+        doc: sch3923
+        where: 'sheet 1 DISPLAY sheet block: PIN18_SYS_LED3 -> LCD_INIT0, PIN19_SYS_LED4 -> LCD_INIT1, PIN20_SYS_LED5 -> LCD_INIT2, PIN17_SYS_LED2 -> LCD_INIT3; sheet DISPLAY: LCD_INIT0..3 -> J2 XR/YD/XL/YU'
+      device:
+        name: RGB LCD resistive-touch lines XR/YD/XL/YU (J2 pins 37-40, LCD_INIT0..3)
+        kind: lcd_rgb
+      shares: [header_j6, onboard_joystick1, onboard_leds]   # the board multiplexes these pins
+      pins:
+        xr: '18'
+        yd: '19'
+        xl: '20'
+        yu: '17'
     onboard_serial_flash:   # XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)
-      source: {doc: sch3923, where: 'sheet 1: U2 XT25F64FWOIGT: MSPI_CLK 59 (IOR34B/MCLK, via 0R R8, 1K pull-down R4), MSPI_CS 60 (IOR34A/MCS_N), MSPI_DI 61 (flash DI, IOR33B/MO), MSPI_DO 62 (flash DO, IOR33A/MI), MSPI_WP 57, MSPI_HOLD 63; litex spiflash cs_n 60 clk 59 mosi 61 miso 62'}
-      device: {"name": "XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)", "kind": "flash", "id": "xtx_xt25f64f"}
+      source:
+        doc: sch3923
+        where: 'sheet 1: U2 XT25F64FWOIGT: MSPI_CLK 59 (IOR34B/MCLK, via 0R R8, 1K pull-down R4), MSPI_CS 60 (IOR34A/MCS_N), MSPI_DI 61 (flash DI, IOR33B/MO), MSPI_DO 62 (flash DO, IOR33A/MI), MSPI_WP 57, MSPI_HOLD 63; litex spiflash cs_n 60 clk 59 mosi 61 miso 62'
+      device:
+        name: XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)
+        kind: flash
+        id: xtx_xt25f64f
       iostandard: "LVCMOS33"
-      pins: {"clk": "59", "cs": "60", "mosi": "61", "miso": "62", "wp": "57", "hold": "63"}
+      pins:
+        clk: '59'
+        cs: '60'
+        mosi: '61'
+        miso: '62'
+        wp: '57'
+        hold: '63'
     onboard_bl616_spi:   # BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 "choose spi" command)
-      source: {doc: sch3923, where: 'sheet 1 USB_JTAG block: PIN86_SPI_DIR -> SPI_DIR (BL616 IO0), PIN13_SPI_SCLK -> SPI_SCLK (BL616 IO1), PIN76_SPI_MOSI -> SPI_MOSI (BL616 IO27), PIN75_SPI_MISO -> SPI_MISO (BL616 IO30); wiki: USB to SPI for FPGA communication; wiki_unbox: BL616 is SPI slave in spi mode'}
-      device: {"name": "BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 \"choose spi\" command)", "kind": "usb", "id": "bouffalo_bl616"}
-      shares: ["gpio", "header_j5", "header_j6", "onboard_ms5351_clk"]   # the board multiplexes these pins
-      pins: {"sclk": "13", "dir": "86", "mosi": "76", "miso": "75"}
+      source:
+        doc: sch3923
+        where: 'sheet 1 USB_JTAG block: PIN86_SPI_DIR -> SPI_DIR (BL616 IO0), PIN13_SPI_SCLK -> SPI_SCLK (BL616 IO1), PIN76_SPI_MOSI -> SPI_MOSI (BL616 IO27), PIN75_SPI_MISO -> SPI_MISO (BL616 IO30); wiki: USB to SPI for FPGA communication; wiki_unbox: BL616 is SPI slave in spi mode'
+      device:
+        name: BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 "choose spi" command)
+        kind: usb
+        id: bouffalo_bl616
+      shares: [gpio, header_j5, header_j6, onboard_ms5351_clk]   # the board multiplexes these pins
+      pins:
+        sclk: '13'
+        dir: '86'
+        mosi: '76'
+        miso: '75'
     onboard_jtag:   # FPGA JTAG (driven by BL616; test points TP3-TP6)
-      source: {doc: sch3923, where: 'sheet 1: PIN05_SYS_TMS (IOR25B/TMS), PIN06_SYS_TCK (IOR26A/TCK, 4.7K pull-down R5), PIN07_SYS_TDI, PIN08_SYS_TDO -> BL616 JTAG_* and TP3..TP6; wiki: JTAG test points for an external debugger'}
-      device: {"name": "FPGA JTAG (driven by BL616; test points TP3-TP6)", "kind": "other", "id": "bouffalo_bl616"}
-      pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8"}
+      source:
+        doc: sch3923
+        where: 'sheet 1: PIN05_SYS_TMS (IOR25B/TMS), PIN06_SYS_TCK (IOR26A/TCK, 4.7K pull-down R5), PIN07_SYS_TDI, PIN08_SYS_TDO -> BL616 JTAG_* and TP3..TP6; wiki: JTAG test points for an external debugger'
+      device:
+        name: FPGA JTAG (driven by BL616; test points TP3-TP6)
+        kind: other
+        id: bouffalo_bl616
+      pins:
+        tms: '5'
+        tck: '6'
+        tdi: '7'
+        tdo: '8'
     onboard_reconfig:   # RECONFIG_N test point TP1
-      source: {doc: sch3923, where: 'sheet 1: PIN09_SYS_RECFG (IOR31B/RECONFIG_N) -> TP1'}
-      device: {"name": "RECONFIG_N test point TP1", "kind": "reset"}
+      source:
+        doc: sch3923
+        where: 'sheet 1: PIN09_SYS_RECFG (IOR31B/RECONFIG_N) -> TP1'
+      device:
+        name: RECONFIG_N test point TP1
+        kind: reset
       active: "low"
-      pins: {"reconfig_n": "9"}
+      pins:
+        reconfig_n: '9'
     header_j5:   # 20-pin header J5 (Conn_01x20)
-      source: {doc: sch3923, where: 'sheet 1 J5: 1 +5V, 2 GND, 3 PIN76_SPI_MOSI, 4 PIN80_SDIO_D2, 5 PIN42_LCD_R3, 6 PIN41_LCD_R4, 7 PIN56_I2S_BCLK, 8 PIN54_I2S_DIN, 9 PIN51_PA_SD/EN, 10 PIN48_LCD_DE, 11 PIN55_I2S_LRCK, 12 PIN49_LCD_BL, 13 PIN86_SPI_DIR, 14 PIN79_WS2812, 15 GND, 16 +3V3, 17 PIN72_HSPI_D1, 18 PIN71_HSPI_D0, 19 PIN53_DCD_CLK, 20 PIN52_DCD_DAT'}
-      device: {"name": "20-pin header J5 (Conn_01x20)", "kind": "header"}
-      shares: ["gpio", "onboard_bl616_spi", "onboard_hdmi_edid", "onboard_headphone", "onboard_joystick", "onboard_lcd", "onboard_microsd", "onboard_pa_enable", "onboard_ws2812"]   # the board multiplexes these pins
-      pins: ["76", "80", "42", "41", "56", "54", "51", "48", "55", "49", "86", "79", "72", "71", "53", "52"]
+      source:
+        doc: sch3923
+        where: 'sheet 1 J5: 1 +5V, 2 GND, 3 PIN76_SPI_MOSI, 4 PIN80_SDIO_D2, 5 PIN42_LCD_R3, 6 PIN41_LCD_R4, 7 PIN56_I2S_BCLK, 8 PIN54_I2S_DIN, 9 PIN51_PA_SD/EN, 10 PIN48_LCD_DE, 11 PIN55_I2S_LRCK, 12 PIN49_LCD_BL, 13 PIN86_SPI_DIR, 14 PIN79_WS2812, 15 GND, 16 +3V3, 17 PIN72_HSPI_D1, 18 PIN71_HSPI_D0, 19 PIN53_DCD_CLK, 20 PIN52_DCD_DAT'
+      device:
+        name: 20-pin header J5 (Conn_01x20)
+        kind: header
+      shares: [gpio, onboard_bl616_spi, onboard_hdmi_edid, onboard_headphone, onboard_joystick, onboard_lcd, onboard_microsd, onboard_pa_enable, onboard_ws2812]   # the board multiplexes these pins
+      pins: ['76', '80', '42', '41', '56', '54', '51', '48', '55', '49', '86', '79', '72', '71', '53', '52']
     header_j6:   # 20-pin header J6 (Conn_01x20)
-      source: {doc: sch3923, where: 'sheet 1 J6: 1 PIN73_HSPI_D2, 2 PIN74_HSPI_D3, 3 PIN75_SPI_MISO, 4 PIN85_SDIO_D1, 5 PIN77_LCD_CK, 6 PIN15_SYS_LED0, 7 PIN16_SYS_LED1, 8 PIN27_LCD_B7, 9 PIN28_LCD_B6, 10 PIN25_LCD_HS, 11 PIN26_LCD_VS, 12 PIN29_LCD_B5, 13 PIN30_LCD_B4, 14 PIN31_LCD_B3, 15 PIN17_SYS_LED2, 16 PIN20_SYS_LED5, 17 PIN19_SYS_LED4, 18 PIN18_SYS_LED3, 19 +3V3, 20 GND'}
-      device: {"name": "20-pin header J6 (Conn_01x20)", "kind": "header"}
-      shares: ["gpio", "onboard_bl616_spi", "onboard_hdmi_ctrl", "onboard_joystick1", "onboard_lcd", "onboard_lcd_touch", "onboard_leds", "onboard_microsd"]   # the board multiplexes these pins
-      pins: ["73", "74", "75", "85", "77", "15", "16", "27", "28", "25", "26", "29", "30", "31", "17", "20", "19", "18"]
+      source:
+        doc: sch3923
+        where: 'sheet 1 J6: 1 PIN73_HSPI_D2, 2 PIN74_HSPI_D3, 3 PIN75_SPI_MISO, 4 PIN85_SDIO_D1, 5 PIN77_LCD_CK, 6 PIN15_SYS_LED0, 7 PIN16_SYS_LED1, 8 PIN27_LCD_B7, 9 PIN28_LCD_B6, 10 PIN25_LCD_HS, 11 PIN26_LCD_VS, 12 PIN29_LCD_B5, 13 PIN30_LCD_B4, 14 PIN31_LCD_B3, 15 PIN17_SYS_LED2, 16 PIN20_SYS_LED5, 17 PIN19_SYS_LED4, 18 PIN18_SYS_LED3, 19 +3V3, 20 GND'
+      device:
+        name: 20-pin header J6 (Conn_01x20)
+        kind: header
+      shares: [gpio, onboard_bl616_spi, onboard_hdmi_ctrl, onboard_joystick1, onboard_lcd, onboard_lcd_touch, onboard_leds, onboard_microsd]   # the board multiplexes these pins
+      pins: ['73', '74', '75', '85', '77', '15', '16', '27', '28', '25', '26', '29', '30', '31', '17', '20', '19', '18']
     onboard_joystick1:   # Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)
-      source: {doc: sch3923, where: 'sheet 1 J6 annotations: 15 Joystick_MCLK (PIN17), 16 Joystick_MOSI (PIN20), 17 Joystick_MISO (PIN19), 18 Joystick_CS (PIN18); cst_nestang joystick_clk 17, mosi 20, miso 19, cs 18'}
-      device: {"name": "Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)", "kind": "joystick"}
-      shares: ["header_j6", "onboard_lcd_touch", "onboard_leds"]   # the board multiplexes these pins
-      pins: {"mclk": "17", "mosi": "20", "miso": "19", "cs": "18"}
+      source:
+        doc: sch3923
+        where: 'sheet 1 J6 annotations: 15 Joystick_MCLK (PIN17), 16 Joystick_MOSI (PIN20), 17 Joystick_MISO (PIN19), 18 Joystick_CS (PIN18); cst_nestang joystick_clk 17, mosi 20, miso 19, cs 18'
+      device:
+        name: Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)
+        kind: joystick
+      shares: [header_j6, onboard_lcd_touch, onboard_leds]   # the board multiplexes these pins
+      pins:
+        mclk: '17'
+        mosi: '20'
+        miso: '19'
+        cs: '18'
   # ---- drawn: headers and parts; ./unifpga layout draft tang_nano_20k regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   connector_types:
     sipeed_nano20k_j5:
       name: Tang Nano 20K side header J5 (1x20)
       voltage: 3.3
-      rows: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
-      power: {1: VCC5, 2: GND, 15: GND, 16: VCC3P3}
+      rows:
+      - [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+      power:
+        1: VCC5
+        2: GND
+        15: GND
+        16: VCC3P3
       source: 'schematic 3923, sheet 1 J5: 1 +5V, 2 GND, 15 GND, 16 +3V3'
     sipeed_nano20k_j6:
       name: Tang Nano 20K side header J6 (1x20)
       voltage: 3.3
-      rows: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
-      power: {19: VCC3P3, 20: GND}
+      rows:
+      - [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+      power:
+        19: VCC3P3
+        20: GND
       source: 'schematic 3923, sheet 1 J6: 19 +3V3, 20 GND'
   headers:
     - id: gpio
@@ -290,74 +408,218 @@ Board:
       label: GPIO
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
-      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]'}
+      pins:
+        '[0]': gpio[0]
+        '[1]': gpio[1]
+        '[2]': gpio[2]
+        '[3]': gpio[3]
+        '[4]': gpio[4]
     - id: header_j5
       type: sipeed_nano20k_j5
       label: J5
       bank: header_j5
-      pins: {'3': 'header_j5[0]', '4': 'header_j5[1]', '5': 'header_j5[2]', '6': 'header_j5[3]', '7': onboard_headphone.bck, '8': onboard_headphone.din, '9': onboard_pa_enable, '10': onboard_lcd.de, '11': onboard_headphone.ws, '12': onboard_lcd.bl, '13': 'gpio[0]', '14': 'header_j5[11]', '17': onboard_joystick.cs, '18': onboard_joystick.miso, '19': 'header_j5[14]', '20': 'header_j5[15]'}
-      source: {doc: sch3923, where: 'sheet 1 J5 (revision 3923; 3920 differs on pins 3, 10, 11)'}
+      pins:
+        '3': header_j5[0]
+        '4': header_j5[1]
+        '5': header_j5[2]
+        '6': header_j5[3]
+        '7': onboard_headphone.bck
+        '8': onboard_headphone.din
+        '9': onboard_pa_enable
+        '10': onboard_lcd.de
+        '11': onboard_headphone.ws
+        '12': onboard_lcd.bl
+        '13': gpio[0]
+        '14': header_j5[11]
+        '17': onboard_joystick.cs
+        '18': onboard_joystick.miso
+        '19': header_j5[14]
+        '20': header_j5[15]
+      source:
+        doc: sch3923
+        where: sheet 1 J5 (revision 3923; 3920 differs on pins 3, 10, 11)
     - id: header_j6
       type: sipeed_nano20k_j6
       label: J6
       bank: header_j6
-      pins: {'1': 'gpio[1]', '2': 'gpio[2]', '3': 'gpio[3]', '4': 'onboard_microsd.dat[1]', '5': onboard_lcd.ck, '6': 'header_j6[5]', '7': 'header_j6[6]', '8': 'header_j6[7]', '9': 'header_j6[8]', '10': onboard_lcd.hs, '11': onboard_lcd.vs, '12': 'header_j6[11]', '13': 'header_j6[12]', '14': 'header_j6[13]', '15': 'header_j6[14]', '16': 'header_j6[15]', '17': 'header_j6[16]', '18': 'header_j6[17]'}
-      source: {doc: sch3923, where: 'sheet 1 J6 (revision 3923; 3920 differs on pins 3, 10, 11)'}
+      pins:
+        '1': gpio[1]
+        '2': gpio[2]
+        '3': gpio[3]
+        '4': onboard_microsd.dat[1]
+        '5': onboard_lcd.ck
+        '6': header_j6[5]
+        '7': header_j6[6]
+        '8': header_j6[7]
+        '9': header_j6[8]
+        '10': onboard_lcd.hs
+        '11': onboard_lcd.vs
+        '12': header_j6[11]
+        '13': header_j6[12]
+        '14': header_j6[13]
+        '15': header_j6[14]
+        '16': header_j6[15]
+        '17': header_j6[16]
+        '18': header_j6[17]
+      source:
+        doc: sch3923
+        where: sheet 1 J6 (revision 3923; 3920 differs on pins 3, 10, 11)
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 6}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 6
+        bind:
+          led: onboard_leds
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: hdmi
       label: hdmi
-      attach: {peripheral: hdmi_tmds, params: {clock_serial_mhz: 249.75}, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+      attach:
+        peripheral: hdmi_tmds
+        params:
+          clock_serial_mhz: 249.75
+        bind:
+          clk_p: onboard_hdmi.clk_p
+          d_p: onboard_hdmi.d_p
+          clk_n: onboard_hdmi.clk_n
+          d_n: onboard_hdmi.d_n
     - id: headphone
       label: headphone
-      attach: {peripheral: i2s_audio_out, bind: {bclk: onboard_headphone.bck, lrclk: onboard_headphone.ws, sdata: onboard_headphone.din, pa_en: onboard_pa_enable}}
+      attach:
+        peripheral: i2s_audio_out
+        bind:
+          bclk: onboard_headphone.bck
+          lrclk: onboard_headphone.ws
+          sdata: onboard_headphone.din
+          pa_en: onboard_pa_enable
     - id: ws2812
       label: WS2812 RGB LED
-      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
+      attach:
+        peripheral: ws2812
+        bind:
+          din: onboard_ws2812.din
     - id: lcd
       label: lcd
       variants:
         - id: lcd_480_272
           label: lcd_480_272
-          attach: {peripheral: lcd_480_272, params: {clock_pixel_pll: {idiv: 2, fbdiv: 0, odiv: 64, sdiv: 2, clkoutd: false}}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl}}
+          attach:
+            peripheral: lcd_480_272
+            params:
+              clock_pixel_pll:
+                idiv: 2
+                fbdiv: 0
+                odiv: 64
+                sdiv: 2
+                clkoutd: false
+            bind:
+              r: onboard_lcd.r
+              g: onboard_lcd.g
+              b: onboard_lcd.b
+              hs: onboard_lcd.hs
+              vs: onboard_lcd.vs
+              de: onboard_lcd.de
+              ck: onboard_lcd.ck
+              bl: onboard_lcd.bl
         - id: lcd_800_480
           label: 'lcd_800_480 (clock_pixel_pll={idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false})'
-          attach: {peripheral: lcd_800_480, params: {clock_pixel_pll: {idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false}}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl}}
+          attach:
+            peripheral: lcd_800_480
+            params:
+              clock_pixel_pll:
+                idiv: 8
+                fbdiv: 10
+                odiv: 16
+                sdiv: 2
+                clkoutd: false
+            bind:
+              r: onboard_lcd.r
+              g: onboard_lcd.g
+              b: onboard_lcd.b
+              hs: onboard_lcd.hs
+              vs: onboard_lcd.vs
+              de: onboard_lcd.de
+              ck: onboard_lcd.ck
+              bl: onboard_lcd.bl
         - id: lcd_800_480_2
           label: 'lcd_800_480 (clock_pixel_pll={idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}; clock_pixel_mhz=48.9375)'
-          attach: {peripheral: lcd_800_480, params: {clock_pixel_pll: {idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}, clock_pixel_mhz: 48.9375}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck}}
+          attach:
+            peripheral: lcd_800_480
+            params:
+              clock_pixel_pll:
+                idiv: 1
+                fbdiv: 28
+                odiv: 2
+                sdiv: 8
+                clkoutd: true
+              clock_pixel_mhz: 48.9375
+            bind:
+              r: onboard_lcd.r
+              g: onboard_lcd.g
+              b: onboard_lcd.b
+              hs: onboard_lcd.hs
+              vs: onboard_lcd.vs
+              de: onboard_lcd.de
+              ck: onboard_lcd.ck
     - id: ms5351_clk
       label: MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)
-      device: {kind: clock, bank: onboard_ms5351_clk}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: clock
+        bank: onboard_ms5351_clk
     - id: hdmi_ctrl
       label: HDMI HPD and CEC
-      device: {kind: hdmi_tx, bank: onboard_hdmi_ctrl}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: hdmi_tx
+        bank: onboard_hdmi_ctrl
     - id: lcd_touch
       label: RGB LCD resistive-touch lines XR/YD/XL/YU (J2 pins 37-40, LCD_INIT0..3)
-      device: {kind: lcd_rgb, bank: onboard_lcd_touch}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: lcd_rgb
+        bank: onboard_lcd_touch
     - id: serial_flash
       label: XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)
-      device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_serial_flash
     - id: bl616_spi
       label: BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 "choose spi" command)
-      device: {kind: usb, bank: onboard_bl616_spi}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: usb
+        bank: onboard_bl616_spi
     - id: jtag
       label: FPGA JTAG (driven by BL616; test points TP3-TP6)
-      device: {kind: other, bank: onboard_jtag}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_jtag
     - id: reconfig
       label: RECONFIG_N test point TP1
-      device: {kind: reset, bank: onboard_reconfig}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: reset
+        bank: onboard_reconfig
     - id: joystick1
       label: Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)
-      device: {kind: joystick, bank: onboard_joystick1}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: joystick
+        bank: onboard_joystick1

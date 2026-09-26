@@ -51,85 +51,192 @@ Board:
       device_part: "up5k"
       device_pack: "sg48"
   banks:
-    clk: { pins: "35", frequency_mhz: 12, source: {doc: ib_pcf, where: '"12 MHz clock" CLK 35; set_frequency 12'} }
+    clk:
+      pins: '35'
+      frequency_mhz: 12
+      source:
+        doc: ib_pcf
+        where: '"12 MHz clock" CLK 35; set_frequency 12'
     onboard_uart:
-      source: {doc: ib_pcf, where: '"RS232" RX 6, TX 9 (FTDI side of the net is Tx_TTL/Rx_TTL in the schematic)'}
+      source:
+        doc: ib_pcf
+        where: '"RS232" RX 6, TX 9 (FTDI side of the net is Tx_TTL/Rx_TTL in the schematic)'
       pins:
         rx: "6"
         tx: "9"
-    onboard_button: { pins: "10", active: low, source: {doc: ib_pcf, where: BTN_N 10; active low (LiteX user_btn_n)} }
-    onboard_led_red: { pins: "11", active: low, source: {doc: ib_pcf, where: LEDR_N 11 (active low)} }
-    onboard_led_green: { pins: "37", active: low, source: {doc: ib_pcf, where: LEDG_N 37 (active low)} }
+    onboard_button:
+      pins: '10'
+      active: low
+      source:
+        doc: ib_pcf
+        where: BTN_N 10; active low (LiteX user_btn_n)
+    onboard_led_red:
+      pins: '11'
+      active: low
+      source:
+        doc: ib_pcf
+        where: LEDR_N 11 (active low)
+    onboard_led_green:
+      pins: '37'
+      active: low
+      source:
+        doc: ib_pcf
+        where: LEDG_N 37 (active low)
     onboard_rgb_led_0:
-      source: {doc: ib_pcf, where: '"RGB LED Driver" LED_RED_N 39, LED_GRN_N 40, LED_BLU_N 41; pins are the SB_RGBA_DRV outputs (schematic RGB0/RGB1/RGB2 = 39/40/41)'}
+      source:
+        doc: ib_pcf
+        where: '"RGB LED Driver" LED_RED_N 39, LED_GRN_N 40, LED_BLU_N 41; pins are the SB_RGBA_DRV outputs (schematic RGB0/RGB1/RGB2 = 39/40/41)'
       pins:
         r: "39"
         g: "40"
         b: "41"
     onboard_serial_flash:
-      source: {doc: ib_pcf, where: '"SPI Flash" FLASH_SCK 15, FLASH_SSB 16, IO0 14, IO1 17, IO2 12, IO3 13'}
+      source:
+        doc: ib_pcf
+        where: '"SPI Flash" FLASH_SCK 15, FLASH_SSB 16, IO0 14, IO1 17, IO2 12, IO3 13'
       pins:
         sck: "15"
         ssb: "16"
-        io: ["14", "17", "12", "13"]
+        io: ['14', '17', '12', '13']
     pmod_p1a:
-      source: {doc: ib_pcf, where: P1A1..P1A10 (pmod pin -> FPGA pin)}
-      pins: ["4", "2", "47", "45", "3", "48", "46", "44"]
+      source:
+        doc: ib_pcf
+        where: P1A1..P1A10 (pmod pin -> FPGA pin)
+      pins: ['4', '2', '47', '45', '3', '48', '46', '44']
     pmod_p1b:
-      source: {doc: ib_pcf, where: P1B1..P1B10}
-      pins: ["43", "38", "34", "31", "42", "36", "32", "28"]
+      source:
+        doc: ib_pcf
+        where: P1B1..P1B10
+      pins: ['43', '38', '34', '31', '42', '36', '32', '28']
     pmod_p2:
-      source: {doc: ib_pcf, where: P2_1..P2_10}
-      pins: ["27", "25", "21", "19", "26", "23", "20", "18"]
+      source:
+        doc: ib_pcf
+        where: P2_1..P2_10
+      pins: ['27', '25', '21', '19', '26', '23', '20', '18']
     onboard_leds:
-      source: {doc: ib_pcf, where: '"LEDs and Buttons (PMOD 2)" LED1..LED5; LiteX break_off_pmod marks PMOD2:4 (pin 26) red, others green'}
-      pins: ["26", "27", "25", "23", "21"]
+      source:
+        doc: ib_pcf
+        where: '"LEDs and Buttons (PMOD 2)" LED1..LED5; LiteX break_off_pmod marks PMOD2:4 (pin 26) red, others green'
+      pins: ['26', '27', '25', '23', '21']
     onboard_buttons:
-      source: {doc: ib_pcf, where: '"LEDs and Buttons (PMOD 2)" BTN1 20, BTN2 19, BTN3 18'}
-      pins: ["20", "19", "18"]
+      source:
+        doc: ib_pcf
+        where: '"LEDs and Buttons (PMOD 2)" BTN1 20, BTN2 19, BTN3 18'
+      pins: ['20', '19', '18']
   # ---- drawn: headers and parts; ./unifpga layout draft icebreaker regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: pmod_p1a
       type: pmod_2x6
       label: PMOD1A
       bank: pmod_p1a
-      pins: {'1': 'pmod_p1a[0]', '2': 'pmod_p1a[1]', '3': 'pmod_p1a[2]', '4': 'pmod_p1a[3]', '7': 'pmod_p1a[4]', '8': 'pmod_p1a[5]', '9': 'pmod_p1a[6]', '10': 'pmod_p1a[7]'}
-      source: {doc: ib_pcf, where: set_io P1A1 .. P1A10}
+      pins:
+        '1': pmod_p1a[0]
+        '2': pmod_p1a[1]
+        '3': pmod_p1a[2]
+        '4': pmod_p1a[3]
+        '7': pmod_p1a[4]
+        '8': pmod_p1a[5]
+        '9': pmod_p1a[6]
+        '10': pmod_p1a[7]
+      source:
+        doc: ib_pcf
+        where: set_io P1A1 .. P1A10
     - id: pmod_p1b
       type: pmod_2x6
       label: PMOD1B
       bank: pmod_p1b
-      pins: {'1': 'pmod_p1b[0]', '2': 'pmod_p1b[1]', '3': 'pmod_p1b[2]', '4': 'pmod_p1b[3]', '7': 'pmod_p1b[4]', '8': 'pmod_p1b[5]', '9': 'pmod_p1b[6]', '10': 'pmod_p1b[7]'}
-      source: {doc: ib_pcf, where: set_io P1B1 .. P1B10}
+      pins:
+        '1': pmod_p1b[0]
+        '2': pmod_p1b[1]
+        '3': pmod_p1b[2]
+        '4': pmod_p1b[3]
+        '7': pmod_p1b[4]
+        '8': pmod_p1b[5]
+        '9': pmod_p1b[6]
+        '10': pmod_p1b[7]
+      source:
+        doc: ib_pcf
+        where: set_io P1B1 .. P1B10
     - id: pmod_p2
       type: pmod_2x6
       label: PMOD2 (the break-off LED / button board's connector)
       bank: pmod_p2
-      pins: {'1': 'pmod_p2[0]', '2': 'pmod_p2[1]', '3': 'pmod_p2[2]', '4': 'pmod_p2[3]', '7': 'pmod_p2[4]', '8': 'pmod_p2[5]', '9': 'pmod_p2[6]', '10': 'pmod_p2[7]'}
-      source: {doc: ib_pcf, where: set_io P2_1 .. P2_10}
+      pins:
+        '1': pmod_p2[0]
+        '2': pmod_p2[1]
+        '3': pmod_p2[2]
+        '4': pmod_p2[3]
+        '7': pmod_p2[4]
+        '8': pmod_p2[5]
+        '9': pmod_p2[6]
+        '10': pmod_p2[7]
+      source:
+        doc: ib_pcf
+        where: set_io P2_1 .. P2_10
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: button
       label: button
-      attach: {peripheral: button_array, params: {width: 1}, bind: {btn: onboard_button}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 1
+        bind:
+          btn: onboard_button
     - id: rgb_led_0
       label: rgb led 0
-      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_0.r, g: onboard_rgb_led_0.g, b: onboard_rgb_led_0.b}}
+      attach:
+        peripheral: rgb_led
+        bind:
+          r: onboard_rgb_led_0.r
+          g: onboard_rgb_led_0.g
+          b: onboard_rgb_led_0.b
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 5}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 5
+        bind:
+          led: onboard_leds
     - id: led_green
       label: led green
-      attach: {peripheral: led_bank, params: {width: 1, active: low}, bind: {led: onboard_led_green}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 1
+          active: low
+        bind:
+          led: onboard_led_green
     - id: led_red
       label: led red
-      attach: {peripheral: led_bank, params: {width: 1, active: low}, bind: {led: onboard_led_red}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 1
+          active: low
+        bind:
+          led: onboard_led_red
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 3}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 3
+        bind:
+          btn: onboard_buttons

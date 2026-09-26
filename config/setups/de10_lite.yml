@@ -9,25 +9,39 @@ Setup:
     - onboard: clk50mhz
     - onboard: buttons
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]}
+      design_bits:
+        switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]
     - onboard: leds
     - onboard: 7seg
     - onboard: vga
     - module: inmp441_breakout
-      wires: {SCK: gpio.5, WS: gpio.3, SD: gpio.6, L/R: gpio.1}
+      wires:
+        SCK: gpio.5
+        WS: gpio.3
+        SD: gpio.6
+        L/R: gpio.1
     - module: i2s_dac_breakout
-      wires: {SCK: gpio.38, BCK: gpio.36, LCK: gpio.32, DIN: gpio.34}
+      wires:
+        SCK: gpio.38
+        BCK: gpio.36
+        LCK: gpio.32
+        DIN: gpio.34
     - gpio: gpio
-      params: {width: 36}
+      params:
+        width: 36
     - gpio: arduino
-      params: {width: 16}
+      params:
+        width: 16
     - onboard: accelerometer
     - onboard: sdram
   design:
     reset:
       sources:
-      - {switch_msb: true}
+      - switch_msb: true
     uart_rx: 0
-    tie: {arduino_reset_n: ~rst}
+    tie:
+      arduino_reset_n: ~rst
   extra:
-    tie: {'gpio[1]': 0, 'gpio[3]': 1}
+    tie:
+      gpio[1]: 0
+      gpio[3]: 1

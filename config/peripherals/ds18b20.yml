@@ -6,9 +6,15 @@ Peripheral:
   id: ds18b20
   description: DS18B20 1-Wire temperature sensor, readings in 1/16 C
   # the on-board devices it models: a temperature device on one data line
-  models: {kind: temperature, pins: {dq: [dq, DQ, one_wire, ow]}}
+  models:
+    kind: temperature
+    pins:
+      dq: [dq, DQ, one_wire, ow]
   signals:
-    - { name: dq, type: scalar, direction: inout, comment: "The 1-Wire data line (pulled up on the board)" }
+    - name: dq
+      type: scalar
+      direction: inout
+      comment: The 1-Wire data line (pulled up on the board)
   provides:
     - capability: temperature
   driver:
