@@ -1,0 +1,30 @@
+# pangomicro_sa_pg2l200h_evkb3: SA_PG2L200H_EVKB3 Evaluation Kit.
+
+Board:
+  id: pangomicro_sa_pg2l200h_evkb3
+  name: SA_PG2L200H_EVKB3 Evaluation Kit
+  url: https://www.pangomicro.com/open/4303.html
+  status: active
+  notes: Smartseason EVK; 200K LUTs; 18 HSST pairs at 6.6G; 12-bit ADC 1 MSPS.
+  producer: pangomicro
+  chip: PG2L200H-6IFBB676
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - adc_chip
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

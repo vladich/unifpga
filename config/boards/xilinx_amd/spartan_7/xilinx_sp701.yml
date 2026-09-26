@@ -1,0 +1,30 @@
+# xilinx_sp701: SP701.
+
+Board:
+  id: xilinx_sp701
+  name: SP701
+  url: https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/sp701.html
+  producer: xilinx_amd
+  chip: XC7S100-2FGGA676C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q256a
+  - microchip_ksz9031rnx
+  - silabs_cp2105
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - silabs_si570

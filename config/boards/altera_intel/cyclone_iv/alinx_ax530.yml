@@ -1,0 +1,29 @@
+# alinx_ax530: AX530.
+
+Board:
+  id: alinx_ax530
+  name: AX530
+  url: https://alinx.com/en/detail/43
+  producer: alinx
+  chip: EP4CE30F23C8
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - microsd_socket
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - seven_seg_module_shared
+  - winbond_w9825g6kh

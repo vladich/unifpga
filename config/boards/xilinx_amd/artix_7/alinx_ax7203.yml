@@ -2,9 +2,28 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/alinx_ax7203.py
 
+
 Board:
   id: alinx_ax7203
-  pinBanks:
+  name: AX7203
+  url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Artix-7/AX7203.html
+  producer: alinx
+  chip: XC7A200T-2FBG484I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - pcie_endpoint
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     cpu_resetn:
       pins: T6
     onboard_leds:

@@ -1,0 +1,21 @@
+# qmtech_kintex7_325t_core: Kintex-7 325T Core Board.
+
+Board:
+  id: qmtech_kintex7_325t_core
+  name: Kintex-7 325T Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  producer: qmtech
+  chip: XC7K325T-2FFG676I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - cypress_s25fl128s
+  - led_discrete_generic
+  - pushbutton_smd_generic

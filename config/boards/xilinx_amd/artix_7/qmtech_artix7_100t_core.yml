@@ -1,0 +1,21 @@
+# qmtech_artix7_100t_core: Artix-7 100T Core Board.
+
+Board:
+  id: qmtech_artix7_100t_core
+  name: Artix-7 100T Core Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  producer: qmtech
+  chip: XC7A100T-1FGG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - cypress_s25fl128s
+  - led_discrete_generic
+  - pushbutton_smd_generic

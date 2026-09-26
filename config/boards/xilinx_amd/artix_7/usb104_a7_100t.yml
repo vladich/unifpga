@@ -3,16 +3,33 @@
 # Source: Digilent USB104-A7-100T-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
+
 Board:
   id: usb104_a7_100t
-  fpga:
-    producer: Xilinx
-    family: Artix 7
-    part: XC7A100T-1FTG256C
+  name: USB104 A7-100T
+  producer: digilent
+  chip: XC7A100T-1FTG256C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - cypress_s25fl128s
+  - micron_mt41k256m16
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - led_discrete_generic
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     onboard_buttons:
       pins: ["V16", "U17"]
     onboard_leds:

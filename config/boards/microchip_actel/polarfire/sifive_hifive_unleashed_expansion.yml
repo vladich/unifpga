@@ -1,0 +1,11 @@
+# sifive_hifive_unleashed_expansion: HiFive Unleashed Expansion Board.
+
+Board:
+  id: sifive_hifive_unleashed_expansion
+  name: HiFive Unleashed Expansion Board
+  url: https://www.crowdsupply.com/microchip/hifive-unleashed-expansion-board
+  producer: sifive
+  chip: MPF300TS-FCG1152I
+  bridges:
+  - jtag
+  programmer: libero_fpexpress

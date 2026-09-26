@@ -1,0 +1,22 @@
+# efinix_t8_bga81_devkit: Trion T8 BGA81 Development Kit.
+
+Board:
+  id: efinix_t8_bga81_devkit
+  name: Trion T8 BGA81 Development Kit
+  url: https://www.efinixinc.com/products-devkits-triont8.html
+  status: active
+  producer: efinix
+  chip: T8F81C2
+  bridges:
+  - usb-jtag
+  programmer: efinity_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - user_leds
+  - user_buttons
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h

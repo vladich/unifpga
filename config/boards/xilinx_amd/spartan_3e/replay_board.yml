@@ -1,0 +1,11 @@
+# replay_board: Replay Board.
+
+Board:
+  id: replay_board
+  name: Replay Board
+  status: eol
+  producer: replay
+  chip: XC3S1600E-FG320
+  bridges:
+  - jtag
+  programmer: ise_impact

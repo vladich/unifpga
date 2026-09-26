@@ -2,9 +2,23 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/lattice_certuspro_nx_evn.py
 
+
 Board:
   id: lattice_certuspro_nx_evn
-  pinBanks:
+  name: CertusPro-NX Evaluation Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/certuspro-nxevaluationboard
+  producer: lattice
+  chip: LFCPNX-100-9LFG672C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - microsd_socket
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  banks:
     sys_clk:
       pins: R4
     onboard_leds:

@@ -2,9 +2,19 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/gadgetfactory_papilio_pro.py
 
+
 Board:
   id: papilio_pro
-  pinBanks:
+  name: Papilio Pro
+  url: https://papilio.cc/index.php?n=Papilio.PapilioPro
+  producer: papilio
+  chip: XC6SLX9-2TQG144C
+  bridges:
+  - papilio-ft2232
+  programmer: papilio_loader
+  extra_programmers:
+  - papilio_loader[*]
+  banks:
     onboard_leds:
       pins: P112
     onboard_uart:

@@ -1,0 +1,21 @@
+# lattice_machxo5_nx_25_devkit: MachXO5-NX Development Board (25K).
+
+Board:
+  id: lattice_machxo5_nx_25_devkit
+  name: MachXO5-NX Development Board (25K)
+  url: https://www.latticesemi.com/products/developmentboardsandkits/machxo5-nx-development-board
+  status: active
+  producer: lattice
+  chip: LFMXO5-25-9BBG400C
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  features:
+  - jtag_header
+  - usb_jtag_bridge
+  - user_leds
+  - user_buttons
+  - arduino_shield_header
+  - pmod_connector
+  devices:
+  - ftdi_ft2232h

@@ -1,0 +1,27 @@
+# gowin_dk_video_gw5at60_ug225: GW5AT-60 UG225 Video Dev Kit (DK_VIDEO_GW5AT-LV60UG225).
+
+Board:
+  id: gowin_dk_video_gw5at60_ug225
+  name: GW5AT-60 UG225 Video Dev Kit (DK_VIDEO_GW5AT-LV60UG225)
+  url: https://www.gowinsemi.com/en/support/devkits/37/
+  status: active
+  producer: gowin_semi
+  chip: GW5AT-LV60UG225C1/I0
+  bridges:
+  - jtag
+  programmer: gowin_pgm
+  features:
+  - ddr3_memory
+  - hdmi_input
+  - hdmi_output
+  - jtag_header
+  - mipi_csi2_input
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - tmds_direct
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

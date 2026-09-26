@@ -1,0 +1,23 @@
+# terasic_de3: DE3.
+
+Board:
+  id: terasic_de3
+  name: DE3
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=260
+  producer: terasic
+  chip: EP3SL150F1152C3N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr2_memory
+  - dip_switches
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr2_sodimm_socket

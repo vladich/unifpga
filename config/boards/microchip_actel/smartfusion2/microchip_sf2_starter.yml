@@ -1,0 +1,21 @@
+# microchip_sf2_starter: SmartFusion2 Starter Kit.
+
+Board:
+  id: microchip_sf2_starter
+  name: SmartFusion2 Starter Kit
+  url: https://www.microchip.com/en-us/development-tool/M2S025-FG484-STARTER
+  producer: microchip
+  chip: M2S025-FG484
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

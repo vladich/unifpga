@@ -1,0 +1,23 @@
+# alinx_axu5ev: AXU5EV.
+
+Board:
+  id: alinx_axu5ev
+  name: AXU5EV
+  url: https://alinx.com/en/detail/14
+  producer: alinx
+  chip: XCZU5EV-2SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - hdmi_output
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic

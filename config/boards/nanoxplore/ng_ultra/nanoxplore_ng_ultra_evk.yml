@@ -1,0 +1,11 @@
+# nanoxplore_ng_ultra_evk: NG-ULTRA Evaluation Kit.
+
+Board:
+  id: nanoxplore_ng_ultra_evk
+  name: NG-ULTRA Evaluation Kit
+  url: https://www.nanoxplore.com
+  producer: nanoxplore
+  chip: NG-ULTRA-CG1156
+  bridges:
+  - jtag
+  programmer: nanoxmap_impulse

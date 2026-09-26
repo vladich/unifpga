@@ -2,9 +2,34 @@
 # Source (local Alinx docs):
 #   ~/Alinx/AXVU13G/01_demo_document/demo.rar -> demo/01_led_test/led_test.srcs/constrs_1/new/led_test.xdc
 
+
 Board:
   id: alinx_axvu13g
-  pinBanks:
+  name: Alinx AXVU13G
+  url: https://coderobin.com/products/alinx-axvu13g-xilinx-virtex-ultrascale-xcvu13p-fpga-development-board
+  status: active
+  notes: VU13P pure-FPGA variant of AXVU13F; 2x QSFP-DD 200G + 7x QSFP28 100G.
+  producer: alinx
+  chip: XCVU13P-2FHGB2104E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - qsfp_cage
+  - qsfp_dd_cage
+  - pcie_endpoint
+  - fmc_plus
+  - fmc_hpc
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: AD33
       frequency_mhz: 200

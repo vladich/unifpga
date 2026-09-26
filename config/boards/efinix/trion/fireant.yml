@@ -5,16 +5,33 @@
 # is sourced from an internal oscillator (T8F81 has no external clock pin —
 # the OSC_0 primitive provides clk_mhz).
 
+
 Board:
   id: fireant
-  fpga:
-    producer: Efinix
-    family: Trion
-    part: T8F81
+  name: FireAnt
+  product: FireAnt (with Efinix Trion T8 FPGA)
+  summary: Efinix Trion T8F81 (T8, ~7.4k LEs, 81-ball FBGA); 33.333 MHz oscillator into the PLL input; W25Q80DV 8
+    Mbit SPI config flash; FT232H USB (flash programming / CRESET / CDONE only, no user UART); 4 yellow LEDs, 2 buttons,
+    CRESET button; two 20-pin headers J1/J2 (34 user I/O).
+  status: eol
+  producer: efinix
+  chip: T8F81
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - spi_flash
+  devices:
+  - ftdi_ft232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
   defaults:
     iostandard: "3.3 V LVTTL / LVCMOS"
 
-  pinBanks:
+  banks:
     # Internal oscillator instead of a clock pin — codegen / driver will
     # instantiate `osc_inst1` (OSC_0). We model it as a virtual clock source
     # so the rest of the codegen pipeline (clock_input peripheral, SDC
@@ -39,3 +56,28 @@ Board:
     onboard_jtag_test_points_tp8_tp11:   # JTAG test points TP8..TP11
       device: {"name": "JTAG test points TP8..TP11", "kind": "other"}
       pins: {"tck": "TCK", "tdi": "TDI", "tdo": "TDO", "tms": "TMS"}
+  # ---- drawn: headers and parts; ./unifpga layout draft fireant regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers: []
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 4, active: low}, bind: {led: onboard_leds}}
+    - id: crst_button_configuration_reset
+      label: CRST button (configuration reset)
+      device: {kind: reset, bank: onboard_crst_button_configuration_reset}   # no peripheral model yet
+    - id: other
+      label: LED_CDN (green, CDONE) and LED_PWR (red)
+      device: {kind: other, bank: onboard_other}   # no peripheral model yet
+    - id: spi_flash
+      label: U4 W25Q80DV SPI flash (configuration)
+      device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet
+    - id: jtag_test_points_tp8_tp11
+      label: JTAG test points TP8..TP11
+      device: {kind: other, bank: onboard_jtag_test_points_tp8_tp11}   # no peripheral model yet

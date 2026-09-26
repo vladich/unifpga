@@ -1,0 +1,23 @@
+# microchip_polarfire_splash: PolarFire Splash Kit.
+
+Board:
+  id: microchip_polarfire_splash
+  name: PolarFire Splash Kit
+  url: https://www.microchip.com/en-us/development-tool/MPF300-SPLASH-KIT
+  producer: microchip
+  chip: MPF300TS-1FCG1152I
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - microsd_socket
+  - spi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - winbond_w25q128

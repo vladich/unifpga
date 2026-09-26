@@ -1,0 +1,11 @@
+# blackice_mx: BlackIce MX.
+
+Board:
+  id: blackice_mx
+  name: BlackIce MX
+  url: https://github.com/folknology/BlackIceMX
+  producer: folknology
+  chip: iCE40HX4K-TQ144
+  bridges:
+  - stm32-bridge
+  programmer: iceprog

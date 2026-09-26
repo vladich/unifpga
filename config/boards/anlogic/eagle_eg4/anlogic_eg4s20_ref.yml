@@ -1,0 +1,11 @@
+# anlogic_eg4s20_ref: EG4S20-BG256 Reference Board.
+
+Board:
+  id: anlogic_eg4s20_ref
+  name: EG4S20-BG256 Reference Board
+  status: eol
+  producer: anlogic
+  chip: EG4S20BG256
+  bridges:
+  - jtag
+  programmer: td_pgm

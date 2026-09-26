@@ -1,0 +1,11 @@
+# efinix_ti35_devkit: Titanium Ti35 Development Kit.
+
+Board:
+  id: efinix_ti35_devkit
+  name: Titanium Ti35 Development Kit
+  status: eol
+  producer: efinix
+  chip: Ti35F256C4
+  bridges:
+  - jtag
+  programmer: efinity_pgm

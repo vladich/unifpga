@@ -1,0 +1,23 @@
+# avnet_microzed_7020: MicroZed 7020.
+
+Board:
+  id: avnet_microzed_7020
+  name: MicroZed 7020
+  aliases:
+  - avnet_microzed_7020_sbc
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/microzed/
+  producer: avnet
+  chip: XC7Z020-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_10_100
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - micron_mt41k256m16
+  - cypress_s25fl128s
+  - microchip_lan8710a
+  - silabs_cp2104

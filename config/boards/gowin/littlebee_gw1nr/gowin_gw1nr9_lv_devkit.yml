@@ -1,0 +1,26 @@
+# gowin_gw1nr9_lv_devkit: GW1NR-9 Starter Kit.
+
+Board:
+  id: gowin_gw1nr9_lv_devkit
+  name: GW1NR-9 Starter Kit
+  url: https://www.gowinsemi.com/en/support/devkits_detail/16/
+  status: active
+  producer: gowin_semi
+  chip: GW1NR-LV9LQ144PC6/I5
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - dip_switches
+  - jtag_header
+  - mipi_csi2_input
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

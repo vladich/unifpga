@@ -1,0 +1,34 @@
+# xilinx_vmk180: AMD Versal Prime Series VMK180 Evaluation Kit.
+
+Board:
+  id: xilinx_vmk180
+  name: AMD Versal Prime Series VMK180 Evaluation Kit
+  url: https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/vmk180.html
+  status: active
+  producer: xilinx_amd
+  chip: XCVM1802-2MSEVSVA2197
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - jtag_header
+  - lpddr4_memory
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr4_sodimm_socket
+  - marvell_88e1512

@@ -1,0 +1,30 @@
+# myir_fz5_card: MYIR FZ5 Card AI Accelerator (ZU5EV).
+
+Board:
+  id: myir_fz5_card
+  name: MYIR FZ5 Card AI Accelerator (ZU5EV)
+  url: https://www.myirtech.com/list.asp?id=638
+  status: active
+  producer: myir
+  chip: XCZU5EV-2SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_3_host
+  - usb_jtag_bridge
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211e
+  - microsd_socket_generic
+  - led_discrete_generic

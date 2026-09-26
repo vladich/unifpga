@@ -1,0 +1,22 @@
+# bittware_385a_sc: BittWare 385A-SoC Arria 10 SX PCIe Card.
+
+Board:
+  id: bittware_385a_sc
+  name: BittWare 385A-SoC Arria 10 SX PCIe Card
+  url: https://www.bittware-molex.com/products/385a-soc/
+  status: eol
+  producer: bittware
+  chip: 10AS066N3F40E2SG
+  bridges:
+  - pcie-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - ddr4_sodimm_socket

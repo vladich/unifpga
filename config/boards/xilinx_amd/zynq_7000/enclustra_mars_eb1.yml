@@ -1,0 +1,29 @@
+# enclustra_mars_eb1: Enclustra Mars EB1 SoDIMM Base Board (EB1).
+
+Board:
+  id: enclustra_mars_eb1
+  name: Enclustra Mars EB1 SoDIMM Base Board (EB1)
+  url: https://www.enclustra.com/en/products/base-boards/mars-eb1/
+  status: active
+  producer: enclustra
+  chip: XC7Z020-2CLG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - usb_2_host
+  - hdmi_output
+  - audio_codec
+  - pmod_connector
+  - user_buttons
+  - user_leds
+  devices:
+  - marvell_88e1512
+  - adi_adv7511
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

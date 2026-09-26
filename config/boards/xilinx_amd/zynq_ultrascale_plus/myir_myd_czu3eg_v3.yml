@@ -1,0 +1,38 @@
+# myir_myd_czu3eg_v3: MYIR MYD-CZU3EG-V3 Dev Board (MYC-CZU3EG SoM).
+
+Board:
+  id: myir_myd_czu3eg_v3
+  name: MYIR MYD-CZU3EG-V3 Dev Board (MYC-CZU3EG SoM)
+  url: https://www.myirtech.com/list.asp?id=838
+  status: active
+  producer: myir
+  chip: XCZU3EG-1SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - mipi_csi2_input
+  - pcie_endpoint
+  - qspi_flash
+  - sata_host
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211fd
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

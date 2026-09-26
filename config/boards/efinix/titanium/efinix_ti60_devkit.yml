@@ -1,0 +1,15 @@
+# efinix_ti60_devkit: Titanium Ti60 F225 Development Kit.
+
+Board:
+  id: efinix_ti60_devkit
+  name: Titanium Ti60 F225 Development Kit
+  url: https://www.efinixinc.com/products-devkits-titaniumti60f225.html
+  producer: efinix
+  chip: Ti60F225C4
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - microsd_socket
+  devices:
+  - microsd_socket_generic

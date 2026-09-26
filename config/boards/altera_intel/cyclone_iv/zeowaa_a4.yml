@@ -1,0 +1,11 @@
+# zeowaa_a4: Zeowaa A4.
+
+Board:
+  id: zeowaa_a4
+  name: Zeowaa A4
+  url: https://zeowaa.aliexpress.com/store
+  producer: zeowaa
+  chip: EP4CE15F23C8N
+  bridges:
+  - jtag
+  programmer: quartus_pgm

@@ -1,0 +1,15 @@
+# efinix_xyloni: Xyloni Dev Kit.
+
+Board:
+  id: efinix_xyloni
+  name: Xyloni Dev Kit
+  url: https://www.efinixinc.com/products-devkits-xyloni.html
+  producer: efinix
+  chip: T8F81C2
+  bridges:
+  - jtag
+  programmer: efinity_pgm
+  features:
+  - microsd_socket
+  devices:
+  - microsd_socket_generic

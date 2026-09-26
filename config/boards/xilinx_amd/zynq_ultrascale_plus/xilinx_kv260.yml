@@ -1,0 +1,26 @@
+# xilinx_kv260: AMD Kria KV260 Vision AI Starter Kit.
+
+Board:
+  id: xilinx_kv260
+  name: AMD Kria KV260 Vision AI Starter Kit
+  url: https://www.amd.com/en/products/system-on-modules/kria/k26/kv260-vision-starter-kit.html
+  status: active
+  producer: xilinx_amd
+  chip: XCK26-SFVC784
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - mipi_csi2_input
+  - raspi_hat_header
+  - hdmi_output
+  - displayport_output
+  - ethernet_phy_gigabit
+  - usb_3_host
+  - usb_uart_bridge
+  - microsd_socket
+  - user_leds
+  - jtag_header
+  devices:
+  - microsd_socket_generic

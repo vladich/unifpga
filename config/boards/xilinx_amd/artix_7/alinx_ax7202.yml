@@ -1,0 +1,27 @@
+# alinx_ax7202: Alinx AX7202.
+
+Board:
+  id: alinx_ax7202
+  name: Alinx AX7202
+  url: https://www.en.alinx.com/Product/FPGA-Development-Boards/Artix-7/AX7202.html
+  status: active
+  producer: alinx
+  chip: XC7A200T-2FBG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - ftdi_ft2232h
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - led_discrete_generic
+  - pushbutton_smd_generic

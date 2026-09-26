@@ -1,0 +1,11 @@
+# colorlight_i5: ColorLight i5.
+
+Board:
+  id: colorlight_i5
+  name: ColorLight i5
+  status: eol
+  producer: colorlight
+  chip: LFE5U-25F-6BG381C
+  bridges:
+  - ft2232h-jtag
+  programmer: ecpprog

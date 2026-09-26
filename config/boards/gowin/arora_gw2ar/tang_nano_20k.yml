@@ -1,12 +1,31 @@
 # tang_nano_20k pin map.
 
+
 Board:
   id: tang_nano_20k
-  fpga:
-    producer: Gowin
-    family: Arora/GW2AR
-    part: GW2AR-LV18QN88C8/I7
-
+  name: Tang Nano 20k
+  product: Tang Nano 20K
+  summary: Gowin GW2AR-LV18QN88C8/I7 (20736 LUT4, 15552 FF, 828 Kbit BSRAM, 64 Mbit 32-bit SDR SDRAM in package),
+    64 Mbit SPI flash, BL616 USB-JTAG/UART/SPI bridge, MS5351 3-output clock generator, 27 MHz oscillator, HDMI (DVI
+    TX), 40-pin RGB LCD FPC, microSD, MAX98357A I2S amp, WS2812, 6 LEDs, 2 buttons, two 20-pin headers
+  url: https://wiki.sipeed.com/hardware/en/tang/tang-nano-20k/nano-20k.html
+  producer: sipeed
+  chip: GW2AR-LV18QN88C8/I7
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - addressable_leds
+  - audio_amp_class_d
+  - microsd_socket
+  - hdmi_output
+  - parallel_lcd
+  - spi_flash
+  - joystick
+  devices:
+  - maxim_max98357
+  - ws2812_led_chain
+  - microsd_socket_generic
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -24,7 +43,7 @@ Board:
     # Sipeed's examples type every pin LVCMOS33. Verified on mercury 2026-09-22.
     iostandard: LVCMOS33
     iostandard_reason: tool-required
-  pinBanks:
+  banks:
     clk: { pins: "4", frequency_mhz: 27 }
     onboard_buttons:
       active: high    # keys pull the pin high (schematic)
@@ -120,3 +139,93 @@ Board:
       device: {"name": "Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)", "kind": "joystick"}
       shares: ["header_j6", "onboard_lcd_touch", "onboard_leds"]   # the board multiplexes these pins
       pins: {"mclk": "17", "mosi": "20", "miso": "19", "cs": "18"}
+  # ---- drawn: headers and parts; ./unifpga layout draft tang_nano_20k regenerates from here on ----
+  layout: {verified: false, generated: true}
+  connector_types:
+    sipeed_nano20k_j5:
+      name: Tang Nano 20K side header J5 (1x20)
+      voltage: 3.3
+      rows: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
+      power: {1: VCC5, 2: GND, 15: GND, 16: VCC3P3}
+      source: 'schematic 3923, sheet 1 J5: 1 +5V, 2 GND, 15 GND, 16 +3V3'
+    sipeed_nano20k_j6:
+      name: Tang Nano 20K side header J6 (1x20)
+      voltage: 3.3
+      rows: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
+      power: {19: VCC3P3, 20: GND}
+      source: 'schematic 3923, sheet 1 J6: 19 +3V3, 20 GND'
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]'}
+    - id: header_j5
+      type: sipeed_nano20k_j5
+      label: J5
+      bank: header_j5
+      pins: {'3': 'header_j5[0]', '4': 'header_j5[1]', '5': 'header_j5[2]', '6': 'header_j5[3]', '7': onboard_headphone.bck, '8': onboard_headphone.din, '9': onboard_pa_enable, '10': onboard_lcd.de, '11': onboard_headphone.ws, '12': onboard_lcd.bl, '13': 'gpio[0]', '14': 'header_j5[11]', '17': onboard_joystick.cs, '18': onboard_joystick.miso, '19': 'header_j5[14]', '20': 'header_j5[15]'}
+    - id: header_j6
+      type: sipeed_nano20k_j6
+      label: J6
+      bank: header_j6
+      pins: {'1': 'gpio[1]', '2': 'gpio[2]', '3': 'gpio[3]', '4': 'onboard_microsd.dat[1]', '5': onboard_lcd.ck, '6': 'header_j6[5]', '7': 'header_j6[6]', '8': 'header_j6[7]', '9': 'header_j6[8]', '10': onboard_lcd.hs, '11': onboard_lcd.vs, '12': 'header_j6[11]', '13': 'header_j6[12]', '14': 'header_j6[13]', '15': 'header_j6[14]', '16': 'header_j6[15]', '17': 'header_j6[16]', '18': 'header_j6[17]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 6}, bind: {led: onboard_leds}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: hdmi
+      label: hdmi
+      attach: {peripheral: hdmi_tmds, params: {clock_serial_mhz: 249.75}, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: headphone
+      label: headphone
+      attach: {peripheral: i2s_audio_out, bind: {bclk: onboard_headphone.bck, lrclk: onboard_headphone.ws, sdata: onboard_headphone.din, pa_en: onboard_pa_enable}}
+    - id: lcd
+      label: lcd
+      variants:
+        - id: lcd_480_272
+          label: lcd_480_272
+          attach: {peripheral: lcd_480_272, params: {clock_pixel_pll: {idiv: 2, fbdiv: 0, odiv: 64, sdiv: 2, clkoutd: false}}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl}}
+        - id: lcd_800_480
+          label: 'lcd_800_480 (clock_pixel_pll={idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false})'
+          attach: {peripheral: lcd_800_480, params: {clock_pixel_pll: {idiv: 8, fbdiv: 10, odiv: 16, sdiv: 2, clkoutd: false}}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck, bl: onboard_lcd.bl}}
+        - id: lcd_800_480_2
+          label: 'lcd_800_480 (clock_pixel_pll={idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}; clock_pixel_mhz=48.9375)'
+          attach: {peripheral: lcd_800_480, params: {clock_pixel_pll: {idiv: 1, fbdiv: 28, odiv: 2, sdiv: 8, clkoutd: true}, clock_pixel_mhz: 48.9375}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, hs: onboard_lcd.hs, vs: onboard_lcd.vs, de: onboard_lcd.de, ck: onboard_lcd.ck}}
+    - id: ws2812
+      label: WS2812 RGB LED
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
+    - id: ms5351_clk
+      label: MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)
+      device: {kind: clock, bank: onboard_ms5351_clk}   # no peripheral model yet
+    - id: hdmi_ctrl
+      label: HDMI HPD and CEC
+      device: {kind: hdmi_tx, bank: onboard_hdmi_ctrl}   # no peripheral model yet
+    - id: lcd_touch
+      label: RGB LCD resistive-touch lines XR/YD/XL/YU (J2 pins 37-40, LCD_INIT0..3)
+      device: {kind: lcd_rgb, bank: onboard_lcd_touch}   # no peripheral model yet
+    - id: serial_flash
+      label: XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)
+      device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
+    - id: bl616_spi
+      label: BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 "choose spi" command)
+      device: {kind: usb, bank: onboard_bl616_spi}   # no peripheral model yet
+    - id: jtag
+      label: FPGA JTAG (driven by BL616; test points TP3-TP6)
+      device: {kind: other, bank: onboard_jtag}   # no peripheral model yet
+    - id: reconfig
+      label: RECONFIG_N test point TP1
+      device: {kind: reset, bank: onboard_reconfig}   # no peripheral model yet
+    - id: joystick1
+      label: Joystick adapter 1 (SPI gamepad converter on J6 pins 15-20, silkscreen Joystick_*)
+      device: {kind: joystick, bank: onboard_joystick1}   # no peripheral model yet

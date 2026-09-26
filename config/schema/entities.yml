@@ -51,7 +51,7 @@ Entities:
     schema: peripheral.schema.json
     relations:
       - {from: provides.*.capability, to: capability, why: "the design-facing contract each provider fills"}
-      - {rule: peripheral_refs, why: "port map, pin assigns, provides, signal widths, serves and pin_fit name this peripheral's signals, parameters and clocks and the provided capabilities' signals and parameters"}
+      - {rule: peripheral_refs, why: "port map, pin assigns, provides, signal widths, serves and pin_fit name this peripheral's signals, parameters and clocks and the provided capabilities' signals and parameters; the models' kinds are of config/kinds.yml"}
       - {rule: peripheral_driver_files, why: "the driver's RTL files exist"}
 
   capability:
@@ -129,6 +129,8 @@ Entities:
     records: list
     id: Id
     schema: producer.schema.json
+    relations:
+      - {rule: producer_names_unique, why: "a name or AKA names one producer (boards and families resolve producers by name)"}
 
   toolchain:
     why: >-
@@ -179,91 +181,69 @@ Entities:
 
   board:
     why: >-
-      A board's catalogue entry (config/boards/<producer>/<family>.yml, the
-      Boards list): identity, chip or chip variants, programmer, bridges,
-      features, devices. Programmer resolution, toolchain compatibility, the
-      catalogue.
-    files: config/boards/*/*.yml
-    root: Boards
-    records: list
-    id: Id
-    schema: null
-    no_schema_because: the entry, the pinmap and the layout become one board file
-    relations:
-      - {from: Chip, to: chip, why: "the part"}
-      - {from: Chips.*, to: chip, format: record_id, why: "the part variants"}
-      - {from: BoardProducer, to: producer, why: "whose board"}
-      - {from: Programmer, to: programmer, why: "the default programmer"}
-      - {from: ExtraProgrammers.*, to: programmer, format: versioned, why: "programmers the board explicitly accepts"}
-      - {from: Features.*, to: feature, why: "catalogue browsing"}
-      - {from: Devices.*, to: device, format: record_id, why: "catalogue browsing"}
-
-  pinmap:
-    why: >-
-      A board's pins (config/boards/<producer>/<family>/<board>.yml): banks of
-      package pins with kinds, IO standards, levels. Codegen's constraints, the
-      layout drafter, the hardware-readiness gate.
+      One board, config/boards/<producer>/<family>/<id>.yml: identity and
+      catalogue fields, chip or chip variants, programmer, bridges, features
+      and devices; its banks of pins (codegen's constraints, the drafter, the
+      hardware-readiness gate); and as drawn its headers and parts (setup
+      expansion resolves on-board parts and connectors there; the editor draws
+      it). The chip family is the file's directory (config/chips/).
     files: config/boards/*/*/*.yml
     root: Board
     id: id
     file_named_after_id: true
-    schema: null
-    no_schema_because: becomes the banks of the board file
+    schema: board.schema.json
     relations:
-      - {from: id, to: board, why: "the catalogue entry it belongs to"}
-
-  layout:
-    why: >-
-      A board's parts and connectors (config/layouts/<board>.yml), generated
-      from the pinmap and the rigs. Setup expansion resolves on-board parts and
-      connectors on it; the editor draws it.
-    files: config/layouts/*.yml
-    root: Layout
-    id: board
-    file_named_after_id: true
-    schema: null
-    no_schema_because: becomes the parts and headers of the board file
-    relations:
-      - {from: board, to: board, why: "the board it lays out"}
-      - {from: onboard.*.attach.peripheral, to: peripheral, why: "the driver of a part"}
-      - {from: onboard.*.variants.*.attach.peripheral, to: peripheral, why: "the driver of a part variant"}
-      - {rule: layout_connector_types, why: "how a header is numbered: a type of config/connectors.yml or one the layout carries from the board-sources registry"}
+      - {from: chip, to: chip, why: "the part"}
+      - {from: chips.*, to: chip, format: record_id, why: "the part variants"}
+      - {from: producer, to: producer, why: "whose board"}
+      - {from: programmer, to: programmer, why: "the default programmer"}
+      - {from: extra_programmers.*, to: programmer, format: versioned, why: "programmers the board explicitly accepts"}
+      - {from: features.*, to: feature, why: "catalogue browsing"}
+      - {from: devices.*, to: device, why: "catalogue browsing"}
+      - {rule: board_kinds, why: "every bank's device kind is one of config/kinds.yml, and the board lists a feature the kind implies"}
+      - {from: parts.*.attach.peripheral, to: peripheral, why: "the driver of a part"}
+      - {from: parts.*.variants.*.attach.peripheral, to: peripheral, why: "the driver of a part variant"}
+      - {rule: board_drawn, why: "headers are of a connector type of config/connectors.yml or the board's own and sit on its banks; parts bind its banks"}
 
   feature:
     why: >-
       A browsable class of hardware (config/features.yml) and the capabilities
-      it can provide. Catalogue browsing and filters only.
+      a device of the class can provide. Catalogue browsing and filters; what
+      a board's banks imply through their kinds.
     files: config/features.yml
     root: Features
     records: list
-    id: Id
-    schema: null
-    no_schema_because: one feature vocabulary replaces features.yml and board_features.yml
+    id: id
+    schema: feature.schema.json
     relations:
-      - {from: Capabilities.*, to: capability, why: "what a device of this class can provide"}
+      - {from: capabilities.*, to: capability, why: "what a device of this class can provide"}
 
-  legacy_feature:
-    why: The older feature vocabulary, config/board_features.yml (read by the catalogue only).
-    files: config/board_features.yml
-    root: Features
+  kind:
+    why: >-
+      A kind a board's banks give their devices (config/kinds.yml, the
+      inventory's taxonomy) and the features a board with such a bank lists
+      one of. The link between banks and the feature vocabulary; the drafter's
+      peripheral models name kinds too.
+    files: config/kinds.yml
+    root: Kinds
     records: list
-    id: Id
-    schema: null
-    no_schema_because: replaced together with features.yml
+    id: kind
+    schema: kind.schema.json
+    relations:
+      - {from: features.*, to: feature, why: "the classes such a bank means"}
 
   device:
     why: >-
-      A named chip on a board (config/peripheral_devices.yml): its feature and
-      the peripheral that drives it. Catalogue and drafter suggestions.
-    files: config/peripheral_devices.yml
+      A named chip or module (config/devices.yml): its feature class and the
+      peripherals that drive it. Catalogue and drafter suggestions.
+    files: config/devices.yml
     root: Devices
     records: list
-    id: Id
-    schema: null
-    no_schema_because: becomes config/devices.yml with the device kinds
+    id: id
+    schema: device.schema.json
     relations:
-      - {from: Feature, to: feature, why: "its class"}
-      - {from: PeripheralDrivers.*, to: peripheral, why: "the drivers that run it"}
+      - {from: feature, to: feature, why: "its class"}
+      - {from: peripherals.*, to: peripheral, why: "the drivers that run it"}
 
   mezzanine:
     why: >-
@@ -273,8 +253,7 @@ Entities:
     root: Mezzanines
     records: list
     id: Id
-    schema: null
-    no_schema_because: reshaped with the board files
+    schema: mezzanine.schema.json
     relations:
       - {from: Producer, to: producer, why: "whose module"}
       - {from: Chip, to: chip, why: "the part on a SoM"}

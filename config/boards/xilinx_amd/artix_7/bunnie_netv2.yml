@@ -2,9 +2,26 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/kosagi_netv2.py
 
+
 Board:
   id: bunnie_netv2
-  pinBanks:
+  name: NeTV2
+  url: https://www.crowdsupply.com/alphamax/netv2
+  status: eol
+  producer: bunnie_studios
+  chip: XC7A35T-2FGG484
+  bridges:
+  - pcie-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - pcie_endpoint
+  - hdmi_input
+  - hdmi_output
+  - ddr3_memory
+  - raspi_hat_header
+  banks:
     sys_clk:
       pins: J19
     onboard_leds:

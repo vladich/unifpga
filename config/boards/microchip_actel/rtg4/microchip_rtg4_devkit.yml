@@ -1,0 +1,23 @@
+# microchip_rtg4_devkit: RTG4 Development Kit.
+
+Board:
+  id: microchip_rtg4_devkit
+  name: RTG4 Development Kit
+  url: https://www.microchip.com/en-us/development-tool/RTG4-DEV-KIT
+  producer: microchip
+  chip: RT4G150-CG1657
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - spi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - winbond_w25q128

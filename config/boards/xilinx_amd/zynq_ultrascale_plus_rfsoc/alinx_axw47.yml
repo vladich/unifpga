@@ -1,0 +1,28 @@
+# alinx_axw47: Alinx AXW47.
+
+Board:
+  id: alinx_axw47
+  name: Alinx AXW47
+  url: https://coderobin.com/products/alinx-axw47-xilinx-zynq-ultrascale-rfsoc-xczu47dr-fpga-development-board
+  status: active
+  notes: 'Dual-FPGA card: primary ZU47DR + secondary Kintex UltraScale XCKU115.'
+  producer: alinx
+  chip: XCZU47DR-2FFVE1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - qsfp_cage
+  - ethernet_10gbe_sfp
+  - rf_adc_dac_high_speed
+  - sma_io_pair
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,9 +1,37 @@
 # qmtech_artix7_wukong pin map.
 # Source: github.com/DavidJRichards/QMTECH_XC7A100T_Wukong_Board
 
+
 Board:
   id: qmtech_artix7_wukong
-  pinBanks:
+  name: QMtech Artix-7 Wukong Board
+  url: https://qmtech.aliexpress.com/store/1199788
+  status: active
+  producer: qmtech
+  chip: XC7A100T-1FGG676C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k128m16
+  - cypress_s25fl128s
+  - realtek_rtl8211e
+  - tmds_direct
+  - microsd_socket_generic
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: M21
     hdmi_clk:

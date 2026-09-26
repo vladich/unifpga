@@ -1,0 +1,38 @@
+# iwave_rainbow_g35d: iW-RainboW-G35D Zynq UltraScale+ MPSoC (ZU19/17/11EG) UHS Dev Kit.
+
+Board:
+  id: iwave_rainbow_g35d
+  name: iW-RainboW-G35D Zynq UltraScale+ MPSoC (ZU19/17/11EG) UHS Dev Kit
+  url: https://www.iwavesystems.com/product/zynq-ultrascale-mpsoc-zu19-zu17-zu11/
+  status: active
+  producer: iwave
+  chip: XCZU19EG-2FFVC1760I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - jtag_header
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - sata_host
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

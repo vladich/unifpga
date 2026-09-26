@@ -1,0 +1,25 @@
+# htg_vsl300: HTG-VSL300 Versal Prime/AI Platform.
+
+Board:
+  id: htg_vsl300
+  name: HTG-VSL300 Versal Prime/AI Platform
+  url: https://www.hitechglobal.com/Boards/Versal_Prime_AI.htm
+  status: active
+  producer: hitech_global
+  chip: XCVM1802-2MSEVSVH1760
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - fmc_plus
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

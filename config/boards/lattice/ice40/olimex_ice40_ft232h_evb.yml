@@ -1,0 +1,11 @@
+# olimex_ice40_ft232h_evb: iCE40-FT232H-EVB.
+
+Board:
+  id: olimex_ice40_ft232h_evb
+  name: iCE40-FT232H-EVB
+  url: https://www.olimex.com/Products/FPGA/iCE40/iCE40HX1K-EVB/
+  producer: olimex
+  chip: iCE40HX1K-VQ100
+  bridges:
+  - jtag
+  programmer: iceprog

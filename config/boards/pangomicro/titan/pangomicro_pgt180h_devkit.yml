@@ -1,0 +1,21 @@
+# pangomicro_pgt180h_devkit: PGT180H Development Kit.
+
+Board:
+  id: pangomicro_pgt180h_devkit
+  name: PGT180H Development Kit
+  url: https://www.pangomicro.com/product/titan_family/
+  producer: pangomicro
+  chip: PGT180HFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

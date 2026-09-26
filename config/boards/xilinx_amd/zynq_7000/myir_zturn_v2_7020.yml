@@ -1,0 +1,34 @@
+# myir_zturn_v2_7020: MYIR Z-turn Board V2 (XC7Z020).
+
+Board:
+  id: myir_zturn_v2_7020
+  name: MYIR Z-turn Board V2 (XC7Z020)
+  url: https://www.myirtech.com/list.asp?id=708
+  status: active
+  producer: myir
+  chip: XC7Z020-1CLG400C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - usb_uart_bridge
+  - hdmi_output
+  - can_transceiver
+  - user_buttons
+  - user_leds
+  - jtag_header
+  devices:
+  - silabs_cp2102
+  - micron_mt41k128m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211e
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

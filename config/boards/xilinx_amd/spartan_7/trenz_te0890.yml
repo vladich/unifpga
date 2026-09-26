@@ -2,9 +2,30 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/trenz_te0890.py
 
+
 Board:
   id: trenz_te0890
-  pinBanks:
+  name: TE0890 S7 Mini Open-Source Spartan-7
+  url: https://www.trenz-electronic.de/en/S7-Mini-Fully-Open-Source-Module-with-AMD-Spartan-7S25-1C-64-Mbit-HyperRAM/TE0890-02-P1C-5-A
+  status: active
+  producer: trenz_electronic
+  chip: XC7S25-1CSGA225C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - hyperram
+  - jtag_header
+  - qspi_flash
+  - usb_powered
+  - user_buttons
+  - user_leds
+  devices:
+  - issi_is66wvh8m8dbll
+  - micron_n25q128a
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: L5
     cpu_resetn:

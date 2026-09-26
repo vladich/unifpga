@@ -3,9 +3,46 @@
 #         parser uncommented all assignments to extract the full pin map)
 #   https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Zedboard-Master.xdc
 
+
 Board:
   id: digilent_zedboard
-  pinBanks:
+  name: ZedBoard
+  url: https://digilent.com/shop/zedboard-zynq-7000-arm-fpga-soc-development-board/
+  status: active
+  producer: digilent
+  chip: XC7Z020-CLG484-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - barrel_jack_input
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - hdmi_output
+  - microsd_socket
+  - pmod_connector
+  - qspi_flash
+  - usb_2_otg
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - cypress_s25fl128s
+  - microchip_ksz9031rnx
+  - adi_adv7511
+  - adi_ssm2603
+  - microchip_usb3343
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - micron_mt41k128m16
+  banks:
     sys_clk:
       pins: Y9
     onboard_buttons:

@@ -1,0 +1,23 @@
+# edge_spartan_7: EDGE Spartan 7.
+
+Board:
+  id: edge_spartan_7
+  name: EDGE Spartan 7
+  url: https://allaboutfpga.com/product/edge-spartan-7-fpga-development-board/
+  status: active
+  producer: invent_logics
+  chip: XC7S15-1FTGB196C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - vga_output
+  - audio_codec
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - seven_segment_display
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_powered

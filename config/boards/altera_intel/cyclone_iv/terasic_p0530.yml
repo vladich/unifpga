@@ -1,0 +1,27 @@
+# terasic_p0530: P0530 (Cyclone IV).
+
+Board:
+  id: terasic_p0530
+  name: P0530 (Cyclone IV)
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=830
+  producer: terasic
+  chip: EP4CGX22CF19C6N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - microsd_socket
+  - qspi_flash
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - cypress_s25fl128s
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

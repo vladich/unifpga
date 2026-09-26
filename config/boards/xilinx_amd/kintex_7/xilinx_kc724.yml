@@ -1,0 +1,11 @@
+# xilinx_kc724: KC724.
+
+Board:
+  id: xilinx_kc724
+  name: KC724
+  url: https://www.xilinx.com/products/boards-and-kits.html
+  producer: xilinx_amd
+  chip: XC7K480T-2FFG901C
+  bridges:
+  - jtag
+  programmer: vivado_hw

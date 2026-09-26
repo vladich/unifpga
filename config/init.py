@@ -8,6 +8,7 @@ peripherals. Picking a configuration resolves to a fully-loaded object that
 synthesize.py and toolchain modules consume.
 """
 
+import contextlib
 import copy
 import hashlib
 import json
@@ -106,6 +107,7 @@ def clear_cache():
     """Drop every cached document (tests that rewrite config files call this)."""
     _yaml_cache.clear()
     _CONFIGURATIONS.clear()
+    _BOARDS.clear()
 
 
 def _load_yaml(path, root_key):
@@ -147,19 +149,19 @@ def _load_yaml_dir(subdir, root_key, id_key, *, base=None, missing_ok=False):
     return out
 
 
-def _unique_catalog(items, source, kind):
+def _unique_catalog(items, source, kind, key="Id"):
     """Index a single-file registry without losing malformed or repeated IDs."""
     if not isinstance(items, list):
         raise ConfigError("{}: {} must be a list".format(source, kind))
     out = {}
     for ordinal, item in enumerate(items, 1):
-        if (not isinstance(item, dict) or not isinstance(item.get("Id"), str) or
-                not item["Id"].strip()):
-            raise ConfigError("{}: {} item {} needs a nonempty string Id".format(
-                source, kind, ordinal))
-        if item["Id"] in out:
-            raise ConfigError("{}: duplicate {} Id {!r}".format(source, kind, item["Id"]))
-        out[item["Id"]] = item
+        if (not isinstance(item, dict) or not isinstance(item.get(key), str) or
+                not item[key].strip()):
+            raise ConfigError("{}: {} item {} needs a nonempty string {}".format(
+                source, kind, ordinal, key))
+        if item[key] in out:
+            raise ConfigError("{}: duplicate {} {} {!r}".format(source, kind, key, item[key]))
+        out[item[key]] = item
     return out
 
 
@@ -287,125 +289,32 @@ def read_board_producers_name_index():
     return idx
 
 
-def validate_board_producers(catalog=None, producers=None):
-    """Verify every board's `BoardProducer:` field references a known
-    producer Id (or, transitionally, a Name / AKA that resolves to one).
-
-    Returns the list of unresolved BoardProducer references — empty list
-    means clean. Useful as a CI gate after editing board catalogs."""
-    if catalog is None:
-        catalog = read_boards_catalog()
-    if producers is None:
-        producers = read_board_producers()
-    idx = read_board_producers_name_index()
-    unresolved = []
-    for bid, b in catalog.items():
-        bp = b.get("BoardProducer")
-        if bp is None:
-            continue
-        if bp not in idx:
-            unresolved.append((bid, bp))
-    return unresolved
+def _registry(name, root, kind, key="id"):
+    """{id: entry} of a single-file registry config/<name>, its entries under
+    `root`, identified by `key`."""
+    path = os.path.join(dir_path, name)
+    return _unique_catalog(_load_yaml(path, root), path, kind, key=key)
 
 
 def read_features():
-    """Read the abstract feature-family registry from features.yml.
-
-    A feature is an abstract family of hardware (e.g. "audio_codec",
-    "ethernet_phy_gigabit", "seven_segment_display") that a board may
-    declare. Each feature optionally maps to one or more Capabilities
-    (config/capabilities/*.yml) that a device of that family could
-    provide to a design.
-
-    Returns {feature_id: feature_info}."""
-    items = _load_yaml(os.path.join(dir_path, "features.yml"), "Features")
-    return _unique_catalog(items, os.path.join(dir_path, "features.yml"), "Feature")
+    """config/features.yml: the browsable classes of hardware a board may list
+    (user_leds, hdmi_output, sdr_sdram, ...), each with the capabilities a
+    device of that class can provide. {id: feature}."""
+    return _registry("features.yml", "Features", "feature")
 
 
-# Back-compat alias for callers still using the old name.
-def read_board_features():
-    return read_features()
+def read_kinds():
+    """config/kinds.yml: the kinds a board's banks give their devices (the
+    inventory's taxonomy: leds, sdcard, flash, ...), each with the features a
+    board with such a bank lists one of. {kind: entry}."""
+    return _registry("kinds.yml", "Kinds", "kind")
 
 
-def read_peripheral_devices():
-    """Read the specific peripheral devices registry from peripheral_devices.yml.
-
-    A device is a specific physical chip/module (e.g. "TI TLV320AIC23B"
-    audio codec, "Realtek RTL8211FD" Ethernet PHY). Each device tags itself
-    with one Feature (the abstract family it belongs to) and optionally
-    links to one or more PeripheralDrivers in config/peripherals/.
-
-    Returns {device_id: device_info}."""
-    items = _load_yaml(os.path.join(dir_path, "peripheral_devices.yml"), "Devices")
-    return _unique_catalog(items, os.path.join(dir_path, "peripheral_devices.yml"), "Device")
-
-
-def validate_board_features(catalog=None, features=None):
-    """Warn when a board's `Features:` references an unknown feature Id.
-
-    Returns a list of (board_id, unknown_feature) tuples. Empty list
-    means clean. Features are optional on boards; this validator only
-    flags tokens that aren't registered in features.yml."""
-    if catalog is None:
-        catalog = read_boards_catalog()
-    if features is None:
-        features = read_features()
-    unknown = []
-    for bid, b in catalog.items():
-        for tok in (b.get("Features") or []):
-            if tok not in features:
-                unknown.append((bid, tok))
-    return unknown
-
-
-def validate_peripheral_devices(devices=None, features=None, peripherals=None):
-    """Validate every device entry has a valid Feature reference and that
-    each PeripheralDrivers entry resolves.
-
-    Returns a dict with two keys:
-      - "unknown_features": [(device_id, feature_ref), ...]
-      - "unknown_peripherals": [(device_id, peripheral_ref), ...]
-    """
-    if devices is None:
-        devices = read_peripheral_devices()
-    if features is None:
-        features = read_features()
-    if peripherals is None:
-        peripherals = read_peripherals()
-    bad_feat = []
-    bad_perif = []
-    for did, d in devices.items():
-        f = d.get("Feature")
-        if f and f not in features:
-            bad_feat.append((did, f))
-        for pref in (d.get("PeripheralDrivers") or []):
-            if pref not in peripherals:
-                bad_perif.append((did, pref))
-    return {"unknown_features": bad_feat, "unknown_peripherals": bad_perif}
-
-
-def validate_board_devices(catalog=None, devices=None):
-    """Verify every Devices entry on every board resolves to a known device Id.
-
-    Returns a list of (board_id, unknown_device_id) tuples; empty list
-    means clean. Devices are optional on boards (population is a slow,
-    research-driven process); this validator only flags entries that
-    reference unknown ids."""
-    if catalog is None:
-        catalog = read_boards_catalog()
-    if devices is None:
-        devices = read_peripheral_devices()
-    unresolved = []
-    for bid, b in catalog.items():
-        for ref in (b.get("Devices") or []):
-            # Devices entries can be plain strings or dicts with {Id, ...}
-            if isinstance(ref, dict):
-                ref_id = ref.get("Id")
-            else:
-                ref_id = ref
-            if ref_id and ref_id not in devices:
-                unresolved.append((bid, ref_id))
-    return unresolved
+def read_devices():
+    """config/devices.yml: named chips and modules (a TLV320AIC23B codec, an
+    RTL8211 PHY), each in one feature class, with the peripherals that drive
+    it. {id: device}."""
+    return _registry("devices.yml", "Devices", "device")
 
 
 def _walk_mezzanine_catalog_files():
@@ -456,170 +365,166 @@ def read_mezzanines_catalog():
     return catalog
 
 
-def validate_mezzanines(catalog=None, devices=None, features=None,
-                        chips=None, board_catalog=None, producers=None):
-    """Check every mezzanine entry resolves cleanly.
+# ---------------------------------------------------------------------------
+# Boards: one file each, config/boards/<producer>/<family>/<id>.yml
+# ---------------------------------------------------------------------------
 
-    Returns a dict:
-      unknown_devices:    [(mid, dev_id), ...]
-      unknown_features:   [(mid, feat_id), ...]
-      unknown_chips:      [(mid, chip_id), ...]   (SoMs only)
-      unknown_producers:  [(mid, prod_slug), ...]
-      unknown_compatible: [(mid, board_id), ...]
-      missing_required:   [(mid, field), ...]
-      bad_type:           [(mid, type), ...]
-    """
-    if catalog        is None: catalog        = read_mezzanines_catalog()
-    if devices        is None: devices        = read_peripheral_devices()
-    if features       is None: features       = read_features()
-    if chips          is None: chips          = read_chips()
-    if board_catalog  is None: board_catalog  = read_boards_catalog()
-    if producers      is None: producers      = read_board_producers()
-
-    # carrier: a board a SoM plugs into (Tang Primer 20K Dock, Enclustra base boards)
-    valid_types = {"mezzanine", "som", "piggyback", "carrier"}
-    out = {k: [] for k in ("unknown_devices", "unknown_features",
-                            "unknown_chips", "unknown_producers",
-                            "unknown_compatible", "missing_required",
-                            "bad_type")}
-    for mid, m in catalog.items():
-        for req in ("Name", "Producer", "Type", "Connector"):
-            if not m.get(req):
-                out["missing_required"].append((mid, req))
-        mtype = m.get("Type")
-        if mtype and mtype not in valid_types:
-            out["bad_type"].append((mid, mtype))
-        prod = m.get("Producer")
-        if prod and prod not in producers:
-            out["unknown_producers"].append((mid, prod))
-        # SoMs must have a Chip; mezzanines/piggybacks shouldn't
-        chip = m.get("Chip")
-        if chip and chip not in chips:
-            out["unknown_chips"].append((mid, chip))
-        for dev in (m.get("Devices") or []):
-            ref = dev["Id"] if isinstance(dev, dict) else dev
-            if ref and ref not in devices:
-                out["unknown_devices"].append((mid, ref))
-        for f in (m.get("Features") or []):
-            if f not in features:
-                out["unknown_features"].append((mid, f))
-        for bref in (m.get("CompatibleBoards") or []):
-            if bref and bref not in board_catalog:
-                out["unknown_compatible"].append((mid, bref))
-    return out
+# The board file's keys and the names the catalogue projection (read_boards_catalog,
+# read_board_entry) gives them, for the readers written against the old
+# family-catalogue files.
+CATALOG_KEYS = (("id", "Id"), ("name", "BoardName"), ("product", "ProductName"), ("summary", "Summary"),
+                ("aliases", "Aliases"), ("url", "BoardURL"), ("status", "Status"), ("notes", "Notes"),
+                ("producer", "BoardProducer"), ("chip", "Chip"), ("chips", "Chips"), ("bridges", "Bridges"),
+                ("programmer", "Programmer"), ("extra_programmers", "ExtraProgrammers"),
+                ("bootloader", "Bootloader"), ("features", "Features"), ("devices", "Devices"))
+# what the pinmap projection (read_board_pinmap) carries, by the board file's key
+PINMAP_KEYS = (("defaults", "defaults"), ("toolchain_options", "toolchain_options"), ("banks", "pinBanks"),
+               ("verification", "verification"))
+# what the layout projection (tools/setup.py read_layouts) carries
+LAYOUT_KEYS = (("connector_types", "connector_types"), ("headers", "connectors"), ("parts", "onboard"))
 
 
-def _walk_board_catalog_files():
-    """Yield (catalog_yml_path, producer_dir_name, family_yml_basename) for
-    every family-catalog file under config/boards/<producer>/<family>.yml.
-
-    Skips files in deeper subdirectories (those are per-board pinmaps) and
-    skips directories whose name starts with `_` (e.g. `_raw/`, used for
-    imported raw constraints)."""
+def _walk_board_files():
+    """Yield (path, producer_dir, family_dir, board_id) for every board file
+    config/boards/<producer>/<family>/<id>.yml, skipping `_` directories."""
     base = os.path.join(dir_path, "boards")
     if not os.path.isdir(base):
         return
     for prod_name in sorted(os.listdir(base)):
-        if prod_name.startswith("_"):
-            continue
         prod_dir = os.path.join(base, prod_name)
-        if not os.path.isdir(prod_dir):
+        if prod_name.startswith("_") or not os.path.isdir(prod_dir):
             continue
-        for fname in sorted(os.listdir(prod_dir)):
-            if not fname.endswith(".yml"):
+        for fam_name in sorted(os.listdir(prod_dir)):
+            fam_dir = os.path.join(prod_dir, fam_name)
+            if fam_name.startswith("_") or not os.path.isdir(fam_dir):
                 continue
-            fam_path = os.path.join(prod_dir, fname)
-            if not os.path.isfile(fam_path):
-                continue
-            yield fam_path, prod_name, fname[:-4]
+            for fname in sorted(os.listdir(fam_dir)):
+                if fname.endswith(".yml") and not fname.startswith("_"):
+                    yield os.path.join(fam_dir, fname), prod_name, fam_name, fname[:-4]
 
 
-def read_boards_catalog():
-    """Read every family-catalog file under config/boards/<producer>/<family>.yml
-    and return {board_id: catalog_entry}.
-
-    Each catalog_entry has BoardName, BoardProducer, PartProducer, PartFamily,
-    and Part (or Parts list), optionally Programmer and BoardURL. The
-    PartProducer and PartFamily fields are *injected* from the enclosing
-    family-catalog file's `Producer:` and `Family:` headers — they don't
-    have to be duplicated on every board entry.
-
-    Per-board pinmaps live alongside the catalog file at
-    config/boards/<producer>/<family>/<board_id>.yml."""
-    return copy.deepcopy(_board_index())
+_BOARDS = {}
+_BOARDS_FROZEN = [0]        # > 0: the index is not checked against the files (see boards_frozen)
 
 
-# Back-compat alias.
-read_boards = read_boards_catalog
+@contextlib.contextmanager
+def boards_frozen():
+    """Within the block the board index is checked against the files once, on
+    entry, not on every read: for loops over every rig (read_configurations,
+    ./unifpga setup check) that would otherwise stat every board file per rig."""
+    _boards_index()
+    _BOARDS_FROZEN[0] += 1
+    try:
+        yield
+    finally:
+        _BOARDS_FROZEN[0] -= 1
 
-_BOARD_INDEX = {}
+
+def _boards_index():
+    """Validated, cached {board id: the file's Board mapping plus _path,
+    _producer_dir, _family_dir}; callers must not mutate its entries."""
+    if _BOARDS_FROZEN[0] and _BOARDS.get("value") is not None:
+        return _BOARDS["value"]
+    files = list(_walk_board_files())
+    key = tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p, _pr, _f, _b in files) + \
+          tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p, _pr, _f in _walk_chip_registry_files())
+    if _BOARDS.get("key") != key:                       # a board or a chip family changed
+        out = {}
+        for path, prod_name, fam_name, board_id in files:
+            data = _parsed(path)
+            board = data.get("Board") if isinstance(data, dict) else None
+            if not isinstance(board, dict) or board.get("id") != board_id:
+                raise ConfigError("{}: needs a Board mapping whose id is {!r}".format(path, board_id))
+            if board_id in out:
+                raise ConfigError("duplicate board {!r}: {} and {}".format(board_id, out[board_id]["_path"], path))
+            entry = dict(board)
+            entry["_path"] = path
+            entry["_producer_dir"] = prod_name
+            entry["_family_dir"] = fam_name
+            out[board_id] = entry
+        _BOARDS.update(key=key, value=out, catalog=None)
+    return _BOARDS["value"]
+
+
+def read_boards():
+    """{board id: board} — every board file (config/boards/<producer>/<family>/<id>.yml),
+    a copy. This is the board: identity and catalogue fields, chip or chips,
+    programmer, banks of pins, verification, and as drawn its headers and parts."""
+    return copy.deepcopy(_boards_index())
+
+
+def read_board(board_id):
+    """One board (a copy), or None."""
+    board = _boards_index().get(board_id)
+    return copy.deepcopy(board) if board is not None else None
+
+
+def _family_names():
+    """{(producer_dir, family_dir): (Producer, Family)} from the chip families."""
+    out = {}
+    for fam_path, prod_dir, fam_slug in _walk_chip_registry_files():
+        data = _parsed(fam_path)
+        if isinstance(data, dict):
+            out[(prod_dir, fam_slug)] = (data.get("Producer"), data.get("Family"))
+    return out
 
 
 def _board_index():
-    """Validated, cached board registry; callers must not mutate its entries."""
-    files = list(_walk_board_catalog_files())
-    key = tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p, _pr, _f in files)
-    if _BOARD_INDEX.get("key") != key:
+    """The catalogue view of the boards: {board id: entry} with the old
+    family-catalogue names (Id, BoardName, Chip, ...), PartProducer and
+    PartFamily from the chip family the board's directory names, and
+    _catalog_path / _producer_dir / _family_dir. Cached with the boards;
+    callers must not mutate its entries."""
+    boards = _boards_index()
+    if _BOARDS.get("catalog") is None:
+        families = _family_names()
         out = {}
-        origins = {}
-        for fam_path, prod_name, fam_slug in files:
-            data = _parsed(fam_path)
-            if not isinstance(data, dict):
-                raise ConfigError("{}: board catalog must be a mapping".format(fam_path))
-            if any(not isinstance(data.get(field), str) or not data[field].strip()
-                   for field in ("Producer", "Family")):
-                raise ConfigError("{}: board catalog needs Producer and Family"
-                                  .format(fam_path))
-            boards = data.get("Boards")
-            if not isinstance(boards, list):
-                raise ConfigError("{}: Boards must be a list".format(fam_path))
-            for ordinal, b in enumerate(boards, 1):
-                if (not isinstance(b, dict) or not isinstance(b.get("Id"), str) or
-                        not b["Id"].strip()):
-                    raise ConfigError("{}: board item {} needs a nonempty string Id"
-                                      .format(fam_path, ordinal))
-                if b["Id"] in out:
-                    raise ConfigError("duplicate board Id {!r}: {} and {}".format(
-                        b["Id"], origins[b["Id"]], fam_path))
-                entry = dict(b)
-                entry.setdefault("PartProducer", data.get("Producer"))
-                entry.setdefault("PartFamily", data.get("Family"))
-                entry["_catalog_path"] = fam_path
-                entry["_producer_dir"] = prod_name
-                entry["_family_dir"] = fam_slug
-                out[b["Id"]] = entry
-                origins[b["Id"]] = fam_path
-        _BOARD_INDEX.update(key=key, value=out)
-    return _BOARD_INDEX["value"]
+        for board_id, board in boards.items():
+            entry = {}
+            for key, name in CATALOG_KEYS:
+                if key in board:
+                    value = board[key]
+                    if key == "chips":
+                        value = [{"Id": c.get("id"), "Name": c.get("name")} if isinstance(c, dict) else c for c in value]
+                    entry[name] = value
+            names = families.get((board["_producer_dir"], board["_family_dir"]))
+            if names is None:
+                raise ConfigError("{}: no chip family config/chips/{}/{}.yml for the board's directory"
+                                  .format(board["_path"], board["_producer_dir"], board["_family_dir"]))
+            entry["PartProducer"], entry["PartFamily"] = names
+            entry["_catalog_path"] = board["_path"]
+            entry["_producer_dir"] = board["_producer_dir"]
+            entry["_family_dir"] = board["_family_dir"]
+            out[board_id] = entry
+        _BOARDS["catalog"] = out
+    return _BOARDS["catalog"]
+
+
+def read_boards_catalog():
+    """{board id: catalogue entry}, a copy: every board's identity and
+    catalogue fields under the names the catalogue readers use (see
+    CATALOG_KEYS), with PartProducer and PartFamily from the chip family."""
+    return copy.deepcopy(_board_index())
 
 
 def read_board_entry(board_id):
-    """One board's catalog entry (a copy), or None."""
+    """One board's catalogue entry (a copy), or None."""
     entry = _board_index().get(board_id)
     return copy.deepcopy(entry) if entry is not None else None
 
 
 def read_board_pinmap(board_id):
-    """Load the per-board pin-map YAML for `board_id`.
-
-    Pinmaps live at config/boards/<producer>/<family>/<board_id>.yml in
-    the hierarchical layout. We consult the catalog to learn the
-    producer/family directory for the given board, then look up the file.
-
-    Returns the inner Board dict (with id, fpga, defaults, pinBanks) or
-    None when no pinmap file exists for this board."""
-    entry = _board_index().get(board_id)
-    if entry is None:
+    """The pins of a board as the pinmap readers see them: {id, defaults,
+    toolchain_options, pinBanks, verification} from the board file (a copy),
+    or None when the board has no banks (a catalogue-only board)."""
+    board = _boards_index().get(board_id)
+    if board is None or not board.get("banks"):
         return None
-    prod_dir = entry.get("_producer_dir")
-    fam_dir = entry.get("_family_dir")
-    if not prod_dir or not fam_dir:
-        return None
-    path = os.path.join(dir_path, "boards", prod_dir, fam_dir, board_id + ".yml")
-    if not os.path.exists(path):
-        return None
-    data = _read_yaml_file(path)
-    return (data or {}).get("Board")
+    out = {"id": board_id}
+    for key, name in PINMAP_KEYS:
+        if key in board:
+            out[name] = copy.deepcopy(board[key])
+    return out
 
 
 def _walk_chip_registry_files():
@@ -823,13 +728,16 @@ _CONFIGURATIONS = {}          # conventions flag -> (source key, {id: configurat
 
 def _rig_sources_key(setup_dir):
     """What the rigs' configurations depend on: the setups (`setup_dir`: a
-    test may stand in another directory), the layouts, the modules and the
-    connectors, by path and modification time."""
+    test may stand in another directory), the boards (their banks and drawn
+    headers and parts), the modules and the connectors, by path and
+    modification time."""
     key = []
-    for base in (setup_dir, os.path.join(dir_path, "layouts"), os.path.join(dir_path, "modules")):
+    for base in (setup_dir, os.path.join(dir_path, "modules")):
         for name in sorted(os.listdir(base)) if os.path.isdir(base) else ():
             path = os.path.join(base, name)
             key.append((path, os.stat(path).st_mtime_ns))
+    for path, _prod, _fam, _board in _walk_board_files():
+        key.append((path, os.stat(path).st_mtime_ns))
     path = os.path.join(dir_path, "connectors.yml")
     if os.path.exists(path):
         key.append((path, os.stat(path).st_mtime_ns))
@@ -851,11 +759,12 @@ def read_configurations(conventions=None):
         return copy.deepcopy(hit[1])
     setups = su.read_setups()
     out = {}
-    for sid in sorted(setups):
-        try:
-            out[sid] = su.generate(setups[sid], conventions)
-        except su.SetupError as exc:
-            raise ConfigError("Configuration '{}': {}".format(sid, exc))
+    with boards_frozen():                          # one look at the board files, not one per rig
+        for sid in sorted(setups):
+            try:
+                out[sid] = su.generate(setups[sid], conventions)
+            except su.SetupError as exc:
+                raise ConfigError("Configuration '{}': {}".format(sid, exc))
     _CONFIGURATIONS[conventions] = (key, out)
     return copy.deepcopy(out)
 

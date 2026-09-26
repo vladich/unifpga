@@ -5,9 +5,19 @@
 #   https://www.manualslib.com/manual/2994570/Alinx-Ax7035.html?page=41
 #   https://www.manualslib.com/manual/2994570/Alinx-Ax7035.html?page=42
 
+
 Board:
   id: alinx_ax7035
-  pinBanks:
+  name: Alinx AX7035
+  product: AX7035 (ALINX Artix-7 FPGA development board, the AX7035B's predecessor)
+  status: eol
+  notes: Catalogued from its pinmap (the AX7035 user manual); the product page now lists only the AX7035B.
+  producer: alinx
+  chip: XC7A35T-2FGG484I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  banks:
     sys_clk:
       pins: Y18
       frequency_mhz: 50

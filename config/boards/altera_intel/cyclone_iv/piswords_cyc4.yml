@@ -1,0 +1,11 @@
+# piswords_cyc4: Piswords Cyclone IV.
+
+Board:
+  id: piswords_cyc4
+  name: Piswords Cyclone IV
+  url: https://piswords.aliexpress.com/store
+  producer: piswords
+  chip: EP4CE15F23C8N
+  bridges:
+  - jtag
+  programmer: quartus_pgm

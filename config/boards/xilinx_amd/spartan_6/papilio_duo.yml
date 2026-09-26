@@ -1,0 +1,13 @@
+# papilio_duo: Papilio Duo.
+
+Board:
+  id: papilio_duo
+  name: Papilio Duo
+  url: https://papilio.cc/index.php?n=Papilio.PapilioDuo
+  producer: papilio
+  chip: XC6SLX9-2TQG144C
+  bridges:
+  - papilio-ft2232
+  programmer: papilio_loader
+  extra_programmers:
+  - papilio_loader[*]

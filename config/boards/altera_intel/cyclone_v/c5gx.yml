@@ -1,19 +1,52 @@
 # c5gx pin map.
 
+
 Board:
   id: c5gx
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone V"
-    part: 5CGXFC5C6F27C7N
-
+  name: Cyclone V GX Starter Kit
+  product: Cyclone V GX Starter Kit (C5G)
+  summary: Cyclone V GX 5CGXFC5C6F27C7N (77K LEs, transceivers on HSMC); 512 MB LPDDR2 + 4 Mb (512 KB) SRAM; HDMI
+    TX, audio CODEC, SD, UART-USB, HSMC, 2x20 GPIO, Arduino header, LTC2308 ADC, 4x 7-seg, 10 SW, 4 KEY, 18 LEDs
+  aliases:
+  - intel_cyclonev_gx_starter
+  producer: terasic
+  chip: 5CGXFC5C6F27C7N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - microsd_socket
+  - qspi_flash
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  - sram
+  - adc_chip
+  devices:
+  - wolfson_wm8731
+  - adi_adv7123
+  - micron_mt41k128m16
+  - micron_n25q128a
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - ftdi_ft232r
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   toolchain_options:
     quartus:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
-  pinBanks:
+  banks:
     clk50mhz: { pins: M10, frequency_mhz: 50, iostandard: 2.5 V }
     onboard_uart:
       iostandard: 2.5 V
@@ -163,3 +196,73 @@ Board:
       device: {"name": "A/D converter (LTC2308, SPI)", "kind": "adc"}
       iostandard: "1.2-V"
       pins: {"ADC_CONVST": "AB22", "ADC_SCK": "AA21", "ADC_SDI": "Y10", "ADC_SDO": "W10"}
+  # ---- drawn: headers and parts; ./unifpga layout draft c5gx regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]', '[20]': 'gpio[20]', '[21]': 'gpio[21]'}
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {rx: onboard_uart.rx}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: cpu_resetn
+      label: cpu resetn
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 10}, bind: {sw: onboard_switches}}
+    - id: leds_green
+      label: leds green
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds_green}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 10}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_per_digit, params: {digits: 4, segs: 7}, bind: {hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3]}}
+    - id: audio_codec
+      label: audio codec
+      attach: {peripheral: i2s_audio_out, bind: {mclk: onboard_audio_codec.xck, bclk: onboard_audio_codec.bclk, lrclk: onboard_audio_codec.dac_lrck, sdata: onboard_audio_codec.dac_dat}}
+    - id: hdmi_tx
+      label: hdmi tx
+      attach: {peripheral: hdmi_adv7513, params: {bits_r: 8, bits_g: 8, bits_b: 8, config_table: c5gx}, bind: {clk: onboard_hdmi_tx.clk, de: onboard_hdmi_tx.de, hs: onboard_hdmi_tx.hs, vs: onboard_hdmi_tx.vs, d: onboard_hdmi_tx.d, i2c_scl: onboard_i2c.scl, i2c_sda: onboard_i2c.sda, int: onboard_hdmi_tx.int}}
+    - id: adc
+      label: A/D converter (LTC2308, SPI)
+      attach: {peripheral: ltc2308, bind: {convst: onboard_adc.ADC_CONVST, sck: onboard_adc.ADC_SCK, sdi: onboard_adc.ADC_SDI, sdo: onboard_adc.ADC_SDO}}
+    - id: sram
+      label: SRAM (512 KB, 16-bit)
+      attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.SRAM_A, d: onboard_sram.SRAM_D, ce_n: onboard_sram.SRAM_CE_n, oe_n: onboard_sram.SRAM_OE_n, we_n: onboard_sram.SRAM_WE_n, lb_n: onboard_sram.SRAM_LB_n, ub_n: onboard_sram.SRAM_UB_n}}
+    - id: clk125mhz
+      label: CLOCK_125 (125 MHz, Si5338, LVDS)
+      device: {kind: clock, bank: onboard_clk125mhz}   # no peripheral model yet
+    - id: clk50mhz_b5b
+      label: CLOCK_50_B5B (50 MHz)
+      device: {kind: clock, bank: onboard_clk50mhz_b5b}   # no peripheral model yet
+    - id: clk50mhz_b6a
+      label: CLOCK_50_B6A (50 MHz)
+      device: {kind: clock, bank: onboard_clk50mhz_b6a}   # no peripheral model yet
+    - id: clk50mhz_b7a
+      label: CLOCK_50_B7A (50 MHz, Si5338)
+      device: {kind: clock, bank: onboard_clk50mhz_b7a}   # no peripheral model yet
+    - id: gxb_refclk
+      label: Transceiver reference clocks (Si5338, REFCLK0 125 MHz, REFCLK1 156.25 MHz)
+      device: {kind: clock, bank: onboard_gxb_refclk}   # no peripheral model yet
+    - id: lpddr2
+      label: LPDDR2 SDRAM (512 MB, 32-bit)
+      device: {kind: other, bank: onboard_lpddr2}   # no peripheral model yet
+    - id: sdcard
+      label: SD card socket
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: 'onboard_sdcard.SD_DAT[0]', dat3: 'onboard_sdcard.SD_DAT[3]'}}
+    - id: hsmc
+      label: HSMC connector
+      device: {kind: header, bank: hsmc}   # no peripheral model yet

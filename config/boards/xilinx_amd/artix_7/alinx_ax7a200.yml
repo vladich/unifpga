@@ -1,0 +1,33 @@
+# alinx_ax7a200: Alinx AX7A200.
+
+Board:
+  id: alinx_ax7a200
+  name: Alinx AX7A200
+  url: https://coderobin.com/products/alinx-ax7a200-xilinx-artix-7-xc7a200t-fpga-development-board
+  status: active
+  notes: Single-board (non-SOM) AX7A200 — pairs with AX7A035 (already in catalog).
+  producer: alinx
+  chip: XC7A200T-2FBG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - sfp_cage
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

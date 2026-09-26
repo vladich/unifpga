@@ -1,0 +1,24 @@
+# realdigital_aup_zu3: AUP-ZU3.
+
+Board:
+  id: realdigital_aup_zu3
+  name: AUP-ZU3
+  url: https://www.realdigital.org/hardware/aup-zu3
+  status: active
+  producer: real_digital
+  chip: XCZU3EG
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - microsd_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - user_leds
+  - user_buttons
+  - pmod_connector

@@ -1,0 +1,23 @@
+# numato_neso_artix7: Neso Artix 7.
+
+Board:
+  id: numato_neso_artix7
+  name: Neso Artix 7
+  url: https://numato.com/product/neso-artix-7-fpga-development-board/
+  producer: numato_lab
+  chip: XC7A100T-1CSG324C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q128a
+  - micron_mt41k128m16
+  - led_discrete_generic
+  - pushbutton_smd_generic

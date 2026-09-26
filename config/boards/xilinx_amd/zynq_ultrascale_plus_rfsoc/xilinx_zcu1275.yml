@@ -1,0 +1,29 @@
+# xilinx_zcu1275: AMD Zynq UltraScale+ RFSoC ZCU1275 Characterization Kit.
+
+Board:
+  id: xilinx_zcu1275
+  name: AMD Zynq UltraScale+ RFSoC ZCU1275 Characterization Kit
+  url: https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/zcu1275.html
+  status: active
+  producer: xilinx_amd
+  chip: XCZU29DR-2FFVF1760E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - jtag_header
+  - microsd_socket
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - spansion_s25fl256s

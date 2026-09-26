@@ -1,0 +1,11 @@
+# radiona_ulx3s_45f: ULX3S 45F.
+
+Board:
+  id: radiona_ulx3s_45f
+  name: ULX3S 45F
+  url: https://radiona.org/ulx3s/
+  producer: radiona
+  chip: LFE5U-45F-6BG381C
+  bridges:
+  - jtag
+  programmer: openFPGALoader

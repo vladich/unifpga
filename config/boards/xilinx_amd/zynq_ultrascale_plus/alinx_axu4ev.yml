@@ -1,0 +1,23 @@
+# alinx_axu4ev: AXU4EV.
+
+Board:
+  id: alinx_axu4ev
+  name: AXU4EV
+  url: https://alinx.com/en/detail/13
+  producer: alinx
+  chip: XCZU4EV-2SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - hdmi_output
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic

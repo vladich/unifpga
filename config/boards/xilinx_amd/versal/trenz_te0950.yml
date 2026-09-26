@@ -1,0 +1,17 @@
+# trenz_te0950: TE0950.
+
+Board:
+  id: trenz_te0950
+  name: TE0950
+  url: https://shop.trenz-electronic.de/en/Products/Trenz-Electronic/TE09XX-Versal/
+  producer: trenz_electronic
+  chip: XCVC1902-1MSEVSVA2197
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g

@@ -1,0 +1,25 @@
+# gowin_gw1nsr_lv4c_g_devkit: GW1NSR-LV4C Dev Kit (G-variant).
+
+Board:
+  id: gowin_gw1nsr_lv4c_g_devkit
+  name: GW1NSR-LV4C Dev Kit (G-variant)
+  url: https://www.gowinsemi.com/en/support/devkits_detail/41/
+  status: active
+  producer: gowin_semi
+  chip: GW1NSR-LV4CQN48GC7/I6
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - usb_2_otg
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  - usb_jtag_bridge
+  - jtag_header
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

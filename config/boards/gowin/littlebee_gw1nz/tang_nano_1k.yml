@@ -4,12 +4,29 @@
 #   https://github.com/sipeed/TangNano-1K-examples/blob/main/example_lcd/lcd_pjt/src/rgb_test.cst
 #   https://github.com/sipeed/TangNano-1K-examples/blob/main/example_led/led_prj/src/led_prj.cst
 
+
 Board:
   id: tang_nano_1k
+  name: Tang Nano 1K
+  product: Tang Nano 1K
+  summary: Gowin GW1NZ-LV1QN48C6/I5 (GW1NZ-1, 1152 LUT4, 72 kbit BSRAM, 64 kbit user flash, 1 PLL) on board 6100;
+    27 MHz oscillator, BL702 USB-JTAG, RGB LED, 2 buttons, 40-pin RGB LCD FPC, IPS6404L QSPI PSRAM footprint, two
+    20-pin headers
+  aliases:
+  - sipeed_tang_nano_1k
+  url: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-1K/Nano-1k.html
+  producer: sipeed
+  chip: GW1NZ-LV1QN48C6/I5
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - hyperram
+  - parallel_lcd
   toolchain_options:
     yosys:
       loader_board: "tangnano1k"          # openFPGALoader -b
-  pinBanks:
+  banks:
     sys_clk:
       pins: 47
     cpu_resetn:

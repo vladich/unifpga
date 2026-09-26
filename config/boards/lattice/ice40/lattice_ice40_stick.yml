@@ -1,0 +1,15 @@
+# lattice_ice40_stick: iCEstick Evaluation Kit.
+
+Board:
+  id: lattice_ice40_stick
+  name: iCEstick Evaluation Kit
+  url: https://www.latticesemi.com/products/developmentboardsandkits/icestick
+  producer: lattice
+  chip: iCE40HX1K-TQ144
+  bridges:
+  - jtag
+  programmer: iceprog
+  features:
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h

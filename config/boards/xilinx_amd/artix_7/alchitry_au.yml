@@ -2,9 +2,17 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/alchitry_au_v2.py
 
+
 Board:
   id: alchitry_au
-  pinBanks:
+  name: Alchitry Au
+  url: https://alchitry.com/boards/au
+  producer: alchitry
+  chip: XC7A35T-1FTG256C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  banks:
     sys_clk:
       pins: N14
     cpu_resetn:

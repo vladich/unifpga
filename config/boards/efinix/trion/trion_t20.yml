@@ -1,0 +1,11 @@
+# trion_t20: Trion T20.
+
+Board:
+  id: trion_t20
+  name: Trion T20
+  url: https://www.efinixinc.com/products-devkits-triont20.html
+  producer: efinix
+  chip: T20F256C2
+  bridges:
+  - jtag
+  programmer: efinity_pgm

@@ -1,0 +1,28 @@
+# xilinx_vhk158: VHK158.
+
+Board:
+  id: xilinx_vhk158
+  name: VHK158
+  url: https://www.xilinx.com/products/boards-and-kits/vhk158.html
+  producer: xilinx_amd
+  chip: XCVH1582-2MSEVSVA3697
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1512
+  - ddr4_sodimm_socket

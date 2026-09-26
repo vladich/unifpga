@@ -1,0 +1,34 @@
+# xilinx_vcu129: AMD Virtex UltraScale+ 58G PAM4 VCU129 FPGA Evaluation Kit.
+
+Board:
+  id: xilinx_vcu129
+  name: AMD Virtex UltraScale+ 58G PAM4 VCU129 FPGA Evaluation Kit
+  url: https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/vcu129.html
+  status: eol
+  producer: xilinx_amd
+  chip: XCVU29P-L2FSGA2577E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - dip_switches
+  - fmc_plus
+  - jtag_header
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q256a
+  - silabs_cp2105
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ddr4_sodimm_socket
+  - silabs_si570

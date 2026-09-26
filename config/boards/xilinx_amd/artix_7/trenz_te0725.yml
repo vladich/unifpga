@@ -2,9 +2,23 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/trenz_te0725.py
 
+
 Board:
   id: trenz_te0725
-  pinBanks:
+  name: TE0725
+  url: https://shop.trenz-electronic.de/en/TE0725-04-72C-1-A-FPGA-Module-with-AMD-Artix-7A100T-2C-2-x-50-Pin-Header-3-5-x-7-3-cm
+  producer: trenz_electronic
+  chip: XC7A100T-2FGG484I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  devices:
+  - micron_mt41k128m16
+  - micron_n25q128a
+  banks:
     sys_clk:
       pins: P17
     cpu_resetn:

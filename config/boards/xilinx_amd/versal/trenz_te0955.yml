@@ -1,0 +1,20 @@
+# trenz_te0955: TE0955 Versal AI Edge VE2302 SoM.
+
+Board:
+  id: trenz_te0955
+  name: TE0955 Versal AI Edge VE2302 SoM
+  url: https://www.trenz-electronic.de/en/AMD-Versal-AI-Edge-SoM-with-VE2302-device-4-x-5.64-cm/TE0955-01-EGBE32-A
+  status: active
+  producer: trenz_electronic
+  chip: XCVE2302-1LSESFVA784
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - jtag_header
+  - lpddr4_memory
+  - qspi_flash
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g

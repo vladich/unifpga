@@ -2,9 +2,28 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/alchitry_pt_v2.py
 
+
 Board:
   id: alchitry_pt
-  pinBanks:
+  name: Alchitry Pt V2
+  url: https://shop.alchitry.com/products/alchitry-pt
+  status: active
+  producer: alchitry
+  chip: XC7A100T-2FGG484I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  - usb_powered
+  banks:
     sys_clk:
       pins: W19
     cpu_resetn:

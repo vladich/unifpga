@@ -1,0 +1,25 @@
+# htg_vsl1: HTG-VSL1 Versal AI Core PCIe Gen4.
+
+Board:
+  id: htg_vsl1
+  name: HTG-VSL1 Versal AI Core PCIe Gen4
+  url: https://www.hitechglobal.com/Boards/VERSAL_PCIE.htm
+  status: active
+  producer: hitech_global
+  chip: XCVC1902-2MSEVSVA2197
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - fmc_plus
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

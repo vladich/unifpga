@@ -2,9 +2,32 @@
 # Source: Terasic user manual PDF
 #   ~/Terasic/DE10-Pro_User_Manual.pdf
 
+
 Board:
   id: terasic_de10_pro
-  pinBanks:
+  name: DE10-Pro
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1144
+  producer: terasic
+  chip: 1SG280HU2F50E2VG
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - pcie_edge_connector
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - cypress_s25fl128s
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  banks:
     sys_clk:
       pins: PIN_BC10
     cpu_resetn:

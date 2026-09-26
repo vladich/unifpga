@@ -1,0 +1,21 @@
+# techway_pfp_kx7_plus_325: PFP-KX7+ 325T (Eclypse-K7 variant).
+
+Board:
+  id: techway_pfp_kx7_plus_325
+  name: PFP-KX7+ 325T (Eclypse-K7 variant)
+  url: https://www.techway.com/p/fpga-board-pcie-with-fmc-slot/
+  status: active
+  producer: techway
+  chip: XC7K325T-2FFG900
+  bridges:
+  - jtag
+  - pcie-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - pcie_endpoint
+  - fmc_plus
+  - jtag_header

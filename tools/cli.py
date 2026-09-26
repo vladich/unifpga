@@ -731,20 +731,21 @@ def cmd_setup(args):
         return 0
     ids = args.ids or sorted(setups)
     failed = 0
-    for sid in ids:
-        if sid not in setups:
-            raise CliError("unknown setup '{}'".format(sid))
-        problems = su.validate(setups[sid])
-        try:
-            su.generate(setups[sid])
-            config.init.resolve_configuration(sid)
-        except (su.SetupError, config.init.ConfigError) as exc:
-            problems.append(("error", str(exc)))
-        errors = [m for level, m in problems if level == "error"]
-        failed += bool(errors)
-        print("{:<48} {}".format(sid, "FAIL" if errors else "ok"))
-        for level, msg in problems:
-            print("    {}: {}".format(level, msg))
+    with config.init.boards_frozen():
+        for sid in ids:
+            if sid not in setups:
+                raise CliError("unknown setup '{}'".format(sid))
+            problems = su.validate(setups[sid])
+            try:
+                su.generate(setups[sid])
+                config.init.resolve_configuration(sid)
+            except (su.SetupError, config.init.ConfigError) as exc:
+                problems.append(("error", str(exc)))
+            errors = [m for level, m in problems if level == "error"]
+            failed += bool(errors)
+            print("{:<48} {}".format(sid, "FAIL" if errors else "ok"))
+            for level, msg in problems:
+                print("    {}: {}".format(level, msg))
     return 1 if failed else 0
 
 
@@ -794,9 +795,10 @@ def cmd_serve(args):
 
 
 def cmd_layout(args):
-    """layout draft [board...] [--all]: write config/layouts/<board>.yml from the
-    board's pinmap, configurations and registry (tools/layout_draft.py); hand-made
-    layouts are left alone."""
+    """layout draft [board...] [--all]: draw the board's headers and parts into
+    its file (the drawn section of config/boards/<producer>/<family>/<board>.yml)
+    from its banks, configurations and registry entry (tools/layout_draft.py);
+    a hand-made drawn section is left alone."""
     from tools import layout_draft
     boards = sorted({c["board"] for c in config.init.read_configurations().values()})
     ids = boards if args.all else args.boards
@@ -806,7 +808,7 @@ def cmd_layout(args):
         if b not in boards:
             raise CliError("no configuration uses board '{}'".format(b))
         if not layout_draft.is_generated(b):
-            print("{:<32} hand-made layout, left alone".format(b))
+            print("{:<32} drawn by hand, left alone".format(b))
             continue
         path, changed = layout_draft.write(b)
         layout = layout_draft.draft(b)
@@ -994,8 +996,8 @@ def build_parser():
     ck.add_argument("entities", nargs="*", help="only these entities (default: all; see config/schema/entities.yml)")
     ck.add_argument("--json", action="store_true", help="print the report as JSON")
 
-    ly = sub.add_parser("layout", help="generate board layouts (config/layouts/) from pinmaps, rigs "
-                                        "and the board-sources registry")
+    ly = sub.add_parser("layout", help="draw boards' headers and parts (the drawn section of their files) "
+                                        "from their banks, rigs and the board-sources registry")
     ly.add_argument("action", choices=["draft"])
     ly.add_argument("boards", nargs="*")
     ly.add_argument("--all", action="store_true", help="every board a configuration uses")

@@ -1,0 +1,11 @@
+# mist_board: MIST Board.
+
+Board:
+  id: mist_board
+  name: MIST Board
+  url: https://lotharek.pl/productdetail.php?id=42
+  producer: mist
+  chip: EP3C25E144C8N
+  bridges:
+  - jtag
+  programmer: quartus_pgm

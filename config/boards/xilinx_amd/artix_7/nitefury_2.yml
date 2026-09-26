@@ -1,0 +1,10 @@
+# nitefury_2: Nitefury II.
+
+Board:
+  id: nitefury_2
+  name: Nitefury II
+  producer: rhs_research
+  chip: xc7a200tfbg484-2
+  bridges:
+  - jtag
+  programmer: vivado_hw

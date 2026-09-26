@@ -1,0 +1,22 @@
+# avnet_picozed_7020: Avnet PicoZed 7020 SoM.
+
+Board:
+  id: avnet_picozed_7020
+  name: Avnet PicoZed 7020 SoM
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/picozed/
+  status: active
+  producer: avnet
+  chip: XC7Z020-1CLG485C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a
+  - marvell_88e1512
+  - emmc_chip_generic

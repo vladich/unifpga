@@ -61,65 +61,69 @@ def test_missing_setup_directory_still_returns_empty(tmp_path, monkeypatch):
 
 
 def test_single_file_registry_rejects_duplicate_ids(tmp_path, monkeypatch):
-    _write(tmp_path, "features.yml", "Features:\n  - Id: repeated\n  - Id: repeated\n")
+    _write(tmp_path, "features.yml", "Features:\n  - id: repeated\n  - id: repeated\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="duplicate Feature Id 'repeated'"):
+    with pytest.raises(config_init.ConfigError, match="duplicate feature id 'repeated'"):
         config_init.read_features()
 
 
 def test_single_file_registry_rejects_blank_id(tmp_path, monkeypatch):
-    _write(tmp_path, "features.yml", "Features:\n  - Id: '  '\n")
+    _write(tmp_path, "features.yml", "Features:\n  - id: '  '\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="nonempty string Id"):
+    with pytest.raises(config_init.ConfigError, match="nonempty string id"):
         config_init.read_features()
 
 
-@pytest.mark.parametrize("kind, path, list_name, reader", [
-    ("board", "boards", "Boards", config_init.read_boards_catalog),
-    ("chip", "chips", "Chips", config_init.read_chips),
-])
-def test_family_registries_reject_duplicate_ids(tmp_path, monkeypatch,
-                                                 kind, path, list_name, reader):
-    family = tmp_path / path / "lattice"
+def test_chip_registries_reject_duplicate_ids(tmp_path, monkeypatch):
+    family = tmp_path / "chips" / "lattice"
     family.mkdir(parents=True)
     for name in ("a.yml", "b.yml"):
-        _write(family, name, "Producer: Lattice\nFamily: Test\n{}:\n  - Id: repeated\n"
-               .format(list_name))
+        _write(family, name, "Producer: Lattice\nFamily: Test\nChips:\n  - Id: repeated\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="duplicate {} Id 'repeated'".format(kind)):
-        reader()
+    with pytest.raises(config_init.ConfigError, match="duplicate chip Id 'repeated'"):
+        config_init.read_chips()
 
 
-@pytest.mark.parametrize("path, list_name, reader", [
-    ("boards", "Boards", config_init.read_boards_catalog),
-    ("chips", "Chips", config_init.read_chips),
-])
-def test_family_registries_reject_null_list(tmp_path, monkeypatch,
-                                            path, list_name, reader):
-    family = tmp_path / path / "lattice"
+def test_chip_registries_reject_null_list(tmp_path, monkeypatch):
+    family = tmp_path / "chips" / "lattice"
     family.mkdir(parents=True)
-    _write(family, "bad.yml", "Producer: Lattice\nFamily: Test\n{}: null\n"
-           .format(list_name))
+    _write(family, "bad.yml", "Producer: Lattice\nFamily: Test\nChips: null\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="{} must be a list".format(list_name)):
-        reader()
+    with pytest.raises(config_init.ConfigError, match="Chips must be a list"):
+        config_init.read_chips()
 
 
-@pytest.mark.parametrize("path, list_name, reader", [
-    ("boards", "Boards", config_init.read_boards_catalog),
-    ("chips", "Chips", config_init.read_chips),
-])
-def test_family_registries_require_identity_and_list(tmp_path, monkeypatch,
-                                                     path, list_name, reader):
-    family = tmp_path / path / "lattice"
+def test_chip_registries_require_identity_and_list(tmp_path, monkeypatch):
+    family = tmp_path / "chips" / "lattice"
     family.mkdir(parents=True)
     catalog = _write(family, "bad.yml", "Producer: Lattice\nFamily: Test\n")
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
-    with pytest.raises(config_init.ConfigError, match="{} must be a list".format(list_name)):
-        reader()
-    catalog.write_text("{}: []\n".format(list_name), encoding="utf-8")
+    with pytest.raises(config_init.ConfigError, match="Chips must be a list"):
+        config_init.read_chips()
+    catalog.write_text("Chips: []\n", encoding="utf-8")
     with pytest.raises(config_init.ConfigError, match="needs Producer and Family"):
-        reader()
+        config_init.read_chips()
+
+
+def test_board_files_are_named_after_their_id_and_need_a_family(tmp_path, monkeypatch):
+    """config/boards/<producer>/<family>/<id>.yml: a Board mapping whose id is
+    the file name; the catalogue view needs the chip family of the directory."""
+    family = tmp_path / "boards" / "lattice" / "ice40"
+    family.mkdir(parents=True)
+    monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
+    _write(family, "one.yml", "Board: {id: other, name: One, producer: lattice, chip: X}\n")
+    with pytest.raises(config_init.ConfigError, match="needs a Board mapping whose id is 'one'"):
+        config_init.read_boards()
+    _write(family, "one.yml", "Board: {id: one, name: One, producer: lattice, chip: X}\n")
+    assert config_init.read_boards()["one"]["_family_dir"] == "ice40"
+    with pytest.raises(config_init.ConfigError, match="no chip family config/chips/lattice/ice40.yml"):
+        config_init.read_boards_catalog()
+    chips = tmp_path / "chips" / "lattice"
+    chips.mkdir(parents=True)
+    _write(chips, "ice40.yml", "Producer: Lattice\nFamily: ICE40\nChips: [{Id: X}]\n")
+    entry = config_init.read_boards_catalog()["one"]
+    assert (entry["BoardName"], entry["Chip"], entry["PartFamily"]) == ("One", "X", "ICE40")
+    assert config_init.read_board_pinmap("one") is None          # no banks: a catalogue-only board
 
 
 def test_tinyfpga_bx_uses_lp_hx_family_and_keeps_pinmap():

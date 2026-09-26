@@ -1,0 +1,17 @@
+# lattice_machxo5nx_evn: MachXO5-NX Evaluation Board.
+
+Board:
+  id: lattice_machxo5nx_evn
+  name: MachXO5-NX Evaluation Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/machxo5-nx-development-board
+  producer: lattice
+  chip: LFMXO5-100T-9MG400I
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - microsd_socket
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h
+  - microsd_socket_generic

@@ -1,0 +1,23 @@
+# terasic_de5_net: DE5-Net.
+
+Board:
+  id: terasic_de5_net
+  name: DE5-Net
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=158&No=727
+  producer: terasic
+  chip: 5SGXEA7N2F45C2N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr3_sodimm_socket
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

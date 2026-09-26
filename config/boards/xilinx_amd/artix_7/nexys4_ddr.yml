@@ -1,15 +1,56 @@
 # nexys4_ddr pin map.
 
+
 Board:
   id: nexys4_ddr
-  fpga:
-    producer: "Xilinx (AMD)"
-    family: "Artix 7"
-    part: XC7A100T-1CSG324C
+  name: Nexys 4 DDR
+  product: Nexys 4 DDR
+  summary: Xilinx Artix-7 XC7A100T-1CSG324C (101,440 logic cells); 128 MB DDR2, Quad-SPI flash, 10/100 Ethernet (RMII),
+    16 switches, 16 LEDs, 2 RGB LEDs, 8-digit 7-segment, 5 buttons + CPU reset, 12-bit VGA, PWM audio, PDM microphone,
+    accelerometer, temperature sensor, microSD, USB HID host (PS/2), 4 Pmods + XADC Pmod, USB-UART
+  url: https://digilent.com/reference/programmable-logic/nexys-4-ddr/start
+  producer: digilent
+  chip: xc7a100tcsg324-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - accelerometer
+  - audio_amp_class_d
+  - ddr2_memory
+  - digital_mic_pdm
+  - dip_switches
+  - ethernet_phy_10_100
+  - microsd_socket
+  - qspi_flash
+  - rgb_leds
+  - seven_segment_display
+  - temperature_sensor_external
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  - usb_2_host
+  devices:
+  - cypress_s25fl128s
+  - ftdi_ft2232h
+  - microchip_lan8720a
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - seven_seg_module_shared
+  - vga666_resistor_dac
+  - pwm_audio_inline
+  - micron_mt47h64m16
+  - adi_adxl362
+  - adi_admp421
+  - adi_adt7420
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk100mhz: { pins: E3, frequency_mhz: 100 }
     onboard_switches:
       pins: [J15, L16, M13, R15, R17, T18, U18, R13, T8, U8, R16, T13, H6, U12, U11, V10]
@@ -104,3 +145,88 @@ Board:
       device: {"name": "DDR2 SDRAM 128 MB (MT47H64M16HR-25E)", "kind": "ddr"}
       iostandard: ["DIFF_SSTL18_II", "SSTL18_II"]
       pins: {"addr": ["M4", "P4", "M6", "T1", "L3", "P5", "M2", "N1", "L4", "N5", "R2", "K5", "N6"], "ba": ["P2", "P3", "R1"], "cas_n": "L1", "ck_n": "L5", "ck_p": "L6", "cke": "M1", "cs_n": "K6", "dm": ["T6", "U1"], "dq": ["R7", "V6", "R8", "U7", "V7", "R6", "U6", "R5", "T5", "U3", "V5", "U4", "V4", "T4", "V1", "T3"], "dqs_n": ["V9", "V2"], "dqs_p": ["U9", "U2"], "odt": "M3", "ras_n": "N4", "we_n": "N2"}
+  # ---- drawn: headers and parts; ./unifpga layout draft nexys4_ddr regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: pmod_ja
+      type: pin_row
+      label: PMOD_JA
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_ja
+      pins: {'[0]': 'pmod_ja[0]', '[1]': 'pmod_ja[1]', '[2]': 'pmod_ja[2]', '[3]': 'pmod_ja[3]', '[4]': 'pmod_ja[4]', '[5]': 'pmod_ja[5]', '[6]': 'pmod_ja[6]', '[7]': 'pmod_ja[7]'}
+    - id: pmod_jb
+      type: pin_row
+      label: PMOD_JB
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_jb
+      pins: {'[0]': 'pmod_jb[0]', '[1]': 'pmod_jb[1]', '[2]': 'pmod_jb[2]', '[3]': 'pmod_jb[3]', '[4]': 'pmod_jb[4]', '[5]': 'pmod_jb[5]', '[6]': 'pmod_jb[6]', '[7]': 'pmod_jb[7]'}
+    - id: pmod_jc
+      type: pin_row
+      label: PMOD_JC
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_jc
+      pins: {'[0]': 'pmod_jc[0]', '[1]': 'pmod_jc[1]', '[2]': 'pmod_jc[2]', '[3]': 'pmod_jc[3]', '[4]': 'pmod_jc[4]', '[5]': 'pmod_jc[5]', '[6]': 'pmod_jc[6]', '[7]': 'pmod_jc[7]'}
+    - id: pmod_jd
+      type: pin_row
+      label: PMOD_JD
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_jd
+      pins: {'[0]': 'pmod_jd[0]', '[1]': 'pmod_jd[1]', '[2]': 'pmod_jd[2]', '[3]': 'pmod_jd[3]', '[4]': 'pmod_jd[4]', '[5]': 'pmod_jd[5]', '[6]': 'pmod_jd[6]', '[7]': 'pmod_jd[7]'}
+  parts:
+    - id: clk100mhz
+      label: clk100mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 100}, bind: {clk: clk100mhz}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 16}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 16}, bind: {led: onboard_leds}}
+    - id: rgb_led_16
+      label: rgb led 16
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_16.r, g: onboard_rgb_led_16.g, b: onboard_rgb_led_16.b}}
+    - id: rgb_led_17
+      label: rgb led 17
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_17.r, g: onboard_rgb_led_17.g, b: onboard_rgb_led_17.b}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 8, active: low, digits_active: low}, bind: {segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg], dp: onboard_7seg.dp, digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+    - id: cpu_resetn
+      label: cpu resetn
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 5}, bind: {btn: onboard_buttons}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: pwm_amp
+      label: pwm amp
+      attach: {peripheral: pwm_amp, params: {open_drain: true}, bind: {pwm: onboard_pwm_amp.pwm, sd: onboard_pwm_amp.sd}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: usb_hid
+      label: USB HID host port (keyboard/mouse bridged to a PS/2-style clock/data pair)
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_usb_hid.clk, data: onboard_usb_hid.data}}
+    - id: temp_sensor
+      label: Temperature sensor (I2C)
+      attach: {peripheral: i2c_temperature_sensor, params: {shift: 3}, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
+    - id: accelerometer
+      label: 3-axis accelerometer (SPI)
+      attach: {peripheral: spi_accelerometer, bind: {miso: onboard_accelerometer.miso, mosi: onboard_accelerometer.mosi, sclk: onboard_accelerometer.sclk, csn: onboard_accelerometer.csn}}
+    - id: pmod_jxadc
+      label: 'Pmod header JXADC: XADC analog pairs XA1-XA4 (VAUX 3, 10, 2, 11; usable as digital IO)'
+      attach: {peripheral: xadc_aux, params: {width: 4, channels: [3, 10, 2, 11]}, bind: {p: onboard_pmod_jxadc.xa_p, n: onboard_pmod_jxadc.xa_n}}
+    - id: sdcard
+      label: microSD card slot
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.sck, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.dat[0]', dat3: 'onboard_sdcard.dat[3]', reset: onboard_sdcard.reset}}
+    - id: ethernet
+      label: 10/100 Ethernet PHY (SMSC, RMII)
+      device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
+    - id: qspi_flash
+      label: Quad-SPI flash
+      device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
+    - id: ddr2
+      label: DDR2 SDRAM 128 MB (MT47H64M16HR-25E)
+      device: {kind: ddr, bank: onboard_ddr2}   # no peripheral model yet

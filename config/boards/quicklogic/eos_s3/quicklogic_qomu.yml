@@ -1,0 +1,17 @@
+# quicklogic_qomu: QuickLogic Qomu EOS S3 USB Stick.
+
+Board:
+  id: quicklogic_qomu
+  name: QuickLogic Qomu EOS S3 USB Stick
+  url: https://www.quicklogic.com/products/eos-s3/qomu/
+  status: active
+  producer: quicklogic
+  chip: EOS-S3
+  bridges:
+  - usb-jtag
+  programmer: qorc_flash
+  features:
+  - usb_powered
+  - qspi_flash
+  - user_leds
+  - user_buttons

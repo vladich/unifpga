@@ -2,9 +2,37 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/.../01_学习教程之例程篇.rar (streamed 207 constraint files; 252 signals)
 
+
 Board:
   id: alinx_ax309
-  pinBanks:
+  name: AX309
+  url: https://alinx.com/en/detail/41
+  status: active
+  notes: Alinx revised the AX309 from Cyclone IV (legacy) to Spartan-6 XC6SLX9; this entry reflects the current shipping
+    product.
+  producer: alinx
+  chip: XC6SLX9-2TQG144C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - microsd_socket
+  - sdr_sdram
+  - seven_segment_display
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - winbond_w9825g6kh
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - seven_seg_module_shared
+  banks:
     sys_clk:
       pins: T8
     cpu_resetn:

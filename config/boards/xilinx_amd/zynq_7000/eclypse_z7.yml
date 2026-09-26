@@ -1,15 +1,44 @@
 # eclypse_z7 pin map.
 
+
 Board:
   id: eclypse_z7
-  fpga:
-    producer: "Xilinx (AMD)"
-    family: "Zynq 7000"
-    part: xc7z020clg484-1
+  name: Eclypse Z7
+  product: Eclypse Z7
+  summary: 'Xilinx Zynq-7000 XC7Z020-1CLG484C (85K logic cells); DDR3L (MT41K256M16) on the PS, PS Gigabit Ethernet,
+    USB OTG, microSD, QSPI flash, UART; PL: two SYZYGY (Zmod) ports, 2 Pmods, 2 buttons, 2 RGB LEDs'
+  url: https://digilent.com/reference/programmable-logic/eclypse-z7/start
+  producer: digilent
+  chip: xc7z020clg484-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - rgb_leds
+  - usb_2_otg
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - pmod_connector
+  devices:
+  - cypress_s25fl128s
+  - ftdi_ft2232h
+  - realtek_rtl8211e
+  - microchip_usb3343
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - issi_is43tr16256a
+  - ti_txs02612
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk: { pins: D18, frequency_mhz: 125 }
     onboard_buttons:
       pins: [C17, C18]
@@ -67,3 +96,79 @@ Board:
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS I2C1", "kind": "other"}
       pins: {"scl_sda": ["MIO12", "MIO13"]}
+  # ---- drawn: headers and parts; ./unifpga layout draft eclypse_z7 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: pmod_jb
+      type: pin_row
+      label: PMOD_JB
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_jb
+      pins: {'[0]': 'pmod_jb[0]', '[1]': 'pmod_jb[1]', '[2]': 'pmod_jb[2]', '[3]': 'pmod_jb[3]', '[4]': 'pmod_jb[4]', '[5]': 'pmod_jb[5]', '[6]': 'pmod_jb[6]', '[7]': 'pmod_jb[7]'}
+    - id: pmod_ja
+      type: pin_row
+      label: PMOD_JA
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_ja
+      pins: {'[0]': 'pmod_ja[0]', '[1]': 'pmod_ja[1]', '[2]': 'pmod_ja[2]', '[3]': 'pmod_ja[3]', '[4]': 'pmod_ja[4]', '[5]': 'pmod_ja[5]', '[6]': 'pmod_ja[6]', '[7]': 'pmod_ja[7]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: rgb_led_1
+      label: rgb led 1
+      variants:
+        - id: led_bank
+          label: led_bank (other pins)
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.b}}
+        - id: led_bank_2
+          label: led_bank (other pins)
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.g}}
+        - id: led_bank_3
+          label: led_bank (other pins)
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_1.r}}
+    - id: rgb_led_0
+      label: rgb led 0
+      variants:
+        - id: led_bank
+          label: led_bank (other pins)
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.b}}
+        - id: led_bank_2
+          label: led_bank (other pins)
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.g}}
+        - id: led_bank_3
+          label: led_bank (other pins)
+          attach: {peripheral: led_bank, params: {width: 1}, bind: {led: onboard_rgb_led_0.r}}
+    - id: syzygy_a
+      label: SYZYGY port A (Zmod port A; 8 differential pairs, 2 clock pairs, 12 single-ended)
+      device: {kind: header, bank: syzygy_a}   # no peripheral model yet
+    - id: syzygy_b
+      label: SYZYGY port B (Zmod port B; 8 differential pairs, 2 clock pairs, 12 single-ended)
+      device: {kind: header, bank: syzygy_b}   # no peripheral model yet
+    - id: crypto
+      label: Crypto authentication chip SDA
+      device: {kind: other, bank: onboard_crypto}   # no peripheral model yet
+    - id: mcu_rsvd
+      label: Reserved lines to the platform MCU (mcu_rsvd)
+      device: {kind: other, bank: onboard_mcu_rsvd}   # no peripheral model yet
+    - id: ps_ethernet
+      label: PS Gigabit Ethernet (GEM0, RGMII PHY)
+      device: {kind: ethernet, bank: onboard_ps_ethernet}   # no peripheral model yet
+    - id: ps_usb
+      label: PS USB 2.0 OTG (USB0, ULPI PHY)
+      device: {kind: other, bank: onboard_ps_usb}   # no peripheral model yet
+    - id: ps_sdcard
+      label: PS microSD slot (SD0)
+      device: {kind: sdcard, bank: onboard_ps_sdcard}   # no peripheral model yet
+    - id: ps_qspi_flash
+      label: PS Quad-SPI flash (boot)
+      device: {kind: flash, bank: onboard_ps_qspi_flash}   # no peripheral model yet
+    - id: ps_uart
+      label: PS UART0 (the board USB-UART; the bridge is not named in the preset)
+      device: {kind: uart, bank: onboard_ps_uart}   # no peripheral model yet
+    - id: ps_i2c1
+      label: PS I2C1
+      device: {kind: other, bank: onboard_ps_i2c1}   # no peripheral model yet

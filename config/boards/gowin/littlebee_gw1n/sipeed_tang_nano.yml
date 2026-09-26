@@ -4,9 +4,32 @@
 #   https://github.com/sipeed/Tang-Nano-examples/blob/master/example_led/led_prj/src/led_prj.cst
 #   https://github.com/sipeed/Tang-Nano-examples/blob/master/nano/src/nano.cst
 
+
 Board:
   id: sipeed_tang_nano
-  pinBanks:
+  name: Sipeed Tang Nano
+  product: Tang Nano
+  summary: Gowin GW1N-LV1QN48C6/I5 (GW1N-1, 1152 LUT4, 72 kbit BSRAM, 96 kbit user flash, 1 PLL) on board 2704; external
+    64 Mbit QSPI PSRAM (IPS6404L-SQ), 24 MHz clock from the CH552T USB-JTAG/UART bridge, RGB LED, 2 buttons, 40-pin
+    RGB LCD FPC, two 20-pin headers
+  url: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano/Nano.html
+  status: active
+  producer: sipeed
+  chip: GW1N-LV1QN48C6/I5
+  bridges:
+  - usb-jtag
+  programmer: gowin_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - hyperram
+  - user_leds
+  - user_buttons
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - usb_powered
+  - parallel_lcd
+  banks:
     sys_clk:
       pins: 35
     cpu_resetn:

@@ -1,0 +1,28 @@
+# htg_zrf16: HTG-ZRF16 RFSoC 16ADC/16DAC ZU29DR.
+
+Board:
+  id: htg_zrf16
+  name: HTG-ZRF16 RFSoC 16ADC/16DAC ZU29DR
+  url: https://www.hitechglobal.com/Boards/16ADC-DAC_Zynq_RFSOC.htm
+  status: active
+  producer: hitech_global
+  chip: XCZU29DR-2FFVF1760E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - marvell_88e1512
+  - microsd_socket_generic

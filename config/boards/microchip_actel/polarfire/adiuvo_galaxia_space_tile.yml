@@ -1,0 +1,16 @@
+# adiuvo_galaxia_space_tile: Galaxia Space Tile.
+
+Board:
+  id: adiuvo_galaxia_space_tile
+  name: Galaxia Space Tile
+  url: https://www.adiuvoengineering.com/product-page/galaxia-space-tile
+  status: active
+  notes: Catalog Chip MPF300T-FCG484E may be incorrect — Adiuvo product docs (DesignNews/EE Journal) describe Galaxia
+    as Lattice Certus-NX LFD2NX-40 with 128Mb NOR + 256Kb MRAM. Verify before relying on the recorded Chip.
+  producer: adiuvo
+  chip: MPF300T-FCG484E
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - jtag_header

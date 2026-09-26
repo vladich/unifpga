@@ -1,0 +1,22 @@
+# bittware_520n_mx: BittWare 520N-MX Stratix 10 MX PCIe Card (HBM2).
+
+Board:
+  id: bittware_520n_mx
+  name: BittWare 520N-MX Stratix 10 MX PCIe Card (HBM2)
+  url: https://www.bittware-molex.com/products/520n-mx/
+  status: active
+  notes: 'BittWare lists it as a legacy product: still sold, not recommended for new designs.'
+  producer: bittware
+  chip: 1SM21CHU2F53E2VG
+  bridges:
+  - pcie-jtag
+  programmer: quartus_pgm
+  features:
+  - hbm2e_in_package
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342

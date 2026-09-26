@@ -1,13 +1,32 @@
 # sipeed_lichee_tang pin map, from its board inventory (tools/inventory.py; the sources are in
 # the board-sources registry entry).
 
+
 Board:
   id: sipeed_lichee_tang
-  fpga:
-    producer: "Anlogic"
-    family: "Eagle EG4"
-    part: "EG4S20BG256"
-  pinBanks:
+  name: Sipeed Lichee Tang
+  product: Lichee Tang (Tang Primer)
+  summary: Anlogic EG4S20BG256 (20K LUT, 64 Mbit SDRAM in package, 12-bit ADC); 24 MHz clock, GD32F150 USB-JTAG/UART,
+    RGB LED, 2 keys, config SPI flash + user SPI flash, microSD, DVP camera FPC-24P, RGB LCD FPC-40P + NS2009 touch,
+    2x SIP40 side rows (header + castellated)
+  url: https://wiki.sipeed.com/hardware/en/tang/Tang-primer/Tang-primer.html
+  producer: sipeed
+  chip: EG4S20BG256
+  bridges:
+  - jtag
+  programmer: td_pgm
+  features:
+  - usb_jtag_bridge
+  - user_leds
+  - user_buttons
+  - qspi_flash
+  - microsd_socket
+  - parallel_camera_input
+  - parallel_lcd
+  - adc_chip
+  devices:
+  - ftdi_ft2232h
+  banks:
     onboard_clk24:   # 24 MHz oscillator
       device: {"name": "24 MHz oscillator", "kind": "clock"}
       frequency_mhz: 24

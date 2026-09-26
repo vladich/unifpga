@@ -1,0 +1,16 @@
+# vicharak_shrike_lite: Vicharak Shrike-Lite.
+
+Board:
+  id: vicharak_shrike_lite
+  name: Vicharak Shrike-Lite
+  url: https://store.vicharak.in/?product=shrike
+  status: active
+  producer: vicharak
+  chip: SLG47910V
+  bridges:
+  - usb-jtag
+  programmer: openFPGALoader
+  features:
+  - pmod_connector
+  - user_leds
+  - usb_powered

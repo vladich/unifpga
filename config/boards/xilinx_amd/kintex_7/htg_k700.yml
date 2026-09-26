@@ -1,0 +1,31 @@
+# htg_k700: HTG-K700 Kintex-7 PCIe Dev Board K410T.
+
+Board:
+  id: htg_k700
+  name: HTG-K700 Kintex-7 PCIe Dev Board K410T
+  url: https://www.hitechglobal.com/Boards/Kintex-7_PCIE.htm
+  status: active
+  producer: hitech_global
+  chip: XC7K410T-2FFG900C
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - silabs_si570
+  - micron_n25q256a
+  - ddr3_sodimm_socket
+  - marvell_88e1512
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,16 @@
+# bunnie_precursor_ec: Precursor EC (iCE40UP5K co-controller).
+
+Board:
+  id: bunnie_precursor_ec
+  name: Precursor EC (iCE40UP5K co-controller)
+  url: https://www.crowdsupply.com/sutajio-kosagi/precursor
+  status: active
+  producer: bunnie_studios
+  chip: iCE40UP5K-SG48
+  bridges:
+  - jtag
+  programmer: iceprog
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - spi_flash

@@ -1,0 +1,20 @@
+# lattice_machxo3d_breakout: MachXO3D Breakout Board.
+
+Board:
+  id: lattice_machxo3d_breakout
+  name: MachXO3D Breakout Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/machxo3d_breakout_board
+  status: active
+  producer: lattice
+  chip: LCMXO3D-9400HC-5BG256C
+  bridges:
+  - jtag
+  programmer: diamond_pgm
+  features:
+  - qspi_flash
+  - user_leds
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h

@@ -1,0 +1,15 @@
+# xilinx_vcu1525: VCU1525.
+
+Board:
+  id: xilinx_vcu1525
+  name: VCU1525
+  url: https://www.xilinx.com/products/boards-and-kits/vcu1525-a.html
+  producer: xilinx_amd
+  chip: XCVU9P-L2FSGD2104E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  devices:
+  - ddr4_sodimm_socket

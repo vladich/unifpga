@@ -1,0 +1,26 @@
+# edge_zynq_soc: EDGE Zynq SoC (7010/7020).
+
+Board:
+  id: edge_zynq_soc
+  name: EDGE Zynq SoC (7010/7020)
+  url: https://allaboutfpga.com/product/edge-zynq-soc-fpga-development-board/
+  status: active
+  producer: invent_logics
+  chip: XC7Z020-1CLG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - hdmi_output
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - microsd_socket
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - seven_segment_display
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_powered

@@ -1,0 +1,26 @@
+# avnet_versal_vmk180_eval_kit: Avnet VMK180 Versal Premium Eval Kit.
+
+Board:
+  id: avnet_versal_vmk180_eval_kit
+  name: Avnet VMK180 Versal Premium Eval Kit
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/versal-evaluation-platforms/
+  status: preview
+  producer: avnet
+  chip: XCVM1802-2MSEVSVA2197
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - microsd_socket
+  - pcie_edge_connector
+  - qsfp_dd_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - micron_mt40a256m16
+  - silabs_si5342
+  - marvell_88e1512
+  - ftdi_ft4232h

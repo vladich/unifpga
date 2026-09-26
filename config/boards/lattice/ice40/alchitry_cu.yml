@@ -2,9 +2,17 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/alchitry_cu.py
 
+
 Board:
   id: alchitry_cu
-  pinBanks:
+  name: Alchitry Cu
+  url: https://alchitry.com/boards/cu
+  producer: alchitry
+  chip: iCE40HX8K-CB132
+  bridges:
+  - jtag
+  programmer: iceprog
+  banks:
     sys_clk:
       pins: P7
     cpu_resetn:

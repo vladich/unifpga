@@ -1,0 +1,31 @@
+# pangomicro_pangu_50k_devkit: Pangu 50K Development Board (盘古50K).
+
+Board:
+  id: pangomicro_pangu_50k_devkit
+  name: Pangu 50K Development Board (盘古50K)
+  url: https://www.pangomicro.com/open/4276.html
+  status: active
+  notes: Pango-branded; 4x HSST 6.375 Gbps; 2x GbE; dual SFP.
+  producer: pangomicro
+  chip: PGL50H-6IFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - pmod_connector
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

@@ -1,0 +1,39 @@
+# terasic_de10_standard: DE10-Standard.
+
+Board:
+  id: terasic_de10_standard
+  name: DE10-Standard
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=1081
+  producer: terasic
+  chip: 5CSXFC6D6F31C6N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - accelerometer
+  - adc_chip
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - micron_mt41k256m16
+  - winbond_w9825g6kh
+  - adi_ssm2603
+  - adi_adv7123
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - adi_adxl345
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - ti_adc128s022

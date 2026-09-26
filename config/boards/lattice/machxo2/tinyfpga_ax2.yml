@@ -1,0 +1,13 @@
+# tinyfpga_ax2: TinyFPGA AX2.
+
+Board:
+  id: tinyfpga_ax2
+  name: TinyFPGA AX2
+  aliases:
+  - tinyfpga_a2
+  url: https://tinyfpga.com/a-series-guide.html
+  producer: tinyfpga
+  chip: LCMXO2-1200HC-4SG32C
+  bridges:
+  - ft2232h-jtag
+  programmer: openFPGALoader

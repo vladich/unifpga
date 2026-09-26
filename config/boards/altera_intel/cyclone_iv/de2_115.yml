@@ -1,12 +1,49 @@
 # de2_115 pin map.
 
+
 Board:
   id: de2_115
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone IV"
-    part: EP4CE115F29C7
-
+  name: DE2-115
+  product: DE2-115 Development and Education Board
+  summary: Cyclone IV E EP4CE115F29C7 (114,480 LEs); 128 MB SDRAM, 2 MB SRAM, 8 MB flash, I2C EEPROM; VGA (ADV7123),
+    WM8731 audio, ADV7180 TV decoder, 2x Gigabit Ethernet, CY7C67200 USB, IR, RS-232, PS/2, SD, 16x2 LCD, HSMC, 2x20
+    GPIO, 8x 7-seg, 18 SW, 4 KEY, 27 LEDs
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=139&No=502
+  producer: terasic
+  chip: EP4CE115F29C7
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - audio_codec
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_input
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  - character_lcd
+  - ps2_port
+  - analog_video_decoder
+  - ir_receiver
+  - sram
+  - nor_flash
+  - sd_card_socket
+  devices:
+  - winbond_w9825g6kh
+  - wolfson_wm8731
+  - adi_adv7123
+  - adi_adv7611
+  - marvell_88e1111
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - adi_adv7180
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   toolchain_options:
@@ -14,7 +51,7 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
-  pinBanks:
+  banks:
     clk50mhz: { pins: Y2, frequency_mhz: 50, iostandard: 3.3-V LVTTL }
     onboard_buttons:
       iostandard: 2.5 V
@@ -211,3 +248,100 @@ Board:
       device: {"name": "SD card socket", "kind": "sdcard"}
       iostandard: "3.3V"
       pins: {"SD_CLK": "AE13", "SD_CMD": "AD14", "SD_DAT": ["AE14", "AF13", "AB14", "AC14"], "SD_WP_N": "AF14"}
+  # ---- drawn: headers and parts; ./unifpga layout draft de2_115 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]', '[20]': 'gpio[20]', '[21]': 'gpio[21]', '[22]': 'gpio[22]', '[23]': 'gpio[23]', '[24]': 'gpio[24]', '[25]': 'gpio[25]', '[26]': 'gpio[26]', '[27]': 'gpio[27]', '[28]': 'gpio[28]', '[29]': 'gpio[29]', '[30]': 'gpio[30]', '[31]': 'gpio[31]', '[32]': 'gpio[32]', '[33]': 'gpio[33]', '[34]': 'gpio[34]', '[35]': 'gpio[35]'}
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 18}, bind: {sw: onboard_switches}}
+    - id: leds_green
+      label: leds green
+      attach: {peripheral: led_bank, params: {width: 9}, bind: {led: onboard_leds_green}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 18}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_per_digit, params: {digits: 8, segs: 7}, bind: {hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5, onboard_7seg.hex6, onboard_7seg.hex7]}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 8, bits_g: 8, bits_b: 8, pin_bits_r: 8, pin_bits_g: 8, pin_bits_b: 8, color_depth: 888, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs, clk: onboard_vga.clk, blank_n: onboard_vga.blank_n}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: audio_codec
+      label: audio codec
+      attach: {peripheral: wm8731_i2s_out, bind: {xck: onboard_audio_codec.xck, bclk: onboard_audio_codec.bclk, dac_lrck: onboard_audio_codec.dac_lrck, dac_dat: onboard_audio_codec.dac_dat, i2c_sclk: onboard_i2c.sclk, i2c_sdat: onboard_i2c.sdat}}
+    - id: lcd
+      label: Character LCD module (16x2)
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.LCD_RS, e: onboard_lcd.LCD_EN, d: ['onboard_lcd.LCD_DATA[4]', 'onboard_lcd.LCD_DATA[5]', 'onboard_lcd.LCD_DATA[6]', 'onboard_lcd.LCD_DATA[7]'], rw: onboard_lcd.LCD_RW}}
+    - id: ps2
+      label: PS/2 port (primary)
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.PS2_CLK, data: onboard_ps2.PS2_DAT}}
+    - id: irda
+      label: IR receiver
+      attach: {peripheral: ir_receiver, bind: {ir: onboard_irda.IRDA_RXD}}
+    - id: sdram
+      label: SDRAM (128 MB, 32-bit)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 32, col_bits: 10}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: onboard_sdram.DRAM_DQM}}
+    - id: clk2_50mhz
+      label: CLOCK2_50 (50 MHz)
+      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
+    - id: clk3_50mhz
+      label: CLOCK3_50 (50 MHz)
+      device: {kind: clock, bank: onboard_clk3_50mhz}   # no peripheral model yet
+    - id: sma_clkout
+      label: SMA clock output
+      device: {kind: clock, bank: onboard_sma_clkout}   # no peripheral model yet
+    - id: sma_clkin
+      label: SMA clock input
+      device: {kind: clock, bank: onboard_sma_clkin}   # no peripheral model yet
+    - id: hsmc
+      label: HSMC connector
+      device: {kind: header, bank: hsmc}   # no peripheral model yet
+    - id: ex_io
+      label: Extended I/O header (EX_IO, JP4 2x7)
+      device: {kind: header, bank: ex_io}   # no peripheral model yet
+    - id: ps2_secondary
+      label: PS/2 port (secondary, via Y-cable)
+      device: {kind: ps2, bank: onboard_ps2_secondary}   # no peripheral model yet
+    - id: ethernet0
+      label: Gigabit Ethernet PHY 0 (88E1111)
+      device: {kind: ethernet, bank: onboard_ethernet0}   # no peripheral model yet
+    - id: ethernet1
+      label: Gigabit Ethernet PHY 1 (88E1111)
+      device: {kind: ethernet, bank: onboard_ethernet1}   # no peripheral model yet
+    - id: enetclk_25mhz
+      label: Ethernet 25 MHz clock (ENETCLK_25)
+      device: {kind: clock, bank: onboard_enetclk_25mhz}   # no peripheral model yet
+    - id: tv_decoder
+      label: TV decoder (ADV7180)
+      device: {kind: video_decoder, bank: onboard_tv_decoder}   # no peripheral model yet
+    - id: usb
+      label: USB host/device (CY7C67200)
+      device: {kind: usb, bank: onboard_usb}   # no peripheral model yet
+    - id: sram
+      label: SRAM (2 MB, 16-bit)
+      attach: {peripheral: async_sram, params: {addr_bits: 20}, bind: {a: onboard_sram.SRAM_ADDR, d: onboard_sram.SRAM_DQ, ce_n: onboard_sram.SRAM_CE_N, oe_n: onboard_sram.SRAM_OE_N, we_n: onboard_sram.SRAM_WE_N, lb_n: onboard_sram.SRAM_LB_N, ub_n: onboard_sram.SRAM_UB_N}}
+    - id: flash
+      label: Flash memory (8 MB, 8-bit)
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet
+    - id: eeprom
+      label: EEPROM (I2C)
+      device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
+    - id: sdcard
+      label: SD card socket
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: 'onboard_sdcard.SD_DAT[0]', dat3: 'onboard_sdcard.SD_DAT[3]'}}

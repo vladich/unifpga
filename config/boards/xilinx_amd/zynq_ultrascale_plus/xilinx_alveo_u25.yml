@@ -1,0 +1,15 @@
+# xilinx_alveo_u25: Alveo U25.
+
+Board:
+  id: xilinx_alveo_u25
+  name: Alveo U25
+  url: https://www.xilinx.com/products/boards-and-kits/alveo/u25.html
+  producer: xilinx_amd
+  chip: XCU25
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  devices:
+  - ddr4_sodimm_socket

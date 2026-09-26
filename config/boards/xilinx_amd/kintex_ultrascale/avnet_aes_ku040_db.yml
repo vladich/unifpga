@@ -2,9 +2,33 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/avnet_aesku40.py
 
+
 Board:
   id: avnet_aes_ku040_db
-  pinBanks:
+  name: Kintex UltraScale KU040 Development Board
+  status: eol
+  producer: avnet
+  chip: XCKU040-1FBVA676C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - hdmi_output
+  - sfp_cage
+  - fmc_hpc
+  - pmod_connector
+  - barrel_jack_input
+  devices:
+  - micron_mt40a256m16
+  - ddr4_sodimm_socket
+  - silabs_si570
+  - ftdi_ft2232h
+  banks:
     cpu_resetn:
       pins: N24
     onboard_uart:

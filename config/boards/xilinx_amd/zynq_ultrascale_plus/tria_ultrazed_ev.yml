@@ -1,0 +1,19 @@
+# tria_ultrazed_ev: Tria UltraZed-EV SOM.
+
+Board:
+  id: tria_ultrazed_ev
+  name: Tria UltraZed-EV SOM
+  url: https://www.tria-technologies.com/product/ultrazed-ev/
+  status: active
+  producer: tria_technologies
+  chip: XCZU7EV-FBVB900
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - jtag_header

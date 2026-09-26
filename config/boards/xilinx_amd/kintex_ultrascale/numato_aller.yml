@@ -2,9 +2,30 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/numato_aller.py
 
+
 Board:
   id: numato_aller
-  pinBanks:
+  name: Aller
+  status: eol
+  producer: numato_lab
+  chip: XCKU040-1FBVA676C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - pcie_edge_connector
+  - qspi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - micron_n25q128a
+  - ddr3_sodimm_socket
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: W19
     onboard_leds:

@@ -1,0 +1,19 @@
+# tria_ultrazed_eg: Tria UltraZed-EG SOM.
+
+Board:
+  id: tria_ultrazed_eg
+  name: Tria UltraZed-EG SOM
+  url: https://www.tria-technologies.com/product/ultrazed-eg/
+  status: active
+  producer: tria_technologies
+  chip: XCZU3EG-1SFVA625
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - usb_2_otg
+  - jtag_header

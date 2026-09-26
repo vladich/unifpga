@@ -1,0 +1,33 @@
+# intel_stratixv_advanced_systems_devkit: Stratix V Advanced Systems Development Kit.
+
+Board:
+  id: intel_stratixv_advanced_systems_devkit
+  name: Stratix V Advanced Systems Development Kit
+  status: eol
+  producer: intel_altera
+  chip: 5SGXEA7N2F45C2N
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_10gbe_sfp
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - pcie_endpoint
+  - qsfp_cage
+  - sfp_cage
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr3_sodimm_socket
+  - micron_mt41k256m16
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - marvell_88e1116r
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

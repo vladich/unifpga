@@ -1,0 +1,18 @@
+# avnet_ve2302_som: Versal VE2302 SOM.
+
+Board:
+  id: avnet_ve2302_som
+  name: Versal VE2302 SOM
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/versal-ve2302/ve2302-som
+  status: active
+  producer: avnet
+  chip: XCVE2302-1LSESFVA784
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - lpddr4_memory
+  - emmc_flash
+  - qspi_flash
+  devices:
+  - emmc_chip_generic

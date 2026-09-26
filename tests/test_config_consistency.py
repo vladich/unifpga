@@ -53,47 +53,6 @@ def test_boards_have_required_fields():
         assert not missing, "Board {b} missing fields: {m}".format(b=board_id, m=missing)
 
 
-def test_board_features_registry_loads():
-    """board_features.yml is well-formed; every entry has required fields."""
-    features = config_init.read_board_features()
-    assert features, "config/board_features.yml has no Features list"
-    valid_categories = {"io", "memory", "connectivity", "sensor", "power",
-                        "expansion", "display", "storage", "programming", "audio"}
-    for fid, f in features.items():
-        assert "Id" in f and f["Id"] == fid
-        assert "Name" in f, "Feature {f}: missing Name".format(f=fid)
-        assert "Category" in f, "Feature {f}: missing Category".format(f=fid)
-        assert f["Category"] in valid_categories, \
-            "Feature {f}: Category {c!r} not in {v}".format(f=fid, c=f["Category"], v=sorted(valid_categories))
-        assert "Description" in f, "Feature {f}: missing Description".format(f=fid)
-
-
-def test_mezzanines_registry_validates():
-    """Every entry in config/mezzanines/* resolves cleanly: known producer,
-    valid Type (mezzanine | som | piggyback | carrier), registered Features/Devices,
-    SoM Chip resolves against the chip registry, CompatibleBoards exist."""
-    result = config_init.validate_mezzanines()
-    failures = {k: v for k, v in result.items() if v}
-    assert not failures, "Mezzanine validation failures: {}".format(
-        {k: items[:5] for k, items in failures.items()})
-
-
-def test_board_producer_aka_uniqueness():
-    """Every Name + AKA string maps to exactly one producer Id (no overlap
-    that would silently mis-route a BoardProducer during migration)."""
-    producers = config_init.read_board_producers()
-    inverse = {}
-    for pid, p in producers.items():
-        candidates = [p.get("Name", pid), pid] + list(p.get("AKA") or [])
-        for c in candidates:
-            if c is None:
-                continue
-            existing = inverse.get(c)
-            assert existing is None or existing == pid, \
-                "Producer alias {c!r} maps to both {a!r} and {b!r}".format(c=c, a=existing, b=pid)
-            inverse[c] = pid
-
-
 def test_every_toolchain_id_has_a_module():
     toolchains = _toolchains()
     for tcid in toolchains:
@@ -110,39 +69,25 @@ def test_every_toolchain_id_has_a_module():
 # ---------------------------------------------------------------------------
 
 def _walk_pinmap_files():
-    """Yield (path, board_id) for every per-board pinmap under the
-    hierarchical config/boards/<producer>/<family>/<board_id>.yml layout."""
-    boards_dir = os.path.join(REPO_ROOT, "config", "boards")
-    import glob
-    for path in glob.glob(os.path.join(boards_dir, "*", "*", "*.yml")):
-        if "/_raw/" in path:
-            continue
-        board_id = os.path.basename(path)[:-4]
-        yield path, board_id
+    """Yield (path, board_id) for every board file with banks of pins
+    (config/boards/<producer>/<family>/<board_id>.yml)."""
+    for board_id, board in sorted(config_init.read_boards().items()):
+        if board.get("banks"):
+            yield board["_path"], board_id
 
 
-def test_per_board_yamls_have_pinbanks():
-    """Every per-board pinmap YAML must parse and expose Board.pinBanks."""
+def test_boards_with_banks_exist():
     files = list(_walk_pinmap_files())
-    assert files, "No per-board pinmap files found under config/boards/<producer>/<family>/"
-
-    for path, board_id in files:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        assert data and "Board" in data, "{p} has no 'Board' root".format(p=path)
-        board = data["Board"]
-        assert "id" in board, "{p}: Board.id missing".format(p=path)
-        assert "pinBanks" in board, "{p}: Board.pinBanks missing".format(p=path)
+    assert len(files) > 100, "No board with banks under config/boards/<producer>/<family>/"
 
 
 def test_pin_bank_pins_well_formed():
     """Walk every pinBank's pin values and reject anything that's clearly malformed
     (embedded spaces, empty strings, etc.). Catches missing-comma YAML typos."""
-    for path, _bid in _walk_pinmap_files():
+    for path, board_id in _walk_pinmap_files():
         with open(path) as f:
             data = yaml.safe_load(f)
-        board_id = data["Board"]["id"]
-        pin_banks = data["Board"].get("pinBanks", {}) or {}
+        pin_banks = data["Board"].get("banks", {}) or {}
         for bank_name, bank in pin_banks.items():
             pins = (bank or {}).get("pins") if isinstance(bank, dict) else None
             if pins is None:

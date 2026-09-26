@@ -1,0 +1,22 @@
+# enclustra_mercury_sa2: Enclustra Mercury SA2 Cyclone V SoC SoM (HPS+FPGA).
+
+Board:
+  id: enclustra_mercury_sa2
+  name: Enclustra Mercury SA2 Cyclone V SoC SoM (HPS+FPGA)
+  url: https://www.enclustra.com/en/products/system-on-chip-modules/mercury-sa2/
+  status: active
+  producer: enclustra
+  chip: 5CSXFC6D6F31I7N
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  devices:
+  - micron_mt41k256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - emmc_chip_generic

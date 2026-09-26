@@ -2,9 +2,39 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/digilent_atlys.py
 
+
 Board:
   id: digilent_atlys
-  pinBanks:
+  name: Atlys
+  url: https://digilent.com/reference/programmable-logic/atlys/start
+  producer: digilent
+  chip: XC6SLX45-3CSG324C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - audio_codec
+  - ddr2_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - qspi_flash
+  - usb_2_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q128a
+  - microchip_pic24fj128_usb_host
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - micron_mt47h64m16
+  - marvell_88e1111
+  - ti_tmds141
+  - nsc_lm4550_ac97
+  - exar_xr21v1410
+  banks:
     sys_clk:
       pins: L15
     cpu_resetn:

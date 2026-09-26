@@ -1,0 +1,20 @@
+# trenz_te0600: TE0600 GigaBee Spartan-6.
+
+Board:
+  id: trenz_te0600
+  name: TE0600 GigaBee Spartan-6
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE0600-Spartan-6-Ethernet/
+  status: active
+  producer: trenz_electronic
+  chip: XC6SLX150-3FGG484I
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - ethernet_phy_gigabit
+  - jtag_header
+  devices:
+  - samsung_k4b_ddr3_generic
+  - micron_n25q128a

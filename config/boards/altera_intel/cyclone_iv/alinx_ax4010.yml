@@ -1,7 +1,39 @@
 # alinx_ax4010 pin map.
 
+
 Board:
   id: alinx_ax4010
+  name: Alinx AX4010
+  product: AX4010 (ALINX / Heijin Cyclone IV development board)
+  summary: Intel/Altera Cyclone IV E EP4CE10F17C8 (10,320 LEs, 256-ball FBGA) on the AX301 PCB; 256 Mbit SDRAM, 16
+    Mbit SPI flash, 24LC04 EEPROM, DS1302 RTC, CP2102 USB-UART, 16-bit (5-6-5) VGA, microSD (SPI), camera port, 6-digit
+    7-segment, 4 LEDs, 3 keys + reset, buzzer, two 40-pin expansion headers
+  url: https://alinx.com/en/detail/42
+  producer: alinx
+  chip: EP4CE10F17C8
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - microsd_socket
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  - spi_flash
+  - audio_codec
+  devices:
+  - winbond_w9825g6kh
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - seven_seg_module_shared
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -12,7 +44,7 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
-  pinBanks:
+  banks:
     clk: { pins: E1, frequency_mhz: 50 }
     cpu_resetn: { pins: N13, active: low }
     onboard_buttons:
@@ -64,3 +96,58 @@ Board:
     camera_port:   # Camera port (18-pin CMOS camera interface; UG: for an OV5640 module)
       device: {"name": "Camera port (18-pin CMOS camera interface; UG: for an OV5640 module)", "kind": "header"}
       pins: ["F1", "F3", "G1", "F2", "M1", "G2", "J2", "J1", "K2", "K1", "L2", "L1", "N5", "M6", "N6", "M7"]
+  # ---- drawn: headers and parts; ./unifpga layout draft alinx_ax4010 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio_0
+      type: pin_row
+      label: GPIO_0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_0
+      pins: {'[0]': 'gpio_0[0]', '[1]': 'gpio_0[1]', '[2]': 'gpio_0[2]', '[3]': 'gpio_0[3]', '[4]': 'gpio_0[4]', '[5]': 'gpio_0[5]', '[6]': 'gpio_0[6]', '[7]': 'gpio_0[7]', '[8]': 'gpio_0[8]', '[9]': 'gpio_0[9]', '[10]': 'gpio_0[10]', '[11]': 'gpio_0[11]', '[12]': 'gpio_0[12]', '[13]': 'gpio_0[13]', '[14]': 'gpio_0[14]', '[15]': 'gpio_0[15]', '[16]': 'gpio_0[16]', '[17]': 'gpio_0[17]', '[18]': 'gpio_0[18]', '[19]': 'gpio_0[19]', '[20]': 'gpio_0[20]', '[21]': 'gpio_0[21]', '[22]': 'gpio_0[22]', '[23]': 'gpio_0[23]', '[24]': 'gpio_0[24]', '[25]': 'gpio_0[25]', '[26]': 'gpio_0[26]', '[27]': 'gpio_0[27]', '[28]': 'gpio_0[28]', '[29]': 'gpio_0[29]', '[30]': 'gpio_0[30]', '[31]': 'gpio_0[31]', '[32]': 'gpio_0[32]', '[33]': 'gpio_0[33]'}
+    - id: gpio_1
+      type: pin_row
+      label: GPIO_1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_1
+      pins: {'[0]': 'gpio_1[0]', '[1]': 'gpio_1[1]', '[2]': 'gpio_1[2]', '[3]': 'gpio_1[3]', '[4]': 'gpio_1[4]', '[5]': 'gpio_1[5]', '[6]': 'gpio_1[6]', '[7]': 'gpio_1[7]', '[8]': 'gpio_1[8]', '[9]': 'gpio_1[9]', '[10]': 'gpio_1[10]', '[11]': 'gpio_1[11]', '[12]': 'gpio_1[12]', '[13]': 'gpio_1[13]', '[14]': 'gpio_1[14]', '[15]': 'gpio_1[15]', '[16]': 'gpio_1[16]', '[17]': 'gpio_1[17]', '[18]': 'gpio_1[18]', '[19]': 'gpio_1[19]', '[20]': 'gpio_1[20]', '[21]': 'gpio_1[21]', '[22]': 'gpio_1[22]', '[23]': 'gpio_1[23]', '[24]': 'gpio_1[24]', '[25]': 'gpio_1[25]', '[26]': 'gpio_1[26]', '[27]': 'gpio_1[27]', '[28]': 'gpio_1[28]', '[29]': 'gpio_1[29]', '[30]': 'gpio_1[30]', '[31]': 'gpio_1[31]', '[32]': 'gpio_1[32]', '[33]': 'gpio_1[33]'}
+    - id: camera_port
+      type: pin_row
+      label: CAMERA_PORT
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: camera_port
+      pins: {'[0]': 'camera_port[0]', '[1]': 'camera_port[1]', '[2]': 'camera_port[2]', '[3]': 'camera_port[3]', '[4]': 'camera_port[4]', '[5]': 'camera_port[5]', '[6]': 'camera_port[6]', '[7]': 'camera_port[7]', '[8]': 'camera_port[8]', '[9]': 'camera_port[9]', '[10]': 'camera_port[10]', '[11]': 'camera_port[11]', '[12]': 'camera_port[12]', '[13]': 'camera_port[13]', '[14]': 'camera_port[14]', '[15]': 'camera_port[15]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: cpu_resetn
+      label: cpu resetn
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 3}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 4}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 6, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]']}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 5, bits_g: 6, bits_b: 5, pin_bits_r: 5, pin_bits_g: 6, pin_bits_b: 5, color_depth: 565}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: buzzer
+      label: Buzzer (transistor-driven, jumper CB1)
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
+    - id: sdram
+      label: SDRAM HY57V2562GTR (256 Mbit, 16M x 16)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 9}, bind: {clk: onboard_sdram.clk, cke: onboard_sdram.cke, cs_n: onboard_sdram.cs_n, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq, dqm: onboard_sdram.dqm}}
+    - id: sdcard
+      label: Micro SD card slot (SPI mode)
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.sclk, cmd: onboard_sdcard.mosi, dat0: onboard_sdcard.miso, dat3: onboard_sdcard.cs_n}}
+    - id: spi_flash
+      label: SPI configuration flash M25P16 (16 Mbit, EPCS16-compatible)
+      device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet
+    - id: rtc
+      label: Real-time clock DS1302 (CR1220 backup battery)
+      device: {kind: other, bank: onboard_rtc}   # no peripheral model yet

@@ -1,0 +1,20 @@
+# trenz_te0711: TE0711 Artix-7 100T Dual Fast Ethernet SoM.
+
+Board:
+  id: trenz_te0711
+  name: TE0711 Artix-7 100T Dual Fast Ethernet SoM
+  url: https://www.trenz-electronic.de/en/Products/Trenz-Electronic/TE07XX-Artix-7/
+  status: active
+  producer: trenz_electronic
+  chip: XC7A100T-2CSG324I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - ethernet_phy_10_100
+  - jtag_header
+  devices:
+  - micron_mt41k128m16
+  - micron_n25q128a

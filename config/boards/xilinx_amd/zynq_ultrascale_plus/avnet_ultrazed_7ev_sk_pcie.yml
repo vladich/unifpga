@@ -1,0 +1,34 @@
+# avnet_ultrazed_7ev_sk_pcie: UltraZed-EV (ZU7EV) PCIe Carrier Card Kit.
+
+Board:
+  id: avnet_ultrazed_7ev_sk_pcie
+  name: UltraZed-EV (ZU7EV) PCIe Carrier Card Kit
+  status: eol
+  producer: avnet
+  chip: XCZU7EV-1FBVB900I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - pcie_endpoint
+  - sata_host
+  - hdmi_input
+  - hdmi_output
+  - sfp_cage
+  - fmc_hpc
+  - ethernet_phy_gigabit
+  - usb_3_host
+  - usb_uart_bridge
+  - microsd_socket
+  devices:
+  - micron_mt40a256m16
+  - marvell_88e1512
+  - adi_adv7611
+  - adi_adv7511
+  - ti_tmds141
+  - ftdi_ft4232h
+  - emmc_chip_generic
+  - microsd_socket_generic

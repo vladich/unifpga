@@ -1,11 +1,23 @@
 # zeowaa pin map.
 
+
 Board:
   id: zeowaa
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone IV"
-    part: EP4CE6E22C8   # there is no EP4CE5
+  name: Zeowaa A-C4E6
+  product: ALTERA Cyclone IV Board (A-C4E6, EP4CE6E22C8N / EP4CE10E22C8N), www.21eda.net design sold as Zeowaa
+  summary: Cyclone IV E EP4CE6E22C8N (6272 LE; EP4CE10E22C8N option), EQFP-144; M25P16 config flash, AT24C04 EEPROM;
+    12 LEDs, 4 user keys + nCONFIG key, 8-way DIP switch, 8-digit 7-segment (2x4, common anode), 3-bit VGA, RS232
+    (MAX232, DB9), PS/2, LCD1602/12864 socket, buzzer, 28-pin GPIO header, 50 MHz + socketed user oscillator
+  producer: zeowaa
+  chip: EP4CE6E22C8
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - ps2_port
+  - buzzer
+  - eeprom_chip
+  - spi_flash
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -16,7 +28,7 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
-  pinBanks:
+  banks:
     clk: { pins: "23", frequency_mhz: 50 }
     onboard_buttons:
       active: low
@@ -60,3 +72,58 @@ Board:
     onboard_flash:   # M25P16 serial configuration flash U4
       device: {"name": "M25P16 serial configuration flash U4", "kind": "flash"}
       pins: {"dclk": "12", "data0": "13", "asdo": "6", "ncso": "8"}
+  # ---- drawn: headers and parts; ./unifpga layout draft zeowaa regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 8}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 12}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      variants:
+        - id: seven_segment_8digit_shared
+          label: seven_segment_8digit_shared (digits=8)
+          attach: {peripheral: seven_segment_8digit_shared, params: {digits: 8, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+        - id: seven_segment_8digit_shared_2
+          label: seven_segment_8digit_shared (digits=7)
+          attach: {peripheral: seven_segment_8digit_shared, params: {digits: 7, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 1, pin_bits_g: 1, pin_bits_b: 1, color_depth: 444}, bind: {r: ['onboard_vga.rgb[2]'], g: ['onboard_vga.rgb[1]'], b: ['onboard_vga.rgb[0]'], hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: buzzer
+      label: BELL buzzer (PNP Q70)
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.buzzer}}
+    - id: clk_user
+      label: USER oscillator socket (CLK_USER)
+      device: {kind: clock, bank: onboard_clk_user}   # no peripheral model yet
+    - id: ps2
+      label: PS/2 connector
+      attach: {peripheral: ps2_keyboard, bind: {clk: onboard_ps2.clk, data: onboard_ps2.data}}
+    - id: lcd
+      label: LCD1602 / LCD12864 socket (20-pin)
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.rs, e: onboard_lcd.en, d: ['onboard_lcd.d[4]', 'onboard_lcd.d[5]', 'onboard_lcd.d[6]', 'onboard_lcd.d[7]'], rw: onboard_lcd.rw}}
+    - id: eeprom
+      label: AT24C04 EEPROM U4A
+      device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
+    - id: flash
+      label: M25P16 serial configuration flash U4
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

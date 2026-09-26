@@ -1,0 +1,17 @@
+# imperix_bbox_micro: B-Box Micro.
+
+Board:
+  id: imperix_bbox_micro
+  name: B-Box Micro
+  url: https://imperix.com/products/control/power-inverter-controller/
+  status: active
+  producer: imperix
+  chip: XC7Z030-3FBG676E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ethernet_phy_gigabit
+  - usb_uart_bridge
+  - jtag_header
+  - barrel_jack_input

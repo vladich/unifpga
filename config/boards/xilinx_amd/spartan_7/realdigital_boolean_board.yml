@@ -1,0 +1,23 @@
+# realdigital_boolean_board: Boolean Board.
+
+Board:
+  id: realdigital_boolean_board
+  name: Boolean Board
+  url: https://www.realdigital.org/hardware/boolean
+  status: active
+  producer: real_digital
+  chip: XC7S50
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - qspi_flash
+  - usb_2_otg
+  - usb_uart_bridge
+  - usb_powered
+  - user_leds
+  - rgb_leds
+  - user_buttons
+  - pmod_connector

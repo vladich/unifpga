@@ -1,0 +1,19 @@
+# avnet_aes_ultra96: AES-ULTRA96.
+
+Board:
+  id: avnet_aes_ultra96
+  name: AES-ULTRA96
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/ultra96-v2/
+  producer: avnet
+  chip: XCZU3EG-1SBVA484E
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - microsd_socket
+  - usb_uart_bridge
+  devices:
+  - ti_tlv320aic3104
+  - ftdi_ft4232h
+  - microsd_socket_generic

@@ -2,9 +2,38 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/xilinx_ac701.py
 
+
 Board:
   id: xilinx_ac701
-  pinBanks:
+  name: AC701
+  url: https://www.xilinx.com/products/boards-and-kits/ek-a7-ac701-g.html
+  producer: xilinx_amd
+  chip: XC7A200T-2FBG676C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a
+  - marvell_88e1116r
+  - silabs_cp2103
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  banks:
     cpu_resetn:
       pins: U4
     onboard_leds:

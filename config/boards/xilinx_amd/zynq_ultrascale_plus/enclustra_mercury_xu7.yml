@@ -1,0 +1,22 @@
+# enclustra_mercury_xu7: Enclustra Mercury XU7 SoM (legacy, pre-Mercury+).
+
+Board:
+  id: enclustra_mercury_xu7
+  name: Enclustra Mercury XU7 SoM (legacy, pre-Mercury+)
+  url: https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu7/
+  status: eol
+  producer: enclustra
+  chip: XCZU7EV-2FFVC1156I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - ethernet_phy_gigabit
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - emmc_chip_generic

@@ -1,0 +1,25 @@
+# microchip_iglo2_evalkit: IGLOO2 Evaluation Kit.
+
+Board:
+  id: microchip_iglo2_evalkit
+  name: IGLOO2 Evaluation Kit
+  url: https://www.microchip.com/en-us/development-tool/M2GL-EVAL-KIT
+  producer: microchip
+  chip: M2GL010T-1FGG484
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - ethernet_phy_10_100
+  - spi_flash
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - winbond_w25q128
+  - microchip_lan8720a

@@ -1,0 +1,33 @@
+# terasic_agilex5_e065b_modular: Agilex 5 FPGA E-Series 065B Modular Development Kit.
+
+Board:
+  id: terasic_agilex5_e065b_modular
+  name: Agilex 5 FPGA E-Series 065B Modular Development Kit
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=123&No=1382
+  status: active
+  producer: terasic
+  chip: A5ED065BB32AE6SR0
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - dip_switches
+  - displayport_output
+  - fmc_plus
+  - hdmi_output
+  - microsd_socket
+  - mipi_csi2_input
+  - pcie_endpoint
+  - sfp_cage
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - microsd_socket_generic
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - ti_sn75dp159

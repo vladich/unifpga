@@ -1,0 +1,32 @@
+# avnet_k26_starter: Avnet Kria K26 Starter Kit.
+
+Board:
+  id: avnet_k26_starter
+  name: Avnet Kria K26 Starter Kit
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/kria-kr260/
+  status: active
+  producer: avnet
+  chip: XCK26-SFVC784-2LV-C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - displayport_output
+  - usb_3_host
+  - usb_uart_bridge
+  - pmod_connector
+  - mipi_csi2_input
+  - user_buttons
+  - user_leds
+  devices:
+  - realtek_rtl8211fd
+  - ti_tmds141
+  - silabs_cp2108
+  - microsd_socket_generic
+  - emmc_chip_generic

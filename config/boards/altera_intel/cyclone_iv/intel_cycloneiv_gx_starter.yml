@@ -1,0 +1,28 @@
+# intel_cycloneiv_gx_starter: Cyclone IV GX FPGA Starter Kit.
+
+Board:
+  id: intel_cycloneiv_gx_starter
+  name: Cyclone IV GX FPGA Starter Kit
+  status: eol
+  producer: intel_altera
+  chip: EP4CGX150DF31C7N
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr3_memory
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - hdmi_output
+  - ethernet_phy_gigabit
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - pcie_endpoint
+  - fmc_hpc
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

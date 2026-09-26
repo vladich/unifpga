@@ -1,0 +1,23 @@
+# realdigital_urbana: Urbana Board.
+
+Board:
+  id: realdigital_urbana
+  name: Urbana Board
+  url: https://www.realdigital.org/hardware/urbana
+  status: active
+  producer: real_digital
+  chip: XC7S50
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr3_memory
+  - microsd_socket
+  - usb_2_otg
+  - usb_uart_bridge
+  - usb_powered
+  - user_leds
+  - user_buttons
+  - pmod_connector

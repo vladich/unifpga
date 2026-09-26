@@ -1,0 +1,21 @@
+# trenz_te0726_zynqberry: TE0726 ZynqBerry.
+
+Board:
+  id: trenz_te0726_zynqberry
+  name: TE0726 ZynqBerry
+  url: https://shop.trenz-electronic.de/en/TE0726-04-41C94-A-ZynqBerry-SoC-Module-with-AMD-Zynq-7010-1C-Raspberry-Pi-3-compatible
+  producer: trenz_electronic
+  chip: XC7Z010-1CLG225C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_10_100
+  - qspi_flash
+  - usb_2_otg
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q128a
+  - microchip_lan8720a
+  - microchip_usb3343

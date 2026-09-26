@@ -1,0 +1,34 @@
+# efinix_t120_bga324_devkit: Trion T120 BGA324 Development Kit.
+
+Board:
+  id: efinix_t120_bga324_devkit
+  name: Trion T120 BGA324 Development Kit
+  url: https://www.efinixinc.com/products-devkits-triont120bga324.html
+  status: active
+  producer: efinix
+  chip: T120F324C4
+  bridges:
+  - usb-jtag
+  programmer: efinity_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - dip_switches
+  - ethernet_phy_10_100
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - mipi_csi2_input
+  - pmod_connector
+  - raspi_hat_header
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

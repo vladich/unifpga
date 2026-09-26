@@ -1,0 +1,23 @@
+# digilent_basys2: Basys 2.
+
+Board:
+  id: digilent_basys2
+  name: Basys 2
+  url: https://digilent.com/reference/programmable-logic/basys-2/start
+  producer: digilent
+  chip: XC3S250E-CP132
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - seven_segment_display
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - seven_seg_module_shared
+  - vga666_resistor_dac

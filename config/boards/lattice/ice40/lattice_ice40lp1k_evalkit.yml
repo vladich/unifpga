@@ -1,0 +1,15 @@
+# lattice_ice40lp1k_evalkit: iCE40LP1K Evaluation Kit.
+
+Board:
+  id: lattice_ice40lp1k_evalkit
+  name: iCE40LP1K Evaluation Kit
+  url: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/iCE40LP1KEvaluationKit
+  status: active
+  producer: lattice
+  chip: iCE40LP1K-SWG16
+  bridges:
+  - jtag
+  programmer: icecube2_pgm
+  features:
+  - user_leds
+  - usb_powered

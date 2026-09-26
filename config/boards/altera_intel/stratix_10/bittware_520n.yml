@@ -1,0 +1,22 @@
+# bittware_520n: BittWare 520N Stratix 10 GX PCIe Card.
+
+Board:
+  id: bittware_520n
+  name: BittWare 520N Stratix 10 GX PCIe Card
+  url: https://www.bittware-molex.com/products/520n/
+  status: eol
+  producer: bittware
+  chip: 1SG280HU2F50E2VG
+  bridges:
+  - pcie-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - ddr4_sodimm_socket

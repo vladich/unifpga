@@ -1,0 +1,24 @@
+# ulx4m_ls: ULX4M-LS (Lattice SDRAM, CM4-compatible).
+
+Board:
+  id: ulx4m_ls
+  name: ULX4M-LS (Lattice SDRAM, CM4-compatible)
+  url: https://intergalaktik.eu/projects/ulx4m-ls
+  status: active
+  producer: intergalaktik
+  chip: LFE5U-85F-6BG381C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  extra_programmers:
+  - ecpprog[*]
+  features:
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - hdmi_output
+  - user_leds
+  - user_buttons
+  - usb_powered

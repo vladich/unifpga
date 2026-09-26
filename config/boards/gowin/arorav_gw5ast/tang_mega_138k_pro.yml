@@ -1,12 +1,38 @@
 # tang_mega_138k_pro pin map.
 
+
 Board:
   id: tang_mega_138k_pro
-  fpga:
-    producer: Gowin
-    family: AroraV/GW5AST
-    part: GW5AST-LV138FPG676AES
-
+  name: Tang Mega 138k Pro
+  product: Tang Mega 138K Pro Dock (Tang MEGA 138K Pro SOM on TANG MEGA-138K Pro Dock)
+  summary: Gowin GW5AST-LV138FPG676A (138,240 LUT4, 8 SerDes to 12.5 Gb/s, hard PCIe, 2x MIPI D-PHY RX) SOM with 2x
+    4 Gbit DDR3 (32-bit), 2x 128 Mbit SPI NOR; dock with PCIe x4 edge, 2x SFP+, M.2 B-key, RTL8211F RGMII, 2x HDMI/DVI
+    (TX + RX), RGB LCD, DVP + 2x MIPI CSI, microSD, PT8211 audio, soft USB 2.0, BL616 USB-JTAG/UART, 3 Pmods, 40-pin
+    SDRAM header, WS2812, 6 LEDs, 4 keys.
+  aliases:
+  - tang_mega_138k_pro_dock
+  url: https://wiki.sipeed.com/hardware/en/tang/tang-mega-138k/mega-138k-pro.html
+  producer: sipeed
+  chip: GW5AST-LV138FPG676AES
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - microsd_socket
+  - hdmi_input
+  - ddr3_memory
+  - spi_flash
+  - user_leds
+  - user_buttons
+  - adc_chip
+  - addressable_leds
+  - pcie_edge_connector
+  - ethernet_phy_gigabit
+  - audio_dac
+  - parallel_camera_input
+  - fan_header
+  devices:
+  - microsd_socket_generic
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -17,7 +43,7 @@ Board:
       set_device: "GW5AST-LV138FPG676AES -name GW5AST-138 -device_version B"
       options: [use_cpu_as_gpio, use_sspi_as_gpio]
       gprj_device: '<Device name="GW5AST-138B" pn="GW5AST-LV138FPG676AES">gw5ast138b-002</Device>'
-  pinBanks:
+  banks:
     clk: { pins: P16, frequency_mhz: 50 }
     onboard_buttons:
       active: low
@@ -148,3 +174,130 @@ Board:
       device: {"name": "40-pin SDRAM expansion header J23 (2x20, MiSTer-style SDRAM)", "kind": "header"}
       shares: ["onboard_m2", "onboard_pcie"]   # the board multiplexes these pins
       pins: ["U16", "V16", "U15", "V17", "W21", "Y21", "P21", "U17", "P23", "P24", "T23", "R23", "R25", "T25", "W23", "P25", "U24", "V23", "AC26", "U25", "AB25", "AB26", "AA25", "AA24", "Y26", "Y25", "L22", "M24", "W26", "W25", "U26", "V26", "W20", "Y20", "V19", "W19", "U22", "V22"]
+  # ---- drawn: headers and parts; ./unifpga layout draft tang_mega_138k_pro regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: pmod_0
+      type: pin_row
+      label: PMOD_0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_0
+      pins: {'[0]': 'pmod_0[0]', '[1]': 'pmod_0[1]', '[2]': 'pmod_0[2]', '[3]': 'pmod_0[3]', '[4]': 'pmod_0[4]', '[5]': 'pmod_0[5]', '[6]': 'pmod_0[6]', '[7]': 'pmod_0[7]'}
+    - id: pmod_1
+      type: pin_row
+      label: PMOD_1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_1
+      pins: {'[0]': 'pmod_1[0]', '[1]': 'pmod_1[1]', '[2]': 'pmod_1[2]', '[3]': 'pmod_1[3]', '[4]': 'pmod_1[4]', '[5]': 'pmod_1[5]', '[6]': 'pmod_1[6]', '[7]': 'pmod_1[7]'}
+    - id: pmod_2
+      type: pin_row
+      label: PMOD_2
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_2
+      pins: {'[0]': 'pmod_2[0]', '[1]': 'pmod_2[1]', '[2]': 'pmod_2[2]', '[3]': 'pmod_2[3]', '[4]': 'pmod_2[4]', '[5]': 'pmod_2[5]', '[6]': 'pmod_2[6]', '[7]': 'pmod_2[7]'}
+    - id: jtag
+      type: pin_row
+      label: JTAG
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: jtag
+      pins: {'[0]': 'jtag[0]', '[1]': 'jtag[1]', '[2]': 'jtag[2]', '[3]': 'jtag[3]', '[4]': 'jtag[4]', '[5]': 'jtag[5]'}
+    - id: header_40p
+      type: pin_row
+      label: HEADER_40P
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: header_40p
+      pins: {'[0]': 'header_40p[0]', '[1]': 'header_40p[1]', '[2]': 'header_40p[2]', '[3]': 'header_40p[3]', '[4]': 'header_40p[4]', '[5]': 'header_40p[5]', '[6]': 'header_40p[6]', '[7]': 'header_40p[7]', '[8]': 'header_40p[8]', '[9]': 'header_40p[9]', '[10]': 'header_40p[10]', '[11]': 'header_40p[11]', '[12]': 'header_40p[12]', '[13]': 'header_40p[13]', '[14]': 'header_40p[14]', '[15]': 'header_40p[15]', '[16]': 'header_40p[16]', '[17]': 'header_40p[17]', '[18]': 'header_40p[18]', '[19]': 'header_40p[19]', '[20]': 'header_40p[20]', '[21]': 'header_40p[21]', '[22]': 'header_40p[22]', '[23]': 'header_40p[23]', '[24]': 'header_40p[24]', '[25]': 'header_40p[25]', '[26]': 'header_40p[26]', '[27]': 'header_40p[27]', '[28]': 'header_40p[28]', '[29]': 'header_40p[29]', '[30]': 'header_40p[30]', '[31]': 'header_40p[31]', '[32]': 'header_40p[32]', '[33]': 'header_40p[33]', '[34]': 'header_40p[34]', '[35]': 'header_40p[35]', '[36]': 'header_40p[36]', '[37]': 'header_40p[37]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {active: low, width: 4}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 6}, bind: {led: onboard_leds}}
+    - id: lcd
+      label: lcd
+      attach: {peripheral: lcd_480_272, params: {clock_pixel_mhz: 8, bits_r: 6, bits_g: 6, bits_b: 6}, bind: {r: onboard_lcd.r, g: onboard_lcd.g, b: onboard_lcd.b, de: onboard_lcd.de, ck: onboard_lcd.ck}}
+    - id: uart
+      label: BL616 USB-JTAG & UART (USB-C), debug UART
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: audio_dac
+      label: PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30
+      attach: {peripheral: i2s_audio_out, params: {align_right: 1, offset_by_one_cycle: 0}, bind: {bclk: onboard_audio_dac.bck, lrclk: onboard_audio_dac.ws, sdata: onboard_audio_dac.din, pa_en: onboard_audio_dac.pa_en}}
+    - id: ws2812
+      label: WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
+      attach: {peripheral: ws2812, bind: {din: onboard_ws2812.din}}
+    - id: fan
+      label: 4-pin PWM fan connector
+      attach: {peripheral: fan_pwm, bind: {pwm: onboard_fan.pwm, tach: onboard_fan.tach}}
+    - id: hdmi_rx
+      label: DVI/HDMI B (RX) connector J12
+      device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet
+    - id: ddr3
+      label: DDR3 SDRAM 2x H5TQ4G63EFR-RDC (512Mx16 each, 32-bit bus, 1 GB)
+      device: {kind: ddr3, bank: onboard_ddr3}   # no peripheral model yet
+    - id: flash
+      label: SPI NOR flash 128 Mbit (configuration, MSPI)
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet
+    - id: flash_user
+      label: SPI NOR flash 128 Mbit (second, user QSPI; sheet label QSPI_NAND)
+      device: {kind: flash, bank: onboard_flash_user}   # no peripheral model yet
+    - id: som_leds
+      label: SOM configuration LEDs (DONE, READY)
+      attach: {peripheral: led_bank, params: {width: 2}, bind: {led: [onboard_som_leds.done, onboard_som_leds.ready]}}
+    - id: som_buttons
+      label: SOM push buttons (RECONFIG, USR_KEY)
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: [onboard_som_buttons.reconfig_n, onboard_som_buttons.usr_key]}}
+    - id: som_buttons_2
+      label: SOM test-point keys USR_KEY1 / USR_KEY2 (bank 7 pads)
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: [onboard_som_buttons_2.usr_key1, onboard_som_buttons_2.usr_key2]}}
+    - id: adc
+      label: FPGA ADC inputs (ADCT, ADCV; bank 10) to dock ADC connectors J3/J4
+      device: {kind: adc, bank: onboard_adc}   # no peripheral model yet
+    - id: config
+      label: Configuration mode / CFGBVS pins (dock mode resistors)
+      device: {kind: other, bank: onboard_config}   # no peripheral model yet
+    - id: sfp_0
+      label: SFP+ cage 0 (SerDes Q1 lane 0)
+      device: {kind: serdes, bank: onboard_sfp_0}   # no peripheral model yet
+    - id: sfp_1
+      label: SFP+ cage 1 (SerDes Q1 lane 1)
+      device: {kind: serdes, bank: onboard_sfp_1}   # no peripheral model yet
+    - id: pcie
+      label: PCIe x4 edge connector (golden finger, SerDes Q0 lanes 0-3)
+      device: {kind: pcie, bank: onboard_pcie}   # no peripheral model yet
+    - id: clocks
+      label: Q0 REFCLK1 external clock input (IPEX J1/J2)
+      device: {kind: clock, bank: onboard_clocks}   # no peripheral model yet
+    - id: clocks_2
+      label: MS5351M clock synthesizers PLL0/PLL1 (25 MHz crystals; SerDes refclks, user clock)
+      device: {kind: clock, bank: onboard_clocks_2}   # no peripheral model yet
+    - id: ethernet
+      label: RTL8211FI-CG Gigabit Ethernet PHY (RGMII) + RJ45
+      device: {kind: ethernet_rgmii, bank: onboard_ethernet}   # no peripheral model yet
+    - id: m2
+      label: M.2 B-key socket J18 (2230/2242, SerDes Q1 lanes 2-3)
+      device: {kind: serdes, bank: onboard_m2}   # no peripheral model yet
+    - id: sdcard
+      label: microSD card slot J19 (SDIO)
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.d0, dat3: onboard_sdcard.d3}}
+    - id: camera_dvp
+      label: DVP camera connector (FPC 24P, OV5640-style)
+      device: {kind: camera_dvp, bank: onboard_camera_dvp}   # no peripheral model yet
+    - id: mipi_csi_0
+      label: MIPI CSI camera 0 (FPC 24P, MIPI0 D-PHY RX, 4 lanes)
+      device: {kind: other, bank: onboard_mipi_csi_0}   # no peripheral model yet
+    - id: mipi_csi_1
+      label: MIPI CSI camera 1 (FPC 24P, MIPI1 D-PHY RX, 4 lanes)
+      device: {kind: other, bank: onboard_mipi_csi_1}   # no peripheral model yet
+    - id: usb_soft
+      label: Soft USB 2.0 device port (USB-C J5, resistor PHY)
+      device: {kind: usb, bank: onboard_usb_soft}   # no peripheral model yet
+    - id: twi
+      label: 8-way TWI multiplexer (2x 74HC4051) on SYS_TWI
+      device: {kind: other, bank: onboard_twi}   # no peripheral model yet
+    - id: twi_2
+      label: EEPROM ZD24C08A (on TWI mux ch.2)
+      device: {kind: other, bank: onboard_twi_2}   # no peripheral model yet

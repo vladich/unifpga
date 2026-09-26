@@ -1,0 +1,25 @@
+# htg_vsl5: HTG-VSL5 Versal Premium PCIe Gen5.
+
+Board:
+  id: htg_vsl5
+  name: HTG-VSL5 Versal Premium PCIe Gen5
+  url: https://www.hitechglobal.com/Boards/Versal_PCIE_Gen5.htm
+  status: active
+  producer: hitech_global
+  chip: XCVP1502-2MSEVSVA2197
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket

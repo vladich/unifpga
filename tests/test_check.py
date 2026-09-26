@@ -36,13 +36,14 @@ def _catalogue():
                                                "Description": "", "DefunctSince": None, "Notes": None}]},
         "chips/maker/family.yml": {"Producer": "Maker Inc", "Family": "Family", "Description": "",
                                    "DefaultToolchains": ["tool[*]"], "Chips": [{"Id": "CHIP-1"}]},
-        "boards/maker/family.yml": {"Boards": [{"Id": "board", "Chip": "CHIP-1", "BoardProducer": "maker",
-                                                "Programmer": "prog", "Features": ["led_feature"],
-                                                "Devices": [{"Id": "led_device"}]}]},
-        "boards/maker/family/board.yml": {"Board": {"id": "board", "pinBanks": {}}},
-        "layouts/board.yml": {"Layout": {"board": "board",
-                                         "connectors": [{"id": "j1", "type": "pmod_2x6"}],
-                                         "onboard": [{"id": "leds", "attach": {"peripheral": "led"}}]}},
+        "boards/maker/family/board.yml": {"Board": {
+            "id": "board", "name": "Board", "producer": "maker", "chip": "CHIP-1", "programmer": "prog",
+            "features": ["led_feature"], "devices": ["led_device"],
+            "banks": {"leds": {"pins": ["A1", "A2"], "device": {"name": "two LEDs", "kind": "leds"}},
+                      "j1": {"pins": ["B1", "B2"], "device": {"name": "J1", "kind": "header"}}},
+            "layout": {"verified": False, "generated": True},
+            "headers": [{"id": "j1", "type": "pmod_2x6", "label": "J1", "bank": "j1", "pins": {"1": "j1[0]", "2": "j1[1]"}}],
+            "parts": [{"id": "leds", "label": "LEDs", "attach": {"peripheral": "led", "bind": {"led": "leds"}, "params": {"width": 2}}}]}},
         "connectors.yml": {"Connectors": {"pmod_2x6": {"name": "Pmod", "source": "spec", "voltage": 3.3,
                                                        "rows": [[1, 2]], "power": {2: "GND"}}}},
         "capabilities/leds.yml": {"Capability": {
@@ -76,13 +77,16 @@ def _catalogue():
                                      "use": [{"onboard": "leds"},
                                              {"module": "addon", "plug": {"connector": "j1"}}],
                                      "design": {"reset": {"sources": [{"power_up": True}]}}}},
-        "features.yml": {"Features": [{"Id": "led_feature", "Capabilities": ["leds"]}]},
-        "peripheral_devices.yml": {"Devices": [{"Id": "led_device", "Feature": "led_feature",
-                                                "PeripheralDrivers": ["led"]}]},
-        "board_features.yml": {"Features": []},
-        "mezzanines/maker/family.yml": {"Mezzanines": [{"Id": "som", "Producer": "maker", "Chip": "CHIP-1",
-                                                        "Features": ["led_feature"], "Devices": ["led_device"],
-                                                        "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
+        "features.yml": {"Features": [{"id": "led_feature", "name": "LEDs", "category": "io", "description": "",
+                                        "capabilities": ["leds"]}]},
+        "kinds.yml": {"Kinds": [{"kind": "leds", "description": "LEDs", "features": ["led_feature"]},
+                                {"kind": "header", "description": "A header", "features": []}]},
+        "devices.yml": {"Devices": [{"id": "led_device", "name": "An LED", "manufacturer": "Generic", "part": "LED",
+                                     "feature": "led_feature", "interface": "gpio", "peripherals": ["led"]}]},
+        "mezzanines/maker/family.yml": {"Producer": "maker", "Mezzanines": [{
+            "Id": "som", "Name": "A SoM", "Producer": "maker", "Type": "som", "Connector": "b2b_custom_maker",
+            "Chip": "CHIP-1", "Features": ["led_feature"], "Devices": ["led_device"], "Status": "active",
+            "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
         "vendor_constraints.yml": {"VendorConstraints": {"maker": {"board": "Board-Master.xdc"}}},
     }
 
@@ -164,7 +168,7 @@ def test_unknown_and_invalid_references_are_precise():
     documents["setups/rig.yml"]["Setup"]["use"][1]["module"] = "missing"
     documents["peripherals/led.yml"]["Peripheral"]["provides"][0]["capability"] = "unknown"
     documents["chips/maker/family.yml"]["DefaultToolchains"] = ["tool[bad"]
-    documents["boards/maker/family.yml"]["Boards"][0]["Chips"] = [{"Id": "absent_chip"}]
+    documents["boards/maker/family/board.yml"]["Board"]["chip"] = "absent_chip"
     documents["mezzanines/maker/family.yml"]["Mezzanines"][0]["Producer"] = "nobody"
     report = _run(documents)
     unknown = _details(report, "unknown_reference")
@@ -172,7 +176,7 @@ def test_unknown_and_invalid_references_are_precise():
     for text in ("rig 'rig' board refers to absent board 'absent'",
                  "use.*.module/use/1/module refers to absent module 'missing'",
                  "provides.*.capability/provides/0/capability refers to absent capability 'unknown'",
-                 "Chips.*/Chips/0 refers to absent chip 'absent_chip'",
+                 "board 'board' chip refers to absent chip 'absent_chip'",
                  "mezzanine 'som' Producer refers to absent producer 'nobody'"):
         assert any(text in d for d in unknown), text
     assert _details(report, "invalid_reference") == ["family 'maker/family' DefaultToolchains.*: 'tool[bad' is not a toolchain reference"]
@@ -208,11 +212,17 @@ def test_rules_catch_what_a_reference_cannot():
     documents["capabilities/leds.yml"]["Capability"]["design"]["ports"]["led"]["signal"] = "lamp"
     documents["setups/rig.yml"]["Setup"]["design"]["reset"]["sources"].append({"magic": True})
     documents["setups/rig.yml"]["Setup"]["part"] = "chip-9"
-    documents["layouts/board.yml"]["Layout"]["connectors"][0]["type"] = "mystery"
+    documents["boards/maker/family/board.yml"]["Board"]["headers"][0]["type"] = "mystery"
     documents["programmers.yml"]["Programmers"][0]["SupportedFamilies"] = [{"Producer": "Maker Inc", "Family": "Other"}]
+    documents["boards/maker/family/board.yml"]["Board"]["features"] = []
+    documents["boards/maker/family/board.yml"]["Board"]["banks"]["j1"]["device"]["kind"] = "mystery"
+    documents["board_producers.yml"]["Producers"].append(dict(documents["board_producers.yml"]["Producers"][0], Id="other", AKA=["Maker"]))
     report = _run(documents)
     assert _codes(report) == {"peripheral_refs", "module_pins", "capability_refs", "rig_reset_sources",
-                              "rig_chip_variant", "layout_connector_types", "programmer_families"}
+                              "rig_chip_variant", "board_drawn", "programmer_families", "board_kinds", "producer_names_unique"}
+    kinds = _details(report, "board_kinds")
+    assert any("kind 'mystery'" in d for d in kinds) and any("led_feature" in d and "none is listed" in d for d in kinds)
+    assert "'Maker' also names producer" in _details(report, "producer_names_unique")[0]
     refs = _details(report, "peripheral_refs")
     assert len(refs) == 4 and all("blink" in d for d in refs)
     assert any("pin.lamp" in d for d in refs) and any("clock.fast" in d for d in refs)
@@ -221,7 +231,7 @@ def test_rules_catch_what_a_reference_cannot():
     assert _details(report, "capability_refs") == ["capability 'leds' port led: signal lamp is not one of its signals"]
     assert "rig 'rig': reset source 'magic' is not one of bank, pin, pll_lock, power_up" in _details(report, "rig_reset_sources")[0]
     assert "part 'chip-9' is not one of the board's chips (CHIP-1)" in _details(report, "rig_chip_variant")[0]
-    assert "'mystery'" in _details(report, "layout_connector_types")[0]
+    assert "'mystery'" in _details(report, "board_drawn")[0]
     assert "Maker Inc / Other" in _details(report, "programmer_families")[0]
 
 
@@ -229,8 +239,9 @@ def test_a_chip_variant_matches_by_id_or_name():
     documents = _catalogue()
     documents["setups/rig.yml"]["Setup"]["part"] = "chip-1"
     assert _run(documents)["findings"] == []
-    documents["boards/maker/family.yml"]["Boards"][0] = {"Id": "board", "Chips": [{"Id": "CHIP-1", "Name": "small"}],
-                                                          "BoardProducer": "maker"}
+    board = documents["boards/maker/family/board.yml"]["Board"]
+    del board["chip"]
+    board["chips"] = [{"id": "CHIP-1", "name": "small"}]
     documents["setups/rig.yml"]["Setup"]["part"] = "small"
     documents["setups/rig.yml"]["Setup"]["parts"] = ["small"]
     assert _run(documents)["findings"] == []

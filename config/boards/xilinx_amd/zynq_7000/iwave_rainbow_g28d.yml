@@ -1,0 +1,36 @@
+# iwave_rainbow_g28d: iW-RainboW-G28D Zynq-7000 SODIMM Dev Kit.
+
+Board:
+  id: iwave_rainbow_g28d
+  name: iW-RainboW-G28D Zynq-7000 SODIMM Dev Kit
+  url: https://iwave-global.com/product/zynq-7000-soc-sodimm-system-on-module/
+  status: active
+  producer: iwave
+  chip: XC7Z020-1CLG484C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - bluetooth_le_radio
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - jtag_header
+  - microsd_socket
+  - qspi_flash
+  - usb_2_otg
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - wifi_radio
+  devices:
+  - ftdi_ft2232h
+  - micron_mt41k256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

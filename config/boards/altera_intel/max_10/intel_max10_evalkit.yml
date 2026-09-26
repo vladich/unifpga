@@ -1,0 +1,25 @@
+# intel_max10_evalkit: MAX 10 FPGA Evaluation Kit.
+
+Board:
+  id: intel_max10_evalkit
+  name: MAX 10 FPGA Evaluation Kit
+  status: eol
+  producer: intel_altera
+  chip: 10M08SAE144C8G
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - dip_switches
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

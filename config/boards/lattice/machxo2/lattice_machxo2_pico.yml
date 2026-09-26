@@ -1,0 +1,11 @@
+# lattice_machxo2_pico: MachXO2 Pico Development Kit.
+
+Board:
+  id: lattice_machxo2_pico
+  name: MachXO2 Pico Development Kit
+  url: https://www.latticesemi.com/products/developmentboardsandkits/machxo2picodevelopmentkit
+  producer: lattice
+  chip: LCMXO2-1200ZE-1QN84C
+  bridges:
+  - jtag
+  programmer: openFPGALoader

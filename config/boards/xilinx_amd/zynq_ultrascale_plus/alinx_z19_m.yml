@@ -1,0 +1,35 @@
+# alinx_z19_m: Alinx Z19-M.
+
+Board:
+  id: alinx_z19_m
+  name: Alinx Z19-M
+  url: https://coderobin.com/products/alinx-z19-m-xilinx-zynq-ultrascale-mpsoc-xczu19eg-fpga-heterogeneous-computing-development-board
+  status: active
+  notes: ZU19EG heterogeneous board with NVIDIA Jetson Orin NX module integration.
+  producer: alinx
+  chip: XCZU19EG-2FFVC1760I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - hdmi_input
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - sd_card_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

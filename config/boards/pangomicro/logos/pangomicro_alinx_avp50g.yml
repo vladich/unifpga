@@ -1,0 +1,34 @@
+# pangomicro_alinx_avp50g: ALINX AVP50G Development Board.
+
+Board:
+  id: pangomicro_alinx_avp50g
+  name: ALINX AVP50G Development Board
+  url: https://www.pangomicro.com/open/4265.html
+  status: active
+  notes: ALINX board with 4x AV inputs.
+  producer: pangomicro
+  chip: PGL50G-6IFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - analog_video_decoder
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_input
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - parallel_camera_input
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

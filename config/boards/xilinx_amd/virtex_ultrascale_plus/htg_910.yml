@@ -1,0 +1,30 @@
+# htg_910: HTG-910 Virtex UltraScale+ Low-Profile PCIe VU9P.
+
+Board:
+  id: htg_910
+  name: HTG-910 Virtex UltraScale+ Low-Profile PCIe VU9P
+  url: https://www.hitechglobal.com/Boards/VirtexUltraScale+_LowProfile_PCIExpress.htm
+  status: active
+  producer: hitech_global
+  chip: XCVU9P-2FLGA2104E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - silabs_si570
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - led_discrete_generic
+  - pushbutton_smd_generic

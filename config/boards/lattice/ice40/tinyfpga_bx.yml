@@ -2,9 +2,17 @@
 # Source: LiteX-Boards platform file
 #   https://raw.githubusercontent.com/litex-hub/litex-boards/master/litex_boards/platforms/tinyfpga_bx.py
 
+
 Board:
   id: tinyfpga_bx
-  pinBanks:
+  name: TinyFPGA BX
+  url: https://tinyfpga.com/bx/guide.html
+  producer: tinyfpga
+  chip: iCE40LP8K-CM81
+  bridges: []
+  programmer: dfu_util
+  bootloader: usb-dfu
+  banks:
     onboard_leds:
       pins: B3
     qspi_flash_clk:

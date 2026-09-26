@@ -1,0 +1,29 @@
+# pangomicro_pg2l100h_fbg676_demo: PG2L100H-FBG676 DEMO Board.
+
+Board:
+  id: pangomicro_pg2l100h_fbg676_demo
+  name: PG2L100H-FBG676 DEMO Board
+  url: https://www.pangomicro.com/open/2530.html
+  status: active
+  notes: Pango first-party DEMO; 64-bit DDR3; PCIe x4. Vendor reference design has public PDF (UG/PK04001).
+  producer: pangomicro
+  chip: PG2L100H-6IFBG676
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - sfp_cage
+  - pcie_endpoint
+  - usb_uart_bridge
+  - microsd_socket
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - clock_generator
+  - gpio_header_generic
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

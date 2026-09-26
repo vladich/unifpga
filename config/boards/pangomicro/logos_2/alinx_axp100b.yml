@@ -1,0 +1,33 @@
+# alinx_axp100b: ALINX AXP100B Development Board.
+
+Board:
+  id: alinx_axp100b
+  name: ALINX AXP100B Development Board
+  url: https://www.pangomicro.com/open/4299.html
+  status: active
+  producer: alinx
+  chip: PG2L100H-6IFBG676
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - gpio_header_generic
+  - hdmi_input
+  - hdmi_output
+  - jtag_header
+  - microsd_socket
+  - qspi_flash
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - microchip_ksz9031rnx
+  - silabs_cp2102
+  - micron_mt41j256m16
+  - silicon_image_sil9134
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

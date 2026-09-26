@@ -1,0 +1,19 @@
+# techway_pfp_zuplus_7cg: Techway PFP-ZU+_07 (ZU7CG).
+
+Board:
+  id: techway_pfp_zuplus_7cg
+  name: Techway PFP-ZU+_07 (ZU7CG)
+  url: https://www.techway.com/p/zynq-board-pcie-with-fmc/
+  status: active
+  producer: techway
+  chip: XCZU7CG-2FFVC1156E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - fmc_plus
+  - usb_uart_bridge
+  - usb_jtag_bridge

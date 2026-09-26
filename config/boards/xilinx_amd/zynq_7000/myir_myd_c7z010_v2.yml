@@ -1,0 +1,30 @@
+# myir_myd_c7z010_v2: MYIR MYD-C7Z010/20-V2 Zynq Dev Board.
+
+Board:
+  id: myir_myd_c7z010_v2
+  name: MYIR MYD-C7Z010/20-V2 Zynq Dev Board
+  url: https://www.myirtech.com/list.asp?id=698
+  status: active
+  producer: myir
+  chip: XC7Z020-2CLG400I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - usb_2_otg
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - micron_mt41k128m16
+  - macronix_mx25l25645g
+  - realtek_rtl8211e
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

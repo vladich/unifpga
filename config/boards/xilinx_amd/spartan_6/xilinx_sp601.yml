@@ -1,0 +1,25 @@
+# xilinx_sp601: SP601.
+
+Board:
+  id: xilinx_sp601
+  name: SP601
+  url: https://www.xilinx.com/products/boards-and-kits/ek-s6-sp601-g.html
+  producer: xilinx_amd
+  chip: XC6SLX16-2CSG324C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - qspi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - micron_n25q128a
+  - marvell_88e1111
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic

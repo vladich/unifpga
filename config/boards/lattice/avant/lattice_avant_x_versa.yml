@@ -1,0 +1,26 @@
+# lattice_avant_x_versa: Avant-X Versa Board.
+
+Board:
+  id: lattice_avant_x_versa
+  name: Avant-X Versa Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/avant-x-versa-board
+  status: active
+  producer: lattice
+  chip: LAV-AT-X70-3LFG1156I
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - fmc_hpc
+  - pmod_connector
+  - raspi_hat_header
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_jtag_bridge
+  - barrel_jack_input
+  devices:
+  - ftdi_ft2232h

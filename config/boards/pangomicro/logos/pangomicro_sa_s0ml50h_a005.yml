@@ -1,0 +1,15 @@
+# pangomicro_sa_s0ml50h_a005: SA_S0ML50H_A005 Core Module.
+
+Board:
+  id: pangomicro_sa_s0ml50h_a005
+  name: SA_S0ML50H_A005 Core Module
+  url: https://www.pangomicro.com/open/4573.html
+  status: active
+  notes: Smartseason SoM.
+  producer: pangomicro
+  chip: PGL50H-6IFBG484
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - ddr3_memory

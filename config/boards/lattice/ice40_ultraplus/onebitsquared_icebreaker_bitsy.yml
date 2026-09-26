@@ -1,0 +1,11 @@
+# onebitsquared_icebreaker_bitsy: iCEBreaker Bitsy.
+
+Board:
+  id: onebitsquared_icebreaker_bitsy
+  name: iCEBreaker Bitsy
+  url: https://1bitsquared.com/products/icebreaker-bitsy
+  producer: onebitsquared
+  chip: iCE40UP5K-SG48
+  bridges:
+  - jtag
+  programmer: dfu_util

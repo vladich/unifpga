@@ -1,0 +1,32 @@
+# xilinx_vek385: AMD Versal AI Edge Series Gen 2 VEK385 Evaluation Kit.
+
+Board:
+  id: xilinx_vek385
+  name: AMD Versal AI Edge Series Gen 2 VEK385 Evaluation Kit
+  url: https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/vek385.html
+  status: active
+  producer: xilinx_amd
+  chip: XC2VE3858-1LSESFVA1760
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - jtag_header
+  - lpddr4_memory
+  - microsd_socket
+  - pcie_endpoint
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - silabs_cp2108
+  - ftdi_ft4232h
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - marvell_88e1512

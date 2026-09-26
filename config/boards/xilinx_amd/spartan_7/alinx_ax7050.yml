@@ -5,9 +5,38 @@
 #   https://www.manualslib.com/manual/2238745/Alinx-Ax7050.html?page=49
 #   https://www.manualslib.com/manual/2238745/Alinx-Ax7050.html?page=50
 
+
 Board:
   id: alinx_ax7050
-  pinBanks:
+  name: AX7050
+  url: https://alinx.com/en/detail/6
+  status: active
+  notes: Alinx revised the AX7050 from Zynq-7000 (legacy) to Spartan-7 XC7S50; this entry reflects the current shipping
+    product.
+  producer: alinx
+  chip: XC7S50FGGA484
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - sdr_sdram
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - realtek_rtl8211e
+  - ftdi_ft232h
+  - silabs_cp2102
+  - microsd_socket_generic
+  - tmds_direct
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_diff:
       pins:
         p: AA6

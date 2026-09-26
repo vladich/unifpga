@@ -1,0 +1,29 @@
+# htg_zrf_em: HTG-ZRF-EM Zynq RFSoC Extended Memory ZU49DR.
+
+Board:
+  id: htg_zrf_em
+  name: HTG-ZRF-EM Zynq RFSoC Extended Memory ZU49DR
+  url: https://www.hitechglobal.com/Boards/Zynq_RFSoC_EM.htm
+  status: active
+  producer: hitech_global
+  chip: XCZU49DR-2FFVF1760E
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - ethernet_phy_gigabit
+  - fmc_plus
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft4232h
+  - silabs_si5342
+  - micron_n25q256a
+  - ddr4_sodimm_socket
+  - marvell_88e1512
+  - microsd_socket_generic

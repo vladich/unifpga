@@ -1,15 +1,27 @@
 # a7_lite_35t pin map.
 
+
 Board:
   id: a7_lite_35t
-  fpga:
-    producer: "Xilinx (AMD)"
-    family: "Artix 7"
-    part: XC7A35TFGG484-1
+  name: A7-Lite 35T
+  product: MicroPhase A7-Lite (A7-LITE 35T)
+  summary: AMD/Xilinx Artix-7 XC7A35T-2FGG484 (33,280 logic cells); 512 MB DDR3 (MT41K256M16), QSPI flash, Gigabit
+    Ethernet (RTL8211, RGMII), HDMI out (direct TMDS), microSD, I2C EEPROM, CH340 USB-UART, 2 LEDs, 2 keys + reset,
+    two 50-pin GPIO headers JP1/JP2 (22 pairs each)
+  producer: microphase
+  chip: xc7a35tfgg484-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - qspi_flash
+  - microsd_socket
+  - ddr3_memory
+  - ethernet_phy_gigabit
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk50mhz: { pins: J19, frequency_mhz: 50 }
     cpu_resetn: { pins: L18, active: low }
     onboard_buttons:
@@ -52,3 +64,49 @@ Board:
     gpio_jp2:   # GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)
       device: {"name": "GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)", "kind": "header"}
       pins: {"GPIO2_0P": "W21", "GPIO2_0N": "W22", "GPIO2_1P": "N17", "GPIO2_1N": "P17", "GPIO2_2P": "P19", "GPIO2_2N": "R19", "GPIO2_3P": "R18", "GPIO2_3N": "T18", "GPIO2_4P": "T21", "GPIO2_4N": "U21", "GPIO2_5P": "U22", "GPIO2_5N": "V22", "GPIO2_6P": "Y21", "GPIO2_6N": "Y22", "GPIO2_7P": "AA20", "GPIO2_7N": "AA21", "GPIO2_8P": "AB21", "GPIO2_8N": "AB22", "GPIO2_9P": "AA19", "GPIO2_9N": "AB20", "GPIO2_10P": "U20", "GPIO2_10N": "V20", "GPIO2_11P": "Y18", "GPIO2_11N": "Y19", "GPIO2_12P": "W19", "GPIO2_12N": "W20", "GPIO2_13P": "AA18", "GPIO2_13N": "AB18", "GPIO2_14P": "V18", "GPIO2_14N": "V19", "GPIO2_15P": "V17", "GPIO2_15N": "W17", "GPIO2_16P": "U17", "GPIO2_16N": "U18", "GPIO2_17P": "P14", "GPIO2_17N": "R14", "GPIO2_18P": "P16", "GPIO2_18N": "R17", "GPIO2_19P": "N13", "GPIO2_19N": "N14", "GPIO2_20P": "P15", "GPIO2_20N": "R16", "GPIO2_21P": "AB7", "GPIO2_21N": "AB6"}
+  # ---- drawn: headers and parts; ./unifpga layout draft a7_lite_35t regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]'}
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: cpu_resetn
+      label: cpu resetn
+      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 2}, bind: {led: onboard_leds}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: hdmi
+      label: hdmi
+      attach: {peripheral: hdmi_tmds, params: {timing: dvi, clock_serial_mhz: 250}, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: qspi_flash
+      label: QSPI flash
+      device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
+    - id: eeprom
+      label: I2C EEPROM
+      device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
+    - id: sdcard
+      label: microSD card slot
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.data0, dat3: onboard_sdcard.data3}}
+    - id: ddr3
+      label: DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
+      device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet
+    - id: ethernet
+      label: Gigabit Ethernet PHY (RTL8211, RGMII)
+      device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet
+    - id: gpio_jp2
+      label: GPIO header JP2 (50-pin, 22 differential pairs GPIO2_0P/N..21P/N)
+      device: {kind: header, bank: gpio_jp2}   # no peripheral model yet

@@ -1,0 +1,11 @@
+# renesas_forgefpga_workshop: ForgeFPGA Workshop Board.
+
+Board:
+  id: renesas_forgefpga_workshop
+  name: ForgeFPGA Workshop Board
+  url: https://www.renesas.com/en/design-resources/boards-kits/slg7evbforge
+  producer: renesas
+  chip: SLG47910V
+  bridges:
+  - jtag
+  programmer: renesas_go_pgm

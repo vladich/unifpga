@@ -1,0 +1,28 @@
+# lattice_avant_e_evn: Avant-E Evaluation Board.
+
+Board:
+  id: lattice_avant_e_evn
+  name: Avant-E Evaluation Board
+  aliases:
+  - lattice_avant_evalboard
+  url: https://www.latticesemi.com/products/developmentboardsandkits/avant-e-evaluation-board
+  status: active
+  producer: lattice
+  chip: LAV-AT-E70-3LFG1156C
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - fmc_hpc
+  - pmod_connector
+  - raspi_hat_header
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_jtag_bridge
+  - barrel_jack_input
+  devices:
+  - ftdi_ft2232h

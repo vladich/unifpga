@@ -1,0 +1,35 @@
+# avnet_ultrazed_eg_iocc: UltraZed-EG IO Carrier Card (IOCC) Starter Kit.
+
+Board:
+  id: avnet_ultrazed_eg_iocc
+  name: UltraZed-EG IO Carrier Card (IOCC) Starter Kit
+  status: eol
+  producer: avnet
+  chip: XCZU3EG-1SFVA625I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - emmc_flash
+  - microsd_socket
+  - ethernet_phy_gigabit
+  - usb_2_host
+  - usb_uart_bridge
+  - hdmi_output
+  - pmod_connector
+  - arduino_shield_header
+  - user_buttons
+  - user_leds
+  - dip_switches
+  devices:
+  - micron_mt40a256m16
+  - marvell_88e1512
+  - adi_adv7511
+  - ftdi_ft4232h
+  - emmc_chip_generic
+  - microsd_socket_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic

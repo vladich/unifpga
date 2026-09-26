@@ -1,0 +1,17 @@
+# adiuvo_galaxia_space_dev_board: Galaxia Space Development Board.
+
+Board:
+  id: adiuvo_galaxia_space_dev_board
+  name: Galaxia Space Development Board
+  url: https://www.adiuvoengineering.com/product-page/galaxia-space-development-board
+  status: active
+  notes: Catalog Chip MPF300T-FCG484E may be incorrect — Adiuvo product docs (DesignNews/EE Journal) describe Galaxia
+    as Lattice Certus-NX LFD2NX-40 with 128Mb NOR + 256Kb MRAM. Verify before relying on the recorded Chip.
+  producer: adiuvo
+  chip: MPF300T-FCG484E
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - qspi_flash
+  - jtag_header

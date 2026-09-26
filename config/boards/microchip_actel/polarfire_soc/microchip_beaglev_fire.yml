@@ -1,0 +1,31 @@
+# microchip_beaglev_fire: BeagleV-Fire.
+
+Board:
+  id: microchip_beaglev_fire
+  name: BeagleV-Fire
+  aliases:
+  - beagleboard_beaglev_fire
+  url: https://www.microchip.com/en-us/development-tool/beaglev-fire
+  status: active
+  producer: microchip
+  chip: MPFS025T-1FCVG484E
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - spi_flash
+  - usb_jtag_bridge
+  - usb_powered
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - microchip_ksz9031rnx
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - winbond_w25q128

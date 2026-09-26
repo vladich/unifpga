@@ -1,0 +1,27 @@
+# microchip_polarfire_evalkit: PolarFire Evaluation Kit.
+
+Board:
+  id: microchip_polarfire_evalkit
+  name: PolarFire Evaluation Kit
+  url: https://www.microchip.com/en-us/development-tool/MPF300-EVAL-KIT
+  producer: microchip
+  chip: MPF300TS-FCG1152I
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - dip_switches
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - spi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - winbond_w25q128
+  - microchip_ksz9031rnx

@@ -1,0 +1,26 @@
+# pangomicro_compa_entry_evk: Compa Entry-Level FPGA/CPLD Learning Evaluation Platform (SA_PGC2KD_EVKC2 / SA_PGC7KD_EVKC3).
+
+Board:
+  id: pangomicro_compa_entry_evk
+  name: Compa Entry-Level FPGA/CPLD Learning Evaluation Platform (SA_PGC2KD_EVKC2 / SA_PGC7KD_EVKC3)
+  url: https://www.pangomicro.com/open/4252.html
+  status: active
+  notes: 'Two SKUs: SA_PGC2KD_EVKC2 (PGC2KG-6IMBG256) and SA_PGC7KD_EVKC3 (PGC7KD-6IMBG256). Smartseason distributor.'
+  producer: pangomicro
+  chip: PGC2KG-6IMBG256
+  bridges:
+  - jtag
+  programmer: pango_pgm
+  features:
+  - dip_switches
+  - jtag_header
+  - seven_segment_display
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared

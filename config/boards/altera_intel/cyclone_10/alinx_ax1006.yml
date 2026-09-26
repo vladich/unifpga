@@ -2,9 +2,38 @@
 # Sources (local Alinx docs):
 #   ~/Alinx/AX1006/AX1006_CD_20190809.zip CD/01_学习教程之例程篇/demo/01_led_test/led_test.qsf
 
+
 Board:
   id: alinx_ax1006
-  pinBanks:
+  name: Alinx AX1006
+  url: https://www.en.alinx.com
+  status: active
+  producer: alinx
+  chip: 10CL006YU256C8G
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - jtag_header
+  - microsd_socket
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_powered
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - vga666_resistor_dac
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - seven_seg_module_shared
+  - winbond_w9825g6kh
+  banks:
     sys_clk:
       pins: PIN_E1
       frequency_mhz: 50

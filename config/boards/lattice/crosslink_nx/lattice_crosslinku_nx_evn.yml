@@ -1,0 +1,29 @@
+# lattice_crosslinku_nx_evn: CrossLinkU-NX Evaluation Board.
+
+Board:
+  id: lattice_crosslinku_nx_evn
+  name: CrossLinkU-NX Evaluation Board
+  url: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/CrossLinkU-NX-Evaluation-Board
+  status: active
+  producer: lattice
+  chip: LIFCLU-33-9BG400I
+  bridges:
+  - jtag
+  programmer: radiant_pgm
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - hyperram
+  - qspi_flash
+  - mipi_csi2_input
+  - usb_2_otg
+  - usb_uart_bridge
+  - pmod_connector
+  - raspi_hat_header
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_jtag_bridge
+  - usb_powered
+  devices:
+  - ftdi_ft2232h

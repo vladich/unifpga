@@ -9,16 +9,32 @@
 # Part: LIFCL-40-9BG400C (default speed grade 9, BG400 package, commercial).
 # A second SKU (-8BG400CES) is also valid.
 
+
 Board:
   id: lattice_crosslink_nx_evn
-  fpga:
-    producer: Lattice
-    family: Certus-NX  # parts.yml family — really LIFCL/CrossLink-NX
-    part: LIFCL-40-9BG400C
+  name: CrossLink-NX Evaluation Board
+  product: CrossLink-NX Evaluation Board (LIFCL-40-EVN)
+  summary: Lattice CrossLink-NX LIFCL-40-9BG400C (39k LC, 2 hard MIPI D-PHY, 1 Mbit+ LRAM), 128 Mbit SPI flash, FT2232H
+    JTAG/UART, 12 MHz + 125 MHz LVDS clocks, 14 LEDs, 8 DIP switches, 4 buttons, FMC LPC, Raspberry Pi header, MIPI
+    camera connector, D-PHY header, 3 PMODs, ADC header
+  url: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/CrossLink-NXEvaluationBoard
+  producer: lattice
+  chip: LIFCL-40-9BG400C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - microsd_socket
+  - usb_jtag_bridge
+  - nor_flash
+  - pmod_connector
+  devices:
+  - ftdi_ft2232h
+  - microsd_socket_generic
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     # 12 MHz oscillator on JP2 (default fitted). 125 MHz LVDS pair (C12/C11)
     # is also available but uses a different clk_input peripheral.
     clk:              { pins: "L13", frequency_mhz: 12 }
@@ -85,3 +101,79 @@ Board:
     onboard_adc:   # ADC test header J26 (hard ADC input 1)
       device: {"name": "ADC test header J26 (hard ADC input 1)", "kind": "other"}
       pins: {"in1_p": "T17", "in1_n": "U17"}
+  # ---- drawn: headers and parts; ./unifpga layout draft lattice_crosslink_nx_evn regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: rpi_header
+      type: pin_row
+      label: RPI_HEADER
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: rpi_header
+      pins: {'[0]': 'rpi_header[0]', '[1]': 'rpi_header[1]', '[2]': 'rpi_header[2]', '[3]': 'rpi_header[3]', '[4]': 'rpi_header[4]', '[5]': 'rpi_header[5]', '[6]': 'rpi_header[6]', '[7]': 'rpi_header[7]', '[8]': 'rpi_header[8]', '[9]': 'rpi_header[9]', '[10]': 'rpi_header[10]', '[11]': 'rpi_header[11]', '[12]': 'rpi_header[12]', '[13]': 'rpi_header[13]', '[14]': 'rpi_header[14]', '[15]': 'rpi_header[15]', '[16]': 'rpi_header[16]', '[17]': 'rpi_header[17]', '[18]': 'rpi_header[18]', '[19]': 'rpi_header[19]', '[20]': 'rpi_header[20]', '[21]': 'rpi_header[21]', '[22]': 'rpi_header[22]', '[23]': 'rpi_header[23]', '[24]': 'rpi_header[24]', '[25]': 'rpi_header[25]', '[26]': 'rpi_header[26]', '[27]': 'rpi_header[27]'}
+    - id: pmod0
+      type: pin_row
+      label: PMOD0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod0
+      pins: {'[0]': 'pmod0[0]', '[1]': 'pmod0[1]', '[2]': 'pmod0[2]', '[3]': 'pmod0[3]', '[4]': 'pmod0[4]', '[5]': 'pmod0[5]', '[6]': 'pmod0[6]', '[7]': 'pmod0[7]'}
+    - id: pmod1
+      type: pin_row
+      label: PMOD1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod1
+      pins: {'[0]': 'pmod1[0]', '[1]': 'pmod1[1]', '[2]': 'pmod1[2]', '[3]': 'pmod1[3]', '[4]': 'pmod1[4]', '[5]': 'pmod1[5]', '[6]': 'pmod1[6]', '[7]': 'pmod1[7]'}
+    - id: pmod2
+      type: pin_row
+      label: PMOD2
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod2
+      pins: {'[0]': 'pmod2[0]', '[1]': 'pmod2[1]', '[2]': 'pmod2[2]', '[3]': 'pmod2[3]', '[4]': 'pmod2[4]', '[5]': 'pmod2[5]', '[6]': 'pmod2[6]', '[7]': 'pmod2[7]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, params: {frequency_mhz: 12}, bind: {clk: clk}}
+    - id: reset
+      label: reset
+      attach: {peripheral: reset_button, bind: {rst: onboard_reset}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 8}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 14}, bind: {led: onboard_leds}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {rx: onboard_uart.rx, tx: onboard_uart.tx}}
+    - id: clk_125
+      label: 125 MHz LVDS oscillator U4 (default) / 200 MHz U5 (resistor option)
+      device: {kind: clock, bank: onboard_clk_125}   # no peripheral model yet
+    - id: programn
+      label: PROGRAMN push button SW5
+      device: {kind: reset, bank: onboard_programn}   # no peripheral model yet
+    - id: serial_flash
+      label: Macronix MX25L12833F SPI flash (config) / Parallel Configuration header J27
+      device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
+    - id: config_status
+      label: 'Config status: INITN (D17 red LED, TP10) and DONE (D18 green LED, TP12)'
+      device: {kind: other, bank: onboard_config_status}   # no peripheral model yet
+    - id: jtag
+      label: JTAG header J1
+      device: {kind: other, bank: onboard_jtag}   # no peripheral model yet
+    - id: fmc
+      label: FMC LPC connector U9 (68 LA single-ended / 34 pairs + 2 clock pairs + VREF)
+      device: {kind: header, bank: fmc}   # no peripheral model yet
+    - id: fmc_config
+      label: FMC configuration / sideband header J27 (JTAG, I2C, PRSNT, PS_POR_B)
+      device: {kind: header, bank: fmc_config}   # no peripheral model yet
+    - id: camera
+      label: Camera connector CN1 (MIPI CSI-2 4-lane on D-PHY0 + I2C + reset)
+      device: {kind: other, bank: onboard_camera}   # no peripheral model yet
+    - id: dphy1
+      label: D-PHY1 header J6 (4 lanes + clock, hard D-PHY)
+      device: {kind: header, bank: dphy1}   # no peripheral model yet
+    - id: adc
+      label: ADC test header J26 (hard ADC input 1)
+      device: {kind: other, bank: onboard_adc}   # no peripheral model yet

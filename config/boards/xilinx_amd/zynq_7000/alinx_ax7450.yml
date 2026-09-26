@@ -3,9 +3,36 @@
 #   https://github.com/alinxalinx/AX7450B_2023.1/blob/master/course_s1_fpga/01_led/auto_create_project/src/constraints/led.xdc
 #   https://github.com/alinxalinx/AX7450B_2023.1/blob/master/course_s1_fpga/14_linux_base/Vivado/auto_create_project/src/constraints/emio.xdc
 
+
 Board:
   id: alinx_ax7450
-  pinBanks:
+  name: Alinx AX7450
+  url: https://coderobin.com/products/alinx-ax7450-xilinx-zynq-7000-xc7z100-fpga-development-board
+  status: active
+  notes: B revision XC7Z100 SoM+carrier; distinct from existing AX7100 entry.
+  producer: alinx
+  chip: XC7Z100-2FFG900I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - sd_card_socket
+  - sfp_cage
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk:
       pins: AB19
       frequency_mhz: 50

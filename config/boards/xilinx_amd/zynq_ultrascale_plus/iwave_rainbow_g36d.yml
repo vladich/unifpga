@@ -1,0 +1,36 @@
+# iwave_rainbow_g36d: iW-RainboW-G36D Zynq UltraScale+ MPSoC (ZU5/4/3T/3/2/1) Dev Kit.
+
+Board:
+  id: iwave_rainbow_g36d
+  name: iW-RainboW-G36D Zynq UltraScale+ MPSoC (ZU5/4/3T/3/2/1) Dev Kit
+  url: https://www.iwavesystems.com/product/zynq-ultrascale-mpsoc-zu5-zu4-zu3t-zu3-zu2-zu1/
+  status: active
+  producer: iwave
+  chip: XCZU3EG-1SFVC784I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_lpc
+  - jtag_header
+  - microsd_socket
+  - pcie_endpoint
+  - qspi_flash
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic

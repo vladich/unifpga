@@ -1,0 +1,11 @@
+# greatscott_glasgow_revc: Glasgow Interface Explorer Rev C.
+
+Board:
+  id: greatscott_glasgow_revc
+  name: Glasgow Interface Explorer Rev C
+  url: https://www.crowdsupply.com/1bitsquared/glasgow
+  producer: onebitsquared
+  chip: iCE40HX8K-BG121
+  bridges:
+  - jtag
+  programmer: iceprog

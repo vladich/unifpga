@@ -1,0 +1,22 @@
+# gowin_gw3a20_devkit: GW3A-20 Starter Kit (DK_START_GW3A-LV20LQ144).
+
+Board:
+  id: gowin_gw3a20_devkit
+  name: GW3A-20 Starter Kit (DK_START_GW3A-LV20LQ144)
+  url: https://www.gowinsemi.com/en/support/devkits/37/
+  status: active
+  producer: gowin_semi
+  chip: GW3A-LV20LQ144C6/I5
+  bridges:
+  - jtag
+  programmer: gowin_pgm
+  features:
+  - gpio_header_generic
+  - jtag_header
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft2232h
+  - led_discrete_generic
+  - pushbutton_smd_generic

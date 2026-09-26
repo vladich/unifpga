@@ -2,9 +2,32 @@
 # Source (local Alinx docs):
 #   ~/Alinx/HEA13/02_Demo/demo.rar -> demo/01_led_test/led_test.srcs/constrs_1/new/led_test.xdc
 
+
 Board:
   id: alinx_hea13
-  pinBanks:
+  name: Alinx HEA13
+  url: https://coderobin.com/products/alinx-hea13-xilinx-virtex-ultrascale-xcvu13p-fpga-heterogeneous-computing-development-board
+  status: active
+  notes: VU13P + NVIDIA Jetson Thor heterogeneous board; LLM/Physical AI/Robotics.
+  producer: alinx
+  chip: XCVU13P-2FHGB2104E
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  - qsfp_cage
+  - pcie_endpoint
+  - fmc_plus
+  - usb_uart_bridge
+  - user_leds
+  - user_buttons
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_p:
       pins: AD33
       frequency_mhz: 200

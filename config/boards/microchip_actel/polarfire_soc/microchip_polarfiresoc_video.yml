@@ -1,0 +1,25 @@
+# microchip_polarfiresoc_video: PolarFire SoC Video Kit.
+
+Board:
+  id: microchip_polarfiresoc_video
+  name: PolarFire SoC Video Kit
+  url: https://www.microchip.com/en-us/development-tool/MPFS-VIDEO-KIT
+  producer: microchip
+  chip: MPFS250T-FCG1152EES
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - spi_flash
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - winbond_w25q128
+  - microchip_ksz9031rnx

@@ -1,0 +1,17 @@
+# trenz_te0745: TE0745.
+
+Board:
+  id: trenz_te0745
+  name: TE0745
+  url: https://shop.trenz-electronic.de/en/TE0745-02-91C31-A-SoM-with-AMD-Zynq-XC7Z045-1FBG676C-1-GByte-DDR3L-SDRAM-5.2-x-7.6-cm
+  producer: trenz_electronic
+  chip: XC7Z045-1FBG676C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a

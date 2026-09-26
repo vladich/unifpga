@@ -1,15 +1,26 @@
 # tang_primer_20k_lite pin map.
 
+
 Board:
   id: tang_primer_20k_lite
-  fpga:
-    producer: Gowin
-    family: Arora/GW2A
-    part: GW2A-LV18PG256C8/I7
-
+  name: Tang Primer 20k Lite
+  product: Tang Primer 20K Lite (Dock Lite ext-board)
+  summary: 'Tang Primer 20K SOM (Gowin GW2A-LV18PG256C8/I7, 20736 LUT4, 128 MB DDR3, 32 Mbit flash, microSD, SPI-LCD
+    FPC) on the Lite carrier: 2 buttons, 2 slide switches, 4 Pmods, two 2x20 headers (all edge IO broken out)'
+  url: https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html
+  producer: sipeed
+  chip: GW2A-LV18PG256C8/I7
+  bridges:
+  - jtag
+  programmer: openFPGALoader
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  features:
+  - ddr3_memory
+  - spi_flash
+  - microsd_socket
+  - spi_lcd
   toolchain_options:
     yosys:
       loader_board: "tangprimer20k"          # openFPGALoader -b
@@ -17,7 +28,7 @@ Board:
       set_device: "GW2A-LV18PG256C8/I7 -name GW2A-18 -device_version C"
       options: [use_sspi_as_gpio, use_ready_as_gpio, use_done_as_gpio]
       gprj_device: '<Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>'
-  pinBanks:
+  banks:
     clk: { pins: H11, frequency_mhz: 27, iostandard: LVCMOS33 }
     onboard_switches:
       iostandard: LVCMOS33
@@ -80,3 +91,76 @@ Board:
       device: {"name": "40-pin header J3 (2x20)", "kind": "header"}
       shares: ["gpio_2", "onboard_jtag"]   # the board multiplexes these pins
       pins: ["N6", "N7", "B11", "A12", "L9", "N8", "R9", "N9", "A6", "A7", "C6", "B8", "C10", "A11", "C11", "B12", "C12", "B13", "A14", "B14", "A15", "D14", "E15", "F16", "F14", "G15", "G14", "J14", "J16", "G12", "F13", "M14", "M15", "T14", "R13", "P13", "R12"]
+  # ---- drawn: headers and parts; ./unifpga layout draft tang_primer_20k_lite regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio_3
+      type: pin_row
+      label: GPIO_3
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_3
+      pins: {'[0]': 'gpio_3[0]', '[1]': 'gpio_3[1]', '[2]': 'gpio_3[2]', '[3]': 'gpio_3[3]', '[4]': 'gpio_3[4]', '[5]': 'gpio_3[5]', '[6]': 'gpio_3[6]', '[7]': 'gpio_3[7]'}
+    - id: gpio_2
+      type: pin_row
+      label: GPIO_2
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_2
+      pins: {'[0]': 'gpio_2[0]', '[1]': 'gpio_2[1]', '[2]': 'gpio_2[2]', '[3]': 'gpio_2[3]', '[4]': 'gpio_2[4]', '[5]': 'gpio_2[5]', '[6]': 'gpio_2[6]', '[7]': 'gpio_2[7]'}
+    - id: gpio_1
+      type: pin_row
+      label: GPIO_1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_1
+      pins: {'[0]': 'gpio_1[0]', '[1]': 'gpio_1[1]', '[2]': 'gpio_1[2]', '[3]': 'gpio_1[3]', '[4]': 'gpio_1[4]', '[5]': 'gpio_1[5]', '[6]': 'gpio_1[6]', '[7]': 'gpio_1[7]'}
+    - id: gpio_0
+      type: pin_row
+      label: GPIO_0
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_0
+      pins: {'[0]': 'gpio_0[0]', '[1]': 'gpio_0[1]', '[2]': 'gpio_0[2]', '[3]': 'gpio_0[3]', '[4]': 'gpio_0[4]', '[5]': 'gpio_0[5]', '[6]': 'gpio_0[6]', '[7]': 'gpio_0[7]'}
+    - id: gpio_j1
+      type: pin_row
+      label: GPIO_J1
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_j1
+      pins: {'[0]': 'gpio_j1[0]', '[1]': 'gpio_j1[1]', '[2]': 'gpio_j1[2]', '[3]': 'gpio_j1[3]', '[4]': 'gpio_j1[4]', '[5]': 'gpio_j1[5]', '[6]': 'gpio_j1[6]', '[7]': 'gpio_j1[7]', '[8]': 'gpio_j1[8]', '[9]': 'gpio_j1[9]', '[10]': 'gpio_j1[10]', '[11]': 'gpio_j1[11]', '[12]': 'gpio_j1[12]', '[13]': 'gpio_j1[13]', '[14]': 'gpio_j1[14]', '[15]': 'gpio_j1[15]', '[16]': 'gpio_j1[16]', '[17]': 'gpio_j1[17]', '[18]': 'gpio_j1[18]', '[19]': 'gpio_j1[19]', '[20]': 'gpio_j1[20]', '[21]': 'gpio_j1[21]', '[22]': 'gpio_j1[22]', '[23]': 'gpio_j1[23]', '[24]': 'gpio_j1[24]', '[25]': 'gpio_j1[25]', '[26]': 'gpio_j1[26]', '[27]': 'gpio_j1[27]', '[28]': 'gpio_j1[28]', '[29]': 'gpio_j1[29]', '[30]': 'gpio_j1[30]'}
+    - id: gpio_j3
+      type: pin_row
+      label: GPIO_J3
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio_j3
+      pins: {'[0]': 'gpio_j3[0]', '[1]': 'gpio_j3[1]', '[2]': 'gpio_j3[2]', '[3]': 'gpio_j3[3]', '[4]': 'gpio_j3[4]', '[5]': 'gpio_j3[5]', '[6]': 'gpio_j3[6]', '[7]': 'gpio_j3[7]', '[8]': 'gpio_j3[8]', '[9]': 'gpio_j3[9]', '[10]': 'gpio_j3[10]', '[11]': 'gpio_j3[11]', '[12]': 'gpio_j3[12]', '[13]': 'gpio_j3[13]', '[14]': 'gpio_j3[14]', '[15]': 'gpio_j3[15]', '[16]': 'gpio_j3[16]', '[17]': 'gpio_j3[17]', '[18]': 'gpio_j3[18]', '[19]': 'gpio_j3[19]', '[20]': 'gpio_j3[20]', '[21]': 'gpio_j3[21]', '[22]': 'gpio_j3[22]', '[23]': 'gpio_j3[23]', '[24]': 'gpio_j3[24]', '[25]': 'gpio_j3[25]', '[26]': 'gpio_j3[26]', '[27]': 'gpio_j3[27]', '[28]': 'gpio_j3[28]', '[29]': 'gpio_j3[29]', '[30]': 'gpio_j3[30]', '[31]': 'gpio_j3[31]', '[32]': 'gpio_j3[32]', '[33]': 'gpio_j3[33]', '[34]': 'gpio_j3[34]', '[35]': 'gpio_j3[35]', '[36]': 'gpio_j3[36]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 2}, bind: {sw: onboard_switches}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: ddr3
+      label: DDR3 SDRAM UD1 (H5TQ1G63EFR-PBC, 64M x16, 128 MB)
+      device: {kind: ddr3, bank: onboard_ddr3}   # no peripheral model yet
+    - id: flash
+      label: SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)
+      device: {kind: flash, bank: onboard_flash}   # no peripheral model yet
+    - id: sdcard
+      label: microSD card slot J2 (SDIO, push-pull)
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.d[0]', dat3: 'onboard_sdcard.d[3]'}}
+    - id: spi_lcd
+      label: SPI LCD FPC connector J3 (8P 0.5 mm, e.g. 1.14" ST7789)
+      device: {kind: lcd_spi, bank: onboard_spi_lcd}   # no peripheral model yet
+    - id: reset
+      label: Reset supervisor U4 (SGM803, 2.93 V) on FPGA_RST
+      device: {kind: reset, bank: onboard_reset}   # no peripheral model yet
+    - id: jtag
+      label: JTAG + UART JST SH 1.0 8-pin connector J1 (SOM)
+      device: {kind: header, bank: onboard_jtag}   # no peripheral model yet
+    - id: configuration_mode_pins_mode0_2
+      label: Configuration mode pins MODE0..2
+      device: {kind: other, bank: onboard_configuration_mode_pins_mode0_2}   # no peripheral model yet
+    - id: other
+      label: Configuration status/control pins RECONFIG_N, READY, DONE
+      device: {kind: other, bank: onboard_other}   # no peripheral model yet

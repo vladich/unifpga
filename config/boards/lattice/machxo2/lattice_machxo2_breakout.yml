@@ -1,0 +1,15 @@
+# lattice_machxo2_breakout: MachXO2 Breakout Board.
+
+Board:
+  id: lattice_machxo2_breakout
+  name: MachXO2 Breakout Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/machxo2breakoutboard
+  producer: lattice
+  chip: LCMXO2-7000HE-4TG144C
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h

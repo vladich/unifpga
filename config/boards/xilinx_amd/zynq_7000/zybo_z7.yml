@@ -1,15 +1,52 @@
 # zybo_z7 pin map.
 
+
 Board:
   id: zybo_z7
-  fpga:
-    producer: "Xilinx (AMD)"
-    family: "Zynq 7000"
-    part: xc7z020clg400-1
+  name: Zybo Z7
+  product: Zybo Z7 (Zybo Z7-10 / Zybo Z7-20)
+  summary: 'Xilinx Zynq-7000 XC7Z010-1CLG400C (Z7-10, 28K logic cells) or XC7Z020-1CLG400C (Z7-20, 85K); 1 GB DDR3L
+    on the PS (2 x MT41K256M16, 32-bit), PS Gigabit Ethernet, USB OTG, microSD, QSPI flash, UART; PL: HDMI in + HDMI
+    out, audio codec, Pcam MIPI CSI-2 camera connector, 4 switches, 4 buttons, 4 LEDs, RGB LEDs, 5-6 Pmods'
+  url: https://digilent.com/reference/programmable-logic/zybo-z7/start
+  producer: digilent
+  chip: xc7z020clg400-1
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - audio_codec
+  - ddr3_memory
+  - dip_switches
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - microsd_socket
+  - qspi_flash
+  - rgb_leds
+  - usb_2_otg
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - hdmi_input
+  - pmod_connector
+  devices:
+  - cypress_s25fl128s
+  - micron_mt41k256m16
+  - ftdi_ft2232h
+  - realtek_rtl8211e
+  - adi_ssm2603
+  - microchip_usb3343
+  - microsd_socket_generic
+  - tmds_direct
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - led_discrete_generic
+  - rgb_led_common_anode
+  - ti_txs02612
   defaults:
     iostandard: LVCMOS33
 
-  pinBanks:
+  banks:
     clk125mhz: { pins: K17, frequency_mhz: 125 }
     onboard_switches:
       pins: [G15, P15, W13, T16]
@@ -89,3 +126,94 @@ Board:
       fabric: false   # a hard-processor (PS) pin: not reachable from the FPGA fabric
       device: {"name": "PS UART1 (the board USB-UART; the bridge is not named in the preset)", "kind": "uart"}
       pins: {"rxtx": ["MIO48", "MIO49"]}
+  # ---- drawn: headers and parts; ./unifpga layout draft zybo_z7 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: pmod_jb
+      type: pin_row
+      label: PMOD_JB
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_jb
+      pins: {'[0]': 'pmod_jb[0]', '[1]': 'pmod_jb[1]', '[2]': 'pmod_jb[2]', '[3]': 'pmod_jb[3]', '[4]': 'pmod_jb[4]', '[5]': 'pmod_jb[5]', '[6]': 'pmod_jb[6]', '[7]': 'pmod_jb[7]'}
+    - id: pmod_jc
+      type: pin_row
+      label: PMOD_JC
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_jc
+      pins: {'[0]': 'pmod_jc[0]', '[1]': 'pmod_jc[1]', '[2]': 'pmod_jc[2]', '[3]': 'pmod_jc[3]', '[4]': 'pmod_jc[4]', '[5]': 'pmod_jc[5]', '[6]': 'pmod_jc[6]', '[7]': 'pmod_jc[7]'}
+    - id: pmod_jd
+      type: pin_row
+      label: PMOD_JD
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_jd
+      pins: {'[0]': 'pmod_jd[0]', '[1]': 'pmod_jd[1]', '[2]': 'pmod_jd[2]', '[3]': 'pmod_jd[3]', '[4]': 'pmod_jd[4]', '[5]': 'pmod_jd[5]', '[6]': 'pmod_jd[6]', '[7]': 'pmod_jd[7]'}
+    - id: pmod_je
+      type: pin_row
+      label: PMOD_JE
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_je
+      pins: {'[0]': 'pmod_je[0]', '[1]': 'pmod_je[1]', '[2]': 'pmod_je[2]', '[3]': 'pmod_je[3]', '[4]': 'pmod_je[4]', '[5]': 'pmod_je[5]', '[6]': 'pmod_je[6]', '[7]': 'pmod_je[7]'}
+    - id: pmod_ja
+      type: pin_row
+      label: PMOD_JA
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: pmod_ja
+      pins: {'[0]': 'pmod_ja[0]', '[1]': 'pmod_ja[1]', '[2]': 'pmod_ja[2]', '[3]': 'pmod_ja[3]', '[4]': 'pmod_ja[4]', '[5]': 'pmod_ja[5]', '[6]': 'pmod_ja[6]', '[7]': 'pmod_ja[7]'}
+  parts:
+    - id: clk125mhz
+      label: clk125mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 125}, bind: {clk: clk125mhz}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 4}, bind: {led: onboard_leds}}
+    - id: rgb_led_5
+      label: RGB LED LD5 (Zybo Z7-20 only)
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_5.r, g: onboard_rgb_led_5.g, b: onboard_rgb_led_5.b}}
+    - id: rgb_led_6
+      label: RGB LED LD6
+      attach: {peripheral: rgb_led, bind: {r: onboard_rgb_led_6.r, g: onboard_rgb_led_6.g, b: onboard_rgb_led_6.b}}
+    - id: audio_codec
+      label: Audio codec (I2S-style playback/record data + I2C control)
+      device: {kind: audio, bank: onboard_audio_codec}   # no peripheral model yet
+    - id: eth_phy_ctrl
+      label: Ethernet PHY sideband (interrupt, reset); data path is on PS MIO
+      device: {kind: ethernet, bank: onboard_eth_phy_ctrl}   # no peripheral model yet
+    - id: usb_otg_oc
+      label: USB OTG over-current detect
+      device: {kind: other, bank: onboard_usb_otg_oc}   # no peripheral model yet
+    - id: fan
+      label: Fan tachometer (Zybo Z7-20 only)
+      device: {kind: other, bank: onboard_fan}   # no peripheral model yet
+    - id: hdmi_rx
+      label: HDMI input (sink; J10, direct TMDS to FPGA)
+      device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet
+    - id: hdmi_tx
+      label: HDMI output (source; direct TMDS from FPGA)
+      device: {kind: hdmi_tx, bank: onboard_hdmi_tx}   # no peripheral model yet
+    - id: pcam_csi2
+      label: Pcam MIPI CSI-2 camera connector (2 data lanes)
+      device: {kind: other, bank: onboard_pcam_csi2}   # no peripheral model yet
+    - id: crypto
+      label: Crypto chip single-wire interface (chip unloaded, for future use)
+      device: {kind: other, bank: onboard_crypto}   # no peripheral model yet
+    - id: ps_ethernet
+      label: PS Gigabit Ethernet (GEM0, RGMII PHY)
+      device: {kind: ethernet, bank: onboard_ps_ethernet}   # no peripheral model yet
+    - id: ps_usb
+      label: PS USB 2.0 OTG (USB0, ULPI PHY)
+      device: {kind: other, bank: onboard_ps_usb}   # no peripheral model yet
+    - id: ps_sdcard
+      label: PS microSD slot (SD0)
+      device: {kind: sdcard, bank: onboard_ps_sdcard}   # no peripheral model yet
+    - id: ps_qspi_flash
+      label: PS Quad-SPI flash (boot)
+      device: {kind: flash, bank: onboard_ps_qspi_flash}   # no peripheral model yet
+    - id: ps_uart
+      label: PS UART1 (the board USB-UART; the bridge is not named in the preset)
+      device: {kind: uart, bank: onboard_ps_uart}   # no peripheral model yet

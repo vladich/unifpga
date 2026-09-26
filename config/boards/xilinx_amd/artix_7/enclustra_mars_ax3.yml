@@ -1,0 +1,20 @@
+# enclustra_mars_ax3: Enclustra Mars AX3 (Artix-7 SoM successor to MX2).
+
+Board:
+  id: enclustra_mars_ax3
+  name: Enclustra Mars AX3 (Artix-7 SoM successor to MX2)
+  url: https://www.enclustra.com/en/products/fpga-modules/mars-ax3/
+  status: active
+  producer: enclustra
+  chip: XC7A100T-2FGG484I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - qspi_flash
+  - ethernet_phy_gigabit
+  devices:
+  - micron_mt41k256m16
+  - macronix_mx25l25645g
+  - marvell_88e1512

@@ -1,0 +1,30 @@
+# redpitaya_stemlab_125_14_pro_gen2: STEMlab 125-14 PRO Gen 2.
+
+Board:
+  id: redpitaya_stemlab_125_14_pro_gen2
+  name: STEMlab 125-14 PRO Gen 2
+  url: https://redpitaya.com/product/stemlab-125-14-pro-starter-kit/
+  status: active
+  producer: redpitaya
+  chip: XC7Z010-1CLG400C
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  extra_programmers:
+  - openFPGALoader[*]
+  features:
+  - adc_chip
+  - can_transceiver
+  - dac_chip
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - qspi_flash
+  - sma_io_pair
+  - usb_2_otg
+  - usb_powered
+  - user_leds
+  devices:
+  - microsd_socket_generic
+  - led_discrete_generic

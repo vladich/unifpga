@@ -1,13 +1,26 @@
 # sipeed_tang_primer_20k_module pin map, from its board inventory (tools/inventory.py; the sources are in
 # the board-sources registry entry).
 
+
 Board:
   id: sipeed_tang_primer_20k_module
-  fpga:
-    producer: "Gowin"
-    family: "Arora/GW2A"
-    part: "GW2A-LV18PG256C8/I7"
-  pinBanks:
+  name: Tang Primer 20K Module
+  product: Tang Primer 20K (core board / SOM)
+  summary: 'Gowin GW2A-LV18PG256C8/I7 (20736 LUT4, 828 Kbit BSRAM, 4 PLL) SO-DIMM module: 128 MB DDR3 (16-bit), 32
+    Mbit SPI NOR flash, 27 MHz oscillator, microSD slot, 8-pin SPI LCD FPC, JST JTAG+UART, 117 IO on a 204-pin DDR3
+    SO-DIMM edge'
+  url: https://wiki.sipeed.com/hardware/en/tang/tang-primer-20k/primer-20k.html
+  producer: sipeed
+  chip: GW2A-LV18PG256C8/I7
+  bridges:
+  - jtag
+  programmer: openFPGALoader
+  features:
+  - ddr3_memory
+  - spi_flash
+  - microsd_socket
+  - spi_lcd
+  banks:
     onboard_clk:   # 27 MHz oscillator U10
       device: {"name": "27 MHz oscillator U10", "kind": "clock"}
       iostandard: "LVCMOS33"

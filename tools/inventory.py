@@ -107,11 +107,12 @@ def _bank_pins(bank):
 # pinmap
 # ---------------------------------------------------------------------------
 
-def _pinmap_path(board_id):
-    entry = config_init.read_board_entry(board_id)
-    if entry is None:
+def _board_path(board_id):
+    """The board's file, config/boards/<producer>/<family>/<id>.yml."""
+    board = config_init.read_board(board_id)
+    if board is None:
         raise InventoryError("board '{}' is not in the catalogue".format(board_id))
-    return os.path.join(config_init.dir_path, "boards", entry["_producer_dir"], entry["_family_dir"], board_id + ".yml")
+    return board["_path"]
 
 
 def plan(inv, pinmap):
@@ -182,30 +183,32 @@ def _bank_text(bank, d, shares):
     return lines
 
 
-def _new_pinmap(board_id, path):
-    """A pinmap for a board that has none: its header from the catalogue,
-    an empty pinBanks the import then fills with every device."""
-    entry = config_init.read_board_entry(board_id)
-    chip = entry.get("Chip") or ((entry.get("Chips") or [{}])[0].get("Chip") if entry.get("Chips") else None)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+def _ensure_banks(path):
+    """A `banks:` block in the board file for a board that has none yet:
+    before its drawn section, else at the end."""
+    from tools.layout_draft import DRAWN_MARKER
+    with open(path, encoding="utf-8") as f:
+        lines = f.read().split("\n")
+    if any(re.match(r"^  banks:\s*(#.*)?$", l) for l in lines):
+        return
+    marker = DRAWN_MARKER.split("{}")[0]
+    at = next((i for i, l in enumerate(lines) if l.startswith(marker)), None)
+    if at is None:
+        at = len(lines)
+        while at and not lines[at - 1].strip():
+            at -= 1
+    lines[at:at] = ["  banks:"]
     with open(path, "w", encoding="utf-8") as f:
-        f.write("\n".join([
-            "# {} pin map, from its board inventory (tools/inventory.py; the sources are in".format(board_id),
-            "# the board-sources registry entry).", "",
-            "Board:", "  id: {}".format(board_id), "  fpga:",
-            "    producer: {}".format(_flow(entry.get("PartProducer"))),
-            "    family: {}".format(_flow(entry.get("PartFamily"))),
-            "    part: {}".format(_flow(chip)),
-            "  pinBanks:", ""]))
+        f.write("\n".join(lines))
 
 
 def _insert_banks(path, text_lines):
-    """Append bank lines at the end of the pinmap's `pinBanks:` block."""
+    """Append bank lines at the end of the board file's `banks:` block."""
     with open(path, encoding="utf-8") as f:
         lines = f.read().split("\n")
-    start = next((i for i, l in enumerate(lines) if re.match(r"^  pinBanks:\s*(#.*)?$", l)), None)
+    start = next((i for i, l in enumerate(lines) if re.match(r"^  banks:\s*(#.*)?$", l)), None)
     if start is None:
-        raise InventoryError("{}: no pinBanks block".format(path))
+        raise InventoryError("{}: no banks block".format(path))
     end = start + 1
     last = start
     while end < len(lines):
@@ -225,30 +228,25 @@ def _insert_banks(path, text_lines):
 # ---------------------------------------------------------------------------
 
 def _set_product(board_id, product_name, summary):
-    """ProductName / Summary on the board's catalogue entry (inserted after
-    BoardName, or replaced). Returns True when the file changed."""
-    entry = config_init.read_board_entry(board_id)
-    path = entry["_catalog_path"]
+    """product / summary in the board's file (inserted after its name, or
+    replaced). Returns True when the file changed."""
+    path = _board_path(board_id)
     with open(path, encoding="utf-8") as f:
         lines = f.read().split("\n")
-    i = next(k for k, l in enumerate(lines) if re.match(r"^  - Id:\s*{}\s*$".format(re.escape(board_id)), l))
-    j = i + 1
-    while j < len(lines) and (lines[j].startswith("    ") or not lines[j].strip()) and not lines[j].startswith("  - "):
-        j += 1
-    block = lines[i:j]
-    block = [l for l in block if not re.match(r"^    (ProductName|Summary):", l)]
-    at = next((k for k, l in enumerate(block) if re.match(r"^    BoardName:", l)), 0) + 1
+    kept = [l for l in lines if not re.match(r"^  (product|summary):", l)]
+    at = next((k for k, l in enumerate(kept) if re.match(r"^  name:", l)), None)
+    if at is None:
+        raise InventoryError("{}: no name line to put the product after".format(path))
     new = []
     if product_name:
-        new.append("    ProductName: {}".format(_flow(product_name)))
+        new.append("  product: {}".format(_flow(product_name)))
     if summary:
-        new.append("    Summary: {}".format(_flow(summary)))
-    block[at:at] = new
-    if block == lines[i:j]:
+        new.append("  summary: {}".format(_flow(summary)))
+    kept[at + 1:at + 1] = new
+    if kept == lines:
         return False
-    lines[i:j] = block
     with open(path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+        f.write("\n".join(kept))
     return True
 
 
@@ -291,16 +289,9 @@ def _record(inv):
 def import_inventory(inv, write=True):
     """Import one inventory; the report of what it did (see plan())."""
     board_id = inv["board"]
-    path = _pinmap_path(board_id)
-    created = False
-    if not os.path.exists(path):
-        if not write:
-            pinmap = {}
-        else:
-            _new_pinmap(board_id, path)
-            config_init.clear_cache()
-            created = True
+    path = _board_path(board_id)
     pinmap = config_init.read_board_pinmap(board_id) or {}
+    created = not pinmap                                # the board had no banks yet
     p = plan(inv, pinmap)
     banks = dict(pinmap.get("pinBanks") or {})
     new = {b: (b, _balls(_as_bank_pins(d))) for b, d in p["add"]}
@@ -310,10 +301,10 @@ def import_inventory(inv, write=True):
         text += _bank_text(b, d, _shares(b, new[b][1], everything))
     report = dict(p, board=board_id, pinmap=os.path.relpath(path, os.path.dirname(config_init.dir_path)), created=created)
     if created and not p["add"]:
-        os.remove(path)                                # nothing with pins: no pinmap after all
         raise InventoryError("board '{}': the inventory has no device with pins".format(board_id))
     if write:
         if text:
+            _ensure_banks(path)
             _insert_banks(path, text)
         report["catalogue"] = _set_product(board_id, inv.get("product_name"), inv.get("summary"))
         report["registry"] = _record(inv)

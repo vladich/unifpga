@@ -1,0 +1,25 @@
+# htg_710: HTG-710 Virtex-7 PCIe Dev Board (X485T/X415T).
+
+Board:
+  id: htg_710
+  name: HTG-710 Virtex-7 PCIe Dev Board (X485T/X415T)
+  url: https://www.hitechglobal.com/Boards/Virtex-7_FMC.htm
+  status: active
+  producer: hitech_global
+  chip: XC7VX485T-2FFG1761C
+  bridges:
+  - pcie-jtag
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - fmc_hpc
+  - pcie_endpoint
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  devices:
+  - ftdi_ft2232h
+  - silabs_si570
+  - micron_n25q256a
+  - ddr3_sodimm_socket

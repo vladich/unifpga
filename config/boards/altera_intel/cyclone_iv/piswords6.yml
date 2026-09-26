@@ -1,11 +1,24 @@
 # piswords6 pin map.
 
+
 Board:
   id: piswords6
-  fpga:
-    producer: "Altera (Intel)"
-    family: "Cyclone IV"
-    part: EP4CE6E22C8
+  name: Altera FPGA Core Board (EP4CE6)
+  product: PiSwords Altera FPGA development board RFB-D V2.0 (EP4CE6E22C8), schematic file PS06
+  summary: Cyclone IV E EP4CE6E22C8 (6272 LE), EQFP-144; HY57V641620 64 Mbit x16 SDRAM, EPCS4 config flash, AT24C08
+    EEPROM, DS18B20; 8 LEDs, 4 keys + nCONFIG key, 4-way DIP switch, 8-digit 7-segment, 3-bit VGA, RS232 (MAX3232,
+    DB9), LCD1602/12864 sockets, buzzer, 28-pin GPIO header; most peripherals share pins with the SDRAM
+  producer: piswords
+  chip: EP4CE6E22C8
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - buzzer
+  - eeprom_chip
+  - temperature_sensor_external
+  - sdr_sdram
+  - spi_flash
   defaults:
     iostandard: 3.3-V LVTTL
 
@@ -16,7 +29,7 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
         - "CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION \"USE AS REGULAR IO\""
-  pinBanks:
+  banks:
     clk: { pins: "23", frequency_mhz: 50 }
     onboard_buttons:
       active: low
@@ -66,3 +79,52 @@ Board:
     onboard_epcs4si8n_config_flash_u4:   # EPCS4SI8N config flash U4
       device: {"name": "EPCS4SI8N config flash U4", "kind": "flash"}
       pins: {"dclk": "12", "data0": "13", "asdo": "6", "ncso": "8"}
+  # ---- drawn: headers and parts; ./unifpga layout draft piswords6 regenerates from here on ----
+  layout: {verified: false, generated: true}
+  headers:
+    - id: gpio
+      type: pin_row
+      label: GPIO
+      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      bank: gpio
+      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]'}
+  parts:
+    - id: clk
+      label: clk
+      attach: {peripheral: clock_input, bind: {clk: clk}}
+    - id: buttons
+      label: buttons
+      attach: {peripheral: button_array, params: {width: 4}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: switches
+      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: leds
+      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 8, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 1, pin_bits_g: 1, pin_bits_b: 1, color_depth: 444}, bind: {r: ['onboard_vga.rgb[2]'], g: ['onboard_vga.rgb[1]'], b: ['onboard_vga.rgb[0]'], hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: uart
+      label: uart
+      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+    - id: buzzer
+      label: BUZZER SP1 (S8550 Q1)
+      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.beep}}
+    - id: temperature
+      label: DS18B20 temperature sensor U5
+      attach: {peripheral: ds18b20, bind: {dq: onboard_temperature.dq}}
+    - id: eeprom
+      label: EEPROM AT24C08 U3
+      device: {kind: eeprom, bank: onboard_eeprom}   # no peripheral model yet
+    - id: sdram
+      label: SDRAM HY57V641620 U2 (4M x16)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.clk, cke: onboard_sdram.cke, cs_n: onboard_sdram.cs_n, ras_n: onboard_sdram.ras_n, cas_n: onboard_sdram.cas_n, we_n: onboard_sdram.we_n, ba: onboard_sdram.ba, a: onboard_sdram.a, dq: onboard_sdram.dq, dqm: onboard_sdram.dqm}}
+    - id: lcd
+      label: LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets
+      attach: {peripheral: hd44780_lcd, bind: {rs: onboard_lcd.rs, e: onboard_lcd.en, d: ['onboard_lcd.d[4]', 'onboard_lcd.d[5]', 'onboard_lcd.d[6]', 'onboard_lcd.d[7]'], rw: onboard_lcd.rw}}
+    - id: epcs4si8n_config_flash_u4
+      label: EPCS4SI8N config flash U4
+      device: {kind: flash, bank: onboard_epcs4si8n_config_flash_u4}   # no peripheral model yet

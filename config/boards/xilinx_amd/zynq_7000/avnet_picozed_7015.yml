@@ -1,0 +1,21 @@
+# avnet_picozed_7015: PicoZed 7015.
+
+Board:
+  id: avnet_picozed_7015
+  name: PicoZed 7015
+  url: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/picozed/
+  producer: avnet
+  chip: XC7Z015-1CLG485C
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr3_memory
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - qspi_flash
+  devices:
+  - micron_mt41k256m16
+  - micron_n25q256a
+  - marvell_88e1512
+  - emmc_chip_generic

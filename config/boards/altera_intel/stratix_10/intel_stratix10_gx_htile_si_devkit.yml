@@ -1,0 +1,27 @@
+# intel_stratix10_gx_htile_si_devkit: Stratix 10 GX H-Tile Transceiver Signal Integrity Development Kit.
+
+Board:
+  id: intel_stratix10_gx_htile_si_devkit
+  name: Stratix 10 GX H-Tile Transceiver Signal Integrity Development Kit
+  status: eol
+  producer: intel_altera
+  chip: 1SG280HU2F50E2VG
+  bridges:
+  - usb-jtag
+  programmer: quartus_pgm
+  features:
+  - ddr4_memory
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - usb_jtag_bridge
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ddr4_sodimm_socket
+  - micron_n25q256a
+  - usb_blaster_ii_built_in
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

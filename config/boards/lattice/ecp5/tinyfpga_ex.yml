@@ -1,0 +1,12 @@
+# tinyfpga_ex: TinyFPGA EX.
+
+Board:
+  id: tinyfpga_ex
+  name: TinyFPGA EX
+  url: https://tinyfpga.com/
+  producer: tinyfpga
+  chip: LFE5U-85F-8MG285C
+  bridges:
+  - ft2232h-jtag
+  programmer: dfu_util
+  bootloader: usb-dfu

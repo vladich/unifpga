@@ -1,0 +1,23 @@
+# edge_spartan_6: EDGE Spartan 6.
+
+Board:
+  id: edge_spartan_6
+  name: EDGE Spartan 6
+  url: https://allaboutfpga.com/product/edge-spartan-6-fpga-development-board/
+  status: active
+  producer: invent_logics
+  chip: XC6SLX9-2TQG144C
+  bridges:
+  - jtag
+  programmer: ise_impact
+  features:
+  - vga_output
+  - audio_codec
+  - usb_uart_bridge
+  - usb_jtag_bridge
+  - qspi_flash
+  - seven_segment_display
+  - user_leds
+  - user_buttons
+  - dip_switches
+  - usb_powered

@@ -1,0 +1,33 @@
+# microchip_polarfiresoc_disco: PolarFire SoC Discovery Kit.
+
+Board:
+  id: microchip_polarfiresoc_disco
+  name: PolarFire SoC Discovery Kit
+  aliases:
+  - microchip_iglooicicle_disco
+  url: https://www.microchip.com/en-us/development-tool/mpfs-disco-kit
+  status: active
+  producer: microchip
+  chip: MPFS095T-1FCSG325E
+  bridges:
+  - jtag
+  programmer: libero_fpexpress
+  features:
+  - ethernet_phy_gigabit
+  - microsd_socket
+  - mikrobus_socket
+  - mipi_csi2_input
+  - qspi_flash
+  - raspi_hat_header
+  - spi_flash
+  - usb_jtag_bridge
+  - usb_powered
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - ftdi_ft4232h
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - winbond_w25q128

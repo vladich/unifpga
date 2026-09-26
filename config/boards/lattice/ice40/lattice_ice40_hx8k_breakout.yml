@@ -1,0 +1,15 @@
+# lattice_ice40_hx8k_breakout: iCE40-HX8K Breakout Board.
+
+Board:
+  id: lattice_ice40_hx8k_breakout
+  name: iCE40-HX8K Breakout Board
+  url: https://www.latticesemi.com/products/developmentboardsandkits/ice40hx8kbreakoutboard
+  producer: lattice
+  chip: iCE40HX8K-CT256
+  bridges:
+  - jtag
+  programmer: iceprog
+  features:
+  - usb_jtag_bridge
+  devices:
+  - ftdi_ft2232h

@@ -4,9 +4,41 @@
 #   https://github.com/alinxalinx/Z19/blob/master/vivado/auto_create_project/src/constraints/system.xdc
 #   https://github.com/alinxalinx/Z19/blob/master/vivado/auto_create_project/src/constraints/uart.xdc
 
+
 Board:
   id: alinx_z19
-  pinBanks:
+  name: Alinx Z19
+  url: https://coderobin.com/products/alinx-z19-xilinx-zynq-ultrascale-mpsoc-xczu19eg-fpga-development-board
+  status: active
+  notes: ZU19EG with 4x 100G QSFP28 and 2x HPC FMC.
+  producer: alinx
+  chip: XCZU19EG-2FFVC1760I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - displayport_output
+  - emmc_flash
+  - ethernet_phy_gigabit
+  - fmc_hpc
+  - microsd_socket
+  - nvme_socket
+  - pcie_endpoint
+  - qsfp_cage
+  - qspi_flash
+  - sata_host
+  - sd_card_socket
+  - usb_3_host
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - microsd_socket_generic
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  banks:
     sys_clk_diff:
       pins:
         p: H24

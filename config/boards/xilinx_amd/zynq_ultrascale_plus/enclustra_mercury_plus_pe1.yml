@@ -1,0 +1,28 @@
+# enclustra_mercury_plus_pe1: Enclustra Mercury+ PE1 PCIe Base Board.
+
+Board:
+  id: enclustra_mercury_plus_pe1
+  name: Enclustra Mercury+ PE1 PCIe Base Board
+  url: https://www.enclustra.com/en/products/base-boards/mercury-pe1-200-300-400/
+  status: active
+  producer: enclustra
+  chip: XCZU7EV-1FFVC1156I
+  bridges:
+  - usb-jtag
+  programmer: vivado_hw
+  features:
+  - pcie_edge_connector
+  - sata_host
+  - sfp_cage
+  - ethernet_phy_gigabit
+  - usb_3_host
+  - usb_uart_bridge
+  - hdmi_output
+  - displayport_output
+  - microsd_socket
+  - fmc_lpc
+  devices:
+  - marvell_88e1512
+  - adi_adv7511
+  - ftdi_ft4232h
+  - microsd_socket_generic

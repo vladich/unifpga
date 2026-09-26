@@ -1,0 +1,27 @@
+# pangomicro_pgxlite_pgc4k_pgc7k: Pangu PGX-Lite (PGC7KD/PGC4KD) Development Board.
+
+Board:
+  id: pangomicro_pgxlite_pgc4k_pgc7k
+  name: Pangu PGX-Lite (PGC7KD/PGC4KD) Development Board
+  url: https://www.pangomicro.com/open/4495.html
+  status: active
+  notes: Onboard JTAG; 5 PMOD; 40-pin header for camera/ADC.
+  producer: pangomicro
+  chip: PGC7KD-6IMBG256
+  bridges:
+  - usb-jtag
+  programmer: pango_pgm
+  features:
+  - dip_switches
+  - gpio_header_generic
+  - pmod_connector
+  - seven_segment_display
+  - usb_jtag_bridge
+  - usb_powered
+  - usb_uart_bridge
+  - user_buttons
+  - user_leds
+  devices:
+  - silabs_cp2102
+  - led_discrete_generic
+  - pushbutton_smd_generic

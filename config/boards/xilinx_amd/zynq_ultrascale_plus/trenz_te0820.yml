@@ -1,0 +1,17 @@
+# trenz_te0820: TE0820.
+
+Board:
+  id: trenz_te0820
+  name: TE0820
+  url: https://shop.trenz-electronic.de/en/Products/Trenz-Electronic/TE08XX-Zynq-UltraScale/
+  producer: trenz_electronic
+  chip: XCZU3EG-1SFVA625I
+  bridges:
+  - jtag
+  programmer: vivado_hw
+  features:
+  - ddr4_memory
+  - qspi_flash
+  devices:
+  - micron_mt40a256m16
+  - macronix_mx25l25645g
