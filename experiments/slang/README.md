@@ -5,7 +5,8 @@ accepted SystemVerilog parser, an import service, or a sandbox for untrusted
 repositories. The [Slang 11 release](https://github.com/MikePopoloski/slang/releases/tag/v11.0)
 changed Python binding namespaces, and this experiment uses its new API. The
 separate `pyproject.toml` and `uv.lock` keep that dependency outside the main
-project's Python >=3.8 runtime.
+project's Python >=3.8 runtime. The lock also pins PyYAML for corpus tests
+that read the project's authoritative design filesets.
 
 Run `uv sync --project experiments/slang --locked` with
 `UV_PROJECT_ENVIRONMENT` and `UV_CACHE_DIR` set to a manifested task-scoped
@@ -56,3 +57,13 @@ items, 4,096 UTF-8 bytes per fact string, and 8 MiB of serialized output.
 Exceeding a bound fails the probe rather than emitting a truncated graph.
 The format is experiment-owned and does not define the project configuration
 schema or an import-service contract.
+
+`test_rtl_corpus.py` also elaborates the existing APS CPU/control design from
+its `fileset.yml` with the testbench's top-level parameters and the simulation
+clock-buffer helper. The current corpus has 40 HDL sources and yields 44
+instances, including CPU, instruction/data memory, UART, timer, and interrupt
+control. Slang reports no errors but 115 warnings, including width conversions,
+unnamed generate scopes, and a dangling `else`. The fileset declares four
+memory/firmware assets; this frontend check does not validate their runtime
+loading or execute firmware. It establishes a reproducible starting point for
+the mixed-source CPU PoC, not a working SoC or a virtual-device conversion.
