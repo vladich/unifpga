@@ -28,6 +28,14 @@ Board:
   - dip_switch_generic
   - led_discrete_generic
   - rgb_led_common_anode
+  documents:
+  - id: xdc
+    title: Digilent Arty-S7-50-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Arty-S7-50-Master.xdc
+    sha256: 26d472164373dff063f3cbdc3c10e958d1e8251d9e3b86776e5ab6889ba53ab5
+    bytes: 18428
+    retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
 

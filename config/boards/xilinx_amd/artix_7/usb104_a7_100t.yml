@@ -26,6 +26,14 @@ Board:
   - microsd_socket_generic
   - pushbutton_smd_generic
   - led_discrete_generic
+  documents:
+  - id: xdc
+    title: Digilent USB104-A7-100T-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/USB104-A7-100T-Master.xdc
+    sha256: 75c7681f734021d9e2637e716402d982edbcd144f4a7440789eef1dac02ff122
+    bytes: 18027
+    retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
 

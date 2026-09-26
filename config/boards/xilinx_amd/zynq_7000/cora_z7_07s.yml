@@ -31,6 +31,14 @@ Board:
   - led_discrete_generic
   - rgb_led_common_anode
   - ti_txs02612
+  documents:
+  - id: xdc
+    title: Digilent Cora-Z7-07S-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Cora-Z7-07S-Master.xdc
+    sha256: 7d689e023461834428a4f3b2b803ac94c66efb8d6994947d583bc4f5095c6eb5
+    bytes: 14113
+    retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
 

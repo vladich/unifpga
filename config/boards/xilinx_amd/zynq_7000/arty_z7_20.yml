@@ -39,6 +39,14 @@ Board:
   - pwm_audio_inline
   - issi_is43tr16256a
   - ti_txs02612
+  documents:
+  - id: xdc
+    title: Digilent Arty-Z7-20-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Arty-Z7-20-Master.xdc
+    sha256: bfdb236bfbd3a575c86c25aaa2f8d155075a5b4b03ec46503ab2533a777bada5
+    bytes: 17838
+    retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
 

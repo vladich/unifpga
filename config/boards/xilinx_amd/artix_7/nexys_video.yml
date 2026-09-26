@@ -44,6 +44,14 @@ Board:
   - adi_adau1761
   - univision_ug2832hsweg04
   - microchip_pic24fj128_usb_host
+  documents:
+  - id: xdc
+    title: Digilent Nexys-Video-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Nexys-Video-Master.xdc
+    sha256: 2debf0afb537c0a9f8f2c1569aa99e0366629a354f2fbdf369bd5142670086cc
+    bytes: 28746
+    retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
 

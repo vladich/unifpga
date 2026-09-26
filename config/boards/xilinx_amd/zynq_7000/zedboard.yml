@@ -39,5 +39,13 @@ Board:
   - pushbutton_smd_generic
   - dip_switch_generic
   - led_discrete_generic
+  documents:
+  - id: xdc
+    title: Digilent Zedboard-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Zedboard-Master.xdc
+    sha256: 4c3ae9d40dce0cb0ca86fdd381a3ec05e0cc099c6f17f8299e270690b2b58b5c
+    bytes: 21398
+    retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33

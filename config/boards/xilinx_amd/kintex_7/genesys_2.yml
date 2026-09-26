@@ -46,6 +46,14 @@ Board:
   - adi_adau1761
   - univision_ug2832hsweg04
   - microchip_pic24fj128_usb_host
+  documents:
+  - id: xdc
+    title: Digilent Genesys-2-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Genesys-2-Master.xdc
+    sha256: 2f704ad912640bcbc2e6b900518452e3153d89bf91cef55d075153107e6c72ce
+    bytes: 46549
+    retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
 
