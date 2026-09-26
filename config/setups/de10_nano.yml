@@ -6,31 +6,57 @@ Setup:
   board: de10_nano
   toolchain: quartus_prime_lite
   toolchains: [quartus_prime_lite, nextpnr_mistral]
-  aliases: {de10_nano_mistral: {toolchain: nextpnr_mistral}}
+  aliases:
+    de10_nano_mistral:
+      toolchain: nextpnr_mistral
   use:
     - onboard: fpga_clk1_50mhz
     - onboard: buttons
-      design_bits: {buttons: [0, 1]}
+      design_bits:
+        buttons: [0, 1]
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, null]}
+      design_bits:
+        switches: [0, 1, 2, null]
     - onboard: leds
-      design_bits: {leds: [0, 1, 2, 3, 4, 5, 6, 7]}
+      design_bits:
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: tm1638_led_key
-      wires: {STB: 'gpio_0.[27]', CLK: 'gpio_0.[29]', DIO: 'gpio_0.[31]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: gpio_0.[27]
+        CLK: gpio_0.[29]
+        DIO: gpio_0.[31]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: []
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {SCK: 'gpio_0.[4]', WS: 'gpio_0.[2]', SD: 'gpio_0.[5]', L/R: 'gpio_0.[0]'}
+      wires:
+        SCK: gpio_0.[4]
+        WS: gpio_0.[2]
+        SD: gpio_0.[5]
+        L/R: gpio_0.[0]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio_0.[17]', BCK: 'gpio_0.[15]', LCK: 'gpio_0.[11]', DIN: 'gpio_0.[13]'}
+      wires:
+        SCK: gpio_0.[17]
+        BCK: gpio_0.[15]
+        LCK: gpio_0.[11]
+        DIN: gpio_0.[13]
     - onboard: hdmi_tx
     - gpio: gpio_0
-      params: {width: 36}
+      params:
+        width: 36
     - onboard: adc
   design:
     reset:
       sources:
-      - {switch_msb: true}
+      - switch_msb: true
     uart_rx: 1
   extra:
-    tie: {onboard_hdmi_tx.i2s: 0, onboard_hdmi_tx.lrclk: 0, onboard_hdmi_tx.mclk: 0, onboard_hdmi_tx.sclk: 0,
-      'gpio_0[1]': 0, 'gpio_0[3]': 1}
+    tie:
+      onboard_hdmi_tx.i2s: 0
+      onboard_hdmi_tx.lrclk: 0
+      onboard_hdmi_tx.mclk: 0
+      onboard_hdmi_tx.sclk: 0
+      gpio_0[1]: 0
+      gpio_0[3]: 1

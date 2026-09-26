@@ -8,30 +8,72 @@ Setup:
   use:
     - onboard: clk50mhz
     - onboard: buttons
-      design_bits: {buttons: [0, 1]}
+      design_bits:
+        buttons: [0, 1]
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, null]}
+      design_bits:
+        switches: [0, 1, 2, null]
     - onboard: leds
-      design_bits: {leds: [0, 1, 2, 3, 4, 5, 6, 7]}
+      design_bits:
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: digilent_pmod_vga
-      wires: {R0: 'gpio_1.[11]', R1: 'gpio_1.[17]', R2: 'gpio_1.[3]', R3: 'gpio_1.[1]', G0: 'gpio_1.[5]', G1: 'gpio_1.[19]', G2: 'gpio_1.[15]', G3: 'gpio_1.[13]', B0: 'gpio_1.[21]', B1: 'gpio_1.[7]', B2: 'gpio_1.[9]', B3: 'gpio_1.[23]', HS: 'gpio_1.[31]', VS: 'gpio_1.[33]'}
-      params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, registered: true}
+      wires:
+        R0: gpio_1.[11]
+        R1: gpio_1.[17]
+        R2: gpio_1.[3]
+        R3: gpio_1.[1]
+        G0: gpio_1.[5]
+        G1: gpio_1.[19]
+        G2: gpio_1.[15]
+        G3: gpio_1.[13]
+        B0: gpio_1.[21]
+        B1: gpio_1.[7]
+        B2: gpio_1.[9]
+        B3: gpio_1.[23]
+        HS: gpio_1.[31]
+        VS: gpio_1.[33]
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        registered: true
     - module: tm1638_led_key
-      wires: {STB: 'gpio_0.[25]', CLK: 'gpio_0.[27]', DIO: 'gpio_0.[29]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: gpio_0.[25]
+        CLK: gpio_0.[27]
+        DIO: gpio_0.[29]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: []
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {SCK: 'gpio_0.[6]', WS: 'gpio_0.[4]', SD: 'gpio_0.[7]', L/R: 'gpio_0.[2]'}
+      wires:
+        SCK: gpio_0.[6]
+        WS: gpio_0.[4]
+        SD: gpio_0.[7]
+        L/R: gpio_0.[2]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio_1.[30]', BCK: 'gpio_1.[28]', LCK: 'gpio_1.[24]', DIN: 'gpio_1.[26]'}
+      wires:
+        SCK: gpio_1.[30]
+        BCK: gpio_1.[28]
+        LCK: gpio_1.[24]
+        DIN: gpio_1.[26]
     - gpio: gpio_0
-      params: {width: 34}
+      params:
+        width: 34
     - onboard: adc
     - onboard: accelerometer
     - onboard: sdram
   design:
     reset:
       sources:
-      - {switch_msb: true}
+      - switch_msb: true
     uart_rx: 1
   extra:
-    tie: {'gpio_0[3]': 0, 'gpio_0[5]': 1}
+    tie:
+      gpio_0[3]: 0
+      gpio_0[5]: 1

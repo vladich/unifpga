@@ -33,7 +33,7 @@ Producers:
 
   - id: achronix
     name: "Achronix Semiconductor"
-    aka: ["Achronix"]
+    aka: [Achronix]
     url: "https://www.achronix.com/"
     country: USA
     founded: 2004
@@ -44,7 +44,7 @@ Producers:
 
   - id: adiuvo
     name: "Adiuvo Engineering & Training Ltd"
-    aka: ["Adiuvo Engineering", "Adiuvo Engineering and Training"]
+    aka: [Adiuvo Engineering, Adiuvo Engineering and Training]
     url: "https://www.adiuvoengineering.com/"
     country: UK
     founded: 2014
@@ -55,7 +55,7 @@ Producers:
 
   - id: alchitry
     name: "Alchitry"
-    aka: ["Alchitry"]
+    aka: [Alchitry]
     url: "https://www.alchitry.com/"
     country: USA
     founded: null
@@ -66,7 +66,7 @@ Producers:
 
   - id: alinx
     name: "ALINX"
-    aka: ["Alinx", "ALINX Electronic Technology"]
+    aka: [Alinx, ALINX Electronic Technology]
     url: "https://www.alinx.com/"
     country: China
     founded: 2007
@@ -77,7 +77,7 @@ Producers:
 
   - id: anlogic
     name: "Anlogic"
-    aka: ["Anlogic", "Anlu Microelectronics", "安路科技", "Shanghai Anlogic Infotech"]
+    aka: [Anlogic, Anlu Microelectronics, 安路科技, Shanghai Anlogic Infotech]
     url: "https://www.anlogic.com/"
     country: China
     founded: 2011
@@ -88,7 +88,7 @@ Producers:
 
   - id: avnet
     name: "Avnet"
-    aka: ["Avnet Electronics Marketing", "Avnet Silica", "Avnet/Digilent"]
+    aka: [Avnet Electronics Marketing, Avnet Silica, Avnet/Digilent]
     url: "https://www.avnet.com/"
     country: USA
     founded: 1921
@@ -99,7 +99,7 @@ Producers:
 
   - id: beagleboard
     name: "BeagleBoard.org Foundation"
-    aka: ["BeagleBoard", "BeagleBoard.org"]
+    aka: [BeagleBoard, BeagleBoard.org]
     url: "https://www.beagleboard.org/"
     country: USA
     founded: 2008
@@ -110,7 +110,7 @@ Producers:
 
   - id: bittware
     name: "BittWare"
-    aka: ["BittWare, a Molex Company"]
+    aka: ['BittWare, a Molex Company']
     url: "https://www.bittware.com/"
     country: USA
     founded: 1989
@@ -132,7 +132,7 @@ Producers:
 
   - id: bunnie_studios
     name: "Bunnie Studios"
-    aka: ["Sutajio Ko-usagi", "Sutajio Ko-usagi PTE LTD", "Kosagi"]
+    aka: [Sutajio Ko-usagi, Sutajio Ko-usagi PTE LTD, Kosagi]
     url: "https://www.bunniestudios.com/"
     country: Singapore
     founded: null
@@ -143,7 +143,7 @@ Producers:
 
   - id: cologne_chip
     name: "Cologne Chip AG"
-    aka: ["Cologne Chip"]
+    aka: [Cologne Chip]
     url: "https://www.colognechip.com/"
     country: Germany
     founded: 2002
@@ -154,7 +154,7 @@ Producers:
 
   - id: colorlight
     name: "Colorlight"
-    aka: ["ColorLight", "Colorlight Cloud Tech"]
+    aka: [ColorLight, Colorlight Cloud Tech]
     url: "https://www.colorlightinside.com/"
     country: China
     founded: 2003
@@ -165,7 +165,7 @@ Producers:
 
   - id: digilent
     name: "Digilent"
-    aka: ["Digilent Inc.", "Digilent (NI)"]
+    aka: [Digilent Inc., Digilent (NI)]
     url: "https://digilent.com/"
     country: USA
     founded: 2000
@@ -176,7 +176,7 @@ Producers:
 
   - id: efinix
     name: "Efinix"
-    aka: ["Efinix"]
+    aka: [Efinix]
     url: "https://www.efinixinc.com/"
     country: USA
     founded: 2012
@@ -187,7 +187,7 @@ Producers:
 
   - id: embedded_micro
     name: "Embedded Micro"
-    aka: ["Embedded Micro"]
+    aka: [Embedded Micro]
     url: "https://embeddedmicro.com/"
     country: USA
     founded: null
@@ -198,7 +198,7 @@ Producers:
 
   - id: emoocc
     name: "emooc.cc"
-    aka: ["emoocc.cc"]
+    aka: [emoocc.cc]
     url: "http://www.emooc.cc/"
     country: China
     founded: null
@@ -209,7 +209,7 @@ Producers:
 
   - id: enclustra
     name: "Enclustra"
-    aka: ["Enclustra GmbH"]
+    aka: [Enclustra GmbH]
     url: "https://www.enclustra.com/"
     country: Switzerland
     founded: 2004
@@ -220,7 +220,7 @@ Producers:
 
   - id: fabmicro
     name: "Fabmicro LLC"
-    aka: ["Fabmicro", "ООО Фабмикро"]
+    aka: [Fabmicro, ООО Фабмикро]
     url: "https://www.fabmicro.ru/"
     country: Russia
     founded: null
@@ -231,7 +231,7 @@ Producers:
 
   - id: flex_logix
     name: "Flex Logix Technologies, Inc."
-    aka: ["Flex Logix", "Flexlogic"]
+    aka: [Flex Logix, Flexlogic]
     url: "https://flex-logix.com/"
     country: USA
     founded: 2014
@@ -242,7 +242,7 @@ Producers:
 
   - id: folknology
     name: "Folknology"
-    aka: ["Folknology"]
+    aka: [Folknology]
     url: "https://folknology.com/"
     country: UK
     founded: null
@@ -253,7 +253,7 @@ Producers:
 
   - id: foosn
     name: "Foosn"
-    aka: ["Foosn"]
+    aka: [Foosn]
     url: "https://www.crowdsupply.com/sutajio-kosagi/fomu"
     country: null
     founded: null
@@ -275,7 +275,7 @@ Producers:
 
   - id: gowin_semi
     name: "Gowin Semiconductor"
-    aka: ["Gowin", "GOWIN Semiconductor", "广东高云半导体"]
+    aka: [Gowin, GOWIN Semiconductor, 广东高云半导体]
     url: "https://www.gowinsemi.com/"
     country: China
     founded: 2014
@@ -286,7 +286,7 @@ Producers:
 
   - id: great_scott_gadgets
     name: "Great Scott Gadgets"
-    aka: ["Great Scott Gadgets"]
+    aka: [Great Scott Gadgets]
     url: "https://greatscottgadgets.com/"
     country: USA
     founded: 2011
@@ -297,7 +297,7 @@ Producers:
 
   - id: hitech_global
     name: "HiTech Global, LLC"
-    aka: ["HiTech Global"]
+    aka: [HiTech Global]
     url: "https://www.hitechglobal.com/"
     country: USA
     founded: 2004
@@ -308,7 +308,7 @@ Producers:
 
   - id: imperix
     name: "imperix SA"
-    aka: ["Imperix"]
+    aka: [Imperix]
     url: "https://imperix.com/"
     country: Switzerland
     founded: 2013
@@ -319,7 +319,7 @@ Producers:
 
   - id: intel_altera
     name: "Altera"
-    aka: ["Intel", "Intel FPGA", "Intel PSG", "Altera Corporation", "Intel (Altera)", "Altera (Intel)"]
+    aka: [Intel, Intel FPGA, Intel PSG, Altera Corporation, Intel (Altera), Altera (Intel)]
     url: "https://www.altera.com/"
     country: USA
     founded: 1983
@@ -330,7 +330,7 @@ Producers:
 
   - id: intergalaktik
     name: "Intergalaktik d.o.o."
-    aka: ["Intergalaktik"]
+    aka: [Intergalaktik]
     url: "https://www.intergalaktik.eu/"
     country: Croatia
     founded: null
@@ -341,7 +341,7 @@ Producers:
 
   - id: invent_logics
     name: "Invent Logics"
-    aka: ["AllAboutFPGA"]
+    aka: [AllAboutFPGA]
     url: "https://allaboutfpga.com/"
     country: India
     founded: null
@@ -352,7 +352,7 @@ Producers:
 
   - id: iwave
     name: "iWave Systems Technologies Pvt. Ltd."
-    aka: ["iWave Systems", "iWave Global", "iWave Japan"]
+    aka: [iWave Systems, iWave Global, iWave Japan]
     url: "https://www.iwavesystems.com/"
     country: India
     founded: 1999
@@ -374,7 +374,7 @@ Producers:
 
   - id: lattice
     name: "Lattice Semiconductor"
-    aka: ["Lattice", "Lattice Semi"]
+    aka: [Lattice, Lattice Semi]
     url: "https://www.latticesemi.com/"
     country: USA
     founded: 1983
@@ -385,7 +385,7 @@ Producers:
 
   - id: logic_fruit
     name: "Logic Fruit Technologies"
-    aka: ["Logic Fruit"]
+    aka: [Logic Fruit]
     url: "https://www.logic-fruit.com/"
     country: India
     founded: 2009
@@ -396,7 +396,7 @@ Producers:
 
   - id: marsohod
     name: "Marsohod"
-    aka: ["marsohod.org", "Marsohod project"]
+    aka: [marsohod.org, Marsohod project]
     url: "https://marsohod.org/"
     country: Russia
     founded: 2011
@@ -407,7 +407,7 @@ Producers:
 
   - id: menta
     name: "Menta"
-    aka: ["Menta eFPGA"]
+    aka: [Menta eFPGA]
     url: "https://www.menta-efpga.com/"
     country: France
     founded: 2007
@@ -418,7 +418,7 @@ Producers:
 
   - id: microchip
     name: "Microchip Technology"
-    aka: ["Microchip", "Microsemi", "Actel", "Microchip (Actel)"]
+    aka: [Microchip, Microsemi, Actel, Microchip (Actel)]
     url: "https://www.microchip.com/en-us/products/fpgas-and-plds"
     country: USA
     founded: 1989
@@ -429,7 +429,7 @@ Producers:
 
   - id: mist
     name: "MIST"
-    aka: ["MiST", "MIST board", "MIST FPGA"]
+    aka: [MiST, MIST board, MIST FPGA]
     url: "http://www.harbaum.org/till/mist/"
     country: Germany
     founded: null
@@ -440,7 +440,7 @@ Producers:
 
   - id: mister
     name: "MiSTer FPGA"
-    aka: ["MiSTer", "MiSTer-devel"]
+    aka: [MiSTer, MiSTer-devel]
     url: "https://mister-devel.github.io/MkDocs_MiSTer/"
     country: null
     founded: 2017
@@ -451,7 +451,7 @@ Producers:
 
   - id: myir
     name: "MYIR Electronics Limited"
-    aka: ["MYIR Tech", "MYIR Tech Limited"]
+    aka: [MYIR Tech, MYIR Tech Limited]
     url: "https://www.myirtech.com/"
     country: China
     founded: 2011
@@ -462,7 +462,7 @@ Producers:
 
   - id: nanoxplore
     name: "NanoXplore"
-    aka: ["NanoXplore"]
+    aka: [NanoXplore]
     url: "https://www.nanoxplore.com/"
     country: France
     founded: 2010
@@ -473,7 +473,7 @@ Producers:
 
   - id: numato_lab
     name: "Numato Lab"
-    aka: ["Numato", "Numato Systems"]
+    aka: [Numato, Numato Systems]
     url: "https://numato.com/"
     country: India
     founded: 2010
@@ -484,7 +484,7 @@ Producers:
 
   - id: olimex
     name: "Olimex"
-    aka: ["Olimex Ltd."]
+    aka: [Olimex Ltd.]
     url: "https://www.olimex.com/"
     country: Bulgaria
     founded: 1991
@@ -495,7 +495,7 @@ Producers:
 
   - id: omdazz
     name: "Omdazz"
-    aka: ["OMDAZZ", "Omdazz FPGA Demo Board Store"]
+    aka: [OMDAZZ, Omdazz FPGA Demo Board Store]
     url: "https://omdazz.aliexpress.com/store/2274002"
     country: China
     founded: null
@@ -506,7 +506,7 @@ Producers:
 
   - id: onebitsquared
     name: "1BitSquared"
-    aka: ["1BitSquared", "1 Bit Squared"]
+    aka: [1BitSquared, 1 Bit Squared]
     url: "https://1bitsquared.com/"
     country: USA
     founded: null
@@ -517,7 +517,7 @@ Producers:
 
   - id: opal_kelly
     name: "Opal Kelly Incorporated"
-    aka: ["Opal Kelly"]
+    aka: [Opal Kelly]
     url: "https://www.opalkelly.com/"
     country: USA
     founded: 2004
@@ -528,7 +528,7 @@ Producers:
 
   - id: orange_pi
     name: "Orange Pi"
-    aka: ["Shenzhen Xunlong Software", "OrangePi"]
+    aka: [Shenzhen Xunlong Software, OrangePi]
     url: "http://www.orangepi.org/"
     country: China
     founded: 2014
@@ -539,7 +539,7 @@ Producers:
 
   - id: pano_logic
     name: "Pano Logic"
-    aka: ["Pano Logic Inc.", "PanoLogic"]
+    aka: [Pano Logic Inc., PanoLogic]
     url: "https://en.wikipedia.org/wiki/Pano_Logic"
     country: USA
     founded: 2006
@@ -550,7 +550,7 @@ Producers:
 
   - id: pangomicro
     name: "Shenzhen Pango Microsystems"
-    aka: ["Pango", "Pangomicro", "PangoMicro", "PANGO MICRO"]
+    aka: [Pango, Pangomicro, PangoMicro, PANGO MICRO]
     url: "https://www.pangomicro.com/en/"
     country: China
     founded: null
@@ -561,7 +561,7 @@ Producers:
 
   - id: papilio
     name: "Gadget Factory"
-    aka: ["Papilio", "Gadget Factory LLC"]
+    aka: [Papilio, Gadget Factory LLC]
     url: "https://store.gadgetfactory.net/"
     country: USA
     founded: 2009
@@ -572,7 +572,7 @@ Producers:
 
   - id: piswords
     name: "PISwords"
-    aka: ["PISWORDS", "Piswords Store"]
+    aka: [PISWORDS, Piswords Store]
     url: "https://piswords.com/"
     country: China
     founded: null
@@ -583,7 +583,7 @@ Producers:
 
   - id: qmtech
     name: "QMTECH"
-    aka: ["QMtech", "QM Tech", "Chengdu QMTECH"]
+    aka: [QMtech, QM Tech, Chengdu QMTECH]
     url: "https://www.qmtech.cn/"
     country: China
     founded: null
@@ -594,7 +594,7 @@ Producers:
 
   - id: quicklogic
     name: "QuickLogic Corporation"
-    aka: ["QuickLogic", "QUIK"]
+    aka: [QuickLogic, QUIK]
     url: "https://www.quicklogic.com/"
     country: USA
     founded: 1988
@@ -605,7 +605,7 @@ Producers:
 
   - id: radiona
     name: "Radiona"
-    aka: ["Radiona.org", "Zagreb Makerspace"]
+    aka: [Radiona.org, Zagreb Makerspace]
     url: "https://radiona.org/"
     country: Croatia
     founded: null
@@ -616,7 +616,7 @@ Producers:
 
   - id: real_digital
     name: "Real Digital"
-    aka: ["RealDigital"]
+    aka: [RealDigital]
     url: "https://www.realdigital.org/"
     country: USA
     founded: null
@@ -627,7 +627,7 @@ Producers:
 
   - id: redpitaya
     name: "Red Pitaya d.o.o."
-    aka: ["Red Pitaya", "RedPitaya"]
+    aka: [Red Pitaya, RedPitaya]
     url: "https://redpitaya.com/"
     country: Slovenia
     founded: 2013
@@ -638,7 +638,7 @@ Producers:
 
   - id: renesas
     name: "Renesas Electronics"
-    aka: ["Renesas", "Dialog Semiconductor", "Silego"]
+    aka: [Renesas, Dialog Semiconductor, Silego]
     url: "https://www.renesas.com/"
     country: Japan
     founded: 2010
@@ -649,7 +649,7 @@ Producers:
 
   - id: replay
     name: "FPGA Arcade"
-    aka: ["Replay", "FPGA Arcade Replay", "Replay Board"]
+    aka: [Replay, FPGA Arcade Replay, Replay Board]
     url: "https://www.fpgaarcade.com/"
     country: null
     founded: null
@@ -660,7 +660,7 @@ Producers:
 
   - id: rhs_research
     name: "RHS Research LLC"
-    aka: ["RHS Research", "RHSResearchLLC"]
+    aka: [RHS Research, RHSResearchLLC]
     url: "https://rhsresearch.com/"
     country: USA
     founded: null
@@ -671,7 +671,7 @@ Producers:
 
   - id: rzrd
     name: "rzrd.net"
-    aka: ["RZ-EasyFPGA", "rzrd"]
+    aka: [RZ-EasyFPGA, rzrd]
     url: "http://www.rzrd.net/"
     country: China
     founded: null
@@ -682,7 +682,7 @@ Producers:
 
   - id: saylinx
     name: "Saylinx"
-    aka: ["SAYLINX"]
+    aka: [SAYLINX]
     url: null
     country: China
     founded: null
@@ -693,7 +693,7 @@ Producers:
 
   - id: sifive
     name: "SiFive"
-    aka: ["SiFive, Inc."]
+    aka: ['SiFive, Inc.']
     url: "https://www.sifive.com/"
     country: USA
     founded: 2015
@@ -704,7 +704,7 @@ Producers:
 
   - id: microphase
     name: "MicroPhase"
-    aka: ["MicroPhase Technology"]
+    aka: [MicroPhase Technology]
     url: "https://github.com/MicroPhase"
     country: China
     founded: null
@@ -715,7 +715,7 @@ Producers:
 
   - id: sipeed
     name: "Sipeed"
-    aka: ["Sipeed Technology"]
+    aka: [Sipeed Technology]
     url: "https://www.sipeed.com/"
     country: China
     founded: 2017
@@ -726,7 +726,7 @@ Producers:
 
   - id: stepfpga
     name: "STEP FPGA"
-    aka: ["stepfpga.com", "STEP-MAX10"]
+    aka: [stepfpga.com, STEP-MAX10]
     url: "https://www.stepfpga.com/"
     country: China
     founded: null
@@ -737,7 +737,7 @@ Producers:
 
   - id: sundance
     name: "Sundance Multiprocessor Technology Ltd"
-    aka: ["Sundance", "Sundance.com"]
+    aka: [Sundance, Sundance.com]
     url: "https://www.sundance.com/"
     country: UK
     founded: 1989
@@ -748,7 +748,7 @@ Producers:
 
   - id: techway
     name: "Techway"
-    aka: ["TECHWAY"]
+    aka: [TECHWAY]
     url: "https://www.techway.fr/"
     country: France
     founded: 2003
@@ -759,7 +759,7 @@ Producers:
 
   - id: terasic
     name: "Terasic"
-    aka: ["Terasic Inc.", "Terasic Technologies"]
+    aka: [Terasic Inc., Terasic Technologies]
     url: "https://www.terasic.com.tw/"
     country: Taiwan
     founded: 2004
@@ -770,7 +770,7 @@ Producers:
 
   - id: tinyfpga
     name: "TinyFPGA"
-    aka: ["Tiny FPGA", "Luke Valenty"]
+    aka: [Tiny FPGA, Luke Valenty]
     url: "https://tinyfpga.com/"
     country: USA
     founded: null
@@ -781,7 +781,7 @@ Producers:
 
   - id: tinyvision_ai
     name: "tinyVision.ai"
-    aka: ["TinyVision.ai", "Tinyvision.ai", "Tinyvision.ai Inc."]
+    aka: [TinyVision.ai, Tinyvision.ai, Tinyvision.ai Inc.]
     url: "https://tinyvision.ai/"
     country: USA
     founded: null
@@ -792,7 +792,7 @@ Producers:
 
   - id: trenz_electronic
     name: "Trenz Electronic"
-    aka: ["Trenz", "Trenz Electronic GmbH"]
+    aka: [Trenz, Trenz Electronic GmbH]
     url: "https://www.trenz-electronic.de/"
     country: Germany
     founded: 1997
@@ -803,7 +803,7 @@ Producers:
 
   - id: tria_technologies
     name: "Tria Technologies"
-    aka: ["Tria", "Avnet Embedded"]
+    aka: [Tria, Avnet Embedded]
     url: "https://www.tria-technologies.com/"
     country: USA
     founded: 2024
@@ -814,7 +814,7 @@ Producers:
 
   - id: tul
     name: "TUL Corporation"
-    aka: ["TUL"]
+    aka: [TUL]
     url: "https://www.tulembedded.com/"
     country: Taiwan
     founded: 1997
@@ -847,7 +847,7 @@ Producers:
 
   - id: xilinx_amd
     name: "AMD (Xilinx)"
-    aka: ["Xilinx", "Xilinx (AMD)", "Xilinx Inc.", "AMD Adaptive Computing", "AMD"]
+    aka: [Xilinx, Xilinx (AMD), Xilinx Inc., AMD Adaptive Computing, AMD]
     url: "https://www.amd.com/en/products/adaptive-socs-and-fpgas.html"
     country: USA
     founded: 1984
@@ -858,7 +858,7 @@ Producers:
 
   - id: zeowaa
     name: "Zeowaa"
-    aka: ["ZEOWAA", "A-C4E6E10", "A-E115FB"]
+    aka: [ZEOWAA, A-C4E6E10, A-E115FB]
     url: null
     country: China
     founded: null

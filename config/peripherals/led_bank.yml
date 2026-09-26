@@ -15,10 +15,15 @@ Peripheral:
       type: bool
       default: false        # colorlight: `LED [0] = led [0] ? 1'b0 : 1'bz` — on drives the active level, off floats
   signals:
-    - { name: led, type: bus, width: $width, direction: output }
+    - name: led
+      type: bus
+      width: $width
+      direction: output
   # the on-board devices it models: a board inventory's `leds` device (a bank
   # of pins) becomes an on-board part attaching this peripheral
-  models: {kind: leds, signal: led}
+  models:
+    kind: leds
+    signal: led
   provides:
     - capability: leds
       params:

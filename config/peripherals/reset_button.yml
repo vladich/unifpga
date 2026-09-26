@@ -10,7 +10,9 @@ Peripheral:
       values: [high, low]
       default: low
   signals:
-    - { name: rst, type: scalar, direction: input }
+    - name: rst
+      type: scalar
+      direction: input
   provides:
     - capability: reset
   driver: null   # codegen inverts when active=low; OR-aggregates if other reset providers exist

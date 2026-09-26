@@ -56,12 +56,21 @@ Board:
       device_part: "hx8k"
       device_pack: "ct256"
   banks:
-    clk: { pins: J3, frequency_mhz: 100, source: {doc: ol_net, where: net /SYSCLK -> U4.J3 (via R10 22R from CR1)} }
+    clk:
+      pins: J3
+      frequency_mhz: 100
+      source:
+        doc: ol_net
+        where: net /SYSCLK -> U4.J3 (via R10 22R from CR1)
     onboard_buttons:
-      source: {doc: ol_net, where: 'nets /PIO2_44/BUT1 (K11), /PIO2_45/BUT2 (P13); 10k pull-ups R15/R16, button to GND -> active low (inferred from netlist)'}
+      source:
+        doc: ol_net
+        where: nets /PIO2_44/BUT1 (K11), /PIO2_45/BUT2 (P13); 10k pull-ups R15/R16, button to GND -> active low (inferred from netlist)
       pins: [K11, P13, R15]
     onboard_leds:
-      source: {doc: ol_net, where: 'nets /PIO2_42/LED1 (M12, also EXT4.23), /PIO2_43/LED2 (R16, also EXT4.25); anode on FPGA pin, cathode via 2.2k to GND -> active high (inferred from schematic)'}
+      source:
+        doc: ol_net
+        where: nets /PIO2_42/LED1 (M12, also EXT4.23), /PIO2_43/LED2 (R16, also EXT4.25); anode on FPGA pin, cathode via 2.2k to GND -> active high (inferred from schematic)
       pins: [M12, R16]
     onboard_switches:
       pins: [R1, N4]
@@ -79,103 +88,372 @@ Board:
         g: [F1, H6, F2, H3]
         b: [F3, G3, E2, H5]
     onboard_sram:   # SRAM U5 K6R4016V1D (256K x 16, 10 ns)
-      source: {doc: ol_net, where: 'nets /SA0../SA17, /SD0../SD15, /SRAM_#CS (T6), /SRAM_#OE (L9), /SRAM_#WE (T7); BLE#/BHE# are not on FPGA nets'}
-      device: {"name": "SRAM U5 K6R4016V1D (256K x 16, 10 ns)", "kind": "sram", "id": "samsung_k6r4016v1d"}
-      pins: {"a": ["N6", "T1", "P4", "R2", "N5", "T2", "P5", "R3", "R5", "T3", "R4", "M7", "N7", "P6", "M8", "T5", "R6", "P8"], "d": ["T8", "P7", "N9", "T9", "M9", "R9", "K9", "P9", "R10", "L10", "P10", "N10", "T10", "T11", "T15", "T14"], "cs_n": "T6", "oe_n": "L9", "we_n": "T7"}
+      source:
+        doc: ol_net
+        where: nets /SA0../SA17, /SD0../SD15, /SRAM_#CS (T6), /SRAM_#OE (L9), /SRAM_#WE (T7); BLE#/BHE# are not on FPGA nets
+      device:
+        name: SRAM U5 K6R4016V1D (256K x 16, 10 ns)
+        kind: sram
+        id: samsung_k6r4016v1d
+      pins:
+        a: [N6, T1, P4, R2, N5, T2, P5, R3, R5, T3, R4, M7, N7, P6, M8, T5, R6, P8]
+        d: [T8, P7, N9, T9, M9, R9, K9, P9, R10, L10, P10, N10, T10, T11, T15, T14]
+        cs_n: T6
+        oe_n: L9
+        we_n: T7
     onboard_serial_flash:   # SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)
-      source: {doc: ol_net, where: 'nets /iCE40-SCK R11, /iCE40-SS_B R12 (flash CS via R9), /iCE40-SDO P12 -> U1.5 DI, /iCE40-SDI P11 <- U1.2 DO'}
-      device: {"name": "SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)", "kind": "flash"}
-      pins: {"sck": "R11", "cs_n": "R12", "sdo_to_flash_di": "P12", "sdi_from_flash_do": "P11"}
+      source:
+        doc: ol_net
+        where: nets /iCE40-SCK R11, /iCE40-SS_B R12 (flash CS via R9), /iCE40-SDO P12 -> U1.5 DI, /iCE40-SDI P11 <- U1.2 DO
+      device:
+        name: SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)
+        kind: flash
+      pins:
+        sck: R11
+        cs_n: R12
+        sdo_to_flash_di: P12
+        sdi_from_flash_do: P11
     onboard_pgm_uart:   # PGM1 10-pin programming connector UART (RxD/TxD, for Olimex programmer)
-      device: {"name": "PGM1 10-pin programming connector UART (RxD/TxD, for Olimex programmer)", "kind": "uart"}
-      pins: {"rx": "L11", "tx": "T16"}
+      device:
+        name: PGM1 10-pin programming connector UART (RxD/TxD, for Olimex programmer)
+        kind: uart
+      pins:
+        rx: L11
+        tx: T16
     gpio1:   # GPIO1 34-pin header (BH34R, iCE40-IO/UEXT-style add-ons)
-      source: {doc: ol_net, where: all nets with a GPIO1 node (connector pin -> ball); remaining pins are power/GND}
-      device: {"name": "GPIO1 34-pin header (BH34R, iCE40-IO/UEXT-style add-ons)", "kind": "header"}
-      shares: ["gpio", "onboard_uart", "onboard_vga"]   # the board multiplexes these pins
-      pins: ["E4", "B2", "F5", "J2", "B1", "H1", "C1", "G1", "C2", "J5", "F4", "H2", "D2", "J4", "G5", "G2", "D1", "H4", "G4", "F1", "E3", "H6", "H5", "F2", "E2", "H3", "G3", "F3"]
+      source:
+        doc: ol_net
+        where: all nets with a GPIO1 node (connector pin -> ball); remaining pins are power/GND
+      device:
+        name: GPIO1 34-pin header (BH34R, iCE40-IO/UEXT-style add-ons)
+        kind: header
+      shares: [gpio, onboard_uart, onboard_vga]   # the board multiplexes these pins
+      pins: [E4, B2, F5, J2, B1, H1, C1, G1, C2, J5, F4, H2, D2, J4, G5, G2, D1, H4, G4, F1, E3, H6, H5, F2, E2, H3, G3, F3]
     ext1:   # EXT1 40-pin header (bank 0 PIO0_00..PIO0_32)
-      source: {doc: ol_net, where: all nets with an EXT1 node}
-      device: {"name": "EXT1 40-pin header (bank 0 PIO0_00..PIO0_32)", "kind": "header"}
-      pins: ["C14", "B15", "B7", "D13", "C7", "B14", "A7", "C12", "B8", "E11", "D8", "C13", "B9", "A16", "F7", "A15", "C8", "B13", "F9", "E10", "A9", "C11", "D9", "D11", "E9", "B12", "C9", "B10", "D10", "B11", "A11", "C10", "A10"]
+      source:
+        doc: ol_net
+        where: all nets with an EXT1 node
+      device:
+        name: EXT1 40-pin header (bank 0 PIO0_00..PIO0_32)
+        kind: header
+      pins: [C14, B15, B7, D13, C7, B14, A7, C12, B8, E11, D8, C13, B9, A16, F7, A15, C8, B13, F9, E10, A9, C11, D9, D11, E9, B12, C9, B10, D10, B11, A11, C10, A10]
     ext2:   # EXT2 40-pin header (bank 0 PIO0_33..51 + bank 1 PIO1_00..13)
-      source: {doc: ol_net, where: all nets with an EXT2 node; pins 30-36 double as the optional JTAG1 (R24-R26 NA)}
-      device: {"name": "EXT2 40-pin header (bank 0 PIO0_33..51 + bank 1 PIO1_00..13)", "kind": "header"}
-      shares: ["onboard_buttons"]   # the board multiplexes these pins
-      pins: ["B6", "C6", "J10", "D7", "M16", "A6", "K12", "D6", "L14", "A5", "L13", "B5", "N16", "E6", "L12", "B4", "M14", "A2", "M13", "D5", "P16", "A1", "P15", "C5", "P14", "C4", "R15", "B3", "R14", "D4", "C3", "E5", "D3"]
+      source:
+        doc: ol_net
+        where: all nets with an EXT2 node; pins 30-36 double as the optional JTAG1 (R24-R26 NA)
+      device:
+        name: EXT2 40-pin header (bank 0 PIO0_33..51 + bank 1 PIO1_00..13)
+        kind: header
+      shares: [onboard_buttons]   # the board multiplexes these pins
+      pins: [B6, C6, J10, D7, M16, A6, K12, D6, L14, A5, L13, B5, N16, E6, L12, B4, M14, A2, M13, D5, P16, A1, P15, C5, P14, C4, R15, B3, R14, D4, C3, E5, D3]
     ext3:   # EXT3 40-pin header (bank 1 PIO1_14..46)
-      source: {doc: ol_net, where: all nets with an EXT3 node}
-      device: {"name": "EXT3 40-pin header (bank 1 PIO1_14..46)", "kind": "header"}
-      pins: ["M15", "J11", "E14", "L16", "F11", "K13", "D15", "K14", "F12", "J15", "F14", "K15", "G12", "K16", "D16", "J14", "G13", "J12", "E16", "J13", "G14", "J16", "F15", "H13", "G11", "H11", "F16", "H16", "G10", "H14", "G15", "G16", "H12"]
+      source:
+        doc: ol_net
+        where: all nets with an EXT3 node
+      device:
+        name: EXT3 40-pin header (bank 1 PIO1_14..46)
+        kind: header
+      pins: [M15, J11, E14, L16, F11, K13, D15, K14, F12, J15, F14, K15, G12, K16, D16, J14, G13, J12, E16, J13, G14, J16, F15, H13, G11, H11, F16, H16, G10, H14, G15, G16, H12]
     ext4:   # EXT4 40-pin header (bank 1/2/3 incl. LED1/LED2)
-      source: {doc: ol_net, where: all nets with an EXT4 node}
-      device: {"name": "EXT4 40-pin header (bank 1/2/3 incl. LED1/LED2)", "kind": "header"}
-      shares: ["onboard_leds", "onboard_switches"]   # the board multiplexes these pins
-      pins: ["C16", "F13", "N4", "B16", "R1", "E13", "M5", "D14", "P2", "M11", "M4", "T13", "P1", "N12", "N3", "M12", "L5", "R16", "M3", "J1", "M6", "K1", "N2", "K3", "L7", "L4", "M2", "L1", "K5", "K4", "L3", "M1", "L6"]
+      source:
+        doc: ol_net
+        where: all nets with an EXT4 node
+      device:
+        name: EXT4 40-pin header (bank 1/2/3 incl. LED1/LED2)
+        kind: header
+      shares: [onboard_leds, onboard_switches]   # the board multiplexes these pins
+      pins: [C16, F13, N4, B16, R1, E13, M5, D14, P2, M11, M4, T13, P1, N12, N3, M12, L5, R16, M3, J1, M6, K1, N2, K3, L7, L4, M2, L1, K5, K4, L3, M1, L6]
   # ---- drawn: headers and parts; ./unifpga layout draft ice40hx8k_evb regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: gpio
       type: pin_row
       label: GPIO
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
-      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]'}
+      pins:
+        '[0]': gpio[0]
+        '[1]': gpio[1]
+        '[2]': gpio[2]
+        '[3]': gpio[3]
+        '[4]': gpio[4]
+        '[5]': gpio[5]
+        '[6]': gpio[6]
+        '[7]': gpio[7]
+        '[8]': gpio[8]
+        '[9]': gpio[9]
+        '[10]': gpio[10]
+        '[11]': gpio[11]
     - id: gpio1
       type: pin_row
       label: GPIO1
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio1
-      pins: {'[0]': 'gpio1[0]', '[1]': 'gpio1[1]', '[2]': 'gpio1[2]', '[3]': 'gpio1[3]', '[4]': 'gpio1[4]', '[5]': 'gpio1[5]', '[6]': 'gpio1[6]', '[7]': 'gpio1[7]', '[8]': 'gpio1[8]', '[9]': 'gpio1[9]', '[10]': 'gpio1[10]', '[11]': 'gpio1[11]', '[12]': 'gpio1[12]', '[13]': 'gpio1[13]', '[14]': 'gpio1[14]', '[15]': 'gpio1[15]', '[16]': 'gpio1[16]', '[17]': 'gpio1[17]', '[18]': 'gpio1[18]', '[19]': 'gpio1[19]', '[20]': 'gpio1[20]', '[21]': 'gpio1[21]', '[22]': 'gpio1[22]', '[23]': 'gpio1[23]', '[24]': 'gpio1[24]', '[25]': 'gpio1[25]', '[26]': 'gpio1[26]', '[27]': 'gpio1[27]'}
+      pins:
+        '[0]': gpio1[0]
+        '[1]': gpio1[1]
+        '[2]': gpio1[2]
+        '[3]': gpio1[3]
+        '[4]': gpio1[4]
+        '[5]': gpio1[5]
+        '[6]': gpio1[6]
+        '[7]': gpio1[7]
+        '[8]': gpio1[8]
+        '[9]': gpio1[9]
+        '[10]': gpio1[10]
+        '[11]': gpio1[11]
+        '[12]': gpio1[12]
+        '[13]': gpio1[13]
+        '[14]': gpio1[14]
+        '[15]': gpio1[15]
+        '[16]': gpio1[16]
+        '[17]': gpio1[17]
+        '[18]': gpio1[18]
+        '[19]': gpio1[19]
+        '[20]': gpio1[20]
+        '[21]': gpio1[21]
+        '[22]': gpio1[22]
+        '[23]': gpio1[23]
+        '[24]': gpio1[24]
+        '[25]': gpio1[25]
+        '[26]': gpio1[26]
+        '[27]': gpio1[27]
     - id: ext1
       type: pin_row
       label: EXT1
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: ext1
-      pins: {'[0]': 'ext1[0]', '[1]': 'ext1[1]', '[2]': 'ext1[2]', '[3]': 'ext1[3]', '[4]': 'ext1[4]', '[5]': 'ext1[5]', '[6]': 'ext1[6]', '[7]': 'ext1[7]', '[8]': 'ext1[8]', '[9]': 'ext1[9]', '[10]': 'ext1[10]', '[11]': 'ext1[11]', '[12]': 'ext1[12]', '[13]': 'ext1[13]', '[14]': 'ext1[14]', '[15]': 'ext1[15]', '[16]': 'ext1[16]', '[17]': 'ext1[17]', '[18]': 'ext1[18]', '[19]': 'ext1[19]', '[20]': 'ext1[20]', '[21]': 'ext1[21]', '[22]': 'ext1[22]', '[23]': 'ext1[23]', '[24]': 'ext1[24]', '[25]': 'ext1[25]', '[26]': 'ext1[26]', '[27]': 'ext1[27]', '[28]': 'ext1[28]', '[29]': 'ext1[29]', '[30]': 'ext1[30]', '[31]': 'ext1[31]', '[32]': 'ext1[32]'}
+      pins:
+        '[0]': ext1[0]
+        '[1]': ext1[1]
+        '[2]': ext1[2]
+        '[3]': ext1[3]
+        '[4]': ext1[4]
+        '[5]': ext1[5]
+        '[6]': ext1[6]
+        '[7]': ext1[7]
+        '[8]': ext1[8]
+        '[9]': ext1[9]
+        '[10]': ext1[10]
+        '[11]': ext1[11]
+        '[12]': ext1[12]
+        '[13]': ext1[13]
+        '[14]': ext1[14]
+        '[15]': ext1[15]
+        '[16]': ext1[16]
+        '[17]': ext1[17]
+        '[18]': ext1[18]
+        '[19]': ext1[19]
+        '[20]': ext1[20]
+        '[21]': ext1[21]
+        '[22]': ext1[22]
+        '[23]': ext1[23]
+        '[24]': ext1[24]
+        '[25]': ext1[25]
+        '[26]': ext1[26]
+        '[27]': ext1[27]
+        '[28]': ext1[28]
+        '[29]': ext1[29]
+        '[30]': ext1[30]
+        '[31]': ext1[31]
+        '[32]': ext1[32]
     - id: ext2
       type: pin_row
       label: EXT2
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: ext2
-      pins: {'[0]': 'ext2[0]', '[1]': 'ext2[1]', '[2]': 'ext2[2]', '[3]': 'ext2[3]', '[4]': 'ext2[4]', '[5]': 'ext2[5]', '[6]': 'ext2[6]', '[7]': 'ext2[7]', '[8]': 'ext2[8]', '[9]': 'ext2[9]', '[10]': 'ext2[10]', '[11]': 'ext2[11]', '[12]': 'ext2[12]', '[13]': 'ext2[13]', '[14]': 'ext2[14]', '[15]': 'ext2[15]', '[16]': 'ext2[16]', '[17]': 'ext2[17]', '[18]': 'ext2[18]', '[19]': 'ext2[19]', '[20]': 'ext2[20]', '[21]': 'ext2[21]', '[22]': 'ext2[22]', '[23]': 'ext2[23]', '[24]': 'ext2[24]', '[25]': 'ext2[25]', '[26]': 'ext2[26]', '[27]': 'ext2[27]', '[28]': 'ext2[28]', '[29]': 'ext2[29]', '[30]': 'ext2[30]', '[31]': 'ext2[31]', '[32]': 'ext2[32]'}
+      pins:
+        '[0]': ext2[0]
+        '[1]': ext2[1]
+        '[2]': ext2[2]
+        '[3]': ext2[3]
+        '[4]': ext2[4]
+        '[5]': ext2[5]
+        '[6]': ext2[6]
+        '[7]': ext2[7]
+        '[8]': ext2[8]
+        '[9]': ext2[9]
+        '[10]': ext2[10]
+        '[11]': ext2[11]
+        '[12]': ext2[12]
+        '[13]': ext2[13]
+        '[14]': ext2[14]
+        '[15]': ext2[15]
+        '[16]': ext2[16]
+        '[17]': ext2[17]
+        '[18]': ext2[18]
+        '[19]': ext2[19]
+        '[20]': ext2[20]
+        '[21]': ext2[21]
+        '[22]': ext2[22]
+        '[23]': ext2[23]
+        '[24]': ext2[24]
+        '[25]': ext2[25]
+        '[26]': ext2[26]
+        '[27]': ext2[27]
+        '[28]': ext2[28]
+        '[29]': ext2[29]
+        '[30]': ext2[30]
+        '[31]': ext2[31]
+        '[32]': ext2[32]
     - id: ext3
       type: pin_row
       label: EXT3
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: ext3
-      pins: {'[0]': 'ext3[0]', '[1]': 'ext3[1]', '[2]': 'ext3[2]', '[3]': 'ext3[3]', '[4]': 'ext3[4]', '[5]': 'ext3[5]', '[6]': 'ext3[6]', '[7]': 'ext3[7]', '[8]': 'ext3[8]', '[9]': 'ext3[9]', '[10]': 'ext3[10]', '[11]': 'ext3[11]', '[12]': 'ext3[12]', '[13]': 'ext3[13]', '[14]': 'ext3[14]', '[15]': 'ext3[15]', '[16]': 'ext3[16]', '[17]': 'ext3[17]', '[18]': 'ext3[18]', '[19]': 'ext3[19]', '[20]': 'ext3[20]', '[21]': 'ext3[21]', '[22]': 'ext3[22]', '[23]': 'ext3[23]', '[24]': 'ext3[24]', '[25]': 'ext3[25]', '[26]': 'ext3[26]', '[27]': 'ext3[27]', '[28]': 'ext3[28]', '[29]': 'ext3[29]', '[30]': 'ext3[30]', '[31]': 'ext3[31]', '[32]': 'ext3[32]'}
+      pins:
+        '[0]': ext3[0]
+        '[1]': ext3[1]
+        '[2]': ext3[2]
+        '[3]': ext3[3]
+        '[4]': ext3[4]
+        '[5]': ext3[5]
+        '[6]': ext3[6]
+        '[7]': ext3[7]
+        '[8]': ext3[8]
+        '[9]': ext3[9]
+        '[10]': ext3[10]
+        '[11]': ext3[11]
+        '[12]': ext3[12]
+        '[13]': ext3[13]
+        '[14]': ext3[14]
+        '[15]': ext3[15]
+        '[16]': ext3[16]
+        '[17]': ext3[17]
+        '[18]': ext3[18]
+        '[19]': ext3[19]
+        '[20]': ext3[20]
+        '[21]': ext3[21]
+        '[22]': ext3[22]
+        '[23]': ext3[23]
+        '[24]': ext3[24]
+        '[25]': ext3[25]
+        '[26]': ext3[26]
+        '[27]': ext3[27]
+        '[28]': ext3[28]
+        '[29]': ext3[29]
+        '[30]': ext3[30]
+        '[31]': ext3[31]
+        '[32]': ext3[32]
     - id: ext4
       type: pin_row
       label: EXT4
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: ext4
-      pins: {'[0]': 'ext4[0]', '[1]': 'ext4[1]', '[2]': 'ext4[2]', '[3]': 'ext4[3]', '[4]': 'ext4[4]', '[5]': 'ext4[5]', '[6]': 'ext4[6]', '[7]': 'ext4[7]', '[8]': 'ext4[8]', '[9]': 'ext4[9]', '[10]': 'ext4[10]', '[11]': 'ext4[11]', '[12]': 'ext4[12]', '[13]': 'ext4[13]', '[14]': 'ext4[14]', '[15]': 'ext4[15]', '[16]': 'ext4[16]', '[17]': 'ext4[17]', '[18]': 'ext4[18]', '[19]': 'ext4[19]', '[20]': 'ext4[20]', '[21]': 'ext4[21]', '[22]': 'ext4[22]', '[23]': 'ext4[23]', '[24]': 'ext4[24]', '[25]': 'ext4[25]', '[26]': 'ext4[26]', '[27]': 'ext4[27]', '[28]': 'ext4[28]', '[29]': 'ext4[29]', '[30]': 'ext4[30]', '[31]': 'ext4[31]', '[32]': 'ext4[32]'}
+      pins:
+        '[0]': ext4[0]
+        '[1]': ext4[1]
+        '[2]': ext4[2]
+        '[3]': ext4[3]
+        '[4]': ext4[4]
+        '[5]': ext4[5]
+        '[6]': ext4[6]
+        '[7]': ext4[7]
+        '[8]': ext4[8]
+        '[9]': ext4[9]
+        '[10]': ext4[10]
+        '[11]': ext4[11]
+        '[12]': ext4[12]
+        '[13]': ext4[13]
+        '[14]': ext4[14]
+        '[15]': ext4[15]
+        '[16]': ext4[16]
+        '[17]': ext4[17]
+        '[18]': ext4[18]
+        '[19]': ext4[19]
+        '[20]': ext4[20]
+        '[21]': ext4[21]
+        '[22]': ext4[22]
+        '[23]': ext4[23]
+        '[24]': ext4[24]
+        '[25]': ext4[25]
+        '[26]': ext4[26]
+        '[27]': ext4[27]
+        '[28]': ext4[28]
+        '[29]': ext4[29]
+        '[30]': ext4[30]
+        '[31]': ext4[31]
+        '[32]': ext4[32]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 3}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 3
+        bind:
+          btn: onboard_buttons
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 2}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 2
+        bind:
+          led: onboard_leds
     - id: switches
       label: switches
-      attach: {peripheral: sw_bank, params: {width: 2}, bind: {sw: onboard_switches}}
+      attach:
+        peripheral: sw_bank
+        params:
+          width: 2
+        bind:
+          sw: onboard_switches
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: vga
       label: vga
-      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444, gate: false}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+      attach:
+        peripheral: vga_4bit
+        params:
+          bits_r: 4
+          bits_g: 4
+          bits_b: 4
+          pin_bits_r: 4
+          pin_bits_g: 4
+          pin_bits_b: 4
+          color_depth: 444
+          gate: false
+        bind:
+          r: onboard_vga.r
+          g: onboard_vga.g
+          b: onboard_vga.b
+          hs: onboard_vga.hs
+          vs: onboard_vga.vs
     - id: sram
       label: SRAM U5 K6R4016V1D (256K x 16, 10 ns)
-      attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.a, d: onboard_sram.d, ce_n: onboard_sram.cs_n, oe_n: onboard_sram.oe_n, we_n: onboard_sram.we_n}}
+      attach:
+        peripheral: async_sram
+        params:
+          addr_bits: 18
+        bind:
+          a: onboard_sram.a
+          d: onboard_sram.d
+          ce_n: onboard_sram.cs_n
+          oe_n: onboard_sram.oe_n
+          we_n: onboard_sram.we_n
     - id: serial_flash
       label: SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)
-      device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_serial_flash
     - id: pgm_uart
       label: PGM1 10-pin programming connector UART (RxD/TxD, for Olimex programmer)
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_pgm_uart.tx, rx: onboard_pgm_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_pgm_uart.tx
+          rx: onboard_pgm_uart.rx

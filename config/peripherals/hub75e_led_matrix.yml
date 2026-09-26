@@ -14,20 +14,63 @@ Peripheral:
       type: int
       default: 1          # HUB75E_LED_MATRIX_BRIGHTNESS; the `_bright` variant raises it
   signals:
-    - { name: r1, type: scalar, direction: output, comment: "Top half red" }
-    - { name: g1, type: scalar, direction: output, comment: "Top half green" }
-    - { name: b1, type: scalar, direction: output, comment: "Top half blue" }
-    - { name: r2, type: scalar, direction: output, comment: "Bottom half red" }
-    - { name: g2, type: scalar, direction: output, comment: "Bottom half green" }
-    - { name: b2, type: scalar, direction: output, comment: "Bottom half blue" }
-    - { name: a,  type: scalar, direction: output, comment: "Row address bit 0" }
-    - { name: b,  type: scalar, direction: output, comment: "Row address bit 1" }
-    - { name: c,  type: scalar, direction: output, comment: "Row address bit 2" }
-    - { name: d,  type: scalar, direction: output, comment: "Row address bit 3" }
-    - { name: e,  type: scalar, direction: output, optional: true, comment: "Row address bit 4 (64-row panels)" }
-    - { name: ck, type: scalar, direction: output, comment: "Panel shift clock (driver output, never the board oscillator)" }
-    - { name: st, type: scalar, direction: output, comment: "Latch / strobe" }
-    - { name: oe, type: scalar, direction: output, comment: "Output enable, active low" }
+    - name: r1
+      type: scalar
+      direction: output
+      comment: Top half red
+    - name: g1
+      type: scalar
+      direction: output
+      comment: Top half green
+    - name: b1
+      type: scalar
+      direction: output
+      comment: Top half blue
+    - name: r2
+      type: scalar
+      direction: output
+      comment: Bottom half red
+    - name: g2
+      type: scalar
+      direction: output
+      comment: Bottom half green
+    - name: b2
+      type: scalar
+      direction: output
+      comment: Bottom half blue
+    - name: a
+      type: scalar
+      direction: output
+      comment: Row address bit 0
+    - name: b
+      type: scalar
+      direction: output
+      comment: Row address bit 1
+    - name: c
+      type: scalar
+      direction: output
+      comment: Row address bit 2
+    - name: d
+      type: scalar
+      direction: output
+      comment: Row address bit 3
+    - name: e
+      type: scalar
+      direction: output
+      optional: true
+      comment: Row address bit 4 (64-row panels)
+    - name: ck
+      type: scalar
+      direction: output
+      comment: Panel shift clock (driver output, never the board oscillator)
+    - name: st
+      type: scalar
+      direction: output
+      comment: Latch / strobe
+    - name: oe
+      type: scalar
+      direction: output
+      comment: Output enable, active low
   provides:
     - capability: screen
       params:

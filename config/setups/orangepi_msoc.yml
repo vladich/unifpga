@@ -13,12 +13,23 @@ Setup:
     - onboard: buttons
     - onboard: 7seg
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[11]', WS: 'gpio.[15]', SD: 'gpio.[9]', L/R: 'gpio.[13]'}
+      wires:
+        SCK: gpio.[11]
+        WS: gpio.[15]
+        SD: gpio.[9]
+        L/R: gpio.[13]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio.[8]', BCK: 'gpio.[10]', LCK: 'gpio.[14]', DIN: 'gpio.[12]'}
-      params: {align_right: 0, offset_by_one_cycle: 1}
+      wires:
+        SCK: gpio.[8]
+        BCK: gpio.[10]
+        LCK: gpio.[14]
+        DIN: gpio.[12]
+      params:
+        align_right: 0
+        offset_by_one_cycle: 1
   design:
     reset:
       sources:
-      - {key: msb}
-    width: {gpio: 20}
+      - key: msb
+    width:
+      gpio: 20

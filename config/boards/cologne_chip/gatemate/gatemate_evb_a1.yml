@@ -74,143 +74,403 @@ Board:
     # Cologne Chip DS1003 (GateMate A1 Evaluation Board), Table 3.3. The
     # reset button SW2 drives RST_N, not a GPIO, and the FT2232HQ carries
     # JTAG / SPI only: a UART needs a Pmod adapter.
-    clk:              { pins: "IO_SB_A8", frequency_mhz: 10, source: {doc: ds, where: '3.5, Figure 3.13 (p. 32)'} }   # X1 10.000 MHz
+    clk:   # X1 10.000 MHz
+      pins: IO_SB_A8
+      frequency_mhz: 10
+      source:
+        doc: ds
+        where: 3.5, Figure 3.13 (p. 32)
     onboard_buttons:                          # user button SW3
-      source: {doc: ds, where: Table 3.3 (p. 25)}
+      source:
+        doc: ds
+        where: Table 3.3 (p. 25)
       active: low
-      pins: ["IO_EB_B0"]
+      pins: [IO_EB_B0]
     onboard_leds:                             # D1..D8, enabled by JP4, lit when driven low
-      source: {doc: ds, where: Table 3.3 (p. 25)}
+      source:
+        doc: ds
+        where: Table 3.3 (p. 25)
       active: low
-      pins: ["IO_EB_B1", "IO_EB_B2", "IO_EB_B3", "IO_EB_B4",
-             "IO_EB_B5", "IO_EB_B6", "IO_EB_B7", "IO_EB_B8"]
+      pins: [IO_EB_B1, IO_EB_B2, IO_EB_B3, IO_EB_B4, IO_EB_B5, IO_EB_B6, IO_EB_B7, IO_EB_B8]
     onboard_clock:   # Optional clock inputs CLOCK1..3 (X2 osc / SMA J8, and CLK2/CLK3 from the GPIO connectors via JP1/JP2) — not populated
-      device: {"name": "Optional clock inputs CLOCK1..3 (X2 osc / SMA J8, and CLK2/CLK3 from the GPIO connectors via JP1/JP2) — not populated", "kind": "clock"}
-      shares: ["io_sb"]   # the board multiplexes these pins
-      pins: {"clock1_in": "IO_SB_A7", "clock2_in": "IO_SB_A6", "clock3_in": "IO_SB_A5"}
+      device:
+        name: Optional clock inputs CLOCK1..3 (X2 osc / SMA J8, and CLK2/CLK3 from the GPIO connectors via JP1/JP2) — not populated
+        kind: clock
+      shares: [io_sb]   # the board multiplexes these pins
+      pins:
+        clock1_in: IO_SB_A7
+        clock2_in: IO_SB_A6
+        clock3_in: IO_SB_A5
     onboard_hyperram:   # U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)
-      source: {doc: ds, where: '3.8, Table 3.10 (p. 38)'}
-      device: {"name": "U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)", "kind": "other", "id": "infineon_s27ks0641"}
+      source:
+        doc: ds
+        where: 3.8, Table 3.10 (p. 38)
+      device:
+        name: U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)
+        kind: other
+        id: infineon_s27ks0641
       iostandard: "1.8 V"
-      pins: {"cs_n": "IO_WB_B0", "rst_n": "IO_WB_A2", "ck": "IO_WB_A3", "ck_n": "IO_WB_B3", "rwds": "IO_WB_B4", "dq": ["IO_WB_A5", "IO_WB_B5", "IO_WB_A6", "IO_WB_B6", "IO_WB_A7", "IO_WB_B7", "IO_WB_A8", "IO_WB_B8"]}
+      pins:
+        cs_n: IO_WB_B0
+        rst_n: IO_WB_A2
+        ck: IO_WB_A3
+        ck_n: IO_WB_B3
+        rwds: IO_WB_B4
+        dq: [IO_WB_A5, IO_WB_B5, IO_WB_A6, IO_WB_B6, IO_WB_A7, IO_WB_B7, IO_WB_A8, IO_WB_B8]
     onboard_serial_flash:   # U5 MX25R6435F SPI flash (config bank WA)
-      source: {doc: sch32, where: U1E GPIO BANK CONFIG WA symbol}
-      device: {"name": "U5 MX25R6435F SPI flash (config bank WA)", "kind": "flash", "id": "macronix_mx25r6435f"}
+      source:
+        doc: sch32
+        where: U1E GPIO BANK CONFIG WA symbol
+      device:
+        name: U5 MX25R6435F SPI flash (config bank WA)
+        kind: flash
+        id: macronix_mx25r6435f
       iostandard: "2.5 V (VDD_WA)"
-      pins: {"cs_n": "IO_WA_A8", "clk": "IO_WA_B8", "d0_mosi": "IO_WA_B7", "d1_miso": "IO_WA_A7", "d2_wp": "IO_WA_B6", "d3_hold": "IO_WA_A6"}
+      pins:
+        cs_n: IO_WA_A8
+        clk: IO_WA_B8
+        d0_mosi: IO_WA_B7
+        d1_miso: IO_WA_A7
+        d2_wp: IO_WA_B6
+        d3_hold: IO_WA_A6
     onboard_usb:   # U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI
-      device: {"name": "U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI", "kind": "usb", "id": "ftdi_ft2232h"}
-      pins: {"jtag_tdo": "IO_WA_B3", "jtag_tdi": "IO_WA_A4", "jtag_tms": "IO_WA_B4", "jtag_tck": "IO_WA_A5", "spi_fwd": "IO_WA_B5"}
+      device:
+        name: 'U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI'
+        kind: usb
+        id: ftdi_ft2232h
+      pins:
+        jtag_tdo: IO_WA_B3
+        jtag_tdi: IO_WA_A4
+        jtag_tms: IO_WA_B4
+        jtag_tck: IO_WA_A5
+        spi_fwd: IO_WA_B5
     pmod_a:   # Pmod A J17A (bank NB via SN74CB3T3245 level shifter)
-      source: {doc: ds, where: '3.7, Table 3.9 (p. 37)'}
-      device: {"name": "Pmod A J17A (bank NB via SN74CB3T3245 level shifter)", "kind": "pmod"}
-      shares: ["onboard_buttons", "onboard_reset"]   # the board multiplexes these pins
-      pins: ["IO_NB_A0", "IO_NB_A1", "IO_NB_A2", "IO_NB_A3", "IO_NB_B0", "IO_NB_B1", "IO_NB_B2", "IO_NB_B3"]
+      source:
+        doc: ds
+        where: 3.7, Table 3.9 (p. 37)
+      device:
+        name: Pmod A J17A (bank NB via SN74CB3T3245 level shifter)
+        kind: pmod
+      shares: [onboard_buttons, onboard_reset]   # the board multiplexes these pins
+      pins: [IO_NB_A0, IO_NB_A1, IO_NB_A2, IO_NB_A3, IO_NB_B0, IO_NB_B1, IO_NB_B2, IO_NB_B3]
     pmod_b:   # Pmod B J17B (bank NB via SN74CB3T3245 level shifter)
-      source: {doc: ds, where: '3.7, Table 3.9 (p. 37)'}
-      device: {"name": "Pmod B J17B (bank NB via SN74CB3T3245 level shifter)", "kind": "pmod"}
-      shares: ["onboard_buttons"]   # the board multiplexes these pins
-      pins: ["IO_NB_A4", "IO_NB_A5", "IO_NB_A6", "IO_NB_A7", "IO_NB_B4", "IO_NB_B5", "IO_NB_B6", "IO_NB_B7"]
+      source:
+        doc: ds
+        where: 3.7, Table 3.9 (p. 37)
+      device:
+        name: Pmod B J17B (bank NB via SN74CB3T3245 level shifter)
+        kind: pmod
+      shares: [onboard_buttons]   # the board multiplexes these pins
+      pins: [IO_NB_A4, IO_NB_A5, IO_NB_A6, IO_NB_A7, IO_NB_B4, IO_NB_B5, IO_NB_B6, IO_NB_B7]
     io_ea:   # J1 GPIO bank EA connector (2x23, 1.27 mm)
-      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
-      device: {"name": "J1 GPIO bank EA connector (2x23, 1.27 mm)", "kind": "header"}
-      shares: ["io_eb", "io_na", "io_sa", "io_sb", "io_wc"]   # the board multiplexes these pins
-      pins: ["IO_EA_A8", "IO_EA_B8", "IO_EA_A7", "IO_EA_B7", "IO_EA_A6", "IO_EA_B6", "IO_EA_A5", "IO_EA_B5", "IO_EA_A4", "IO_EA_B4", "IO_EA_A3", "IO_EA_B3", "IO_EA_A2", "IO_EA_B2", "IO_EA_A1", "IO_EA_B1", "IO_EA_A0", "IO_EA_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
+      source:
+        doc: ds
+        where: 3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)
+      device:
+        name: J1 GPIO bank EA connector (2x23, 1.27 mm)
+        kind: header
+      shares: [io_eb, io_na, io_sa, io_sb, io_wc]   # the board multiplexes these pins
+      pins: [IO_EA_A8, IO_EA_B8, IO_EA_A7, IO_EA_B7, IO_EA_A6, IO_EA_B6, IO_EA_A5, IO_EA_B5, IO_EA_A4, IO_EA_B4, IO_EA_A3, IO_EA_B3, IO_EA_A2, IO_EA_B2, IO_EA_A1, IO_EA_B1, IO_EA_A0, IO_EA_B0, CLK3out, CLK2out, APP_RESET_OUT, APP_RESET_IN, CFG_FAILED, CFG_DONE]
     io_eb:   # J2 GPIO bank EB connector (2x23, 1.27 mm)
-      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
-      device: {"name": "J2 GPIO bank EB connector (2x23, 1.27 mm)", "kind": "header"}
-      shares: ["io_ea", "io_na", "io_sa", "io_sb", "io_wc", "onboard_leds"]   # the board multiplexes these pins
-      pins: ["IO_EB_A8", "IO_EB_B8", "IO_EB_A7", "IO_EB_B7", "IO_EB_A6", "IO_EB_B6", "IO_EB_A5", "IO_EB_B5", "IO_EB_A4", "IO_EB_B4", "IO_EB_A3", "IO_EB_B3", "IO_EB_A2", "IO_EB_B2", "IO_EB_A1", "IO_EB_B1", "IO_EB_A0", "IO_EB_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
+      source:
+        doc: ds
+        where: 3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)
+      device:
+        name: J2 GPIO bank EB connector (2x23, 1.27 mm)
+        kind: header
+      shares: [io_ea, io_na, io_sa, io_sb, io_wc, onboard_leds]   # the board multiplexes these pins
+      pins: [IO_EB_A8, IO_EB_B8, IO_EB_A7, IO_EB_B7, IO_EB_A6, IO_EB_B6, IO_EB_A5, IO_EB_B5, IO_EB_A4, IO_EB_B4, IO_EB_A3, IO_EB_B3, IO_EB_A2, IO_EB_B2, IO_EB_A1, IO_EB_B1, IO_EB_A0, IO_EB_B0, CLK3out, CLK2out, APP_RESET_OUT, APP_RESET_IN, CFG_FAILED, CFG_DONE]
     io_sa:   # J9 GPIO bank SA connector (2x23, 1.27 mm)
-      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
-      device: {"name": "J9 GPIO bank SA connector (2x23, 1.27 mm)", "kind": "header"}
-      shares: ["io_ea", "io_eb", "io_na", "io_sb", "io_wc"]   # the board multiplexes these pins
-      pins: ["IO_SA_A8", "IO_SA_B8", "IO_SA_A7", "IO_SA_B7", "IO_SA_A6", "IO_SA_B6", "IO_SA_A5", "IO_SA_B5", "IO_SA_A4", "IO_SA_B4", "IO_SA_A3", "IO_SA_B3", "IO_SA_A2", "IO_SA_B2", "IO_SA_A1", "IO_SA_B1", "IO_SA_A0", "IO_SA_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
+      source:
+        doc: ds
+        where: 3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)
+      device:
+        name: J9 GPIO bank SA connector (2x23, 1.27 mm)
+        kind: header
+      shares: [io_ea, io_eb, io_na, io_sb, io_wc]   # the board multiplexes these pins
+      pins: [IO_SA_A8, IO_SA_B8, IO_SA_A7, IO_SA_B7, IO_SA_A6, IO_SA_B6, IO_SA_A5, IO_SA_B5, IO_SA_A4, IO_SA_B4, IO_SA_A3, IO_SA_B3, IO_SA_A2, IO_SA_B2, IO_SA_A1, IO_SA_B1, IO_SA_A0, IO_SA_B0, CLK3out, CLK2out, APP_RESET_OUT, APP_RESET_IN, CFG_FAILED, CFG_DONE]
     io_sb:   # J10 GPIO bank SB connector (2x23, 1.27 mm)
-      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
-      device: {"name": "J10 GPIO bank SB connector (2x23, 1.27 mm)", "kind": "header"}
-      shares: ["clk", "io_ea", "io_eb", "io_na", "io_sa", "io_wc", "onboard_clock"]   # the board multiplexes these pins
-      pins: ["IO_SB_A8", "IO_SB_B8", "IO_SB_A7", "IO_SB_B7", "IO_SB_A6", "IO_SB_B6", "IO_SB_A5", "IO_SB_B5", "IO_SB_A4", "IO_SB_B4", "IO_SB_A3", "IO_SB_B3", "IO_SB_A2", "IO_SB_B2", "IO_SB_A1", "IO_SB_B1", "IO_SB_A0", "IO_SB_B0", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
+      source:
+        doc: ds
+        where: 3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)
+      device:
+        name: J10 GPIO bank SB connector (2x23, 1.27 mm)
+        kind: header
+      shares: [clk, io_ea, io_eb, io_na, io_sa, io_wc, onboard_clock]   # the board multiplexes these pins
+      pins: [IO_SB_A8, IO_SB_B8, IO_SB_A7, IO_SB_B7, IO_SB_A6, IO_SB_B6, IO_SB_A5, IO_SB_B5, IO_SB_A4, IO_SB_B4, IO_SB_A3, IO_SB_B3, IO_SB_A2, IO_SB_B2, IO_SB_A1, IO_SB_B1, IO_SB_A0, IO_SB_B0, CLK3out, CLK2out, APP_RESET_OUT, APP_RESET_IN, CFG_FAILED, CFG_DONE]
     io_wc:   # J18 GPIO bank WC connector (2x23, 1.27 mm)
-      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
-      device: {"name": "J18 GPIO bank WC connector (2x23, 1.27 mm)", "kind": "header"}
-      shares: ["io_ea", "io_eb", "io_na", "io_sa", "io_sb"]   # the board multiplexes these pins
-      pins: ["IO_WC_A0", "IO_WC_B0", "IO_WC_A1", "IO_WC_B1", "IO_WC_A2", "IO_WC_B2", "IO_WC_A3", "IO_WC_B3", "IO_WC_A4", "IO_WC_B4", "IO_WC_A5", "IO_WC_B5", "IO_WC_A6", "IO_WC_B6", "IO_WC_A7", "IO_WC_B7", "IO_WC_A8", "IO_WC_B8", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
+      source:
+        doc: ds
+        where: 3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)
+      device:
+        name: J18 GPIO bank WC connector (2x23, 1.27 mm)
+        kind: header
+      shares: [io_ea, io_eb, io_na, io_sa, io_sb]   # the board multiplexes these pins
+      pins: [IO_WC_A0, IO_WC_B0, IO_WC_A1, IO_WC_B1, IO_WC_A2, IO_WC_B2, IO_WC_A3, IO_WC_B3, IO_WC_A4, IO_WC_B4, IO_WC_A5, IO_WC_B5, IO_WC_A6, IO_WC_B6, IO_WC_A7, IO_WC_B7, IO_WC_A8, IO_WC_B8, CLK3out, CLK2out, APP_RESET_OUT, APP_RESET_IN, CFG_FAILED, CFG_DONE]
     io_na:   # J19 GPIO bank NA connector (2x23, 1.27 mm)
-      source: {doc: ds, where: '3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)'}
-      device: {"name": "J19 GPIO bank NA connector (2x23, 1.27 mm)", "kind": "header"}
-      shares: ["io_ea", "io_eb", "io_sa", "io_sb", "io_wc"]   # the board multiplexes these pins
-      pins: ["IO_NA_A0", "IO_NA_B0", "IO_NA_A1", "IO_NA_B1", "IO_NA_A2", "IO_NA_B2", "IO_NA_A3", "IO_NA_B3", "IO_NA_A4", "IO_NA_B4", "IO_NA_A5", "IO_NA_B5", "IO_NA_A6", "IO_NA_B6", "IO_NA_A7", "IO_NA_B7", "IO_NA_A8", "IO_NA_B8", "CLK3out", "CLK2out", "APP_RESET_OUT", "APP_RESET_IN", "CFG_FAILED", "CFG_DONE"]
+      source:
+        doc: ds
+        where: 3.6, Figure 3.16 and Table 3.6 (p. 34-35); Table 3.4 (p. 26)
+      device:
+        name: J19 GPIO bank NA connector (2x23, 1.27 mm)
+        kind: header
+      shares: [io_ea, io_eb, io_sa, io_sb, io_wc]   # the board multiplexes these pins
+      pins: [IO_NA_A0, IO_NA_B0, IO_NA_A1, IO_NA_B1, IO_NA_A2, IO_NA_B2, IO_NA_A3, IO_NA_B3, IO_NA_A4, IO_NA_B4, IO_NA_A5, IO_NA_B5, IO_NA_A6, IO_NA_B6, IO_NA_A7, IO_NA_B7, IO_NA_A8, IO_NA_B8, CLK3out, CLK2out, APP_RESET_OUT, APP_RESET_IN, CFG_FAILED, CFG_DONE]
   # ---- drawn: headers and parts; ./unifpga layout draft gatemate_evb_a1 regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: pmod_a
       type: pin_row
       label: PMOD_A
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_a
-      pins: {'[0]': 'pmod_a[0]', '[1]': 'pmod_a[1]', '[2]': 'pmod_a[2]', '[3]': 'pmod_a[3]', '[4]': 'pmod_a[4]', '[5]': 'pmod_a[5]', '[6]': 'pmod_a[6]', '[7]': 'pmod_a[7]'}
+      pins:
+        '[0]': pmod_a[0]
+        '[1]': pmod_a[1]
+        '[2]': pmod_a[2]
+        '[3]': pmod_a[3]
+        '[4]': pmod_a[4]
+        '[5]': pmod_a[5]
+        '[6]': pmod_a[6]
+        '[7]': pmod_a[7]
     - id: pmod_b
       type: pin_row
       label: PMOD_B
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_b
-      pins: {'[0]': 'pmod_b[0]', '[1]': 'pmod_b[1]', '[2]': 'pmod_b[2]', '[3]': 'pmod_b[3]', '[4]': 'pmod_b[4]', '[5]': 'pmod_b[5]', '[6]': 'pmod_b[6]', '[7]': 'pmod_b[7]'}
+      pins:
+        '[0]': pmod_b[0]
+        '[1]': pmod_b[1]
+        '[2]': pmod_b[2]
+        '[3]': pmod_b[3]
+        '[4]': pmod_b[4]
+        '[5]': pmod_b[5]
+        '[6]': pmod_b[6]
+        '[7]': pmod_b[7]
     - id: io_ea
       type: pin_row
       label: IO_EA
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: io_ea
-      pins: {'[0]': 'io_ea[0]', '[1]': 'io_ea[1]', '[2]': 'io_ea[2]', '[3]': 'io_ea[3]', '[4]': 'io_ea[4]', '[5]': 'io_ea[5]', '[6]': 'io_ea[6]', '[7]': 'io_ea[7]', '[8]': 'io_ea[8]', '[9]': 'io_ea[9]', '[10]': 'io_ea[10]', '[11]': 'io_ea[11]', '[12]': 'io_ea[12]', '[13]': 'io_ea[13]', '[14]': 'io_ea[14]', '[15]': 'io_ea[15]', '[16]': 'io_ea[16]', '[17]': 'io_ea[17]', '[18]': 'io_ea[18]', '[19]': 'io_ea[19]', '[20]': 'io_ea[20]', '[21]': 'io_ea[21]', '[22]': 'io_ea[22]', '[23]': 'io_ea[23]'}
+      pins:
+        '[0]': io_ea[0]
+        '[1]': io_ea[1]
+        '[2]': io_ea[2]
+        '[3]': io_ea[3]
+        '[4]': io_ea[4]
+        '[5]': io_ea[5]
+        '[6]': io_ea[6]
+        '[7]': io_ea[7]
+        '[8]': io_ea[8]
+        '[9]': io_ea[9]
+        '[10]': io_ea[10]
+        '[11]': io_ea[11]
+        '[12]': io_ea[12]
+        '[13]': io_ea[13]
+        '[14]': io_ea[14]
+        '[15]': io_ea[15]
+        '[16]': io_ea[16]
+        '[17]': io_ea[17]
+        '[18]': io_ea[18]
+        '[19]': io_ea[19]
+        '[20]': io_ea[20]
+        '[21]': io_ea[21]
+        '[22]': io_ea[22]
+        '[23]': io_ea[23]
     - id: io_eb
       type: pin_row
       label: IO_EB
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: io_eb
-      pins: {'[0]': 'io_eb[0]', '[1]': 'io_eb[1]', '[2]': 'io_eb[2]', '[3]': 'io_eb[3]', '[4]': 'io_eb[4]', '[5]': 'io_eb[5]', '[6]': 'io_eb[6]', '[7]': 'io_eb[7]', '[8]': 'io_eb[8]', '[9]': 'io_eb[9]', '[10]': 'io_eb[10]', '[11]': 'io_eb[11]', '[12]': 'io_eb[12]', '[13]': 'io_eb[13]', '[14]': 'io_eb[14]', '[15]': 'io_eb[15]', '[16]': 'io_eb[16]', '[17]': 'io_eb[17]', '[18]': 'io_eb[18]', '[19]': 'io_eb[19]', '[20]': 'io_eb[20]', '[21]': 'io_eb[21]', '[22]': 'io_eb[22]', '[23]': 'io_eb[23]'}
+      pins:
+        '[0]': io_eb[0]
+        '[1]': io_eb[1]
+        '[2]': io_eb[2]
+        '[3]': io_eb[3]
+        '[4]': io_eb[4]
+        '[5]': io_eb[5]
+        '[6]': io_eb[6]
+        '[7]': io_eb[7]
+        '[8]': io_eb[8]
+        '[9]': io_eb[9]
+        '[10]': io_eb[10]
+        '[11]': io_eb[11]
+        '[12]': io_eb[12]
+        '[13]': io_eb[13]
+        '[14]': io_eb[14]
+        '[15]': io_eb[15]
+        '[16]': io_eb[16]
+        '[17]': io_eb[17]
+        '[18]': io_eb[18]
+        '[19]': io_eb[19]
+        '[20]': io_eb[20]
+        '[21]': io_eb[21]
+        '[22]': io_eb[22]
+        '[23]': io_eb[23]
     - id: io_sa
       type: pin_row
       label: IO_SA
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: io_sa
-      pins: {'[0]': 'io_sa[0]', '[1]': 'io_sa[1]', '[2]': 'io_sa[2]', '[3]': 'io_sa[3]', '[4]': 'io_sa[4]', '[5]': 'io_sa[5]', '[6]': 'io_sa[6]', '[7]': 'io_sa[7]', '[8]': 'io_sa[8]', '[9]': 'io_sa[9]', '[10]': 'io_sa[10]', '[11]': 'io_sa[11]', '[12]': 'io_sa[12]', '[13]': 'io_sa[13]', '[14]': 'io_sa[14]', '[15]': 'io_sa[15]', '[16]': 'io_sa[16]', '[17]': 'io_sa[17]', '[18]': 'io_sa[18]', '[19]': 'io_sa[19]', '[20]': 'io_sa[20]', '[21]': 'io_sa[21]', '[22]': 'io_sa[22]', '[23]': 'io_sa[23]'}
+      pins:
+        '[0]': io_sa[0]
+        '[1]': io_sa[1]
+        '[2]': io_sa[2]
+        '[3]': io_sa[3]
+        '[4]': io_sa[4]
+        '[5]': io_sa[5]
+        '[6]': io_sa[6]
+        '[7]': io_sa[7]
+        '[8]': io_sa[8]
+        '[9]': io_sa[9]
+        '[10]': io_sa[10]
+        '[11]': io_sa[11]
+        '[12]': io_sa[12]
+        '[13]': io_sa[13]
+        '[14]': io_sa[14]
+        '[15]': io_sa[15]
+        '[16]': io_sa[16]
+        '[17]': io_sa[17]
+        '[18]': io_sa[18]
+        '[19]': io_sa[19]
+        '[20]': io_sa[20]
+        '[21]': io_sa[21]
+        '[22]': io_sa[22]
+        '[23]': io_sa[23]
     - id: io_sb
       type: pin_row
       label: IO_SB
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: io_sb
-      pins: {'[0]': 'io_sb[0]', '[1]': 'io_sb[1]', '[2]': 'io_sb[2]', '[3]': 'io_sb[3]', '[4]': 'io_sb[4]', '[5]': 'io_sb[5]', '[6]': 'io_sb[6]', '[7]': 'io_sb[7]', '[8]': 'io_sb[8]', '[9]': 'io_sb[9]', '[10]': 'io_sb[10]', '[11]': 'io_sb[11]', '[12]': 'io_sb[12]', '[13]': 'io_sb[13]', '[14]': 'io_sb[14]', '[15]': 'io_sb[15]', '[16]': 'io_sb[16]', '[17]': 'io_sb[17]', '[18]': 'io_sb[18]', '[19]': 'io_sb[19]', '[20]': 'io_sb[20]', '[21]': 'io_sb[21]', '[22]': 'io_sb[22]', '[23]': 'io_sb[23]'}
+      pins:
+        '[0]': io_sb[0]
+        '[1]': io_sb[1]
+        '[2]': io_sb[2]
+        '[3]': io_sb[3]
+        '[4]': io_sb[4]
+        '[5]': io_sb[5]
+        '[6]': io_sb[6]
+        '[7]': io_sb[7]
+        '[8]': io_sb[8]
+        '[9]': io_sb[9]
+        '[10]': io_sb[10]
+        '[11]': io_sb[11]
+        '[12]': io_sb[12]
+        '[13]': io_sb[13]
+        '[14]': io_sb[14]
+        '[15]': io_sb[15]
+        '[16]': io_sb[16]
+        '[17]': io_sb[17]
+        '[18]': io_sb[18]
+        '[19]': io_sb[19]
+        '[20]': io_sb[20]
+        '[21]': io_sb[21]
+        '[22]': io_sb[22]
+        '[23]': io_sb[23]
     - id: io_wc
       type: pin_row
       label: IO_WC
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: io_wc
-      pins: {'[0]': 'io_wc[0]', '[1]': 'io_wc[1]', '[2]': 'io_wc[2]', '[3]': 'io_wc[3]', '[4]': 'io_wc[4]', '[5]': 'io_wc[5]', '[6]': 'io_wc[6]', '[7]': 'io_wc[7]', '[8]': 'io_wc[8]', '[9]': 'io_wc[9]', '[10]': 'io_wc[10]', '[11]': 'io_wc[11]', '[12]': 'io_wc[12]', '[13]': 'io_wc[13]', '[14]': 'io_wc[14]', '[15]': 'io_wc[15]', '[16]': 'io_wc[16]', '[17]': 'io_wc[17]', '[18]': 'io_wc[18]', '[19]': 'io_wc[19]', '[20]': 'io_wc[20]', '[21]': 'io_wc[21]', '[22]': 'io_wc[22]', '[23]': 'io_wc[23]'}
+      pins:
+        '[0]': io_wc[0]
+        '[1]': io_wc[1]
+        '[2]': io_wc[2]
+        '[3]': io_wc[3]
+        '[4]': io_wc[4]
+        '[5]': io_wc[5]
+        '[6]': io_wc[6]
+        '[7]': io_wc[7]
+        '[8]': io_wc[8]
+        '[9]': io_wc[9]
+        '[10]': io_wc[10]
+        '[11]': io_wc[11]
+        '[12]': io_wc[12]
+        '[13]': io_wc[13]
+        '[14]': io_wc[14]
+        '[15]': io_wc[15]
+        '[16]': io_wc[16]
+        '[17]': io_wc[17]
+        '[18]': io_wc[18]
+        '[19]': io_wc[19]
+        '[20]': io_wc[20]
+        '[21]': io_wc[21]
+        '[22]': io_wc[22]
+        '[23]': io_wc[23]
     - id: io_na
       type: pin_row
       label: IO_NA
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: io_na
-      pins: {'[0]': 'io_na[0]', '[1]': 'io_na[1]', '[2]': 'io_na[2]', '[3]': 'io_na[3]', '[4]': 'io_na[4]', '[5]': 'io_na[5]', '[6]': 'io_na[6]', '[7]': 'io_na[7]', '[8]': 'io_na[8]', '[9]': 'io_na[9]', '[10]': 'io_na[10]', '[11]': 'io_na[11]', '[12]': 'io_na[12]', '[13]': 'io_na[13]', '[14]': 'io_na[14]', '[15]': 'io_na[15]', '[16]': 'io_na[16]', '[17]': 'io_na[17]', '[18]': 'io_na[18]', '[19]': 'io_na[19]', '[20]': 'io_na[20]', '[21]': 'io_na[21]', '[22]': 'io_na[22]', '[23]': 'io_na[23]'}
+      pins:
+        '[0]': io_na[0]
+        '[1]': io_na[1]
+        '[2]': io_na[2]
+        '[3]': io_na[3]
+        '[4]': io_na[4]
+        '[5]': io_na[5]
+        '[6]': io_na[6]
+        '[7]': io_na[7]
+        '[8]': io_na[8]
+        '[9]': io_na[9]
+        '[10]': io_na[10]
+        '[11]': io_na[11]
+        '[12]': io_na[12]
+        '[13]': io_na[13]
+        '[14]': io_na[14]
+        '[15]': io_na[15]
+        '[16]': io_na[16]
+        '[17]': io_na[17]
+        '[18]': io_na[18]
+        '[19]': io_na[19]
+        '[20]': io_na[20]
+        '[21]': io_na[21]
+        '[22]': io_na[22]
+        '[23]': io_na[23]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, params: {frequency_mhz: 10}, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        params:
+          frequency_mhz: 10
+        bind:
+          clk: clk
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 1}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 1
+        bind:
+          btn: onboard_buttons
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 8
+        bind:
+          led: onboard_leds
     - id: clock
       label: Optional clock inputs CLOCK1..3 (X2 osc / SMA J8, and CLK2/CLK3 from the GPIO connectors via JP1/JP2) — not populated
-      device: {kind: clock, bank: onboard_clock}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: clock
+        bank: onboard_clock
     - id: hyperram
       label: U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)
-      device: {kind: other, bank: onboard_hyperram}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_hyperram
     - id: serial_flash
       label: U5 MX25R6435F SPI flash (config bank WA)
-      device: {kind: flash, bank: onboard_serial_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_serial_flash
     - id: usb
       label: 'U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI'
-      device: {kind: usb, bank: onboard_usb}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: usb
+        bank: onboard_usb

@@ -5,7 +5,8 @@ Setup:
   id: omdazz_epm570
   board: omdazz_epm570
   toolchain: quartus2
-  aliases: {omdazz_epm570_quartus_13_1_or_older: {}}
+  aliases:
+    omdazz_epm570_quartus_13_1_or_older: {}
   use:
     - onboard: clk
     - onboard: cpu_resetn

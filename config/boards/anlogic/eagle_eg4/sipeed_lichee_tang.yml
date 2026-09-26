@@ -84,63 +84,173 @@ Board:
     retrieved: '2026-09-24'
   banks:
     onboard_clk24:   # 24 MHz oscillator
-      device: {"name": "24 MHz oscillator", "kind": "clock"}
+      device:
+        name: 24 MHz oscillator
+        kind: clock
       frequency_mhz: 24
-      pins: {"clk": "K14"}
+      pins:
+        clk: K14
     onboard_rgb_led:   # RGB LED LED1 (RGB_3528, common anode)
-      source: {doc: sch, where: 'sheet 2 "RGB LED" R1/R5/R7 4K7 -> zLED_R/zLED_G/zLED_B; U2D R3 IO_T_2,INIT_B; U2A J14 IO_L10P_1; P13 IO_L3P_1,DONE'}
-      device: {"name": "RGB LED LED1 (RGB_3528, common anode)", "kind": "leds"}
+      source:
+        doc: sch
+        where: sheet 2 "RGB LED" R1/R5/R7 4K7 -> zLED_R/zLED_G/zLED_B; U2D R3 IO_T_2,INIT_B; U2A J14 IO_L10P_1; P13 IO_L3P_1,DONE
+      device:
+        name: RGB LED LED1 (RGB_3528, common anode)
+        kind: leds
       active: "low"
-      shares: ["onboard_config"]   # the board multiplexes these pins
-      pins: {"r": "R3", "g": "J14", "b": "P13"}
+      shares: [onboard_config]   # the board multiplexes these pins
+      pins:
+        r: R3
+        g: J14
+        b: P13
     onboard_buttons:   # User key K1 (USR)
-      source: {doc: sch, where: 'sheet 2 "JTAG MODE" K1 USR, R3 10K, zUSR_KEY; U2A K16 IO_L15N_1'}
-      device: {"name": "User key K1 (USR)", "kind": "buttons"}
+      source:
+        doc: sch
+        where: sheet 2 "JTAG MODE" K1 USR, R3 10K, zUSR_KEY; U2A K16 IO_L15N_1
+      device:
+        name: User key K1 (USR)
+        kind: buttons
       active: "low"
-      pins: {"usr_key": "K16"}
+      pins:
+        usr_key: K16
     onboard_program_b:   # Reset key K2 (RST, FPGA PROGRAM_B)
-      device: {"name": "Reset key K2 (RST, FPGA PROGRAM_B)", "kind": "reset"}
+      device:
+        name: Reset key K2 (RST, FPGA PROGRAM_B)
+        kind: reset
       active: "low"
-      pins: {"program_b": "T2"}
+      pins:
+        program_b: T2
     onboard_uart:   # GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)
-      source: {doc: sch, where: 'sheet 1 U6 GD32F150Gx (zUART1/2, zSPI1 = JTAG, zSPI2); sheet 2 U2A L13/M13/J13/H13/K11/J11/L12, U2D P7; JTAG pins E14/A15 (U2A), C12/C14 (U2B bank 0)'}
-      device: {"name": "GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)", "kind": "uart", "id": "gigadevice_gd32f150"}
-      shares: ["gpio_j2", "gpio_j3"]   # the board multiplexes these pins
-      pins: {"uart1_tx": "J13", "uart1_rx": "H13", "uart2_tx": "L13", "uart2_rx": "M13", "spi_sck": "P7", "spi_nss": "K11", "spi_mosi": "J11", "spi_miso": "L12", "jtag_tms": "A15", "jtag_tck": "C14", "jtag_tdo": "E14", "jtag_tdi": "C12"}
+      source:
+        doc: sch
+        where: sheet 1 U6 GD32F150Gx (zUART1/2, zSPI1 = JTAG, zSPI2); sheet 2 U2A L13/M13/J13/H13/K11/J11/L12, U2D P7; JTAG pins E14/A15 (U2A), C12/C14 (U2B bank 0)
+      device:
+        name: GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)
+        kind: uart
+        id: gigadevice_gd32f150
+      shares: [gpio_j2, gpio_j3]   # the board multiplexes these pins
+      pins:
+        uart1_tx: J13
+        uart1_rx: H13
+        uart2_tx: L13
+        uart2_rx: M13
+        spi_sck: P7
+        spi_nss: K11
+        spi_mosi: J11
+        spi_miso: L12
+        jtag_tms: A15
+        jtag_tck: C14
+        jtag_tdo: E14
+        jtag_tdi: C12
     onboard_config_flash:   # Configuration SPI flash (FLASH (QSPI) U3, 25Q80B footprint)
-      device: {"name": "Configuration SPI flash (FLASH (QSPI) U3, 25Q80B footprint)", "kind": "flash"}
-      pins: {"cs_n": "T3", "clk": "R11", "io0": "T10", "io1": "P10", "io2": "L7", "io3": "L8"}
+      device:
+        name: Configuration SPI flash (FLASH (QSPI) U3, 25Q80B footprint)
+        kind: flash
+      pins:
+        cs_n: T3
+        clk: R11
+        io0: T10
+        io1: P10
+        io2: L7
+        io3: L8
     onboard_user_flash:   # User SPI flash (U4, 26Q80B / "NAND" footprint)
-      device: {"name": "User SPI flash (U4, 26Q80B / \"NAND\" footprint)", "kind": "flash"}
-      pins: {"cs_n": "D3", "clk": "H4", "io0": "B3", "io1": "F4", "io2": "F5", "io3": "B1"}
+      device:
+        name: User SPI flash (U4, 26Q80B / "NAND" footprint)
+        kind: flash
+      pins:
+        cs_n: D3
+        clk: H4
+        io0: B3
+        io1: F4
+        io2: F5
+        io3: B1
     onboard_sdcard:   # microSD card slot (TF card)
-      device: {"name": "microSD card slot (TF card)", "kind": "sdcard"}
-      pins: {"clk": "M9", "cmd": "H14", "d0": "F13", "d1": "F14", "d2": "N16", "d3": "N14"}
+      device:
+        name: microSD card slot (TF card)
+        kind: sdcard
+      pins:
+        clk: M9
+        cmd: H14
+        d0: F13
+        d1: F14
+        d2: N16
+        d3: N14
     onboard_camera:   # DVP camera FPC-24P connector (CSI_24P, OV2640-style)
-      device: {"name": "DVP camera FPC-24P connector (CSI_24P, OV2640-style)", "kind": "camera_dvp"}
-      pins: {"d": ["P15", "P16", "L16", "L14", "M14", "M16", "M15", "K15", "H16", "G16"], "pclk": "K12", "xclk": "J12", "hsync": "H15", "vsync": "F15", "pwdn": "G14", "reset": "E15", "sioc": "D16", "siod": "D14"}
+      device:
+        name: DVP camera FPC-24P connector (CSI_24P, OV2640-style)
+        kind: camera_dvp
+      pins:
+        d: [P15, P16, L16, L14, M14, M16, M15, K15, H16, G16]
+        pclk: K12
+        xclk: J12
+        hsync: H15
+        vsync: F15
+        pwdn: G14
+        reset: E15
+        sioc: D16
+        siod: D14
     onboard_lcd:   # RGB LCD FPC-40P connector J4 (24-bit RGB, backlight PWM, resistive touch)
-      device: {"name": "RGB LCD FPC-40P connector J4 (24-bit RGB, backlight PWM, resistive touch)", "kind": "lcd_rgb"}
-      pins: {"r": ["B2", "A2", "C3", "C2", "C1", "E2", "D1", "E1"], "g": ["E3", "E4", "F1", "F2", "G1", "G3", "J4", "J3"], "b": ["J1", "K1", "K2", "K3", "L3", "M2", "M1", "N1"], "clk": "L1", "hsync": "P1", "vsync": "R1", "de": "L4", "bl_pwm": "J16"}
+      device:
+        name: RGB LCD FPC-40P connector J4 (24-bit RGB, backlight PWM, resistive touch)
+        kind: lcd_rgb
+      pins:
+        r: [B2, A2, C3, C2, C1, E2, D1, E1]
+        g: [E3, E4, F1, F2, G1, G3, J4, J3]
+        b: [J1, K1, K2, K3, L3, M2, M1, N1]
+        clk: L1
+        hsync: P1
+        vsync: R1
+        de: L4
+        bl_pwm: J16
     onboard_touch_i2c:   # NS2009 resistive touch-screen controller (I2C address 0x48)
-      device: {"name": "NS2009 resistive touch-screen controller (I2C address 0x48)", "kind": "other"}
-      shares: ["gpio_j3"]   # the board multiplexes these pins
-      pins: {"scl": "P2", "sda": "R2"}
+      device:
+        name: NS2009 resistive touch-screen controller (I2C address 0x48)
+        kind: other
+      shares: [gpio_j3]   # the board multiplexes these pins
+      pins:
+        scl: P2
+        sda: R2
     onboard_adc:   # ADC inputs ADC_CH0..7 (EG4 on-chip 12-bit ADC)
-      device: {"name": "ADC inputs ADC_CH0..7 (EG4 on-chip 12-bit ADC)", "kind": "adc"}
-      shares: ["gpio_j3", "onboard_config"]   # the board multiplexes these pins
-      pins: {"ch0": "N11", "ch1": "M10", "ch2": "L10", "ch3": "P11", "ch4": "M12", "ch5": "N12", "ch6": "P12", "ch7": "R16"}
+      device:
+        name: ADC inputs ADC_CH0..7 (EG4 on-chip 12-bit ADC)
+        kind: adc
+      shares: [gpio_j3, onboard_config]   # the board multiplexes these pins
+      pins:
+        ch0: N11
+        ch1: M10
+        ch2: L10
+        ch3: P11
+        ch4: M12
+        ch5: N12
+        ch6: P12
+        ch7: R16
     gpio_j3:   # Side header/castellated row J3 (SIP40, left side)
-      source: {doc: sch, where: 'sheet 2 J3 SIP40, pad labels (R22_N ...) resolved through the U2 symbol'}
-      device: {"name": "Side header/castellated row J3 (SIP40, left side)", "kind": "header"}
-      shares: ["onboard_adc", "onboard_config", "onboard_touch_i2c", "onboard_uart"]   # the board multiplexes these pins
-      pins: ["N3", "P2", "M4", "R2", "P4", "N5", "N4", "P5", "T5", "T7", "T6", "R7", "R5", "P8", "M10", "R9", "P11", "P9", "L10", "T13", "N11", "T14", "P12", "R12", "N12", "R14", "R16", "T15", "M12", "R15", "L13", "M13", "P7", "K11"]
+      source:
+        doc: sch
+        where: sheet 2 J3 SIP40, pad labels (R22_N ...) resolved through the U2 symbol
+      device:
+        name: Side header/castellated row J3 (SIP40, left side)
+        kind: header
+      shares: [onboard_adc, onboard_config, onboard_touch_i2c, onboard_uart]   # the board multiplexes these pins
+      pins: [N3, P2, M4, R2, P4, N5, N4, P5, T5, T7, T6, R7, R5, P8, M10, R9, P11, P9, L10, T13, N11, T14, P12, R12, N12, R14, R16, T15, M12, R15, L13, M13, P7, K11]
     gpio_j2:   # Side header/castellated row J2 (SIP40, right side)
-      source: {doc: sch, where: 'sheet 2 J2 SIP40, pad labels (B25_P ...) resolved through the U2 symbol'}
-      device: {"name": "Side header/castellated row J2 (SIP40, right side)", "kind": "header"}
-      shares: ["onboard_uart"]   # the board multiplexes these pins
-      pins: ["D5", "A4", "D6", "A3", "C6", "C5", "C7", "B6", "A5", "C9", "A6", "B10", "A8", "A7", "B14", "B8", "A14", "C8", "B15", "A12", "B16", "A13", "C16", "A11", "C15", "C11", "E16", "B12", "F16", "C10", "A15", "H13", "C14", "J13", "E14", "J11", "C12", "L12"]
+      source:
+        doc: sch
+        where: sheet 2 J2 SIP40, pad labels (B25_P ...) resolved through the U2 symbol
+      device:
+        name: Side header/castellated row J2 (SIP40, right side)
+        kind: header
+      shares: [onboard_uart]   # the board multiplexes these pins
+      pins: [D5, A4, D6, A3, C6, C5, C7, B6, A5, C9, A6, B10, A8, A7, B14, B8, A14, C8, B15, A12, B16, A13, C16, A11, C15, C11, E16, B12, F16, C10, A15, H13, C14, J13, E14, J11, C12, L12]
     onboard_config:   # Configuration / mode pins
-      device: {"name": "Configuration / mode pins", "kind": "other"}
-      shares: ["gpio_j3", "onboard_adc", "onboard_rgb_led"]   # the board multiplexes these pins
-      pins: {"done": "P13", "init_b": "R3", "suspend": "P14", "m0": "T11", "m1": "N11", "hswapen": "C4"}
+      device:
+        name: Configuration / mode pins
+        kind: other
+      shares: [gpio_j3, onboard_adc, onboard_rgb_led]   # the board multiplexes these pins
+      pins:
+        done: P13
+        init_b: R3
+        suspend: P14
+        m0: T11
+        m1: N11
+        hswapen: C4

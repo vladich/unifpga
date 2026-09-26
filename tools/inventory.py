@@ -38,6 +38,7 @@ import re
 import yaml
 
 from config import init as config_init
+from tools import yamltext          # noqa: E402
 
 PIN_TOKEN = re.compile(r"^[A-Za-z0-9_]+$")
 HEADER_KINDS = {"pmod", "header"}
@@ -167,22 +168,21 @@ def _bank_pins_balls(v):
     return _balls(_bank_pins(v)) if not isinstance(v, tuple) else v[1]
 
 
-def _flow(value):
-    return json.dumps(value, ensure_ascii=False)          # JSON is valid YAML flow style
+_flow = yamltext.scalar           # one scalar as YAML writes it (block style everywhere: tools/yamltext.py)
 
 
 def _bank_text(bank, d, shares):
     lines = ["    {}:   # {}".format(bank, d.get("name", "").replace("\n", " "))]
-    lines.append("      device: {}".format(_flow({"name": d.get("name"), "kind": d.get("kind")})))
+    lines += yamltext.entry("device", {"name": d.get("name"), "kind": d.get("kind")}, 6)
     for k in ("active", "iostandard", "frequency_mhz"):
         if d.get(k) not in (None, ""):
             lines.append("      {}: {}".format(k, _flow(d[k])))
     if shares:
-        lines.append("      shares: {}   # the board multiplexes these pins".format(_flow(shares)))
-    lines.append("      pins: {}".format(_flow(_as_bank_pins(d))))
+        lines.append("      shares: {}   # the board multiplexes these pins".format(yamltext.inline(shares)))
+    lines += yamltext.entry("pins", _as_bank_pins(d), 6)
     src = d.get("source")
     if isinstance(src, dict) and src.get("doc") and src.get("where"):
-        lines.append("      source: {}".format(_flow({"doc": src["doc"], "where": src["where"]})))
+        lines += yamltext.entry("source", {"doc": src["doc"], "where": src["where"]}, 6)
     return lines
 
 

@@ -66,50 +66,110 @@ Board:
     # instantiate `osc_inst1` (OSC_0). We model it as a virtual clock source
     # so the rest of the codegen pipeline (clock_input peripheral, SDC
     # create_clock) keeps working.
-    clk:        { virtual: true, origin: "osc", frequency_mhz: 50, source: {doc: fa_sch, where: 'sheet 1, Y1 33.333MHz OUT -> net PLL_IN -> U1 C3 GPIOL_20_PLLIN'} }
+    clk:
+      virtual: true
+      origin: osc
+      frequency_mhz: 50
+      source:
+        doc: fa_sch
+        where: sheet 1, Y1 33.333MHz OUT -> net PLL_IN -> U1 C3 GPIOL_20_PLLIN
     # GPIOR_34 has only a pull-up (the one reset button drives CRESET_N) and
     # GPIOR_00 / 01 are J1 header pins 18 / 19 (the FT232H reaches no user
     # GPIO): no on-board reset or UART (FireAnt T8 schematic V1.3)
-    onboard_buttons:  { pins: ["GPIOR_28", "GPIOR_30"], active: low, source: {doc: fa_sch, where: 'sheet 2, BTN1/BTN2, R19/R20; fa_peri BTN[0..1]'} }   # keys[0..1], 10K pull-ups
+    onboard_buttons:   # keys[0..1], 10K pull-ups
+      pins: [GPIOR_28, GPIOR_30]
+      active: low
+      source:
+        doc: fa_sch
+        where: sheet 2, BTN1/BTN2, R19/R20; fa_peri BTN[0..1]
     onboard_leds:                                          # led_n[0..3], active-low
-      source: {doc: fa_sch, where: 'sheet 2, LED1..LED4 / R21..R24; fa_peri LED[0..3]'}
-      pins: ["GPIOR_02", "GPIOR_05", "GPIOR_07", "GPIOR_10"]
+      source:
+        doc: fa_sch
+        where: sheet 2, LED1..LED4 / R21..R24; fa_peri LED[0..3]
+      pins: [GPIOR_02, GPIOR_05, GPIOR_07, GPIOR_10]
       active: low
     onboard_crst_button_configuration_reset:   # CRST button (configuration reset)
-      device: {"name": "CRST button (configuration reset)", "kind": "reset"}
-      pins: {"creset_n": "CRESET_N"}
+      device:
+        name: CRST button (configuration reset)
+        kind: reset
+      pins:
+        creset_n: CRESET_N
     onboard_other:   # LED_CDN (green, CDONE) and LED_PWR (red)
-      device: {"name": "LED_CDN (green, CDONE) and LED_PWR (red)", "kind": "other"}
-      pins: {"cdone": "CONDONE"}
+      device:
+        name: LED_CDN (green, CDONE) and LED_PWR (red)
+        kind: other
+      pins:
+        cdone: CONDONE
     onboard_spi_flash:   # U4 W25Q80DV SPI flash (configuration)
-      source: {doc: fa_sch, where: sheet 1 nets SPI_SS/SPI_SCLK/SPI_MOSI/SPI_MISO -> J4/H4/F4/H3; sheet 2 U4; litex_fa spiflash agrees}
-      device: {"name": "U4 W25Q80DV SPI flash (configuration)", "kind": "flash", "id": "winbond_w25q80dv"}
-      pins: {"cs_n": "GPIOL_01_SS_N", "clk": "GPIOL_02_CCK", "mosi": "GPIOL_04_CDI0", "miso": "GPIOL_06_CDI1"}
+      source:
+        doc: fa_sch
+        where: sheet 1 nets SPI_SS/SPI_SCLK/SPI_MOSI/SPI_MISO -> J4/H4/F4/H3; sheet 2 U4; litex_fa spiflash agrees
+      device:
+        name: U4 W25Q80DV SPI flash (configuration)
+        kind: flash
+        id: winbond_w25q80dv
+      pins:
+        cs_n: GPIOL_01_SS_N
+        clk: GPIOL_02_CCK
+        mosi: GPIOL_04_CDI0
+        miso: GPIOL_06_CDI1
     onboard_jtag_test_points_tp8_tp11:   # JTAG test points TP8..TP11
-      device: {"name": "JTAG test points TP8..TP11", "kind": "other"}
-      pins: {"tck": "TCK", "tdi": "TDI", "tdo": "TDO", "tms": "TMS"}
+      device:
+        name: JTAG test points TP8..TP11
+        kind: other
+      pins:
+        tck: TCK
+        tdi: TDI
+        tdo: TDO
+        tms: TMS
   # ---- drawn: headers and parts; ./unifpga layout draft fireant regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers: []
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        params:
+          frequency_mhz: 50
+        bind:
+          clk: clk
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 4, active: low}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 4
+          active: low
+        bind:
+          led: onboard_leds
     - id: crst_button_configuration_reset
       label: CRST button (configuration reset)
-      device: {kind: reset, bank: onboard_crst_button_configuration_reset}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: reset
+        bank: onboard_crst_button_configuration_reset
     - id: other
       label: LED_CDN (green, CDONE) and LED_PWR (red)
-      device: {kind: other, bank: onboard_other}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_other
     - id: spi_flash
       label: U4 W25Q80DV SPI flash (configuration)
-      device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_spi_flash
     - id: jtag_test_points_tp8_tp11
       label: JTAG test points TP8..TP11
-      device: {kind: other, bank: onboard_jtag_test_points_tp8_tp11}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_jtag_test_points_tp8_tp11

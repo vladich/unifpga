@@ -60,30 +60,43 @@ Board:
         - "RESERVE_ALL_UNUSED_PINS_NO_OUTPUT_GND \"AS INPUT TRI-STATED\""
   banks:
     onboard_mem:
-      source: {doc: sch, where: sheet 7/7 Memory (U1F IOBank_5)}
+      source:
+        doc: sch
+        where: sheet 7/7 Memory (U1F IOBank_5)
       pins:
-        dq: ["120", "119", "118", "117", "114", "113", "112", "111", "189", "188", "187", "185", "184", "183", "182", "181", "94", "93", "88", "87", "86", "85", "84", "83", "220", "219", "218", "217", "216", "214", "207", "203"]
-        dqm: ["110", "194", "95", "202"]
-        a: ["100", "99", "98", "201", "200", "199", "198", "197", "196", "195", "101", "106"]
-        ba: ["103", "102"]
+        dq: ['120', '119', '118', '117', '114', '113', '112', '111', '189', '188', '187', '185', '184', '183', '182', '181', '94', '93', '88', '87', '86', '85', '84', '83', '220', '219', '218', '217', '216', '214', '207', '203']
+        dqm: ['110', '194', '95', '202']
+        a: ['100', '99', '98', '201', '200', '199', '198', '197', '196', '195', '101', '106']
+        ba: ['103', '102']
         ras: "107"
         cas: "108"
         we: "109"
         clk: "186"
     onboard_buttons:
-      source: {doc: sch, where: 'sheet 4/7: key_0 152, key_1 151'}
+      source:
+        doc: sch
+        where: 'sheet 4/7: key_0 152, key_1 151'
       active: low
-      pins: ["152", "151"]
-    clk: { pins: "150", frequency_mhz: 50, source: {doc: sch, where: 'sheet 3/7 Config: X1 IQXO-70 OUT -> clk -> U1C pin 150'} }
+      pins: ['152', '151']
+    clk:
+      pins: '150'
+      frequency_mhz: 50
+      source:
+        doc: sch
+        where: 'sheet 3/7 Config: X1 IQXO-70 OUT -> clk -> U1C pin 150'
     onboard_uart:
-      source: {doc: sch, where: sheet 5/7 SE1 Conn_02x08}
+      source:
+        doc: sch
+        where: sheet 5/7 SE1 Conn_02x08
       pins:
         rx: "149"
         tx: "143"
     onboard_7seg:
-      source: {doc: sch, where: sheet 4/7 KeyLeds}
+      source:
+        doc: sch
+        where: sheet 4/7 KeyLeds
       pins:
-        anodes: ["144", "145", "146", "147"]
+        anodes: ['144', '145', '146', '147']
         ce: "148"
         ca: "159"
         cb: "160"
@@ -93,104 +106,224 @@ Board:
         cc: "166"
         cf: "167"
     onboard_leds:
-      source: {doc: sch, where: 'sheet 4/7 KeyLeds: led_0..led_7'}
-      pins: ["168", "169", "171", "173", "174", "175", "176", "177"]
+      source:
+        doc: sch
+        where: 'sheet 4/7 KeyLeds: led_0..led_7'
+      pins: ['168', '169', '171', '173', '174', '175', '176', '177']
     onboard_pcm:
-      source: {doc: sch, where: sheet 5/7 SoundFlash}
+      source:
+        doc: sch
+        where: sheet 5/7 SoundFlash
       pins:
         dout: "92"
         scki: "126"
         lrck: "127"
         bck: "128"
     onboard_audio_out:
-      source: {doc: sch, where: 'sheet 5/7: sound_out_r 131, sound_out_l 132 -> RC + Q5/Q6 -> J2'}
+      source:
+        doc: sch
+        where: 'sheet 5/7: sound_out_r 131, sound_out_l 132 -> RC + Q5/Q6 -> J2'
       pins:
         r: "131"
         l: "132"
     onboard_serial_flash:
-      source: {doc: sch, where: 'sheet 5/7: F_CS/F_SO/F_SI/F_WP/F_RES'}
+      source:
+        doc: sch
+        where: 'sheet 5/7: F_CS/F_SO/F_SI/F_WP/F_RES'
       pins:
         csb: "133"
         clk: "134"
-        io: ["135", "137", "139", "142"]
+        io: ['135', '137', '139', '142']
     gpio_a:
-      source: {doc: sch, where: 'sheet 6/7 gpio: U1B IOBank_1 + PB2'}
-      pins: ["234", "233", "20", "19", "18", "232", "231", "235", "236", "238", "239", "237", "230", "226", "13", "9", "223", "6", "5", "224", "222", "221", "4", "240"]
+      source:
+        doc: sch
+        where: 'sheet 6/7 gpio: U1B IOBank_1 + PB2'
+      pins: ['234', '233', '20', '19', '18', '232', '231', '235', '236', '238', '239', '237', '230', '226', '13', '9', '223', '6', '5', '224', '222', '221', '4', '240']
     gpio_a_i:
-      pins: ["209", "210", "211", "212"]
+      pins: ['209', '210', '211', '212']
     gpio:
-      source: {doc: sch, where: 'sheet 6/7 gpio: U1D IOBank_3 + P81'}
+      source:
+        doc: sch
+        where: 'sheet 6/7 gpio: U1D IOBank_3 + P81'
       index_origin: 2
-      pins: ["21", "22", "37", "51", "52", "50", "49", "46", "55", "56", "38", "39", "63", "41", "43", "57", "64", "65", "44", "45"]
+      pins: ['21', '22', '37', '51', '52', '50', '49', '46', '55', '56', '38', '39', '63', '41', '43', '57', '64', '65', '44', '45']
     gpio_i:
       index_origin: 24
-      pins: ["32", "33", "34", "31"]
+      pins: ['32', '33', '34', '31']
     gpio_b:
-      source: {doc: sch, where: 'sheet 6/7 gpio: U1E IOBank_2 + PB3'}
-      pins: ["71", "70", "82", "81", "80", "69", "68", "72", "73", "76", "78"]
+      source:
+        doc: sch
+        where: 'sheet 6/7 gpio: U1E IOBank_2 + PB3'
+      pins: ['71', '70', '82', '81', '80', '69', '68', '72', '73', '76', '78']
     gpio_b_i:
-      pins: ["89", "90", "91"]
+      pins: ['89', '90', '91']
     onboard_u7_epcs4_configuration_flash:   # U7 EPCS4 configuration flash
-      device: {"name": "U7 EPCS4 configuration flash", "kind": "flash"}
-      pins: {"asdo": "12", "ncso": "14", "dclk": "23", "data0": "24"}
+      device:
+        name: U7 EPCS4 configuration flash
+        kind: flash
+      pins:
+        asdo: '12'
+        ncso: '14'
+        dclk: '23'
+        data0: '24'
     onboard_other:   # JTAG1 header (2x5, USB-Blaster pinout)
-      device: {"name": "JTAG1 header (2x5, USB-Blaster pinout)", "kind": "other"}
-      pins: {"tdi": "26", "tck": "27", "tms": "28", "tdo": "29"}
+      device:
+        name: JTAG1 header (2x5, USB-Blaster pinout)
+        kind: other
+      pins:
+        tdi: '26'
+        tck: '27'
+        tms: '28'
+        tdo: '29'
   # ---- drawn: headers and parts; ./unifpga layout draft marsohod_mcy316 regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: gpio_a
       type: pin_row
       label: GPIO_A
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_a
-      pins: {'[0]': 'gpio_a[0]', '[1]': 'gpio_a[1]', '[2]': 'gpio_a[2]', '[3]': 'gpio_a[3]', '[4]': 'gpio_a[4]', '[5]': 'gpio_a[5]', '[6]': 'gpio_a[6]', '[7]': 'gpio_a[7]', '[8]': 'gpio_a[8]', '[9]': 'gpio_a[9]', '[10]': 'gpio_a[10]', '[11]': 'gpio_a[11]', '[12]': 'gpio_a[12]', '[13]': 'gpio_a[13]', '[14]': 'gpio_a[14]', '[15]': 'gpio_a[15]', '[16]': 'gpio_a[16]', '[17]': 'gpio_a[17]', '[18]': 'gpio_a[18]', '[19]': 'gpio_a[19]', '[20]': 'gpio_a[20]', '[21]': 'gpio_a[21]', '[22]': 'gpio_a[22]', '[23]': 'gpio_a[23]'}
+      pins:
+        '[0]': gpio_a[0]
+        '[1]': gpio_a[1]
+        '[2]': gpio_a[2]
+        '[3]': gpio_a[3]
+        '[4]': gpio_a[4]
+        '[5]': gpio_a[5]
+        '[6]': gpio_a[6]
+        '[7]': gpio_a[7]
+        '[8]': gpio_a[8]
+        '[9]': gpio_a[9]
+        '[10]': gpio_a[10]
+        '[11]': gpio_a[11]
+        '[12]': gpio_a[12]
+        '[13]': gpio_a[13]
+        '[14]': gpio_a[14]
+        '[15]': gpio_a[15]
+        '[16]': gpio_a[16]
+        '[17]': gpio_a[17]
+        '[18]': gpio_a[18]
+        '[19]': gpio_a[19]
+        '[20]': gpio_a[20]
+        '[21]': gpio_a[21]
+        '[22]': gpio_a[22]
+        '[23]': gpio_a[23]
     - id: gpio_a_i
       type: pin_row
       label: GPIO_A_I
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_a_i
-      pins: {'[0]': 'gpio_a_i[0]', '[1]': 'gpio_a_i[1]', '[2]': 'gpio_a_i[2]', '[3]': 'gpio_a_i[3]'}
+      pins:
+        '[0]': gpio_a_i[0]
+        '[1]': gpio_a_i[1]
+        '[2]': gpio_a_i[2]
+        '[3]': gpio_a_i[3]
     - id: gpio
       type: pin_row
       label: GPIO
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
-      pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]', '[8]': 'gpio[8]', '[9]': 'gpio[9]', '[10]': 'gpio[10]', '[11]': 'gpio[11]', '[12]': 'gpio[12]', '[13]': 'gpio[13]', '[14]': 'gpio[14]', '[15]': 'gpio[15]', '[16]': 'gpio[16]', '[17]': 'gpio[17]', '[18]': 'gpio[18]', '[19]': 'gpio[19]'}
+      pins:
+        '[0]': gpio[0]
+        '[1]': gpio[1]
+        '[2]': gpio[2]
+        '[3]': gpio[3]
+        '[4]': gpio[4]
+        '[5]': gpio[5]
+        '[6]': gpio[6]
+        '[7]': gpio[7]
+        '[8]': gpio[8]
+        '[9]': gpio[9]
+        '[10]': gpio[10]
+        '[11]': gpio[11]
+        '[12]': gpio[12]
+        '[13]': gpio[13]
+        '[14]': gpio[14]
+        '[15]': gpio[15]
+        '[16]': gpio[16]
+        '[17]': gpio[17]
+        '[18]': gpio[18]
+        '[19]': gpio[19]
     - id: gpio_i
       type: pin_row
       label: GPIO_I
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_i
-      pins: {'[0]': 'gpio_i[0]', '[1]': 'gpio_i[1]', '[2]': 'gpio_i[2]', '[3]': 'gpio_i[3]'}
+      pins:
+        '[0]': gpio_i[0]
+        '[1]': gpio_i[1]
+        '[2]': gpio_i[2]
+        '[3]': gpio_i[3]
     - id: gpio_b
       type: pin_row
       label: GPIO_B
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_b
-      pins: {'[0]': 'gpio_b[0]', '[1]': 'gpio_b[1]', '[2]': 'gpio_b[2]', '[3]': 'gpio_b[3]', '[4]': 'gpio_b[4]', '[5]': 'gpio_b[5]', '[6]': 'gpio_b[6]', '[7]': 'gpio_b[7]', '[8]': 'gpio_b[8]', '[9]': 'gpio_b[9]', '[10]': 'gpio_b[10]'}
+      pins:
+        '[0]': gpio_b[0]
+        '[1]': gpio_b[1]
+        '[2]': gpio_b[2]
+        '[3]': gpio_b[3]
+        '[4]': gpio_b[4]
+        '[5]': gpio_b[5]
+        '[6]': gpio_b[6]
+        '[7]': gpio_b[7]
+        '[8]': gpio_b[8]
+        '[9]': gpio_b[9]
+        '[10]': gpio_b[10]
     - id: gpio_b_i
       type: pin_row
       label: GPIO_B_I
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio_b_i
-      pins: {'[0]': 'gpio_b_i[0]', '[1]': 'gpio_b_i[1]', '[2]': 'gpio_b_i[2]'}
+      pins:
+        '[0]': gpio_b_i[0]
+        '[1]': gpio_b_i[1]
+        '[2]': gpio_b_i[2]
   parts:
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+        bind:
+          btn: onboard_buttons
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: 7seg
       label: 7seg
-      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 4, active: low, digits_active: high}, bind: {segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg], dp: onboard_7seg.dp, digits: ['onboard_7seg.anodes[3]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[0]']}}
+      attach:
+        peripheral: seven_segment_8digit_shared
+        params:
+          digits: 4
+          active: low
+          digits_active: high
+        bind:
+          segments: [onboard_7seg.ca, onboard_7seg.cb, onboard_7seg.cc, onboard_7seg.cd, onboard_7seg.ce, onboard_7seg.cf, onboard_7seg.cg]
+          dp: onboard_7seg.dp
+          digits: ['onboard_7seg.anodes[3]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[0]']
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 8
+        bind:
+          led: onboard_leds
     - id: u7_epcs4_configuration_flash
       label: U7 EPCS4 configuration flash
-      device: {kind: flash, bank: onboard_u7_epcs4_configuration_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_u7_epcs4_configuration_flash
     - id: other
       label: JTAG1 header (2x5, USB-Blaster pinout)
-      device: {kind: other, bank: onboard_other}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: other
+        bank: onboard_other

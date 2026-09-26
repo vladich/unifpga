@@ -8,21 +8,58 @@ Peripheral:
   id: lcd_ml6485
   description: 480x272 RGB-parallel LCD (ML6485 controller) with HSYNC/VSYNC/DE/CLK and optional backlight
   parameters:
-    bits_r: { type: int, default: 5 }
-    bits_g: { type: int, default: 6 }
-    bits_b: { type: int, default: 5 }
-    bl:   { type: string, default: const.1 }
-    init: { type: string, default: const.0 }
+    bits_r:
+      type: int
+      default: 5
+    bits_g:
+      type: int
+      default: 6
+    bits_b:
+      type: int
+      default: 5
+    bl:
+      type: string
+      default: const.1
+    init:
+      type: string
+      default: const.0
   signals:
-    - { name: r,    type: bus, width: $bits_r, direction: output }
-    - { name: g,    type: bus, width: $bits_g, direction: output }
-    - { name: b,    type: bus, width: $bits_b, direction: output }
-    - { name: hs,   type: scalar, direction: output, optional: true }
-    - { name: vs,   type: scalar, direction: output, optional: true }
-    - { name: de,   type: scalar, direction: output }
-    - { name: ck,   type: scalar, direction: output }
-    - { name: bl,   type: scalar, direction: output, optional: true, comment: "Backlight enable" }
-    - { name: init, type: scalar, direction: output, optional: true, comment: "Init / display enable" }
+    - name: r
+      type: bus
+      width: $bits_r
+      direction: output
+    - name: g
+      type: bus
+      width: $bits_g
+      direction: output
+    - name: b
+      type: bus
+      width: $bits_b
+      direction: output
+    - name: hs
+      type: scalar
+      direction: output
+      optional: true
+    - name: vs
+      type: scalar
+      direction: output
+      optional: true
+    - name: de
+      type: scalar
+      direction: output
+    - name: ck
+      type: scalar
+      direction: output
+    - name: bl
+      type: scalar
+      direction: output
+      optional: true
+      comment: Backlight enable
+    - name: init
+      type: scalar
+      direction: output
+      optional: true
+      comment: Init / display enable
   provides:
     - capability: screen
       params:
@@ -35,7 +72,8 @@ Peripheral:
   # The panel is clocked from the 800x480 PLL setting: 27 MHz -> CLKOUT
   # 129.6 MHz -> CLKOUTD / 4 = 32.4 MHz (annotated "33.33 MHz" in the top).
   clocks:
-    - { name: pixel, mhz: 32.4 }
+    - name: pixel
+      mhz: 32.4
   driver:
     module: lcd_480_272_ml6485
     file: rtl/peripherals/lcd_480_272_ml6485.sv

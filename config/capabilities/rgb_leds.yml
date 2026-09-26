@@ -9,9 +9,18 @@ Capability:
       type: int
       description: Total number of RGB LEDs (sum across providers).
   signals:
-    - { name: r, type: bus, width: $count, direction: user_to_hw }
-    - { name: g, type: bus, width: $count, direction: user_to_hw }
-    - { name: b, type: bus, width: $count, direction: user_to_hw }
+    - name: r
+      type: bus
+      width: $count
+      direction: user_to_hw
+    - name: g
+      type: bus
+      width: $count
+      direction: user_to_hw
+    - name: b
+      type: bus
+      width: $count
+      direction: user_to_hw
   aggregation: concat
 
   primary: count
@@ -19,9 +28,17 @@ Capability:
     comment: RGB LEDs (active-high)
 
     parameters:
-      w_rgb_led: {value: count, absent: 0, description: Number of RGB LEDs
-}
+      w_rgb_led:
+        value: count
+        absent: 0
+        description: Number of RGB LEDs
     ports:
-      rgb_r: {signal: r, width: w_rgb_led}
-      rgb_g: {signal: g, width: w_rgb_led}
-      rgb_b: {signal: b, width: w_rgb_led}
+      rgb_r:
+        signal: r
+        width: w_rgb_led
+      rgb_g:
+        signal: g
+        width: w_rgb_led
+      rgb_b:
+        signal: b
+        width: w_rgb_led

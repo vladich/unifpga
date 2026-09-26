@@ -58,11 +58,12 @@ Board:
     iostandard: LVCMOS33
 
   banks:
-    clk100mhz: { pins: "R2" }
+    clk100mhz:
+      pins: R2
     onboard_buttons:
-      pins: ["G15", "K16", "J16", "H13"]
+      pins: [G15, K16, J16, H13]
     onboard_leds:
-      pins: ["E18", "F13", "E13", "H15"]
+      pins: [E18, F13, E13, H15]
     onboard_rgb_led_0:
       pins:
         b: "F15"
@@ -74,16 +75,16 @@ Board:
         g: "F18"
         r: "E15"
     onboard_switches:
-      pins: ["H14", "H18", "G18", "M5"]
+      pins: [H14, H18, G18, M5]
     onboard_uart:
       pins:
         rx: "V12"
         tx: "R12"
     pmod_ja:
-      pins: ["L17", "L18", "M14", "N14", "M16", "M17", "M18", "N18"]
+      pins: [L17, L18, M14, N14, M16, M17, M18, N18]
     pmod_jb:
-      pins: ["P17", "P18", "R18", "T18", "P14", "P15", "N15", "P16"]
+      pins: [P17, P18, R18, T18, P14, P15, N15, P16]
     pmod_jc:
-      pins: ["U15", "V16", "U17", "U18", "U16", "P13", "R13", "V14"]
+      pins: [U15, V16, U17, U18, U16, P13, R13, V14]
     pmod_jd:
-      pins: ["V15", "U12", "V13", "T12", "T13", "R11", "T11", "U11"]
+      pins: [V15, U12, V13, T12, T13, R11, T11, U11]

@@ -12,8 +12,12 @@ Capability:
       default: 115200
       description: Suggested baud rate (informational; the user implements framing)
   signals:
-    - { name: tx, type: scalar, direction: user_to_hw }
-    - { name: rx, type: scalar, direction: hw_to_user }
+    - name: tx
+      type: scalar
+      direction: user_to_hw
+    - name: rx
+      type: scalar
+      direction: hw_to_user
   aggregation: exclusive
 
   design:
@@ -21,5 +25,12 @@ Capability:
 
     ports:
       # no console: the idle line, or the configuration's `uart_rx: 0`
-      uart_rx: {signal: rx, width: 1, absent: {source: uart_rx_idle}}
-      uart_tx: {signal: tx, width: 1, idle: "1'b1"}   # idle high
+      uart_rx:
+        signal: rx
+        width: 1
+        absent:
+          source: uart_rx_idle
+      uart_tx:   # idle high
+        signal: tx
+        width: 1
+        idle: 1'b1

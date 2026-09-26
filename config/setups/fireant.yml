@@ -6,10 +6,10 @@ Setup:
   board: fireant
   toolchain: efinity
   notes:
-    - "Hand-curated (Efinity XML constraints)."
+    - Hand-curated (Efinity XML constraints).
   use:
     - onboard: clk
     - onboard: buttons
     - onboard: leds
   extra:
-    {manual: true}
+    manual: true

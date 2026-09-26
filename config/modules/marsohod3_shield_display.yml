@@ -7,7 +7,10 @@ Module:
   name: Marsohod3 7-segment + 4-button shield (display)
   peripheral: seven_segment_8digit_shared
   voltage: 3.3
-  params: {digits: 4, active: low, digits_active: high}
+  params:
+    digits: 4
+    active: low
+    digits_active: high
   pins:
     IO6: segments[0]
     IO7: segments[1]

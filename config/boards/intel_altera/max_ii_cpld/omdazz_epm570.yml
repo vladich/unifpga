@@ -30,35 +30,49 @@ Board:
       global_assignments:
         - "RESERVE_ALL_UNUSED_PINS \"AS INPUT TRI-STATED\""
   banks:
-    clk: { pins: "12", frequency_mhz: 50, source: {doc: yanshan, where: CLK_Scan PIN_12} }
-    cpu_resetn: { pins: "41", active: low }
+    clk:
+      pins: '12'
+      frequency_mhz: 50
+      source:
+        doc: yanshan
+        where: CLK_Scan PIN_12
+    cpu_resetn:
+      pins: '41'
+      active: low
     onboard_leds:
-      source: {doc: yanshan, where: 'LED[1..8] = 67,61,57,55,66,58,56,54 (student numbering, not board order)'}
+      source:
+        doc: yanshan
+        where: LED[1..8] = 67,61,57,55,66,58,56,54 (student numbering, not board order)
       active: low
       index_origin: 1
-      pins: ["67", "66", "61", "58", "57", "56", "55", "54"]
+      pins: ['67', '66', '61', '58', '57', '56', '55', '54']
     onboard_buttons:              # KEY[6:1] (key = ~ KEY): KEY[1] first
-      source: {doc: yanshan, where: 'RESET 42, Fake 43, Start 44'}
+      source:
+        doc: yanshan
+        where: RESET 42, Fake 43, Start 44
       active: low
       index_origin: 1
-      pins: ["49", "48", "47", "44", "43", "42"]
+      pins: ['49', '48', '47', '44', '43', '42']
     onboard_switches:             # CKEY[4:1] (sw = ~ CKEY): four more keys used as switches
       active: low
       index_origin: 1
-      pins: ["53", "52", "51", "50"]
+      pins: ['53', '52', '51', '50']
     onboard_7seg:
-      source: {doc: yanshan, where: 'SEG[0..6] = 76,83,81,75,74,78,82; DP 77; DIG[0..7] = 87,86,85,84,95,92,91,89'}
+      source:
+        doc: yanshan
+        where: SEG[0..6] = 76,83,81,75,74,78,82; DP 77; DIG[0..7] = 87,86,85,84,95,92,91,89
       pins:
-        anodes: ["87", "86", "85", "84", "95", "92", "91", "89"]
-        segments: ["76", "83", "81", "75", "74", "78", "82", "77"]
+        anodes: ['87', '86', '85', '84', '95', '92', '91', '89']
+        segments: ['76', '83', '81', '75', '74', '78', '82', '77']
     onboard_uart:
       pins:
         rx: "68"
         tx: "69"
     onboard_char_lcd:
-      index_origin: {d: 1}
+      index_origin:
+        d: 1
       pins:
-        d: ["6", "5", "4", "3", "2", "1", "100", "99", "98", "97", "96"]
+        d: ['6', '5', '4', '3', '2', '1', '100', '99', '98', '97', '96']
     onboard_vga:
       pins:
         hs: "7"
@@ -67,40 +81,104 @@ Board:
         r: "17"
         g: "16"
     onboard_buzzer:   # Buzzer
-      source: {doc: yanshan, where: BEEP PIN_73}
-      device: {"name": "Buzzer", "kind": "buzzer"}
-      pins: {"beep": "73"}
+      source:
+        doc: yanshan
+        where: BEEP PIN_73
+      device:
+        name: Buzzer
+        kind: buzzer
+      pins:
+        beep: '73'
   # ---- drawn: headers and parts; ./unifpga layout draft omdazz_epm570 regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers: []
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: cpu_resetn
       label: cpu resetn
-      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+      attach:
+        peripheral: reset_button
+        bind:
+          rst: cpu_resetn
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 8
+        bind:
+          led: onboard_leds
     - id: buttons
       label: buttons
-      attach: {peripheral: button_array, params: {width: 6}, bind: {btn: onboard_buttons}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 6
+        bind:
+          btn: onboard_buttons
     - id: switches
       label: switches
-      attach: {peripheral: sw_bank, params: {width: 4}, bind: {sw: onboard_switches}}
+      attach:
+        peripheral: sw_bank
+        params:
+          width: 4
+        bind:
+          sw: onboard_switches
     - id: 7seg
       label: 7seg
-      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 8, active: low, digits_active: low}, bind: {segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]'], dp: 'onboard_7seg.segments[0]', digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']}}
+      attach:
+        peripheral: seven_segment_8digit_shared
+        params:
+          digits: 8
+          active: low
+          digits_active: low
+        bind:
+          segments: ['onboard_7seg.segments[7]', 'onboard_7seg.segments[6]', 'onboard_7seg.segments[5]', 'onboard_7seg.segments[4]', 'onboard_7seg.segments[3]', 'onboard_7seg.segments[2]', 'onboard_7seg.segments[1]']
+          dp: onboard_7seg.segments[0]
+          digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]', 'onboard_7seg.anodes[4]', 'onboard_7seg.anodes[5]', 'onboard_7seg.anodes[6]', 'onboard_7seg.anodes[7]']
     - id: uart
       label: uart
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_uart.tx, rx: onboard_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_uart.tx
+          rx: onboard_uart.rx
     - id: vga
       label: vga
-      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 1, pin_bits_g: 1, pin_bits_b: 1, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+      attach:
+        peripheral: vga_4bit
+        params:
+          bits_r: 4
+          bits_g: 4
+          bits_b: 4
+          pin_bits_r: 1
+          pin_bits_g: 1
+          pin_bits_b: 1
+          color_depth: 444
+        bind:
+          r: onboard_vga.r
+          g: onboard_vga.g
+          b: onboard_vga.b
+          hs: onboard_vga.hs
+          vs: onboard_vga.vs
     - id: char_lcd
       label: char lcd
-      attach: {peripheral: gpio_header, params: {width: 11}, bind: {io: onboard_char_lcd.d}}
+      attach:
+        peripheral: gpio_header
+        params:
+          width: 11
+        bind:
+          io: onboard_char_lcd.d
     - id: buzzer
       label: Buzzer
-      attach: {peripheral: buzzer, bind: {pwm: onboard_buzzer.beep}}
+      attach:
+        peripheral: buzzer
+        bind:
+          pwm: onboard_buzzer.beep

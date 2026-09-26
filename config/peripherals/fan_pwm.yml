@@ -8,13 +8,32 @@ Peripheral:
   id: fan_pwm
   description: Fan header — PWM speed and / or supply enable, one actuator
   parameters:
-    pwm_khz: { type: int, default: 25 }
+    pwm_khz:
+      type: int
+      default: 25
   # the on-board devices it models: a board inventory's fan header
-  models: {kind: fan, pins: {pwm: [pwm, fan_pwm], en: [en, fan_en, enable], tach: [tach, tacho, fb]}}
+  models:
+    kind: fan
+    pins:
+      pwm: [pwm, fan_pwm]
+      en: [en, fan_en, enable]
+      tach: [tach, tacho, fb]
   signals:
-    - { name: pwm,  type: scalar, direction: output, optional: true, comment: "Speed: PWM duty from the level" }
-    - { name: en,   type: scalar, direction: output, optional: true, comment: "Supply enable: the on/off bit" }
-    - { name: tach, type: scalar, direction: input,  optional: true, comment: "Tachometer (not read yet)" }
+    - name: pwm
+      type: scalar
+      direction: output
+      optional: true
+      comment: 'Speed: PWM duty from the level'
+    - name: en
+      type: scalar
+      direction: output
+      optional: true
+      comment: 'Supply enable: the on/off bit'
+    - name: tach
+      type: scalar
+      direction: input
+      optional: true
+      comment: Tachometer (not read yet)
   provides:
     - capability: actuators
       params:

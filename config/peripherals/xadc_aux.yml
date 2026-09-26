@@ -21,10 +21,20 @@ Peripheral:
       type: int
       default: 1000
   # the on-board devices it models: a board inventory's XADC pairs as two buses
-  models: {kind: xadc, pins: {p: [xa_p, vaux_p, sense_p, p], n: [xa_n, vaux_n, sense_n, n]}}
+  models:
+    kind: xadc
+    pins:
+      p: [xa_p, vaux_p, sense_p, p]
+      n: [xa_n, vaux_n, sense_n, n]
   signals:
-    - { name: p, type: bus, direction: input, comment: "The pairs' positive pins" }
-    - { name: n, type: bus, direction: input, comment: "Their negative pins (ground for a single-ended input)" }
+    - name: p
+      type: bus
+      direction: input
+      comment: The pairs' positive pins
+    - name: n
+      type: bus
+      direction: input
+      comment: Their negative pins (ground for a single-ended input)
   provides:
     - capability: adc
       params:

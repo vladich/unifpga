@@ -5,7 +5,9 @@ Module:
   name: Marsohod3 7-segment + 4-button shield (keys)
   peripheral: button_array
   voltage: 3.3
-  params: {width: 4, active: low}
+  params:
+    width: 4
+    active: low
   pins:
     IO11: btn[0]
     IO10: btn[1]

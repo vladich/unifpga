@@ -10,9 +10,15 @@ Peripheral:
       type: int
       default: 1            # every common receiver module idles high
   # the on-board devices it models: a board inventory's IR receiver
-  models: {kind: ir, pins: {ir: [ir, IR, IRDA_RXD, ir_rx, rx, data]}}
+  models:
+    kind: ir
+    pins:
+      ir: [ir, IR, IRDA_RXD, ir_rx, rx, data]
   signals:
-    - { name: ir, type: scalar, direction: input, comment: "The receiver's demodulated output" }
+    - name: ir
+      type: scalar
+      direction: input
+      comment: The receiver's demodulated output
   provides:
     - capability: ir_remote
   driver:

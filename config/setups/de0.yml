@@ -11,17 +11,28 @@ Setup:
     - onboard: buttons
     - onboard: leds_green
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]}
+      design_bits:
+        switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]
     - onboard: 7seg
     - onboard: vga
     - module: inmp441_breakout
-      wires: {SCK: 'gpio_0.[6]', WS: 'gpio_0.[4]', SD: 'gpio_0.[7]', L/R: 'gpio_0.[2]'}
+      wires:
+        SCK: gpio_0.[6]
+        WS: gpio_0.[4]
+        SD: gpio_0.[7]
+        L/R: gpio_0.[2]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio_0.[29]', BCK: 'gpio_0.[27]', LCK: 'gpio_0.[23]', DIN: 'gpio_0.[25]'}
+      wires:
+        SCK: gpio_0.[29]
+        BCK: gpio_0.[27]
+        LCK: gpio_0.[23]
+        DIN: gpio_0.[25]
     - gpio: gpio_1
-      params: {width: 32}
+      params:
+        width: 32
     - gpio: gpio_0
-      params: {width: 32}
+      params:
+        width: 32
     - onboard: lcd
     - onboard: ps2
     - onboard: sdram
@@ -29,6 +40,8 @@ Setup:
   design:
     reset:
       sources:
-      - {switch_msb: true}
+      - switch_msb: true
   extra:
-    tie: {'gpio_0[3]': 0, 'gpio_0[5]': 1}
+    tie:
+      gpio_0[3]: 0
+      gpio_0[5]: 1

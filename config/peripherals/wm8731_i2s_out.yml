@@ -7,12 +7,30 @@ Peripheral:
   id: wm8731_i2s_out
   description: On-board WM8731 codec as I2S DAC (I2S lines + I2C register setup)
   signals:
-    - { name: xck,      type: scalar, direction: output, comment: "Codec master clock (AUD_XCK)" }
-    - { name: bclk,     type: scalar, direction: output, comment: "AUD_BCLK" }
-    - { name: dac_lrck, type: scalar, direction: output, comment: "AUD_DACLRCK" }
-    - { name: dac_dat,  type: scalar, direction: output, comment: "AUD_DACDAT" }
-    - { name: i2c_sclk, type: scalar, direction: output, comment: "Codec configuration I2C clock" }
-    - { name: i2c_sdat, type: scalar, direction: inout,  comment: "Codec configuration I2C data" }
+    - name: xck
+      type: scalar
+      direction: output
+      comment: Codec master clock (AUD_XCK)
+    - name: bclk
+      type: scalar
+      direction: output
+      comment: AUD_BCLK
+    - name: dac_lrck
+      type: scalar
+      direction: output
+      comment: AUD_DACLRCK
+    - name: dac_dat
+      type: scalar
+      direction: output
+      comment: AUD_DACDAT
+    - name: i2c_sclk
+      type: scalar
+      direction: output
+      comment: Codec configuration I2C clock
+    - name: i2c_sdat
+      type: scalar
+      direction: inout
+      comment: Codec configuration I2C data
   provides:
     - capability: audio_out
   driver:

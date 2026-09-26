@@ -6,32 +6,79 @@ Setup:
   board: arty_a7
   toolchain: vivado
   toolchains: [vivado, nextpnr_openxc7]
-  part: "35t"
+  part: 35t
   parts: [35t, 100t]
-  aliases: {arty_a7_100: {part: 100t}, arty_a7_100_openxc7: {toolchain: nextpnr_openxc7, part: 100t}, arty_a7_35: {part: 35t}, arty_a7_35_openxc7: {toolchain: nextpnr_openxc7, part: 35t}}
+  aliases:
+    arty_a7_100:
+      part: 100t
+    arty_a7_100_openxc7:
+      toolchain: nextpnr_openxc7
+      part: 100t
+    arty_a7_35:
+      part: 35t
+    arty_a7_35_openxc7:
+      toolchain: nextpnr_openxc7
+      part: 35t
   use:
     - onboard: clock
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, 3]}
+      design_bits:
+        switches: [0, 1, 2, 3]
     - onboard: rgb_led_0
     - onboard: rgb_led_1
     - onboard: rgb_led_2
     - onboard: rgb_led_3
     - onboard: leds
-      design_bits: {leds: [0, 1, 2, 3]}
+      design_bits:
+        leds: [0, 1, 2, 3]
     - onboard: buttons
-      design_bits: {buttons: [0, 1, 2, 3]}
+      design_bits:
+        buttons: [0, 1, 2, 3]
     - onboard: uart
     - onboard: reset
     - onboard: xadc_shield
     - module: tm1638_led_key
-      wires: {STB: ck.IO41, CLK: ck.IO40, DIO: ck.IO39}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: ck.IO41
+        CLK: ck.IO40
+        DIO: ck.IO39
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: []
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: inmp441_breakout
-      wires: {SCK: jd.10, WS: jd.7, SD: jd.9, L/R: jd.8}
+      wires:
+        SCK: jd.10
+        WS: jd.7
+        SD: jd.9
+        L/R: jd.8
     - gpio: ck
-      params: {width: 30}
-      design_bits: {gpio: [41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]}
+      params:
+        width: 30
+      design_bits:
+        gpio: [41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
     - module: digilent_pmod_vga
-      wires: {R0: jb.7, R1: jb.8, R2: jb.9, R3: jb.10, G0: jc.7, G1: jc.8, G2: jc.9, G3: jc.10, B0: jb.1, B1: jb.2, B2: jb.3, B3: jb.4, HS: jc.1, VS: jc.2}
-      params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}
+      wires:
+        R0: jb.7
+        R1: jb.8
+        R2: jb.9
+        R3: jb.10
+        G0: jc.7
+        G1: jc.8
+        G2: jc.9
+        G3: jc.10
+        B0: jb.1
+        B1: jb.2
+        B2: jb.3
+        B3: jb.4
+        HS: jc.1
+        VS: jc.2
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        gate: false

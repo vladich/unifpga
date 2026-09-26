@@ -11,7 +11,10 @@ Capability:
       type: int
       description: Total GPIO width (sum across providers).
   signals:
-    - { name: io, type: bus, width: $width, direction: inout }
+    - name: io
+      type: bus
+      width: $width
+      direction: inout
   aggregation: concat
 
   primary: width
@@ -21,8 +24,15 @@ Capability:
 
     parameters:
       # without a provider: the configuration's design_width.gpio (the design's w_gpio)
-      w_gpio: {value: width, absent: {source: design_width}, description: Generic bidirectional pin bank
-}
+      w_gpio:
+        value: width
+        absent:
+          source: design_width
+        description: Generic bidirectional pin bank
     ports:
       # straight to the pin nets (inout), also without a provider (design_width)
-      gpio: {signal: io, width: w_gpio, net: {source: gpio_connection}}
+      gpio:
+        signal: io
+        width: w_gpio
+        net:
+          source: gpio_connection

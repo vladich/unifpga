@@ -6,28 +6,66 @@ Setup:
   board: zybo_z7
   toolchain: vivado
   toolchains: [vivado, nextpnr_openxc7]
-  aliases: {zybo_z7_openxc7: {toolchain: nextpnr_openxc7}}
+  aliases:
+    zybo_z7_openxc7:
+      toolchain: nextpnr_openxc7
   use:
     - onboard: clk125mhz
     - onboard: switches
-      design_bits: {switches: [0, 1, 2, null]}
+      design_bits:
+        switches: [0, 1, 2, null]
     - onboard: buttons
-      design_bits: {buttons: [0, 1, 2, 3]}
+      design_bits:
+        buttons: [0, 1, 2, 3]
     - onboard: leds
-      design_bits: {leds: [0, 1, 2, 3]}
+      design_bits:
+        leds: [0, 1, 2, 3]
     - module: tm1638_led_key
-      wires: {STB: 'pmod_je.[0]', CLK: 'pmod_je.[1]', DIO: 'pmod_je.[2]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        STB: pmod_je.[0]
+        CLK: pmod_je.[1]
+        DIO: pmod_je.[2]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: []
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - module: i2s_dac_breakout
-      wires: {SCK: 'pmod_jb.[0]', BCK: 'pmod_jb.[2]', LCK: 'pmod_jb.[1]', DIN: 'pmod_jb.[3]'}
+      wires:
+        SCK: pmod_jb.[0]
+        BCK: pmod_jb.[2]
+        LCK: pmod_jb.[1]
+        DIN: pmod_jb.[3]
     - module: digilent_pmod_vga
-      wires: {R0: 'pmod_jc.[0]', R1: 'pmod_jc.[1]', R2: 'pmod_jc.[2]', R3: 'pmod_jc.[3]', G0: 'pmod_jc.[4]', G1: 'pmod_jc.[5]', G2: 'pmod_jc.[6]', G3: 'pmod_jc.[7]', B0: 'pmod_jd.[0]', B1: 'pmod_jd.[1]', B2: 'pmod_jd.[2]', B3: 'pmod_jd.[3]', HS: 'pmod_jd.[4]', VS: 'pmod_jd.[5]'}
-      params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, gate: false}
+      wires:
+        R0: pmod_jc.[0]
+        R1: pmod_jc.[1]
+        R2: pmod_jc.[2]
+        R3: pmod_jc.[3]
+        G0: pmod_jc.[4]
+        G1: pmod_jc.[5]
+        G2: pmod_jc.[6]
+        G3: pmod_jc.[7]
+        B0: pmod_jd.[0]
+        B1: pmod_jd.[1]
+        B2: pmod_jd.[2]
+        B3: pmod_jd.[3]
+        HS: pmod_jd.[4]
+        VS: pmod_jd.[5]
+      params:
+        bits_r: 4
+        bits_g: 4
+        bits_b: 4
+        pin_bits_r: 4
+        pin_bits_g: 4
+        pin_bits_b: 4
+        gate: false
     - onboard: rgb_led_5
     - onboard: rgb_led_6
   design:
     reset:
       sources:
-      - {switch_msb: true}
+      - switch_msb: true
     uart_rx: 1
-    width: {gpio: 8}
+    width:
+      gpio: 8

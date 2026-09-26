@@ -131,7 +131,7 @@ def test_the_setup_writer_keeps_the_design_conventions(tmp_path, monkeypatch):
     monkeypatch.setattr(su, "SETUP_DIR", str(tmp_path))
     su.write_setup(setup)
     text = open(str(tmp_path / "de10_lite.yml")).read()
-    assert "design_bits: {switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]}" in text
+    assert "      design_bits:\n        switches: [0, 1, 2, 3, 4, 5, 6, 7, 8, null]\n" in text
     assert "  design:\n" in text and "uart_rx: 0" in text
     again = yaml.safe_load(text)["Setup"]
     assert su.same_configuration(su.generate(again), su.generate(setup))

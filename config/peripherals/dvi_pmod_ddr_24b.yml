@@ -8,8 +8,16 @@ Peripheral:
   id: dvi_pmod_ddr_24b
   description: 1BitSquared DVI 24b Pmod carrier (16 pins, DDR-encoded)
   signals:
-    - { name: pmod_a, type: bus, width: 8, direction: output, comment: "Top header (P*A1..10) data" }
-    - { name: pmod_b, type: bus, width: 8, direction: output, comment: "Bottom header (P*B1..10) data" }
+    - name: pmod_a
+      type: bus
+      width: 8
+      direction: output
+      comment: Top header (P*A1..10) data
+    - name: pmod_b
+      type: bus
+      width: 8
+      direction: output
+      comment: Bottom header (P*B1..10) data
   provides:
     - capability: screen
       params:
@@ -19,7 +27,8 @@ Peripheral:
   # 25.125 MHz pixel clock from the iCE40 PLL (SB_PLL40_PAD 12 -> 25.125 MHz;
   # the whole design runs on it, see the rig's `design: clock:`).
   clocks:
-    - { name: pixel, mhz: 25.125 }
+    - name: pixel
+      mhz: 25.125
   driver:
     module: dvi_pmod_ddr_24b
     file: rtl/peripherals/dvi_pmod_ddr_24b.sv

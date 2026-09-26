@@ -12,7 +12,10 @@ Capability:
       description: Total number of switches exposed to the user.
                    Computed at codegen time from the sum of all providers.
   signals:
-    - { name: sw, type: bus, width: $width, direction: hw_to_user }
+    - name: sw
+      type: bus
+      width: $width
+      direction: hw_to_user
   aggregation: concat
 
   primary: width           # summed across providers; what `switches >= N` constrains
@@ -20,7 +23,11 @@ Capability:
     comment: Switches (active-high — codegen normalizes polarity)
 
     parameters:
-      w_sw: {value: width, absent: 0, description: Width of slide-switch bus
-}
+      w_sw:
+        value: width
+        absent: 0
+        description: Width of slide-switch bus
     ports:
-      sw: {signal: sw, width: w_sw}
+      sw:
+        signal: sw
+        width: w_sw

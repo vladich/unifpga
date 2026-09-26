@@ -5,20 +5,30 @@ Setup:
   id: colorlight75b_tm1638_ecp5
   board: colorlight75b
   toolchain: nextpnr_trellis
-  aliases: {colorlight75b_tm1638_ecp5_yosys: {}}
+  aliases:
+    colorlight75b_tm1638_ecp5_yosys: {}
   use:
     - onboard: clk
     - onboard: leds
-      design_bits: {leds: [0]}
+      design_bits:
+        leds: [0]
     - module: tm1638_led_key
-      wires: {CLK: 'gpio.[0]', STB: 'gpio.[1]', DIO: 'onboard_buttons_pads.[0]'}
-      design_bits: {buttons: [0, 1, 2, 3, 4, 5, 6, 7], switches: [], leds: [0, 1, 2, 3, 4, 5, 6, 7], seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]}
+      wires:
+        CLK: gpio.[0]
+        STB: gpio.[1]
+        DIO: onboard_buttons_pads.[0]
+      design_bits:
+        buttons: [0, 1, 2, 3, 4, 5, 6, 7]
+        switches: []
+        leds: [0, 1, 2, 3, 4, 5, 6, 7]
+        seven_segment: [0, 1, 2, 3, 4, 5, 6, 7]
     - onboard: hdmi
     - onboard: sdram
   design:
     reset:
       sources:
-      - {tm_key: msb}
-      - {pll_lock: serial}
+      - tm_key: msb
+      - pll_lock: serial
     uart_rx: 0
-    width: {gpio: 2}
+    width:
+      gpio: 2

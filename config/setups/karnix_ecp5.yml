@@ -5,23 +5,34 @@ Setup:
   id: karnix_ecp5
   board: karnix_ecp5
   toolchain: nextpnr_trellis
-  aliases: {karnix_ecp5_yosys: {}}
+  aliases:
+    karnix_ecp5_yosys: {}
   use:
     - onboard: clk
     - onboard: leds
     - onboard: buttons
     - onboard: vga
     - onboard: switches
-      design_bits: {switches: []}
+      design_bits:
+        switches: []
     - onboard: uart
     - module: inmp441_breakout
-      wires: {SCK: 'gpio.[5]', WS: 'gpio.[4]', SD: 'gpio.[6]', L/R: 'gpio.[3]'}
+      wires:
+        SCK: gpio.[5]
+        WS: gpio.[4]
+        SD: gpio.[6]
+        L/R: gpio.[3]
     - module: i2s_dac_breakout
-      wires: {SCK: 'gpio.[7]', BCK: 'gpio.[8]', LCK: 'gpio.[10]', DIN: 'gpio.[9]'}
+      wires:
+        SCK: gpio.[7]
+        BCK: gpio.[8]
+        LCK: gpio.[10]
+        DIN: gpio.[9]
     - onboard: adc
     - onboard: sram
   design:
     reset:
       sources:
-      - {key: msb}
-    width: {gpio: 12}
+      - key: msb
+    width:
+      gpio: 12

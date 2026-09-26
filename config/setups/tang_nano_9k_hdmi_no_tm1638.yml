@@ -8,8 +8,11 @@ Setup:
   use:
     - onboard: clk
     - onboard: buttons
-      params: {as_switches: true}
-      design_bits: {buttons: [1, 0], switches: [1, 0]}
+      params:
+        as_switches: true
+      design_bits:
+        buttons: [1, 0]
+        switches: [1, 0]
     - onboard: leds
     - onboard: uart
     - onboard: hdmi
@@ -18,12 +21,16 @@ Setup:
     - onboard: lcd
       variant: i2s_audio_out
     - gpio: gpio
-      params: {width: 6}
+      params:
+        width: 6
   design:
     reset:
       sources:
-      - {power_up: true}
-    width: {gpio: 10}
+      - power_up: true
+    width:
+      gpio: 10
   extra:
-    io_overrides: {clk: LVCMOS33}
-    tie: {onboard_lcd.de: 0}
+    io_overrides:
+      clk: LVCMOS33
+    tie:
+      onboard_lcd.de: 0

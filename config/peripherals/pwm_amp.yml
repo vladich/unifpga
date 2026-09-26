@@ -8,10 +8,20 @@ Peripheral:
       type: bool
       default: false        # Digilent Nexys AUD_PWM (board datasheet): 1'b0 for 0 V, high-Z for 3.3 V
   # the on-board device it models: a board inventory's PWM audio amplifier
-  models: {kind: audio_amp, pins: {pwm: [pwm, AUD_PWM, ain], sd: [sd, AUD_SD, shutdown]}}
+  models:
+    kind: audio_amp
+    pins:
+      pwm: [pwm, AUD_PWM, ain]
+      sd: [sd, AUD_SD, shutdown]
   signals:
-    - { name: pwm, type: scalar, direction: output, comment: "PWM-modulated audio" }
-    - { name: sd,  type: scalar, direction: output, comment: "Shutdown control (active low)" }
+    - name: pwm
+      type: scalar
+      direction: output
+      comment: PWM-modulated audio
+    - name: sd
+      type: scalar
+      direction: output
+      comment: Shutdown control (active low)
   provides:
     - capability: audio_out
   driver:

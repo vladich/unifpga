@@ -8,15 +8,37 @@ Peripheral:
   description: SPI accelerometer (Analog Devices ADXL362), readings in milli-g
   # the on-board devices it models: a board inventory's accelerometer
   # (its INT lines are left unbound: the reader polls)
-  models: {kind: accelerometer, pins: {miso: [miso, MISO, ACL_MISO], mosi: [mosi, MOSI, ACL_MOSI],
-                                       sclk: [sclk, SCLK, ACL_SCLK], csn: [csn, cs_n, CSN, ACL_CSN]}}
+  models:
+    kind: accelerometer
+    pins:
+      miso: [miso, MISO, ACL_MISO]
+      mosi: [mosi, MOSI, ACL_MOSI]
+      sclk: [sclk, SCLK, ACL_SCLK]
+      csn: [csn, cs_n, CSN, ACL_CSN]
   signals:
-    - { name: miso, type: scalar, direction: input }
-    - { name: mosi, type: scalar, direction: output }
-    - { name: sclk, type: scalar, direction: output }
-    - { name: csn,  type: scalar, direction: output, comment: "Chip-select, active low" }
-    - { name: int1, type: scalar, direction: input, optional: true, comment: "Interrupt 1, not used" }
-    - { name: int2, type: scalar, direction: input, optional: true, comment: "Interrupt 2, not used" }
+    - name: miso
+      type: scalar
+      direction: input
+    - name: mosi
+      type: scalar
+      direction: output
+    - name: sclk
+      type: scalar
+      direction: output
+    - name: csn
+      type: scalar
+      direction: output
+      comment: Chip-select, active low
+    - name: int1
+      type: scalar
+      direction: input
+      optional: true
+      comment: Interrupt 1, not used
+    - name: int2
+      type: scalar
+      direction: input
+      optional: true
+      comment: Interrupt 2, not used
   provides:
     - capability: accelerometer
   driver:

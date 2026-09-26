@@ -88,8 +88,15 @@ Board:
     iostandard: LVCMOS33
 
   banks:
-    clk: { pins: F22, frequency_mhz: 50, source: {doc: litex_core, where: 'resource ("clk50", 0), line 17'} }
-    cpu_resetn: { pins: AF9, active: low }
+    clk:
+      pins: F22
+      frequency_mhz: 50
+      source:
+        doc: litex_core
+        where: resource ("clk50", 0), line 17
+    cpu_resetn:
+      pins: AF9
+      active: low
     onboard_leds:
       pins: [D10, A10, B9, A8, J26, H26]
     onboard_7seg:
@@ -108,180 +115,498 @@ Board:
       overrides:
         AF10: LVCMOS18
     onboard_core_keys:   # Core-board user keys SW2, SW3
-      device: {"name": "Core-board user keys SW2, SW3", "kind": "buttons"}
+      device:
+        name: Core-board user keys SW2, SW3
+        kind: buttons
       active: "low (inference: core manual section 2.2.7 figure shows pull-up resistors R16/R17 on the key nets; LiteX names them user_btn_n)"
       iostandard: "LVCMOS18"
-      shares: ["cpu_resetn", "onboard_buttons"]   # the board multiplexes these pins
-      pins: {"sw2": "AF9", "sw3": "AF10"}
+      shares: [cpu_resetn, onboard_buttons]   # the board multiplexes these pins
+      pins:
+        sw2: AF9
+        sw3: AF10
     onboard_core_leds:   # Core-board user LEDs D2 (LED2), D3 (LED3)
-      device: {"name": "Core-board user LEDs D2 (LED2), D3 (LED3)", "kind": "leds"}
+      device:
+        name: Core-board user LEDs D2 (LED2), D3 (LED3)
+        kind: leds
       active: "low (core manual Figure 2-11: LED anode to 3V3, cathode on the FPGA net; inference from the figure)"
       iostandard: "LVCMOS33"
-      shares: ["onboard_leds"]   # the board multiplexes these pins
-      pins: {"led": ["J26", "H26"]}
+      shares: [onboard_leds]   # the board multiplexes these pins
+      pins:
+        led: [J26, H26]
     onboard_spi_flash:   # SPI flash S25FL256L (32 MB, quad)
-      source: {doc: litex_core, where: 'resource ("spiflash4x", 0), line 34'}
-      device: {"name": "SPI flash S25FL256L (32 MB, quad)", "kind": "flash", "id": "infineon_s25fl256l"}
+      source:
+        doc: litex_core
+        where: resource ("spiflash4x", 0), line 34
+      device:
+        name: SPI flash S25FL256L (32 MB, quad)
+        kind: flash
+        id: infineon_s25fl256l
       iostandard: "LVCMOS33"
-      pins: {"cs_n": "C23", "dq": ["B24", "A25", "B22", "A22"]}
+      pins:
+        cs_n: C23
+        dq: [B24, A25, B22, A22]
     onboard_ddr3:   # DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)
-      source: {doc: litex_core, where: 'resource ("ddram", 0), line 43'}
-      device: {"name": "DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)", "kind": "ddr", "id": "micron_mt41k128m16"}
-      iostandard: ["DIFF_SSTL15", "LVCMOS15", "SSTL15"]
-      pins: {"a": ["AF5", "AF2", "AD6", "AC6", "AD4", "AB6", "AE2", "Y5", "AA4", "AE6", "AE3", "AD5", "AB4", "Y6"], "ba": ["AD3", "AE1", "AE5"], "ras_n": "AC3", "cas_n": "AC4", "we_n": "AF4", "dm": ["V1", "V3"], "dq": ["W1", "V2", "Y1", "Y3", "AC2", "Y2", "AB2", "AA3", "U1", "V4", "U6", "W3", "V6", "U2", "U7", "U5"], "dqs_p": ["AB1", "W6"], "dqs_n": ["AC1", "W5"], "clk_p": "AA5", "clk_n": "AB5", "cke": "AD1", "odt": "AF3", "reset_n": "W4"}
+      source:
+        doc: litex_core
+        where: resource ("ddram", 0), line 43
+      device:
+        name: DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)
+        kind: ddr
+        id: micron_mt41k128m16
+      iostandard: [DIFF_SSTL15, LVCMOS15, SSTL15]
+      pins:
+        a: [AF5, AF2, AD6, AC6, AD4, AB6, AE2, Y5, AA4, AE6, AE3, AD5, AB4, Y6]
+        ba: [AD3, AE1, AE5]
+        ras_n: AC3
+        cas_n: AC4
+        we_n: AF4
+        dm: [V1, V3]
+        dq: [W1, V2, Y1, Y3, AC2, Y2, AB2, AA3, U1, V4, U6, W3, V6, U2, U7, U5]
+        dqs_p: [AB1, W6]
+        dqs_n: [AC1, W5]
+        clk_p: AA5
+        clk_n: AB5
+        cke: AD1
+        odt: AF3
+        reset_n: W4
     header_j2:   # Core-board 64-pin header U5 (LiteX/daughterboard name J2)
-      source: {doc: litex_core, where: '_connectors ("J2"), line 76'}
-      device: {"name": "Core-board 64-pin header U5 (LiteX/daughterboard name J2)", "kind": "header"}
-      shares: ["db_header_j1", "db_pmod_j10", "db_pmod_j11", "onboard_7seg", "onboard_buttons", "onboard_db_7seg", "onboard_db_buttons", "onboard_db_leds", "onboard_db_uart", "onboard_leds"]   # the board multiplexes these pins
-      pins: ["A8", "A9", "B9", "C9", "A10", "B10", "D10", "E10", "B11", "B12", "C11", "C12", "A12", "A13", "D13", "D14", "A14", "B14", "C13", "C14", "A15", "B15", "D16", "D15", "B16", "C16", "A17", "B17", "D18", "E18", "C18", "C17", "A19", "A18", "B19", "C19", "A20", "B20", "D20", "D19", "A24", "A23", "E22", "E21", "D24", "D23", "D25", "E25", "E26", "F25", "B26", "B25", "C26", "D26"]
+      source:
+        doc: litex_core
+        where: _connectors ("J2"), line 76
+      device:
+        name: Core-board 64-pin header U5 (LiteX/daughterboard name J2)
+        kind: header
+      shares: [db_header_j1, db_pmod_j10, db_pmod_j11, onboard_7seg, onboard_buttons, onboard_db_7seg, onboard_db_buttons, onboard_db_leds, onboard_db_uart, onboard_leds]   # the board multiplexes these pins
+      pins: [A8, A9, B9, C9, A10, B10, D10, E10, B11, B12, C11, C12, A12, A13, D13, D14, A14, B14, C13, C14, A15, B15, D16, D15, B16, C16, A17, B17, D18, E18, C18, C17, A19, A18, B19, C19, A20, B20, D20, D19, A24, A23, E22, E21, D24, D23, D25, E25, E26, F25, B26, B25, C26, D26]
     header_j3:   # Core-board 64-pin header U4 (LiteX/daughterboard name J3)
-      source: {doc: litex_core, where: '_connectors ("J3"), line 106'}
-      device: {"name": "Core-board 64-pin header U4 (LiteX/daughterboard name J3)", "kind": "header"}
-      shares: ["onboard_db_buttons", "onboard_db_ethernet", "onboard_db_ethernet_clocks", "onboard_db_sdcard", "onboard_db_vga"]   # the board multiplexes these pins
-      pins: ["AD21", "AE21", "AE22", "AF22", "AE23", "AF23", "V21", "W21", "Y22", "AA22", "AF24", "AF25", "AB21", "AC21", "AB22", "AC22", "AD23", "AD24", "AC23", "AC24", "AD25", "AE25", "AA23", "AB24", "AA25", "AB25", "Y23", "AA24", "AD26", "AE26", "AB26", "AC26", "W23", "W24", "Y25", "Y26", "W25", "W26", "U26", "V26", "V23", "V24", "U24", "U25", "T22", "T23", "R22", "R23", "R25", "P25", "P23", "N23", "N26", "M26"]
+      source:
+        doc: litex_core
+        where: _connectors ("J3"), line 106
+      device:
+        name: Core-board 64-pin header U4 (LiteX/daughterboard name J3)
+        kind: header
+      shares: [onboard_db_buttons, onboard_db_ethernet, onboard_db_ethernet_clocks, onboard_db_sdcard, onboard_db_vga]   # the board multiplexes these pins
+      pins: [AD21, AE21, AE22, AF22, AE23, AF23, V21, W21, Y22, AA22, AF24, AF25, AB21, AC21, AB22, AC22, AD23, AD24, AC23, AC24, AD25, AE25, AA23, AB24, AA25, AB25, Y23, AA24, AD26, AE26, AB26, AC26, W23, W24, Y25, Y26, W25, W26, U26, V26, V23, V24, U24, U25, T22, T23, R22, R23, R25, P25, P23, N23, N26, M26]
     onboard_db_uart:   # Daughterboard USB-UART (CP2102N, J4 mini-USB)
-      device: {"name": "Daughterboard USB-UART (CP2102N, J4 mini-USB)", "kind": "uart", "id": "silabs_cp2102n"}
+      device:
+        name: Daughterboard USB-UART (CP2102N, J4 mini-USB)
+        kind: uart
+        id: silabs_cp2102n
       iostandard: "LVCMOS33"
-      shares: ["header_j2", "onboard_7seg", "onboard_buttons"]   # the board multiplexes these pins
-      pins: {"rx": "B12", "tx": "B11"}
+      shares: [header_j2, onboard_7seg, onboard_buttons]   # the board multiplexes these pins
+      pins:
+        rx: B12
+        tx: B11
     onboard_db_leds:   # Daughterboard LEDs (5)
-      device: {"name": "Daughterboard LEDs (5)", "kind": "leds"}
+      device:
+        name: Daughterboard LEDs (5)
+        kind: leds
       iostandard: "LVCMOS33"
-      shares: ["header_j2"]   # the board multiplexes these pins
-      pins: {"user_led": ["A18", "A19", "C17", "C18", "E18"]}
+      shares: [header_j2]   # the board multiplexes these pins
+      pins:
+        user_led: [A18, A19, C17, C18, E18]
     onboard_db_buttons:   # Daughterboard keys (5)
-      device: {"name": "Daughterboard keys (5)", "kind": "buttons"}
+      device:
+        name: Daughterboard keys (5)
+        kind: buttons
       iostandard: "LVCMOS33"
-      shares: ["header_j2", "header_j3"]   # the board multiplexes these pins
-      pins: {"user_btn": ["AD21", "B20", "A20", "C19", "B19"]}
+      shares: [header_j2, header_j3]   # the board multiplexes these pins
+      pins:
+        user_btn: [AD21, B20, A20, C19, B19]
     onboard_db_ethernet_clocks:   # Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)
-      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)", "kind": "ethernet", "id": "realtek_rtl8211eg"}
+      device:
+        name: Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)
+        kind: ethernet
+        id: realtek_rtl8211eg
       iostandard: "LVCMOS33"
-      shares: ["header_j3"]   # the board multiplexes these pins
-      pins: {"tx": "AC22", "gtx": "AA23", "rx": "AB26"}
+      shares: [header_j3]   # the board multiplexes these pins
+      pins:
+        tx: AC22
+        gtx: AA23
+        rx: AB26
     onboard_db_ethernet:   # Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)
-      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)", "kind": "ethernet", "id": "realtek_rtl8211eg"}
+      device:
+        name: Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)
+        kind: ethernet
+        id: realtek_rtl8211eg
       iostandard: "LVCMOS33"
-      shares: ["header_j3"]   # the board multiplexes these pins
-      pins: {"int_n": "AC24", "mdio": "Y22", "mdc": "AA22", "rx_dv": "Y26", "rx_er": "AB25", "rx_data": ["Y25", "W24", "W23", "AC26", "AE26", "AD26", "AA24", "Y23"], "tx_en": "AE25", "tx_er": "AF24", "tx_data": ["AD25", "AC23", "AD24", "AD23", "AB22", "AC21", "AB21", "AF25"], "col": "AA25", "crs": "AB24"}
+      shares: [header_j3]   # the board multiplexes these pins
+      pins:
+        int_n: AC24
+        mdio: Y22
+        mdc: AA22
+        rx_dv: Y26
+        rx_er: AB25
+        rx_data: [Y25, W24, W23, AC26, AE26, AD26, AA24, Y23]
+        tx_en: AE25
+        tx_er: AF24
+        tx_data: [AD25, AC23, AD24, AD23, AB22, AC21, AB21, AF25]
+        col: AA25
+        crs: AB24
     onboard_db_7seg:   # Daughterboard 3-digit 7-segment display (U3, 2352B-type)
-      device: {"name": "Daughterboard 3-digit 7-segment display (U3, 2352B-type)", "kind": "seven_segment"}
+      device:
+        name: Daughterboard 3-digit 7-segment display (U3, 2352B-type)
+        kind: seven_segment
       iostandard: "LVCMOS33"
-      shares: ["header_j2", "onboard_7seg"]   # the board multiplexes these pins
-      pins: {"sel": ["A17", "A15", "D18"], "seg": ["B16", "C14", "B15", "C16", "B17", "D16", "C13", "D15"]}
+      shares: [header_j2, onboard_7seg]   # the board multiplexes these pins
+      pins:
+        sel: [A17, A15, D18]
+        seg: [B16, C14, B15, C16, B17, D16, C13, D15]
     onboard_db_vga:   # Daughterboard VGA (RGB 5-6-5)
-      device: {"name": "Daughterboard VGA (RGB 5-6-5)", "kind": "vga"}
+      device:
+        name: Daughterboard VGA (RGB 5-6-5)
+        kind: vga
       iostandard: "LVCMOS33"
-      shares: ["header_j3"]   # the board multiplexes these pins
-      pins: {"hsync_n": "W26", "vsync_n": "W25", "r": ["P23", "P25", "N26", "N23", "M26"], "g": ["T22", "U25", "R22", "T23", "R23", "R25"], "b": ["V26", "U26", "V24", "V23", "U24"]}
+      shares: [header_j3]   # the board multiplexes these pins
+      pins:
+        hsync_n: W26
+        vsync_n: W25
+        r: [P23, P25, N26, N23, M26]
+        g: [T22, U25, R22, T23, R23, R25]
+        b: [V26, U26, V24, V23, U24]
     onboard_db_sdcard:   # Daughterboard microSD slot
-      device: {"name": "Daughterboard microSD slot", "kind": "sdcard"}
+      device:
+        name: Daughterboard microSD slot
+        kind: sdcard
       iostandard: "LVCMOS33"
-      shares: ["header_j3"]   # the board multiplexes these pins
-      pins: {"data": ["AF22", "AE22", "W21", "V21"], "cmd": "AF23", "clk": "AE23", "cd": "AE21"}
+      shares: [header_j3]   # the board multiplexes these pins
+      pins:
+        data: [AF22, AE22, W21, V21]
+        cmd: AF23
+        clk: AE23
+        cd: AE21
     db_pmod_j10:   # Daughterboard Pmod J10 (pmoda)
-      source: {doc: litex_db, where: 'connectors ("pmoda"), line 144; keyed by Pmod pin (LiteX order = pins 1-4, 7-10, inference from the LiteX pmod convention)'}
-      device: {"name": "Daughterboard Pmod J10 (pmoda)", "kind": "pmod"}
-      shares: ["header_j2", "onboard_7seg", "onboard_buttons"]   # the board multiplexes these pins
-      pins: ["C11", "A12", "D13", "A14", "C12", "A13", "D14", "B14"]
+      source:
+        doc: litex_db
+        where: connectors ("pmoda"), line 144; keyed by Pmod pin (LiteX order = pins 1-4, 7-10, inference from the LiteX pmod convention)
+      device:
+        name: Daughterboard Pmod J10 (pmoda)
+        kind: pmod
+      shares: [header_j2, onboard_7seg, onboard_buttons]   # the board multiplexes these pins
+      pins: [C11, A12, D13, A14, C12, A13, D14, B14]
     db_pmod_j11:   # Daughterboard Pmod J11 (pmodb)
-      source: {doc: litex_db, where: 'connectors ("pmodb"), line 145; keyed by Pmod pin (LiteX order = pins 1-4, 7-10, inference from the LiteX pmod convention)'}
-      device: {"name": "Daughterboard Pmod J11 (pmodb)", "kind": "pmod"}
-      shares: ["header_j2", "onboard_7seg", "onboard_leds"]   # the board multiplexes these pins
-      pins: ["A8", "B9", "A10", "D10", "A9", "C9", "B10", "E10"]
+      source:
+        doc: litex_db
+        where: connectors ("pmodb"), line 145; keyed by Pmod pin (LiteX order = pins 1-4, 7-10, inference from the LiteX pmod convention)
+      device:
+        name: Daughterboard Pmod J11 (pmodb)
+        kind: pmod
+      shares: [header_j2, onboard_7seg, onboard_leds]   # the board multiplexes these pins
+      pins: [A8, B9, A10, D10, A9, C9, B10, E10]
     db_header_j1:   # Daughterboard header J1 (16 IO, JP1 HDR_9X2 on the schematic?)
-      source: {doc: litex_db, where: 'connectors ("J1"), line 146'}
-      device: {"name": "Daughterboard header J1 (16 IO, JP1 HDR_9X2 on the schematic?)", "kind": "header"}
-      shares: ["header_j2"]   # the board multiplexes these pins
-      pins: ["D26", "C26", "B25", "B26", "F25", "E26", "E25", "D25", "D23", "D24", "E21", "E22", "A23", "A24", "D19", "D20"]
+      source:
+        doc: litex_db
+        where: connectors ("J1"), line 146
+      device:
+        name: Daughterboard header J1 (16 IO, JP1 HDR_9X2 on the schematic?)
+        kind: header
+      shares: [header_j2]   # the board multiplexes these pins
+      pins: [D26, C26, B25, B26, F25, E26, E25, D25, D23, D24, E21, E22, A23, A24, D19, D20]
   # ---- drawn: headers and parts; ./unifpga layout draft qmtech_kintex_7 regenerates from here on ----
-  layout: {verified: false, generated: true}
+  layout:
+    verified: false
+    generated: true
   headers:
     - id: header_j2
       type: pin_row
       label: HEADER_J2
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_j2
-      pins: {'[0]': 'header_j2[0]', '[1]': 'header_j2[1]', '[2]': 'header_j2[2]', '[3]': 'header_j2[3]', '[4]': 'header_j2[4]', '[5]': 'header_j2[5]', '[6]': 'header_j2[6]', '[7]': 'header_j2[7]', '[8]': 'header_j2[8]', '[9]': 'header_j2[9]', '[10]': 'header_j2[10]', '[11]': 'header_j2[11]', '[12]': 'header_j2[12]', '[13]': 'header_j2[13]', '[14]': 'header_j2[14]', '[15]': 'header_j2[15]', '[16]': 'header_j2[16]', '[17]': 'header_j2[17]', '[18]': 'header_j2[18]', '[19]': 'header_j2[19]', '[20]': 'header_j2[20]', '[21]': 'header_j2[21]', '[22]': 'header_j2[22]', '[23]': 'header_j2[23]', '[24]': 'header_j2[24]', '[25]': 'header_j2[25]', '[26]': 'header_j2[26]', '[27]': 'header_j2[27]', '[28]': 'header_j2[28]', '[29]': 'header_j2[29]', '[30]': 'header_j2[30]', '[31]': 'header_j2[31]', '[32]': 'header_j2[32]', '[33]': 'header_j2[33]', '[34]': 'header_j2[34]', '[35]': 'header_j2[35]', '[36]': 'header_j2[36]', '[37]': 'header_j2[37]', '[38]': 'header_j2[38]', '[39]': 'header_j2[39]', '[40]': 'header_j2[40]', '[41]': 'header_j2[41]', '[42]': 'header_j2[42]', '[43]': 'header_j2[43]', '[44]': 'header_j2[44]', '[45]': 'header_j2[45]', '[46]': 'header_j2[46]', '[47]': 'header_j2[47]', '[48]': 'header_j2[48]', '[49]': 'header_j2[49]', '[50]': 'header_j2[50]', '[51]': 'header_j2[51]', '[52]': 'header_j2[52]', '[53]': 'header_j2[53]'}
+      pins:
+        '[0]': header_j2[0]
+        '[1]': header_j2[1]
+        '[2]': header_j2[2]
+        '[3]': header_j2[3]
+        '[4]': header_j2[4]
+        '[5]': header_j2[5]
+        '[6]': header_j2[6]
+        '[7]': header_j2[7]
+        '[8]': header_j2[8]
+        '[9]': header_j2[9]
+        '[10]': header_j2[10]
+        '[11]': header_j2[11]
+        '[12]': header_j2[12]
+        '[13]': header_j2[13]
+        '[14]': header_j2[14]
+        '[15]': header_j2[15]
+        '[16]': header_j2[16]
+        '[17]': header_j2[17]
+        '[18]': header_j2[18]
+        '[19]': header_j2[19]
+        '[20]': header_j2[20]
+        '[21]': header_j2[21]
+        '[22]': header_j2[22]
+        '[23]': header_j2[23]
+        '[24]': header_j2[24]
+        '[25]': header_j2[25]
+        '[26]': header_j2[26]
+        '[27]': header_j2[27]
+        '[28]': header_j2[28]
+        '[29]': header_j2[29]
+        '[30]': header_j2[30]
+        '[31]': header_j2[31]
+        '[32]': header_j2[32]
+        '[33]': header_j2[33]
+        '[34]': header_j2[34]
+        '[35]': header_j2[35]
+        '[36]': header_j2[36]
+        '[37]': header_j2[37]
+        '[38]': header_j2[38]
+        '[39]': header_j2[39]
+        '[40]': header_j2[40]
+        '[41]': header_j2[41]
+        '[42]': header_j2[42]
+        '[43]': header_j2[43]
+        '[44]': header_j2[44]
+        '[45]': header_j2[45]
+        '[46]': header_j2[46]
+        '[47]': header_j2[47]
+        '[48]': header_j2[48]
+        '[49]': header_j2[49]
+        '[50]': header_j2[50]
+        '[51]': header_j2[51]
+        '[52]': header_j2[52]
+        '[53]': header_j2[53]
     - id: header_j3
       type: pin_row
       label: HEADER_J3
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_j3
-      pins: {'[0]': 'header_j3[0]', '[1]': 'header_j3[1]', '[2]': 'header_j3[2]', '[3]': 'header_j3[3]', '[4]': 'header_j3[4]', '[5]': 'header_j3[5]', '[6]': 'header_j3[6]', '[7]': 'header_j3[7]', '[8]': 'header_j3[8]', '[9]': 'header_j3[9]', '[10]': 'header_j3[10]', '[11]': 'header_j3[11]', '[12]': 'header_j3[12]', '[13]': 'header_j3[13]', '[14]': 'header_j3[14]', '[15]': 'header_j3[15]', '[16]': 'header_j3[16]', '[17]': 'header_j3[17]', '[18]': 'header_j3[18]', '[19]': 'header_j3[19]', '[20]': 'header_j3[20]', '[21]': 'header_j3[21]', '[22]': 'header_j3[22]', '[23]': 'header_j3[23]', '[24]': 'header_j3[24]', '[25]': 'header_j3[25]', '[26]': 'header_j3[26]', '[27]': 'header_j3[27]', '[28]': 'header_j3[28]', '[29]': 'header_j3[29]', '[30]': 'header_j3[30]', '[31]': 'header_j3[31]', '[32]': 'header_j3[32]', '[33]': 'header_j3[33]', '[34]': 'header_j3[34]', '[35]': 'header_j3[35]', '[36]': 'header_j3[36]', '[37]': 'header_j3[37]', '[38]': 'header_j3[38]', '[39]': 'header_j3[39]', '[40]': 'header_j3[40]', '[41]': 'header_j3[41]', '[42]': 'header_j3[42]', '[43]': 'header_j3[43]', '[44]': 'header_j3[44]', '[45]': 'header_j3[45]', '[46]': 'header_j3[46]', '[47]': 'header_j3[47]', '[48]': 'header_j3[48]', '[49]': 'header_j3[49]', '[50]': 'header_j3[50]', '[51]': 'header_j3[51]', '[52]': 'header_j3[52]', '[53]': 'header_j3[53]'}
+      pins:
+        '[0]': header_j3[0]
+        '[1]': header_j3[1]
+        '[2]': header_j3[2]
+        '[3]': header_j3[3]
+        '[4]': header_j3[4]
+        '[5]': header_j3[5]
+        '[6]': header_j3[6]
+        '[7]': header_j3[7]
+        '[8]': header_j3[8]
+        '[9]': header_j3[9]
+        '[10]': header_j3[10]
+        '[11]': header_j3[11]
+        '[12]': header_j3[12]
+        '[13]': header_j3[13]
+        '[14]': header_j3[14]
+        '[15]': header_j3[15]
+        '[16]': header_j3[16]
+        '[17]': header_j3[17]
+        '[18]': header_j3[18]
+        '[19]': header_j3[19]
+        '[20]': header_j3[20]
+        '[21]': header_j3[21]
+        '[22]': header_j3[22]
+        '[23]': header_j3[23]
+        '[24]': header_j3[24]
+        '[25]': header_j3[25]
+        '[26]': header_j3[26]
+        '[27]': header_j3[27]
+        '[28]': header_j3[28]
+        '[29]': header_j3[29]
+        '[30]': header_j3[30]
+        '[31]': header_j3[31]
+        '[32]': header_j3[32]
+        '[33]': header_j3[33]
+        '[34]': header_j3[34]
+        '[35]': header_j3[35]
+        '[36]': header_j3[36]
+        '[37]': header_j3[37]
+        '[38]': header_j3[38]
+        '[39]': header_j3[39]
+        '[40]': header_j3[40]
+        '[41]': header_j3[41]
+        '[42]': header_j3[42]
+        '[43]': header_j3[43]
+        '[44]': header_j3[44]
+        '[45]': header_j3[45]
+        '[46]': header_j3[46]
+        '[47]': header_j3[47]
+        '[48]': header_j3[48]
+        '[49]': header_j3[49]
+        '[50]': header_j3[50]
+        '[51]': header_j3[51]
+        '[52]': header_j3[52]
+        '[53]': header_j3[53]
     - id: db_pmod_j10
       type: pin_row
       label: DB_PMOD_J10
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: db_pmod_j10
-      pins: {'[0]': 'db_pmod_j10[0]', '[1]': 'db_pmod_j10[1]', '[2]': 'db_pmod_j10[2]', '[3]': 'db_pmod_j10[3]', '[4]': 'db_pmod_j10[4]', '[5]': 'db_pmod_j10[5]', '[6]': 'db_pmod_j10[6]', '[7]': 'db_pmod_j10[7]'}
+      pins:
+        '[0]': db_pmod_j10[0]
+        '[1]': db_pmod_j10[1]
+        '[2]': db_pmod_j10[2]
+        '[3]': db_pmod_j10[3]
+        '[4]': db_pmod_j10[4]
+        '[5]': db_pmod_j10[5]
+        '[6]': db_pmod_j10[6]
+        '[7]': db_pmod_j10[7]
     - id: db_pmod_j11
       type: pin_row
       label: DB_PMOD_J11
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: db_pmod_j11
-      pins: {'[0]': 'db_pmod_j11[0]', '[1]': 'db_pmod_j11[1]', '[2]': 'db_pmod_j11[2]', '[3]': 'db_pmod_j11[3]', '[4]': 'db_pmod_j11[4]', '[5]': 'db_pmod_j11[5]', '[6]': 'db_pmod_j11[6]', '[7]': 'db_pmod_j11[7]'}
+      pins:
+        '[0]': db_pmod_j11[0]
+        '[1]': db_pmod_j11[1]
+        '[2]': db_pmod_j11[2]
+        '[3]': db_pmod_j11[3]
+        '[4]': db_pmod_j11[4]
+        '[5]': db_pmod_j11[5]
+        '[6]': db_pmod_j11[6]
+        '[7]': db_pmod_j11[7]
     - id: db_header_j1
       type: pin_row
       label: DB_HEADER_J1
       note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: db_header_j1
-      pins: {'[0]': 'db_header_j1[0]', '[1]': 'db_header_j1[1]', '[2]': 'db_header_j1[2]', '[3]': 'db_header_j1[3]', '[4]': 'db_header_j1[4]', '[5]': 'db_header_j1[5]', '[6]': 'db_header_j1[6]', '[7]': 'db_header_j1[7]', '[8]': 'db_header_j1[8]', '[9]': 'db_header_j1[9]', '[10]': 'db_header_j1[10]', '[11]': 'db_header_j1[11]', '[12]': 'db_header_j1[12]', '[13]': 'db_header_j1[13]', '[14]': 'db_header_j1[14]', '[15]': 'db_header_j1[15]'}
+      pins:
+        '[0]': db_header_j1[0]
+        '[1]': db_header_j1[1]
+        '[2]': db_header_j1[2]
+        '[3]': db_header_j1[3]
+        '[4]': db_header_j1[4]
+        '[5]': db_header_j1[5]
+        '[6]': db_header_j1[6]
+        '[7]': db_header_j1[7]
+        '[8]': db_header_j1[8]
+        '[9]': db_header_j1[9]
+        '[10]': db_header_j1[10]
+        '[11]': db_header_j1[11]
+        '[12]': db_header_j1[12]
+        '[13]': db_header_j1[13]
+        '[14]': db_header_j1[14]
+        '[15]': db_header_j1[15]
   parts:
     - id: clk
       label: clk
-      attach: {peripheral: clock_input, bind: {clk: clk}}
+      attach:
+        peripheral: clock_input
+        bind:
+          clk: clk
     - id: cpu_resetn
       label: cpu resetn
-      attach: {peripheral: reset_button, bind: {rst: cpu_resetn}}
+      attach:
+        peripheral: reset_button
+        bind:
+          rst: cpu_resetn
     - id: leds
       label: leds
-      attach: {peripheral: led_bank, params: {width: 6}, bind: {led: onboard_leds}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 6
+        bind:
+          led: onboard_leds
     - id: 7seg
       label: 7seg
-      attach: {peripheral: seven_segment_8digit_shared, params: {digits: 4, active: high, digits_active: low}, bind: {segments: [onboard_7seg.dp, onboard_7seg.cg, onboard_7seg.cf, onboard_7seg.ce, onboard_7seg.cd, onboard_7seg.cc, onboard_7seg.cb], dp: onboard_7seg.ca, digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]']}}
+      attach:
+        peripheral: seven_segment_8digit_shared
+        params:
+          digits: 4
+          active: high
+          digits_active: low
+        bind:
+          segments: [onboard_7seg.dp, onboard_7seg.cg, onboard_7seg.cf, onboard_7seg.ce, onboard_7seg.cd, onboard_7seg.cc, onboard_7seg.cb]
+          dp: onboard_7seg.ca
+          digits: ['onboard_7seg.anodes[0]', 'onboard_7seg.anodes[1]', 'onboard_7seg.anodes[2]', 'onboard_7seg.anodes[3]']
     - id: buttons
       label: buttons
       variants:
         - id: button_array
           label: button_array (width=4)
-          attach: {peripheral: button_array, params: {width: 4}, bind: {btn: ['onboard_buttons[0]', 'onboard_buttons[1]', 'onboard_buttons[2]', 'onboard_buttons[3]']}}
+          attach:
+            peripheral: button_array
+            params:
+              width: 4
+            bind:
+              btn: ['onboard_buttons[0]', 'onboard_buttons[1]', 'onboard_buttons[2]', 'onboard_buttons[3]']
         - id: button_array_2
           label: button_array (width=1; active=low)
-          attach: {peripheral: button_array, params: {width: 1, active: low}, bind: {btn: ['onboard_buttons[4]']}}
+          attach:
+            peripheral: button_array
+            params:
+              width: 1
+              active: low
+            bind:
+              btn: ['onboard_buttons[4]']
     - id: db_leds
       label: Daughterboard LEDs (5)
-      attach: {peripheral: led_bank, params: {width: 5}, bind: {led: onboard_db_leds.user_led}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 5
+        bind:
+          led: onboard_db_leds.user_led
     - id: db_buttons
       label: Daughterboard keys (5)
-      attach: {peripheral: button_array, params: {width: 5}, bind: {btn: onboard_db_buttons.user_btn}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 5
+        bind:
+          btn: onboard_db_buttons.user_btn
     - id: db_sdcard
       label: Daughterboard microSD slot
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_db_sdcard.clk, cmd: onboard_db_sdcard.cmd, dat0: 'onboard_db_sdcard.data[0]', dat3: 'onboard_db_sdcard.data[3]'}}
+      attach:
+        peripheral: sdcard_spi
+        bind:
+          clk: onboard_db_sdcard.clk
+          cmd: onboard_db_sdcard.cmd
+          dat0: onboard_db_sdcard.data[0]
+          dat3: onboard_db_sdcard.data[3]
     - id: core_keys
       label: Core-board user keys SW2, SW3
-      attach: {peripheral: button_array, params: {width: 2, active: low}, bind: {btn: [onboard_core_keys.sw2, onboard_core_keys.sw3]}}
+      attach:
+        peripheral: button_array
+        params:
+          width: 2
+          active: low
+        bind:
+          btn: [onboard_core_keys.sw2, onboard_core_keys.sw3]
     - id: core_leds
       label: Core-board user LEDs D2 (LED2), D3 (LED3)
-      attach: {peripheral: led_bank, params: {width: 2, active: low}, bind: {led: onboard_core_leds.led}}
+      attach:
+        peripheral: led_bank
+        params:
+          width: 2
+          active: low
+        bind:
+          led: onboard_core_leds.led
     - id: spi_flash
       label: SPI flash S25FL256L (32 MB, quad)
-      device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: flash
+        bank: onboard_spi_flash
     - id: ddr3
       label: DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)
-      device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ddr
+        bank: onboard_ddr3
     - id: db_uart
       label: Daughterboard USB-UART (CP2102N, J4 mini-USB)
-      attach: {peripheral: uart_2wire, bind: {tx: onboard_db_uart.tx, rx: onboard_db_uart.rx}}
+      attach:
+        peripheral: uart_2wire
+        bind:
+          tx: onboard_db_uart.tx
+          rx: onboard_db_uart.rx
     - id: db_ethernet_clocks
       label: Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)
-      device: {kind: ethernet, bank: onboard_db_ethernet_clocks}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ethernet
+        bank: onboard_db_ethernet_clocks
     - id: db_ethernet
       label: Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)
-      device: {kind: ethernet, bank: onboard_db_ethernet}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: ethernet
+        bank: onboard_db_ethernet
     - id: db_7seg
       label: Daughterboard 3-digit 7-segment display (U3, 2352B-type)
-      device: {kind: seven_segment, bank: onboard_db_7seg}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: seven_segment
+        bank: onboard_db_7seg
     - id: db_vga
       label: Daughterboard VGA (RGB 5-6-5)
-      device: {kind: vga, bank: onboard_db_vga}   # no peripheral model yet
+      device:   # no peripheral model yet
+        kind: vga
+        bank: onboard_db_vga

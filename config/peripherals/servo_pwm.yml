@@ -7,11 +7,22 @@ Peripheral:
   id: servo_pwm
   description: Servo / PWM outputs, one per actuator (position or duty from the 8-bit level)
   parameters:
-    count:   { type: int, required: true }
-    servo:   { type: bool, default: true, description: "true: 50 Hz servo pulses of 1..2 ms; false: PWM" }
-    pwm_khz: { type: int, default: 20, description: "PWM frequency (servo: false)" }
+    count:
+      type: int
+      required: true
+    servo:
+      type: bool
+      default: true
+      description: 'true: 50 Hz servo pulses of 1..2 ms; false: PWM'
+    pwm_khz:
+      type: int
+      default: 20
+      description: 'PWM frequency (servo: false)'
   signals:
-    - { name: pwm, type: bus, width: $count, direction: output }
+    - name: pwm
+      type: bus
+      width: $count
+      direction: output
   provides:
     - capability: actuators
       params:

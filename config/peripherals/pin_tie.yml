@@ -21,7 +21,9 @@ Peripheral:
       type: string
       required: true
   signals:
-    - { name: pin, type: scalar, direction: output }
+    - name: pin
+      type: scalar
+      direction: output
   provides: []
   driver: null
   pin_assigns:

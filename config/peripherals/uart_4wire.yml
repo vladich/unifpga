@@ -4,12 +4,26 @@ Peripheral:
   id: uart_4wire
   description: 4-wire UART (TX, RX, CTS, RTS)
   signals:
-    - { name: tx,  type: scalar, direction: output, comment: "Transmit (host to peer)" }
-    - { name: rx,  type: scalar, direction: input,  comment: "Receive (peer to host)" }
+    - name: tx
+      type: scalar
+      direction: output
+      comment: Transmit (host to peer)
+    - name: rx
+      type: scalar
+      direction: input
+      comment: Receive (peer to host)
     # CTS/RTS are optional: Digilent leaves them commented out in the Nexys
     # A7 / Nexys4 DDR master XDC, so the pinmap has no pins for them.
-    - { name: cts, type: scalar, direction: input,  optional: true, comment: "Clear-to-send (peer to host)" }
-    - { name: rts, type: scalar, direction: output, optional: true, comment: "Request-to-send (host to peer)" }
+    - name: cts
+      type: scalar
+      direction: input
+      optional: true
+      comment: Clear-to-send (peer to host)
+    - name: rts
+      type: scalar
+      direction: output
+      optional: true
+      comment: Request-to-send (host to peer)
   provides:
     - capability: serial_console
   # No flow control at the capability level — codegen drives RTS=1 and ignores

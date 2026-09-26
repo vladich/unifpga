@@ -18,16 +18,28 @@ Capability:
     # bit 7 = a, bit 6 = b, ..., bit 1 = g, bit 0 = h (decimal point).
     # Segment patterns are active-high here; providers invert for
     # common-anode hardware.
-    - { name: abcdefgh, type: bus, width: 8,        direction: user_to_hw }
-    - { name: digit,    type: bus, width: $digits,  direction: user_to_hw }
+    - name: abcdefgh
+      type: bus
+      width: 8
+      direction: user_to_hw
+    - name: digit
+      type: bus
+      width: $digits
+      direction: user_to_hw
   aggregation: concat   # multi-source concatenates digit positions
 
   primary: digits
   design:
     comment: '7-segment display (shared segment lines + digit-select): 8 = 7 segments (a..g) + decimal point; the user multiplexes across digits'
     parameters:
-      w_digit: {value: digits, absent: 0, description: Number of 7-segment digit positions
-}
+      w_digit:
+        value: digits
+        absent: 0
+        description: Number of 7-segment digit positions
     ports:
-      abcdefgh: {signal: abcdefgh, width: 8}
-      digit: {signal: digit, width: w_digit}
+      abcdefgh:
+        signal: abcdefgh
+        width: 8
+      digit:
+        signal: digit
+        width: w_digit

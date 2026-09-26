@@ -58,25 +58,26 @@ Board:
     iostandard: LVCMOS33
 
   banks:
-    cpu_resetn: { pins: "R19" }
+    cpu_resetn:
+      pins: R19
     onboard_buttons:
-      pins: ["E18", "B19", "M20", "C19", "M19"]
+      pins: [E18, B19, M20, C19, M19]
     onboard_leds:
-      pins: ["T28", "V19", "U30", "U29", "V20", "V26", "W24", "W23"]
+      pins: [T28, V19, U30, U29, V20, V26, W24, W23]
     onboard_switches:
-      pins: ["G19", "G25", "H24", "K19", "N19", "P19", "P26", "P27"]
+      pins: [G19, G25, H24, K19, N19, P19, P26, P27]
     onboard_vga:
       pins:
         hs: "AF20"
         vs: "AG23"
-        b: ["AH20", "AG20", "AF21", "AK20", "AG22"]
-        g: ["AJ23", "AJ22", "AH22", "AK21", "AJ21", "AK23"]
-        r: ["AK25", "AG25", "AH25", "AK24", "AJ24"]
+        b: [AH20, AG20, AF21, AK20, AG22]
+        g: [AJ23, AJ22, AH22, AK21, AJ21, AK23]
+        r: [AK25, AG25, AH25, AK24, AJ24]
     pmod_ja:
-      pins: ["U27", "U28", "T26", "T27", "T22", "T23", "T20", "T21"]
+      pins: [U27, U28, T26, T27, T22, T23, T20, T21]
     pmod_jb:
-      pins: ["V29", "V30", "V25", "W26", "T25", "U25", "U22", "U23"]
+      pins: [V29, V30, V25, W26, T25, U25, U22, U23]
     pmod_jc:
-      pins: ["AC26", "AJ27", "AH30", "AK29", "AD26", "AG30", "AK30", "AK28"]
+      pins: [AC26, AJ27, AH30, AK29, AD26, AG30, AK30, AK28]
     pmod_jd:
-      pins: ["V27", "Y30", "V24", "W22", "U24", "Y26", "V22", "W21"]
+      pins: [V27, Y30, V24, W22, U24, Y26, V22, W21]

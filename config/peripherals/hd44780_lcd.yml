@@ -5,17 +5,40 @@ Peripheral:
   id: hd44780_lcd
   description: HD44780-compatible character LCD on a 4-bit bus (16x2, 20x4 ...)
   parameters:
-    columns: { type: int, default: 16 }
-    rows:    { type: int, default: 2 }
+    columns:
+      type: int
+      default: 16
+    rows:
+      type: int
+      default: 2
   # the on-board devices it models: a board inventory's character LCD, its pins
   # named as below (the 4-bit bus is the top half of an 8-bit data bank)
-  models: {kind: [lcd_char, lcd], pins: {rs: [rs, LCD_RS], e: [e, en, LCD_EN], rw: [rw, LCD_RW],
-                                        d: ["d[4:8]", "LCD_DATA[4:8]", "data[4:8]"]}}
+  models:
+    kind: [lcd_char, lcd]
+    pins:
+      rs: [rs, LCD_RS]
+      e: [e, en, LCD_EN]
+      rw: [rw, LCD_RW]
+      d: ['d[4:8]', 'LCD_DATA[4:8]', 'data[4:8]']
   signals:
-    - { name: rs, type: scalar, direction: output, comment: "Register select: 0 = instruction, 1 = data" }
-    - { name: e,  type: scalar, direction: output, comment: "Enable (falling edge latches)" }
-    - { name: d,  type: bus, width: 4, direction: output, comment: "D4..D7" }
-    - { name: rw, type: scalar, direction: output, optional: true, comment: "Read/write, held at 0 (write)" }
+    - name: rs
+      type: scalar
+      direction: output
+      comment: 'Register select: 0 = instruction, 1 = data'
+    - name: e
+      type: scalar
+      direction: output
+      comment: Enable (falling edge latches)
+    - name: d
+      type: bus
+      width: 4
+      direction: output
+      comment: D4..D7
+    - name: rw
+      type: scalar
+      direction: output
+      optional: true
+      comment: Read/write, held at 0 (write)
   provides:
     - capability: text_display
       params:

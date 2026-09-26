@@ -6,10 +6,24 @@ Capability:
   id: ir_remote
   description: "Infrared remote-control key events (NEC): address and command, and repeats while held."
   signals:
-    - { name: valid,   type: scalar, direction: hw_to_user, comment: "One-clock pulse: a key press" }
-    - { name: address, type: bus, width: 16, direction: hw_to_user, comment: "The remote's address (extended NEC: 16 bits)" }
-    - { name: command, type: bus, width: 8, direction: hw_to_user, comment: "The key's command byte" }
-    - { name: repeat,  type: scalar, direction: hw_to_user, comment: "One-clock pulse: the key is still held" }
+    - name: valid
+      type: scalar
+      direction: hw_to_user
+      comment: 'One-clock pulse: a key press'
+    - name: address
+      type: bus
+      width: 16
+      direction: hw_to_user
+      comment: 'The remote''s address (extended NEC: 16 bits)'
+    - name: command
+      type: bus
+      width: 8
+      direction: hw_to_user
+      comment: The key's command byte
+    - name: repeat
+      type: scalar
+      direction: hw_to_user
+      comment: 'One-clock pulse: the key is still held'
   aggregation: exclusive
 
   optional: true           # reaches design_top only when the design declares its ports
@@ -17,7 +31,15 @@ Capability:
   design:
     comment: 'Infrared remote (optional): one clock of ir_valid per key press (NEC: the remote''s address, the key''s command byte), ir_repeat while held'
     ports:
-      ir_valid: {signal: valid, width: 1}
-      ir_address: {signal: address, width: 16}
-      ir_command: {signal: command, width: 8}
-      ir_repeat: {signal: repeat, width: 1}
+      ir_valid:
+        signal: valid
+        width: 1
+      ir_address:
+        signal: address
+        width: 16
+      ir_command:
+        signal: command
+        width: 8
+      ir_repeat:
+        signal: repeat
+        width: 1

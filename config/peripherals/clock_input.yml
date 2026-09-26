@@ -8,7 +8,9 @@ Peripheral:
       type: float
       required: true
   signals:
-    - { name: clk, type: scalar, direction: input }
+    - name: clk
+      type: scalar
+      direction: input
   provides:
     - capability: clock
       params:

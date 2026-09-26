@@ -14,9 +14,15 @@ Peripheral:
       type: int
       default: 32           # of 255: bright enough indoors, easy on the eyes
   # the on-board devices it models: a board inventory's `ws2812` device
-  models: {kind: ws2812, pins: {din: [din]}}
+  models:
+    kind: ws2812
+    pins:
+      din: [din]
   signals:
-    - { name: din, type: scalar, direction: output, comment: "The first LED's data input" }
+    - name: din
+      type: scalar
+      direction: output
+      comment: The first LED's data input
   provides:
     - capability: rgb_leds
       params:

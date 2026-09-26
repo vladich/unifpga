@@ -6,7 +6,9 @@ Setup:
   board: qmtech_kintex_7
   toolchain: vivado
   toolchains: [vivado, nextpnr_openxc7]
-  aliases: {qmtech_kintex_7_openxc7: {toolchain: nextpnr_openxc7}}
+  aliases:
+    qmtech_kintex_7_openxc7:
+      toolchain: nextpnr_openxc7
   use:
     - onboard: clk
     - onboard: cpu_resetn
@@ -20,4 +22,4 @@ Setup:
     - onboard: db_buttons
     - onboard: db_sdcard
   design:
-    {uart_rx: 0}
+    uart_rx: 0

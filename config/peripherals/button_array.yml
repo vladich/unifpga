@@ -16,10 +16,15 @@ Peripheral:
       default: false
       rig: true             # the rig's convention, not the part's        # boards without switches feed the design's sw from the keys (`.sw (key)`)
   signals:
-    - { name: btn, type: bus, width: $width, direction: input }
+    - name: btn
+      type: bus
+      width: $width
+      direction: input
   # the on-board devices it models: a board inventory's `buttons` device (a bank
   # of pins) becomes an on-board part attaching this peripheral
-  models: {kind: buttons, signal: btn}
+  models:
+    kind: buttons
+    signal: btn
   provides:
     - capability: buttons
       params:

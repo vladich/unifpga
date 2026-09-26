@@ -6,9 +6,15 @@ Peripheral:
   description: On-board buzzer (transistor-driven), PWM audio
   # the on-board devices it models: a board inventory's `buzzer` (or an `audio`
   # device whose only pin is the buzzer's), its pin named as below
-  models: {kind: [buzzer, audio], pins: {pwm: [beep, buzzer, bell]}}
+  models:
+    kind: [buzzer, audio]
+    pins:
+      pwm: [beep, buzzer, bell]
   signals:
-    - { name: pwm, type: scalar, direction: output, comment: "PWM-modulated audio to the buzzer's transistor" }
+    - name: pwm
+      type: scalar
+      direction: output
+      comment: PWM-modulated audio to the buzzer's transistor
   provides:
     - capability: audio_out
   driver:

@@ -59,7 +59,7 @@ Programmers:
 
   - id: quartus_pgm
     name: "Quartus Programmer"
-    known_versions: ["18.1", "19.1", "20.1", "21.1", "22.1std", "23.1std", "24.1std"]
+    known_versions: ['18.1', '19.1', '20.1', '21.1', 22.1std, 23.1std, 24.1std]
     version: "23.1std"
     bundled: quartus_prime_lite
     binary: quartus_pgm
@@ -67,7 +67,7 @@ Programmers:
 
   - id: quartus2_pgm
     name: "Quartus II 13 Programmer"
-    known_versions: ["13.0sp1"]
+    known_versions: [13.0sp1]
     version: "13.0sp1"
     bundled: quartus2
     binary: quartus_pgm
@@ -75,7 +75,7 @@ Programmers:
 
   - id: libero_fpexpress
     name: "FlashPro Express"
-    known_versions: ["2022.2", "2023.1", "2023.2", "2024.1", "2024.2"]
+    known_versions: ['2022.2', '2023.1', '2023.2', '2024.1', '2024.2']
     version: "2024.1"
     bundled: libero_soc
     binary: FPExpress
@@ -83,7 +83,7 @@ Programmers:
 
   - id: efinity_pgm
     name: "Efinity Programmer"
-    known_versions: ["2022.1", "2023.1", "2023.2", "2024.1"]
+    known_versions: ['2022.1', '2023.1', '2023.2', '2024.1']
     version: "2023.2"
     bundled: efinity
     binary: efx_pgm
@@ -91,7 +91,7 @@ Programmers:
 
   - id: gowin_pgm
     name: "Gowin Programmer"
-    known_versions: ["1.9.9.03.Education", "1.9.11.03.Educational"]
+    known_versions: [1.9.9.03.Education, 1.9.11.03.Educational]
     version: "1.9.11.03.Educational"
     bundled: gowin_eda
     binary: programmer
@@ -99,7 +99,7 @@ Programmers:
 
   - id: gowin_pgm_standard
     name: "Gowin Programmer (Standard build)"
-    known_versions: ["1.9.9.02"]
+    known_versions: [1.9.9.02]
     version: "1.9.9.02"
     bundled: gowin_standard
     binary: programmer
@@ -107,7 +107,7 @@ Programmers:
 
   - id: diamond_pgm
     name: "Lattice Diamond Programmer"
-    known_versions: ["3.11", "3.12", "3.13"]
+    known_versions: ['3.11', '3.12', '3.13']
     version:
     bundled: lattice_diamond
     binary: pgrcmd
@@ -115,7 +115,7 @@ Programmers:
 
   - id: radiant_pgm
     name: "Lattice Radiant Programmer"
-    known_versions: ["2.2", "3.0", "2024.1"]
+    known_versions: ['2.2', '3.0', '2024.1']
     version:
     bundled: lattice_radiant
     binary: radiant-programmer
@@ -123,7 +123,7 @@ Programmers:
 
   - id: icecube2_pgm
     name: "iCEcube2 Programmer"
-    known_versions: ["2017.08", "2020.12"]
+    known_versions: ['2017.08', '2020.12']
     version:
     bundled: icecube2
     binary: pgrcmd
@@ -131,7 +131,7 @@ Programmers:
 
   - id: td_pgm
     name: "Tang Dynasty Programmer"
-    known_versions: ["4.6", "5.0", "5.6"]
+    known_versions: ['4.6', '5.0', '5.6']
     version:
     bundled: td
     binary: td_programmer
@@ -139,7 +139,7 @@ Programmers:
 
   - id: pango_pgm
     name: "Pango Design Suite Programmer"
-    known_versions: ["2024.1"]
+    known_versions: ['2024.1']
     version:
     bundled: pango_ds
     binary: pds_programmer
@@ -147,7 +147,7 @@ Programmers:
 
   - id: renesas_go_pgm
     name: "Renesas Go Configure / ForgeFPGA Workshop"
-    known_versions: ["6.0"]
+    known_versions: ['6.0']
     version:
     bundled: forge_fpga
     binary: GoConfigureSoftwareHub
@@ -155,7 +155,7 @@ Programmers:
 
   - id: ace_pgm
     name: "Achronix ACE Bitporter"
-    known_versions: ["10.0", "11.0"]
+    known_versions: ['10.0', '11.0']
     version:
     bundled: ace
     binary: ace
@@ -163,7 +163,7 @@ Programmers:
 
   - id: nanoxmap_impulse
     name: "NanoXplore Impulse"
-    known_versions: ["4.0", "4.5"]
+    known_versions: ['4.0', '4.5']
     version:
     bundled: nanoxmap
     binary: impulse
@@ -179,7 +179,7 @@ Programmers:
 
   - id: isplever_classic_pgm
     name: "ispVM (ispLEVER Classic CPLD)"
-    known_versions: ["2.1"]
+    known_versions: ['2.1']
     version: "2.1"
     bundled: isplever_classic
     binary: ispvm
@@ -191,7 +191,7 @@ Programmers:
 
   - id: openFPGALoader
     name: "openFPGALoader (universal)"
-    known_versions: ["0.10", "0.11", "0.12", "0.13", git-master]
+    known_versions: ['0.10', '0.11', '0.12', '0.13', git-master]
     version: git-master
     bundled: null
     binary: openFPGALoader
@@ -255,7 +255,7 @@ Programmers:
 
   - id: dfu_util
     name: dfu-util
-    known_versions: ["0.10", "0.11"]
+    known_versions: ['0.10', '0.11']
     version: "0.11"
     bundled: null
     binary: dfu-util
@@ -265,7 +265,7 @@ Programmers:
 
   - id: openocd
     name: OpenOCD
-    known_versions: ["0.11.0", "0.12.0"]
+    known_versions: [0.11.0, 0.12.0]
     version: "0.12.0"
     bundled: null
     binary: openocd
@@ -291,7 +291,7 @@ Programmers:
 
   - id: urjtag
     name: "UrJTAG (universal JTAG)"
-    known_versions: ["0.10"]
+    known_versions: ['0.10']
     version:
     bundled: null
     binary: jtag
@@ -303,7 +303,7 @@ Programmers:
 
   - id: mojoload
     name: "Mojo Loader"
-    known_versions: ["v1.2.1"]
+    known_versions: [v1.2.1]
     version: "v1.2.1"
     bundled: null
     binary: mojoload
@@ -313,7 +313,7 @@ Programmers:
 
   - id: papilio_loader
     name: "Papilio Loader"
-    known_versions: ["2.8"]
+    known_versions: ['2.8']
     version:
     bundled: null
     binary: papilio-loader

@@ -11,7 +11,10 @@ Capability:
       type: int
       description: Total number of LEDs exposed (sum across providers).
   signals:
-    - { name: led, type: bus, width: $width, direction: user_to_hw }
+    - name: led
+      type: bus
+      width: $width
+      direction: user_to_hw
   aggregation: concat
 
   primary: width
@@ -19,7 +22,11 @@ Capability:
     comment: LEDs (active-high)
 
     parameters:
-      w_led: {value: width, absent: 0, description: Width of single-colour LED bus
-}
+      w_led:
+        value: width
+        absent: 0
+        description: Width of single-colour LED bus
     ports:
-      led: {signal: led, width: w_led}
+      led:
+        signal: led
+        width: w_led

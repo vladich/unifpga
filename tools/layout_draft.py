@@ -31,7 +31,7 @@ import re
 import yaml
 
 from config import init as config_init
-from tools import board_sources
+from tools import board_sources, yamltext
 from tools import codegen
 from tools import setup as su
 
@@ -383,7 +383,7 @@ def _variant_label(x, others):
         return x["peripheral"]
     y = same[0]
     px, py = x.get("params") or {}, y.get("params") or {}
-    diff = ["{}={}".format(k, _flow(px[k])) for k in px if px.get(k) != py.get(k)]
+    diff = ["{}={}".format(k, _label_value(px[k])) for k in px if px.get(k) != py.get(k)]
     if not diff and set(x["bind"]) != set(y["bind"]):
         diff = ["pins " + ", ".join(sorted(set(x["bind"]) - set(y["bind"])) or ["fewer"])]
     if not diff and x["bind"] != y["bind"]:
@@ -402,48 +402,54 @@ def _natural(key):
     return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", str(key))]
 
 
-def _flow(value):
-    text = yaml.safe_dump(value, default_flow_style=True, sort_keys=False, width=1 << 20, allow_unicode=True)
-    return re.sub(r"\n\.\.\.\s*$", "", text).strip()       # a bare scalar ends its document with `...`
+_flow = yamltext.scalar           # a label, a note: one scalar as YAML writes it
+
+
+def _label_value(v):
+    """A parameter value inside a variant label: a scalar as YAML writes it, a
+    mapping or list on one line in its own order (`{idiv: 8, fbdiv: 10}`)."""
+    if isinstance(v, (dict, list)):
+        return yaml.safe_dump(v, default_flow_style=True, sort_keys=False, width=1 << 20, allow_unicode=True).strip()
+    return yamltext.scalar(v)
 
 
 def emit_drawn(layout):
     """The drawn section of a board file: the marker line, the layout line
     (verified / generated), the board's own connector types, its headers and
-    its parts."""
-    out = [DRAWN_MARKER.format(layout["board"]),
-           "  layout: {{verified: {}, generated: {}}}".format(
-               "true" if layout.get("verified") else "false", "true" if layout.get("generated") else "false")]
+    its parts — block style (tools/yamltext.py)."""
+    out = [DRAWN_MARKER.format(layout["board"]), "  layout:",
+           "    verified: {}".format("true" if layout.get("verified") else "false"),
+           "    generated: {}".format("true" if layout.get("generated") else "false")]
     if layout.get("connector_types"):
         out.append("  connector_types:")
         for tid, ctype in layout["connector_types"].items():
-            out.append("    {}:".format(tid))
-            out += ["      {}: {}".format(k, _flow(v)) for k, v in ctype.items()]
+            out += yamltext.entry(tid, ctype, 4)
     out.append("  headers:" + ("" if layout["headers"] else " []"))
     for c in layout["headers"]:
         out += ["    - id: {}".format(c["id"]), "      type: {}".format(c["type"]),
                 "      label: {}".format(_flow(c["label"]))] + \
                (["      note: {}".format(_flow(c["note"]))] if c.get("note") else []) + \
-               (["      bank: {}".format(c["bank"])] if c.get("bank") else []) + [
-                "      pins: {}".format(_flow({str(k): v for k, v in c["pins"].items()}))] + \
-               (["      source: {}".format(_flow(c["source"]))] if c.get("source") else [])
+               (["      bank: {}".format(c["bank"])] if c.get("bank") else []) + \
+               yamltext.entry("pins", {str(k): v for k, v in c["pins"].items()}, 6) + \
+               (yamltext.entry("source", c["source"], 6) if c.get("source") else [])
     out.append("  parts:" + ("" if layout["parts"] else " []"))
     for o in layout["parts"]:
         out += ["    - id: {}".format(o["id"]), "      label: {}".format(_flow(o["label"]))]
         if o.get("source"):
-            out.append("      source: {}".format(_flow(o["source"])))
+            out += yamltext.entry("source", o["source"], 6)
         if o.get("shares"):
-            out.append("      shares: {}".format(_flow(o["shares"])))
+            out += yamltext.entry("shares", o["shares"], 6)
         if "device" in o:
-            out.append("      device: {}   # no peripheral model yet".format(_flow(o["device"])))
+            out.append("      device:   # no peripheral model yet")
+            out += yamltext.block(o["device"], 8)
             continue
         if "attach" in o:
-            out.append("      attach: {}".format(_flow(o["attach"])))
+            out += yamltext.entry("attach", o["attach"], 6)
             continue
         out.append("      variants:")
         for v in o["variants"]:
-            out += ["        - id: {}".format(v["id"]), "          label: {}".format(_flow(v["label"])),
-                    "          attach: {}".format(_flow(v["attach"]))]
+            out += ["        - id: {}".format(v["id"]), "          label: {}".format(_flow(v["label"]))]
+            out += yamltext.entry("attach", v["attach"], 10)
     return "\n".join(out) + "\n"
 
 
