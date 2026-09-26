@@ -40,7 +40,7 @@ def _catalogue():
         "boards/maker/family/board.yml": {"Board": {
             "id": "board", "name": "Board", "producer": "maker", "chip": "CHIP-1", "programmer": "prog",
             "features": ["led_feature"], "devices": ["led_device"],
-            "banks": {"leds": {"pins": ["A1", "A2"], "device": {"name": "two LEDs", "kind": "leds"}},
+            "banks": {"leds": {"pins": ["A1", "A2"], "device": {"name": "two LEDs", "kind": "leds", "id": "led_device"}},
                       "j1": {"pins": ["B1", "B2"], "device": {"name": "J1", "kind": "header"}}},
             "layout": {"verified": False, "generated": True},
             "headers": [{"id": "j1", "type": "pmod_2x6", "label": "J1", "bank": "j1", "pins": {"1": "j1[0]", "2": "j1[1]"}}],
@@ -119,7 +119,7 @@ def test_the_repository_passes():
 def test_the_registry_names_real_entities_and_rules():
     entities = check.read_entities()
     for name, spec in entities.items():
-        assert spec.get("schema") or spec.get("no_schema_because"), name
+        assert spec.get("schema") or spec.get("record_schema") or spec.get("no_schema_because"), name
         for rel in spec.get("relations") or []:
             if "rule" in rel:
                 assert rel["rule"] in check.RULES, (name, rel["rule"])
@@ -132,7 +132,7 @@ def test_the_command_prints_the_summary_and_exits_zero(capsys):
     assert cli.main(["check", "rig", "capability"]) == 0
     out = capsys.readouterr().out
     assert out.splitlines()[0].startswith("entity") and "rig.schema.json" in out
-    assert "0 findings" in out and "without a schema yet" in out
+    assert "0 findings" in out and "without a schema" not in out     # every entity has its schema now
     assert cli.main(["check", "nonsense"]) == 1
     assert "unknown entity nonsense" in capsys.readouterr().err
 
@@ -296,4 +296,50 @@ def test_a_model_names_the_peripherals_own_signals():
     assert _codes(_run(documents)) == {"schema"}
     led["models"] = {"kind": "mystery", "signal": "led"}
     assert "kind 'mystery'" in _details(_run(documents), "peripheral_refs")[0]
+
+
+def test_a_chip_is_a_record_with_its_own_schema():
+    """Chips sit in their family's file, but chip.schema.json checks each of
+    them as a record of the chip table (record_schema): the finding names the
+    chip, not just the file."""
+    documents = _catalogue()
+    documents["chips/maker/family.yml"]["Family"]["chips"] = [{"id": "CHIP-1"}, {"id": "CHIP-2", "part": "x"}, {"id": "CHIP-3", "toolchains": []}]
+    report = _run(documents)
+    found = _details(report, "schema")
+    assert len(found) == 2 and any("chip 'CHIP-2'" in d and "part" in d for d in found) and any("chip 'CHIP-3'/toolchains" in d for d in found), found
+    assert report["counts"]["chip"] == 3 and report["entities"]["chip"]["schema"] == "chip.schema.json"
+
+
+def test_directories_and_bank_devices_are_checked():
+    """A family file sits in its producer's directory; a board's directory is
+    the family of its chips; a bank's catalogued device (device.id) is a device
+    whose feature the bank's kind implies, unless the kind is `other`."""
+    documents = _catalogue()
+    documents["chips/other/family.yml"] = documents.pop("chips/maker/family.yml")
+    documents["boards/other/family/board.yml"] = documents.pop("boards/maker/family/board.yml")
+    report = _run(documents)
+    assert _details(report, "family_directory") == ["family 'family' is in directory 'other', not its producer's 'maker'"]
+    assert _details(report, "board_family") == []                     # the board still sits in the family's directory
+    documents = _catalogue()
+    fam = documents["chips/maker/family.yml"]["Family"]
+    documents["chips/maker/other.yml"] = {"Family": dict(fam, id="other", chips=[{"id": "CHIP-9"}])}
+    documents["boards/maker/family/board.yml"]["Board"]["chips"] = [{"id": "CHIP-9", "name": "nine"}, {"id": "CHIP-1", "name": "one"}]
+    del documents["boards/maker/family/board.yml"]["Board"]["chip"]
+    assert _details(_run(documents), "board_family") == ["board 'board': chip 'CHIP-9' is of family 'other', not the directory's 'family'"]
+    documents["boards/maker/family/board.yml"]["Board"]["chips"].reverse()      # the first variant decides
+    assert _details(_run(documents), "board_family") == []
+    documents = _catalogue()
+    board = documents["boards/maker/family/board.yml"]["Board"]
+    documents["devices.yml"]["Devices"].append({"id": "sensor", "name": "A sensor", "manufacturer": "Generic", "part": "S1",
+                                                "feature": "led_feature", "interface": "i2c", "peripherals": []})
+    documents["features.yml"]["Features"].append({"id": "sense", "name": "Sensing", "category": "io", "description": "", "capabilities": []})
+    documents["devices.yml"]["Devices"][-1]["feature"] = "sense"
+    board["banks"]["leds"]["device"]["id"] = "sensor"
+    found = _details(_run(documents), "bank_devices")
+    assert found == ["board 'board' bank leds: device 'sensor' has feature 'sense', which kind 'leds' does not imply (led_feature)"]
+    board["banks"]["leds"]["device"]["kind"] = "other"
+    documents["kinds.yml"]["Kinds"].append({"kind": "other", "description": "no kind", "features": []})
+    assert _details(_run(documents), "bank_devices") == []
+    board["banks"]["leds"]["device"]["id"] = "absent"
+    assert any("device.id" in d and "absent device" in d for d in _details(_run(documents), "unknown_reference"))
 

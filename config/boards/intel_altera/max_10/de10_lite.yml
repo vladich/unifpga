@@ -1,0 +1,182 @@
+# de10_lite pin map.
+
+
+Board:
+  id: de10_lite
+  name: DE10-Lite
+  product: DE10-Lite Board
+  summary: MAX 10 10M50DAF484C7G (50K LEs, on-chip ADC); 64 MB SDRAM; VGA (4-bit), ADXL345 accelerometer, 2x20 GPIO,
+    Arduino header, 6x 7-seg, 10 SW, 2 KEY, 10 LEDs
+  url: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=218&No=1021
+  producer: terasic
+  chip: 10M50DAF484C7G
+  bridges:
+  - jtag
+  programmer: quartus_pgm
+  features:
+  - accelerometer
+  - dip_switches
+  - sdr_sdram
+  - seven_segment_display
+  - usb_jtag_bridge
+  - user_buttons
+  - user_leds
+  - vga_output
+  devices:
+  - winbond_w9825g6kh
+  - vga666_resistor_dac
+  - usb_blaster_ii_built_in
+  - led_discrete_generic
+  - pushbutton_smd_generic
+  - dip_switch_generic
+  - seven_seg_module_shared
+  - adi_adxl345
+  documents:
+  - id: manual
+    title: DE10-Lite User Manual (Terasic)
+    kind: manual
+    url: https://www.terasic.com.tw/attachment/archive/1021/DE10-Lite_User_Manual.pdf
+    sha256: ab2c47e5a7e4ac26874013bfe05df31e2d498bc9a7f9f6b33bd931c64db848ac
+    bytes: 6234852
+    retrieved: '2026-09-23'
+  - id: litex
+    title: LiteX-Boards platform terasic_de10lite.py
+    kind: platform
+    url: https://raw.githubusercontent.com/litex-hub/litex-boards/a05e31e6ff99fd9a1c5c96ee91e35d77e65f2397/litex_boards/platforms/terasic_de10lite.py
+    sha256: 11d49721a660ed7b098945cf219ec891935e7c3ea3bc29fc8796e8cddc3cddca
+    bytes: 6224
+    retrieved: '2026-09-24'
+  - id: amaranth
+    title: Amaranth-boards platform de10_lite.py
+    kind: platform
+    url: https://raw.githubusercontent.com/amaranth-lang/amaranth-boards/f270d210e36b0787d62db77176c7b0e8032178d3/amaranth_boards/de10_lite.py
+    sha256: 1f2004777bc0898c13516a5cb62856b1dca0761b79f9fdc707ee8612729f0eb5
+    bytes: 3681
+    retrieved: '2026-09-24'
+  defaults:
+    iostandard: 3.3-V LVTTL
+
+  # Quartus project settings:
+  # dual-purpose pin reservation, unused-pin state, device I/O default.
+  toolchain_options:
+    quartus:
+      global_assignments:
+        - "RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP \"AS INPUT TRI-STATED\""
+  banks:
+    clk50mhz: { pins: P11, frequency_mhz: 50, source: {doc: manual, where: 'Table 3-2, p. 25'} }
+    onboard_buttons:
+      source: {doc: manual, where: 'Table 3-3, p. 26'}
+      iostandard: 3.3 V Schmitt Trigger
+      active: low
+      pins: [B8, A7]
+    onboard_switches:
+      source: {doc: manual, where: 'Table 3-4, p. 27'}
+      pins: [C10, C11, D12, C12, A12, B12, A13, A14, B14, F15]
+    onboard_leds:
+      source: {doc: manual, where: 'Table 3-5, p. 28'}
+      pins: [A8, A9, A10, B10, D13, C13, E14, D14, A11, B11]
+    onboard_7seg:
+      source: {doc: manual, where: 'Table 3-6, p. 29-30'}
+      pins:
+        hex0: [C14, E15, C15, C16, E16, D17, C17, D15]
+        hex1: [C18, D18, E18, B16, A17, A18, B17, A16]
+        hex2: [B20, A20, B19, A21, B21, C22, B22, A19]
+        hex3: [F21, E22, E21, C19, C20, D19, E17, D22]
+        hex4: [F18, E20, E19, J18, H19, F19, F20, F17]
+        hex5: [J20, K20, L18, N18, M20, N19, N20, L19]
+    onboard_vga:
+      source: {doc: manual, where: 'Table 3-11, p. 37'}
+      pins:
+        hs: N3
+        vs: N1
+        r: [AA1, V1, Y2, Y1]
+        g: [W1, T2, R2, R1]
+        b: [P1, T1, P4, N2]
+    arduino_reset_n: { pins: F16 }
+    arduino_io:
+      source: {doc: manual, where: 'Table 3-8, p. 34'}
+      pins: [AB5, AB6, AB7, AB8, AB9, Y10, AA11, AA12, AB17, AA17, AB19, AA19, Y19, AB20, AB21, AA20]
+    gpio:
+      source: {doc: manual, where: 'Table 3-7, p. 32'}
+      pins: [V10, W10, V9, W9, V8, W8, V7, W7, W6, V5, W5, AA15, AA14, W13, W12, AB13, AB12, Y11, AB11, W11, AB10, AA10, AA9, Y8, AA8, Y7, AA7, Y6, AA6, Y5, AA5, Y4, AB3, Y3, AB2, AA2]
+    onboard_adc_clk_10mhz:   # ADC_CLK_10 (10 MHz, MAX 10 ADC PLL)
+      device: {"name": "ADC_CLK_10 (10 MHz, MAX 10 ADC PLL)", "kind": "clock"}
+      iostandard: "3.3-V LVTTL"
+      pins: {"ADC_CLK_10": "N5"}
+    onboard_clk2_50mhz:   # MAX10_CLK2_50 (50 MHz)
+      device: {"name": "MAX10_CLK2_50 (50 MHz)", "kind": "clock"}
+      iostandard: "3.3-V LVTTL"
+      pins: {"MAX10_CLK2_50": "N14"}
+    onboard_sdram:   # SDRAM (64 MB, 16-bit)
+      source: {doc: manual, where: 'Table 3-12, p. 39'}
+      device: {"name": "SDRAM (64 MB, 16-bit)", "kind": "sdram"}
+      iostandard: "3.3-V LVTTL"
+      model_params: {col_bits: 10}
+      pins: {"DRAM_ADDR": ["U17", "W19", "V18", "U18", "U19", "T18", "T19", "R18", "P18", "P19", "T20", "P20", "R20"], "DRAM_DQ": ["Y21", "Y20", "AA22", "AA21", "Y22", "W22", "W20", "V21", "P21", "J22", "H21", "H22", "G22", "G20", "G19", "F22"], "DRAM_BA": ["T21", "T22"], "DRAM_LDQM": "V22", "DRAM_UDQM": "J21", "DRAM_RAS_N": "U22", "DRAM_CAS_N": "U21", "DRAM_CKE": "N22", "DRAM_CLK": "L14", "DRAM_WE_N": "V20", "DRAM_CS_N": "U20"}
+    onboard_accelerometer:   # Accelerometer (ADXL345, SPI/I2C)
+      source: {doc: manual, where: 'Table 3-13, p. 41'}
+      device: {"name": "Accelerometer (ADXL345, SPI/I2C)", "kind": "accelerometer", "id": "adi_adxl345"}
+      iostandard: "3.3-V LVTTL"
+      pins: {"GSENSOR_SDI": "V11", "GSENSOR_SDO": "V12", "GSENSOR_CS_n": "AB16", "GSENSOR_SCLK": "AB15", "GSENSOR_INT1": "Y14", "GSENSOR_INT2": "Y13"}
+  # ---- drawn: headers and parts; ./unifpga layout draft de10_lite regenerates from here on ----
+  layout: {verified: false, generated: true}
+  connector_types:
+    arduino_uno_r3:
+      name: Arduino Uno R3 shield header (digital)
+      voltage: 3.3
+      rows: [[IO15, IO14, AREF, GND, IO13, IO12, IO11, IO10, IO9, IO8], [IO7, IO6, IO5, IO4, IO3, IO2, IO1, IO0]]
+      power: {AREF: AREF, GND: GND}
+      source: Arduino Uno R3 header order (SCL, SDA, AREF, GND, D13 .. D8 | D7 .. D0); DE10-Lite User Manual, Figure 3-19, Table 3-8 (p. 33-34)
+    terasic_gpio_2x20:
+      name: Terasic 2x20 GPIO expansion header (36 I/O, 5 V and 3.3 V)
+      voltage: 3.3
+      rows: [[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39], [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]]
+      power: {11: VCC5, 12: GND, 29: VCC3P3, 30: GND}
+      source: DE10-Lite User Manual, Figure 3-18 (p. 31)
+  headers:
+    - id: arduino
+      type: arduino_uno_r3
+      label: Arduino Uno header
+      bank: arduino_io
+      pins: {IO0: 'arduino_io[0]', IO1: 'arduino_io[1]', IO2: 'arduino_io[2]', IO3: 'arduino_io[3]', IO4: 'arduino_io[4]', IO5: 'arduino_io[5]', IO6: 'arduino_io[6]', IO7: 'arduino_io[7]', IO8: 'arduino_io[8]', IO9: 'arduino_io[9]', IO10: 'arduino_io[10]', IO11: 'arduino_io[11]', IO12: 'arduino_io[12]', IO13: 'arduino_io[13]', IO14: 'arduino_io[14]', IO15: 'arduino_io[15]'}
+      source: {doc: manual, where: 'Table 3-8, p. 34'}
+    - id: gpio
+      type: terasic_gpio_2x20
+      label: GPIO header (40-pin)
+      bank: gpio
+      pins: {'1': 'gpio[0]', '2': 'gpio[1]', '3': 'gpio[2]', '4': 'gpio[3]', '5': 'gpio[4]', '6': 'gpio[5]', '7': 'gpio[6]', '8': 'gpio[7]', '9': 'gpio[8]', '10': 'gpio[9]', '13': 'gpio[10]', '14': 'gpio[11]', '15': 'gpio[12]', '16': 'gpio[13]', '17': 'gpio[14]', '18': 'gpio[15]', '19': 'gpio[16]', '20': 'gpio[17]', '21': 'gpio[18]', '22': 'gpio[19]', '23': 'gpio[20]', '24': 'gpio[21]', '25': 'gpio[22]', '26': 'gpio[23]', '27': 'gpio[24]', '28': 'gpio[25]', '31': 'gpio[26]', '32': 'gpio[27]', '33': 'gpio[28]', '34': 'gpio[29]', '35': 'gpio[30]', '36': 'gpio[31]', '37': 'gpio[32]', '38': 'gpio[33]', '39': 'gpio[34]', '40': 'gpio[35]'}
+      source: {doc: manual, where: 'Figure 3-18, p. 31'}
+  parts:
+    - id: clk50mhz
+      label: clk50mhz
+      attach: {peripheral: clock_input, params: {frequency_mhz: 50}, bind: {clk: clk50mhz}}
+    - id: buttons
+      label: KEY0-KEY1
+      source: {doc: manual, where: 'Table 3-3, p. 26'}
+      attach: {peripheral: button_array, params: {width: 2}, bind: {btn: onboard_buttons}}
+    - id: switches
+      label: SW0-SW9
+      source: {doc: manual, where: 'Table 3-4, p. 27'}
+      attach: {peripheral: sw_bank, params: {width: 10}, bind: {sw: onboard_switches}}
+    - id: leds
+      label: LEDR0-LEDR9
+      source: {doc: manual, where: 'Table 3-5, p. 28'}
+      attach: {peripheral: led_bank, params: {width: 10}, bind: {led: onboard_leds}}
+    - id: 7seg
+      label: 7seg
+      attach: {peripheral: seven_segment_per_digit, params: {digits: 6, segs: 8}, bind: {hex: [onboard_7seg.hex0, onboard_7seg.hex1, onboard_7seg.hex2, onboard_7seg.hex3, onboard_7seg.hex4, onboard_7seg.hex5]}}
+    - id: vga
+      label: vga
+      attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
+    - id: accelerometer
+      label: Accelerometer (ADXL345, SPI/I2C)
+      attach: {peripheral: adxl345_spi, bind: {mosi: onboard_accelerometer.GSENSOR_SDI, miso: onboard_accelerometer.GSENSOR_SDO, sclk: onboard_accelerometer.GSENSOR_SCLK, cs_n: onboard_accelerometer.GSENSOR_CS_n}}
+    - id: sdram
+      label: SDRAM (64 MB, 16-bit)
+      attach: {peripheral: sdram_sdr, params: {row_bits: 13, data_bits: 16, col_bits: 10}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
+    - id: adc_clk_10mhz
+      label: ADC_CLK_10 (10 MHz, MAX 10 ADC PLL)
+      device: {kind: clock, bank: onboard_adc_clk_10mhz}   # no peripheral model yet
+    - id: clk2_50mhz
+      label: MAX10_CLK2_50 (50 MHz)
+      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet

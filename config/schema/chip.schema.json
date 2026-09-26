@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:chip",
+  "title": "Chip",
+  "description": "One chip: a record of the chips list of its family's file config/chips/<producer>/<family>.yml (the check applies this schema to each record). The part number as the vendor writes it — what a board's chip / chips name and a rig's part: selects — and the toolchains that build for it when they differ from the family's default_toolchains.",
+  "type": "object",
+  "required": ["id"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "description": "The part number as the vendor writes it", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.+/-]*$" },
+    "toolchains": {
+      "description": "This chip's toolchains when they differ from the family's, as <toolchain>[<version constraint>]",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\[[^\\[\\]]+\\])?$" }
+    }
+  }
+}

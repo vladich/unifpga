@@ -39,11 +39,12 @@
       "properties": {
         "pins": { "$ref": "#/$defs/pin_set" },
         "device": {
-          "description": "The on-board device on these pins and its kind (from the board inventory)",
+          "description": "The on-board device on these pins: its name as the board's documents give it, its kind (config/kinds.yml, from the board inventory) and, when it is a catalogued part, its id in config/devices.yml",
           "type": "object",
           "required": ["name", "kind"],
           "additionalProperties": false,
-          "properties": { "name": { "type": "string" }, "kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" } }
+          "properties": { "name": { "type": "string" }, "kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                          "id": { "description": "The device in config/devices.yml", "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" } }
         },
         "iostandard": { "$ref": "#/$defs/iostandard" },
         "active": { "description": "The level that means on / pressed; may say where that is known from", "type": "string", "pattern": "^(high|low)\\b" },

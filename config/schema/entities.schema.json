@@ -44,6 +44,7 @@
         "id": { "description": "The field that identifies a record (absent for a map: the key; for one record without an id field: the file name)", "type": "string" },
         "file_named_after_id": { "description": "One record per file, the file named <id>.yml", "type": "boolean", "default": false },
         "schema": { "description": "The JSON Schema (config/schema/) every file satisfies; null while the entity's files are still being reshaped", "type": ["string", "null"], "pattern": "^[a-z_]+\\.schema\\.json$" },
+        "record_schema": { "description": "For an entity whose records sit inside another entity's files (chips in a family file): the JSON Schema every record satisfies", "type": "string", "pattern": "^[a-z_]+\\.schema\\.json$" },
         "no_schema_because": { "description": "Why there is no schema yet", "type": "string" },
         "relations": { "type": "array", "items": { "$ref": "#/$defs/relation" } }
       },
