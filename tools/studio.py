@@ -25,6 +25,7 @@ import zipfile
 
 from config import init as config_init
 from tools import codegen
+from tools import design_top   # noqa: E402  (the designs' rendered headers)
 from tools import setup as su
 from tools import trace as tr
 
@@ -663,15 +664,24 @@ def verilog_view(setup, target):
             src = module_source(name, design if name == "design_top" and design else None)
         except ApiError:
             continue
-        mlines = src["text"].split("\n")
-        marks = []
-        # the port or parameter the target names, as the module declares it
-        for word, pattern in ((port, r"^\s*(input|output|inout)\b[^;]*\b{}\b"),
-                              (param, r"^\s*(parameter\b[^;]*?\b)?{}\s*=")):
-            if word:
-                marks += [k + 1 for k, l in enumerate(mlines) if re.search(pattern.format(re.escape(word)), l)][:1]
-        files.append({"path": src["path"], "title": "module " + name + (" of " + design if src["path"].startswith("designs") else ""),
-                      "text": src["text"], "highlight": sorted(set(marks)) or [src["line"]], "note": ""})
+        def marked(text):
+            # the port or parameter the target names, as the module declares it
+            mlines, marks = text.split("\n"), []
+            for word, pattern in ((port, r"^\s*(input|output|inout)\b[^;]*\b{}\b"),
+                                  (param, r"^\s*(parameter\b[^;]*?\b)?{}\s*=")):
+                if word:
+                    marks += [k + 1 for k, l in enumerate(mlines) if re.search(pattern.format(re.escape(word)), l)][:1]
+            return sorted(set(marks))
+        title = "module " + name + (" of " + design if src["path"].startswith("designs") else "")
+        files.append({"path": src["path"], "title": title, "text": src["text"],
+                      "highlight": marked(src["text"]) or [src["line"]], "note": ""})
+        if name == "design_top" and design_top.includes_header(src["text"]):
+            # the design's header is the include rendered beside it: the target's declaration is there
+            include = design_top.render_include(src["text"])
+            files.append({"path": os.path.join(os.path.dirname(src["path"]), design_top.INCLUDE_NAME),
+                          "title": "the header of design_top of " + design + " (rendered by every build)",
+                          "text": include, "highlight": marked(include) or [1],
+                          "note": "rendered from config/design_top.yml, the capabilities and the design's // requires:"})
     return {"files": files, "modules": sorted(idx)}
 
 

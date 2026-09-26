@@ -181,7 +181,7 @@ Entities:
     relations:
       - {from: sections.*.capabilities.*, to: capability, why: "the capabilities on the device, in order"}
       - {rule: design_top_sections, why: "every capability with a design block is in exactly one section"}
-      - {rule: design_top_interface, why: "rtl/peripherals/design_top_interface.sv is what the capabilities render to"}
+      - {rule: design_top_interface, why: "rtl/peripherals/design_top_interface.sv is what the capabilities render to, and every design takes its module header from the include rendered beside it (design_top_interface.svh: the device without the optional capabilities its // requires: does not name), never from a copy"}
 
   entity_registry:
     why: This file.

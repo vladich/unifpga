@@ -491,7 +491,12 @@ def test_verilog_view_marks_what_defines_the_target():
     assert b["text"].split("\n")[b["highlight"][0] - 1].startswith("module top")
     p = studio.verilog_view(rig, {"design_port": "red", "parameter": "w_red", "module": "design_top", "design": "2_9_pong"})
     assert p["files"][1]["path"] == "designs/2_9_pong/design_top.sv"
-    assert [p["files"][1]["text"].split("\n")[n - 1].strip()[:5] for n in p["files"][1]["highlight"]] == ["w_red", "outpu"]
+    assert p["files"][1]["text"].split("\n")[p["files"][1]["highlight"][0] - 1].startswith("module design_top")
+    # the design's header is its rendered include: the parameter and the port are declared there
+    header = p["files"][2]
+    assert header["path"] == "designs/2_9_pong/design_top_interface.svh"
+    assert [header["text"].split("\n")[n - 1].strip()[:5] for n in header["highlight"]] == ["param", "outpu"]
+    assert "w_red" in header["text"].split("\n")[header["highlight"][0] - 1]
 
 
 def test_module_source_is_limited_to_module_names():

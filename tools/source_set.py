@@ -253,6 +253,10 @@ def design_inputs(design_dir):
     Paths in a fileset are relative to the design, never to the caller's cwd.
     """
     design_dir = os.path.abspath(design_dir)
+    top = os.path.join(design_dir, "design_top.sv")
+    if os.path.isfile(top):
+        from tools import design_top                # the design's module header, rendered next to it
+        design_top.write_include(top)
     manifest = os.path.join(design_dir, DESIGN_FILESET)
     if os.path.lexists(manifest):
         if os.path.islink(manifest):
@@ -277,7 +281,6 @@ def design_inputs(design_dir):
             raise SourceSetError("{}: sources must include design_top.sv once".format(manifest))
         return sources, simulation, assets
 
-    top = os.path.join(design_dir, "design_top.sv")
     sources = [top] if os.path.isfile(top) else []
     simulation, assets = [], []
     real_root = os.path.realpath(design_dir)
@@ -291,8 +294,8 @@ def design_inputs(design_dir):
             if name == "tb.sv":
                 if root == design_dir:
                     simulation.append(path)
-            elif name == "design_top.sv":
-                continue
+            elif name == "design_top.sv" or name == "design_top_interface.svh":
+                continue                            # the header include is read through design_top.sv
             elif name.endswith((".sv", ".v", ".svh")):
                 sources.append(path)
             elif name.endswith((".hex", ".mem")):

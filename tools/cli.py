@@ -49,7 +49,7 @@ if REPO not in sys.path:                    # `python3 tools/cli.py` without the
 import config.init                          # noqa: E402
 import program                              # noqa: E402  (called, never shelled out)
 import synthesize                           # noqa: E402  (called, never shelled out)
-from tools import source_set, toolchain_detect  # noqa: E402
+from tools import codegen, source_set, toolchain_detect  # noqa: E402
 
 DESIGNS_DIR = os.path.join(REPO, "designs")
 TOP_NAME = "design_top.sv"
@@ -770,21 +770,40 @@ def cmd_check(args):
 
 
 def cmd_interface(args):
-    """interface [--write]: is rtl/peripherals/design_top_interface.sv what
-    config/design_top.yml and the capabilities render to; --write renders it."""
+    """interface [--write] [design.sv ...]: is rtl/peripherals/design_top_interface.sv
+    what config/design_top.yml and the capabilities render to, and does every
+    design (or those named) take its module header from the rendered include
+    design_top_interface.svh; --write renders the file and the includes, and
+    converts a design still carrying a hand-written header."""
     from tools import design_top
+    stale = 0
     try:
-        if args.write:
-            changed = design_top.write()
-            print("{} {}".format("wrote" if changed else "unchanged", _shown(design_top.INTERFACE)))
-            return 0
-        if design_top.is_current():
-            print("{} is current".format(_shown(design_top.INTERFACE)))
-            return 0
-        print("{} is not what the capabilities render to: ./unifpga interface --write".format(_shown(design_top.INTERFACE)))
-        return 1
-    except config.init.ConfigError as exc:
+        targets = [os.path.abspath(p) for p in args.designs] if args.designs else design_top.design_files()
+        if not args.designs:
+            if args.write:
+                print("{:<10} {}".format("wrote" if design_top.write() else "current", _shown(design_top.INTERFACE)))
+            elif not design_top.is_current():
+                stale += 1
+                print("{:<10} {}".format("stale", _shown(design_top.INTERFACE)))
+        for path in targets:
+            with open(path, encoding="utf-8") as f:
+                text = f.read()
+            if design_top.includes_header(text):
+                if args.write:
+                    changed = design_top.write_include(path)
+                    print("{:<10} {}".format("rendered" if changed else "current", _shown(design_top.include_path(path))))
+                continue
+            if args.write:
+                design_top.convert(path)
+                print("{:<10} {} (its header is now {})".format("converted", _shown(path), design_top.INCLUDE_NAME))
+            else:
+                stale += 1
+                print("{:<10} {} carries a hand-written module header".format("hand", _shown(path)))
+    except (config.init.ConfigError, codegen.CodegenError, OSError) as exc:
         raise CliError(str(exc))
+    if not args.write:
+        print("{} to render ({} designs looked at){}".format(stale, len(targets), "; ./unifpga interface --write" if stale else ""))
+    return 1 if stale else 0
 
 
 def cmd_view(args):
@@ -1015,9 +1034,11 @@ def build_parser():
     ck.add_argument("entities", nargs="*", help="only these entities (default: all; see config/schema/entities.yml)")
     ck.add_argument("--json", action="store_true", help="print the report as JSON")
 
-    it = sub.add_parser("interface", help="rtl/peripherals/design_top_interface.sv from config/design_top.yml and the "
-                                          "capabilities: is it current (--write: render it)")
-    it.add_argument("--write", action="store_true", help="render the file")
+    it = sub.add_parser("interface", help="the design_top interface rendered from config/design_top.yml and the capabilities: "
+                                          "rtl/peripherals/design_top_interface.sv and each design's design_top_interface.svh "
+                                          "(--write: render them; a hand-written header is converted)")
+    it.add_argument("designs", nargs="*", help="design_top.sv files (default: every design under designs/, and the interface file)")
+    it.add_argument("--write", action="store_true", help="render")
 
     ly = sub.add_parser("layout", help="draw boards' headers and parts (the drawn section of their files) "
                                         "from their banks, their rigs and the facts already drawn from documents")

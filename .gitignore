@@ -81,3 +81,5 @@ PLAN.md
 plans/
 docs/
 rtl/sim/.vendor_blackboxes.v
+# a design's module header, rendered next to it by every build (./unifpga interface --write)
+designs/*/design_top_interface.svh

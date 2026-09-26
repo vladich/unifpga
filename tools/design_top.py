@@ -1,28 +1,47 @@
 """
-The virtual device interface, rendered from data: rtl/peripherals/
-design_top_interface.sv is what config/design_top.yml (the sections, in
-order) and the capabilities' `design:` blocks (their parameters, derived
-widths and ports, with `description` and `comment` for the prose) say.
+The virtual device interface, rendered from data, in two places:
 
-    ./unifpga interface            is the file what the data renders to?
-    ./unifpga interface --write    render it (./unifpga check reports a stale file)
+  * rtl/peripherals/design_top_interface.sv — the whole device, with its
+    prose: what config/design_top.yml (the sections, in order) and the
+    capabilities' `design:` blocks (parameters, derived widths, ports;
+    `description` and `comment` for the prose) say;
+  * designs/<name>/design_top_interface.svh — a design's module header, the
+    same parameters and ports without the optional capabilities the design
+    does not require (its `// requires:` names the ones it uses). The design
+    file holds no header of its own:
 
-A design copies the module header of that file (all of it, or the part it
-uses: an optional capability reaches a design only through the ports it
-declares).
+        // requires:
+        //   memory
+        module design_top
+        `include "design_top_interface.svh"
+            ... the design ...
+        endmodule
+
+    The include is a build product: every build, simulation and lint renders
+    it first (tools/source_set.py design_inputs); it is not committed.
+
+    ./unifpga interface                      is the interface file current, does every design include its header?
+    ./unifpga interface --write [design…]    render the file and the designs' includes; a design still carrying
+                                             a hand-written header is converted to the include
 """
 
+import glob
 import os
+import re
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
-from config import init as config_init   # noqa: E402
-from tools import codegen                # noqa: E402
+from config import init as config_init            # noqa: E402
+from tools import codegen, design_requirements    # noqa: E402
 
 INTERFACE = codegen.DESIGN_INTERFACE
+DESIGNS_DIR = os.path.join(REPO, "designs")
+INCLUDE_NAME = "design_top_interface.svh"
+DIRECTIVE = '`include "{}"'.format(INCLUDE_NAME)
+WIDTH = 80
 
 PREAMBLE = """\
 // =============================================================================
@@ -33,18 +52,21 @@ PREAMBLE = """\
 // configuration widths (number of switches, presence of a screen, etc.) come
 // from `parameter` overrides set by the codegen-generated top module.
 //
-// A capability a particular board lacks gets the parameter values below (its
-// `absent` values in config/capabilities/: most widths 0, so the vectors are
-// zero-element arrays that optimize away; a screen 640x480 so pixel code still
-// compiles). User code that references e.g. `led[3]` on a board with
-// `w_led = 2` produces a synthesis error — which is the correct behaviour:
+// Capabilities a particular board lacks are declared with width 0; SystemVerilog
+// vectors of width 0 are zero-element arrays (no driver, no consumer), which
+// silently optimize away. User code that references e.g. `led[3]` on a board
+// with `w_led = 2` produces a synthesis error — which is the correct behaviour:
 // the design requires more than the board provides, surface the mismatch.
 //
-// To write a new design, copy the body of this file into your project as
-// `design_top.sv` and add your logic. Never rename the ports or change their
-// directions — every board adapter binds to these names. An optional
-// capability (its section says so) reaches a design only through the ports
-// the design declares: leave them out when you do not use it.
+// A design does not copy this header: its file says
+//
+//     module design_top
+//     `include "design_top_interface.svh"
+//
+// and the include, rendered next to it by every build (or by `./unifpga
+// interface --write`), is this header without the optional capabilities the
+// design's `// requires:` block does not name. Never rename the ports or
+// change their directions — every board adapter binds to these names.
 //
 // To declare hard capability requirements that synthesize.py should check
 // before building, add a `// requires:` block before the module keyword.
@@ -68,9 +90,6 @@ PREAMBLE = """\
 """
 
 
-WIDTH = 80
-
-
 def _comment(text):
     """A `// ---- text ----` heading, wrapped at WIDTH, the dashes on its last line."""
     lines, line = [], "    // ---- "
@@ -83,10 +102,10 @@ def _comment(text):
 
 
 def _default(spec):
-    """The interface's default of a design parameter: its value on a rig
-    without a provider."""
-    absent = spec.get("absent")
-    return absent if isinstance(absent, (int, float)) and not isinstance(absent, bool) else 0
+    """A design parameter's value when nothing sets it (a design compiled on
+    its own): its `default`, else 0."""
+    d = spec.get("default")
+    return d if isinstance(d, (int, float)) and not isinstance(d, bool) else 0
 
 
 def _derived_expr(spec):
@@ -111,55 +130,78 @@ def _direction(capabilities, port):
     return {"hw_to_user": "input       ", "user_to_hw": "output logic", "inout": "inout       "}[sig.get("direction")]
 
 
-def render():
-    """The interface file's text."""
+def optional_capabilities():
+    return {cid for cid, cap in codegen._capabilities().items() if cap.get("optional")}
+
+
+def render_lists(uses=None, prose=False):
+    """The `# ( … )` parameter list and `( … );` port list of design_top,
+    without the optional capabilities not in `uses` (None: all of them).
+    With `prose`, the section headings, the parameters' descriptions and the
+    capabilities' comments."""
     capabilities = codegen._capabilities()
     sections = config_init.read_design_top().get("sections") or []
     params, derived, ports = codegen.design_contract()
-    by_cap_params = {}
-    for p in params:
-        by_cap_params.setdefault(p.capability, []).append(p)
-    out = [PREAMBLE, "module design_top", "# ("]
-    first = True
+    optional = optional_capabilities()
+    keep = lambda cid: cid not in optional or uses is None or cid in uses
+    out = ["# ("]
+    lines_all = []
     for sec in sections:
         lines = []
         for cid in sec["capabilities"]:
-            for p in by_cap_params.get(cid, []):
-                desc = p.spec.get("description")
+            if not keep(cid):
+                continue
+            for p in params:
+                if p.capability != cid:
+                    continue
+                desc = p.spec.get("description") if prose else None
                 lines.append("    parameter int {:<13} = {:<7}{}".format(p.name, str(_default(p.spec)) + ",", "// " + desc if desc else "").rstrip())
         if not lines:
             continue
-        if not first:
-            out.append("")
-        first = False
-        out += _comment(sec["title"])
-        out += lines
-    out.append("")
-    out += _comment("Derived widths (do not override)")
-    for d in derived:
-        out.append("    parameter int {} = {},".format(d.name, _derived_expr(d.spec)))
-    out[-1] = out[-1].rstrip(",")
-    out += [")", "("]
-    by_cap_ports = {}
-    for p in ports:
-        by_cap_ports.setdefault(p.capability, []).append(p)
-    first = True
+        if prose:
+            if lines_all:
+                lines_all.append("")
+            lines_all += _comment(sec["title"])
+        lines_all += lines
+    kept_derived = [d for d in derived if keep(d.capability)]
+    if kept_derived:
+        if prose:
+            lines_all.append("")
+            lines_all += _comment("Derived widths (do not override)")
+        lines_all += ["    parameter int {} = {},".format(d.name, _derived_expr(d.spec)) for d in kept_derived]
+    lines_all[-1] = lines_all[-1].rstrip(",")
+    out += lines_all + [")", "("]
+    lines_all = []
     for sec in sections:
         for cid in sec["capabilities"]:
-            mine = by_cap_ports.get(cid)
-            if not mine:
+            mine = [p for p in ports if p.capability == cid]
+            if not mine or not keep(cid):
                 continue
-            if not first:
-                out.append("")
-            first = False
-            cap = capabilities[cid]
-            out += _comment((cap.get("design") or {}).get("comment") or cap.get("description") or cid)
+            if prose:
+                if lines_all:
+                    lines_all.append("")
+                cap = capabilities[cid]
+                lines_all += _comment((cap.get("design") or {}).get("comment") or cap.get("description") or cid)
             for p in mine:
-                out.append("    {} {:<20} {},".format(_direction(capabilities, p), _range(p.width), p.name).rstrip())
-    out[-1] = out[-1].rstrip(",")
-    out += [");", "", "    // -------------------------------------------------------------------------",
-            "    // Default tie-offs. Override below as needed.",
-            "    // -------------------------------------------------------------------------"]
+                lines_all.append("    {} {:<20} {},".format(_direction(capabilities, p), _range(p.width), p.name).rstrip())
+    lines_all[-1] = lines_all[-1].rstrip(",")
+    out += lines_all + [");"]
+    return "\n".join(out)
+
+
+# ---------------------------------------------------------------------------
+# rtl/peripherals/design_top_interface.sv
+# ---------------------------------------------------------------------------
+
+def render():
+    """The interface file's text: the preamble, the whole header with its
+    prose, the outputs' default tie-offs."""
+    capabilities = codegen._capabilities()
+    _params, _derived, ports = codegen.design_contract()
+    out = [PREAMBLE + "module design_top", render_lists(None, prose=True), "",
+           "    // -------------------------------------------------------------------------",
+           "    // Default tie-offs. Override below as needed.",
+           "    // -------------------------------------------------------------------------"]
     for p in ports:
         if _direction(capabilities, p).startswith("output"):
             out.append("    assign {:<9} = {};".format(p.name, p.spec.get("idle", "'0")))
@@ -186,3 +228,106 @@ def write():
         with open(INTERFACE, "w", encoding="utf-8") as f:
             f.write(text)
     return old != text
+
+
+# ---------------------------------------------------------------------------
+# the designs' includes
+# ---------------------------------------------------------------------------
+
+def design_files():
+    return sorted(glob.glob(os.path.join(DESIGNS_DIR, "*", "design_top.sv")))
+
+
+def uses_of(text):
+    """The optional capabilities a design's `// requires:` block names."""
+    try:
+        required = set(design_requirements.parse_text(text))
+    except Exception:          # a requires block the parser rejects: the build reports it
+        required = set()
+    return required & optional_capabilities()
+
+
+def includes_header(text):
+    """Does the design file take its header from the include?"""
+    return DIRECTIVE in text
+
+
+def render_include(text):
+    """The include file of a design whose text this is."""
+    uses = uses_of(text)
+    optional = sorted(uses) or None
+    return "\n".join([
+        "// design_top's module header, rendered by ./unifpga interface --write (and by every build)",
+        "// from config/design_top.yml, the capabilities' design: blocks and this design's",
+        "// // requires: block" + (" (optional capabilities: {})".format(", ".join(optional)) if optional else "") +
+        ". Not for editing; not committed.",
+        render_lists(uses), ""])
+
+
+def resolve(text):
+    """A design's text with the include directive replaced by the header it
+    renders to (what codegen reads the declared ports from)."""
+    if not includes_header(text):
+        return text
+    return text.replace(DIRECTIVE, render_lists(uses_of(text)), 1)
+
+
+def include_path(design_path):
+    return os.path.join(os.path.dirname(os.path.abspath(design_path)), INCLUDE_NAME)
+
+
+def write_include(design_path):
+    """Render a design's include next to it (when the design includes its
+    header); True when the file changed."""
+    with open(design_path, encoding="utf-8") as f:
+        text = f.read()
+    if not includes_header(text):
+        return False
+    path = include_path(design_path)
+    new = render_include(text)
+    old = None
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            old = f.read()
+    if old != new:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(new)
+    return old != new
+
+
+def _header_span(text):
+    """(start, end) of a hand-written `module design_top … );` header, or None."""
+    m = re.search(r"^module\s+design_top\b", text, re.M)
+    if not m:
+        return None
+    pos, depth, seen = m.end(), 0, 0
+    while pos < len(text):
+        ch = text[pos]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                seen += 1
+        elif ch == ";" and depth == 0 and seen:
+            return m.start(), pos + 1
+        pos += 1
+    return None
+
+
+def convert(design_path):
+    """A design carrying a hand-written header: the header replaced by the
+    include directive and the include rendered. Returns whether the design
+    file changed; raises when the file has no header at all."""
+    with open(design_path, encoding="utf-8") as f:
+        text = f.read()
+    if includes_header(text):
+        return write_include(design_path) and False
+    span = _header_span(text)
+    if span is None:
+        raise codegen.CodegenError("{}: no `module design_top` header to convert".format(design_path))
+    new = text[:span[0]] + "module design_top\n" + DIRECTIVE + text[span[1]:]
+    with open(design_path, "w", encoding="utf-8") as f:
+        f.write(new)
+    write_include(design_path)
+    return True

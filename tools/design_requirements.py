@@ -66,7 +66,11 @@ def parse(sv_path):
         return OrderedDict()
     with open(sv_path) as f:
         text = f.read()
+    return parse_text(text)
 
+
+def parse_text(text):
+    """parse() of a design's text."""
     # Find the requires: block. It's a sequence of `// ...` lines starting with
     # a `// requires:` line and ending at the first non-comment line.
     lines = text.splitlines()

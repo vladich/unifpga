@@ -77,7 +77,8 @@
             { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/value_alternative" } }
           ]
         },
-        "absent": { "oneOf": [{ "type": ["integer", "number"] }, { "$ref": "#/$defs/source" }] }
+        "absent": { "description": "Its value on a rig without a provider", "oneOf": [{ "type": ["integer", "number"] }, { "$ref": "#/$defs/source" }] },
+        "default": { "description": "Its value when nothing sets it (a design compiled on its own); 0 when absent", "type": ["integer", "number"] }
       }
     },
     "derived_parameter": {

@@ -566,11 +566,20 @@ def _design_top_sections(ctx, entity, rec_id, record, path):
 
 @rule("design_top_interface", needs_repo=True)
 def _design_top_interface(ctx, entity, rec_id, record, path):
-    """rtl/peripherals/design_top_interface.sv is what the data renders to."""
+    """rtl/peripherals/design_top_interface.sv is what the data renders to,
+    and every design takes its module header from the rendered include
+    (design_top_interface.svh, rendered by every build), not from a copy."""
     from tools import design_top
     try:
         if not design_top.is_current():
             ctx.fail(path, "rtl/peripherals/design_top_interface.sv is not what the capabilities render to: ./unifpga interface --write")
+        for design in design_top.design_files():
+            with open(design, encoding="utf-8") as f:
+                text = f.read()
+            if not design_top.includes_header(text):
+                rel = os.path.relpath(design, ctx.repo)
+                ctx.fail(path, "{} carries a hand-written module header instead of {}: ./unifpga interface --write {}"
+                         .format(rel, design_top.DIRECTIVE, rel))
     except Exception as exc:                   # a capability the renderer cannot place
         ctx.fail(path, "the interface cannot be rendered: {}".format(exc))
 

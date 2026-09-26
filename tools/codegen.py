@@ -2681,6 +2681,9 @@ def design_declarations(source, module="design_top"):
     if source and os.path.exists(str(source)):
         with open(source, encoding="utf-8", errors="replace") as f:
             source = f.read()
+    if source and "design_top_interface.svh" in source:
+        from tools import design_top                # the header a design includes is rendered from its requires
+        source = design_top.resolve(source)
     text = _strip_sv_comments(source or "")
     m = re.search(r"\bmodule\s+{}\b".format(re.escape(module)), text)
     if not m:
