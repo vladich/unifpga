@@ -34,6 +34,8 @@ Board:
   - pmod_connector
   devices:
   - ftdi_ft2232h
+  - infineon_s27ks0641
+  - macronix_mx25r6435f
   documents:
   - id: ds
     title: DS1003 GateMate FPGA Evaluation Board Datasheet (January 2024)
@@ -88,12 +90,12 @@ Board:
       pins: {"clock1_in": "IO_SB_A7", "clock2_in": "IO_SB_A6", "clock3_in": "IO_SB_A5"}
     onboard_hyperram:   # U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)
       source: {doc: ds, where: '3.8, Table 3.10 (p. 38)'}
-      device: {"name": "U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)", "kind": "other"}
+      device: {"name": "U10 HyperRAM S27KS0641 (64 Mbit, bank WB, 1.8 V)", "kind": "other", "id": "infineon_s27ks0641"}
       iostandard: "1.8 V"
       pins: {"cs_n": "IO_WB_B0", "rst_n": "IO_WB_A2", "ck": "IO_WB_A3", "ck_n": "IO_WB_B3", "rwds": "IO_WB_B4", "dq": ["IO_WB_A5", "IO_WB_B5", "IO_WB_A6", "IO_WB_B6", "IO_WB_A7", "IO_WB_B7", "IO_WB_A8", "IO_WB_B8"]}
     onboard_serial_flash:   # U5 MX25R6435F SPI flash (config bank WA)
       source: {doc: sch32, where: U1E GPIO BANK CONFIG WA symbol}
-      device: {"name": "U5 MX25R6435F SPI flash (config bank WA)", "kind": "flash"}
+      device: {"name": "U5 MX25R6435F SPI flash (config bank WA)", "kind": "flash", "id": "macronix_mx25r6435f"}
       iostandard: "2.5 V (VDD_WA)"
       pins: {"cs_n": "IO_WA_A8", "clk": "IO_WA_B8", "d0_mosi": "IO_WA_B7", "d1_miso": "IO_WA_A7", "d2_wp": "IO_WA_B6", "d3_hold": "IO_WA_A6"}
     onboard_usb:   # U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI

@@ -21,6 +21,9 @@ Board:
   - spi_flash
   devices:
   - hynix_hy57v641620
+  - microchip_at24c08
+  - maxim_ds18b20
+  - lcd_char_16x2
   documents:
   - id: sch
     title: PS06.pdf — RFB-D V2.0 schematic (p1), PCB outline (p2), bill of materials (p3)
@@ -84,11 +87,11 @@ Board:
       shares: ["onboard_eeprom"]   # the board multiplexes these pins
       pins: {"beep": "2"}
     onboard_eeprom:   # EEPROM AT24C08 U3
-      device: {"name": "EEPROM AT24C08 U3", "kind": "eeprom"}
+      device: {"name": "EEPROM AT24C08 U3", "kind": "eeprom", "id": "microchip_at24c08"}
       shares: ["onboard_buzzer", "onboard_vga"]   # the board multiplexes these pins
       pins: {"scl": "1", "sda": "2"}
     onboard_temperature:   # DS18B20 temperature sensor U5
-      device: {"name": "DS18B20 temperature sensor U5", "kind": "temperature"}
+      device: {"name": "DS18B20 temperature sensor U5", "kind": "temperature", "id": "maxim_ds18b20"}
       shares: ["onboard_leds"]   # the board multiplexes these pins
       pins: {"dq": "44"}
     onboard_sdram:   # SDRAM HY57V641620 U2 (4M x16)
@@ -97,7 +100,7 @@ Board:
       model_params: {col_bits: 8}
       pins: {"a": ["76", "75", "74", "73", "34", "33", "32", "31", "30", "28", "77", "58"], "ba": ["83", "80"], "dq": ["110", "106", "105", "104", "103", "101", "100", "99", "65", "66", "67", "68", "69", "70", "71", "72"], "clk": "60", "cke": "59", "cs_n": "84", "ras_n": "85", "cas_n": "86", "we_n": "87", "dqm": ["98", "64"]}
     onboard_lcd:   # LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets
-      device: {"name": "LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets", "kind": "lcd"}
+      device: {"name": "LCD1602 P2 (16-pin) and LCD12864 LCD1 (20-pin) sockets", "kind": "lcd", "id": "lcd_char_16x2"}
       shares: ["onboard_sdram", "onboard_switches"]   # the board multiplexes these pins
       pins: {"rs": "34", "rw": "33", "en": "32", "d": ["31", "30", "28", "58", "59", "60", "64", "65"], "psb_12864": "66", "rst_12864": "67"}
     onboard_epcs4si8n_config_flash_u4:   # EPCS4SI8N config flash U4

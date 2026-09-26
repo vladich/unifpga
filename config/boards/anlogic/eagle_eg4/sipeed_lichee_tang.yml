@@ -26,6 +26,7 @@ Board:
   - adc_chip
   devices:
   - ftdi_ft2232h
+  - gigadevice_gd32f150
   documents:
   - id: sch
     title: 'LicheeTang-RV (Schematic), 2 sheets, printed 2020-06-04 (current board: microSD, "new IO map")'
@@ -103,7 +104,7 @@ Board:
       pins: {"program_b": "T2"}
     onboard_uart:   # GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)
       source: {doc: sch, where: 'sheet 1 U6 GD32F150Gx (zUART1/2, zSPI1 = JTAG, zSPI2); sheet 2 U2A L13/M13/J13/H13/K11/J11/L12, U2D P7; JTAG pins E14/A15 (U2A), C12/C14 (U2B bank 0)'}
-      device: {"name": "GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)", "kind": "uart"}
+      device: {"name": "GD32F150G USB-JTAG / UART / SPI bridge (micro-USB J1)", "kind": "uart", "id": "gigadevice_gd32f150"}
       shares: ["gpio_j2", "gpio_j3"]   # the board multiplexes these pins
       pins: {"uart1_tx": "J13", "uart1_rx": "H13", "uart2_tx": "L13", "uart2_rx": "M13", "spi_sck": "P7", "spi_nss": "K11", "spi_mosi": "J11", "spi_miso": "L12", "jtag_tms": "A15", "jtag_tck": "C14", "jtag_tdo": "E14", "jtag_tdi": "C12"}
     onboard_config_flash:   # Configuration SPI flash (FLASH (QSPI) U3, 25Q80B footprint)

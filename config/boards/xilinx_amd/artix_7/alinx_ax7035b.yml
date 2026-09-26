@@ -32,6 +32,8 @@ Board:
   - microsd_socket_generic
   - led_discrete_generic
   - pushbutton_smd_generic
+  - micron_n25q128a
+  - lm75_generic
   documents:
   - id: litex
     title: LiteX-Boards platform alinx_ax7035.py (AX7035B; comments cite the AX7035B user manual parts/tables)
@@ -100,7 +102,7 @@ Board:
       pins: {"data": ["P16", "R17", "N14", "N13"], "cmd": "P15", "clk": "N15", "cd_n": "R16"}
     onboard_qspi_flash:   # QSPI flash (Micron N25Q128, 16 MB)
       source: {doc: litex, where: 'resource ("spiflash4x", 0), line 166'}
-      device: {"name": "QSPI flash (Micron N25Q128, 16 MB)", "kind": "flash"}
+      device: {"name": "QSPI flash (Micron N25Q128, 16 MB)", "kind": "flash", "id": "micron_n25q128a"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "T19", "dq": ["P22", "R22", "P21", "R21"]}
     onboard_eeprom:   # I2C EEPROM 24LC04
@@ -110,7 +112,7 @@ Board:
       pins: {"sda": "N19", "scl": "N18"}
     onboard_temp_sensor:   # Temperature sensor LM75 (I2C)
       source: {doc: litex, where: 'resource ("i2c_tmp", 0), line 193'}
-      device: {"name": "Temperature sensor LM75 (I2C)", "kind": "temperature"}
+      device: {"name": "Temperature sensor LM75 (I2C)", "kind": "temperature", "id": "lm75_generic"}
       iostandard: "LVCMOS33"
       pins: {"sda": "N22", "scl": "M22"}
     onboard_hdmi_rx:   # HDMI input (commented out in LiteX: "UNVERIFIED")

@@ -29,6 +29,8 @@ Board:
   - usb_jtag_bridge
   - usb_powered
   - parallel_lcd
+  devices:
+  - wch_ch552t
   documents:
   - id: sch2704
     title: Tang-NANO-2704 schematic (KiCad, 1 sheet)
@@ -103,7 +105,7 @@ Board:
       pins: [16, 17, 18]
     onboard_uart:   # CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)
       source: {doc: sch2704, where: 'U5 pin 8 IOL6F/RECONFIG_N carries nets FPGA_TX and RECONFIG, pin 9 IOL6G/DONE carries FPGA_RX and DONE; CH552_TX0 (CH552 P3.1/TXD) wired to label FPGA_RX, CH552_RX0 (P3.0/RXD) wired to label FPGA_TX (direct wire, no resistor)'}
-      device: {"name": "CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)", "kind": "uart"}
+      device: {"name": "CH552T USB UART (CH552_TX0/RX0 to FPGA_RX/FPGA_TX)", "kind": "uart", "id": "wch_ch552t"}
       iostandard: "LVCMOS33"
       shares: ["header_p5"]   # the board multiplexes these pins
       pins: {"tx": "8", "rx": "9"}
@@ -126,7 +128,7 @@ Board:
       shares: ["onboard_config_mode"]   # the board multiplexes these pins
       pins: {"bl": "47"}
     onboard_jtag:   # JTAG (CH552T USB-JTAG through 22R array YR1)
-      device: {"name": "JTAG (CH552T USB-JTAG through 22R array YR1)", "kind": "other"}
+      device: {"name": "JTAG (CH552T USB-JTAG through 22R array YR1)", "kind": "other", "id": "wch_ch552t"}
       pins: {"tms": "3", "tck": "4", "tdi": "6", "tdo": "7"}
     onboard_config_mode:   # Mode pins MODE0/MODE1
       device: {"name": "Mode pins MODE0/MODE1", "kind": "other"}

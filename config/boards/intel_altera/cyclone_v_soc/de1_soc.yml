@@ -42,6 +42,9 @@ Board:
   - dip_switch_generic
   - seven_seg_module_shared
   - ti_adc128s022
+  - microchip_ksz9021rn
+  - ftdi_ft232r
+  - microchip_usb3300
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   documents:
@@ -237,12 +240,12 @@ Board:
       pins: {"HPS_I2C2_SCLK": "H23", "HPS_I2C2_SDAT": "A25"}
     onboard_hps_ethernet:   # HPS Gigabit Ethernet PHY (KSZ9021RN)
       fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
-      device: {"name": "HPS Gigabit Ethernet PHY (KSZ9021RN)", "kind": "ethernet"}
+      device: {"name": "HPS Gigabit Ethernet PHY (KSZ9021RN)", "kind": "ethernet", "id": "microchip_ksz9021rn"}
       iostandard: "3.3V"
       pins: {"HPS_ENET_TX_EN": "A20", "HPS_ENET_TX_DATA": ["F20", "J19", "F21", "F19"], "HPS_ENET_RX_DV": "K17", "HPS_ENET_RX_DATA": ["A21", "B20", "B18", "D21"], "HPS_ENET_RX_CLK": "G20", "HPS_ENET_RESET_N": "E18", "HPS_ENET_MDIO": "E21", "HPS_ENET_MDC": "B21", "HPS_ENET_INT_N": "C19", "HPS_ENET_GTX_CLK": "H19"}
     onboard_hps_uart:   # HPS UART to USB (FT232R)
       fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
-      device: {"name": "HPS UART to USB (FT232R)", "kind": "uart"}
+      device: {"name": "HPS UART to USB (FT232R)", "kind": "uart", "id": "ftdi_ft232r"}
       iostandard: "3.3V"
       pins: {"HPS_UART_RX": "B25", "HPS_UART_TX": "C25", "HPS_CONV_USB_N": "B15"}
     onboard_hps_ddr3:   # HPS DDR3 SDRAM (1 GB, 32-bit)
@@ -257,7 +260,7 @@ Board:
       pins: {"HPS_SD_CLK": "A16", "HPS_SD_CMD": "F18", "HPS_SD_DATA": ["G18", "C17", "D17", "B16"]}
     onboard_hps_usb_otg:   # HPS USB 2.0 OTG PHY (USB3300)
       fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
-      device: {"name": "HPS USB 2.0 OTG PHY (USB3300)", "kind": "usb"}
+      device: {"name": "HPS USB 2.0 OTG PHY (USB3300)", "kind": "usb", "id": "microchip_usb3300"}
       iostandard: "3.3V"
       pins: {"HPS_USB_CLKOUT": "N16", "HPS_USB_DATA": ["E16", "G16", "D16", "D14", "A15", "C14", "D15", "M17"], "HPS_USB_DIR": "E14", "HPS_USB_NXT": "A14", "HPS_USB_RESET": "G17", "HPS_USB_STP": "C15"}
     onboard_hps_gsensor:   # HPS accelerometer (ADXL345 G-sensor)

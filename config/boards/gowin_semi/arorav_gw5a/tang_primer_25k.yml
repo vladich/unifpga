@@ -24,6 +24,7 @@ Board:
   - user_leds
   devices:
   - winbond_w25q64
+  - bouffalo_bl616
   documents:
   - id: sch_som
     title: Tang_Primer_25K_52300_Schematic.pdf (core board 52300; FPGA symbol p.3, flash p.1, BTB connectors J1/J2 p.5)
@@ -165,7 +166,7 @@ Board:
       shares: ["som_j2"]   # the board multiplexes these pins
       pins: {"ck": "A7,B7", "d0": "A9,B9", "d1": "A8,B8", "d2": "A6,B6", "d3": "A5,B5"}
     onboard_jtag:   # JTAG (to the Dock's BL616 debugger and the J7 2x4 JTAG header)
-      device: {"name": "JTAG (to the Dock's BL616 debugger and the J7 2x4 JTAG header)", "kind": "other"}
+      device: {"name": "JTAG (to the Dock's BL616 debugger and the J7 2x4 JTAG header)", "kind": "other", "id": "bouffalo_bl616"}
       shares: ["som_j2"]   # the board multiplexes these pins
       pins: {"tck": "C1", "tms": "B1", "tdo": "A2", "tdi": "A3"}
     onboard_leds:   # READY / DONE LEDs (LED3, LED4) on configuration pins

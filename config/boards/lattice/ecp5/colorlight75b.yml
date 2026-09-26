@@ -16,6 +16,9 @@ Board:
   features:
   - sdr_sdram
   - ethernet_phy_gigabit
+  devices:
+  - esmt_m12l64322a
+  - realtek_rtl8211fd
   documents:
   - id: ch75_v8
     title: chubby75 5a-75b hardware_V8.0.md
@@ -60,18 +63,18 @@ Board:
         clk_n: H14
     onboard_sdram:   # ESMT M12L64322A SDRAM (2M x 32, 8 MB)
       source: {doc: ch75_v8, where: 'SDRAM U29 table; CS#, DQM0-3 tied to GND, CKE to 3V3'}
-      device: {"name": "ESMT M12L64322A SDRAM (2M x 32, 8 MB)", "kind": "sdram"}
+      device: {"name": "ESMT M12L64322A SDRAM (2M x 32, 8 MB)", "kind": "sdram", "id": "esmt_m12l64322a"}
       iostandard: "LVCMOS33"
       model_params: {col_bits: 8}
       pins: {"clk": "C8", "a": ["A9", "B9", "B10", "C10", "D9", "C9", "E9", "D8", "E8", "C7", "B8"], "ba": ["B7", "A8"], "we_n": "B5", "cas_n": "A6", "ras_n": "B6", "dq": ["B2", "A2", "C3", "A3", "B3", "A4", "B4", "A5", "E7", "C6", "D7", "D6", "E6", "D5", "C5", "E5", "A11", "B11", "B12", "A13", "B13", "A14", "B14", "D14", "D13", "E11", "C13", "D11", "C12", "E10", "C11", "D10"]}
     onboard_eth0:   # Ethernet PHY U11 (RTL8211FD, RGMII, port 0)
       source: {doc: ch75_v8, where: Gigabit PHYs table (U11 column); rst/mdc/mdio shared with U13}
-      device: {"name": "Ethernet PHY U11 (RTL8211FD, RGMII, port 0)", "kind": "ethernet"}
+      device: {"name": "Ethernet PHY U11 (RTL8211FD, RGMII, port 0)", "kind": "ethernet", "id": "realtek_rtl8211fd"}
       shares: ["onboard_eth1"]   # the board multiplexes these pins
       pins: {"rst_n": "R6", "mdc": "R5", "mdio": "T4", "txc": "L1", "tx_ctl": "L2", "txd": ["M2", "M1", "P1", "R1"], "rxc": "J1", "rx_ctl": "J2", "rxd": ["K2", "J3", "K1", "K3"]}
     onboard_eth1:   # Ethernet PHY U13 (RTL8211FD, RGMII, port 1)
       source: {doc: ch75_v8, where: Gigabit PHYs table (U13 column); U13 also sources the 25 MHz clock - do not hold it in reset}
-      device: {"name": "Ethernet PHY U13 (RTL8211FD, RGMII, port 1)", "kind": "ethernet"}
+      device: {"name": "Ethernet PHY U13 (RTL8211FD, RGMII, port 1)", "kind": "ethernet", "id": "realtek_rtl8211fd"}
       shares: ["onboard_eth0"]   # the board multiplexes these pins
       pins: {"rst_n": "R6", "mdc": "R5", "mdio": "T4", "txc": "J16", "tx_ctl": "K14", "txd": ["K16", "J15", "J14", "K15"], "rxc": "M16", "rx_ctl": "P16", "rxd": ["M15", "R16", "L15", "L16"]}
     onboard_config:   # sysCONFIG resistor pads (PROGRAMN R9, CFG_1 P10, INITN T9, DONE P9)

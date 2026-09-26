@@ -33,6 +33,11 @@ Board:
   - fan_header
   devices:
   - microsd_socket_generic
+  - worldsemi_ws2812
+  - bouffalo_bl616
+  - ruimeng_ms5351m
+  - realtek_rtl8211f
+  - princeton_pt8211
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -236,11 +241,11 @@ Board:
       device: {"name": "Configuration mode / CFGBVS pins (dock mode resistors)", "kind": "other"}
       pins: {"mode0": "AB7", "mode1": "Y9", "mode2": "W9", "cfgbvs": "AB15"}
     onboard_ws2812:   # WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)
-      device: {"name": "WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)", "kind": "ws2812"}
+      device: {"name": "WS2812B-2020 RGB LED + aRGB strip connector (chained from its DOUT)", "kind": "ws2812", "id": "worldsemi_ws2812"}
       pins: {"din": "H16"}
     onboard_uart:   # BL616 USB-JTAG & UART (USB-C), debug UART
       source: {doc: dock_f3, where: 'p.6 USB_JTAG: N16,3 DBG_UART.RX -> R95 -> BL616_TX; P15,3 DBG_UART.TX -> BL616_RX; JTAG.TMS H11, TCK H12, TDO J10, TDI H10 (bank 10); som4071 N16_FPGA_RXD / P15_FPGA_TXD; litex serial rx N16 tx P15'}
-      device: {"name": "BL616 USB-JTAG & UART (USB-C), debug UART", "kind": "uart"}
+      device: {"name": "BL616 USB-JTAG & UART (USB-C), debug UART", "kind": "uart", "id": "bouffalo_bl616"}
       shares: ["jtag"]   # the board multiplexes these pins
       pins: {"rx": "N16", "tx": "P15", "jtag_tck": "H12", "jtag_tms": "H11", "jtag_tdi": "H10", "jtag_tdo": "J10"}
     onboard_sfp_0:   # SFP+ cage 0 (SerDes Q1 lane 0)
@@ -259,11 +264,11 @@ Board:
       device: {"name": "Q0 REFCLK1 external clock input (IPEX J1/J2)", "kind": "clock"}
       pins: {"q0_refclk1": "E13,F13"}
     onboard_clocks_2:   # MS5351M clock synthesizers PLL0/PLL1 (25 MHz crystals; SerDes refclks, user clock)
-      device: {"name": "MS5351M clock synthesizers PLL0/PLL1 (25 MHz crystals; SerDes refclks, user clock)", "kind": "clock"}
+      device: {"name": "MS5351M clock synthesizers PLL0/PLL1 (25 MHz crystals; SerDes refclks, user clock)", "kind": "clock", "id": "ruimeng_ms5351m"}
       shares: ["onboard_m2", "onboard_sfp_0", "onboard_sfp_1"]   # the board multiplexes these pins
       pins: {"q1_refclk1_pll0": "AA13,AB13", "q1_refclk0_pll1": "AA11,AB11", "usr_clk_in_pll1_clk2": "N22"}
     onboard_ethernet:   # RTL8211FI-CG Gigabit Ethernet PHY (RGMII) + RJ45
-      device: {"name": "RTL8211FI-CG Gigabit Ethernet PHY (RGMII) + RJ45", "kind": "ethernet_rgmii"}
+      device: {"name": "RTL8211FI-CG Gigabit Ethernet PHY (RGMII) + RJ45", "kind": "ethernet_rgmii", "id": "realtek_rtl8211f"}
       pins: {"txd": ["K21", "J21", "L19", "K18"], "tx_ctl": "J24", "tx_clk": "H24", "rxd": ["B26", "C26", "D26", "E26"], "rx_ctl": "C22", "rx_clk": "C23", "mdc": "K23", "mdio": "K22", "rst_n": "E17", "phy_clk": "E18"}
     onboard_m2:   # M.2 B-key socket J18 (2230/2242, SerDes Q1 lanes 2-3)
       device: {"name": "M.2 B-key socket J18 (2230/2242, SerDes Q1 lanes 2-3)", "kind": "serdes"}
@@ -273,7 +278,7 @@ Board:
       device: {"name": "microSD card slot J19 (SDIO)", "kind": "sdcard"}
       pins: {"clk": "D23", "cmd": "D24", "d0": "H23", "d1": "J23", "d2": "A25", "d3": "B25", "det": "J15"}
     onboard_audio_dac:   # PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30
-      device: {"name": "PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30", "kind": "audio_dac"}
+      device: {"name": "PT8211-S stereo DAC (I2S) + XPT4809 speaker amp, 3.5 mm jack J29, speaker J30", "kind": "audio_dac", "id": "princeton_pt8211"}
       model_params: {"align_right": 1, "offset_by_one_cycle": 0}   # PT8211: LSB-justified input
       pins: {"bck": "E22", "ws": "F24", "din": "G24", "pa_en": "H17"}
     onboard_camera_dvp:   # DVP camera connector (FPC 24P, OV5640-style)

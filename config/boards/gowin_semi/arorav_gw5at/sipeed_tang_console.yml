@@ -40,6 +40,8 @@ Board:
   devices:
   - microsd_socket_generic
   - maxim_max98357
+  - ruimeng_ms5351m
+  - micron_mt41j256m16
   documents:
   - id: sch60c
     title: Tang_60K_Console_V32001C schematic (Rev 1.3, 2025-04-24; KiCad)
@@ -174,7 +176,7 @@ Board:
       pins:
         pin: P21
     onboard_clk_gen:   # MS5351M programmable clock generator (25 MHz crystal)
-      device: {"name": "MS5351M programmable clock generator (25 MHz crystal)", "kind": "clock"}
+      device: {"name": "MS5351M programmable clock generator (25 MHz crystal)", "kind": "clock", "id": "ruimeng_ms5351m"}
       shares: ["onboard_hdmi", "onboard_serdes_q0"]   # the board multiplexes these pins
       pins: {"usr_clk_in": "V10", "q0_refclk1": "F10,E10", "i2c_scl": "M13", "i2c_sda": "L13"}
     onboard_serdes_q0:   # SerDes quad Q0 (GW5AT transceiver lanes on BTB J1)
@@ -186,7 +188,7 @@ Board:
       shares: ["onboard_serdes_q0", "pcie_rst_n", "pcie_wake_n"]   # the board multiplexes these pins
       pins: {"refclk": "F6,E6", "tx0": "A4,B4", "rx0": "B8,A8", "clkreq_n": "AA14", "wake_n": "T14", "perst_n": "W11"}
     onboard_ddr3:   # DDR3 SDRAM on the SOM (60K: one MT41J256M16 16-bit; 138K: two chips, 32-bit)
-      device: {"name": "DDR3 SDRAM on the SOM (60K: one MT41J256M16 16-bit; 138K: two chips, 32-bit)", "kind": "ddr3"}
+      device: {"name": "DDR3 SDRAM on the SOM (60K: one MT41J256M16 16-bit; 138K: two chips, 32-bit)", "kind": "ddr3", "id": "micron_mt41j256m16"}
       iostandard: "SSTL15 (cst60: SSTL15_I, BANK_VCCIO=1.5)"
       pins: {"a": ["M1", "K2", "G2", "J4", "J2", "H2", "G3", "J1", "J5", "H5", "L1", "H3", "K4", "K1", "D1", "R1"], "ba": ["P5", "P2", "M6"], "cs_n": "P4", "ras_n": "L5", "cas_n": "L4", "we_n": "M5", "cke": "K6", "odt": "M2", "reset_n": "L6", "ck": "L3,K3", "dq": ["Y4", "AB3", "AA5", "V4", "AA1", "AB2", "AB5", "AB1", "AA8", "Y8", "AB7", "Y7", "AB8", "W9", "AB6", "Y9"], "dm": ["AA4", "V7"], "dqs": ["Y3,AA3", "V9,V8"]}
     onboard_buttons:   # User buttons S1, S2 (EX_KEY)

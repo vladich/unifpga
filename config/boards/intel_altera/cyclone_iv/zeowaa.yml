@@ -20,6 +20,8 @@ Board:
   - spi_flash
   devices:
   - micron_m25p16
+  - lcd_char_16x2
+  - microchip_at24c04
   documents:
   - id: sch
     title: A-C4E6 schematic with MAX232 (SP6-X9-SCH, dated 27-Sep-2015, www.21eda.net 'ALTERA Cyclone IV Board')
@@ -85,13 +87,13 @@ Board:
       device: {"name": "PS/2 connector", "kind": "ps2"}
       pins: {"data": "10", "clk": "11"}
     onboard_lcd:   # LCD1602 / LCD12864 socket (20-pin)
-      device: {"name": "LCD1602 / LCD12864 socket (20-pin)", "kind": "lcd"}
+      device: {"name": "LCD1602 / LCD12864 socket (20-pin)", "kind": "lcd", "id": "lcd_char_16x2"}
       pins: {"rs": "85", "rw": "99", "en": "100", "d": ["101", "103", "104", "105", "106", "110", "111", "112"]}
     onboard_buzzer:   # BELL buzzer (PNP Q70)
       device: {"name": "BELL buzzer (PNP Q70)", "kind": "buzzer"}
       pins: {"buzzer": "141"}
     onboard_eeprom:   # AT24C04 EEPROM U4A
-      device: {"name": "AT24C04 EEPROM U4A", "kind": "eeprom"}
+      device: {"name": "AT24C04 EEPROM U4A", "kind": "eeprom", "id": "microchip_at24c04"}
       pins: {"scl": "7", "sda": "3"}
     onboard_flash:   # M25P16 serial configuration flash U4
       device: {"name": "M25P16 serial configuration flash U4", "kind": "flash", "id": "micron_m25p16"}

@@ -31,6 +31,7 @@ Board:
   - dip_switch_generic
   - adi_adxl345
   - ti_adc128s022
+  - intel_epcs64
   documents:
   - id: manual
     title: DE0-Nano User Manual (Terasic)
@@ -110,7 +111,7 @@ Board:
       pins: {"G_SENSOR_INT": "M2", "G_SENSOR_CS_N": "G5", "I2C_SCLK": "F2", "I2C_SDAT": "F1"}
     onboard_epcs:   # Serial configuration flash (EPCS64)
       source: {doc: litex, where: 'epcs (data0, dclk, ncs0, asd0)'}
-      device: {"name": "Serial configuration flash (EPCS64)", "kind": "flash"}
+      device: {"name": "Serial configuration flash (EPCS64)", "kind": "flash", "id": "intel_epcs64"}
       iostandard: "3.3-V LVTTL"
       pins: {"EPCS_DATA0": "H2", "EPCS_DCLK": "H1", "EPCS_NCSO": "D2", "EPCS_ASDO": "C1"}
   # ---- drawn: headers and parts; ./unifpga layout draft de0_nano regenerates from here on ----

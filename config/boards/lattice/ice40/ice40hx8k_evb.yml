@@ -18,6 +18,8 @@ Board:
   features:
   - sram
   - spi_flash
+  devices:
+  - samsung_k6r4016v1d
   documents:
   - id: ol_net
     title: Olimex iCE40HX8K-EVB Rev B1 KiCad netlist
@@ -78,7 +80,7 @@ Board:
         b: [F3, G3, E2, H5]
     onboard_sram:   # SRAM U5 K6R4016V1D (256K x 16, 10 ns)
       source: {doc: ol_net, where: 'nets /SA0../SA17, /SD0../SD15, /SRAM_#CS (T6), /SRAM_#OE (L9), /SRAM_#WE (T7); BLE#/BHE# are not on FPGA nets'}
-      device: {"name": "SRAM U5 K6R4016V1D (256K x 16, 10 ns)", "kind": "sram"}
+      device: {"name": "SRAM U5 K6R4016V1D (256K x 16, 10 ns)", "kind": "sram", "id": "samsung_k6r4016v1d"}
       pins: {"a": ["N6", "T1", "P4", "R2", "N5", "T2", "P5", "R3", "R5", "T3", "R4", "M7", "N7", "P6", "M8", "T5", "R6", "P8"], "d": ["T8", "P7", "N9", "T9", "M9", "R9", "K9", "P9", "R10", "L10", "P10", "N10", "T10", "T11", "T15", "T14"], "cs_n": "T6", "oe_n": "L9", "we_n": "T7"}
     onboard_serial_flash:   # SPI flash U1 (EN25Q16B or W25Q16JV, 2 MB, configuration)
       source: {doc: ol_net, where: 'nets /iCE40-SCK R11, /iCE40-SS_B R12 (flash CS via R9), /iCE40-SDO P12 -> U1.5 DI, /iCE40-SDI P11 <- U1.2 DO'}

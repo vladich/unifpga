@@ -21,6 +21,8 @@ Board:
   - spi_flash
   - microsd_socket
   - spi_lcd
+  devices:
+  - xtx_xt25b32
   documents:
   - id: som
     title: Tang Primer 20K SOM 3961 schematic (KiCad title Tang_primer_20K_3691, Rev 1.2, 2022-09-01, 1 sheet)
@@ -141,7 +143,7 @@ Board:
       pins: {"a": ["F7", "A4", "D6", "F8", "C4", "E6", "B1", "D8", "A5", "F9", "K3", "B7", "A3", "C8"], "ba": ["H4", "D3", "H5"], "ras_n": "R4", "cas_n": "R6", "we_n": "L2", "cs_n": "P5", "dm": ["G1", "K5"], "dq": ["G5", "F5", "F4", "F3", "E2", "C1", "E1", "B3", "M3", "K4", "N2", "L1", "P4", "H3", "R1", "M2"], "dqs": ["G2,G3", "J5,K6"], "ck": "J1,J3", "cke": "J2", "odt": "R3", "reset_n": "B9"}
     onboard_flash:   # SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)
       source: {doc: som, where: 'U9 XT25B32: ~CS <- M9_IOR34A_FLASH_SPI_~CS (MCS_N), CLK <- L10_IOR34B (MCLK), IO1/DO -> P10_IOR33A (MI), IO0/DI <- R10_IOR33B (MO); WP/HOLD pulled up 4.7K'}
-      device: {"name": "SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)", "kind": "flash"}
+      device: {"name": "SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)", "kind": "flash", "id": "xtx_xt25b32"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "M9", "clk": "L10", "miso": "P10", "mosi": "R10"}
     onboard_sdcard:   # microSD card slot J2 (SDIO, push-pull)

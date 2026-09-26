@@ -18,6 +18,7 @@ Board:
   - microsd_socket
   devices:
   - microsd_socket_generic
+  - bouffalo_bl702
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -186,7 +187,7 @@ Board:
         d_p: ["71,70", "73,72", "75,74"]
         d_n: ["70", "72", "74"]
     onboard_fpga_jtag:   # BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)
-      device: {"name": "BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)", "kind": "other"}
+      device: {"name": "BL702 USB-JTAG to FPGA JTAG (and RECONFIG_N / MODE pins)", "kind": "other", "id": "bouffalo_bl702"}
       shares: ["onboard_buttons"]   # the board multiplexes these pins
       pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8", "reconfig_n": "9", "mode0": "88", "mode1": "87", "jtagsel_n": "4"}
     header_j5:   # 2x24 pin header J5 (2.54 mm pads, one side of the board)

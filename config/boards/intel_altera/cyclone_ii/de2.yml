@@ -41,6 +41,8 @@ Board:
   - dip_switch_generic
   - seven_seg_module_shared
   - adi_adv7180
+  - davicom_dm9000a
+  - nxp_isp1362
   # Quartus project settings:
   # dual-purpose pin reservation, unused-pin state, device I/O default.
   documents:
@@ -148,7 +150,7 @@ Board:
       pins: {"PS2_CLK": "D26", "PS2_DAT": "C24"}
     onboard_ethernet:   # Fast Ethernet (DM9000A)
       source: {doc: manual, where: 'Table 4.12, p. 47-48'}
-      device: {"name": "Fast Ethernet (DM9000A)", "kind": "ethernet"}
+      device: {"name": "Fast Ethernet (DM9000A)", "kind": "ethernet", "id": "davicom_dm9000a"}
       pins: {"ENET_DATA": ["D17", "C17", "B18", "A18", "B17", "A17", "B16", "B15", "B20", "A20", "C19", "D19", "B19", "A19", "E18", "D18"], "ENET_CLK": "B24", "ENET_CMD": "A21", "ENET_CS_N": "A23", "ENET_INT": "B21", "ENET_RD_N": "A22", "ENET_WR_N": "B22", "ENET_RST_N": "B23"}
     onboard_tv_decoder:   # TV decoder (ADV7180 per manual)
       source: {doc: manual, where: 'Table 4.13, p. 49'}
@@ -156,7 +158,7 @@ Board:
       pins: {"TD_DATA": ["J9", "E8", "H8", "H10", "G9", "F9", "D7", "C7"], "TD_HS": "D5", "TD_VS": "K9", "TD_CLK27": "C16", "TD_RESET": "C4"}
     onboard_usb:   # USB host/device (ISP1362)
       source: {doc: manual, where: 'Table 4.14, p. 51-52'}
-      device: {"name": "USB host/device (ISP1362)", "kind": "usb"}
+      device: {"name": "USB host/device (ISP1362)", "kind": "usb", "id": "nxp_isp1362"}
       pins: {"OTG_ADDR": ["K7", "F2"], "OTG_DATA": ["F4", "D2", "D1", "F7", "J5", "J8", "J7", "H6", "E2", "E1", "K6", "K5", "G4", "G3", "J6", "K8"], "OTG_CS_N": "F1", "OTG_RD_N": "G2", "OTG_WR_N": "G1", "OTG_RST_N": "G5", "OTG_INT": ["B3", "C3"], "OTG_DACK0_N": "C2", "OTG_DACK1_N": "B2", "OTG_DREQ": ["F6", "E5"], "OTG_FSPEED": "F3", "OTG_LSPEED": "G6"}
     onboard_irda:   # IrDA transceiver
       source: {doc: manual, where: 'Table 4.15, p. 52'}
