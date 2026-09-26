@@ -281,7 +281,7 @@ def read_kinds():
     """config/kinds.yml: the kinds a board's banks give their devices (the
     inventory's taxonomy: leds, sdcard, flash, ...), each with the features a
     board with such a bank lists one of. {kind: entry}."""
-    return _registry("kinds.yml", "Kinds", "kind")
+    return _registry("kinds.yml", "Kinds", "kind", key="kind")
 
 
 def read_design_top():

@@ -30,19 +30,11 @@
           "items": { "$ref": "#/$defs/versioned_ref" }
         },
         "chips": {
+          "description": "The family's chips; each record is a chip (chip.schema.json, applied to every record by the check)",
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/chip" }
+          "items": { "type": "object" }
         }
-      }
-    },
-    "chip": {
-      "type": "object",
-      "required": ["id"],
-      "additionalProperties": false,
-      "properties": {
-        "id": { "description": "The part number as the vendor writes it", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.+/-]*$" },
-        "toolchains": { "description": "This chip's toolchains when they differ from the family's", "type": "array", "items": { "$ref": "#/$defs/versioned_ref" } }
       }
     }
   }

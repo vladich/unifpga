@@ -75,13 +75,15 @@ def _jsonschema():
     return jsonschema.Draft202012Validator, exceptions.best_match
 
 
-def validators(entities):
-    """{entity: a validator of its schema}; the schemas themselves are checked."""
+def validators(entities, key="schema"):
+    """{entity: a validator of its `schema` (every file) or, with key
+    "record_schema", of the schema every one of its records satisfies}; the
+    schemas themselves are checked."""
     Validator, _best = _jsonschema()
     out = {}
     for name, spec in entities.items():
-        if spec.get("schema"):
-            schema = read_schema(spec["schema"])
+        if spec.get(key):
+            schema = read_schema(spec[key])
             Validator.check_schema(schema)
             out[name] = Validator(schema)
     return out
@@ -276,6 +278,7 @@ def check(documents=None, root=None, repo=REPO, entities=None):
         finding("yaml", path, error)
 
     checked = validators(entities)
+    record_checked = validators(entities, "record_schema")
     _Validator, best_match = _jsonschema()
     records = {name: {} for name in entities}
     summary = {}
@@ -283,8 +286,8 @@ def check(documents=None, root=None, repo=REPO, entities=None):
     for name, spec in entities.items():
         paths = sorted(p for p in documents if _matches(spec["files"], p))
         stored.update(paths)
-        summary[name] = {"files": len(paths), "records": 0, "schema": spec.get("schema")}
-        validator = checked.get(name)
+        summary[name] = {"files": len(paths), "records": 0, "schema": spec.get("schema") or spec.get("record_schema")}
+        validator, record_validator = checked.get(name), record_checked.get(name)
         for path in paths:
             doc = documents[path]
             if validator is not None:
@@ -304,6 +307,11 @@ def check(documents=None, root=None, repo=REPO, entities=None):
                     continue
                 records[name][rec_id] = (path, record)
                 summary[name]["records"] += 1
+                if record_validator is not None:
+                    for error in sorted(record_validator.iter_errors(record), key=lambda e: list(e.absolute_path)):
+                        best = best_match([error])
+                        where = "/".join(str(p) for p in best.absolute_path)
+                        finding("schema", path, "{} {!r}{}: {}".format(name, rec_id, "/" + where if where else "", best.message), name)
         if not paths and spec.get("schema") and spec["files"].startswith("config/"):
             finding("missing_entity", "", "no file of {} ({})".format(name, spec["files"]), name)
     unexamined = sorted(p for p in documents if p not in stored)
@@ -746,6 +754,60 @@ def _toolchain_driver(ctx, entity, rec_id, record, path):
         ctx.fail(path, "toolchain {!r} has operations but no driver toolchains/{}/{}.py".format(rec_id, rec_id, rec_id))
 
 
+@rule("family_directory")
+def _family_directory(ctx, entity, rec_id, record, path):
+    """A family file sits in the directory named after its producer's id:
+    config/chips/<producer>/<family>.yml (and the boards of the family under
+    config/boards/<producer>/<family>/)."""
+    directory = os.path.basename(os.path.dirname(path))
+    if directory != record.get("producer"):
+        ctx.fail(path, "family {!r} is in directory {!r}, not its producer's {!r}".format(rec_id, directory, record.get("producer")))
+
+
+@rule("board_family")
+def _board_family(ctx, entity, rec_id, record, path):
+    """A board's directory config/boards/<producer>/<family>/ names the chip
+    family of its chip — of its first chip variant when the variants span
+    families (the Tang Console: a GW5AST-138 or a GW5AT-60)."""
+    parts = path.split("/")
+    if len(parts) < 4:
+        return
+    producer, family = parts[-3], parts[-2]
+    if ctx.record("family", family) is None:
+        ctx.fail(path, "board {!r}: no chip family config/chips/{}/{}.yml for its directory".format(rec_id, producer, family))
+        return
+    chips = _board_chips(record)
+    if not chips:
+        return
+    cid = chips[0][0]
+    hit = ctx.records.get("chip", {}).get(cid)
+    if hit is None:
+        return                                           # the unknown chip is an unknown_reference already
+    chip_family = os.path.basename(hit[0])[:-4]
+    if chip_family != family:
+        ctx.fail(path, "board {!r}: chip {!r} is of family {!r}, not the directory's {!r}".format(rec_id, cid, chip_family, family))
+
+
+@rule("bank_devices")
+def _bank_devices(ctx, entity, rec_id, record, path):
+    """A bank that names a catalogued device (device.id) names one whose
+    feature the bank's kind implies (config/kinds.yml), unless the kind is
+    `other` (a bank with no kind of its own may still hold a known part)."""
+    kinds = ctx.records.get("kind", {})
+    for bank_name, bank in (record.get("banks") or {}).items():
+        device = bank.get("device") if isinstance(bank, dict) else None
+        if not isinstance(device, dict) or not device.get("id"):
+            continue
+        hit = ctx.record("device", device["id"])
+        kind = kinds.get(device.get("kind"))
+        if hit is None or kind is None or device.get("kind") == "other":
+            continue
+        implied = kind[1].get("features") or []
+        if implied and hit.get("feature") not in implied:
+            ctx.fail(path, "board {!r} bank {}: device {!r} has feature {!r}, which kind {!r} does not imply ({})".format(
+                rec_id, bank_name, device["id"], hit.get("feature"), device.get("kind"), " / ".join(implied)))
+
+
 @rule("design_fileset", needs_repo=True)
 def _design_fileset(ctx, entity, rec_id, record, path):
     from tools import source_set
@@ -776,10 +838,11 @@ def render(report, only=None):
             last = f["path"]
         lines.append("    {}: {}".format(f["code"], f["detail"]))
     without = [n for n, s in report["entities"].items() if not s["schema"]]
-    lines.append("{} finding{} in {} file{}; {} entit{} without a schema yet{}".format(
+    lines.append("{} finding{} in {} file{}{}".format(
         len(findings), "" if len(findings) == 1 else "s", len({f["path"] for f in findings}),
         "" if len({f["path"] for f in findings}) == 1 else "s",
-        len(without), "y" if len(without) == 1 else "ies", ": " + ", ".join(without) if without else ""))
+        "; {} entit{} without a schema yet: {}".format(len(without), "y" if len(without) == 1 else "ies", ", ".join(without))
+        if without else ""))
     if report.get("rules_skipped"):
         lines.append("rules not run without the repository: " + ", ".join(report["rules_skipped"]))
     return "\n".join(lines) + "\n"

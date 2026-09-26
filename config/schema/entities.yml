@@ -110,17 +110,18 @@ Entities:
     relations:
       - {from: producer, to: producer, why: "whose family"}
       - {from: default_toolchains.*, to: toolchain, format: versioned, why: "the builds every chip of the family accepts"}
+      - {rule: family_directory, why: "the file sits in the directory named after its producer's id"}
 
   chip:
     why: >-
-      One chip of a family (the chips list of the family file): the part a
-      board carries and a rig's `part` selects; its toolchains gate the builds.
+      One chip of a family (a record of the chips list of the family file): the
+      part a board carries and a rig's `part` selects; its toolchains gate the
+      builds. Its own table: chip.schema.json is applied to every record.
     files: config/chips/*/*.yml
     root: Family.chips
     records: list
     id: id
-    schema: null
-    no_schema_because: family.schema.json covers the whole family file, chips included
+    record_schema: chip.schema.json
     relations:
       - {from: toolchains.*, to: toolchain, format: versioned, why: "a chip's own builds"}
 
@@ -219,6 +220,9 @@ Entities:
       - {from: features.*, to: feature, why: "catalogue browsing"}
       - {from: devices.*, to: device, why: "catalogue browsing"}
       - {rule: board_kinds, why: "every bank's device kind is one of config/kinds.yml, and the board lists a feature the kind implies"}
+      - {from: banks.*.device.id, to: device, why: "the catalogued part on the bank"}
+      - {rule: bank_devices, why: "a bank's catalogued device has a feature its kind implies"}
+      - {rule: board_family, why: "the board's directory is the chip family of its chip (its first variant when the variants span families)"}
       - {from: parts.*.attach.peripheral, to: peripheral, why: "the driver of a part"}
       - {from: parts.*.variants.*.attach.peripheral, to: peripheral, why: "the driver of a part variant"}
       - {rule: board_drawn, why: "headers are of a connector type of config/connectors.yml or the board's own and sit on its banks; parts bind its banks"}

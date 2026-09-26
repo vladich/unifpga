@@ -354,7 +354,7 @@ intended SKIP, not a failure.
 │   ├── producers.yml          # who makes boards, chips and modules
 │   ├── chips/                 # chip families, one file each
 │   │   ├── xilinx_amd/<family>.yml   # producer, name, chips + default_toolchains[version_constraint]
-│   │   ├── altera_intel/<family>.yml
+│   │   ├── intel_altera/<family>.yml
 │   │   └── ...                # other producers' families
 │   ├── boards/                # boards, one file each, grouped like the chip families
 │   │   ├── xilinx_amd/        # producer dirs
