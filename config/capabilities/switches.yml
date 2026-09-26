@@ -17,7 +17,10 @@ Capability:
 
   primary: width           # summed across providers; what `switches >= N` constrains
   design:
+    comment: Switches (active-high — codegen normalizes polarity)
+
     parameters:
-      w_sw: {value: width, absent: 0}
+      w_sw: {value: width, absent: 0, description: Width of slide-switch bus
+}
     ports:
       sw: {signal: sw, width: w_sw}

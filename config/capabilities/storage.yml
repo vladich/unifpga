@@ -24,8 +24,9 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "block storage"
   design:
+    comment: 'Storage (optional): an SD card read block by block — st_req with st_block while st_ready; then 512 bytes, each one clock of st_valid with st_data, and st_done or st_error; st_present while a card answers'
     parameters:
-      st_blocks: {value: blocks, absent: 0}
+      st_blocks: {value: blocks, absent: 0, description: 'Storage (an SD card): 512-byte blocks, 0 = unknown'}
     ports:
       st_req: {signal: req, width: 1}
       st_block: {signal: block, width: 32}

@@ -26,9 +26,11 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "2^{w_mem_addr} words of {mem_bytes} bytes"
   design:
+    comment: 'Memory (optional): the board''s RAM, 2^w_mem_addr words of mem_bytes bytes; a request (mem_req; mem_we and mem_be for a write) while mem_ready, one clock of mem_ack when it is done, mem_rdata a read''s word'
     parameters:
-      w_mem_addr: {value: addr_bits, absent: 0}
-      mem_bytes: {value: data_bytes, absent: 0}
+      w_mem_addr: {value: addr_bits, absent: 0, description: 'Memory (the board''s RAM): word address bits'}
+      mem_bytes: {value: data_bytes, absent: 0, description: Bytes per memory word
+}
     derived:
       w_mem_data: {multiply: [mem_bytes, 8]}
     ports:

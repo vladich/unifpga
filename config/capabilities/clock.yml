@@ -21,7 +21,9 @@ Capability:
   # order of parameters and ports is design_top_interface.sv's)
   required: true           # every rig needs one (a new setup starts with the board's)
   design:
+    comment: Clock
+
     parameters:
-      clk_mhz: {value: {source: design_clock_mhz}}
+      clk_mhz: {value: {source: design_clock_mhz}, absent: 50, description: "Advertised frequency of `clk` in MHz"}
     ports:
       clk: {signal: clk, width: 1, net: {source: design_clock_net}}

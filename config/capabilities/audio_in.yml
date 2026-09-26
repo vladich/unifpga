@@ -11,6 +11,8 @@ Capability:
   aggregation: exclusive
 
   design:
+    comment: Audio in (24-bit signed mono samples; valid pulses on new sample)
+
     ports:
       mic_sample: {signal: sample, width: 24}
       mic_valid: {signal: valid, width: 1}

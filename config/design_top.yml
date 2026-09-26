@@ -1,0 +1,24 @@
+# The virtual device every design targets: which capabilities put parameters
+# and ports on design_top, in what order, under which headings. What each one
+# puts there is the capability's own `design:` block (config/capabilities/).
+# rtl/peripherals/design_top_interface.sv is rendered from this
+# (./unifpga interface --write; ./unifpga check reports a stale file).
+
+DesignTop:
+  sections:
+    - title: Clock & reset (always present)
+      capabilities: [clock, reset]
+    - title: User input banks (concatenated across providers)
+      capabilities: [switches, buttons]
+    - title: User output banks
+      capabilities: [leds, seven_segment, rgb_leds]
+    - title: "Screen (raster-scan pixel display; 0x0 = no screen)"
+      capabilities: [screen]
+    - title: Audio
+      capabilities: [audio_in, audio_out]
+    - title: Serial console (raw 2-wire UART)
+      capabilities: [serial_console]
+    - title: General-purpose I/O
+      capabilities: [gpio]
+    - title: "Optional capabilities: declare them only when the design uses them (the generated top connects what the design declares)"
+      capabilities: [small_display, text_display, actuators, keyboard, temperature, accelerometer, adc, ir_remote, memory, storage]

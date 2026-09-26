@@ -19,9 +19,12 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "{adc_channels} analog inputs, {adc_mv} mV full scale"
   design:
+    comment: 'Analog inputs (optional): one clock of adc_valid per conversion; adc_value is the 12-bit code of channel adc_channel (mV = value * adc_mv / 4096)'
     parameters:
-      adc_channels: {value: channels, absent: 0}
-      adc_mv: {value: full_scale_mv, absent: 0}
+      adc_channels: {value: channels, absent: 0, description: Analog inputs (A/D converter channels)
+}
+      adc_mv: {value: full_scale_mv, absent: 0, description: Their full scale in millivolts (code 4096)
+}
     ports:
       adc_valid: {signal: valid, width: 1}
       adc_channel: {signal: channel, width: 4}

@@ -21,10 +21,12 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "{sd_width}×{sd_height}, {w_sd_pixel} bit"
   design:
+    comment: 'Small display (optional): the driver fetches the pixel at (sd_x, sd_y) one clock after presenting it'
     parameters:
-      sd_width: {value: width, absent: 0}
+      sd_width: {value: width, absent: 0, description: "Small display (SSD1306 OLED ...), pixels"}
       sd_height: {value: height, absent: 0}
-      w_sd_pixel: {value: bits, absent: 1}
+      w_sd_pixel: {value: bits, absent: 1, description: Bits per small-display pixel
+}
     derived:
       w_sd_x: {clog2: sd_width}
       w_sd_y: {clog2: sd_height}

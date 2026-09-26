@@ -13,5 +13,7 @@ Capability:
   aggregation: broadcast
 
   design:
+    comment: Audio out (16-bit signed mono samples; one per cycle)
+
     ports:
       sound: {signal: sample, width: 16}

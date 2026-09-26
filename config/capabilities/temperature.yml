@@ -14,6 +14,7 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "temperature readings"
   design:
+    comment: 'Temperature (optional): one clock of temp_valid per new reading; temp is two''s complement in 1/16 degrees Celsius (400 = 25.0 C)'
     ports:
       temp_valid: {signal: valid, width: 1}
       temp: {signal: value, width: 16}

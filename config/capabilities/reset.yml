@@ -26,5 +26,7 @@ Capability:
     tm_key:     {capability: buttons, signal: btn, parts: driver}
 
   design:
+    comment: Reset (active-high)
+
     ports:
       rst: {signal: rst, width: 1, net: {source: reset_net}}

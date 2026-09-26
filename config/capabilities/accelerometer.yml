@@ -15,6 +15,7 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "acceleration readings"
   design:
+    comment: 'Accelerometer (optional): one clock of acc_valid per new set of readings; each axis two''s complement in milli-g'
     ports:
       acc_valid: {signal: valid, width: 1}
       acc_x: {signal: x, width: 16}

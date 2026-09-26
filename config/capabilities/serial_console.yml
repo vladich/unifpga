@@ -17,7 +17,9 @@ Capability:
   aggregation: exclusive
 
   design:
+    comment: Serial console (raw 2-wire UART)
+
     ports:
       # no console: the idle line, or the configuration's `uart_rx: 0`
       uart_rx: {signal: rx, width: 1, absent: {source: uart_rx_idle}}
-      uart_tx: {signal: tx, width: 1}
+      uart_tx: {signal: tx, width: 1, idle: "1'b1"}   # idle high

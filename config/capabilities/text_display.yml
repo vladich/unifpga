@@ -19,8 +19,10 @@ Capability:
   optional: true
   summary: "{txt_columns}×{txt_rows} characters"
   design:
+    comment: 'Character display (optional): the character code at (txt_col, txt_row), fetched one clock after the position'
     parameters:
-      txt_columns: {value: columns, absent: 0}
+      txt_columns: {value: columns, absent: 0, description: Character display (HD44780 LCD ...)
+}
       txt_rows: {value: rows, absent: 0}
     derived:
       w_txt_col: {clog2: txt_columns}

@@ -16,8 +16,11 @@ Capability:
 
   primary: count
   design:
+    comment: RGB LEDs (active-high)
+
     parameters:
-      w_rgb_led: {value: count, absent: 0}
+      w_rgb_led: {value: count, absent: 0, description: Number of RGB LEDs
+}
     ports:
       rgb_r: {signal: r, width: w_rgb_led}
       rgb_g: {signal: g, width: w_rgb_led}

@@ -19,7 +19,7 @@ Capability:
   optional: true
   design:
     parameters:
-      w_act: {value: count, absent: 0}
+      w_act: {value: count, absent: 0, description: "Actuators (relays, servos, PWM outputs)"}
     derived:
       w_act_level: {multiply: [w_act, 8]}
     ports:

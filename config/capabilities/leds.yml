@@ -16,7 +16,10 @@ Capability:
 
   primary: width
   design:
+    comment: LEDs (active-high)
+
     parameters:
-      w_led: {value: width, absent: 0}
+      w_led: {value: width, absent: 0, description: Width of single-colour LED bus
+}
     ports:
       led: {signal: led, width: w_led}

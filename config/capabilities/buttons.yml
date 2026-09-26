@@ -15,7 +15,10 @@ Capability:
 
   primary: width
   design:
+    comment: Buttons (active-high — codegen normalizes polarity)
+
     parameters:
-      w_btn: {value: width, absent: 0}
+      w_btn: {value: width, absent: 0, description: Width of push-button bus
+}
     ports:
       btn: {signal: btn, width: w_btn}

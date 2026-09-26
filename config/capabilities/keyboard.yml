@@ -14,6 +14,7 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "key events"
   design:
+    comment: 'Keyboard (optional): one clock of kbd_valid per key event; kbd_key is the key''s USB HID usage code (A = 8''h04, Enter = 8''h28), kbd_down 1 pressed'
     ports:
       kbd_valid: {signal: valid, width: 1}
       kbd_key: {signal: key, width: 8}

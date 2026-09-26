@@ -15,6 +15,7 @@ Capability:
   optional: true           # reaches design_top only when the design declares its ports
   summary: "infrared remote keys"
   design:
+    comment: 'Infrared remote (optional): one clock of ir_valid per key press (NEC: the remote''s address, the key''s command byte), ir_repeat while held'
     ports:
       ir_valid: {signal: valid, width: 1}
       ir_address: {signal: address, width: 16}

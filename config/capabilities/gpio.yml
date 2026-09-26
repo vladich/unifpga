@@ -17,9 +17,12 @@ Capability:
   primary: width
   passthrough: gpio_header # the peripheral a setup's `gpio: <connector>` attaches
   design:
+    comment: General-purpose I/O
+
     parameters:
       # without a provider: the configuration's design_width.gpio (the design's w_gpio)
-      w_gpio: {value: width, absent: {source: design_width}}
+      w_gpio: {value: width, absent: {source: design_width}, description: Generic bidirectional pin bank
+}
     ports:
       # straight to the pin nets (inout), also without a provider (design_width)
       gpio: {signal: io, width: w_gpio, net: {source: gpio_connection}}
