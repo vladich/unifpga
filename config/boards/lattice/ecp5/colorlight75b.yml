@@ -13,6 +13,9 @@ Board:
   bridges:
   - ft2232h-jtag
   programmer: ecpprog
+  features:
+  - sdr_sdram
+  - ethernet_phy_gigabit
   defaults:
     iostandard: LVCMOS33
 

@@ -20,6 +20,11 @@ Board:
   - usb_jtag_bridge
   - user_buttons
   - user_leds
+  - ethernet_phy_gigabit
+  - seven_segment_display
+  - vga_output
+  - microsd_socket
+  - pmod_connector
   devices:
   - micron_mt41k128m16
   - cypress_s25fl128s

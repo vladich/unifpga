@@ -13,6 +13,11 @@ Board:
   bridges:
   - jtag
   programmer: quartus_pgm
+  features:
+  - ps2_port
+  - buzzer
+  - eeprom_chip
+  - spi_flash
   defaults:
     iostandard: 3.3-V LVTTL
 

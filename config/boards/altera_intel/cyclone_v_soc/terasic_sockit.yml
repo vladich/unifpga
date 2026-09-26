@@ -27,6 +27,7 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - qspi_flash
   devices:
   - micron_mt41k256m16
   - adi_ssm2603

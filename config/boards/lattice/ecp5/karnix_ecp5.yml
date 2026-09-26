@@ -14,6 +14,14 @@ Board:
   bridges:
   - ft2232h-jtag
   programmer: ecpprog
+  features:
+  - sram
+  - ethernet_phy_10_100
+  - hdmi_output
+  - adc_chip
+  - audio_codec
+  - eeprom_chip
+  - spi_flash
   defaults:
     iostandard: LVCMOS33
 

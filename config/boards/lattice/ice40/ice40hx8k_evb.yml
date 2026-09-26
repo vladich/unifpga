@@ -15,6 +15,9 @@ Board:
   - jtag
   programmer: iceprog
   # yosys synth flags.
+  features:
+  - sram
+  - spi_flash
   toolchain_options:
     yosys:
       synth_options: [dsp, noabc9]

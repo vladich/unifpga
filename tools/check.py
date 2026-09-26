@@ -479,6 +479,12 @@ def _peripheral_refs(ctx, entity, rec_id, record, path):
     for sig in record.get("pin_fit") or {}:
         if sig not in names:
             bad("pin_fit.{} is not one of its signals".format(sig))
+    kinds = ctx.records.get("kind", {})
+    models = record.get("models") or {}
+    model_kinds = models.get("kind") if isinstance(models, dict) else None
+    for kind in (model_kinds if isinstance(model_kinds, list) else [model_kinds] if model_kinds else []):
+        if kinds and kind not in kinds:
+            bad("models: kind {!r} is not one of config/kinds.yml".format(kind))
     for clock in record.get("clocks") or []:
         if clock.get("from") and clock["from"] not in clocks:
             bad("clock {}: from {} is not one of its clocks".format(clock.get("name"), clock["from"]))
@@ -487,6 +493,40 @@ def _peripheral_refs(ctx, entity, rec_id, record, path):
                 bad("clock {}: when.{} is not one of its parameters".format(clock.get("name"), k))
         if isinstance(clock.get("mhz"), str) and clock["mhz"][1:] not in params:
             bad("clock {}: mhz {} is not one of its parameters".format(clock.get("name"), clock["mhz"]))
+
+
+@rule("board_kinds")
+def _board_kinds(ctx, entity, rec_id, record, path):
+    """Every bank's device kind is a kind of config/kinds.yml; the board lists
+    one of the features the kind implies."""
+    kinds = ctx.records.get("kind", {})
+    if not kinds:
+        return
+    listed = set(record.get("features") or [])
+    missing = {}
+    for bank_name, bank in (record.get("banks") or {}).items():
+        device = bank.get("device") if isinstance(bank, dict) else None
+        if not isinstance(device, dict):
+            continue
+        kind = device.get("kind")
+        if kind not in kinds:
+            ctx.fail(path, "board {!r} bank {}: device kind {!r} is not one of config/kinds.yml".format(rec_id, bank_name, kind))
+            continue
+        implied = kinds[kind][1].get("features") or []
+        if implied and not listed & set(implied):
+            missing.setdefault((kind, tuple(implied)), []).append(bank_name)
+    for (kind, implied), banks in sorted(missing.items()):
+        ctx.fail(path, "board {!r}: bank{} {} ({}) impl{} one of the features {}, none is listed".format(
+            rec_id, "s" if len(banks) > 1 else "", ", ".join(banks), kind, "y" if len(banks) > 1 else "ies", " / ".join(implied)))
+
+
+@rule("producer_names_unique")
+def _producer_names_unique(ctx, entity, rec_id, record, path):
+    """A producer's Name and AKAs name no other producer."""
+    for name in [record.get("Name")] + list(record.get("AKA") or []):
+        for other_id, (_p, other) in ctx.records.get("producer", {}).items():
+            if other_id != rec_id and isinstance(other, dict) and name in [other.get("Name"), other_id] + list(other.get("AKA") or []):
+                ctx.fail(path, "producer {!r}: {!r} also names producer {!r}".format(rec_id, name, other_id))
 
 
 @rule("peripheral_driver_files", needs_repo=True)

@@ -23,6 +23,7 @@ Board:
   - usb_jtag_bridge
   - user_buttons
   - user_leds
+  - pmod_connector
   devices:
   - cypress_s25fl128s
   - ftdi_ft2232h

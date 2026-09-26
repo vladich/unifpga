@@ -22,6 +22,7 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - ps2_port
   devices:
   - winbond_w9825g6kh
   - vga666_resistor_dac

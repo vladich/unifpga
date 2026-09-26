@@ -27,6 +27,8 @@ Board:
   - usb_jtag_bridge
   - user_buttons
   - user_leds
+  - hdmi_input
+  - pmod_connector
   devices:
   - cypress_s25fl128s
   - micron_mt41k256m16

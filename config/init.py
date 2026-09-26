@@ -149,19 +149,19 @@ def _load_yaml_dir(subdir, root_key, id_key, *, base=None, missing_ok=False):
     return out
 
 
-def _unique_catalog(items, source, kind):
+def _unique_catalog(items, source, kind, key="Id"):
     """Index a single-file registry without losing malformed or repeated IDs."""
     if not isinstance(items, list):
         raise ConfigError("{}: {} must be a list".format(source, kind))
     out = {}
     for ordinal, item in enumerate(items, 1):
-        if (not isinstance(item, dict) or not isinstance(item.get("Id"), str) or
-                not item["Id"].strip()):
-            raise ConfigError("{}: {} item {} needs a nonempty string Id".format(
-                source, kind, ordinal))
-        if item["Id"] in out:
-            raise ConfigError("{}: duplicate {} Id {!r}".format(source, kind, item["Id"]))
-        out[item["Id"]] = item
+        if (not isinstance(item, dict) or not isinstance(item.get(key), str) or
+                not item[key].strip()):
+            raise ConfigError("{}: {} item {} needs a nonempty string {}".format(
+                source, kind, ordinal, key))
+        if item[key] in out:
+            raise ConfigError("{}: duplicate {} {} {!r}".format(source, kind, key, item[key]))
+        out[item[key]] = item
     return out
 
 
@@ -289,125 +289,32 @@ def read_board_producers_name_index():
     return idx
 
 
-def validate_board_producers(catalog=None, producers=None):
-    """Verify every board's `BoardProducer:` field references a known
-    producer Id (or, transitionally, a Name / AKA that resolves to one).
-
-    Returns the list of unresolved BoardProducer references — empty list
-    means clean. Useful as a CI gate after editing board catalogs."""
-    if catalog is None:
-        catalog = read_boards_catalog()
-    if producers is None:
-        producers = read_board_producers()
-    idx = read_board_producers_name_index()
-    unresolved = []
-    for bid, b in catalog.items():
-        bp = b.get("BoardProducer")
-        if bp is None:
-            continue
-        if bp not in idx:
-            unresolved.append((bid, bp))
-    return unresolved
+def _registry(name, root, kind, key="id"):
+    """{id: entry} of a single-file registry config/<name>, its entries under
+    `root`, identified by `key`."""
+    path = os.path.join(dir_path, name)
+    return _unique_catalog(_load_yaml(path, root), path, kind, key=key)
 
 
 def read_features():
-    """Read the abstract feature-family registry from features.yml.
-
-    A feature is an abstract family of hardware (e.g. "audio_codec",
-    "ethernet_phy_gigabit", "seven_segment_display") that a board may
-    declare. Each feature optionally maps to one or more Capabilities
-    (config/capabilities/*.yml) that a device of that family could
-    provide to a design.
-
-    Returns {feature_id: feature_info}."""
-    items = _load_yaml(os.path.join(dir_path, "features.yml"), "Features")
-    return _unique_catalog(items, os.path.join(dir_path, "features.yml"), "Feature")
+    """config/features.yml: the browsable classes of hardware a board may list
+    (user_leds, hdmi_output, sdr_sdram, ...), each with the capabilities a
+    device of that class can provide. {id: feature}."""
+    return _registry("features.yml", "Features", "feature")
 
 
-# Back-compat alias for callers still using the old name.
-def read_board_features():
-    return read_features()
+def read_kinds():
+    """config/kinds.yml: the kinds a board's banks give their devices (the
+    inventory's taxonomy: leds, sdcard, flash, ...), each with the features a
+    board with such a bank lists one of. {kind: entry}."""
+    return _registry("kinds.yml", "Kinds", "kind")
 
 
-def read_peripheral_devices():
-    """Read the specific peripheral devices registry from peripheral_devices.yml.
-
-    A device is a specific physical chip/module (e.g. "TI TLV320AIC23B"
-    audio codec, "Realtek RTL8211FD" Ethernet PHY). Each device tags itself
-    with one Feature (the abstract family it belongs to) and optionally
-    links to one or more PeripheralDrivers in config/peripherals/.
-
-    Returns {device_id: device_info}."""
-    items = _load_yaml(os.path.join(dir_path, "peripheral_devices.yml"), "Devices")
-    return _unique_catalog(items, os.path.join(dir_path, "peripheral_devices.yml"), "Device")
-
-
-def validate_board_features(catalog=None, features=None):
-    """Warn when a board's `Features:` references an unknown feature Id.
-
-    Returns a list of (board_id, unknown_feature) tuples. Empty list
-    means clean. Features are optional on boards; this validator only
-    flags tokens that aren't registered in features.yml."""
-    if catalog is None:
-        catalog = read_boards_catalog()
-    if features is None:
-        features = read_features()
-    unknown = []
-    for bid, b in catalog.items():
-        for tok in (b.get("Features") or []):
-            if tok not in features:
-                unknown.append((bid, tok))
-    return unknown
-
-
-def validate_peripheral_devices(devices=None, features=None, peripherals=None):
-    """Validate every device entry has a valid Feature reference and that
-    each PeripheralDrivers entry resolves.
-
-    Returns a dict with two keys:
-      - "unknown_features": [(device_id, feature_ref), ...]
-      - "unknown_peripherals": [(device_id, peripheral_ref), ...]
-    """
-    if devices is None:
-        devices = read_peripheral_devices()
-    if features is None:
-        features = read_features()
-    if peripherals is None:
-        peripherals = read_peripherals()
-    bad_feat = []
-    bad_perif = []
-    for did, d in devices.items():
-        f = d.get("Feature")
-        if f and f not in features:
-            bad_feat.append((did, f))
-        for pref in (d.get("PeripheralDrivers") or []):
-            if pref not in peripherals:
-                bad_perif.append((did, pref))
-    return {"unknown_features": bad_feat, "unknown_peripherals": bad_perif}
-
-
-def validate_board_devices(catalog=None, devices=None):
-    """Verify every Devices entry on every board resolves to a known device Id.
-
-    Returns a list of (board_id, unknown_device_id) tuples; empty list
-    means clean. Devices are optional on boards (population is a slow,
-    research-driven process); this validator only flags entries that
-    reference unknown ids."""
-    if catalog is None:
-        catalog = read_boards_catalog()
-    if devices is None:
-        devices = read_peripheral_devices()
-    unresolved = []
-    for bid, b in catalog.items():
-        for ref in (b.get("Devices") or []):
-            # Devices entries can be plain strings or dicts with {Id, ...}
-            if isinstance(ref, dict):
-                ref_id = ref.get("Id")
-            else:
-                ref_id = ref
-            if ref_id and ref_id not in devices:
-                unresolved.append((bid, ref_id))
-    return unresolved
+def read_devices():
+    """config/devices.yml: named chips and modules (a TLV320AIC23B codec, an
+    RTL8211 PHY), each in one feature class, with the peripherals that drive
+    it. {id: device}."""
+    return _registry("devices.yml", "Devices", "device")
 
 
 def _walk_mezzanine_catalog_files():
@@ -456,59 +363,6 @@ def read_mezzanines_catalog():
                         i=mid, a=catalog[mid]["_registry_path"], b=fam_path))
             catalog[mid] = entry
     return catalog
-
-
-def validate_mezzanines(catalog=None, devices=None, features=None,
-                        chips=None, board_catalog=None, producers=None):
-    """Check every mezzanine entry resolves cleanly.
-
-    Returns a dict:
-      unknown_devices:    [(mid, dev_id), ...]
-      unknown_features:   [(mid, feat_id), ...]
-      unknown_chips:      [(mid, chip_id), ...]   (SoMs only)
-      unknown_producers:  [(mid, prod_slug), ...]
-      unknown_compatible: [(mid, board_id), ...]
-      missing_required:   [(mid, field), ...]
-      bad_type:           [(mid, type), ...]
-    """
-    if catalog        is None: catalog        = read_mezzanines_catalog()
-    if devices        is None: devices        = read_peripheral_devices()
-    if features       is None: features       = read_features()
-    if chips          is None: chips          = read_chips()
-    if board_catalog  is None: board_catalog  = read_boards_catalog()
-    if producers      is None: producers      = read_board_producers()
-
-    # carrier: a board a SoM plugs into (Tang Primer 20K Dock, Enclustra base boards)
-    valid_types = {"mezzanine", "som", "piggyback", "carrier"}
-    out = {k: [] for k in ("unknown_devices", "unknown_features",
-                            "unknown_chips", "unknown_producers",
-                            "unknown_compatible", "missing_required",
-                            "bad_type")}
-    for mid, m in catalog.items():
-        for req in ("Name", "Producer", "Type", "Connector"):
-            if not m.get(req):
-                out["missing_required"].append((mid, req))
-        mtype = m.get("Type")
-        if mtype and mtype not in valid_types:
-            out["bad_type"].append((mid, mtype))
-        prod = m.get("Producer")
-        if prod and prod not in producers:
-            out["unknown_producers"].append((mid, prod))
-        # SoMs must have a Chip; mezzanines/piggybacks shouldn't
-        chip = m.get("Chip")
-        if chip and chip not in chips:
-            out["unknown_chips"].append((mid, chip))
-        for dev in (m.get("Devices") or []):
-            ref = dev["Id"] if isinstance(dev, dict) else dev
-            if ref and ref not in devices:
-                out["unknown_devices"].append((mid, ref))
-        for f in (m.get("Features") or []):
-            if f not in features:
-                out["unknown_features"].append((mid, f))
-        for bref in (m.get("CompatibleBoards") or []):
-            if bref and bref not in board_catalog:
-                out["unknown_compatible"].append((mid, bref))
-    return out
 
 
 # ---------------------------------------------------------------------------

@@ -41,6 +41,13 @@ Board:
   - pmod_connector
   - rgb_leds
   - user_buttons
+  - user_leds
+  - adc_chip
+  - dip_switches
+  - addressable_leds
+  - sdr_sdram
+  - joystick
+  - fan_header
   devices:
   - microsd_socket_generic
   banks:

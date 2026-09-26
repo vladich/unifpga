@@ -29,6 +29,9 @@ Board:
   bridges:
   - jtag
   programmer: openFPGALoader
+  features:
+  - spi_flash
+  - pmod_connector
   verification:
     status: placeholder
   defaults:

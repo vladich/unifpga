@@ -32,6 +32,7 @@ Board:
   - usb_jtag_bridge
   - user_buttons
   - user_leds
+  - spi_flash
   devices:
   - ftdi_ft2232h
   - led_discrete_generic

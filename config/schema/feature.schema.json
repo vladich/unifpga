@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:feature",
+  "title": "Features",
+  "description": "config/features.yml: the browsable classes of hardware a board or mezzanine may list (a class, not a chip), each with the capabilities a device of the class can provide to a design. Board banks imply features through their kinds (config/kinds.yml).",
+  "type": "object",
+  "required": ["Features"],
+  "additionalProperties": false,
+  "properties": {
+    "Features": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/feature" } }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "required": ["id", "name", "category", "description", "capabilities"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "category": { "enum": ["io", "display", "audio", "memory", "storage", "connectivity", "expansion", "sensor", "programming", "power"] },
+        "description": { "type": "string" },
+        "capabilities": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" } }
+      }
+    }
+  }
+}

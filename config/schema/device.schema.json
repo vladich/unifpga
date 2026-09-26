@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:device",
+  "title": "Devices",
+  "description": "config/devices.yml: named chips and modules found on boards, each in one feature class, with the peripherals that drive it. Boards and mezzanines list devices by id.",
+  "type": "object",
+  "required": ["Devices"],
+  "additionalProperties": false,
+  "properties": {
+    "Devices": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/device" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+    "device": {
+      "type": "object",
+      "required": ["id", "name", "manufacturer", "feature", "interface", "peripherals"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "manufacturer": { "type": "string", "minLength": 1 },
+        "part": { "description": "The part number; absent for a commodity part (a discrete LED, a push-button)", "type": "string", "minLength": 1 },
+        "feature": { "$ref": "#/$defs/id" },
+        "interface": { "description": "How it connects: spi, i2c, qspi, rgmii, ddr3, ...", "type": "string", "minLength": 1 },
+        "datasheet": { "type": "string", "pattern": "^https?://" },
+        "peripherals": { "description": "The peripherals (config/peripherals/) that drive it", "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

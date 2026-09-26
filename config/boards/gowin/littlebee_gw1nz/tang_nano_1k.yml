@@ -20,6 +20,9 @@ Board:
   bridges:
   - jtag
   programmer: openFPGALoader
+  features:
+  - hyperram
+  - parallel_lcd
   toolchain_options:
     yosys:
       loader_board: "tangnano1k"          # openFPGALoader -b

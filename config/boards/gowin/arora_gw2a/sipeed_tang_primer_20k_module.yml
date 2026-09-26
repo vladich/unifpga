@@ -15,6 +15,11 @@ Board:
   bridges:
   - jtag
   programmer: openFPGALoader
+  features:
+  - ddr3_memory
+  - spi_flash
+  - microsd_socket
+  - spi_lcd
   banks:
     onboard_clk:   # 27 MHz oscillator U10
       device: {"name": "27 MHz oscillator U10", "kind": "clock"}

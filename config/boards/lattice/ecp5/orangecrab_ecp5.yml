@@ -18,6 +18,9 @@ Board:
   - ft2232h-jtag
   programmer: dfu_util
   bootloader: usb-dfu
+  features:
+  - ddr3_memory
+  - microsd_socket
   defaults:
     iostandard: LVCMOS33
 

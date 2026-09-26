@@ -26,6 +26,8 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - sram
+  - adc_chip
   devices:
   - wolfson_wm8731
   - adi_adv7123

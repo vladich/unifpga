@@ -39,7 +39,8 @@ def _catalogue():
         "boards/maker/family/board.yml": {"Board": {
             "id": "board", "name": "Board", "producer": "maker", "chip": "CHIP-1", "programmer": "prog",
             "features": ["led_feature"], "devices": ["led_device"],
-            "banks": {"leds": {"pins": ["A1", "A2"]}, "j1": {"pins": ["B1", "B2"]}},
+            "banks": {"leds": {"pins": ["A1", "A2"], "device": {"name": "two LEDs", "kind": "leds"}},
+                      "j1": {"pins": ["B1", "B2"], "device": {"name": "J1", "kind": "header"}}},
             "layout": {"verified": False, "generated": True},
             "headers": [{"id": "j1", "type": "pmod_2x6", "label": "J1", "bank": "j1", "pins": {"1": "j1[0]", "2": "j1[1]"}}],
             "parts": [{"id": "leds", "label": "LEDs", "attach": {"peripheral": "led", "bind": {"led": "leds"}, "params": {"width": 2}}}]}},
@@ -76,13 +77,16 @@ def _catalogue():
                                      "use": [{"onboard": "leds"},
                                              {"module": "addon", "plug": {"connector": "j1"}}],
                                      "design": {"reset": {"sources": [{"power_up": True}]}}}},
-        "features.yml": {"Features": [{"Id": "led_feature", "Capabilities": ["leds"]}]},
-        "peripheral_devices.yml": {"Devices": [{"Id": "led_device", "Feature": "led_feature",
-                                                "PeripheralDrivers": ["led"]}]},
-        "board_features.yml": {"Features": []},
-        "mezzanines/maker/family.yml": {"Mezzanines": [{"Id": "som", "Producer": "maker", "Chip": "CHIP-1",
-                                                        "Features": ["led_feature"], "Devices": ["led_device"],
-                                                        "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
+        "features.yml": {"Features": [{"id": "led_feature", "name": "LEDs", "category": "io", "description": "",
+                                        "capabilities": ["leds"]}]},
+        "kinds.yml": {"Kinds": [{"kind": "leds", "description": "LEDs", "features": ["led_feature"]},
+                                {"kind": "header", "description": "A header", "features": []}]},
+        "devices.yml": {"Devices": [{"id": "led_device", "name": "An LED", "manufacturer": "Generic", "part": "LED",
+                                     "feature": "led_feature", "interface": "gpio", "peripherals": ["led"]}]},
+        "mezzanines/maker/family.yml": {"Producer": "maker", "Mezzanines": [{
+            "Id": "som", "Name": "A SoM", "Producer": "maker", "Type": "som", "Connector": "b2b_custom_maker",
+            "Chip": "CHIP-1", "Features": ["led_feature"], "Devices": ["led_device"], "Status": "active",
+            "CompatibleBoards": ["board"], "DefaultCarrier": "board"}]},
         "vendor_constraints.yml": {"VendorConstraints": {"maker": {"board": "Board-Master.xdc"}}},
     }
 
@@ -210,9 +214,15 @@ def test_rules_catch_what_a_reference_cannot():
     documents["setups/rig.yml"]["Setup"]["part"] = "chip-9"
     documents["boards/maker/family/board.yml"]["Board"]["headers"][0]["type"] = "mystery"
     documents["programmers.yml"]["Programmers"][0]["SupportedFamilies"] = [{"Producer": "Maker Inc", "Family": "Other"}]
+    documents["boards/maker/family/board.yml"]["Board"]["features"] = []
+    documents["boards/maker/family/board.yml"]["Board"]["banks"]["j1"]["device"]["kind"] = "mystery"
+    documents["board_producers.yml"]["Producers"].append(dict(documents["board_producers.yml"]["Producers"][0], Id="other", AKA=["Maker"]))
     report = _run(documents)
     assert _codes(report) == {"peripheral_refs", "module_pins", "capability_refs", "rig_reset_sources",
-                              "rig_chip_variant", "board_drawn", "programmer_families"}
+                              "rig_chip_variant", "board_drawn", "programmer_families", "board_kinds", "producer_names_unique"}
+    kinds = _details(report, "board_kinds")
+    assert any("kind 'mystery'" in d for d in kinds) and any("led_feature" in d and "none is listed" in d for d in kinds)
+    assert "'Maker' also names producer" in _details(report, "producer_names_unique")[0]
     refs = _details(report, "peripheral_refs")
     assert len(refs) == 4 and all("blink" in d for d in refs)
     assert any("pin.lamp" in d for d in refs) and any("clock.fast" in d for d in refs)
