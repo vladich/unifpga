@@ -111,21 +111,20 @@ def main(argv=None):
 
     cfg        = resolved["configuration"]
     board      = resolved["board"]
-    pinmap     = resolved["board_pinmap"]
     toolchain  = resolved["toolchain"]
     peripherals = resolved["peripherals"]
 
     target = resolved.get("target") or {"id": cfg["id"], "rig": cfg["id"]}
     log.info("Configuration: %s  (%sboard: %s, toolchain: %s, %d peripherals)",
              target["id"], "" if target["id"] == target["rig"] else "rig " + target["rig"] + ", ",
-             board["Id"], toolchain["id"], len(peripherals))
+             board["id"], toolchain["id"], len(peripherals))
     try:
         config.init.require_toolchain_operation(toolchain, "synthesize")
         if args.program:
             config.init.require_toolchain_operation(toolchain, "program")
         config.init.require_toolchain_version(toolchain)
         if not os.environ.get("UNIFPGA_DRY_RUN"):
-            config.init.require_hardware_readiness(board, pinmap)
+            config.init.require_hardware_readiness(board)
         else:
             log.warning("Dry run only: generated project is not admitted for hardware")
     except config.init.ConfigError as exc:
@@ -186,7 +185,6 @@ def main(argv=None):
             dir=dir_path,
             configuration=cfg,
             board=board,
-            board_pinmap=pinmap,
             toolchain=toolchain,
             peripherals=peripherals,
             top=args.top,
@@ -204,7 +202,6 @@ def main(argv=None):
             log.info("Synthesis succeeded; programming the board.")
             rc = driver.program(
                 board=board,
-                board_pinmap=pinmap,
                 toolchain=toolchain,
                 output=output_folder,
             )

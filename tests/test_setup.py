@@ -35,7 +35,7 @@ def test_setup_expands_to_its_configuration(sid):
 
 
 def test_every_configuration_of_a_laid_out_board_has_a_setup_and_round_trips():
-    boards = set(su.read_layouts())
+    boards = set(su.drawn_boards())
     setups = su.read_setups()
     for cid, cfg in config_init.read_configurations().items():
         if cfg["board"] in boards:
@@ -43,13 +43,12 @@ def test_every_configuration_of_a_laid_out_board_has_a_setup_and_round_trips():
             assert su.check_roundtrip(cfg) == []
 
 
-@pytest.mark.parametrize("board_id", sorted(su.read_layouts()))
+@pytest.mark.parametrize("board_id", sorted(su.drawn_boards()))
 def test_layout_pins_are_distinct_board_pins_on_signal_positions(board_id):
-    layout = su.read_layout(board_id)
-    pinmap = config_init.read_board_pinmap(board_id)
+    layout = su.read_drawn(board_id)
     connectors = su.read_connectors()
     seen = {}
-    for conn in layout["connectors"]:
+    for conn in layout["headers"]:
         ctype = connectors[conn["type"]]
         power = {str(k) for k in (ctype.get("power") or {})}
         numbered = {str(k) for row in ctype.get("rows") or [] for k in row}
@@ -57,18 +56,18 @@ def test_layout_pins_are_distinct_board_pins_on_signal_positions(board_id):
             assert str(key) not in power, (conn["id"], key)
             if numbered:
                 assert str(key) in numbered, (conn["id"], key)
-            pins = [p for _b, p in codegen._bind_pins(pinmap, ref)]
+            pins = [p for _b, p in codegen._bind_pins(layout, ref)]
             assert pins and None not in pins, (conn["id"], key, ref)
-            bank = (pinmap.get("pinBanks") or {}).get(conn.get("bank")) or {}
+            bank = (layout.get("banks") or {}).get(conn.get("bank")) or {}
             for p in pins:
                 if p in seen:
-                    # two connectors on the same FPGA pins only where the pinmap
-                    # says the board multiplexes them (`shares:`)
-                    other = (pinmap.get("pinBanks") or {}).get(seen[p][2]) or {}
+                    # two connectors on the same FPGA pins only where the board
+                    # says it multiplexes them (`shares:`)
+                    other = (layout.get("banks") or {}).get(seen[p][2]) or {}
                     assert seen[p][2] in (bank.get("shares") or []) or conn.get("bank") in (other.get("shares") or []), \
                         "{} is {} and {}".format(p, seen.get(p)[:2], (conn["id"], key))
                 seen.setdefault(p, (conn["id"], key, conn.get("bank")))
-    for o in layout["onboard"]:
+    for o in layout["parts"]:
         for _vid, _label, attach in su.onboard_variants(o):
             assert attach["peripheral"] in config_init.read_peripherals()
 
@@ -89,7 +88,7 @@ def test_plugging_follows_pin_roles_in_either_orientation():
     the header lands power on VCC, ground on GND and signals on signal pins, in
     whichever orientation does that; nothing names a module form."""
     connectors, mic = su.read_connectors(), su.read_modules()["digilent_pmod_mic3"]
-    arty, dock = su.read_layout("arty_a7"), su.read_layout("tang_primer_20k_dock")
+    arty, dock = su.read_drawn("arty_a7"), su.read_drawn("tang_primer_20k_dock")
     assert {"connector": "ja", "row": 1} in su.plug_placements(connectors, arty, mic)
     placements = su.plug_placements(connectors, dock, mic)
     assert placements and all(p.get("reversed") for p in placements)   # the Dock's rows run the other way

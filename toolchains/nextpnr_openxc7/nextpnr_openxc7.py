@@ -154,27 +154,16 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
 
 
 def _select_part(board, configuration):
-    part = board.get("Part") or ""
-    if not part and isinstance(board.get("Parts"), list):
-        wanted = (configuration.get("part") or "").lower()
-        chosen = None
-        for entry in board["Parts"]:
-            if wanted and entry.get("Name", "").lower() == wanted:
-                chosen = entry
-                break
-        if chosen is None:
-            chosen = board["Parts"][0]
-        part = chosen.get("Part") or ""
+    part = board.get("part") or ""
     return part
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-xilinx. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -186,7 +175,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     raw_part = _select_part(board, configuration)
     if not raw_part:
-        log.error("Board %s has no 'Part' field — cannot drive openxc7.", board["Id"])
+        log.error("Board %s has no part — cannot drive openxc7.", board["id"])
         return 1
     part = _normalize_part(raw_part)
 
@@ -296,7 +285,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .bit to the connected board via openFPGALoader."""
     bit = os.path.join(output, PROJECT_NAME + ".bit")
     if not os.path.exists(bit) and not os.environ.get("UNIFPGA_DRY_RUN"):

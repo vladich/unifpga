@@ -288,7 +288,7 @@ def test_program_py_calls_the_toolchain_driver(tmp_path, monkeypatch):
             return 0
     monkeypatch.setattr(synthesize, "toolchain_module", lambda tc: Driver)
     assert program.main(["-c", CFG, "-o", str(tmp_path)]) == 0
-    assert got["output"] == str(tmp_path) and got["board"]["Id"] and got["toolchain"]["Id"] == "gowin_eda"
+    assert got["output"] == str(tmp_path) and got["board"]["id"] and got["toolchain"]["id"] == "gowin_eda"
     assert program.main(["-c", CFG, "-o", str(tmp_path / "missing")]) == 1
     assert program.main(["-c", "no_such_configuration", "-o", str(tmp_path)]) == 1
 

@@ -2,7 +2,7 @@
 The virtual device a configuration presents to design_top, traced to the
 hardware: for every design port (a capability signal: led, btn, sw, abcdefgh,
 digit, red, x, sample, io, tx, ...) the attaches that provide it and, bit by
-bit where the peripheral wires bits straight to pins, the pinmap entry and the
+bit where the peripheral wires bits straight to pins, the board entry and the
 FPGA pin each design bit reaches. Peripherals with a driver (TM1638, VGA, I2S,
 ...) reach their pins through that driver: their bits are traced to the
 provider and its whole pin set.
@@ -115,8 +115,8 @@ def config_capabilities():
     return _CAPS
 
 
-def _pins(pinmap, ref):
-    return [{"ref": bit, "pin": pin} for bit, pin in codegen._bind_pins(pinmap, ref)]
+def _pins(board, ref):
+    return [{"ref": bit, "pin": pin} for bit, pin in codegen._bind_pins(board, ref)]
 
 
 def pin_sources(resolved, idx, clocks):
@@ -177,7 +177,7 @@ def trace(resolved):
     edges: design bit <-> pin, see edges().
     """
     plans = codegen.build_capability_plans(resolved)
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
     attaches = []
     clocks = codegen.collect_clock_requirements(resolved)
     for idx, a in enumerate(resolved["peripherals"]):
@@ -185,7 +185,7 @@ def trace(resolved):
         attaches.append({"attach_index": a.get("attach_index"), "peripheral": a["peripheral_id"],
                          "params": a.get("params") or {},
                          "pin_fit": a["peripheral"].get("pin_fit") or {},
-                         "pins": {sig: _pins(pinmap, ref) for sig, ref in (a.get("bind") or {}).items()},
+                         "pins": {sig: _pins(board, ref) for sig, ref in (a.get("bind") or {}).items()},
                          "links": {sig: links.get(sig, []) for sig in (a.get("bind") or {})},
                          "sources": pin_sources(resolved, idx, clocks)})
     # a gpio bit whose pin another part uses dangles (codegen): no edge to the pin
@@ -213,8 +213,8 @@ def trace(resolved):
             design_bits = _provider_bits(plan, pidx, sig_name)
             direct = _direct_signal(perif, cap_id, sig_name)
             if design_bits is not None and direct and direct in (a.get("bind") or {}):
-                pins = _pins(pinmap, a["bind"][direct])
-                if codegen._peripheral_mirror(a, pinmap):
+                pins = _pins(board, a["bind"][direct])
+                if codegen._peripheral_mirror(a, board):
                     pins = list(reversed(pins))
                 taken = lambda k: pidx in gpio_indices and k < len(pins) and pins[k]["ref"] and \
                     set(codegen._bind_bit_ports(resolved, pins[k]["ref"])) & claimed

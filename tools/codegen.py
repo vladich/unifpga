@@ -66,9 +66,9 @@ def _parse_bank_ref(text):
     return (bank, sub, int(idx) if idx is not None else None)
 
 
-def _bank_pin(pinmap, bank_name, subkey, index):
-    """Look up a single pin (or list of pins) inside a board's pinBanks."""
-    bank = pinmap.get("pinBanks", {}).get(bank_name)
+def _bank_pin(board, bank_name, subkey, index):
+    """Look up a single pin (or list of pins) inside a board's banks."""
+    bank = board.get("banks", {}).get(bank_name)
     if bank is None:
         return None
     pins = bank.get("pins") if isinstance(bank, dict) else None
@@ -86,9 +86,9 @@ def _bank_pin(pinmap, bank_name, subkey, index):
     return pins
 
 
-def _bank_width(pinmap, bank_name, subkey=None):
+def _bank_width(board, bank_name, subkey=None):
     """Number of pins the given bank (or subkey) holds. None if not a list."""
-    bank = pinmap.get("pinBanks", {}).get(bank_name) or {}
+    bank = board.get("banks", {}).get(bank_name) or {}
     pins = bank.get("pins")
     if subkey is not None and isinstance(pins, dict):
         pins = pins.get(subkey)
@@ -328,9 +328,9 @@ def resolve_clock(resolved, plans=None):
         {"bank_ref": "clk",          # bind RHS as written in the configuration
          "port":     "clk",          # generated top-level port name
          "mhz":      100.0 or None,  # None when nothing declares a frequency
-         "source":   "configuration" | "pinmap" | "bank-name" | None}
+         "source":   "configuration" | "board" | "bank-name" | None}
 
-    Precedence: the attach's `frequency_mhz` param, then the pinmap bank's
+    Precedence: the attach's `frequency_mhz` param, then the board bank's
     `frequency_mhz`, then a `<n>mhz` token in the bank name. Every emitter and
     the design_top parameter block must use this function so the constraint
     period and the advertised `clk_mhz` can never disagree."""
@@ -341,11 +341,11 @@ def resolve_clock(resolved, plans=None):
         return None
     pidx, _perif, cap_params = clk_plan.providers[0]
     attach = resolved["peripherals"][pidx]
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
     clk_bank = (attach.get("bind") or {}).get("clk")
     if clk_bank is None:
         # Heuristic fallback: first pin bank whose name looks like a clock.
-        for bank_name in (pinmap.get("pinBanks") or {}):
+        for bank_name in (board.get("banks") or {}):
             low = bank_name.lower()
             if low.startswith("clk") or "clock" in low or low.startswith("osc"):
                 clk_bank = bank_name
@@ -359,10 +359,10 @@ def resolve_clock(resolved, plans=None):
     source = "configuration" if mhz is not None else None
     if mhz is None:
         parsed = _parse_bank_ref(str(clk_bank))
-        bank = (pinmap.get("pinBanks") or {}).get(parsed[0]) if parsed else None
+        bank = (board.get("banks") or {}).get(parsed[0]) if parsed else None
         if isinstance(bank, dict) and bank.get("frequency_mhz") is not None:
             mhz = bank["frequency_mhz"]
-            source = "pinmap"
+            source = "board"
     if mhz is None:
         m = _MHZ_IN_NAME.search(str(clk_bank))
         if m:
@@ -370,7 +370,7 @@ def resolve_clock(resolved, plans=None):
             source = "bank-name"
     if mhz is None:
         log.warning("Configuration %s: clock bank %r has no frequency_mhz in the "
-                    "configuration or the pinmap; clk_mhz will default to 50 and no "
+                    "configuration or the board; clk_mhz will default to 50 and no "
                     "clock constraint will be emitted (audit code CLK-FREQ)",
                     resolved["configuration"]["id"], clk_bank)
     return {"bank_ref": clk_bank, "port": _bank_port_name(clk_bank),
@@ -469,9 +469,9 @@ MmcmOutput   = namedtuple("MmcmOutput",   "f_out index mmcm")        # one CLKOU
 
 def _pll_vendor(board):
     """Which PLL wrapper the board's device family takes, or None."""
-    producer = (board.get("PartProducer") or "").lower()
-    family = (board.get("PartFamily") or "").lower()
-    part = (board.get("Part") or "").upper()
+    producer = ((board.get("family") or {}).get("producer") or "").lower()
+    family = ((board.get("family") or {}).get("name") or "").lower()
+    part = (board.get("part") or "").upper()
     if "gowin" in producer or part.startswith("GW"):
         if part.startswith("GW5") or "gw5" in family or "arorav" in family:
             return "gowin_gw5"           # PLLA-based Gowin_PLL: not wrapped yet (P3.1b)
@@ -487,17 +487,17 @@ def _pll_vendor(board):
 
 
 def _is_gowin_littlebee(board):
-    part = (board.get("Part") or "").upper()
-    family = (board.get("PartFamily") or "").lower()
+    part = (board.get("part") or "").upper()
+    family = ((board.get("family") or {}).get("name") or "").lower()
     return part.startswith("GW1N") or "littlebee" in family or "gw1n" in family
 
 
 def diff_buf_kind(resolved):
     """Which differential output buffer rtl/io/diff_obuf.sv should use on this
-    board (`context.diff_buf`): the pinmap's `io.diff_obuf` when set, else by
+    board (`context.diff_buf`): the board's `io.diff_obuf` when set, else by
     family: ELVDS_OBUF on Gowin LittleBee (GW1N*), TLVDS_OBUF on Gowin Arora,
     OBUFDS on Xilinx, pseudo-differential (`n = ~p`) elsewhere."""
-    io = resolved["board_pinmap"].get("io") or {}
+    io = resolved["board"].get("io") or {}
     if io.get("diff_obuf"):
         return str(io["diff_obuf"])
     board = resolved["board"]
@@ -524,9 +524,9 @@ _CLOCK_BUFFERS = {
 
 def clock_buffer_kind(resolved):
     """Which global clock buffer `global_clock_buffer` is on this board: the
-    pinmap's `io.clock_buffer` when set, else by family (GLOBAL on Intel, BUFG on
+    board's `io.clock_buffer` when set, else by family (GLOBAL on Intel, BUFG on
     Xilinx 7-series, a plain wire elsewhere)."""
-    io = resolved["board_pinmap"].get("io") or {}
+    io = resolved["board"].get("io") or {}
     if io.get("clock_buffer"):
         kind = str(io["clock_buffer"])
         if kind not in _CLOCK_BUFFERS:
@@ -534,7 +534,7 @@ def clock_buffer_kind(resolved):
                 resolved["configuration"]["id"], kind, ", ".join(sorted(_CLOCK_BUFFERS))))
         return kind
     board = resolved["board"]
-    producer = (board.get("PartProducer") or "").lower()
+    producer = ((board.get("family") or {}).get("producer") or "").lower()
     if "intel" in producer or "altera" in producer:
         return "intel"
     if _pll_vendor(board) == "xilinx_mmcm":
@@ -576,23 +576,23 @@ def _pinned_rpll(cfg_id, name, f_in, r):
 
 def _gowin_rpll_primitive(board):
     """GW1NS / GW1NSR (Tang Nano 4K) have PLLVR instead of rPLL."""
-    part = (board.get("Part") or "").upper()
+    part = (board.get("part") or "").upper()
     return "PLLVR" if part.startswith(("GW1NS", "GW1NSR", "GW1NSE", "GW1NSER")) else "rPLL"
 
 
 def _gw5_primitive(board):
     """Gowin_PLL wrappers: primitive PLL on GW5AST / GW5AT (Tang Mega
     138K), PLLA on GW5A (Tang Primer 25K)."""
-    part = (board.get("Part") or "").upper()
+    part = (board.get("part") or "").upper()
     return "PLLA" if part.startswith("GW5A-") else "PLL"
 
 
-def openfpgaloader_args(pinmap):
+def openfpgaloader_args(board):
     """openFPGALoader options for this board, in this
     order: `--cable` (colorlight), `--ftdi-channel` (ECP5 boards), `-b
-    <board>`, from the pinmap's `toolchain_options.yosys.loader_*`. [] when
+    <board>`, from the board's `toolchain_options.yosys.loader_*`. [] when
     nothing is known (openFPGALoader then autodetects)."""
-    opts = ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
+    opts = ((board or {}).get("toolchain_options") or {}).get("yosys") or {}
     if opts.get("loader_cable"):
         return ["--cable", str(opts["loader_cable"])]
     if opts.get("loader_ftdi_channel") not in (None, ""):
@@ -607,17 +607,17 @@ def nextpnr_gui_args():
     return ["--gui"] if os.environ.get("UNIFPGA_NEXTPNR_GUI") else []
 
 
-def yosys_loader_settings(pinmap):
-    """`toolchain_options.yosys` of the pinmap: synth_options, loader_*, device_part,
+def yosys_loader_settings(board):
+    """`toolchain_options.yosys` of the board: synth_options, loader_*, device_part,
     device_family, device_pack, speed."""
-    return ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
+    return ((board or {}).get("toolchain_options") or {}).get("yosys") or {}
 
 
-def emit_gowin_gprj(pinmap, sv_files, cst_path, sdc_path):
+def emit_gowin_gprj(board, sv_files, cst_path, sdc_path):
     """Gowin IDE project file (project header + file list + options): the
     `<Device>` element is board data (`toolchain_options.gowin.gprj_device`). None without it —
     the IDE needs the internal device id (gw1nr9c-004) the template carries."""
-    device = (((pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}).get("gprj_device")
+    device = (((board or {}).get("toolchain_options") or {}).get("gowin") or {}).get("gprj_device")
     if not device:
         return None
     lines = ['<?xml version="1" encoding="UTF-8"?>',
@@ -637,11 +637,11 @@ def emit_gowin_gprj(pinmap, sv_files, cst_path, sdc_path):
     return "\n".join(lines) + "\n"
 
 
-def yosys_synth_options(pinmap):
-    """Extra `synth_*` flags for a yosys flow from the pinmap's
+def yosys_synth_options(board):
+    """Extra `synth_*` flags for a yosys flow from the board's
     `toolchain_options.yosys.synth_options` (e.g. `synth_ice40 -dsp
     -noabc9`). Returned with their leading dash."""
-    opts = ((pinmap or {}).get("toolchain_options") or {}).get("yosys") or {}
+    opts = ((board or {}).get("toolchain_options") or {}).get("yosys") or {}
     return ["-" + str(o).lstrip("-") for o in (opts.get("synth_options") or [])]
 
 
@@ -650,8 +650,8 @@ def _gowin_rpll_device(resolved):
     `-name` plus `-device_version` from the board's Gowin set_device args.
     Under the open flow nextpnr-gowin compares the parameter with its own
     family name (`GW2A-18` for the Primer 20K, "wrong PLL device" otherwise),
-    so the pinmap may pin `toolchain_options.apicula.rpll_device`."""
-    tc_opts = resolved["board_pinmap"].get("toolchain_options") or {}
+    so the board may pin `toolchain_options.apicula.rpll_device`."""
+    tc_opts = resolved["board"].get("toolchain_options") or {}
     if resolved["toolchain"]["id"].startswith("nextpnr_apicula"):
         dev = (tc_opts.get("apicula") or {}).get("rpll_device")
         if dev:
@@ -667,7 +667,7 @@ def _gowin_rpll_device(resolved):
         # name already carries the revision); `-name GW1NR-9 -device_version C`
         # -> "GW1NR-9C".
         return name if not ver or name.endswith(ver) else name + ver
-    part = (resolved["board"].get("Part") or "").upper()
+    part = (resolved["board"].get("part") or "").upper()
     m = re.match(r"^(GW\d[A-Z]*)-[A-Z]*(\d+)", part)
     return "{}-{}C".format(m.group(1), m.group(2)) if m else "GW1NR-9C"
 
@@ -707,7 +707,7 @@ def plan_clock_tree(resolved, plans=None):
     if sources and vendor is None:
         raise CodegenError("Configuration {}: clock '{}' ({} MHz) needs a PLL but no wrapper exists for {} / {}"
                            .format(cfg_id, sources[0][0], sources[0][1]["mhz"],
-                                                   board.get("PartProducer"), board.get("PartFamily")))
+                                                   (board.get("family") or {}).get("producer"), (board.get("family") or {}).get("name")))
     out = OrderedDict()
     # 1. clocks that already exist: the board clock itself
     for name, r in reqs.items():
@@ -1038,12 +1038,12 @@ def _sub_used(resolved, bank, sub):
 def fpga_port_decls(resolved, referenced_banks):
     """Emit the FPGA top module's port list. Direction is inferred per sub-key
     when a bank has differently-directed pins (e.g. UART tx/rx)."""
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
     decls = []
     ports = []
 
     for bank_name in referenced_banks:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name) or {}
+        bank = (board.get("banks") or {}).get(bank_name) or {}
         pins = bank.get("pins")
 
         if isinstance(pins, str) or pins is None:
@@ -1125,7 +1125,7 @@ def constrained_pads(resolved):
     constraint emitters make, bound bits and unbound ones alike (a referenced
     list bank is declared and constrained whole). A pin with two port bits is
     a build error in every toolchain."""
-    banks = resolved["board_pinmap"].get("pinBanks") or {}
+    banks = resolved["board"].get("banks") or {}
     out = OrderedDict()
 
     def add(pin, bit):
@@ -1158,7 +1158,7 @@ def constrained_pads(resolved):
 def _port_bits(resolved):
     """Every referenced port (a bank, or a dict bank's sub-key) with its bits:
     {(bank, sub): [(port bit, bind ref, pin)]}, in bit order."""
-    banks = resolved["board_pinmap"].get("pinBanks") or {}
+    banks = resolved["board"].get("banks") or {}
     out = OrderedDict()
     for name in collect_referenced_banks(resolved):
         bank = banks.get(name) or {}
@@ -1269,7 +1269,7 @@ def fold_shared_pads(resolved):
 
 
 def _port_bank(banks, port_name):
-    """The pinmap bank a generated port belongs to: `onboard_leds` -> that
+    """The board bank a generated port belongs to: `onboard_leds` -> that
     bank, `onboard_7seg_anodes` -> onboard_7seg."""
     if port_name in banks:
         return banks[port_name]
@@ -1283,20 +1283,20 @@ def _port_bank(banks, port_name):
 # Phase 2b: validation (the pin ledger)
 # ---------------------------------------------------------------------------
 
-def _bind_pins(pinmap, ref):
+def _bind_pins(board, ref):
     """Physical pins covered by one bind RHS, in port-bit order, as a list of
     (port_bit_name, pin_or_None). Unknown bank/sub-key/index -> None entry."""
     out = []
     if isinstance(ref, list):
         for el in ref:
-            out.extend(_bind_pins(pinmap, el))
+            out.extend(_bind_pins(board, el))
         return out
     parsed = _parse_bank_ref(str(ref))
     if parsed is None:
         return [(str(ref), None)]
     bank, sub, idx = parsed
-    val = _bank_pin(pinmap, bank, sub, idx)
-    if val is None and not (idx is None and isinstance(_bank_pin(pinmap, bank, sub, None), list)):
+    val = _bank_pin(board, bank, sub, idx)
+    if val is None and not (idx is None and isinstance(_bank_pin(board, bank, sub, None), list)):
         return [(_bank_ref_to_port(ref), None)]
     if isinstance(val, list):
         base = _bank_port_name(ref)
@@ -1306,7 +1306,7 @@ def _bind_pins(pinmap, ref):
     return [(_bank_ref_to_port(ref), val)]
 
 
-def _describe_missing(pinmap, ref, port_bit):
+def _describe_missing(board, ref, port_bit):
     """Explain why a bind element has no pin: unparsable, unknown bank,
     unknown sub-key, index out of range, or an explicit null entry."""
     refs = ref if isinstance(ref, list) else [ref]
@@ -1316,9 +1316,9 @@ def _describe_missing(pinmap, ref, port_bit):
         if parsed is None:
             return "{!r}: unparsable reference".format(one)
         bank, sub, idx = parsed
-        banks = pinmap.get("pinBanks") or {}
+        banks = board.get("banks") or {}
         if bank not in banks:
-            return "{!r}: bank {!r} does not exist in the pinmap".format(one, bank)
+            return "{!r}: bank {!r} does not exist in the board".format(one, bank)
         pins = (banks[bank] or {}).get("pins")
         if sub is not None:
             if not isinstance(pins, dict) or sub not in pins:
@@ -1332,7 +1332,7 @@ def _describe_missing(pinmap, ref, port_bit):
                 return "{!r}: pin is null".format(one)
             continue
         if isinstance(pins, list) and any(p is None for p in pins):
-            return "{}: null entry in the pinmap list".format(port_bit)
+            return "{}: null entry in the board list".format(port_bit)
     return "{}: no pin".format(port_bit)
 
 
@@ -1377,14 +1377,14 @@ def validate_configuration(resolved, plans=None):
     resolved = fold_shared_pads(resolved)
     if plans is None:
         plans = build_capability_plans(resolved)
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
     cfg_id = resolved["configuration"]["id"]
     problems = []
     pin_to_bits = defaultdict(set)          # physical pin -> {port bit}
     bit_to_attaches = defaultdict(list)     # port bit -> [(idx, is_gpio_passthrough)]
     bit_dirs = defaultdict(set)             # port bit -> {input, output} from non-gpio signals
 
-    banks = pinmap.get("pinBanks") or {}
+    banks = board.get("banks") or {}
 
     def _is_virtual(ref):
         # A `virtual: true` bank has no package pin (Efinity's internal
@@ -1414,12 +1414,12 @@ def validate_configuration(resolved, plans=None):
         for sig, ref in bind.items():
             if _is_virtual(ref):
                 continue
-            entries = _bind_pins(pinmap, ref)
+            entries = _bind_pins(board, ref)
             sig_dir = (sig_defs.get(sig) or {}).get("direction")
             for k, (port_bit, pin) in enumerate(entries):
                 if pin is None:
                     problems.append("{}: bind {} -> {}".format(
-                        label, sig, _describe_missing(pinmap, ref, port_bit)))
+                        label, sig, _describe_missing(board, ref, port_bit)))
                     continue
                 pin_to_bits[str(pin)].add(port_bit)
                 if perif.get("driver") is None and unmapped(k):
@@ -1433,7 +1433,7 @@ def validate_configuration(resolved, plans=None):
                 if isinstance(want, str) and want.startswith("$"):
                     want = _eval_param(want, attach.get("params") or {}, perif)
                 parsed = _parse_bank_ref(ref)
-                have = _bank_width(pinmap, parsed[0], parsed[1]) if parsed and parsed[2] is None else 1
+                have = _bank_width(board, parsed[0], parsed[1]) if parsed and parsed[2] is None else 1
                 if want is not None and have is not None and int(want) != int(have):
                     problems.append("{}: bind {} -> {!r}: signal is {} wide but the bank has {} pins"
                                     .format(label, sig, ref, want, have))
@@ -1462,7 +1462,7 @@ def validate_configuration(resolved, plans=None):
     if clock is None:
         problems.append("no clock_input attachment")
     elif clock["mhz"] is None:
-        problems.append("clock bank {!r} has no frequency_mhz (configuration or pinmap)".format(clock["bank_ref"]))
+        problems.append("clock bank {!r} has no frequency_mhz (configuration or board)".format(clock["bank_ref"]))
     else:
         try:
             plan_clock_tree(resolved, plans)
@@ -1495,7 +1495,6 @@ def emit_top_sv(resolved, strict=True, design=None):
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     board = resolved["board"]
-    pinmap = resolved["board_pinmap"]
     toolchain = resolved["toolchain"]
 
     plans = build_capability_plans(resolved)
@@ -1511,7 +1510,7 @@ def emit_top_sv(resolved, strict=True, design=None):
     out.append("// =============================================================================")
     out.append("// Auto-generated top.sv — DO NOT EDIT")
     out.append("// Configuration: {}".format(cfg["id"]))
-    out.append("// Board:         {} ({})".format(board.get("BoardName", board["Id"]), board["Id"]))
+    out.append("// Board:         {} ({})".format(board.get("name", board["id"]), board["id"]))
     out.append("// Toolchain:     {}".format(toolchain["id"]))
     out.append("// Generated by tools/codegen.py from the rig config/setups/{}.yml".format(cfg["id"]))
     out.append("// =============================================================================")
@@ -1563,7 +1562,7 @@ def emit_top_sv(resolved, strict=True, design=None):
     for attach in resolved["peripherals"]:
         for ref in (attach.get("bind") or {}).values():
             driven.update(_bind_bit_ports(resolved, ref))
-    banks = pinmap.get("pinBanks") or {}
+    banks = board.get("banks") or {}
     idle = []
     for pname, w, d in _ports:
         if d != "output" or w < 2:
@@ -1701,7 +1700,7 @@ def reset_sources(resolved, plans=None):
             continue
         sources.append(("pin", {"ref": rst_bank,
                                 "active": _peripheral_active_polarity(perif, r_attach,
-                                                                      resolved["board_pinmap"])}))
+                                                                      resolved["board"])}))
     spec = resolved["configuration"].get("reset") or {}
     for src in spec.get("sources") or []:
         if isinstance(src, str):
@@ -1785,9 +1784,9 @@ def _board_provider_terms(resolved, plans, cap_id, sig, bank=None):
         if bank is not None and {re.split(r"[.\[]", str(one).strip('"'), maxsplit=1)[0]
                                  for one in (ref if isinstance(ref, list) else [ref])} != {bank}:
             continue
-        inv = _peripheral_active_polarity(perif, attach, resolved["board_pinmap"]) == "low"
+        inv = _peripheral_active_polarity(perif, attach, resolved["board"]) == "low"
         ports = _bind_bit_ports(resolved, ref)
-        if _peripheral_mirror(attach, resolved["board_pinmap"]):
+        if _peripheral_mirror(attach, resolved["board"]):
             ports = list(reversed(ports))
         terms.extend(("(~ {})" if inv else "({})").format(p) for p in ports)
     return terms
@@ -1981,29 +1980,29 @@ def _emit_attachment(resolved, idx, attach, plans, emit):
     return _emit_driver_instance(resolved, idx, attach, plans, emit)
 
 
-def _bank_attr(pinmap, ref, name):
+def _bank_attr(board, ref, name):
     """Board-level attribute (`active`, `mirror`, ...) of the bank a bind
-    references, or None. Attributes live next to `pins:` in the pinmap."""
+    references, or None. Attributes live next to `pins:` in the board."""
     if isinstance(ref, list):
         ref = ref[0] if ref else None
     parsed = _parse_bank_ref(str(ref)) if isinstance(ref, str) else None
     if parsed is None:
         return None
-    bank = (pinmap.get("pinBanks") or {}).get(parsed[0])
+    bank = (board.get("banks") or {}).get(parsed[0])
     return bank.get(name) if isinstance(bank, dict) else None
 
 
-def _peripheral_active_polarity(perif, attach, pinmap=None):
+def _peripheral_active_polarity(perif, attach, board=None):
     """Returns 'high' or 'low'. Precedence: configuration `params.active`,
-    the bound bank's `active:` attribute in the pinmap (the board fact), the
+    the bound bank's `active:` attribute in the board (the board fact), the
     peripheral YAML's
     `parameters.active.default`, then 'high'."""
     cfg_params = attach.get("params") or {}
     if "active" in cfg_params:
         return cfg_params["active"]
-    if pinmap is not None:
+    if board is not None:
         for ref in (attach.get("bind") or {}).values():
-            v = _bank_attr(pinmap, ref, "active")
+            v = _bank_attr(board, ref, "active")
             if v is not None:
                 return v
     pdef = (perif.get("parameters") or {}).get("active") or {}
@@ -2025,7 +2024,7 @@ def _signal_active_polarity(perif, attach, sig, default):
     return (pdefs.get(key) or {}).get("default") or default
 
 
-def _peripheral_mirror(attach, pinmap):
+def _peripheral_mirror(attach, board):
     """True when the bank's bit order is reversed relative to the user's bus
     (`SWAP_BITS (LED, ...)` on the Tang Nano 9K). Configuration
     `params.mirror` overrides the bank attribute."""
@@ -2033,7 +2032,7 @@ def _peripheral_mirror(attach, pinmap):
     if "mirror" in cfg_params:
         return bool(cfg_params["mirror"])
     for ref in (attach.get("bind") or {}).values():
-        v = _bank_attr(pinmap, ref, "mirror")
+        v = _bank_attr(board, ref, "mirror")
         if v is not None:
             return bool(v)
     return False
@@ -2058,10 +2057,10 @@ def _emit_passthrough(resolved, idx, attach, plans, emit):
     lines = []
     perif = attach["peripheral"]
     bind = attach.get("bind") or {}
-    pinmap = resolved["board_pinmap"]
-    active = _peripheral_active_polarity(perif, attach, pinmap)
+    board = resolved["board"]
+    active = _peripheral_active_polarity(perif, attach, board)
     inv = "~ " if active == "low" else ""
-    mirror = _peripheral_mirror(attach, pinmap)
+    mirror = _peripheral_mirror(attach, board)
 
     open_drain = bool((attach.get("params") or {}).get("open_drain"))
 
@@ -2508,7 +2507,7 @@ def _bind_bit_ports(resolved, ref):
     """Expand one bind RHS into the list of generated top port bits it covers,
     LSB first: `pmod_ja` -> [pmod_ja[0], ..., pmod_ja[7]]; `pmod_ja[3]` ->
     [pmod_ja[3]]; `onboard_uart.tx` -> [onboard_uart_tx]. Lists expand element-wise."""
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
     if isinstance(ref, list):
         out = []
         for el in ref:
@@ -2520,11 +2519,11 @@ def _bind_bit_ports(resolved, ref):
     bank, sub, idx = parsed
     if idx is not None:
         return [_bank_ref_to_port(ref)]
-    width = _bank_width(pinmap, bank, sub)
+    width = _bank_width(board, bank, sub)
     base = _bank_port_name(ref)
     if width is None:
         return []
-    if width == 1 and not isinstance(_bank_pin(pinmap, bank, sub, None), list):
+    if width == 1 and not isinstance(_bank_pin(board, bank, sub, None), list):
         return [base]
     return ["{}[{}]".format(base, i) for i in range(width)]
 
@@ -2994,14 +2993,14 @@ def emit_xdc(resolved):
     for any clock-providing peripheral with a known frequency."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
-    default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
+    board = resolved["board"]
+    default_iostd = (board.get("defaults") or {}).get("iostandard") or "LVCMOS33"
 
     out = []
     out.append("# =============================================================================")
     out.append("# Auto-generated XDC constraints — DO NOT EDIT")
     out.append("# Configuration: {}".format(cfg["id"]))
-    out.append("# Board:         {}".format(resolved["board"].get("BoardName", resolved["board"]["Id"])))
+    out.append("# Board:         {}".format(resolved["board"].get("name", resolved["board"]["id"])))
     out.append("# =============================================================================")
     out.append("")
     # Silence Vivado's CFGBVS DRC warning. 3.3 V is the universal default for
@@ -3016,9 +3015,9 @@ def emit_xdc(resolved):
 
     # ---- Pin assignments per bank/sub-key/index ----
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("# WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("# WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
         overrides = (bank.get("overrides") or {})
@@ -3085,11 +3084,11 @@ PULL_TOOLCHAINS = ("vivado", "nextpnr_openxc7")
 
 
 def _pulled_ports(resolved):
-    """Top ports of the used banks the pinmap marks `pull: up`, in bank order."""
-    pinmap = resolved["board_pinmap"]
+    """Top ports of the used banks the board marks `pull: up`, in bank order."""
+    board = resolved["board"]
     out = []
     for bank_name in collect_referenced_banks(resolved):
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name) or {}
+        bank = (board.get("banks") or {}).get(bank_name) or {}
         if bank.get("pull") != "up":
             continue
         pins = bank.get("pins")
@@ -3115,8 +3114,8 @@ def emit_xdc_simple(resolved):
     `-dict { … }` shorthand isn't supported by the open flow."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
-    default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
+    board = resolved["board"]
+    default_iostd = (board.get("defaults") or {}).get("iostandard") or "LVCMOS33"
 
     out = []
     out.append("# =============================================================================")
@@ -3134,7 +3133,7 @@ def emit_xdc_simple(resolved):
         out.append("set_property IOSTANDARD {} [get_ports {{{}}}]".format(iostd, port))
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
             continue
         pins = bank.get("pins")
@@ -3188,14 +3187,14 @@ def emit_ucf(resolved):
     Targets ISE 14.7 — Spartan 3 / 6 and Virtex 4 / 5 / 6."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
-    default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
+    board = resolved["board"]
+    default_iostd = (board.get("defaults") or {}).get("iostandard") or "LVCMOS33"
 
     out = []
     out.append("# =============================================================================")
     out.append("# Auto-generated UCF (ISE) constraints — DO NOT EDIT")
     out.append("# Configuration: {}".format(cfg["id"]))
-    out.append("# Board:         {}".format(resolved["board"].get("BoardName", resolved["board"]["Id"])))
+    out.append("# Board:         {}".format(resolved["board"].get("name", resolved["board"]["id"])))
     out.append("# =============================================================================")
     out.append("")
 
@@ -3212,7 +3211,7 @@ def emit_ucf(resolved):
         out.append('NET "{port}" IOSTANDARD = "{iostd}";'.format(port=ucf_port, iostd=iostd))
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
             continue
         pins = bank.get("pins")
@@ -3264,13 +3263,13 @@ def _pair_p(pin):
     return str(pin).split(",", 1)[0].strip()
 
 
-def _pair_n_pins(pinmap, referenced):
+def _pair_n_pins(board, referenced):
     """{N pin: P pin} for every "P,N" pair in the referenced banks, so the
     emitters recognise the pair's N half when it also appears as its own
     entry (`clk_n: "68"` next to `clk_p: "69,68"`)."""
     out = {}
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name) or {}
+        bank = (board.get("banks") or {}).get(bank_name) or {}
         pins = bank.get("pins")
         vals = []
         if isinstance(pins, str):
@@ -3302,7 +3301,7 @@ def _bank_port_name(bank_ref):
 # QSF / SDC constraint emission (Intel/Altera — Quartus Prime / Quartus II)
 # ---------------------------------------------------------------------------
 
-# Map BoardYaml.PartFamily strings to Quartus-canonical FAMILY assignment names.
+# Map a chip family's name to Quartus-canonical FAMILY assignment names.
 # When a Cyclone IV part starts with EP4CGX/EP4CE we disambiguate the GX/E
 # variants (Quartus rejects bare "Cyclone IV").
 _QUARTUS_FAMILY = {
@@ -3323,7 +3322,7 @@ _QUARTUS_FAMILY = {
 
 def _quartus_family(board, part):
     """Pick a FAMILY string for the QSF. Disambiguate Cyclone IV by part prefix."""
-    fam = (board.get("PartFamily") or "").strip()
+    fam = ((board.get("family") or {}).get("name") or "").strip()
     if fam == "Cyclone IV":
         p = (part or "").upper()
         if p.startswith("EP4CGX"):
@@ -3339,14 +3338,13 @@ def emit_qsf(resolved, part):
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
     board = resolved["board"]
-    pinmap = resolved["board_pinmap"]
-    # No invented default: a pin whose standard the pinmap does not state
+    # No invented default: a pin whose standard the board does not state
     # gets the device default (Cyclone IV
     # E: 2.5 V — an invented 3.3-V LVTTL on the DE2-115 puts HEX3 into a
     # VCCIO conflict, Quartus 169026).
-    default_iostd = (pinmap.get("defaults") or {}).get("iostandard")
+    default_iostd = (board.get("defaults") or {}).get("iostandard")
     family = _quartus_family(board, part)
-    quartus_opts = (pinmap.get("toolchain_options") or {}).get("quartus") or {}
+    quartus_opts = (board.get("toolchain_options") or {}).get("quartus") or {}
     # dk_dev_3c120n: the project default comes from STRATIX_DEVICE_IO_STANDARD
     # and the pins at that standard carry no assignment of their own; an
     # explicit 2.5 V on them is refused where the bank runs at 1.8 V (169026)
@@ -3360,7 +3358,7 @@ def emit_qsf(resolved, part):
     out.append("# =============================================================================")
     out.append("# Auto-generated QSF settings — DO NOT EDIT")
     out.append("# Configuration: {}".format(cfg["id"]))
-    out.append("# Board:         {}".format(board.get("BoardName", board["Id"])))
+    out.append("# Board:         {}".format(board.get("name", board["id"])))
     out.append("# =============================================================================")
     out.append("")
     out.append('set_global_assignment -name FAMILY "{}"'.format(family))
@@ -3372,7 +3370,7 @@ def emit_qsf(resolved, part):
     out.append("set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2005")
     # Project template: four fitter threads (no vendor macros: designs do not test the vendor)
     out.append("set_global_assignment -name NUM_PARALLEL_PROCESSORS 4")
-    # Board-level project settings from the pinmap (dual-
+    # Board-level project settings from the board (dual-
     # purpose pin reservation such as nCEO used as regular I/O, unused-pin
     # state, device I/O default).
     for ga in quartus_opts.get("global_assignments") or []:
@@ -3383,9 +3381,9 @@ def emit_qsf(resolved, part):
     plans = build_capability_plans(resolved)
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("# WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("# WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
         overrides = bank.get("overrides") or {}
@@ -3493,12 +3491,12 @@ def emit_cst(resolved):
     IO_PORT for IO_TYPE / drive strength."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
-    # No IO_TYPE unless the pinmap states one (Gowin CSTs constrain
+    board = resolved["board"]
+    # No IO_TYPE unless the board states one (Gowin CSTs constrain
     # only IO_LOC on most boards; the tool then keeps its defaults and the
     # bank voltages the embedded functions dictate. An invented LVCMOS33 on
     # the Tang Nano 9K's 1.8 V bank 3 is refused with CT1136.)
-    default_raw = (pinmap.get("defaults") or {}).get("iostandard")
+    default_raw = (board.get("defaults") or {}).get("iostandard")
     default_iotype = _GOWIN_IOTYPE.get(default_raw, default_raw) if default_raw else None
 
     out = []
@@ -3520,7 +3518,7 @@ def emit_cst(resolved):
         pair_style = "split"
     elif kind == "generic":
         pair_style = "lvcmos"
-    pair_n = _pair_n_pins(pinmap, referenced)
+    pair_n = _pair_n_pins(board, referenced)
 
     def lines_for(p, port, iot, explicit):
         if isinstance(p, str) and "," in p:
@@ -3538,9 +3536,9 @@ def emit_cst(resolved):
         return _cst_lines(p, port, iot)
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("// WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("// WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
         overrides = bank.get("overrides") or {}
@@ -3619,8 +3617,8 @@ def emit_lpf(resolved):
     Indexed bus elements use `port[idx]` syntax."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
-    default_iotype = (pinmap.get("defaults") or {}).get("iostandard") or "LVCMOS33"
+    board = resolved["board"]
+    default_iotype = (board.get("defaults") or {}).get("iostandard") or "LVCMOS33"
     # Normalize Gowin/Quartus-style iostandard names to ECP5/Lattice names.
     iotype_map = {
         "3.3-V LVTTL": "LVCMOS33",
@@ -3643,9 +3641,9 @@ def emit_lpf(resolved):
     referenced = collect_referenced_banks(resolved)
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("# WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("# WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
         overrides = bank.get("overrides") or {}
@@ -3715,8 +3713,8 @@ def emit_peri_xml(resolved, device_def):
     `device_def`: e.g. "T8F81" — same string used in board.fpga.part."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
-    default_iostd = (pinmap.get("defaults") or {}).get("iostandard") or "3.3 V LVTTL / LVCMOS"
+    board = resolved["board"]
+    default_iostd = (board.get("defaults") or {}).get("iostandard") or "3.3 V LVTTL / LVCMOS"
 
     out = []
     out.append('<?xml version="1.0" encoding="UTF-8"?>')
@@ -3733,8 +3731,8 @@ def emit_peri_xml(resolved, device_def):
     out.append("    <efxpt:device_info>")
     out.append("        <efxpt:iobank_info>")
     # T8F81 standard banks; if a board needs
-    # something else, override via board_pinmap.iobanks.
-    iobanks = (pinmap.get("iobanks") or {
+    # something else, override via the board's `iobanks`.
+    iobanks = (board.get("iobanks") or {
         "1A": "3.3 V LVTTL / LVCMOS",
         "1B": "3.3 V LVTTL / LVCMOS",
         "1C": "1.1 V",
@@ -3755,7 +3753,7 @@ def emit_peri_xml(resolved, device_def):
     buses = []   # (bus_name, mode, msb, lsb)
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
             continue
         # Virtual oscillator-sourced clock — record it in osc_clocks
@@ -3851,7 +3849,7 @@ def emit_efx_project_xml(resolved, device_def, sv_files, sdc_path, peri_path,
     SDC and peri XML, and the standard synth/pnr/bitstream parameters."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    family = (resolved["board"].get("PartFamily") or "Trion").strip()
+    family = ((resolved["board"].get("family") or {}).get("name") or "Trion").strip()
     out = []
     out.append('<?xml version="1.0" encoding="UTF-8"?>')
     out.append(
@@ -3909,7 +3907,7 @@ def emit_pcf(resolved):
     elements use `port[idx]` syntax — same as XDC/QSF."""
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
 
     out = []
     out.append("# =============================================================================")
@@ -3922,9 +3920,9 @@ def emit_pcf(resolved):
     plans = build_capability_plans(resolved)
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("# WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("# WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
 
@@ -3978,14 +3976,14 @@ def emit_microchip_pdc(resolved):
     """
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
     board = resolved.get("board") or {}
 
     out = []
     out.append("# =============================================================================")
     out.append("# Auto-generated Microchip Libero IO PDC — DO NOT EDIT")
     out.append("# Configuration: {}".format(cfg["id"]))
-    out.append("# Board:         {}".format(board.get("BoardName", "")))
+    out.append("# Board:         {}".format(board.get("name", "")))
     out.append("# =============================================================================")
     out.append("")
 
@@ -4004,9 +4002,9 @@ def emit_microchip_pdc(resolved):
                    .format(port=port, pad=pad, dir=direction))
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("# WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("# WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
 
@@ -4050,16 +4048,16 @@ def emit_pdc(resolved):
     """
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
     board = resolved.get("board") or {}
-    iostd = (pinmap.get("defaults") or {}).get("iostandard", "LVCMOS33")
+    iostd = (board.get("defaults") or {}).get("iostandard", "LVCMOS33")
     plans = build_capability_plans(resolved)
 
     out = []
     out.append("# =============================================================================")
     out.append("# Auto-generated PDC constraints — DO NOT EDIT")
     out.append("# Configuration: {}".format(cfg["id"]))
-    out.append("# Board:         {}".format(board.get("BoardName", "")))
+    out.append("# Board:         {}".format(board.get("name", "")))
     out.append("# =============================================================================")
     out.append("")
 
@@ -4070,9 +4068,9 @@ def emit_pdc(resolved):
         out.append('ldc_set_port -iobuf {{IO_TYPE={s}}} [get_ports {port}]'.format(s=iostd, port=port))
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("# WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("# WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
 
@@ -4127,13 +4125,13 @@ def emit_ccf(resolved):
     """
     resolved = fold_shared_pads(resolved)
     cfg = resolved["configuration"]
-    pinmap = resolved["board_pinmap"]
+    board = resolved["board"]
 
     out = []
     out.append("# =============================================================================")
     out.append("# Auto-generated CCF constraints — DO NOT EDIT")
     out.append("# Configuration: {}".format(cfg["id"]))
-    out.append("# Board:         {}".format((resolved.get("board") or {}).get("BoardName", "")))
+    out.append("# Board:         {}".format((resolved.get("board") or {}).get("name", "")))
     out.append("# =============================================================================")
     out.append("")
 
@@ -4147,9 +4145,9 @@ def emit_ccf(resolved):
         out.append('NET "{port}" LOC={pad};'.format(port=port, pad=pad))
 
     for bank_name in referenced:
-        bank = (pinmap.get("pinBanks") or {}).get(bank_name)
+        bank = (board.get("banks") or {}).get(bank_name)
         if bank is None:
-            out.append("# WARNING: bank '{}' referenced but not in pinBanks".format(bank_name))
+            out.append("# WARNING: bank '{}' referenced but not in banks".format(bank_name))
             continue
         pins = bank.get("pins")
 

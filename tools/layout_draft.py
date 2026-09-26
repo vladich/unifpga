@@ -17,7 +17,7 @@ as attaches. draft() builds it from:
     included, a part keeps its silkscreen label.
 
 A header without verified facts is a logical row (connector type `pin_row`)
-whose pins are named by their pinmap index ([0], [1], ...), so nobody reads
+whose pins are named by their board index ([0], [1], ...), so nobody reads
 them as physical pin numbers. The section says `verified: true` only when every
 header and part in it is backed by verified facts. A section drawn by hand
 (`generated: false`) is never overwritten.
@@ -42,7 +42,7 @@ _REF_BANK = re.compile(r"^([A-Za-z_]\w*)")
 
 
 def _banks_of(value):
-    """The pinmap banks a bind value names (`onboard_7seg.hex0`, `gpio[3]`, lists)."""
+    """The board banks a bind value names (`onboard_7seg.hex0`, `gpio[3]`, lists)."""
     if isinstance(value, (list, tuple)):
         return {b for v in value for b in _banks_of(v)}
     m = _REF_BANK.match(str(value))
@@ -52,11 +52,11 @@ def _banks_of(value):
 HEADER_KINDS = ("pmod", "header")
 
 
-def header_banks(pinmap):
+def header_banks(board):
     """The banks that are headers: not on-board, not a clock, a list of pins
     (a bank an inventory tags as some other device is an on-board part)."""
     out = []
-    for name, bank in (pinmap.get("pinBanks") or {}).items():
+    for name, bank in (board.get("banks") or {}).items():
         pins = bank.get("pins") if isinstance(bank, dict) else bank
         if name.startswith("onboard_") or (isinstance(bank, dict) and "frequency_mhz" in bank):
             continue
@@ -72,9 +72,9 @@ def _title(bank):
 
 
 def draft(board_id):
-    """The layout dict for `board_id` (see the module docstring)."""
+    """The drawn section for `board_id` as a dict: board, verified, generated,
+    connector_types, headers, parts (see the module docstring)."""
     board = config_init.read_board(board_id) or {}
-    pinmap = config_init.read_board_pinmap(board_id) or {}
     base_types = config_init._load_yaml(os.path.join(su.CONFIG_DIR, "connectors.yml"), "Connectors") or {}
     connectors_def = dict(base_types, **(board.get("connector_types") or {}))
     # the facts: headers and parts of the drawn section read from a document
@@ -98,21 +98,21 @@ def draft(board_id):
         for a in cfg.get("attach") or []:
             for value in (a.get("bind") or {}).values():
                 for ref in (value if isinstance(value, list) else [value]):
-                    pins = [p for _bit, p in codegen._bind_pins(pinmap, ref)] if isinstance(ref, str) else []
+                    pins = [p for _bit, p in codegen._bind_pins(board, ref)] if isinstance(ref, str) else []
                     if len(pins) == 1 and pins[0]:
                         named.setdefault(board_sources._norm_pin(str(pins[0]).split(",")[0]), Counter())[ref] += 1
 
     connectors = []
-    headers = header_banks(pinmap)
+    headers = header_banks(board)
     for bank in headers:
-        refs = [ref for ref, _pin in board_sources.bank_pins(pinmap, bank)]
+        refs = [ref for ref, _pin in board_sources.bank_pins(board, bank)]
         fact = facts_h.get(bank)
         if bank in ok_headers:
             c = {k: v for k, v in fact.items() if k in ("id", "type", "label", "note", "bank", "pins", "source")}
             c["pins"] = dict(sorted(((str(k), v) for k, v in fact["pins"].items()), key=lambda kv: _natural(kv[0])))
         else:
             c = {"id": bank, "type": "pin_row", "label": bank.upper(),
-                 "note": "pins in the pinmap's order: the header's physical pin numbers are not verified yet",
+                 "note": "pins in the board's order: the header's physical pin numbers are not verified yet",
                  "bank": bank, "pins": {"[{}]".format(k): ref for k, ref in enumerate(refs)}}
         connectors.append(c)
 
@@ -166,7 +166,7 @@ def draft(board_id):
                       if k not in rig_params.get(a["peripheral"], ()) and k not in codegen.RIG_PARAMS}
             if a.get("params") is not None and params:
                 attach["params"] = params
-            attach["bind"] = _whole_bank(a.get("bind") or {}, attach.get("params"), pinmap, shared)
+            attach["bind"] = _whole_bank(a.get("bind") or {}, attach.get("params"), board, shared)
             if main not in parts:
                 parts[main] = []
                 order.append(main)
@@ -177,7 +177,7 @@ def draft(board_id):
     # a device the board data describes is attached as its model says: the model
     # replaces a configuration's attach of the same peripheral (a better model,
     # model_params, reaches the rigs), attaches of other peripherals stay variants
-    banks = pinmap.get("pinBanks") or {}
+    banks = board.get("banks") or {}
     for main in order:
         spec = banks.get(main)
         dev = spec.get("device") if isinstance(spec, dict) else None
@@ -215,7 +215,7 @@ def draft(board_id):
     # its kind, else a part drawn with its pins that designs cannot use yet
     attached = {b for main in parts for a in parts[main] for b in _banks_of(list(a["bind"].values()))}
     ids = {o["id"] for o in onboard}
-    for bank, spec in (pinmap.get("pinBanks") or {}).items():
+    for bank, spec in (board.get("banks") or {}).items():
         dev = spec.get("device") if isinstance(spec, dict) else None
         if not dev or bank in headers or bank in attached:
             continue
@@ -234,7 +234,7 @@ def draft(board_id):
     # the board's own connector types stay with it
     own = {c["type"]: connectors_def[c["type"]] for c in connectors if c["type"] not in base_types}
     return {"board": board_id, "verified": verified, "generated": True, "connector_types": own,
-            "connectors": connectors, "onboard": onboard}
+            "headers": connectors, "parts": onboard}
 
 
 def _model(kind, bank, spec):
@@ -345,7 +345,7 @@ def _model(kind, bank, spec):
     return None
 
 
-def _whole_bank(bind, params, pinmap, shared=()):
+def _whole_bank(bind, params, board, shared=()):
     """A rig's `pins:` choice undone: a bind of some of one list bank's pins in
     their order (`led: [onboard_leds[0], .., onboard_leds[7]]` without LED 4,
     the DS18B20's pin) is the part's whole bank in the layout — the part is the
@@ -363,7 +363,7 @@ def _whole_bank(bind, params, pinmap, shared=()):
     bank = parsed[0][0]
     if bank in shared:
         return bind
-    pins = ((pinmap.get("pinBanks") or {}).get(bank) or {}).get("pins")
+    pins = ((board.get("banks") or {}).get(bank) or {}).get("pins")
     idx = [p[2] for p in parsed]
     if not isinstance(pins, list) or any(p[0] != bank for p in parsed) or len(idx) >= len(pins) \
             or idx != sorted(idx) or len(set(idx)) != len(idx):
@@ -419,16 +419,16 @@ def emit_drawn(layout):
         for tid, ctype in layout["connector_types"].items():
             out.append("    {}:".format(tid))
             out += ["      {}: {}".format(k, _flow(v)) for k, v in ctype.items()]
-    out.append("  headers:" + ("" if layout["connectors"] else " []"))
-    for c in layout["connectors"]:
+    out.append("  headers:" + ("" if layout["headers"] else " []"))
+    for c in layout["headers"]:
         out += ["    - id: {}".format(c["id"]), "      type: {}".format(c["type"]),
                 "      label: {}".format(_flow(c["label"]))] + \
                (["      note: {}".format(_flow(c["note"]))] if c.get("note") else []) + \
                (["      bank: {}".format(c["bank"])] if c.get("bank") else []) + [
                 "      pins: {}".format(_flow({str(k): v for k, v in c["pins"].items()}))] + \
                (["      source: {}".format(_flow(c["source"]))] if c.get("source") else [])
-    out.append("  parts:" + ("" if layout["onboard"] else " []"))
-    for o in layout["onboard"]:
+    out.append("  parts:" + ("" if layout["parts"] else " []"))
+    for o in layout["parts"]:
         out += ["    - id: {}".format(o["id"]), "      label: {}".format(_flow(o["label"]))]
         if o.get("source"):
             out.append("      source: {}".format(_flow(o["source"])))
@@ -462,8 +462,8 @@ def splice_drawn(text, section):
 
 def is_generated(board_id):
     """True when the board is not drawn yet or its drawn section was generated."""
-    layout = su.read_layouts().get(board_id)
-    return layout is None or bool(layout.get("generated"))
+    board = config_init.peek_board(board_id)
+    return board is None or "layout" not in board or bool((board.get("layout") or {}).get("generated"))
 
 
 def write(board_id):

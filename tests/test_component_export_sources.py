@@ -207,8 +207,8 @@ def test_synthesize_passes_snapshot_to_driver_and_rejects_changed_export(tmp_pat
     top = design / "design_top.sv"
     top.write_text("module design_top; generated u(); endmodule\n")
     resolved = {
-        "configuration": {"id": "test"}, "board": {"Id": "test-board"},
-        "board_pinmap": {}, "toolchain": {"id": "test-toolchain"},
+        "configuration": {"id": "test"}, "board": {"id": "test-board"},
+        "toolchain": {"id": "test-toolchain"},
         "peripherals": [],
     }
     calls = []

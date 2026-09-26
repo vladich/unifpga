@@ -11,12 +11,11 @@ import synthesize
 
 def _verified(resolved):
     resolved = copy.deepcopy(resolved)
-    pinmap = resolved["board_pinmap"]
     board = resolved["board"]
-    pinmap["verification"] = {
+    board["verification"] = {
         "status": "verified",
-        "pinmap_sha256": config.init.pinmap_fingerprint(pinmap),
-        "parts": [board.get("PartOrderingCode") or board["Part"]],
+        "banks_sha256": config.init.board_fingerprint(board),
+        "parts": [board["chip_id"]],
         "pinout": {"source": "vendor board schematic", "revision": "rev A"},
         "electrical": {"source": "vendor electrical manual", "revision": "rev B"},
     }
@@ -27,38 +26,38 @@ def test_unverified_and_placeholder_boards_are_rejected():
     unverified = config.init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
     placeholder = config.init.resolve_configuration("gatemate_evb_a1")
     with pytest.raises(config.init.ConfigError, match="not verified for hardware"):
-        config.init.require_hardware_readiness(unverified["board"], unverified["board_pinmap"])
+        config.init.require_hardware_readiness(unverified["board"])
     with pytest.raises(config.init.ConfigError, match="not verified for hardware"):
-        config.init.require_hardware_readiness(placeholder["board"], placeholder["board_pinmap"])
+        config.init.require_hardware_readiness(placeholder["board"])
 
 
-def test_exact_pinmap_and_part_attestation_is_required():
+def test_exact_banks_and_part_attestation_is_required():
     resolved = _verified(config.init.resolve_configuration("tang_nano_9k_hdmi_tm1638"))
-    board, pinmap = resolved["board"], resolved["board_pinmap"]
-    config.init.require_hardware_readiness(board, pinmap)
+    board = resolved["board"]
+    config.init.require_hardware_readiness(board)
 
-    changed = copy.deepcopy(pinmap)
-    changed["pinBanks"]["clk"]["pins"] = "different-pin"
+    changed = copy.deepcopy(board)
+    changed["banks"]["clk"]["pins"] = "different-pin"
     with pytest.raises(config.init.ConfigError, match="digest is missing or stale"):
-        config.init.require_hardware_readiness(board, changed)
+        config.init.require_hardware_readiness(changed)
 
     wrong_part = copy.deepcopy(board)
-    wrong_part["Part"] = "different-part"
+    wrong_part["chip_id"] = "different-part"
     with pytest.raises(config.init.ConfigError, match="does not cover selected part"):
-        config.init.require_hardware_readiness(wrong_part, pinmap)
+        config.init.require_hardware_readiness(wrong_part)
 
-    no_electrical = copy.deepcopy(pinmap)
+    no_electrical = copy.deepcopy(board)
     no_electrical["verification"]["electrical"]["revision"] = ""
     with pytest.raises(config.init.ConfigError, match="lacks electrical source and revision"):
-        config.init.require_hardware_readiness(board, no_electrical)
+        config.init.require_hardware_readiness(no_electrical)
 
-    wrong_board = copy.deepcopy(board)
-    wrong_board["Id"] = "another-board"
-    with pytest.raises(config.init.ConfigError, match="identity does not match"):
-        config.init.require_hardware_readiness(wrong_board, pinmap)
+    other_board = copy.deepcopy(board)
+    other_board["id"] = "another-board"                      # the digest covers the board's identity
+    with pytest.raises(config.init.ConfigError, match="digest is missing or stale"):
+        config.init.require_hardware_readiness(other_board)
 
 
-def test_physical_synthesis_rejects_unknown_pinmap_before_tool_setup(tmp_path, monkeypatch):
+def test_physical_synthesis_rejects_an_unverified_board_before_tool_setup(tmp_path, monkeypatch):
     resolved = config.init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
     monkeypatch.setattr(config.init, "read_or_init", lambda _, **__: resolved)
     monkeypatch.setattr(synthesize, "prepare_toolchain", lambda _: pytest.fail("tool setup ran"))
@@ -67,14 +66,14 @@ def test_physical_synthesis_rejects_unknown_pinmap_before_tool_setup(tmp_path, m
     assert not output.exists()
 
 
-def test_physical_program_rejects_unknown_pinmap_before_driver(tmp_path, monkeypatch):
+def test_physical_program_rejects_an_unverified_board_before_driver(tmp_path, monkeypatch):
     resolved = config.init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
     monkeypatch.setattr(config.init, "read_or_init", lambda _: resolved)
     monkeypatch.setattr(synthesize, "toolchain_module", lambda _: pytest.fail("driver loaded"))
     assert program.main(["-o", str(tmp_path)]) == 2
 
 
-def test_verified_pinmap_admits_program_driver(tmp_path, monkeypatch):
+def test_verified_board_admits_program_driver(tmp_path, monkeypatch):
     resolved = _verified(config.init.resolve_configuration("tang_nano_9k_hdmi_tm1638"))
     calls = []
     monkeypatch.setattr(config.init, "read_or_init", lambda _: resolved)
@@ -88,7 +87,7 @@ def test_verified_pinmap_admits_program_driver(tmp_path, monkeypatch):
 
     monkeypatch.setattr(synthesize, "toolchain_module", lambda _: Driver)
     assert program.main(["-o", str(tmp_path)]) == 0
-    assert len(calls) == 1 and calls[0]["board_pinmap"] is resolved["board_pinmap"]
+    assert len(calls) == 1 and calls[0]["board"] is resolved["board"]
 
 
 @pytest.mark.parametrize("result", [None, True, "0"])

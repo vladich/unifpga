@@ -66,22 +66,21 @@ def _himbaechel_has_gowin(binary):
     return "gowin" in out.lower()
 
 
-def _select_part(board, pinmap):
-    """(nextpnr device, apicula family): the pinmap's
+def _select_part(board):
+    """(nextpnr device, apicula family): the board's
     `toolchain_options.yosys.device_part` (else the board's part) and
     `device_family`; None without a family."""
-    yo = codegen.yosys_loader_settings(pinmap)
+    yo = codegen.yosys_loader_settings(board)
     family = yo.get("device_family")
-    return (yo.get("device_part") or board.get("Part"), family) if family else None
+    return (yo.get("device_part") or board.get("part"), family) if family else None
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-gowin + gowin_pack. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -91,10 +90,10 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    info = _select_part(board, board_pinmap)
+    info = _select_part(board)
     if info is None:
-        log.error("Board %r: its pinmap gives no toolchain_options.yosys.device_family (the apicula "
-                  "family, GW1N-9C ...)", board.get("Id"))
+        log.error("Board %r: its board gives no toolchain_options.yosys.device_family (the apicula "
+                  "family, GW1N-9C ...)", board.get("id"))
         return 1
     nextpnr_device, gowin_pack_device = info
 
@@ -129,7 +128,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
     yosys_script = "; ".join(
         read_cmds
-        + ['{} -top top -json "{}"'.format(" ".join(["synth_gowin"] + codegen.yosys_synth_options(board_pinmap)), json_path)]
+        + ['{} -top top -json "{}"'.format(" ".join(["synth_gowin"] + codegen.yosys_synth_options(board)), json_path)]
     )
     cmd = [yosys, "-q", "-l", yosys_log, "-p", yosys_script]
     log.info("Invoking yosys synth_gowin")
@@ -150,7 +149,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     # the gowin uarch (`--device $DEVICE_PART --vopt family=$DEVICE_FAMILY
     # --vopt cst=...`); a build without that uarch (mercury's oss-cad-suite)
     # keeps the legacy nextpnr-gowin ----
-    yo = codegen.yosys_loader_settings(board_pinmap)
+    yo = codegen.yosys_loader_settings(board)
     himbaechel = _resolve_bin("nextpnr-himbaechel")
     if himbaechel is not None and not _himbaechel_has_gowin(himbaechel):
         himbaechel = None
@@ -192,7 +191,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .fs to the connected board via openFPGALoader."""
     fs = os.path.join(output, PROJECT_NAME + ".fs")
     if not os.path.exists(fs) and not os.environ.get("UNIFPGA_DRY_RUN"):
@@ -205,7 +204,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     if pgm is None:
         log.error("Could not find openFPGALoader on $PATH.")
         return 1
-    cmd = [pgm] + (codegen.openfpgaloader_args(board_pinmap)) + [fs]
+    cmd = [pgm] + (codegen.openfpgaloader_args(board)) + [fs]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode
     if rc != 0:

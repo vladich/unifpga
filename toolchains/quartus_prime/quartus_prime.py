@@ -110,19 +110,7 @@ def _select_part(board, configuration):
     Parts (analogous to Vivado driver). Normalizes for Quartus's device list:
     Cyclone V parts often carry a trailing `N` (manufacturing/temp marker) in
     datasheet names, but Quartus's device.db only accepts the base form."""
-    part_name = board.get("Part") or ""
-    if not part_name and isinstance(board.get("Parts"), list):
-        wanted = (configuration.get("part") or "").lower()
-        chosen = None
-        for entry in board["Parts"]:
-            if wanted and entry.get("Name", "").lower() == wanted:
-                chosen = entry
-                break
-        if chosen is None:
-            chosen = board["Parts"][0]
-            log.info("Board %s has multiple Parts; defaulting to %s",
-                     board["Id"], chosen.get("Name") or chosen.get("Part"))
-        part_name = chosen.get("Part") or ""
+    part_name = board.get("part") or ""
 
     # Strip trailing N (Cyclone V "no temp/lead" marker — not in Quartus device list).
     if part_name.endswith("N") and (part_name.startswith("5C") or part_name.startswith("EP")):
@@ -130,13 +118,12 @@ def _select_part(board, configuration):
     return part_name
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Quartus. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -148,7 +135,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     part_name = _select_part(board, configuration)
     if not part_name:
-        log.error("Board %s has no 'Part' field — cannot drive Quartus.", board["Id"])
+        log.error("Board %s has no part — cannot drive Quartus.", board["id"])
         return 1
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
@@ -283,10 +270,10 @@ def _cables(quartus_pgm, env, cwd):
     return [m.group(1).strip() for m in re.finditer(r"^\s*\d+\)\s+(.+?)\s*$", out, re.M)]
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the bitstream over JTAG with quartus_pgm: the first cable
     `quartus_pgm -l` lists (warn on more), `.sof` else `.pof` (MAX II), the
-    FPGA's index in the JTAG chain from the pinmap
+    FPGA's index in the JTAG chain from the board
     (`toolchain_options.quartus.jtag_device_index`: 2 behind the HPS on the
     DE1-SoC / DE10-Nano)."""
     bitstream = _find_bitstream(output)
@@ -296,7 +283,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         return 1
     if bitstream is None:
         bitstream = os.path.join(output, PROJECT_NAME + ".sof")
-    opts = ((board_pinmap or {}).get("toolchain_options") or {}).get("quartus") or {}
+    opts = ((board or {}).get("toolchain_options") or {}).get("quartus") or {}
     index = opts.get("jtag_device_index")
     target = "P;{}{}".format(bitstream, "@{}".format(index) if index else "")
     if dry:

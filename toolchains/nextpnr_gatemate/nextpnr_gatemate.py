@@ -65,17 +65,16 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
 def _select_part(board, configuration):
     """nextpnr-himbaechel --device: the board's part, when it is a GateMate
     die (CCGM1A1 single-die, CCGM1A2 dual-die ...)."""
-    part = str(board.get("Part") or "")
+    part = str(board.get("part") or "")
     return part if re.match(r"^CCGM\d+A\d+$", part) else None
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-himbaechel + gmpack. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -87,7 +86,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     device = _select_part(board, configuration)
     if device is None:
-        log.error("Board %r: its part %r is not a GateMate die (CCGM1A1 ...)", board.get("Id"), board.get("Part"))
+        log.error("Board %r: its part %r is not a GateMate die (CCGM1A1 ...)", board.get("id"), board.get("part"))
         return 1
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
@@ -174,7 +173,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .bit to the connected GateMate EVB via openFPGALoader.
     The GateMate EVB-A1 enumerates as a generic FT2232 JTAG; openFPGALoader
     has a `gatemate_evb_jtag` cable profile."""

@@ -170,7 +170,7 @@ def parse_digilent_xdc_text(text):
 
 
 # ----------------------------------------------------------------------------
-# YAML pinmap loader — flatten our pinBanks: { name → list/dict/str of pins }
+# flatten the board's banks: { name → list/dict/str of pins }
 # ----------------------------------------------------------------------------
 
 def pins_of(board):

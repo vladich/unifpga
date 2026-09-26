@@ -115,11 +115,11 @@ def _board_path(board_id):
     return board["_path"]
 
 
-def plan(inv, pinmap):
-    """What importing `inv` into `pinmap` does:
+def plan(inv, board):
+    """What importing `inv` into the board does:
     {add: [(bank, device)], matched: [bank], same_pins_other_order: [bank],
      differs: [(bank, detail)], skipped: [(device name, why)]}."""
-    banks = dict((pinmap or {}).get("pinBanks") or {})
+    banks = dict((board or {}).get("banks") or {})
     out = {"add": [], "matched": [], "same_pins_other_order": [], "differs": [], "skipped": []}
     taken = set(banks)
     for d in inv["devices"]:
@@ -302,10 +302,10 @@ def import_inventory(inv, write=True):
     """Import one inventory; the report of what it did (see plan())."""
     board_id = inv["board"]
     path = _board_path(board_id)
-    pinmap = config_init.read_board_pinmap(board_id) or {}
-    created = not pinmap                                # the board had no banks yet
-    p = plan(inv, pinmap)
-    banks = dict(pinmap.get("pinBanks") or {})
+    existing = config_init.peek_board(board_id) or {}
+    created = not existing.get("banks")                 # the board had no banks yet
+    p = plan(inv, existing)
+    banks = dict(existing.get("banks") or {})
     new = {b: (b, _balls(_as_bank_pins(d))) for b, d in p["add"]}
     everything = dict(banks, **new)
     text = []

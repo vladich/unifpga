@@ -115,7 +115,7 @@ def test_chip_registries_require_identity_and_list(tmp_path, monkeypatch):
 
 def test_board_files_are_named_after_their_id_and_need_a_family(tmp_path, monkeypatch):
     """config/boards/<producer>/<family>/<id>.yml: a Board mapping whose id is
-    the file name; the catalogue view needs the chip family of the directory."""
+    the file name; the board's chip family is the one its directory names."""
     family = tmp_path / "boards" / "lattice" / "ice40"
     family.mkdir(parents=True)
     monkeypatch.setattr(config_init, "dir_path", str(tmp_path))
@@ -123,22 +123,20 @@ def test_board_files_are_named_after_their_id_and_need_a_family(tmp_path, monkey
     with pytest.raises(config_init.ConfigError, match="needs a Board mapping whose id is 'one'"):
         config_init.read_boards()
     _write(family, "one.yml", "Board: {id: one, name: One, producer: lattice, chip: X}\n")
-    assert config_init.read_boards()["one"]["_family_dir"] == "ice40"
     with pytest.raises(config_init.ConfigError, match="no chip family config/chips/lattice/ice40.yml"):
-        config_init.read_boards_catalog()
+        config_init.read_boards()
     chips = tmp_path / "chips" / "lattice"
     chips.mkdir(parents=True)
     _write(chips, "ice40.yml", "Family: {id: ice40, producer: lattice, name: ICE40, chips: [{id: X}]}\n")
-    entry = config_init.read_boards_catalog()["one"]
-    assert (entry["BoardName"], entry["Chip"], entry["PartProducer"], entry["PartFamily"]) == ("One", "X", "lattice", "ICE40")
-    assert config_init.read_board_pinmap("one") is None          # no banks: a catalogue-only board
+    board = config_init.read_boards()["one"]
+    assert (board["name"], board["chip"], board["_family_dir"]) == ("One", "X", "ice40")
+    assert board["family"] == {"id": "ice40", "name": "ICE40", "producer": "lattice"}
+    assert "banks" not in board                                    # a catalogue-only board
 
 
-def test_tinyfpga_bx_uses_lp_hx_family_and_keeps_pinmap():
-    board = config_init.read_board_entry("tinyfpga_bx")
-    chip = config_init.read_chips()[board["Chip"]]
-    pinmap = config_init.read_board_pinmap("tinyfpga_bx")
-    assert board["PartFamily"] == chip["family_name"] == "ICE40" and chip["family"] == "ice40"
-    assert board["PartProducer"] == chip["producer"] == "lattice"
-    assert board["_family_dir"] == "ice40"
-    assert pinmap["id"] == "tinyfpga_bx"
+def test_tinyfpga_bx_uses_lp_hx_family_and_keeps_its_banks():
+    board = config_init.read_board("tinyfpga_bx")
+    chip = config_init.read_chips()[board["chip"]]
+    assert board["family"]["name"] == chip["family_name"] == "ICE40" and board["family"]["id"] == chip["family"] == "ice40"
+    assert board["family"]["producer"] == chip["producer"] == "lattice" and board["_family_dir"] == "ice40"
+    assert board["banks"] and board["banks"] is not config_init.peek_board("tinyfpga_bx")["banks"]   # a copy, with its pins

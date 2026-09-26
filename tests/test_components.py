@@ -131,13 +131,13 @@ def test_wm8731_and_adv7513_generate():
 
 def test_qsf_global_assignments_and_no_invented_default():
     r = config_init.resolve_configuration("omdazz")
-    pm = r["board_pinmap"]
+    pm = r["board"]
     pm.setdefault("toolchain_options", {})["quartus"] = {
         "global_assignments": ['CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"']}
     qsf = codegen.emit_qsf(r, "EP4CE6E22C8")
     assert 'set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"' in qsf
     pm.pop("defaults", None)
-    for b in pm["pinBanks"].values():
+    for b in pm["banks"].values():
         b.pop("iostandard", None)
         b.pop("overrides", None)
     qsf = codegen.emit_qsf(r, "EP4CE6E22C8")
@@ -152,7 +152,7 @@ def test_yosys_synth_options():
 
 # ---------------------------------------------------------------- sync helpers
 
-_PINMAP = {"pinBanks": {
+_BOARD = {"banks": {
     "gpio_0": {"pins": ["A%d" % i for i in range(4)]},
     "pmod_ja": {"pins": ["B%d" % i for i in range(8)]},
     "onboard_leds": {"pins": ["L0", "L1", "L2"], "active": "low"},
@@ -179,15 +179,15 @@ _HDR_LED2 = _hdr("input CLK", "output [2:0] LED", "output LED_R_N")
 
 def test_openfpgaloader_args_follow_the_board():
     """openFPGALoader: --cable (colorlight), --ftdi-channel (karnix 0,
-    orangecrab 1), -b BOARD; the Gowin table when the pinmap says nothing."""
+    orangecrab 1), -b BOARD; the Gowin table when the board says nothing."""
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_ftdi_channel": "1"}}}) == ["--ftdi-channel", "1"]
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_cable": "ft2232"}}}) == ["--cable", "ft2232"]
     assert codegen.openfpgaloader_args({"toolchain_options": {"yosys": {"loader_board": "ice40_generic"}}}) == ["-b", "ice40_generic"]
-    assert codegen.openfpgaloader_args(config_init.read_board_pinmap("tang_nano_20k")) == ["-b", "tangnano20k"]
+    assert codegen.openfpgaloader_args(config_init.read_board("tang_nano_20k")) == ["-b", "tangnano20k"]
     assert codegen.openfpgaloader_args({}) == []
-    assert codegen.openfpgaloader_args(config_init.read_board_pinmap("de10_lite")) == []
+    assert codegen.openfpgaloader_args(config_init.read_board("de10_lite")) == []
     r = config_init.resolve_configuration("orangecrab_ecp5_yosys")
-    assert codegen.openfpgaloader_args(r["board_pinmap"]) == ["--ftdi-channel", "1"]
+    assert codegen.openfpgaloader_args(r["board"]) == ["--ftdi-channel", "1"]
 
 
 def test_qsf_has_project_template_lines():
@@ -195,7 +195,7 @@ def test_qsf_has_project_template_lines():
     qsf = codegen.emit_qsf(r, "5CSEBA6U23I7")
     assert "set_global_assignment -name NUM_PARALLEL_PROCESSORS 4" in qsf
     assert "VERILOG_MACRO" not in qsf          # designs do not test the vendor
-    assert r["board_pinmap"]["toolchain_options"]["quartus"]["jtag_device_index"] == 2
+    assert r["board"]["toolchain_options"]["quartus"]["jtag_device_index"] == 2
 
 
 def test_quartus_cable_list_parsing(monkeypatch):
@@ -220,9 +220,9 @@ def test_gowin_ide_project_file_from_the_pinmap_device():
     assert '<File path="/o/top.cst" type="file.cst" enable="1"/>' in text
     assert '<File path="/o/top.sdc" type="file.sdc" enable="1"/>' in text
     r = config_init.resolve_configuration("tang_nano_9k_hdmi_tm1638")
-    assert "gw1nr9c-004" in codegen.emit_gowin_gprj(r["board_pinmap"], [], None, None)
+    assert "gw1nr9c-004" in codegen.emit_gowin_gprj(r["board"], [], None, None)
     r = config_init.resolve_configuration("tang_nano_20k_hdmi_tm1638")
-    assert "gw2ar18c-000" in codegen.emit_gowin_gprj(r["board_pinmap"], [], None, None)   # the majority of the 7 variants
+    assert "gw2ar18c-000" in codegen.emit_gowin_gprj(r["board"], [], None, None)   # the majority of the 7 variants
 
 
 def test_nextpnr_gui_args_follow_the_environment(monkeypatch):

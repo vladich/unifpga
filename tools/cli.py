@@ -859,7 +859,7 @@ def cmd_layout(args):
                         raise CliError("{} does not round-trip with the new layout:\n  {}".format(cid, "\n  ".join(diffs)))
                     su.write_setup(su.derive(cfg))
         print("{:<32} {} {} ({} headers, {} on-board parts{})".format(
-            b, "wrote" if changed else "unchanged", _shown(path), len(layout["connectors"]), len(layout["onboard"]),
+            b, "wrote" if changed else "unchanged", _shown(path), len(layout["headers"]), len(layout["parts"]),
             ", verified" if layout["verified"] else ""))
     return 0
 

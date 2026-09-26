@@ -96,7 +96,7 @@ def test_sized_requirements_of_the_new_capabilities():
 
 
 def test_a_two_row_pmod_plugs_into_the_whole_connector():
-    layout, modules, connectors = su.read_layout("arty_a7"), su.read_modules(), su.read_connectors()
+    layout, modules, connectors = su.read_drawn("arty_a7"), su.read_modules(), su.read_connectors()
     oled = modules["digilent_pmod_oled"]
     wires = su.plug_wires(connectors, layout, oled, {"connector": "ja", "row": "all"})
     assert wires == {"1": "ja.1", "2": "ja.2", "4": "ja.4", "7": "ja.7", "8": "ja.8", "9": "ja.9", "10": "ja.10"}

@@ -21,12 +21,12 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain,
+def synthesize(*, dir, configuration, board, toolchain,
                peripherals, top, include, output, step="full", **_):
     log.error(
         "[stub %s] cannot synthesize configuration=%s, board=%s, top=%s, "
         "step=%s, output=%s, peripherals=%d",
-        toolchain["id"], configuration["id"], board["Id"], top, step, output,
+        toolchain["id"], configuration["id"], board["id"], top, step, output,
         len(peripherals),
     )
     return 2

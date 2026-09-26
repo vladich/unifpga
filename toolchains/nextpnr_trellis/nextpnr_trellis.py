@@ -54,15 +54,15 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
         include_svh=False, gate_helpers=True, gate_common=True, component_sources=component_sources)
 
 
-def _select_part(board, pinmap):
-    """nextpnr-ecp5 (DEVICE, PACKAGE, SPEED): the pinmap's
+def _select_part(board):
+    """nextpnr-ecp5 (DEVICE, PACKAGE, SPEED): the board's
     `toolchain_options.yosys` device_part / device_pack / speed when it
     gives them, else from the board's part."""
-    yo = codegen.yosys_loader_settings(pinmap)
+    yo = codegen.yosys_loader_settings(board)
     if yo.get("device_part") and yo.get("device_pack"):
         return str(yo["device_part"]), str(yo["device_pack"]), int(yo.get("speed") or 6)
     # else parse `LFE5U[M]-<size>F[-<speed>][BG<pkg>]` style strings.
-    part = board.get("Part") or ""
+    part = board.get("part") or ""
     m = re.match(r"^LFE5UM?-(\d+)F(?:-(\d+))?(?:([CB]G\d+))?$", part)
     if m:
         device = m.group(1) + "k"
@@ -72,13 +72,12 @@ def _select_part(board, pinmap):
     return None
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-ecp5 + ecppack. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -88,13 +87,13 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    info = _select_part(board, board_pinmap)
+    info = _select_part(board)
     if info is None:
-        log.error("Board %r: neither its pinmap (toolchain_options.yosys device_part / device_pack) nor its "
-                  "part %r names the ECP5 device and package", board.get("Id"), board.get("Part"))
+        log.error("Board %r: neither its board (toolchain_options.yosys device_part / device_pack) nor its "
+                  "part %r names the ECP5 device and package", board.get("id"), board.get("part"))
         return 1
     device, package, speed = info
-    yo = codegen.yosys_loader_settings(board_pinmap)
+    yo = codegen.yosys_loader_settings(board)
     speed = yo.get("speed") or speed                 # the board's speed grade (nextpnr-ecp5 --speed)
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
@@ -128,7 +127,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
     yosys_script = "; ".join(
         read_cmds
-        + ['{} -top top -json "{}"'.format(" ".join(["synth_ecp5"] + codegen.yosys_synth_options(board_pinmap)), json_path)]
+        + ['{} -top top -json "{}"'.format(" ".join(["synth_ecp5"] + codegen.yosys_synth_options(board)), json_path)]
     )
     cmd = [yosys, "-q", "-l", yosys_log, "-p", yosys_script]
     log.info("Invoking yosys synth_ecp5")
@@ -175,7 +174,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .bit to the connected board via openFPGALoader (or ecpdap)."""
     bit = os.path.join(output, PROJECT_NAME + ".bit")
     if not os.path.exists(bit) and not os.environ.get("UNIFPGA_DRY_RUN"):
@@ -190,7 +189,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         return 1
     # openFPGALoader takes `--cable` (colorlight, set per board) and
     # `--ftdi-channel` (karnix 0, orangecrab 1)
-    args = codegen.openfpgaloader_args(board_pinmap) if os.path.basename(pgm).startswith("openFPGALoader") else []
+    args = codegen.openfpgaloader_args(board) if os.path.basename(pgm).startswith("openFPGALoader") else []
     cmd = [pgm] + args + [bit]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output).returncode

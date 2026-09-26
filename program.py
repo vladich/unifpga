@@ -49,7 +49,7 @@ def main(argv=None):
         config.init.require_toolchain_operation(toolchain, "program")
         config.init.require_toolchain_version(toolchain)
         if not os.environ.get("UNIFPGA_DRY_RUN"):
-            config.init.require_hardware_readiness(resolved["board"], resolved["board_pinmap"])
+            config.init.require_hardware_readiness(resolved["board"])
         else:
             log.warning("Dry run only: no physical board will be programmed")
     except config.init.ConfigError as exc:
@@ -58,7 +58,6 @@ def main(argv=None):
     synthesize.prepare_toolchain(toolchain)
     rc = synthesize.toolchain_module(toolchain).program(
         board=resolved["board"],
-        board_pinmap=resolved["board_pinmap"],
         toolchain=toolchain,
         output=args.output,
     )

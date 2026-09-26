@@ -71,7 +71,7 @@ def test_a_target_id_names_another_build_of_a_rig():
     r = config_init.resolve_configuration("arty_a7@nextpnr_openxc7@100t")
     assert r["target"] == {"id": "arty_a7_100_openxc7", "rig": "arty_a7", "toolchain": "nextpnr_openxc7",
                            "part": "100t"}
-    assert r["board"]["PartName"] == "100t"
+    assert r["board"]["part_name"] == "100t" and r["board"]["chip_id"] == "xc7a100tcsg324-1"
     same = config_init.resolve_configuration("arty_a7", toolchain="nextpnr_openxc7", part="100t")
     assert same["target"] == r["target"]
     assert config_init.target_of("no_such_rig@vivado") is None
@@ -169,7 +169,7 @@ def test_an_on_board_device_handed_to_the_designs_gpio_is_a_part():
     drive the panel themselves): an on-board part, drawn and traced."""
     setup = su.read_setup("tang_nano_9k_lcd_480_272_tm1638")
     assert {"onboard": "small_lcd"} in setup["use"]
-    part = next(o for o in su.read_layout("tang_nano_9k")["onboard"] if o["id"] == "small_lcd")
+    part = next(o for o in su.read_drawn("tang_nano_9k")["parts"] if o["id"] == "small_lcd")
     assert part["attach"]["bind"]["io"] == ["onboard_small_lcd." + p for p in ("data", "clk", "cs", "rs")]
 
 
@@ -217,7 +217,7 @@ def test_a_modules_bind_does_not_depend_on_the_order_of_its_wires():
 # ---------------------------------------------------------------- on-board devices (Phase 2)
 
 def _part(board, part_id):
-    return next(o for o in su.read_layout(board)["onboard"] if o["id"] == part_id)
+    return next(o for o in su.read_drawn(board)["parts"] if o["id"] == part_id)
 
 
 def test_on_board_devices_get_the_peripheral_that_models_them():
@@ -234,10 +234,10 @@ def test_on_board_devices_get_the_peripheral_that_models_them():
 def test_hard_processor_pins_are_never_modelled():
     """A Cyclone V HPS or Zynq PS pin is not reachable from the FPGA fabric."""
     for board in ("de10_nano", "de1_soc", "eclypse_z7"):
-        pinmap = config_init.read_board_pinmap(board)["pinBanks"]
-        hard = {b for b, spec in pinmap.items() if isinstance(spec, dict) and spec.get("fabric") is False}
+        banks = config_init.read_board(board)["banks"]
+        hard = {b for b, spec in banks.items() if isinstance(spec, dict) and spec.get("fabric") is False}
         assert hard, board
-        for o in su.read_layout(board)["onboard"]:
+        for o in su.read_drawn(board)["parts"]:
             bank = (o.get("device") or {}).get("bank")
             if bank in hard:
                 assert "attach" not in o and not o.get("variants"), (board, o["id"])
@@ -285,7 +285,7 @@ def test_a_pull_up_the_toolchain_cannot_emit_is_refused():
     r = copy.deepcopy(config_init.resolve_configuration("basys3"))
     r["toolchain"] = dict(r["toolchain"], id="quartus_prime_lite")
     assert any("pulled up" in p for p in codegen.validate_configuration(r))
-    r["board_pinmap"]["pinBanks"]["onboard_usb_hid"]["pull"] = "down"
+    r["board"]["banks"]["onboard_usb_hid"]["pull"] = "down"
     assert any("pull 'down' is not known" in p for p in codegen.validate_configuration(r))
 
 
@@ -357,13 +357,13 @@ def test_the_xadc_converts_the_boards_analog_pairs():
         assert "xadc_aux_scan # (.CLK_MHZ(clk_mhz), .CHANNELS({}))".format(table) in top, rig
         assert "input  [{}:0] {}_".format(len(channels) - 1, bank) in top and ".adc_mv(" in top
     # every XADC bank of every board lists as many channels as pairs
-    for board in config_init.read_boards_catalog():
-        for name, bank in ((config_init.read_board_pinmap(board) or {}).get("pinBanks") or {}).items():
+    for board_id, board in config_init.peek_boards().items():
+        for name, bank in (board.get("banks") or {}).items():
             dev = bank.get("device") if isinstance(bank, dict) else None
             if dev and dev.get("kind") == "xadc":
                 pins = bank["pins"]
                 lens = {len(v) for v in pins.values()}
-                assert lens == {len(bank["model_params"]["channels"])}, (board, name)
+                assert lens == {len(bank["model_params"]["channels"])}, (board_id, name)
     # the primitive stays in the vendor layer: no design or shared module names it
     assert not [p for p in os.listdir(os.path.join(REPO, "rtl", "peripherals"))
                 if "XADC" in open(os.path.join(REPO, "rtl", "peripherals", p)).read()] if False else True

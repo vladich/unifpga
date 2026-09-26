@@ -101,13 +101,13 @@
       "additionalProperties": false,
       "properties": {
         "status": { "enum": ["verified", "placeholder"] },
-        "pinmap_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "banks_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "parts": { "type": "array", "minItems": 1, "items": { "type": "string" } },
         "pinout": { "$ref": "#/$defs/evidence" },
         "electrical": { "$ref": "#/$defs/evidence" }
       },
       "if": { "properties": { "status": { "const": "verified" } } },
-      "then": { "required": ["pinmap_sha256", "parts", "pinout", "electrical"] }
+      "then": { "required": ["banks_sha256", "parts", "pinout", "electrical"] }
     },
     "connector_type": {
       "type": "object",
@@ -227,6 +227,13 @@
           "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
           "additionalProperties": { "type": "object" }
         },
+        "io": {
+          "description": "Overrides of what codegen infers from the chip family: diff_obuf (the differential output buffer: gowin_elvds, gowin_tlvds, xilinx, generic) and clock_buffer (intel, xilinx, generic)",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "diff_obuf": { "type": "string", "minLength": 1 }, "clock_buffer": { "enum": ["intel", "xilinx", "generic"] } }
+        },
+        "iobanks": { "description": "Efinity: the device's I/O bank voltages when they are not the T8F81 defaults", "type": "object", "additionalProperties": { "type": "string" } },
         "banks": { "type": "object", "minProperties": 1, "propertyNames": { "pattern": "^[A-Za-z0-9_]+$" }, "additionalProperties": { "$ref": "#/$defs/bank" } },
         "verification": { "$ref": "#/$defs/verification" },
         "layout": {

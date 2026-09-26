@@ -214,13 +214,12 @@ def _merge_sv_files_via_sv2v(sv_files, merged_v_path, dry_run=False):
     return rc
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize a configuration through ISE 14.7. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -240,21 +239,9 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     for sv in sv_files:
         log.info("  - %s", os.path.relpath(sv, REPO) if sv.startswith(REPO) else sv)
 
-    part_name = board.get("Part") or ""
-    if not part_name and isinstance(board.get("Parts"), list):
-        wanted = (configuration.get("part") or "").lower()
-        chosen = None
-        for entry in board["Parts"]:
-            if wanted and entry.get("Name", "").lower() == wanted:
-                chosen = entry
-                break
-        if chosen is None:
-            chosen = board["Parts"][0]
-            log.info("Board %s has multiple Parts; defaulting to %s",
-                     board["Id"], chosen.get("Name") or chosen.get("Part"))
-        part_name = chosen.get("Part") or ""
+    part_name = board.get("part") or ""
     if not part_name:
-        log.error("Board %s has no 'Part' field — cannot drive ISE.", board["Id"])
+        log.error("Board %s has no part — cannot drive ISE.", board["id"])
         return 1
     # ISE xst expects the part name without the leading 'XC' uppercase prefix
     # variance; normalize to lowercase since the rest of the flow accepts both.
@@ -370,7 +357,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Program the connected board with the previously-built bitstream.
 
     Programmer choice depends on the board:
@@ -390,5 +377,5 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
         return 1
     log.error("[ise] cannot program %s to %s; programming logic is not implemented "
               "(use openFPGALoader or vendor iMPACT manually).",
-              bit, board.get("Id"))
+              bit, board.get("id"))
     return 2

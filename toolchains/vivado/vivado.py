@@ -81,13 +81,12 @@ def _emit_tcl(part_name, sv_files, xdc_path, output_dir, top_module="top",
     return "\n".join(lines) + "\n"
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize a configuration through Vivado. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -104,24 +103,9 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
 
-    # Boards may list a single Part: or a Parts: list (Arty A7's 35t/100t
-    # variants etc.). Pick the configuration's nominated variant if specified;
-    # otherwise default to the first.
-    part_name = board.get("Part") or ""
-    if not part_name and isinstance(board.get("Parts"), list):
-        wanted = (configuration.get("part") or "").lower()
-        chosen = None
-        for entry in board["Parts"]:
-            if wanted and entry.get("Name", "").lower() == wanted:
-                chosen = entry
-                break
-        if chosen is None:
-            chosen = board["Parts"][0]
-            log.info("Board %s has multiple Parts; defaulting to %s",
-                     board["Id"], chosen.get("Name") or chosen.get("Part"))
-        part_name = chosen.get("Part") or ""
+    part_name = board.get("part") or ""
     if not part_name:
-        log.error("Board %s has no 'Part' field — cannot drive Vivado.", board["Id"])
+        log.error("Board %s has no part — cannot drive Vivado.", board["id"])
         return 1
 
     do_synth     = step in ("elaborate", "pnr", "full")
@@ -186,7 +170,7 @@ def _emit_program_tcl(bitstream_path, hw_device):
     ).format(bit=bitstream_path, dev=hw_device)
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the previously-built bitstream to the connected board over JTAG.
     Runs `vivado -mode batch -source program.tcl`."""
     bit = os.path.join(output, "top.bit")
@@ -196,9 +180,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
 
     # The hw_device pattern is typically `<chip-family>_0` for the first
     # device in the JTAG chain. e.g. xc7a100t_0 for Nexys 4 DDR.
-    part = board.get("Part") or ""
-    if not part and isinstance(board.get("Parts"), list):
-        part = board["Parts"][0].get("Part") or ""
+    part = board.get("part") or ""
     # Strip the package + speed suffix to get the chip family.
     # xc7a100tcsg324-1 -> xc7a100t
     import re as _re

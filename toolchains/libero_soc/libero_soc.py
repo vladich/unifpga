@@ -88,10 +88,10 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
         include_svh=False, gate_helpers=True, gate_common=True, component_sources=component_sources)
 
 
-def _select_target(board_pinmap):
+def _select_target(board):
     """The Libero target (family, die, package, speed, part_range, iostd):
-    the pinmap's `toolchain_options.libero`, None without it."""
-    target = ((board_pinmap or {}).get("toolchain_options") or {}).get("libero")
+    the board's `toolchain_options.libero`, None without it."""
+    target = ((board or {}).get("toolchain_options") or {}).get("libero")
     need = ("family", "die", "package", "speed", "part_range", "iostd")
     return dict(target) if target and all(k in target for k in need) else None
 
@@ -148,13 +148,12 @@ def _emit_tcl(target, project_dir, sv_files, top_module, pdc_path, sdc_path):
     return "\n".join(lines) + "\n"
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Libero SoC. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -164,10 +163,10 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    target = _select_target(board_pinmap)
+    target = _select_target(board)
     if target is None:
-        log.error("Board %r: its pinmap gives no complete toolchain_options.libero (family, die, package, "
-                  "speed, part_range, iostd)", board.get("Id"))
+        log.error("Board %r: its board gives no complete toolchain_options.libero (family, die, package, "
+                  "speed, part_range, iostd)", board.get("id"))
         return 1
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
@@ -217,7 +216,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Programming via Libero's FlashPro/FlashProExpress is a separate step
     (.stp/.pdb generation + JTAG). Surface the artifact path rather than
     drive the programmer headless."""

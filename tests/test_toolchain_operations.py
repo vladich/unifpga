@@ -48,10 +48,10 @@ def test_placeholder_driver_methods_cannot_report_success(toolchain_id, tmp_path
     driver = importlib.import_module("toolchains.{0}.{0}".format(toolchain_id))
     toolchain = {"id": toolchain_id}
     assert driver.synthesize(
-        dir=str(tmp_path), configuration={"id": "example"}, board={"Id": "board"},
-        board_pinmap={}, toolchain=toolchain, peripherals=[], top="design_top.sv",
+        dir=str(tmp_path), configuration={"id": "example"}, board={"id": "board"},
+        toolchain=toolchain, peripherals=[], top="design_top.sv",
         include=[], output=str(tmp_path)) != 0
-    assert driver.program(board={"Id": "board"}, toolchain=toolchain,
+    assert driver.program(board={"id": "board"}, toolchain=toolchain,
                           output=str(tmp_path)) != 0
 
 
@@ -87,7 +87,7 @@ def test_direct_partial_programmers_refuse_success(tmp_path):
 
     (tmp_path / (ise.PROJECT_NAME + ".bit")).write_bytes(b"bitstream")
     (tmp_path / "libero_project").mkdir()
-    assert ise.program(board={"Id": "board"}, toolchain={"id": "ise"},
+    assert ise.program(board={"id": "board"}, toolchain={"id": "ise"},
                        output=str(tmp_path)) != 0
-    assert libero_soc.program(board={"Id": "board"}, toolchain={"id": "libero_soc"},
+    assert libero_soc.program(board={"id": "board"}, toolchain={"id": "libero_soc"},
                               output=str(tmp_path)) != 0

@@ -33,7 +33,7 @@ _PIN_TOKEN = re.compile(r"^[A-Za-z]+\d*$|^\d+$|^[A-Za-z][A-Za-z0-9_]*$")
 # Catalog round-trip and cross-reference tests
 # ---------------------------------------------------------------------------
 
-def _boards():        return config_init.read_boards_catalog()
+def _boards():        return config_init.read_boards()
 def _toolchains():    return config_init.read_toolchains()
 def _peripherals():   return config_init.read_peripherals()
 def _capabilities():  return config_init.read_capabilities()
@@ -47,10 +47,11 @@ def _configurations(): return config_init.read_configurations()
 
 def test_boards_have_required_fields():
     boards = _boards()
-    required = {"Id", "BoardName", "BoardProducer", "PartProducer", "PartFamily"}
+    required = {"id", "name", "producer", "family"}
     for board_id, board in boards.items():
         missing = required - set(board.keys())
         assert not missing, "Board {b} missing fields: {m}".format(b=board_id, m=missing)
+        assert set(board["family"]) == {"id", "name", "producer"} and all(board["family"].values()), board_id
 
 
 def test_every_toolchain_id_has_a_module():
@@ -65,7 +66,7 @@ def test_every_toolchain_id_has_a_module():
 
 
 # ---------------------------------------------------------------------------
-# Per-board YAML structure (new pinBanks schema)
+# Per-board YAML structure (the banks of pins)
 # ---------------------------------------------------------------------------
 
 def _walk_pinmap_files():

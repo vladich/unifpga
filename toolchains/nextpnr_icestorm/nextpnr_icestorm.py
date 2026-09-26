@@ -55,17 +55,7 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
 
 
 def _select_part(board, configuration):
-    part = board.get("Part") or ""
-    if not part and isinstance(board.get("Parts"), list):
-        wanted = (configuration.get("part") or "").lower()
-        chosen = None
-        for entry in board["Parts"]:
-            if wanted and entry.get("Name", "").lower() == wanted:
-                chosen = entry
-                break
-        if chosen is None:
-            chosen = board["Parts"][0]
-        part = chosen.get("Part") or ""
+    part = board.get("part") or ""
     return part
 
 
@@ -85,13 +75,12 @@ def _yosys_synth_family(part):
     return "synth_ice40"
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-ice40 + icepack. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -137,7 +126,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     # syntax against SV-2009 `'{ … }` array-init that yosys still rejects.
     # Telling yosys it's "Icarus" picks the older-syntax branch.
     read_cmds = ['read_verilog -sv -D __ICARUS__ "{}"'.format(sv) for sv in sv_files]
-    synth_cmd = " ".join([_yosys_synth_family(part)] + codegen.yosys_synth_options(board_pinmap))
+    synth_cmd = " ".join([_yosys_synth_family(part)] + codegen.yosys_synth_options(board))
     yosys_script = "; ".join(
         read_cmds
         + ['{} -top top -json "{}"'.format(synth_cmd, json_path)]
@@ -187,7 +176,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .bin to the connected board over USB via iceprog."""
     bit = os.path.join(output, PROJECT_NAME + ".bin")
     if not os.path.exists(bit) and not os.environ.get("UNIFPGA_DRY_RUN"):
@@ -199,7 +188,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     # openFPGALoader -b <the board's loader name>;
     # iceprog stays the fallback for a machine without openFPGALoader
     loader = _resolve_bin("openFPGALoader")
-    args = codegen.openfpgaloader_args(board_pinmap)
+    args = codegen.openfpgaloader_args(board)
     if loader is not None:
         cmd = [loader] + args + [bit]
     else:

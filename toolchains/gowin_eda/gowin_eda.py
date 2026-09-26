@@ -74,40 +74,27 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
         include_svh=False, gate_helpers=False, gate_common=False, component_sources=component_sources)
 
 
-def _gowin_options(board_pinmap):
-    """`toolchain_options.gowin` from the pinmap: {set_device: str, options: [..]}
+def _gowin_options(board):
+    """`toolchain_options.gowin` from the board: {set_device: str, options: [..]}
     (the device string and the board's configuration-pin options)."""
-    return ((board_pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}
+    return ((board or {}).get("toolchain_options") or {}).get("gowin") or {}
 
 
-def _select_set_device_args(board, configuration, board_pinmap=None):
-    """Pick the args for `set_device`. Precedence: the pinmap's
+def _select_set_device_args(board, configuration):
+    """Pick the args for `set_device`. Precedence: the board's
     `toolchain_options.gowin.set_device` (the exact `<part> -name <name>
-    -device_version <ver>`), the board's `GowinDeviceArgs`, then the bare Part."""
-    args = _gowin_options(board_pinmap).get("set_device")
+    -device_version <ver>`), then the bare part."""
+    args = _gowin_options(board).get("set_device")
     if args:
         return args
-    args = board.get("GowinDeviceArgs")
-    if args:
-        return args
-    part_name = board.get("Part") or ""
-    if not part_name and isinstance(board.get("Parts"), list):
-        wanted = (configuration.get("part") or "").lower()
-        chosen = None
-        for entry in board["Parts"]:
-            if wanted and entry.get("Name", "").lower() == wanted:
-                chosen = entry
-                break
-        if chosen is None:
-            chosen = board["Parts"][0]
-        part_name = chosen.get("Part") or ""
+    part_name = board.get("part") or ""
     return part_name
 
 
 def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step, options=()):
     """Generate the gw_sh batch script. The Gowin TCL flow is:
         set_device <part> [-name <name>] [-device_version <ver>]
-        set_option -use_<pin-group>_as_gpio 1   (per board, from the pinmap)
+        set_option -use_<pin-group>_as_gpio 1   (per board, from the board)
         add_file <each .sv .v>
         add_file -type cst <cst>
         add_file -type sdc <sdc>
@@ -142,13 +129,12 @@ def _emit_tcl(device_args, sv_files, cst_path, sdc_path, output_dir, step, optio
     return "\n".join(lines) + "\n"
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Gowin EDA. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -158,11 +144,11 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    device_args = _select_set_device_args(board, configuration, board_pinmap)
+    device_args = _select_set_device_args(board, configuration)
     if not device_args:
-        log.error("Board %s has no 'Part'/'GowinDeviceArgs' — cannot drive Gowin.", board["Id"])
+        log.error("Board %s has no part / toolchain_options.gowin.set_device — cannot drive Gowin.", board["id"])
         return 1
-    gowin_opts = _gowin_options(board_pinmap).get("options") or []
+    gowin_opts = _gowin_options(board).get("options") or []
     # Use the bare part token (first whitespace-delimited word) wherever a
     # raw part-name is needed (e.g. for emit_cst / pin lookup).
     part_name = device_args.split()[0]
@@ -185,7 +171,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         f.write(_emit_tcl(device_args, sv_files, cst_path, sdc_path, output, step, gowin_opts))
     log.info("Wrote %s", tcl_path)
     # A .gprj project file lets the Gowin IDE open the same build
-    gprj = codegen.emit_gowin_gprj(board_pinmap, sv_files, cst_path, sdc_path)
+    gprj = codegen.emit_gowin_gprj(board, sv_files, cst_path, sdc_path)
     if gprj:
         gprj_path = os.path.join(output, PROJECT_NAME + ".gprj")
         with open(gprj_path, "w") as f:
@@ -229,20 +215,20 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def _programmer_device(board, board_pinmap):
+def _programmer_device(board):
     import re
-    args = (((board_pinmap or {}).get("toolchain_options") or {}).get("gowin") or {}).get("set_device") or ""
+    args = (((board or {}).get("toolchain_options") or {}).get("gowin") or {}).get("set_device") or ""
     m_name = re.search(r"-name\s+(\S+)", args)
     m_ver = re.search(r'-device_version\s+("[^"]*"|\S+)', args)
     if m_name:
         name, ver = m_name.group(1), (m_ver.group(1).strip('"') if m_ver else "")
         return name if not ver or name.endswith(ver) else name + ver
-    part = (board.get("Part") or "").upper()
+    part = (board.get("part") or "").upper()
     m = re.match(r"^(GW\d[A-Z]*)-[A-Z]*(\d+)", part)
     return "{}-{}".format(m.group(1), m.group(2)) if m else "GW1NR-9C"
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .fs bitstream over JTAG via programmer_cli."""
     bit = os.path.join(output, "impl", "pnr", PROJECT_NAME + ".fs")
     if not os.path.exists(bit) and not os.environ.get("UNIFPGA_DRY_RUN"):
@@ -257,7 +243,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     # programmer_cli otherwise (macOS / Windows, or no loader)
     loader = shutil.which("openFPGALoader") if sys.platform.startswith("linux") else None
     if loader is not None:
-        cmd = [loader] + (codegen.openfpgaloader_args(board_pinmap)) + [bit]
+        cmd = [loader] + (codegen.openfpgaloader_args(board)) + [bit]
         log.info("Programming via: %s", " ".join(cmd))
         rc = subprocess.run(cmd, cwd=output).returncode
         if rc != 0:
@@ -273,7 +259,7 @@ def program(*, board, board_pinmap=None, toolchain, output, **_):
     # programmer_cli wants the family name `set_device` gives with `-name`
     # (GW1NR-9C, GW2AR-18C, GW5AST-138B); the LittleBee 9K default is what the
     # old hard-coded value was.
-    cmd = [pgm, "--device", _programmer_device(board, board_pinmap), "--operation_index", "2", "--fsFile", bit]
+    cmd = [pgm, "--device", _programmer_device(board), "--operation_index", "2", "--fsFile", bit]
     log.info("Programming via: %s", " ".join(cmd))
     rc = subprocess.run(cmd, cwd=output, env=env).returncode
     if rc != 0:

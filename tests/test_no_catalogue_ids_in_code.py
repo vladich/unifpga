@@ -27,9 +27,9 @@ SCRIPTS = sorted(glob.glob(os.path.join("tools", "studio", "*.js")))
 
 def _catalogue_ids():
     ids = {}
-    sources = [("board", config_init.read_boards_catalog()), ("chip", config_init.read_chips()),
+    sources = [("board", config_init.read_boards()), ("chip", config_init.read_chips()),
                ("configuration", config_init.read_configurations()), ("setup", su.read_setups()),
-               ("layout", su.read_layouts()), ("peripheral", config_init.read_peripherals()), ("module", su.read_modules())]
+               ("layout", su.drawn_boards()), ("peripheral", config_init.read_peripherals()), ("module", su.read_modules())]
     for kind, entries in sources:
         for k in entries:
             ids.setdefault(str(k), kind)

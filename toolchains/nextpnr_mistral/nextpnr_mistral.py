@@ -61,29 +61,18 @@ def _select_part(board, configuration):
     """Pull the Cyclone V model name. mistral wants the part without the
     trailing 'N' (RoHS marker), and rejects a few -prefix forms; strip both
     if present."""
-    part = board.get("Part") or ""
-    if not part and isinstance(board.get("Parts"), list):
-        wanted = (configuration.get("part") or "").lower()
-        chosen = None
-        for entry in board["Parts"]:
-            if wanted and entry.get("Name", "").lower() == wanted:
-                chosen = entry
-                break
-        if chosen is None:
-            chosen = board["Parts"][0]
-        part = chosen.get("Part") or ""
+    part = board.get("part") or ""
     if part.endswith("N"):
         part = part[:-1]
     return part
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-mistral. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -95,7 +84,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     part = _select_part(board, configuration)
     if not part:
-        log.error("No Cyclone V part on board %r", board.get("Id"))
+        log.error("No Cyclone V part on board %r", board.get("id"))
         return 1
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
@@ -174,7 +163,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .rbf to the connected board via openFPGALoader.
     Cyclone V SoC dev boards typically use USB-BlasterII; openFPGALoader
     supports it via libftdi."""

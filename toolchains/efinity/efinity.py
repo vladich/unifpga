@@ -94,13 +94,12 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
         include_svh=False, gate_helpers=False, gate_common=False, component_sources=component_sources)
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through Efinity's efx_run.py. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -110,10 +109,10 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
         with open(generated_top, "w") as f:
             f.write(codegen.emit_top_sv(resolved, design=top))
 
-    device = (board.get("Part") or "").strip()
-    family = (board.get("PartFamily") or "Trion").strip()
+    device = (board.get("part") or "").strip()
+    family = ((board.get("family") or {}).get("name") or "Trion").strip()
     if not device:
-        log.error("Board %s has no 'Part' field — cannot drive Efinity.", board["Id"])
+        log.error("Board %s has no part — cannot drive Efinity.", board["id"])
         return 1
 
     sv_files = _collect_sv_sources(REPO, peripherals, top, generated_top, component_sources)
@@ -209,7 +208,7 @@ def _find_bitstream(output):
     return None
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the bitstream with efx_run.py --flow program on the project
     (the programmer settings live in the project XML); openFPGALoader is the
     fallback without Efinity."""

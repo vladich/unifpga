@@ -32,8 +32,8 @@ def test_a_board_carries_its_documents_and_the_facts_verify():
 
 
 def test_the_drafter_keeps_a_header_read_from_a_document():
-    drawn = su.read_layout("de10_lite")["connectors"]
-    drafted = ld.draft("de10_lite")["connectors"]
+    drawn = su.read_drawn("de10_lite")["headers"]
+    drafted = ld.draft("de10_lite")["headers"]
     fact = next(c for c in drawn if c["bank"] == "gpio")
     again = next(c for c in drafted if c["bank"] == "gpio")
     assert again["type"] == fact["type"] == "terasic_gpio_2x20" and again["pins"] == fact["pins"]

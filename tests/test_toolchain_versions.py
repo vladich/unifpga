@@ -32,7 +32,7 @@ def test_malformed_version_constraints_are_rejected(constraint):
 
 def test_spartan_ultrascale_plus_requirement_is_retained():
     chips = config.init.read_chips()
-    boards = {"example": {"Chip": "XCSU35P-2SBVB625I"}}
+    boards = {"example": {"chip": "XCSU35P-2SBVB625I"}}
     assert config.init.toolchain_constraints(boards, chips, "example", "vivado") == ["2024.1+"]
     assert config.init.toolchain_constraints(boards, chips, "example", "quartus2") == []
 

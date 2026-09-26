@@ -41,7 +41,7 @@ computed when a rig is loaded and never a file of the repository
 --no-profile) leaves the design section and the design_bits out: buses
 concatenated in attach order, a power-up reset.
 
-The board as drawn (its headers and parts, in its file; read_layouts) says which bank pin every
+The board as drawn (its headers and parts, in its file; drawn_boards) says which bank pin every
 connector pin is and what the on-board devices attach as; connector types
 (config/connectors.yml) give pin numbering, power pins and voltage.
 
@@ -99,34 +99,21 @@ def read_connectors():
     return out
 
 
-def _layout_of(board_id, board):
-    """A board's drawn section as the layout readers see it: {board, verified,
-    generated, connector_types, connectors (the headers), onboard (the parts)}."""
-    layout = {"board": board_id, "verified": bool((board["layout"] or {}).get("verified")),
-              "generated": bool((board["layout"] or {}).get("generated"))}
-    for key, name in config_init.LAYOUT_KEYS:
-        if key in board:
-            layout[name] = copy.deepcopy(board[key])
-    layout.setdefault("connectors", [])
-    layout.setdefault("onboard", [])
-    return layout
+def drawn_boards():
+    """{board id: board} for every board drawn — its headers and parts follow
+    the `layout:` line of its file config/boards/<producer>/<family>/<id>.yml.
+    The cached originals (config.init.peek_boards): read-only."""
+    return {board_id: board for board_id, board in config_init.peek_boards().items() if "layout" in board}
 
 
-def read_layouts():
-    """{board id: layout} for every board drawn — its headers and parts, from
-    its file config/boards/<producer>/<family>/<id>.yml (the `layout:` line
-    and what follows); see _layout_of."""
-    return {board_id: _layout_of(board_id, board)
-            for board_id, board in config_init._boards_index().items() if "layout" in board}
-
-
-def read_layout(board_id):
-    """One board's layout (see _layout_of); SetupError when the board is not drawn."""
-    board = config_init._boards_index().get(board_id)
+def read_drawn(board_id):
+    """One drawn board (the cached original, read-only); SetupError when the
+    board is not drawn."""
+    board = config_init.peek_board(board_id)
     if board is None or "layout" not in board:
         raise SetupError("board '{}' is not drawn yet (no headers and parts in its file; ./unifpga layout draft {})"
                          .format(board_id, board_id))
-    return _layout_of(board_id, board)
+    return board
 
 
 def read_modules():
@@ -147,17 +134,17 @@ def read_setup(setup_id):
 
 
 def connector(layout, conn_id):
-    for c in layout.get("connectors") or []:
+    for c in layout.get("headers") or []:
         if c["id"] == conn_id:
             return c
-    raise SetupError("board '{}' has no connector '{}'".format(layout["board"], conn_id))
+    raise SetupError("board '{}' has no connector '{}'".format(layout["id"], conn_id))
 
 
 def onboard_item(layout, item_id):
-    for o in layout.get("onboard") or []:
+    for o in layout.get("parts") or []:
         if o["id"] == item_id:
             return o
-    raise SetupError("board '{}' has no on-board item '{}'".format(layout["board"], item_id))
+    raise SetupError("board '{}' has no on-board item '{}'".format(layout["id"], item_id))
 
 
 def onboard_variants(item):
@@ -190,7 +177,7 @@ def onboard_attach(layout, use):
 
 
 def pin_ref(layout, where):
-    """`jd.7` -> the pinmap reference that connector pin is (`pmod_jd[4]`)."""
+    """`jd.7` -> the bank reference that connector pin is (`pmod_jd[4]`)."""
     conn_id, _, pin = str(where).partition(".")
     c = connector(layout, conn_id)
     pins = c.get("pins") or {}
@@ -201,12 +188,12 @@ def pin_ref(layout, where):
 
 
 def ref_index(layout):
-    """{pinmap reference: `connector.pin`} over every connector of the layout. A
+    """{bank reference: `connector.pin`} over every connector of the layout. A
     pin on several connectors (a Tang Mega 138K Pmod pin is also a J14 pin) is
     the one of the connector of the reference's own bank, else a physical
     (verified) header's rather than a logical row's."""
     out = {}
-    conns = layout.get("connectors") or []
+    conns = layout.get("headers") or []
     for c in sorted(conns, key=lambda c: c.get("type") != "pin_row"):
         for key, ref in (c.get("pins") or {}).items():
             out[ref] = "{}.{}".format(c["id"], key)
@@ -282,7 +269,7 @@ def plug_wires(connectors, layout, module, plug):
 def plug_placements(connectors, layout, module, conn_ids=None):
     """Every placement a module's numbered header fits, in layout order."""
     out = []
-    for c in layout.get("connectors") or []:
+    for c in layout.get("headers") or []:
         if conn_ids is not None and c["id"] not in conn_ids:
             continue
         rows = (connectors.get(c["type"]) or {}).get("rows") or []
@@ -301,7 +288,7 @@ def plug_placements(connectors, layout, module, conn_ids=None):
 # ---------------------------------------------------------------------------
 
 def _bank_signal(bind, board):
-    """The one signal of an on-board part's bind that is a whole pinmap bank of
+    """The one signal of an on-board part's bind that is a whole bank of
     listed pins (led_bank's `led: onboard_leds`), and that bank: the signal a
     use's `pins:` narrows."""
     whole = [(sig, ref) for sig, ref in bind.items()
@@ -312,8 +299,8 @@ def _bank_signal(bind, board):
 
 
 def _bank_size(board, bank):
-    """How many pins the pinmap bank has when it is a list of pins, else None."""
-    pins = ((config_init.read_board_pinmap(board) or {}).get("pinBanks") or {}).get(bank, {}).get("pins")
+    """How many pins the bank has when it is a list of pins, else None."""
+    pins = ((config_init.peek_board(board) or {}).get("banks") or {}).get(bank, {}).get("pins")
     return len(pins) if isinstance(pins, list) else None
 
 
@@ -340,7 +327,7 @@ def _subset_pins(t_bind, a_bind, board):
 def _connector_banks(layout):
     """{bank: [its pin refs in bank order]} for the connectors that are one bank."""
     out = {}
-    for c in layout.get("connectors") or []:
+    for c in layout.get("headers") or []:
         if c.get("bank"):
             refs = [str(r) for r in (c.get("pins") or {}).values()]
             idx = {r: int(m.group(1)) for r in refs for m in [re.match(r"^" + re.escape(c["bank"]) + r"\[(\d+)\]$", r)] if m}
@@ -451,7 +438,7 @@ def _patched_toolchains(doc, list_key):
 
 
 def _generate(setup, conventions=True):
-    layout = read_layout(setup["board"])
+    layout = read_drawn(setup["board"])
     modules = read_modules()
     connectors = read_connectors()
     cfg = {"id": setup["id"], "board": setup["board"]}
@@ -490,7 +477,7 @@ def _generate(setup, conventions=True):
         elif "gpio" in use:
             c = connector(layout, use["gpio"])
             if not c.get("bank"):
-                raise SetupError("connector '{}' is not one pinmap bank: it cannot be the design's gpio".format(c["id"]))
+                raise SetupError("connector '{}' is not one bank: it cannot be the design's gpio".format(c["id"]))
             pid, sig = gpio_passthrough()
             a = {"peripheral": pid}
             if use.get("params"):
@@ -635,11 +622,11 @@ def derive(configuration, previous=None):
 
 
 def _derive(configuration, before=()):
-    layout = read_layout(configuration["board"])
+    layout = read_drawn(configuration["board"])
     modules = read_modules()
     connectors = read_connectors()
     refs = ref_index(layout)
-    banks = {c.get("bank"): c["id"] for c in layout.get("connectors") or [] if c.get("bank")}
+    banks = {c.get("bank"): c["id"] for c in layout.get("headers") or [] if c.get("bank")}
     setup = {"id": configuration["id"], "board": configuration["board"]}
     for k in TARGET_KEYS:
         if configuration.get(k) is not None:
@@ -648,7 +635,7 @@ def _derive(configuration, before=()):
     for a_full in configuration.get("attach") or []:
         a = {k: v for k, v in a_full.items() if k != "design_bits"}
         use = None
-        for o, vid, t in ((o, vid, t) for o in layout.get("onboard") or [] for vid, _l, t in onboard_variants(o)):
+        for o, vid, t in ((o, vid, t) for o in layout.get("parts") or [] for vid, _l, t in onboard_variants(o)):
             if t["peripheral"] != a["peripheral"] or list(a) != [k for k in ("peripheral", "params", "bind") if k in a]:
                 continue
             subset = None
@@ -682,7 +669,7 @@ def _derive(configuration, before=()):
                 use["params"] = copy.deepcopy(a["params"])
         if use is None and a["peripheral"] == gpio_pid and isinstance(io, list) and io and set(a["bind"]) == {gpio_sig}:
             # some pins of one connector: `gpio: <connector>, pins: [...]`
-            for c in layout.get("connectors") or []:
+            for c in layout.get("headers") or []:
                 keys = {str(ref): k for k, ref in (c.get("pins") or {}).items()}
                 if c.get("bank") and all(str(r) in keys for r in io):
                     use = {"gpio": c["id"], "pins": [keys[str(r)] for r in io]}
@@ -796,7 +783,7 @@ def _target_problems(setup):
             problems.append(("error", "unknown toolchain '{}'".format(toolchain)))
             continue
         try:
-            ok = config_init.is_compatible(config_init._board_index(), config_init.read_chips(),
+            ok = config_init.is_compatible(config_init.peek_boards(), config_init.read_chips(),
                                            setup["board"], toolchain)
         except config_init.ConfigError:
             ok = True                       # a board without a chip: reported where it matters
@@ -833,11 +820,10 @@ def validate(setup, clashes=None):
         problems = []
         pair_pins = {}                       # (earlier use, later use) -> pins both use
         try:
-            layout = read_layout(setup["board"])
+            layout = read_drawn(setup["board"])
             cfg = generate(setup)
         except SetupError as exc:
             return [("error", str(exc))]
-        pinmap = config_init.read_board_pinmap(setup["board"]) or {}
         peripherals = config_init.read_peripherals()
         modules = read_modules()
         connectors = read_connectors()
@@ -846,7 +832,7 @@ def validate(setup, clashes=None):
         owner = {}
         covered = plugged_row_refs(setup, layout, connectors)
         for ref, k in covered.items():
-            for _bit, pin in codegen._bind_pins(pinmap, ref):
+            for _bit, pin in codegen._bind_pins(layout, ref):
                 for p in str(pin or "").split(","):
                     if p:
                         owner.setdefault(p, (k, use_label(setup["use"][k], {}), False))
@@ -884,11 +870,11 @@ def validate(setup, clashes=None):
             # top LEDs of a Terasic board (codegen's ledger applies the same rule)
             bit_lists = [list(b or []) for b in (a.get("design_bits") or {}).values()] if contract.get("driver") is None else []
             for sig, ref in (a.get("bind") or {}).items():
-                for k, (port_bit, pin) in enumerate(codegen._bind_pins(pinmap, ref)):
+                for k, (port_bit, pin) in enumerate(codegen._bind_pins(layout, ref)):
                     if bit_lists and any(k >= len(bl) or bl[k] is None for bl in bit_lists):
                         continue
                     if pin is None:
-                        bank = (pinmap.get("pinBanks") or {}).get(re.split(r"[.\[]", str(ref))[0])
+                        bank = (layout.get("banks") or {}).get(re.split(r"[.\[]", str(ref))[0])
                         if not (isinstance(bank, dict) and bank.get("virtual")):     # an on-chip source has no pin
                             problems.append(("error", "{}: {} ({}) is not a pin of the board".format(label, sig, port_bit)))
                         continue
@@ -1053,7 +1039,7 @@ def generated_text(setup):
 # ---------------------------------------------------------------------------
 
 def plugged_row_refs(setup, layout, connectors, skip=None):
-    """{pinmap ref: use index} for every signal pin under a plugged module:
+    """{bank ref: use index} for every signal pin under a plugged module:
     the module covers its whole row, the pins it leaves unconnected too."""
     out = {}
     for k, use in enumerate(setup.get("use") or []):
@@ -1070,13 +1056,13 @@ def plugged_row_refs(setup, layout, connectors, skip=None):
 def used_pins(setup, skip=None):
     """FPGA pins the setup's uses occupy (all but use `skip`), the pins under
     a plugged module included."""
-    pinmap = config_init.read_board_pinmap(setup["board"]) or {}
+    board = config_init.peek_board(setup["board"]) or {}
     rest = dict(setup, use=[u for k, u in enumerate(setup.get("use") or []) if k != skip])
     used = set()
     refs = [ref for a in generate(rest)["attach"] for ref in (a.get("bind") or {}).values()]
-    refs += list(plugged_row_refs(setup, read_layout(setup["board"]), read_connectors(), skip=skip))
+    refs += list(plugged_row_refs(setup, read_drawn(setup["board"]), read_connectors(), skip=skip))
     for ref in refs:
-        for _bit, pin in codegen._bind_pins(pinmap, ref):
+        for _bit, pin in codegen._bind_pins(board, ref):
             if pin:
                 used.update(str(pin).split(","))
     return used
@@ -1092,8 +1078,7 @@ def autowire(setup, index):
     module = modules.get(use.get("module"))
     if module is None:
         raise SetupError("use {} is not a module".format(index))
-    layout = read_layout(setup["board"])
-    pinmap = config_init.read_board_pinmap(setup["board"]) or {}
+    layout = read_drawn(setup["board"])
     used = used_pins(setup, skip=index)
     lo, hi = _voltage_range(module.get("voltage"))
     need = [p for p, sig in module["pins"].items() if sig not in _PASSIVE]
@@ -1102,11 +1087,11 @@ def autowire(setup, index):
         ref = (conn.get("pins") or {}).get(key, (conn.get("pins") or {}).get(int(key) if str(key).isdigit() else key))
         if ref is None:
             return False
-        pins = [p for _b, p in codegen._bind_pins(pinmap, ref)]
+        pins = [p for _b, p in codegen._bind_pins(layout, ref)]
         return pins and all(p and not set(str(p).split(",")) & used for p in pins)
 
     candidates = []
-    for c in layout.get("connectors") or []:
+    for c in layout.get("headers") or []:
         v = (ctypes.get(c["type"]) or {}).get("voltage")
         if lo is None or v is None or lo <= v <= hi:
             candidates.append(c)

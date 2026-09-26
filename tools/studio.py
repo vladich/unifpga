@@ -70,7 +70,7 @@ def list_designs():
 
 def board_toolchains(board_id):
     """The toolchains that can build for the board, sorted."""
-    boards, chips = config_init._board_index(), config_init.read_chips()
+    boards, chips = config_init.peek_boards(), config_init.read_chips()
     out = []
     for tc in sorted(config_init.read_toolchains()):
         try:
@@ -83,18 +83,16 @@ def board_toolchains(board_id):
 
 def board_data(board_id):
     """Everything the page needs to draw and edit rigs on one board."""
-    layouts = su.read_layouts()
-    if board_id not in layouts:
-        raise ApiError(404, "no layout for board '{}'".format(board_id))
-    layout = layouts[board_id]
-    pinmap = config_init.read_board_pinmap(board_id) or {}
+    board = su.drawn_boards().get(board_id)
+    if board is None:
+        raise ApiError(404, "board '{}' is not drawn".format(board_id))
     ctypes = su.read_connectors()
 
     def pins(ref):
-        return [{"ref": bit, "pin": pin} for bit, pin in codegen._bind_pins(pinmap, ref)]
+        return [{"ref": bit, "pin": pin} for bit, pin in codegen._bind_pins(board, ref)]
 
     connectors = []
-    for c in layout.get("connectors") or []:
+    for c in board.get("headers") or []:
         ctype = ctypes.get(c["type"]) or {}
         rows = [[str(k) for k in r] for r in ctype.get("rows") or []]
         keys = [str(k) for k in c.get("pins") or {}]
@@ -110,14 +108,14 @@ def board_data(board_id):
                      for k, ref in (c.get("pins") or {}).items()},
         })
     onboard = []
-    for o in layout.get("onboard") or []:
+    for o in board.get("parts") or []:
         variants = [{"id": vid, "label": label, "attach": attach,
                      "pins": {s: pins(ref) for s, ref in (attach.get("bind") or {}).items()}}
                     for vid, label, attach in su.onboard_variants(o)]
         if not variants:
             # a device with no peripheral model yet: drawn with its pins, not usable
             dev = o.get("device") or {}
-            bank = ((pinmap.get("pinBanks") or {}).get(dev.get("bank")) or {})
+            bank = ((board.get("banks") or {}).get(dev.get("bank")) or {})
             bpins = bank.get("pins") if isinstance(bank, dict) else bank
             refs = ({s: "{}.{}".format(dev["bank"], s) for s in bpins} if isinstance(bpins, dict)
                     else {dev.get("kind", "pins"): dev.get("bank")})
@@ -131,10 +129,10 @@ def board_data(board_id):
     peripherals = config_init.read_peripherals()
     modules = su.read_modules()
     used = {m["peripheral"] for m in modules.values()} | {su.gpio_passthrough()[0]} | \
-           {attach["peripheral"] for o in layout.get("onboard") or [] for _v, _l, attach in su.onboard_variants(o)}
+           {attach["peripheral"] for o in board.get("parts") or [] for _v, _l, attach in su.onboard_variants(o)}
     return {
         "board": board_id,
-        "verified": bool(layout.get("verified")),
+        "verified": bool((board.get("layout") or {}).get("verified")),
         "connectors": connectors,
         "onboard": onboard,
         "modules": sorted(modules.values(), key=lambda m: m["id"]),
@@ -159,8 +157,8 @@ def board_data(board_id):
         "toolchains": board_toolchains(board_id),
         # the board's chips when it has several (Arty A7 35T / 100T): a rig names its default
         # `part:` and, in `parts:`, every chip it is checked with
-        "parts": [str(c.get("Name") or c.get("Id")) if isinstance(c, dict) else str(c)
-                  for c in config_init.read_board_entry(board_id).get("Chips") or []],
+        "parts": [str(c.get("name") or c.get("id")) if isinstance(c, dict) else str(c)
+                  for c in board.get("chips") or []],
         "designs": list_designs(),
     }
 
@@ -225,7 +223,7 @@ def design_table():
         if _TABLE["key"] == key:
             return _TABLE["data"]
         cfgs = config_init.read_configurations()
-        setups, layouts = su.read_setups(), su.read_layouts()
+        setups, layouts = su.read_setups(), su.drawn_boards()
         caps = config_init.read_capabilities()
         configurations, resolved = [], []
         for cid in sorted(cfgs):
@@ -234,7 +232,7 @@ def design_table():
                      "setup": cid in setups, "layout": c["board"] in layouts}
             try:
                 r = config_init.resolve_configuration(cid)
-                entry["board_name"] = r["board"].get("BoardName") or c["board"]
+                entry["board_name"] = r["board"].get("name") or c["board"]
                 resolved.append((r, dr.design_parameters(r)))
             except (config_init.ConfigError, codegen.CodegenError, KeyError, ValueError) as exc:
                 entry["error"] = str(exc).splitlines()[0]
@@ -573,7 +571,7 @@ def save_design(design, text, loaded):
 
 
 def _ref_names(ref):
-    """How a pinmap entry appears in top.sv: as written (`arduino_io[27]`),
+    """How a bank entry appears in top.sv: as written (`arduino_io[27]`),
     and its port name (`onboard_uart.tx` -> `onboard_uart_tx`, the bus of an
     indexed entry)."""
     ref = str(ref)
@@ -584,7 +582,7 @@ def _ref_names(ref):
 def verilog_view(setup, target):
     """The rig's generated top.sv with the lines that define `target`:
       use          its part's section
-      refs         lines using these pinmap entries (within the use's section when given)
+      refs         lines using these bank entries (within the use's section when given)
       design_port  the design_top instance's port line, and the lines of the
                    use's section that drive its capability bus
       parameter    the design_top instance's parameter line
@@ -688,7 +686,7 @@ def verilog_view(setup, target):
 def _check_setup(setup):
     if not isinstance(setup, dict) or not ID_RE.match(str(setup.get("id", ""))):
         raise ApiError(400, "a setup id is 1-80 characters of a-z, 0-9 and _")
-    if setup.get("board") not in su.read_layouts():
+    if setup.get("board") not in su.drawn_boards():
         raise ApiError(400, "unknown board '{}'".format(setup.get("board")))
 
 
@@ -787,7 +785,7 @@ def make_server(port=8765, host="127.0.0.1"):
                 if parts[:2] == ["api", "designs"] and len(parts) == 2:
                     return self._send(200, design_table())
                 if parts[:2] == ["api", "boards"]:
-                    return self._send(200, sorted(su.read_layouts()))
+                    return self._send(200, sorted(su.drawn_boards()))
                 if parts[:2] == ["api", "board"] and len(parts) == 3:
                     return self._send(200, board_data(parts[2]))
                 if parts[:2] == ["api", "setup"] and len(parts) == 3:

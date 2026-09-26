@@ -179,9 +179,9 @@ def _norm_pin(p):
     return s.upper()
 
 
-def bank_pins(pinmap, bank):
-    """The bank's pins as [(ref, FPGA pin)] in pinmap order."""
-    return [(ref, _norm_pin(pin)) for ref, pin in codegen._bind_pins(pinmap, bank) if pin]
+def bank_pins(board, bank):
+    """The bank's pins as [(ref, FPGA pin)] in board order."""
+    return [(ref, _norm_pin(pin)) for ref, pin in codegen._bind_pins(board, bank) if pin]
 
 
 def part_bank(part):
@@ -204,8 +204,7 @@ def verify(board, connectors=None):
     board_id = board["id"]
     if connectors is None:
         connectors = su.read_connectors()
-    pinmap = config_init.read_board_pinmap(board_id) or {}
-    banks = pinmap.get("pinBanks") or {}
+    banks = board.get("banks") or {}
     docs = documents(board)
     out = {"documents": [], "headers": {}, "parts": {}, "info": []}
     for d in docs.values():
@@ -248,7 +247,7 @@ def verify(board, connectors=None):
                 problems.append("pin {} is not a position of {}".format(phys, h["type"]))
             if phys in power:
                 problems.append("pin {} is {} on {}, not a signal".format(phys, power[phys], h["type"]))
-            fpga = [_norm_pin(p) for _b, p in codegen._bind_pins(pinmap, str(ref)) if p]
+            fpga = [_norm_pin(p) for _b, p in codegen._bind_pins(board, str(ref)) if p]
             if len(fpga) != 1:
                 problems.append("pin {}: {!r} is not one pin of the board".format(phys, ref))
                 continue
@@ -256,10 +255,10 @@ def verify(board, connectors=None):
         for fpga, physs in where.items():
             if len(physs) > 1:
                 problems.append("FPGA pin {} is at header pins {}".format(fpga, ", ".join(physs)))
-        for ref, fpga in bank_pins(pinmap, bank):
+        for ref, fpga in bank_pins(board, bank):
             if fpga not in where:
                 problems.append("{} (FPGA {}) is at no pin of the header".format(ref, fpga))
-        extra = set(where) - {fpga for _r, fpga in bank_pins(pinmap, bank)}
+        extra = set(where) - {fpga for _r, fpga in bank_pins(board, bank)}
         if extra:
             out["info"].append("{}: header pins on FPGA pins the bank does not have: {}".format(bank, ", ".join(sorted(extra))))
     for o in board.get("parts") or []:

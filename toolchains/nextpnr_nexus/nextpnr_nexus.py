@@ -57,7 +57,7 @@ def _collect_sv_sources(repo, peripherals, user_design_top, generated_top, compo
 
 def _select_part(board, configuration):
     """nextpnr-nexus --device: the board's part, when it is a Nexus part."""
-    part = board.get("Part") or ""
+    part = board.get("part") or ""
     if part.startswith(("LIFCL-", "LFD2NX-")):
         return part
     return None
@@ -70,13 +70,12 @@ def _yosys_synth_family(part):
     return "lifcl"
 
 
-def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripherals,
+def synthesize(*, dir, configuration, board, toolchain, peripherals,
                top, generated_top=None, include=None, component_sources=(), output, step="full", **_):
     """Synthesize through yosys + nextpnr-nexus + prjoxide pack. Returns 0 on success."""
     resolved = {
         "configuration": configuration,
         "board":         board,
-        "board_pinmap":  board_pinmap,
         "toolchain":     toolchain,
         "peripherals":   peripherals,
     }
@@ -88,7 +87,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
 
     device = _select_part(board, configuration)
     if device is None:
-        log.error("Board %r: its part %r is not a Nexus part (LIFCL-..., LFD2NX-...)", board.get("Id"), board.get("Part"))
+        log.error("Board %r: its part %r is not a Nexus part (LIFCL-..., LFD2NX-...)", board.get("id"), board.get("part"))
         return 1
 
     family = _yosys_synth_family(device)
@@ -177,7 +176,7 @@ def synthesize(*, dir, configuration, board, board_pinmap, toolchain, peripheral
     return 0
 
 
-def program(*, board, board_pinmap=None, toolchain, output, **_):
+def program(*, board, toolchain, output, **_):
     """Download the .bit to the connected board via openFPGALoader.
     The CrossLink-NX EVN enumerates as an FT4232H — openFPGALoader has a
     `crosslink-nx-evn` cable profile."""

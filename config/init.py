@@ -40,8 +40,9 @@ class ConfigError(Exception):
 # per run (and the test-suite calls them ~134 times each). Parsing ~300 YAML
 # files on every call made one resolve take seconds. We cache the parsed
 # document per file, keyed on (mtime, size), and hand out deep copies so
-# callers that annotate the dicts (read_boards_catalog injects `_catalog_path`
-# etc.) never leak state into each other.
+# callers that annotate the dicts (resolve_configuration selects a board's
+# chip and applies a rig's overrides to its banks) never leak state into each
+# other.
 # ---------------------------------------------------------------------------
 
 _yaml_cache = {}
@@ -198,51 +199,47 @@ def require_toolchain_operation(toolchain, operation):
                           .format(t=toolchain.get("id", "?"), op=operation))
 
 
-def pinmap_fingerprint(pinmap):
-    """Fingerprint the exact resolved board data used to generate constraints.
-
-    Configuration pin and I/O overrides change this digest, so an attestation
-    of the base board cannot accidentally authorize a different rig pinout.
-    """
+def board_fingerprint(board):
+    """Digest of the exact board data the constraints are generated from — its
+    id, banks (with the configuration's pin and I/O overrides applied),
+    defaults and toolchain_options — so an attestation of the base board
+    cannot accidentally authorize a different rig pinout."""
+    facts = {k: board.get(k) for k in ("id", "banks", "defaults", "toolchain_options") if k in board}
     try:
-        encoded = json.dumps({k: v for k, v in pinmap.items() if k != "verification"},
-                             sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        encoded = json.dumps(facts, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     except (TypeError, ValueError) as exc:
-        raise ConfigError("Board pinmap cannot be fingerprinted: {}".format(exc))
+        raise ConfigError("Board {!r} cannot be fingerprinted: {}".format(board.get("id"), exc))
     return hashlib.sha256(encoded).hexdigest()
 
 
-def require_hardware_readiness(board, pinmap):
-    """Admit physical builds only with review of the exact resolved pinmap.
+def require_hardware_readiness(board):
+    """Admit physical builds only with review of the exact resolved banks.
 
-    The YAML attestation is a review record, not a claim that this process can
-    independently verify a vendor schematic. Missing records fail closed.
+    The YAML attestation (the board's `verification`) is a review record, not
+    a claim that this process can independently verify a vendor schematic.
+    Missing records fail closed.
     """
-    board_id = board.get("Id", "?")
-    if not isinstance(pinmap, dict) or pinmap.get("id") != board_id:
-        raise ConfigError("Board '{}' pinmap identity does not match".format(board_id))
-    verification = pinmap.get("verification")
+    board_id = board.get("id", "?")
+    verification = board.get("verification")
     if not isinstance(verification, dict) or verification.get("status") != "verified":
-        raise ConfigError("Board '{}' pinmap is not verified for hardware; "
-                          "use UNIFPGA_DRY_RUN=1 to inspect generated files"
-                          .format(board_id))
-    digest = verification.get("pinmap_sha256")
+        raise ConfigError("Board '{}' is not verified for hardware; "
+                          "use UNIFPGA_DRY_RUN=1 to inspect generated files".format(board_id))
+    digest = verification.get("banks_sha256")
     if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest) or \
-            digest != pinmap_fingerprint(pinmap):
-        raise ConfigError("Board '{}' pinmap verification digest is missing or stale"
-                          .format(board_id))
-    selected_part = board.get("PartOrderingCode") or board.get("Part")
+            digest != board_fingerprint(board):
+        raise ConfigError("Board '{}' verification digest is missing or stale".format(board_id))
+    selected_part = board.get("chip_id") or board.get("part")
     parts = verification.get("parts")
     if not isinstance(parts, list) or not parts or any(not isinstance(p, str) or not p for p in parts) \
             or len(parts) != len(set(parts)) or selected_part not in parts:
-        raise ConfigError("Board '{}' pinmap verification does not cover selected part '{}'"
+        raise ConfigError("Board '{}' verification does not cover selected part '{}'"
                           .format(board_id, selected_part))
     for subject in ("pinout", "electrical"):
         evidence = verification.get(subject)
         if not isinstance(evidence, dict) or any(
                 not isinstance(evidence.get(field), str) or not evidence[field].strip()
                 for field in ("source", "revision")):
-            raise ConfigError("Board '{}' pinmap verification lacks {} source and revision"
+            raise ConfigError("Board '{}' verification lacks {} source and revision"
                               .format(board_id, subject))
 
 
@@ -345,20 +342,6 @@ def read_mezzanines():
 # Boards: one file each, config/boards/<producer>/<family>/<id>.yml
 # ---------------------------------------------------------------------------
 
-# The board file's keys and the names the catalogue projection (read_boards_catalog,
-# read_board_entry) gives them, for the readers written against the old
-# family-catalogue files.
-CATALOG_KEYS = (("id", "Id"), ("name", "BoardName"), ("product", "ProductName"), ("summary", "Summary"),
-                ("aliases", "Aliases"), ("url", "BoardURL"), ("status", "Status"), ("notes", "Notes"),
-                ("producer", "BoardProducer"), ("chip", "Chip"), ("chips", "Chips"), ("bridges", "Bridges"),
-                ("programmer", "Programmer"), ("extra_programmers", "ExtraProgrammers"),
-                ("bootloader", "Bootloader"), ("features", "Features"), ("devices", "Devices"))
-# what the pinmap projection (read_board_pinmap) carries, by the board file's key
-PINMAP_KEYS = (("defaults", "defaults"), ("toolchain_options", "toolchain_options"), ("banks", "pinBanks"),
-               ("verification", "verification"))
-# what the layout projection (tools/setup.py read_layouts) carries
-LAYOUT_KEYS = (("connector_types", "connector_types"), ("headers", "connectors"), ("parts", "onboard"))
-
 
 def _walk_board_files():
     """Yield (path, producer_dir, family_dir, board_id) for every board file
@@ -397,7 +380,8 @@ def boards_frozen():
 
 
 def _boards_index():
-    """Validated, cached {board id: the file's Board mapping plus _path,
+    """Validated, cached {board id: the file's Board mapping plus `family`
+    ({id, name, producer} of the chip family its directory names), _path,
     _producer_dir, _family_dir}; callers must not mutate its entries."""
     if _BOARDS_FROZEN[0] and _BOARDS.get("value") is not None:
         return _BOARDS["value"]
@@ -405,6 +389,7 @@ def _boards_index():
     key = tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p, _pr, _f, _b in files) + \
           tuple((p, os.stat(p).st_mtime_ns, os.stat(p).st_size) for p, _pr, _f in _walk_chip_registry_files())
     if _BOARDS.get("key") != key:                       # a board or a chip family changed
+        families = _families_by_dir()
         out = {}
         for path, prod_name, fam_name, board_id in files:
             data = _parsed(path)
@@ -413,19 +398,25 @@ def _boards_index():
                 raise ConfigError("{}: needs a Board mapping whose id is {!r}".format(path, board_id))
             if board_id in out:
                 raise ConfigError("duplicate board {!r}: {} and {}".format(board_id, out[board_id]["_path"], path))
+            family = families.get((prod_name, fam_name))
+            if family is None:
+                raise ConfigError("{}: no chip family config/chips/{}/{}.yml for the board's directory"
+                                  .format(path, prod_name, fam_name))
             entry = dict(board)
+            entry["family"] = family
             entry["_path"] = path
             entry["_producer_dir"] = prod_name
             entry["_family_dir"] = fam_name
             out[board_id] = entry
-        _BOARDS.update(key=key, value=out, catalog=None)
+        _BOARDS.update(key=key, value=out)
     return _BOARDS["value"]
 
 
 def read_boards():
     """{board id: board} — every board file (config/boards/<producer>/<family>/<id>.yml),
     a copy. This is the board: identity and catalogue fields, chip or chips,
-    programmer, banks of pins, verification, and as drawn its headers and parts."""
+    programmer, banks of pins, verification, as drawn its headers and parts,
+    and `family` ({id, name, producer}: the chip family its directory names)."""
     return copy.deepcopy(_boards_index())
 
 
@@ -435,72 +426,40 @@ def read_board(board_id):
     return copy.deepcopy(board) if board is not None else None
 
 
-def _family_names():
-    """{(producer_dir, family_dir): (producer id, family name)} from the chip families."""
+def _families_by_dir():
+    """{(producer_dir, family_dir): {id, name, producer}} from the chip family files."""
     out = {}
     for fam_path, prod_dir, fam_slug in _walk_chip_registry_files():
         data = _parsed(fam_path)
         fam = data.get("Family") if isinstance(data, dict) else None
         if isinstance(fam, dict):
-            out[(prod_dir, fam_slug)] = (fam.get("producer"), fam.get("name"))
+            out[(prod_dir, fam_slug)] = {"id": fam_slug, "name": fam.get("name"), "producer": fam.get("producer")}
     return out
 
 
-def _board_index():
-    """The catalogue view of the boards: {board id: entry} with the old
-    family-catalogue names (Id, BoardName, Chip, ...), PartProducer and
-    PartFamily from the chip family the board's directory names, and
-    _catalog_path / _producer_dir / _family_dir. Cached with the boards;
-    callers must not mutate its entries."""
-    boards = _boards_index()
-    if _BOARDS.get("catalog") is None:
-        families = _family_names()
-        out = {}
-        for board_id, board in boards.items():
-            entry = {}
-            for key, name in CATALOG_KEYS:
-                if key in board:
-                    value = board[key]
-                    if key == "chips":
-                        value = [{"Id": c.get("id"), "Name": c.get("name")} if isinstance(c, dict) else c for c in value]
-                    entry[name] = value
-            names = families.get((board["_producer_dir"], board["_family_dir"]))
-            if names is None:
-                raise ConfigError("{}: no chip family config/chips/{}/{}.yml for the board's directory"
-                                  .format(board["_path"], board["_producer_dir"], board["_family_dir"]))
-            entry["PartProducer"], entry["PartFamily"] = names
-            entry["_catalog_path"] = board["_path"]
-            entry["_producer_dir"] = board["_producer_dir"]
-            entry["_family_dir"] = board["_family_dir"]
-            out[board_id] = entry
-        _BOARDS["catalog"] = out
-    return _BOARDS["catalog"]
+def peek_boards():
+    """The boards as read_boards gives them, but the cached originals, not
+    copies: for read-only loops over every board. Never mutate them."""
+    return _boards_index()
 
 
-def read_boards_catalog():
-    """{board id: catalogue entry}, a copy: every board's identity and
-    catalogue fields under the names the catalogue readers use (see
-    CATALOG_KEYS), with PartProducer and PartFamily from the chip family."""
-    return copy.deepcopy(_board_index())
+def peek_board(board_id):
+    """One board, the cached original (read-only), or None."""
+    return _boards_index().get(board_id)
 
 
-def read_board_entry(board_id):
-    """One board's catalogue entry (a copy), or None."""
-    entry = _board_index().get(board_id)
-    return copy.deepcopy(entry) if entry is not None else None
-
-
-def read_board_pinmap(board_id):
-    """The pins of a board as the pinmap readers see them: {id, defaults,
-    toolchain_options, pinBanks, verification} from the board file (a copy),
-    or None when the board has no banks (a catalogue-only board)."""
-    board = _boards_index().get(board_id)
-    if board is None or not board.get("banks"):
-        return None
-    out = {"id": board_id}
-    for key, name in PINMAP_KEYS:
-        if key in board:
-            out[name] = copy.deepcopy(board[key])
+def board_chips(board):
+    """[(chip id, variant name or None)]: the board's `chip`, or its `chips`
+    (the variants a rig's `part:` chooses between)."""
+    if board.get("chip"):
+        return [(board["chip"], None)]
+    out = []
+    for entry in board.get("chips") or []:
+        if isinstance(entry, dict):
+            if entry.get("id"):
+                out.append((entry["id"], entry.get("name")))
+        elif entry:
+            out.append((str(entry), None))
     return out
 
 
@@ -575,53 +534,34 @@ def parse_versioned_ref(ref):
         raise ConfigError(str(exc)) from exc
 
 
-def programmers_for_board(board_id, *, catalog=None, chips=None, programmers=None):
-    """Compute the set of programmers usable on the given board.
+def programmers_for_board(board_id, *, boards=None, chips=None, programmers=None):
+    """The programmers usable on a board, in resolution order (additive):
 
-    Resolution rules (additive):
-      1. **Bundled / chip-tied via toolchain:** any programmer whose
-         `bundled:` toolchain id appears in the board's chip's
-         `toolchains` list.
-      2. **Third-party with explicit chip-family support:** any programmer
-         whose `families:` names the family of one of the board's chips
-         AND whose `requires_bridge:` is satisfied by the board's `Bridges:`
-         (or which has no bridge requirement).
-      3. **Bootloader-tied:** any programmer whose `requires_bootloader:`
-         matches the board's `Bootloader:` (if set).
-      4. **Board-explicit:** every entry in the board's `ExtraProgrammers:`
-         list (parsed for version constraints).
+      1. **Bundled / chip-tied via toolchain:** a programmer whose `bundled`
+         toolchain is among the toolchains of the board's chips.
+      2. **Third-party with chip-family support:** a programmer whose
+         `families` names the family of one of the board's chips and whose
+         `requires_bridge`, if any, is among the board's `bridges`.
+      3. **Bootloader-tied:** a programmer whose `requires_bootloader` is the
+         board's `bootloader`.
+      4. **Board-explicit:** every entry of the board's `extra_programmers`
+         (parsed for version constraints).
 
-    Returns a list of programmer entries (full dicts from programmers.yml)
-    in roughly resolution-rule order. Callers that want a single "preferred"
-    programmer can pick the first entry, or honor the board's `Programmer:`
-    field as the explicit default.
-    """
-    if catalog is None: catalog = read_boards_catalog()
+    Returns the programmers.yml entries; the board's `programmer` is the
+    explicit default a caller may prefer."""
+    if boards is None: boards = _boards_index()
     if chips is None: chips = read_chips()
     if programmers is None: programmers = read_programmers()
 
-    board = catalog.get(board_id)
+    board = boards.get(board_id)
     if board is None:
         raise ConfigError("Unknown board: {b}".format(b=board_id))
+    bridges = set(board.get("bridges") or [])
+    bootloader = board.get("bootloader")
 
-    # Resolve the board's chip(s). Single-Chip or multi-Chips (variants).
-    chip_ids = []
-    if board.get("Chip"):
-        chip_ids.append(board["Chip"])
-    elif board.get("Chips"):
-        for entry in board["Chips"]:
-            if isinstance(entry, dict):
-                if entry.get("Id"):
-                    chip_ids.append(entry["Id"])
-            else:
-                chip_ids.append(entry)
-    bridges = set(board.get("Bridges") or [])
-    bootloader = board.get("Bootloader")
-
-    # Collect the union of toolchain ids supported by ANY of the board's chips.
     chip_toolchain_ids = set()
     chip_families = set()
-    for cid in chip_ids:
+    for cid, _name in board_chips(board):
         chip = chips.get(cid)
         if chip is None:
             log.warning("Board %s references unknown chip %s", board_id, cid)
@@ -638,37 +578,29 @@ def programmers_for_board(board_id, *, catalog=None, chips=None, programmers=Non
             result.append(p)
             seen.add(p["id"])
 
-    # Rule 1: bundled vendor programmers via toolchain match
-    for pid, p in programmers.items():
+    for pid, p in programmers.items():                      # 1. bundled with a toolchain of the chips
         if p.get("bundled") and p["bundled"] in chip_toolchain_ids:
-            # If the programmer requires a specific bridge, check it
             req = p.get("requires_bridge")
             if req and req not in bridges:
                 continue
             add(p)
-    # Rule 2: third-party with explicit family support
-    for pid, p in programmers.items():
-        if p.get("bundled"):
-            continue
-        if not chip_families & set(p.get("families") or []):
+    for pid, p in programmers.items():                      # 2. third-party, by chip family
+        if p.get("bundled") or not chip_families & set(p.get("families") or []):
             continue
         req = p.get("requires_bridge")
         if req and req not in bridges:
             continue
         add(p)
-    # Rule 3: bootloader-tied
-    if bootloader:
+    if bootloader:                                          # 3. by bootloader
         for pid, p in programmers.items():
             if p.get("requires_bootloader") == bootloader:
                 add(p)
-    # Rule 4: board-explicit ExtraProgrammers
-    for ref in board.get("ExtraProgrammers") or []:
+    for ref in board.get("extra_programmers") or []:         # 4. named by the board
         pid, _ = parse_versioned_ref(ref)
         if pid in programmers:
             add(programmers[pid])
         else:
             log.warning("Board %s references unknown programmer %s", board_id, pid)
-
     return result
 
 
@@ -845,19 +777,9 @@ def toolchain_constraints(boards, chips, board_id, toolchain_id, selected_chip_i
     if board_id not in boards:
         raise ConfigError("Board {b} was not found in the catalog".format(b=board_id))
     board = boards[board_id]
-    chip_ids = []
-    if board.get("Chip"):
-        chip_ids.append(board["Chip"])
-    elif board.get("Chips"):
-        for entry in board["Chips"]:
-            if isinstance(entry, dict) and entry.get("Id"):
-                chip_ids.append(entry["Id"])
-            elif isinstance(entry, str):
-                chip_ids.append(entry)
+    chip_ids = [cid for cid, _name in board_chips(board)]
     if not chip_ids:
-        raise ConfigError(
-            "Board {b} has no Chip / Chips field — can't determine toolchain support"
-            .format(b=board_id))
+        raise ConfigError("Board {b} has no chip / chips field — can't determine toolchain support".format(b=board_id))
     if selected_chip_id is not None:
         if selected_chip_id not in chip_ids:
             raise ConfigError("Chip '{c}' is not a variant of board '{b}'"
@@ -950,8 +872,9 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
 
         {
           "configuration": <Configuration dict>,
-          "board":         <catalog entry from boards.yml>,
-          "board_pinmap":  <pinBanks dict from config/boards/<id>.yml>,
+          "board":         <the board (config.init.read_board) with the chip selected —
+                            chip_id, part (as the toolchain writes it), part_name — and the
+                            configuration's pin / io overrides applied to its banks>,
           "toolchain":     <Toolchain dict from toolchains.yml>,
           "peripherals": [
               {"peripheral_id": ..., "peripheral": <Peripheral dict>,
@@ -984,7 +907,7 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
     rig_cfg = cfg
     cfg = for_target(cfg, toolchain, part)
 
-    boards = _board_index()                 # read-only; the board is copied below
+    boards = _boards_index()                # read-only; the board is copied below
     toolchains = read_toolchains()
     chips = read_chips()
     peripherals = read_peripherals()
@@ -999,60 +922,36 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
     if toolchain_id not in toolchains:
         raise ConfigError("Configuration '{c}' references unknown toolchain '{t}'"
                           .format(c=configuration_id, t=toolchain_id))
-    # Resolve the chip part number — toolchain drivers expect `board["Part"]`
-    # (or `board["Parts"]` for multi-variant boards). We inject these by
-    # looking up the chip(s) the board references.
-    board_resolved = copy.deepcopy(boards[board_id])
-    selected_chip_id = None
-    if board_resolved.get("Chip"):
-        cid = board_resolved["Chip"]
-        selected_chip_id = cid
-        chip = chips.get(cid)
-        if chip is None:
-            raise ConfigError("Board '{b}' references unknown chip '{c}'"
-                              .format(b=board_id, c=cid))
-        board_resolved["Part"] = cid
-    elif board_resolved.get("Chips"):
-        parts_list = []
-        for entry in board_resolved["Chips"]:
-            if isinstance(entry, dict):
-                cid = entry.get("Id")
-                name = entry.get("Name")
-            else:
-                cid, name = entry, None
-            chip = chips.get(cid)
-            if chip is None:
-                raise ConfigError("Board '{b}' references unknown chip '{c}'"
-                                  .format(b=board_id, c=cid))
-            p = {"Part": cid, "Id": cid}
-            if name:
-                p["Name"] = name
-            parts_list.append(p)
-        board_resolved["Parts"] = parts_list
-        # Multi-die boards (Arty A7 35T/100T, Nexys A7 50T/100T, OrangeCrab
-        # 25F/85F): the configuration must say which die it targets. Without
-        # `part:` every driver used to fall back to Parts[0] silently.
-        wanted = cfg.get("part")
-        if wanted is not None:
-            w = str(wanted).strip().lower()
-            chosen = None
-            for p in parts_list:
-                if w in {str(p.get("Name", "")).lower(), str(p["Part"]).lower(), str(p["Id"]).lower()}:
-                    chosen = p
-                    break
-            if chosen is None:
-                raise ConfigError(
-                    "Configuration '{c}': part: {w!r} is not one of the board's chips ({opts})"
-                    .format(c=configuration_id, w=wanted,
-                            opts=", ".join("{}={}".format(p.get("Name", "?"), p["Id"]) for p in parts_list)))
-            board_resolved["Part"] = chosen["Part"]
-            board_resolved["PartName"] = chosen.get("Name")
-            selected_chip_id = chosen["Id"]
-        else:
+
+    # The chip the build targets: the board's chip, or the variant the
+    # configuration's `part:` names (Arty A7 35T / 100T, Nexys A7 50T / 100T,
+    # OrangeCrab 25F / 85F); `part` is that chip as the toolchain writes it.
+    board = copy.deepcopy(boards[board_id])
+    variants = board_chips(board)
+    if not variants:
+        raise ConfigError("Board '{b}' has no chip / chips field".format(b=board_id))
+    for cid, _name in variants:
+        if cid not in chips:
+            raise ConfigError("Board '{b}' references unknown chip '{c}'".format(b=board_id, c=cid))
+    wanted = cfg.get("part")
+    if wanted is not None:
+        w = str(wanted).strip().lower()
+        chosen = next(((cid, name) for cid, name in variants if w in {str(name or "").lower(), cid.lower()}), None)
+        if chosen is None:
+            raise ConfigError(
+                "Configuration '{c}': part: {w!r} is not one of the board's chips ({opts})"
+                .format(c=configuration_id, w=wanted,
+                        opts=", ".join("{}={}".format(name or "?", cid) for cid, name in variants)))
+    else:
+        if len(variants) > 1:
             log.warning("Configuration '%s': board '%s' has %d chips but no part: is set; "
                         "toolchains will default to %s (audit code PART)",
-                        configuration_id, board_id, len(parts_list), parts_list[0]["Part"])
-            selected_chip_id = parts_list[0]["Id"]
+                        configuration_id, board_id, len(variants), variants[0][0])
+        chosen = variants[0]
+    selected_chip_id, part_name = chosen
+    board["chip_id"] = selected_chip_id
+    board["part_name"] = part_name
+    board["part"] = _tool_part(selected_chip_id, toolchain_id)
 
     constraints = toolchain_constraints(boards, chips, board_id, toolchain_id,
                                         selected_chip_id=selected_chip_id)
@@ -1064,17 +963,11 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
     resolved_toolchain = resolve_toolchain_install(toolchains[toolchain_id])
     resolved_toolchain["chip_version_constraints"] = constraints
 
-    board_pinmap = read_board_pinmap(board_id)
-    if board_pinmap is None:
-        raise ConfigError("Board '{b}' has no pinmap under config/boards/<producer>/<family>/ — "
-                          "add its pinmap".format(b=board_id))
-    _apply_pin_overrides(configuration_id, cfg, board_pinmap)
-    _apply_io_overrides(configuration_id, cfg, board_pinmap)
-    if board_resolved.get("Part"):
-        tool_part = _tool_part(board_resolved["Part"], toolchain_id)
-        if tool_part != board_resolved["Part"]:
-            board_resolved["PartOrderingCode"] = board_resolved["Part"]
-            board_resolved["Part"] = tool_part
+    if not board.get("banks"):
+        raise ConfigError("Board '{b}' has no banks of pins in config/boards/{p}/{f}/{b}.yml — a catalogue-only board"
+                          .format(b=board_id, p=board["_producer_dir"], f=board["_family_dir"]))
+    _apply_pin_overrides(configuration_id, cfg, board)
+    _apply_io_overrides(configuration_id, cfg, board)
 
     attached = []
     for attach_index, entry in enumerate(cfg.get("attach", []) or []):
@@ -1120,8 +1013,7 @@ def resolve_configuration(configuration_id, configuration=None, toolchain=None, 
 
     return {
         "configuration": cfg,
-        "board":         board_resolved,
-        "board_pinmap":  board_pinmap,
+        "board":         board,
         "toolchain":     resolved_toolchain,
         "peripherals":   attached,
         "target":        {"id": target_id(rig_id, rig_cfg, toolchain_id, cfg.get("part")) if configuration is None
@@ -1146,9 +1038,9 @@ def _tie_value(configuration_id, ref, value):
     return _TIE_VALUES[key]
 
 
-def _apply_pin_overrides(configuration_id, cfg, pinmap):
-    """Apply the configuration's `pin_overrides:` to its (private copy of the)
-    board pinmap. A variant that wires a header differently from the board's
+def _apply_pin_overrides(configuration_id, cfg, board):
+    """Apply the configuration's `pin_overrides:` to its private copy of the
+    board's banks. A variant that wires a header differently from the board's
     default (`tang_nano_20k_lcd_800_480_49mhz_tm1638` uses another LCD
     adapter) says so here instead of getting a second board:
 
@@ -1160,7 +1052,7 @@ def _apply_pin_overrides(configuration_id, cfg, pinmap):
     overrides = cfg.get("pin_overrides") or {}
     if not overrides:
         return
-    banks = pinmap.setdefault("pinBanks", {})
+    banks = board.setdefault("banks", {})
     for ref, value in overrides.items():
         parts = str(ref).split(".")
         bank_name = parts[0]
@@ -1204,11 +1096,11 @@ def _tool_part(part, toolchain_id):
     return "{}{}-{}".format(dev, pkg, speed)
 
 
-def _apply_io_overrides(configuration_id, cfg, pinmap):
+def _apply_io_overrides(configuration_id, cfg, board):
     """Apply the configuration's `io_overrides:` (IO standard per bank, sub-key
-    or pin) to its private pinmap copy. The Gowin variants type pins per
+    or pin) to its private copy of the board's banks. The Gowin variants type pins per
     variant (the Tang Nano 9K HDMI variants put LVCMOS33 on CLK, the LCD
-    variants type nothing), so the pinmap keeps what every variant agrees on
+    variants type nothing), so the board keeps what every variant agrees on
     and each configuration carries its own additions:
 
         io_overrides:
@@ -1219,7 +1111,7 @@ def _apply_io_overrides(configuration_id, cfg, pinmap):
     overrides = cfg.get("io_overrides") or {}
     if not overrides:
         return
-    banks = pinmap.setdefault("pinBanks", {})
+    banks = board.setdefault("banks", {})
     for ref, value in overrides.items():
         m = re.match(r"^([A-Za-z_]\w*)(?:\.(\w+))?(?:\[(\d+)\])?$", str(ref).strip())
         if not m:
@@ -1320,7 +1212,7 @@ def init():
     rigs = read_configurations()
     if not rigs:
         raise ConfigError("No rigs found in config/setups/")
-    boards = read_boards_catalog()
+    boards = _boards_index()
 
     # Group the build targets (every rig with each toolchain / chip it is checked with) by board.
     by_board = {}
@@ -1335,9 +1227,9 @@ def init():
         b = boards[bid]
         print("  {i:3d}) {name}  ({producer} / {family}) — {n} configuration(s)".format(
             i=i,
-            name=b.get("BoardName", bid),
-            producer=b.get("PartProducer", "?"),
-            family=b.get("PartFamily", "?"),
+            name=b.get("name", bid),
+            producer=b["family"]["producer"],
+            family=b["family"]["name"],
             n=len(by_board[bid]),
         ))
     n = _prompt_choice("\nEnter a board number: ", len(board_ids_with_configs))
@@ -1349,7 +1241,7 @@ def init():
         cfg_id = variants[0][0]
         print("Only one configuration for this board: {}".format(cfg_id))
     else:
-        print("\nConfigurations for {}:\n".format(boards[board_id].get("BoardName", board_id)))
+        print("\nConfigurations for {}:\n".format(boards[board_id].get("name", board_id)))
         for i, (cfg_id, cfg) in enumerate(variants, start=1):
             tc = cfg.get("toolchain", "?")
             desc = cfg.get("description", "").strip()
