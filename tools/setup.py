@@ -4,34 +4,46 @@ Setups: a rig — one file, config/setups/<id>.yml.
 A setup names a board, a toolchain and, in attach order, what is used on it:
 
     - onboard: <id>              an on-board device of the board's layout
-      params: {...}              (merged over the layout's attach params)
+      params:                    (merged over the layout's attach params)
+        <name>: <value>
       pins: [0, 1, 2, 4]         (some of the part's pins, in this order)
     - module: <id>               an add-on module (config/modules/<id>.yml)
-      wires: {<module pin>: <connector>.<pin>, ...}
-      plug: {connector: jd, row: 2}   (instead of wires: a module plugged by its
-                                       numbered header; reversed: true = rotated)
-      params: {...}
+      wires:                     which connector pin each module pin sits on
+        <module pin>: <connector>.<pin>
+      plug:                      (instead of wires: a module plugged by its
+        connector: jd             numbered header; reversed: true = rotated)
+        row: 2
+      params:
+        <name>: <value>
     - gpio: <connector>          the connector's pins as the design's gpio bus
-      params: {...}
-    - raw: {<attach>}            an attach the physical model does not cover
+      params:
+        width: 30
+    - raw:                       an attach the physical model does not cover
+        <attach>
 
 and how the design (design_top, the virtual device) sees it — on a use:
 
-      bind: {dp: [onboard_leds[4], ...], hs: null}   a signal routed onto other
-                                       pins, or (null) left unwired and tied off
-                                       (a convention, like the design section)
-      design_bits: {leds: [0, 1, 2, ~, 3]}   which bit of the design's bus each of
-                                       the part's bits is (~: none); absent, the
-                                       part takes the next free bits in attach order
+      bind:                      a signal routed onto other pins, or (null)
+        dp: [onboard_leds[4], ...]   left unwired and tied off (a convention,
+        hs: null                   like the design section)
+      design_bits:               which bit of the design's bus each of the
+        leds: [0, 1, 2, ~, 3]      part's bits is (~: none); absent, the part
+                                 takes the next free bits in attach order
 
 and, for the rig, a `design:` section:
 
     design:
-      reset: {sources: [{key: 0}], sync: 2}  which key / switch resets, and how
-      clock: pixel | {name: lab, mhz: 50}    the clock design_top runs on
-      uart_rx: 0 | 1                         what uart_rx reads with no UART pin
-      width: {buttons: 8}                    a design bus wider than the bits wired to it
-      tie: {<pin>: rst | ~rst | 0 | 1}       pins driven from the reset or tied off
+      reset:                     which key / switch resets, and how
+        sources:
+        - key: 0
+        sync: 2
+      clock: pixel               the clock design_top runs on: a named clock, or
+                                 its own (`clock:` with `name: design`, `mhz: 50`)
+      uart_rx: 0 | 1             what uart_rx reads with no UART pin
+      width:                     a design bus wider than the bits wired to it
+        buttons: 8
+      tie:                       pins driven from the reset or tied off
+        <pin>: rst | ~rst | 0 | 1
 
 `extra:` holds any other configuration key (io_overrides, pin_overrides, tie
 for the hardware's sake, manual). The rig's configuration — the dict codegen
