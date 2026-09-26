@@ -2,7 +2,7 @@
 Board inventories: every on-board device and header of a board, with its
 FPGA pins and the documents they come from, imported into
 
-  * the board's pinmap: a bank per device the pinmap does not have yet,
+  * the board's banks: a bank per device the board does not have yet,
     tagged `device: {name, kind}` (and `shares:` when other banks use the
     same FPGA balls: pins the board multiplexes between devices);
   * the board catalogue: the producer's product name and a line of main
@@ -79,8 +79,8 @@ def _well_formed(pins):
 
 
 def _as_bank_pins(device):
-    """The pins as a pinmap bank holds them: a header's physically numbered
-    pins as a list in pin-number order (the pinmap's convention for Pmods and
+    """The pins as a bank holds them: a header's physically numbered
+    pins as a list in pin-number order (the boards' convention for Pmods and
     headers), everything else as the inventory gives it."""
     pins = device["pins"]
     if device.get("kind") in HEADER_KINDS and isinstance(pins, dict) and all(str(k).isdigit() for k in pins):
@@ -104,7 +104,7 @@ def _bank_pins(bank):
 
 
 # ---------------------------------------------------------------------------
-# pinmap
+# the board's banks
 # ---------------------------------------------------------------------------
 
 def _board_path(board_id):
@@ -140,7 +140,7 @@ def plan(inv, board):
             elif sorted(have) == sorted(balls):
                 out["same_pins_other_order"].append(bank)
             else:
-                out["differs"].append((bank, "pinmap {} vs inventory {} ({})".format(
+                out["differs"].append((bank, "board {} vs inventory {} ({})".format(
                     have, balls, name)))
             continue
         # the same pins already under another name: not a new device bank
@@ -311,7 +311,7 @@ def import_inventory(inv, write=True):
     text = []
     for b, d in p["add"]:
         text += _bank_text(b, d, _shares(b, new[b][1], everything))
-    report = dict(p, board=board_id, pinmap=os.path.relpath(path, os.path.dirname(config_init.dir_path)), created=created)
+    report = dict(p, board=board_id, file=os.path.relpath(path, os.path.dirname(config_init.dir_path)), created=created)
     if created and not p["add"]:
         raise InventoryError("board '{}': the inventory has no device with pins".format(board_id))
     if write:

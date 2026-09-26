@@ -624,8 +624,8 @@ def gui_command(toolchain_id, out_dir, bins=None):
     if toolchain_id in ("gowin_eda", "gowin_standard"):
         prj = find("*.gprj")
         return (["gw_ide", "-prj", prj], None) if prj else \
-            (None, "no Gowin IDE project in {}: run build (or prepare) first; the pinmap needs "
-                   "toolchain_options.gowin.gprj_device (sync --gowin-options)".format(out_dir))
+            (None, "no Gowin IDE project in {}: run build (or prepare) first; the board needs "
+                   "toolchain_options.gowin.gprj_device".format(out_dir))
     if toolchain_id == "efinity":
         xml = find("unifpga_top.xml", "*.xml")
         return (["efinity", "--project", xml] if xml else ["efinity"], None)

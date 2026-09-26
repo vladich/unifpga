@@ -1,4 +1,4 @@
-"""Board inventories (tools/inventory.py): new devices become pinmap banks
+"""Board inventories (tools/inventory.py): new devices become banks
 tagged `device:`, existing banks are only compared, headers keep their FPGA
 pins in pin-number order without power pins, shared pins are recorded."""
 

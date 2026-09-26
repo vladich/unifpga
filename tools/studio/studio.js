@@ -140,7 +140,7 @@ function providersText(p) {
     return useLabel(S.setup.use[pr.attach_index] || {}) + " (" + pr.peripheral + (prm.length ? ": " + prm.map(([k, v]) => k + " = " + v).join(", ") : "") + ")"; }).join("; ");
 }
 
-// design bits a pinmap ref carries, with the port and the providing use
+// design bits a bank ref carries, with the port and the providing use
 function designBitsOfRef(ref) {
   const out = [];
   for (const p of ports()) for (const pr of p.providers) for (const b of pr.bits || [])
@@ -1760,7 +1760,7 @@ function details() {
     d.append(h("h4", {}, c.label + " pin " + k));
     if (sharedRefText(pin.ref)) d.append(h("p", {class: "note"}, "This pin is " + sharedRefText(pin.ref) + "."));
     edgeList(d, pin.ref);
-    d.append(h("table", {}, h("tr", {}, h("td", {}, "pinmap"), h("td", {}, pin.ref)),
+    d.append(h("table", {}, h("tr", {}, h("td", {}, "bank ref"), h("td", {}, pin.ref)),
                           h("tr", {}, h("td", {}, "FPGA pin"), h("td", {}, pin.pin)),
                           h("tr", {}, h("td", {}, "voltage"), h("td", {}, (c.voltage || "?") + " V"))));
     let any = false;
@@ -1802,7 +1802,7 @@ function details() {
     const o = onboardDef(sel.id);
     d.append(h("h4", {}, o.label));
     d.append(h("p", {class: "note"}, "No peripheral model yet for this " + (o.device.kind || "device") +
-      ": the rig shows it so the board is complete, but a design cannot use it until one exists. Its pins are in the pinmap bank " + o.device.bank + "."));
+      ": the rig shows it so the board is complete, but a design cannot use it until one exists. Its pins are the bank " + o.device.bank + "."));
     for (const [s, ps] of Object.entries(o.pins || {})) d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ")));
   } else if (sel.kind === "onboard") {
     const o = onboardDef(sel.id), i = uses.findIndex((u) => u.onboard === sel.id), vs = variantsOf(o);
@@ -1878,7 +1878,7 @@ function connectionPanel(d, ed) {
     rows.push(["Bit relation", relationText(ed, p)]);
   }
   rows.push(["Peripheral signal", (ed.signal || (p.signal || "")) + (a.peripheral ? " of " + a.peripheral : "")]);
-  rows.push(["Pinmap entry", ed.ref]);
+  rows.push(["Bank reference", ed.ref]);
   rows.push(["FPGA pin", ed.pin || "?"]);
   if (c) rows.push(["Header pin", c.label + " pin " + hp.split(".")[1] + " (" + c.type + ", " + (c.voltage || "?") + " V)"]);
   else rows.push(["On the board", useLabel(use) + " (no header: the pin goes to the on-board part)"]);
@@ -1935,7 +1935,7 @@ function driverPanel(d, sel) {
   d.append(h("p", {class: "muted"}, about));
 }
 
-// the connections (design bit <-> pin edges) at one pinmap entry, grouped by
+// the connections (design bit <-> pin edges) at one bank reference, grouped by
 // the part that makes them, each clickable
 function edgeList(d, ref) {
   const all = (S.ev && S.ev.trace && S.ev.trace.edges) || [];
@@ -2520,7 +2520,7 @@ async function selftest() {
       ok("the trace names the driver", $("details").textContent.includes(ed.via + " ("));
       select({kind: "edge", n: n1});
       const txt = $("details").textContent, [cid, key] = ri[ed.ref].split(".");
-      ok("a connection's panel gives its driver, pinmap, FPGA, header and module pin",
+      ok("a connection's panel gives its driver, bank ref, FPGA, header and module pin",
          txt.includes("through the " + ed.via + " driver") && txt.includes(ed.ref) && txt.includes(ed.pin) &&
          txt.includes(conn(cid).label + " pin " + key) && txt.includes("Module pin" + mp + " (" + m.pins[mp] + ")"));
     }

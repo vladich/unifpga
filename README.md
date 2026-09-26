@@ -6,8 +6,8 @@ toolchains can provide it. A toolchain's `operations` and board evidence determi
 which catalog entries are currently eligible for a build or programming run.
 
 > **Status:** configuration and generated-project checks exist, but full
-> toolchain, simulation, and physical-board coverage is incomplete. No board
-> pinmap is yet attested for hardware, so builds and programming stop at the
+> toolchain, simulation, and physical-board coverage is incomplete. No board's
+> pins are yet attested for hardware, so builds and programming stop at the
 > hardware-readiness gate. Treat any first physical run as a bring-up.
 
 ## Quick start
@@ -21,7 +21,7 @@ cd designs/1_06_binary_counter
 ../../unifpga program    # build and load the bitstream onto the board
 ```
 
-Until a board has a reviewed pinmap attestation, use `../../unifpga prepare`
+Until a board's pins have a reviewed attestation, use `../../unifpga prepare`
 to inspect generated project files; `build` and `program` require that
 attestation and an installed supported toolchain.
 
@@ -85,12 +85,12 @@ detection. `./unifpga tools` shows both. Catalogue-only toolchains have `[]`;
 attempting their build or program operation exits before creating build output.
 ISE and Libero SoC currently support synthesis but require an external
 programming workflow. An implemented driver operation does not by itself
-verify a board's pinmap or electrical constraints.
+verify a board's pins or electrical constraints.
 
 Physical builds and programming now require a reviewed `verification` record
-in the board file. A missing record, a placeholder status, a stale resolved
-pinmap digest, an uncovered FPGA part, or missing pinout/electrical evidence
-stops the operation before tool setup. No existing pinmap has yet been
+in the board file. A missing record, a placeholder status, a stale digest of
+the resolved banks, an uncovered FPGA part, or missing pinout/electrical evidence
+stops the operation before tool setup. No board has yet been
 attested for hardware, so the current catalog supports project inspection via
 `UNIFPGA_DRY_RUN=1` while board evidence is collected. Dry-run success is not
 a bitstream or a programmed device. To admit a board, review its exact pins
@@ -126,7 +126,7 @@ real reason cleanly.
 
 ## Examples
 
-The example designs in `designs/` and most board pin maps started from
+The example designs in `designs/` and most boards' pin data started from
 [basics-graphics-music](https://github.com/yuri-panchul/basics-graphics-music)
 by Yuri Panchul and contributors; see
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for their licences.
@@ -161,8 +161,8 @@ by Yuri Panchul and contributors; see
 The main configuration registries reject duplicate YAML mapping keys and IDs,
 and malformed entries. A contributor should correct the named source file rather
 than relying on load order to choose a record. Board and chip family registries
-also reject duplicate IDs across files; a board's pinmap stays under the same
-producer/family directory as its catalog entry.
+also reject duplicate IDs across files; a board is one file under its
+producer/family directory.
 
 ## Boards as rigs (preview)
 
@@ -221,7 +221,7 @@ The board editor draws three columns: the virtual device `design_top` sees
 (its ports and bits), the board (on-board devices, connectors with numbered
 pins) and the add-on modules with their wires. Click a design bit, a header
 pin, a wire, a module or a device to trace it end to end (design bit → part →
-module pin → header pin → pinmap entry → FPGA pin); the table under the
+module pin → header pin → bank reference → FPGA pin); the table under the
 drawing lists every connection. Editing: add a module, click one of its pins
 and then a header pin to wire it (or pick the pin from a list), disconnect,
 remove, reorder, use an on-board device or not, hand a connector to the design
@@ -258,7 +258,7 @@ schematic); module pinouts not checked against a vendor document say so
 | `nextpnr_nexus` | 1 | Lattice CrossLink-NX EVN (LIFCL-40) | Smoke-tested (yosys synth_nexus → nextpnr-nexus → prjoxide pack) |
 | `nextpnr_oxide` | 1 | Same as `nextpnr_nexus` (historical alias) | Thin re-export of `nextpnr_nexus` — kept for compat with downstream docs |
 | `nextpnr_mistral` | 7 | DE0-CV, DE0-Nano-SoC (vga666 + vga_pmod), DE1-SoC, DE10-Nano, c5gx, terasic_sockit | Validated (327/644 OK; needs locally-built nextpnr-mistral against mistral commit `d6bd02c`) |
-| `nextpnr_gatemate` | 1 | gatemate_evb_a1 (Cologne Chip CCGM1A1) | Smoke-tested (placeholder pinmap; needs verified pads for hardware target) |
+| `nextpnr_gatemate` | 1 | gatemate_evb_a1 (Cologne Chip CCGM1A1) | Smoke-tested (placeholder pins; needs verified pads for hardware target) |
 
 The remaining failures on yosys-based flows cluster around a small set of
 designs using SystemVerilog 2009 features yosys still doesn't fully accept
