@@ -31,6 +31,12 @@ Board:
   - user_buttons
   - usb_jtag_bridge
   - pcie_endpoint
+  - ddr3_memory
+  - audio_dac
+  - parallel_lcd
+  - sdr_sdram
+  - fan_header
+  - adc_chip
   devices:
   - microsd_socket_generic
   banks:

@@ -1,0 +1,1016 @@
+# Named chips and modules found on boards (config/schema/device.schema.json):
+# each in one feature class (config/features.yml), with the peripherals
+# (config/peripherals/) that drive it. Boards and mezzanines list devices by id.
+
+Devices:
+  - id: adi_ad8195
+    name: ADI AD8195 HDMI Receiver Buffer
+    manufacturer: Analog Devices
+    part: AD8195
+    feature: hdmi_input
+    interface: tmds_buffer
+    peripherals: []
+    notes: Nexys Video HDMI in.
+  - id: adi_ad9777
+    name: ADI AD9777 Dual 16-bit 160 MSPS DAC
+    manufacturer: Analog Devices
+    part: AD9777
+    feature: rf_adc_dac_high_speed
+    interface: parallel
+    peripherals: []
+  - id: adi_adau1761
+    name: ADI ADAU1761 SigmaDSP Audio Codec
+    manufacturer: Analog Devices
+    part: ADAU1761
+    feature: audio_codec
+    interface: i2s+i2c
+    peripherals: []
+    notes: Nexys Video, Genesys 2, Genesys ZU.
+  - id: adi_admp421
+    name: ADI ADMP421 PDM MEMS Microphone
+    manufacturer: Analog Devices
+    part: ADMP421
+    feature: digital_mic_pdm
+    interface: pdm
+    peripherals: [pdm_mic]
+    notes: Nexys 4, Nexys A7.
+  - id: adi_adt7420
+    name: ADI ADT7420 I2C Temperature Sensor
+    manufacturer: Analog Devices
+    part: ADT7420
+    feature: temperature_sensor_external
+    interface: i2c
+    peripherals: [i2c_temperature_sensor]
+    notes: Nexys 4 / Nexys A7.
+  - id: adi_adv7123
+    name: ADI ADV7123 240 MSPS Triple Video DAC
+    manufacturer: Analog Devices
+    part: ADV7123
+    feature: vga_output
+    interface: parallel
+    datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/ADV7123.pdf
+    peripherals: []
+    notes: Used on Terasic DE-series VGA outputs (10-bit-per-channel).
+  - id: adi_adv7180
+    name: ADI ADV7180 NTSC/PAL Video Decoder
+    manufacturer: Analog Devices
+    part: ADV7180
+    feature: hdmi_input
+    interface: parallel+i2c
+    peripherals: []
+    notes: DE2-115, DE2-70 composite/SDTV decode.
+  - id: adi_adv7511
+    name: Analog Devices ADV7511 HDMI Transmitter
+    manufacturer: Analog Devices
+    part: ADV7511
+    feature: hdmi_output
+    interface: rgb_parallel + i2c
+    datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/adv7511.pdf
+    peripherals: []
+    notes: ZedBoard, ZCU102, ZCU104.
+  - id: adi_adv7513
+    name: Analog Devices ADV7513 HDMI Transmitter
+    manufacturer: Analog Devices
+    part: ADV7513
+    feature: hdmi_output
+    interface: rgb_parallel + i2c
+    peripherals: []
+  - id: adi_adv7611
+    name: Analog Devices ADV7611 HDMI Receiver
+    manufacturer: Analog Devices
+    part: ADV7611
+    feature: hdmi_input
+    interface: rgb_parallel + i2c
+    peripherals: []
+  - id: adi_adxl345
+    name: ADI ADXL345 3-axis Accelerometer
+    manufacturer: Analog Devices
+    part: ADXL345
+    feature: accelerometer
+    interface: spi / i2c
+    peripherals: [spi_accelerometer]
+  - id: adi_adxl362
+    name: ADI ADXL362 3-axis Accelerometer (ultra-low-power)
+    manufacturer: Analog Devices
+    part: ADXL362
+    feature: accelerometer
+    interface: spi
+    peripherals: [spi_accelerometer]
+    notes: Nexys 4, Nexys 4 DDR / A7.
+  - id: adi_ssm2603
+    name: Analog Devices SSM2603 Audio Codec
+    manufacturer: Analog Devices
+    part: SSM2603
+    feature: audio_codec
+    interface: i2s+i2c
+    datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/SSM2603.pdf
+    peripherals: []
+    notes: ZedBoard, ZC702/706.
+  - id: atmega32u4_mojo_bridge
+    name: ATmega32U4 (Mojo v3 USB-to-config bridge)
+    manufacturer: Microchip
+    part: ATmega32U4
+    feature: avr_bridge
+    interface: usb_cdc + spi
+    peripherals: []
+    notes: Custom AVR firmware handles bitstream loading on Mojo v3.
+  - id: bosch_bme280
+    name: Bosch BME280 Pressure/Humidity/Temp Sensor
+    manufacturer: Bosch
+    part: BME280
+    feature: barometric_pressure_sensor
+    interface: i2c / spi
+    peripherals: []
+  - id: bosch_bno055
+    name: Bosch BNO055 9-DoF IMU
+    manufacturer: Bosch
+    part: BNO055
+    feature: imu_chip
+    interface: i2c
+    peripherals: []
+  - id: cirrus_cs4344
+    name: Cirrus CS4344 Stereo DAC
+    manufacturer: Cirrus Logic
+    part: CS4344
+    feature: audio_dac
+    interface: i2s
+    datasheet: https://statics.cirrus.com/pubs/proDatasheet/CS4344_45_48_F2.pdf
+    peripherals: []
+    notes: DAC-only — line-out from FPGA via I2S.
+  - id: cypress_cy7c1061dv33
+    name: Cypress CY7C1061DV33 16 MB Cellular RAM
+    manufacturer: Cypress/Infineon
+    part: CY7C1061DV33
+    feature: sdr_sdram
+    interface: psram_parallel
+    peripherals: []
+    notes: Nexys 3.
+  - id: cypress_s25fl032
+    name: Spansion S25FL032 32 Mbit QSPI Flash
+    manufacturer: Cypress/Infineon (Spansion)
+    part: S25FL032P
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Basys 3.
+  - id: cypress_s25fl128s
+    name: Cypress S25FL128S 128 Mbit QSPI Flash
+    manufacturer: Cypress / Infineon
+    part: S25FL128S
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+  - id: ddr2_sodimm_socket
+    name: DDR2 SODIMM socket
+    manufacturer: (generic)
+    feature: ddr2_memory
+    interface: ddr2_sodimm
+    peripherals: []
+    notes: Older Terasic / Stratix III/IV / Arria II dev kits.
+  - id: ddr3_sodimm_socket
+    name: DDR3 SODIMM socket
+    manufacturer: (generic)
+    feature: ddr3_memory
+    interface: ddr3_sodimm
+    peripherals: []
+    notes: Socketed user-replaceable DDR3 SODIMM (common on Terasic dev kits).
+  - id: ddr4_sodimm_socket
+    name: DDR4 SODIMM socket
+    manufacturer: (generic)
+    feature: ddr4_memory
+    interface: ddr4_sodimm
+    peripherals: []
+  - id: digilent_dp_pmod
+    name: Digilent DisplayPort Pmod
+    manufacturer: Digilent
+    part: Pmod DP
+    feature: displayport_output
+    interface: tmds_pmod
+    peripherals: []
+  - id: digilent_hs2
+    name: Digilent HS2/HS3 USB-JTAG
+    manufacturer: Digilent
+    part: JTAG-HS2 / JTAG-HS3
+    feature: usb_jtag_bridge
+    interface: usb_jtag
+    peripherals: []
+  - id: digilent_pmod_mic3
+    name: Digilent Pmod MIC3 (analog mic + SPI ADC)
+    manufacturer: Digilent
+    part: Pmod MIC3
+    feature: analog_mic_jack
+    interface: spi
+    datasheet: https://digilent.com/reference/pmod/pmodmic3/start
+    peripherals: [pmod_mic3]
+  - id: digilent_smartlynq
+    name: Digilent SMARTLYNQ USB-JTAG
+    manufacturer: Digilent
+    part: SMARTLYNQ
+    feature: usb_jtag_bridge
+    interface: usb_jtag
+    peripherals: []
+  - id: dip_switch_generic
+    name: DIP switch (generic)
+    manufacturer: (generic mech)
+    feature: dip_switches
+    interface: gpio
+    peripherals: [sw_bank]
+  - id: emmc_chip_generic
+    name: eMMC chip (generic)
+    manufacturer: (various — Micron / Samsung / SK Hynix / Kingston)
+    feature: emmc_flash
+    interface: emmc
+    peripherals: []
+  - id: espressif_esp32
+    name: Espressif ESP32 Wi-Fi+BT SoC
+    manufacturer: Espressif
+    part: ESP32-WROOM-32E
+    feature: wifi_radio
+    interface: uart
+    peripherals: []
+  - id: exar_xr21v1410
+    name: EXAR XR21V1410 USB-UART Bridge
+    manufacturer: EXAR/MaxLinear
+    part: XR21V1410
+    feature: usb_uart_bridge
+    interface: usb_uart
+    peripherals: []
+    notes: Atlys.
+  - id: ftdi_ft2232h
+    name: FTDI FT2232H Dual USB Bridge
+    manufacturer: FTDI
+    part: FT2232H
+    feature: usb_jtag_bridge
+    interface: usb_dual_mpsse
+    datasheet: https://ftdichip.com/wp-content/uploads/2020/07/DS_FT2232H.pdf
+    peripherals: []
+    notes: Provides JTAG (Channel A in MPSSE) + UART (Channel B). On most open-flow boards.
+  - id: ftdi_ft232h
+    name: FTDI FT232H Single USB Bridge
+    manufacturer: FTDI
+    part: FT232H
+    feature: usb_jtag_bridge
+    interface: usb_mpsse
+    datasheet: https://ftdichip.com/wp-content/uploads/2020/07/DS_FT232H.pdf
+    peripherals: []
+  - id: ftdi_ft232r
+    name: FTDI FT232R USB-UART
+    manufacturer: FTDI
+    part: FT232RL
+    feature: usb_uart_bridge
+    interface: usb_uart
+    peripherals: []
+  - id: ftdi_ft4232h
+    name: FTDI FT4232H Quad USB-Serial
+    manufacturer: FTDI
+    part: FT4232H
+    feature: usb_uart_bridge
+    interface: usb_quad_uart
+    peripherals: []
+  - id: hub75e_panel
+    name: HUB75E RGB LED matrix panel
+    manufacturer: (generic / Adafruit)
+    feature: addressable_leds
+    interface: hub75
+    peripherals: [hub75e_led_matrix]
+  - id: hynix_h5tc4g63cfr
+    name: Hynix H5TC4G63CFR (4 Gbit DDR3)
+    manufacturer: SK Hynix
+    part: H5TC4G63CFR
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+  - id: hynix_hy57v641620
+    name: Hynix HY57V641620 64 Mbit SDR SDRAM
+    manufacturer: SK Hynix
+    part: HY57V641620
+    feature: sdr_sdram
+    interface: sdr
+    peripherals: []
+    notes: Common on cheap Cyclone IV boards (omdazz, rzrd, etc.).
+  - id: intel_strataflash_p30
+    name: Intel/Numonyx StrataFlash P30 Parallel NOR Flash
+    manufacturer: Numonyx/Micron
+    part: JS28F128P30B
+    feature: nor_flash
+    interface: parallel
+    peripherals: []
+    notes: Nexys 2/3, Spartan-3E Starter, ML5xx/ML605, SP6xx.
+  - id: invensense_inmp441
+    name: InvenSense INMP441 I2S MEMS Microphone
+    manufacturer: InvenSense (TDK)
+    part: INMP441
+    feature: digital_mic_i2s
+    interface: i2s_mono
+    datasheet: https://invensense.tdk.com/wp-content/uploads/2015/02/INMP441.pdf
+    peripherals: [inmp441_i2s_mic]
+  - id: issi_is43tr16256a
+    name: ISSI IS43TR16256A 4 Gbit DDR3L SDRAM
+    manufacturer: ISSI
+    part: IS43TR16256A-125KBL
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+    notes: Arty Z7, Eclypse Z7.
+  - id: issi_is61wv5128bll
+    name: ISSI IS61WV5128BLL 4 Mbit Async SRAM
+    manufacturer: ISSI
+    part: IS61WV5128BLL-10BLI
+    feature: sram
+    interface: parallel_sram
+    peripherals: []
+    notes: Cmod A7 (512 KB SRAM).
+  - id: issi_is66wvh32m8dbll
+    name: ISSI IS66WVH32M8DBLL 256 Mbit HyperRAM
+    manufacturer: ISSI
+    part: IS66WVH32M8DBLL
+    feature: hyperram
+    interface: hyperbus
+    peripherals: []
+  - id: issi_is66wvh8m8dbll
+    name: ISSI IS66WVH8M8DBLL 64 Mbit HyperRAM
+    manufacturer: ISSI
+    part: IS66WVH8M8DBLL
+    feature: hyperram
+    interface: hyperbus
+    peripherals: []
+    notes: 8 MB. Used on Tang Nano 20K.
+  - id: lcd_480x272_generic
+    name: Generic 480×272 RGB LCD
+    manufacturer: (generic)
+    feature: parallel_lcd
+    interface: parallel_rgb
+    peripherals: [lcd_480_272]
+  - id: lcd_480x272_ml6485
+    name: ML6485 480×272 RGB LCD
+    manufacturer: (generic)
+    part: ML6485-controller panel
+    feature: parallel_lcd
+    interface: parallel_rgb
+    peripherals: [lcd_ml6485]
+  - id: lcd_800x480_generic
+    name: Generic 800×480 RGB LCD
+    manufacturer: (generic)
+    feature: parallel_lcd
+    interface: parallel_rgb
+    peripherals: [lcd_800_480]
+  - id: lcd_char_16x2
+    name: 16x2 character LCD (HD44780)
+    manufacturer: (generic)
+    part: HD44780-compatible
+    feature: parallel_lcd
+    interface: parallel_4bit
+    peripherals: []
+    notes: ML4xx/5xx/6xx era Xilinx eval boards, Cyclone V SoC Dev Kit.
+  - id: led_discrete_generic
+    name: Discrete LED (generic)
+    manufacturer: (generic)
+    feature: user_leds
+    interface: gpio
+    peripherals: [led_bank]
+    notes: Plain discrete LED driven by a single FPGA IOB through a current-limit resistor.
+  - id: lt_ltc2308
+    name: LT LTC2308 8-ch 12-bit SAR ADC
+    manufacturer: Analog Devices (Linear Tech)
+    part: LTC2308
+    feature: adc_chip
+    interface: spi
+    peripherals: []
+    notes: Terasic SoCKit, DECA.
+  - id: lt_ltc2389
+    name: LT LTC2389-18 18-bit 2.5 MSPS ADC
+    manufacturer: Analog Devices (Linear Technology)
+    part: LTC2389-18
+    feature: adc_chip
+    interface: spi
+    peripherals: []
+  - id: macronix_mx25l25645g
+    name: Macronix MX25L25645G 256 Mbit QSPI Flash
+    manufacturer: Macronix
+    part: MX25L25645G
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+  - id: macronix_mx25l3233f
+    name: Macronix MX25L3233F 32 Mbit QSPI Flash
+    manufacturer: Macronix
+    part: MX25L3233F
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Cmod S7, alt Basys 3 lot.
+  - id: marvell_88e1111
+    name: Marvell 88E1111 Gigabit Ethernet PHY
+    manufacturer: Marvell
+    part: 88E1111
+    feature: ethernet_phy_gigabit
+    interface: rgmii/gmii
+    peripherals: []
+    notes: KC705, VC707, ML5xx/6xx era Xilinx eval kits, DE2-115.
+  - id: marvell_88e1116r
+    name: Marvell 88E1116R Gigabit Ethernet PHY
+    manufacturer: Marvell
+    part: 88E1116R
+    feature: ethernet_phy_gigabit
+    interface: rgmii
+    peripherals: []
+    notes: Older Xilinx kits.
+  - id: marvell_88e1512
+    name: Marvell 88E1512 Gigabit Ethernet PHY
+    manufacturer: Marvell
+    part: 88E1512
+    feature: ethernet_phy_gigabit
+    interface: rgmii / sgmii
+    peripherals: []
+    notes: Newer Xilinx eval kits.
+  - id: maxim_max98357
+    name: Maxim MAX98357 Class-D Mono Amp
+    manufacturer: Maxim
+    part: MAX98357A
+    feature: audio_amp_class_d
+    interface: i2s
+    datasheet: https://datasheets.maximintegrated.com/en/ds/MAX98357A-MAX98357B.pdf
+    peripherals: []
+  - id: microchip_ksz9031rnx
+    name: Microchip KSZ9031RNX Gigabit Ethernet PHY
+    manufacturer: Microchip
+    part: KSZ9031RNX
+    feature: ethernet_phy_gigabit
+    interface: rgmii
+    datasheet: https://ww1.microchip.com/downloads/aemDocuments/documents/UNG/ProductDocuments/DataSheets/KSZ9031RNX-Data-Sheet-DS00002117.pdf
+    peripherals: []
+    notes: ZedBoard, KC705, ZC706.
+  - id: microchip_lan8710a
+    name: Microchip LAN8710A 10/100 Ethernet PHY
+    manufacturer: Microchip
+    part: LAN8710A
+    feature: ethernet_phy_10_100
+    interface: mii/rmii
+    peripherals: [ethernet_rmii_phy]
+    notes: Nexys 3, ZynqBerry.
+  - id: microchip_lan8720a
+    name: Microchip LAN8720A 10/100 Ethernet PHY
+    manufacturer: Microchip
+    part: LAN8720A
+    feature: ethernet_phy_10_100
+    interface: rmii
+    datasheet: https://ww1.microchip.com/downloads/aemDocuments/documents/UNG/ProductDocuments/DataSheets/LAN8720A-Data-Sheet-00002165.pdf
+    peripherals: [ethernet_rmii_phy]
+  - id: microchip_lan8742a
+    name: Microchip LAN8742A 10/100 Ethernet PHY
+    manufacturer: Microchip
+    part: LAN8742A
+    feature: ethernet_phy_10_100
+    interface: rmii
+    peripherals: [ethernet_rmii_phy]
+  - id: microchip_pic24fj128_usb_host
+    name: Microchip PIC24FJ128 USB HID Host Bridge
+    manufacturer: Microchip
+    part: PIC24FJ128
+    feature: usb_2_host
+    interface: ps2_emulation
+    peripherals: []
+    notes: Atlys, Genesys 2, Nexys Video — handles USB HID keyboard/mouse.
+  - id: microchip_usb2514b
+    name: Microchip USB2514B 4-Port USB 2.0 Hub
+    manufacturer: Microchip
+    part: USB2514B
+    feature: usb_2_host
+    interface: usb2_hub
+    peripherals: []
+  - id: microchip_usb3343
+    name: Microchip USB3343 ULPI PHY
+    manufacturer: Microchip
+    part: USB3343
+    feature: usb_2_otg
+    interface: ulpi
+    peripherals: []
+    notes: Common ULPI PHY on Zynq-based boards (ZedBoard, Zybo Z7).
+  - id: micron_mt40a256m16
+    name: Micron MT40A256M16 (4 Gbit DDR4)
+    manufacturer: Micron
+    part: MT40A256M16
+    feature: ddr4_memory
+    interface: ddr4
+    peripherals: []
+  - id: micron_mt41j256m16
+    name: Micron MT41J256M16 4 Gbit DDR3 SDRAM
+    manufacturer: Micron
+    part: MT41J256M16HA-107
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+    notes: Genesys 2 1 GB total.
+  - id: micron_mt41k128m16
+    name: Micron MT41K128M16 (2 Gbit DDR3L)
+    manufacturer: Micron
+    part: MT41K128M16
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+    notes: Density 2 Gb (256 MB × 16 / chip).
+  - id: micron_mt41k256m16
+    name: Micron MT41K256M16 (4 Gbit DDR3L)
+    manufacturer: Micron
+    part: MT41K256M16
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+  - id: micron_mt45w8mw16
+    name: Micron MT45W8MW16 16 MB CellularRAM (PSRAM)
+    manufacturer: Micron
+    part: MT45W8MW16BGX
+    feature: sdr_sdram
+    interface: psram_parallel
+    peripherals: []
+    notes: Nexys 2, Nexys 4 (non-DDR).
+  - id: micron_mt47h64m16
+    name: Micron MT47H64M16 1 Gbit DDR2 SDRAM
+    manufacturer: Micron
+    part: MT47H64M16HR-25:H
+    feature: ddr2_memory
+    interface: ddr2
+    peripherals: []
+    notes: Nexys 4 DDR / Nexys A7, Digilent Atlys, dk_dev_3c120n.
+  - id: micron_mt53d512m32
+    name: Micron MT53D512M32 (16 Gbit LPDDR4)
+    manufacturer: Micron
+    part: MT53D512M32
+    feature: lpddr4_memory
+    interface: lpddr4
+    peripherals: []
+  - id: micron_n25q032a
+    name: Micron N25Q032A 32 Mbit QSPI Flash
+    manufacturer: Micron
+    part: N25Q032A
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Cmod A7.
+  - id: micron_n25q128a
+    name: Micron N25Q128A 128 Mbit QSPI Flash
+    manufacturer: Micron
+    part: N25Q128A
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+  - id: micron_n25q256a
+    name: Micron N25Q256A 256 Mbit QSPI Flash
+    manufacturer: Micron
+    part: N25Q256A
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+  - id: microsd_socket_generic
+    name: microSD socket (generic)
+    manufacturer: (generic mech)
+    feature: microsd_socket
+    interface: sdio / spi
+    peripherals: []
+  - id: murata_lbee5kl1dx
+    name: Murata LBEE5KL1DX Wi-Fi + BT module
+    manufacturer: Murata
+    part: LBEE5KL1DX-883
+    feature: wifi_radio
+    interface: sdio + uart
+    peripherals: []
+    notes: Combined Wi-Fi 4 + BT 4.1 module; krtkl Snickerdoodle, etc.
+  - id: nsc_lm4550_ac97
+    name: NSC LM4550 AC97 Audio Codec
+    manufacturer: National Semiconductor
+    part: LM4550
+    feature: audio_codec
+    interface: ac97
+    peripherals: []
+    notes: Digilent Atlys (Spartan-6) legacy.
+  - id: pmod_dvi_ddr_24b
+    name: Pmod DVI 24-bit DDR
+    manufacturer: (generic Pmod board)
+    feature: tmds_pmod
+    interface: tmds_pmod
+    peripherals: [dvi_pmod_ddr_24b]
+  - id: pmod_vga
+    name: Digilent Pmod VGA
+    manufacturer: Digilent
+    part: Pmod VGA
+    feature: vga_output
+    interface: resistor_dac
+    datasheet: https://digilent.com/reference/pmod/pmodvga/start
+    peripherals: [vga_4bit]
+  - id: pushbutton_smd_generic
+    name: User push-button (generic)
+    manufacturer: (generic mech)
+    feature: user_buttons
+    interface: gpio
+    peripherals: [button_array, reset_button]
+  - id: pwm_audio_inline
+    name: PWM audio output (inline R-C)
+    manufacturer: (generic)
+    feature: audio_amp_class_d
+    interface: pwm
+    peripherals: [pwm_amp]
+    notes: Trivial PWM-to-RC-filter audio output — many hobby boards drive a speaker this way.
+  - id: realtek_alc662
+    name: Realtek ALC662 Audio Codec
+    manufacturer: Realtek
+    part: ALC662
+    feature: audio_codec
+    interface: ac97 / hda
+    peripherals: []
+    notes: Cheap Chinese FPGA boards (Alinx AX7Z, etc.).
+  - id: realtek_rtl8211e
+    name: Realtek RTL8211E Gigabit Ethernet PHY
+    manufacturer: Realtek
+    part: RTL8211E-VL
+    feature: ethernet_phy_gigabit
+    interface: rgmii
+    peripherals: []
+    notes: Older but widely used (Arty, Cmod, Nexys 4 DDR).
+  - id: realtek_rtl8211fd
+    name: Realtek RTL8211FD Gigabit Ethernet PHY
+    manufacturer: Realtek
+    part: RTL8211FD-CG
+    feature: ethernet_phy_gigabit
+    interface: rgmii
+    peripherals: []
+    notes: Newer industrial RTL8211 variant.
+  - id: rgb_led_common_anode
+    name: RGB LED (common-anode)
+    manufacturer: (generic)
+    feature: rgb_leds
+    interface: gpio_x3
+    peripherals: [rgb_led]
+  - id: samsung_k4b_ddr3_generic
+    name: Samsung K4B-series DDR3 SDRAM
+    manufacturer: Samsung
+    part: K4B (family)
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+  - id: seven_seg_module_shared
+    name: 7-seg display (shared-anode, multiplexed)
+    manufacturer: (generic mech)
+    feature: seven_segment_display
+    interface: gpio_segments+digits
+    peripherals: [seven_segment_8digit_shared, seven_segment_per_digit]
+  - id: silabs_cp2102
+    name: Silicon Labs CP2102 USB-UART
+    manufacturer: Silicon Labs
+    part: CP2102
+    feature: usb_uart_bridge
+    interface: usb_uart
+    peripherals: []
+  - id: silabs_cp2103
+    name: Silicon Labs CP2103 USB-UART
+    manufacturer: Silicon Labs
+    part: CP2103
+    feature: usb_uart_bridge
+    interface: usb_uart
+    peripherals: []
+    notes: KC705/ZC706/VC707 era Xilinx kits.
+  - id: silabs_cp2104
+    name: Silicon Labs CP2104 USB-UART
+    manufacturer: Silicon Labs
+    part: CP2104
+    feature: usb_uart_bridge
+    interface: usb_uart
+    peripherals: []
+  - id: silabs_cp2105
+    name: Silicon Labs CP2105 Dual USB-UART
+    manufacturer: Silicon Labs
+    part: CP2105
+    feature: usb_uart_bridge
+    interface: usb_uart_dual
+    peripherals: []
+    notes: KCU105/KCU116/VCU108/VCU118/VCU128/VCU129/ZCU111/ZCU208/ZCU216.
+  - id: silabs_cp2108
+    name: Silicon Labs CP2108 Quad USB-UART
+    manufacturer: Silicon Labs
+    part: CP2108
+    feature: usb_uart_bridge
+    interface: usb_uart_quad
+    peripherals: []
+    notes: VCK190/VEK280/VMK180/VPK120/VPK180/VHK158/ZCU111/ZCU208/ZCU216.
+  - id: silabs_si5324
+    name: Silicon Labs Si5324 Jitter Attenuator
+    manufacturer: Silicon Labs
+    part: Si5324
+    feature: qspi_flash
+    interface: i2c
+    peripherals: []
+    notes: Approximated feature; KC705/VC707/ZC706 clock cleaner. Add clock_generator feature later.
+  - id: silabs_si5342
+    name: Silicon Labs Si5342 Jitter Attenuator / Clock Gen
+    manufacturer: Silicon Labs
+    part: Si5342A-D-GM
+    feature: qspi_flash
+    interface: i2c
+    peripherals: []
+    notes: Approximated feature; Genesys ZU 3EG/5EV HDMI reference clock.
+  - id: silabs_si570
+    name: Silicon Labs Si570 Programmable LVDS Clock
+    manufacturer: Silicon Labs
+    part: Si570
+    feature: qspi_flash
+    interface: i2c
+    peripherals: []
+    notes: Approximated feature; KCU105/VC707/etc programmable clock.
+  - id: silicon_image_sil9134
+    name: Silicon Image SiI9134 HDMI Transmitter
+    manufacturer: Silicon Image (Lattice)
+    part: SiI9134
+    feature: hdmi_output
+    interface: rgb_parallel + i2c
+    peripherals: []
+  - id: smsc_lan83c185
+    name: SMSC LAN83C185 10/100 Ethernet PHY
+    manufacturer: SMSC (Microchip)
+    part: LAN83C185
+    feature: ethernet_phy_10_100
+    interface: mii
+    peripherals: []
+    notes: Spartan-3E Starter.
+  - id: spansion_s25fl256s
+    name: Spansion S25FL256S 256 Mbit QSPI Flash
+    manufacturer: Cypress/Infineon (Spansion)
+    part: S25FL256S
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Genesys 2, Nexys Video, ZCU102/104/106/111/208/216/670.
+  - id: st_mp34dt01
+    name: ST MP34DT01 PDM MEMS Microphone
+    manufacturer: STMicroelectronics
+    part: MP34DT01
+    feature: digital_mic_pdm
+    interface: pdm
+    datasheet: https://www.st.com/resource/en/datasheet/mp34dt01.pdf
+    peripherals: [pdm_mic]
+  - id: ti_adc128s022
+    name: TI ADC128S022 8-channel 12-bit SPI ADC
+    manufacturer: Texas Instruments
+    part: ADC128S022
+    feature: adc_chip
+    interface: spi
+    peripherals: []
+    notes: DE0-Nano, DE10-Standard, DE1-SoC, DE10-Nano, DE25 family.
+  - id: ti_dp83848j
+    name: TI DP83848J 10/100 Ethernet PHY
+    manufacturer: Texas Instruments
+    part: DP83848J
+    feature: ethernet_phy_10_100
+    interface: mii
+    peripherals: []
+    notes: Arty A7 10/100 ethernet.
+  - id: ti_dp83867
+    name: TI DP83867 Gigabit Ethernet PHY
+    manufacturer: Texas Instruments
+    part: DP83867IR
+    feature: ethernet_phy_gigabit
+    interface: rgmii / sgmii
+    datasheet: https://www.ti.com/lit/ds/symlink/dp83867ir.pdf
+    peripherals: []
+  - id: ti_sn75dp159
+    name: TI SN75DP159 HDMI 2.x Retimer
+    manufacturer: Texas Instruments
+    part: SN75DP159
+    feature: hdmi_output
+    interface: tmds_retimer
+    peripherals: []
+    notes: Terasic DE10-Advanced/Agilex/Atum A5.
+  - id: ti_tlv320aic23b
+    name: TI TLV320AIC23B Stereo Audio Codec
+    manufacturer: Texas Instruments
+    part: TLV320AIC23B
+    feature: audio_codec
+    interface: i2s+i2c
+    datasheet: https://www.ti.com/lit/ds/symlink/tlv320aic23b.pdf
+    peripherals: []
+    notes: Found on Zybo Z7, PYNQ-Z2, Cora Z7.
+  - id: ti_tlv320aic3104
+    name: TI TLV320AIC3104 Audio Codec
+    manufacturer: Texas Instruments
+    part: TLV320AIC3104
+    feature: audio_codec
+    interface: i2s+i2c
+    datasheet: https://www.ti.com/lit/ds/symlink/tlv320aic3104.pdf
+    peripherals: []
+    notes: Used on some Digilent / Avnet boards.
+  - id: ti_tlv320aic3254
+    name: TI TLV320AIC3254 Stereo Audio Codec
+    manufacturer: Texas Instruments
+    part: TLV320AIC3254
+    feature: audio_codec
+    interface: i2s+i2c
+    peripherals: []
+    notes: Terasic MAX10 DECA.
+  - id: ti_tmds141
+    name: TI TMDS141 HDMI Buffer/Retimer
+    manufacturer: Texas Instruments
+    part: TMDS141
+    feature: hdmi_output
+    interface: tmds_buffer
+    peripherals: []
+    notes: Atlys, Genesys 2, Nexys Video.
+  - id: ti_tmp275
+    name: TI TMP275 I2C Temperature Sensor
+    manufacturer: Texas Instruments
+    part: TMP275
+    feature: temperature_sensor_external
+    interface: i2c
+    peripherals: [i2c_temperature_sensor]
+  - id: ti_tusb1210
+    name: TI TUSB1210 USB 2.0 ULPI Transceiver
+    manufacturer: Texas Instruments
+    part: TUSB1210
+    feature: usb_2_otg
+    interface: ulpi
+    peripherals: []
+    notes: Genesys 2 USB OTG.
+  - id: ti_txs02612
+    name: TI TXS02612 SDIO Level Shifter
+    manufacturer: Texas Instruments
+    part: TXS02612RTWR
+    feature: microsd_socket
+    interface: sdio_level_shift
+    peripherals: []
+    notes: Every Digilent Zynq board (Arty Z7, Cora Z7, PYNQ-Z1/Z2, Eclypse Z7, Zybo Z7).
+  - id: tm1638_board_controller
+    name: TM1638 LED+Key Board Controller
+    manufacturer: Titan Micro
+    part: TM1638
+    feature: tm1638_module
+    interface: 3-wire-serial
+    peripherals: [tm1638_led_key]
+  - id: tmds_direct
+    name: Direct FPGA TMDS output
+    manufacturer: (FPGA-internal)
+    feature: hdmi_output
+    interface: tmds
+    peripherals: [dvi_24bit, dvi_12bit, hdmi_tmds]
+    notes: TMDS pairs driven straight from FPGA IOBs. No external transmitter.
+  - id: univision_ug2832hsweg04
+    name: Univision UG-2832HSWEG04 OLED (SSD1306)
+    manufacturer: Univision Tech
+    part: UG-2832HSWEG04
+    feature: parallel_lcd
+    interface: spi
+    peripherals: []
+    notes: 128x32 OLED on Genesys 2, Nexys Video.
+  - id: usb_blaster_ii_built_in
+    name: Intel USB-Blaster II (on-board)
+    manufacturer: Intel/Altera
+    part: USB-Blaster II
+    feature: usb_jtag_bridge
+    interface: usb_jtag
+    peripherals: []
+    notes: Standard JTAG bridge on Terasic DE-series and Intel official dev kits.
+  - id: vga666_resistor_dac
+    name: VGA666 / Pmod VGA — resistor DAC
+    manufacturer: (community / generic)
+    feature: vga_output
+    interface: resistor_dac
+    peripherals: [vga_4bit]
+    notes: Cheap 4-bit-per-channel R-2R ladder, breakout-style.
+  - id: winbond_w25q128
+    name: Winbond W25Q128 128 Mbit SPI Flash
+    manufacturer: Winbond
+    part: W25Q128JV
+    feature: spi_flash
+    interface: spi
+    peripherals: []
+  - id: winbond_w9825g6kh
+    name: Winbond W9825G6KH 32 MB SDR SDRAM
+    manufacturer: Winbond
+    part: W9825G6KH
+    feature: sdr_sdram
+    interface: sdr
+    peripherals: []
+  - id: wolfson_wm8731
+    name: Wolfson WM8731 Audio Codec
+    manufacturer: Cirrus Logic (Wolfson)
+    part: WM8731
+    feature: audio_codec
+    interface: i2s+i2c
+    datasheet: https://statics.cirrus.com/pubs/proDatasheet/WM8731_v4.9.pdf
+    peripherals: []
+    notes: Common on Terasic DE-series boards.
+  - id: ws2812_led_chain
+    name: WS2812 / SK6812 addressable LED chain
+    manufacturer: Worldsemi / Adafruit
+    part: WS2812 / NeoPixel
+    feature: addressable_leds
+    interface: single_wire
+    peripherals: []
+  - id: microchip_24lc04
+    name: Microchip 24LC04 4 Kbit I2C EEPROM
+    manufacturer: Microchip
+    part: 24LC04B
+    feature: eeprom_chip
+    interface: i2c
+    peripherals: []
+    notes: Common board-ID/MAC EEPROM on Alinx boards.
+  - id: maxim_ds1302
+    name: Maxim DS1302 RTC
+    manufacturer: Maxim / Analog Devices
+    part: DS1302
+    feature: clock_generator
+    interface: spi
+    peripherals: []
+    notes: Real-time clock with battery backup; common on Chinese educational boards.
+  - id: micron_m25p16
+    name: Micron M25P16 16 Mbit SPI Flash
+    manufacturer: Micron / ST
+    part: M25P16
+    feature: spi_flash
+    interface: spi
+    peripherals: []
+    notes: Legacy 16 Mbit SPI flash on QMtech Spartan-6 LX16/LX25 core boards.
+  - id: microchip_usb3320c
+    name: Microchip USB3320C USB 2.0 PHY
+    manufacturer: Microchip
+    part: USB3320C-EZK
+    feature: usb_2_otg
+    interface: ulpi
+    peripherals: []
+    notes: USB 2.0 ULPI PHY on many Alinx Zynq carriers.
+  - id: jl_jl2121
+    name: JLSemi JL2121 Gigabit Ethernet PHY
+    manufacturer: JLSemi
+    part: JL2121
+    feature: ethernet_phy_gigabit
+    interface: rgmii
+    peripherals: []
+    notes: Chinese-domestic GbE PHY common on Alinx + several QMtech boards.
+  - id: winbond_w25q64
+    name: Winbond W25Q64 64 Mbit SPI Flash
+    manufacturer: Winbond
+    part: W25Q64
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Used on QMtech EP4CE15/55/CGX150 core boards and many Gowin GW2A-18/55 starter kits.
+  - id: winbond_w25q256
+    name: Winbond W25Q256 256 Mbit QSPI Flash
+    manufacturer: Winbond
+    part: W25Q256JV
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: 32 MByte QSPI on QMtech Zynq 7100 + KU040 cores; companion to W25Q128.
+  - id: macronix_mx25l12835f
+    name: Macronix MX25L12835F 128 Mbit QSPI Flash
+    manufacturer: Macronix
+    part: MX25L12835F
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Common 128 Mbit SPI flash on Gowin GW5A/GW5AT eval boards.
+  - id: gigadevice_gd25q127
+    name: GigaDevice GD25Q127 128 Mbit SPI Flash
+    manufacturer: GigaDevice
+    part: GD25Q127C
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Chinese-market SPI flash; common on Alinx and Sipeed boards.
+  - id: wch_ch340
+    name: WCH CH340N USB-UART bridge
+    manufacturer: WCH (Nanjing Qinheng Microelectronics)
+    part: CH340N
+    feature: usb_uart_bridge
+    interface: usb
+    peripherals: []
+    notes: Low-cost USB-UART on many Chinese FPGA dev boards (Sipeed, Alinx, QMtech).
+  - id: hynix_h5tq2g63
+    name: Hynix H5TQ2G63 2 Gbit DDR3 SDRAM
+    manufacturer: SK Hynix
+    part: H5TQ2G63GFR
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+    notes: 2 Gbit DDR3 chip; alternate to Micron MT41K128M16 on some Alinx boards.
+  - id: silabs_si5332
+    name: Silicon Labs Si5332 clock generator
+    manufacturer: Silicon Labs
+    part: Si5332
+    feature: clock_generator
+    interface: i2c
+    peripherals: []
+    notes: Programmable clock generator; alternate to Si5345/Si570 on newer carriers.
+  - id: micron_mt40a512m16
+    name: Micron MT40A512M16 8 Gbit DDR4 SDRAM
+    manufacturer: Micron
+    part: MT40A512M16LY
+    feature: ddr4_memory
+    interface: ddr4
+    peripherals: []
+    notes: 8 Gbit DDR4 chip; common on Zynq UltraScale+ and Versal carriers.
+  - id: micron_mt40a1g16
+    name: Micron MT40A1G16 16 Gbit DDR4 SDRAM
+    manufacturer: Micron
+    part: MT40A1G16KD
+    feature: ddr4_memory
+    interface: ddr4
+    peripherals: []
+    notes: 16 Gbit DDR4 chip; high-end accelerator cards and RFSoC boards.

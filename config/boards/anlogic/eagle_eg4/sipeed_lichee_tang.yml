@@ -17,6 +17,13 @@ Board:
   programmer: td_pgm
   features:
   - usb_jtag_bridge
+  - user_leds
+  - user_buttons
+  - qspi_flash
+  - microsd_socket
+  - parallel_camera_input
+  - parallel_lcd
+  - adc_chip
   devices:
   - ftdi_ft2232h
   banks:

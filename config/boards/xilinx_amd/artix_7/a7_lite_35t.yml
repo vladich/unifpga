@@ -13,6 +13,11 @@ Board:
   bridges:
   - jtag
   programmer: vivado_hw
+  features:
+  - qspi_flash
+  - microsd_socket
+  - ddr3_memory
+  - ethernet_phy_gigabit
   defaults:
     iostandard: LVCMOS33
 

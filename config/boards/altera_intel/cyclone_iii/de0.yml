@@ -14,6 +14,7 @@ Board:
   - jtag
   programmer: quartus_pgm
   features:
+  - nor_flash
   - dip_switches
   - sdr_sdram
   - seven_segment_display
@@ -21,6 +22,9 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - character_lcd
+  - ps2_port
+  - sd_card_socket
   devices:
   - hynix_hy57v641620
   - usb_blaster_ii_built_in

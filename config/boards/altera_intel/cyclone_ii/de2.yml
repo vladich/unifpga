@@ -23,6 +23,14 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - character_lcd
+  - ps2_port
+  - ethernet_phy_10_100
+  - analog_video_decoder
+  - irda_transceiver
+  - sram
+  - nor_flash
+  - sd_card_socket
   devices:
   - hynix_hy57v641620
   - wolfson_wm8731

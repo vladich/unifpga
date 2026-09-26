@@ -28,6 +28,7 @@ Board:
   - usb_uart_bridge
   - usb_jtag_bridge
   - usb_powered
+  - parallel_lcd
   banks:
     sys_clk:
       pins: 35

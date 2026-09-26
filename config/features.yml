@@ -1,586 +1,582 @@
----
-# Registry of board features.
-#
-# A feature is an ABSTRACT FAMILY of hardware that may be present on a
-# board — e.g. "audio_codec", "ethernet_phy_gigabit", "seven_segment_display".
-# Features categorize what's on a board without committing to a specific
-# chip model.
-#
-# A specific chip/module — e.g. "TI TLV320AIC23B Stereo Audio Codec" —
-# lives in config/peripheral_devices.yml and references a Feature by Id.
-#
-# Each Feature optionally declares which `Capabilities:` a device of this
-# type can satisfy. Capabilities (config/capabilities/*.yml) are the
-# user-facing roles a design declares (`buttons`, `leds`, `audio_in`,
-# etc.). Most features map to zero or more capabilities; some don't
-# (memory chips, voltage regulators).
-#
-# Per-entry schema:
-#   Id:           kebab-case identifier (referenced from boards and peripheral_devices)
-#   Name:         human-readable display name
-#   Category:     one of: audio, connectivity, display, expansion, io,
-#                 memory, power, programming, sensor, storage
-#   Description:  one-line summary
-#   Capabilities: list of capability Ids this feature can provide (empty
-#                 if the feature doesn't map to a user-facing capability)
+# The browsable classes of hardware a board may list under `features:`
+# (config/schema/feature.schema.json; `./unifpga check`): a class, not a chip
+# (the chips are config/devices.yml). `capabilities` names what a device of the
+# class can provide to a design (config/capabilities/); `category` groups the
+# catalogue. A board's banks imply features through their kinds (config/kinds.yml).
 
 Features:
-
-#  ---------- I/O (on-board user-input/output) ----------
-  - Id: user_leds
-    Name: "User LEDs"
-    Category: io
-    Description: "Discrete user LEDs driven directly by FPGA IOBs."
-    Capabilities: [leds]
-  - Id: rgb_leds
-    Name: "RGB LEDs"
-    Category: io
-    Description: "User RGB LEDs (typically common-cathode, 3 IOBs per LED)."
-    Capabilities: [rgb_leds]
-  - Id: addressable_leds
-    Name: "Addressable LED string"
-    Category: io
-    Description: "WS2812 / SK6812 / APA102 string driven by a single IOB."
-    Capabilities: [rgb_leds]
-  - Id: user_buttons
-    Name: "User push-buttons"
-    Category: io
-    Description: "Momentary push-buttons for user input (excluding RESET)."
-    Capabilities: [buttons]
-  - Id: dip_switches
-    Name: "DIP / slide switches"
-    Category: io
-    Description: "DIP or slide switches for user configuration."
-    Capabilities: [switches]
-  - Id: rotary_encoder
-    Name: "Rotary encoder"
-    Category: io
-    Description: "Quadrature rotary encoder, optionally with push-button."
-    Capabilities: [buttons]
-  - Id: seven_segment_display
-    Name: "7-segment display"
-    Category: io
-    Description: "Multi-digit 7-segment LED display (shared or per-digit drive)."
-    Capabilities: [seven_segment]
-  - Id: alphanumeric_display
-    Name: "Alphanumeric display"
-    Category: io
-    Description: "14- or 16-segment alphanumeric LED display."
-    Capabilities: [seven_segment]
-  - Id: tm1638_module
-    Name: "TM1638 LED+key module"
-    Category: io
-    Description: "Pre-built TM1638 module: 8× 7-seg digits + 8 LEDs + 8 buttons over a 3-wire serial bus."
-    Capabilities: [seven_segment, leds, buttons]
-
-#  ---------- Display / Video ----------
-  - Id: hdmi_output
-    Name: "HDMI output"
-    Category: display
-    Description: "HDMI Type-A output connector (usually 1080p@60 capable)."
-    Capabilities: [screen]
-  - Id: hdmi_input
-    Name: "HDMI input"
-    Category: display
-    Description: "HDMI Type-A input connector."
-    Capabilities: []
-  - Id: displayport_output
-    Name: "DisplayPort output"
-    Category: display
-    Description: "DisplayPort 1.x or 2.x output."
-    Capabilities: [screen]
-  - Id: vga_output
-    Name: "VGA output"
-    Category: display
-    Description: "VGA DE-15 output (typically 4-bit-per-channel resistor DAC)."
-    Capabilities: [screen]
-  - Id: tmds_pmod
-    Name: "TMDS Pmod (DVI/HDMI)"
-    Category: display
-    Description: "TMDS differential pairs routed to Pmod connector for an HDMI/DVI adapter board."
-    Capabilities: [screen]
-  - Id: parallel_lcd
-    Name: "Parallel RGB LCD"
-    Category: display
-    Description: "Parallel RGB LCD connector / on-board panel."
-    Capabilities: [screen]
-  - Id: mipi_dsi_output
-    Name: "MIPI DSI output"
-    Category: display
-    Description: "MIPI DSI display interface (smartphone-style panel)."
-    Capabilities: [screen]
-  - Id: composite_video_output
-    Name: "Composite video output"
-    Category: display
-    Description: "NTSC/PAL composite video output (resistor DAC or AD725 encoder)."
-    Capabilities: [screen]
-
-#  ---------- Audio ----------
-  - Id: audio_codec
-    Name: "Audio codec"
-    Category: audio
-    Description: "Stereo audio ADC+DAC codec (line-in/out, sometimes mic/speaker drivers). Typically I2S data + I2C config."
-    Capabilities: [audio_in, audio_out]
-  - Id: audio_dac
-    Name: "Audio DAC"
-    Category: audio
-    Description: "Audio DAC only (line-out / headphone-out). Often I2S."
-    Capabilities: [audio_out]
-  - Id: audio_amp_class_d
-    Name: "Class-D audio amplifier"
-    Category: audio
-    Description: "On-board Class-D amplifier driving an external speaker via PWM."
-    Capabilities: [audio_out]
-  - Id: digital_mic_i2s
-    Name: "I2S digital microphone"
-    Category: audio
-    Description: "MEMS digital microphone with I2S output (e.g. INMP441)."
-    Capabilities: [audio_in]
-  - Id: digital_mic_pdm
-    Name: "PDM digital microphone"
-    Category: audio
-    Description: "MEMS digital microphone with PDM output."
-    Capabilities: [audio_in]
-  - Id: analog_mic_jack
-    Name: "Analog microphone jack"
-    Category: audio
-    Description: "3.5 mm analog microphone jack feeding an external codec."
-    Capabilities: [audio_in]
-  - Id: headphone_jack
-    Name: "Headphone jack"
-    Category: audio
-    Description: "3.5 mm headphone jack (output from a codec or DAC)."
-    Capabilities: [audio_out]
-
-#  ---------- Memory ----------
-  - Id: ddr2_memory
-    Name: "DDR2 SDRAM"
-    Category: memory
-    Description: "DDR2 SDRAM chip(s) on-board."
-    Capabilities: []
-  - Id: ddr3_memory
-    Name: "DDR3 SDRAM"
-    Category: memory
-    Description: "DDR3 / DDR3L SDRAM chip(s) on-board."
-    Capabilities: []
-  - Id: ddr4_memory
-    Name: "DDR4 SDRAM"
-    Category: memory
-    Description: "DDR4 SDRAM chip(s) on-board."
-    Capabilities: []
-  - Id: ddr5_memory
-    Name: "DDR5 SDRAM"
-    Category: memory
-    Description: "DDR5 SDRAM chip(s) on-board (Agilex 7 M-series and Versal Premium-class)."
-    Capabilities: []
-  - Id: lpddr2_memory
-    Name: "LPDDR2 SDRAM"
-    Category: memory
-    Description: "Low-power DDR2 (mobile-class). Used on Precursor and similar low-power boards."
-    Capabilities: []
-  - Id: lpddr3_memory
-    Name: "LPDDR3 SDRAM"
-    Category: memory
-    Description: "Low-power DDR3 (mobile-class)."
-    Capabilities: []
-  - Id: lpddr4_memory
-    Name: "LPDDR4 SDRAM"
-    Category: memory
-    Description: "Low-power DDR4 (Zynq UltraScale+ MPSoC class)."
-    Capabilities: []
-  - Id: sdr_sdram
-    Name: "SDR SDRAM"
-    Category: memory
-    Description: "Legacy single-data-rate SDRAM (PC100/PC133 class). Common on cheap Cyclone boards."
-    Capabilities: []
-  - Id: hyperram
-    Name: "HyperRAM / PSRAM"
-    Category: memory
-    Description: "Octal- or quad-line PSRAM (HyperRAM)."
-    Capabilities: []
-  - Id: hbm2e_in_package
-    Name: "HBM2e in-package"
-    Category: memory
-    Description: "High-bandwidth memory stacked in-package with the FPGA (Stratix 10 MX, Versal HBM)."
-    Capabilities: []
-  - Id: sram
-    Name: "SRAM"
-    Category: memory
-    Description: "Asynchronous SRAM (legacy boards)."
-    Capabilities: []
-  - Id: ddr1_memory
-    Name: "DDR1 SDRAM"
-    Category: memory
-    Description: "Original DDR (DDR1) SDRAM — legacy Virtex-4 / Stratix-II class boards."
-    Capabilities: []
-  - Id: qdrii_sram
-    Name: "QDR-II/II+ SRAM"
-    Category: memory
-    Description: "Quad-data-rate SRAM (separate read/write busses) — typical of high-end packet-processing / NIC FPGA boards."
-    Capabilities: []
-
-#  ---------- Storage / Flash ----------
-  - Id: qspi_flash
-    Name: "QSPI configuration flash"
-    Category: storage
-    Description: "Quad SPI flash for FPGA configuration and/or general-purpose data."
-    Capabilities: []
-  - Id: spi_flash
-    Name: "SPI flash"
-    Category: storage
-    Description: "Single-line SPI flash."
-    Capabilities: []
-  - Id: nor_flash
-    Name: "Parallel NOR flash"
-    Category: storage
-    Description: "Parallel NOR flash (legacy)."
-    Capabilities: []
-  - Id: nand_flash
-    Name: "NAND flash"
-    Category: storage
-    Description: "Raw NAND flash chip (eMMC-class density)."
-    Capabilities: []
-  - Id: eeprom_chip
-    Name: "I2C/SPI EEPROM"
-    Category: storage
-    Description: "Small serial EEPROM (AT24C-class) — board ID, MAC address, calibration constants."
-    Capabilities: []
-  - Id: microsd_socket
-    Name: "microSD socket"
-    Category: storage
-    Description: "microSD card socket — often used as boot media on SoC FPGAs."
-    Capabilities: []
-  - Id: sd_card_socket
-    Name: "SD card socket (full-size)"
-    Category: storage
-    Description: "Full-size SD card slot."
-    Capabilities: []
-  - Id: emmc_flash
-    Name: "eMMC"
-    Category: storage
-    Description: "Soldered eMMC chip for bulk storage."
-    Capabilities: []
-  - Id: nvme_socket
-    Name: "M.2 NVMe socket"
-    Category: storage
-    Description: "M.2 M-key socket for NVMe SSD via PCIe."
-    Capabilities: []
-
-#  ---------- Connectivity — wired ----------
-  - Id: ethernet_phy_10_100
-    Name: "10/100 Ethernet PHY"
-    Category: connectivity
-    Description: "10/100BASE-T Ethernet PHY with RJ-45 magjack."
-    Capabilities: []
-  - Id: ethernet_phy_gigabit
-    Name: "Gigabit Ethernet PHY"
-    Category: connectivity
-    Description: "10/100/1000BASE-T PHY with RJ-45 magjack (RGMII/SGMII/RMII MAC interface)."
-    Capabilities: []
-  - Id: ethernet_phy_2_5gbe
-    Name: "2.5GbE Ethernet PHY"
-    Category: connectivity
-    Description: "2.5GBASE-T PHY (newer industrial boards)."
-    Capabilities: []
-  - Id: ethernet_10gbe_sfp
-    Name: "10G Ethernet (SFP+)"
-    Category: connectivity
-    Description: "10GBASE-* via SFP+ cage and transceiver lanes."
-    Capabilities: []
-  - Id: ethernet_25gbe_sfp28
-    Name: "25G Ethernet (SFP28)"
-    Category: connectivity
-    Description: "25GBASE-* via SFP28 cage."
-    Capabilities: []
-  - Id: usb_2_device
-    Name: "USB 2.0 device"
-    Category: connectivity
-    Description: "USB 2.0 device port (typically the FPGA-config / UART bridge)."
-    Capabilities: []
-  - Id: usb_2_host
-    Name: "USB 2.0 host"
-    Category: connectivity
-    Description: "USB 2.0 host port (driven by FPGA / SoC USB controller)."
-    Capabilities: []
-  - Id: usb_2_otg
-    Name: "USB 2.0 OTG"
-    Category: connectivity
-    Description: "USB 2.0 host/device OTG port (typical of Zynq-based boards)."
-    Capabilities: []
-  - Id: usb_3_host
-    Name: "USB 3.0 host"
-    Category: connectivity
-    Description: "USB 3.0 / SuperSpeed host port via FPGA transceivers + ULPI/UTMI PHY."
-    Capabilities: []
-  - Id: usb_3_device
-    Name: "USB 3.0 device"
-    Category: connectivity
-    Description: "USB 3.0 / SuperSpeed device port (through a bridge such as the CH569 or FPGA transceivers)."
-    Capabilities: []
-  - Id: usb_uart_bridge
-    Name: "USB-UART bridge"
-    Category: connectivity
-    Description: "FTDI / CP210x / CH340 USB-serial bridge for stdio + (sometimes) JTAG."
-    Capabilities: [serial_console]
-  - Id: rs232_transceiver
-    Name: "RS-232 transceiver"
-    Category: connectivity
-    Description: "MAX3232-class transceiver behind a DE-9 connector."
-    Capabilities: [serial_console]
-  - Id: rs485_transceiver
-    Name: "RS-485 transceiver"
-    Category: connectivity
-    Description: "Half/full-duplex RS-485 transceiver for industrial bus."
-    Capabilities: []
-  - Id: can_transceiver
-    Name: "CAN transceiver"
-    Category: connectivity
-    Description: "CAN 2.0 / CAN FD transceiver chip."
-    Capabilities: []
-
-#  ---------- Connectivity — wireless ----------
-  - Id: wifi_radio
-    Name: "Wi-Fi radio"
-    Category: connectivity
-    Description: "On-board Wi-Fi module (typically SDIO / SPI / UART AT)."
-    Capabilities: []
-  - Id: bluetooth_le_radio
-    Name: "Bluetooth LE radio"
-    Category: connectivity
-    Description: "On-board Bluetooth Low Energy radio."
-    Capabilities: []
-  - Id: zigbee_radio
-    Name: "Zigbee radio"
-    Category: connectivity
-    Description: "On-board IEEE 802.15.4 / Zigbee radio."
-    Capabilities: []
-
-#  ---------- High-speed serial ----------
-  - Id: pcie_endpoint
-    Name: "PCIe endpoint"
-    Category: connectivity
-    Description: "PCIe endpoint (Gen2/Gen3/Gen4/Gen5) via FPGA transceivers."
-    Capabilities: []
-  - Id: pcie_edge_connector
-    Name: "PCIe edge connector"
-    Category: connectivity
-    Description: "Card-edge PCIe finger for plugging the board into a host slot."
-    Capabilities: []
-  - Id: sata_host
-    Name: "SATA host"
-    Category: connectivity
-    Description: "SATA III host port via FPGA transceivers."
-    Capabilities: []
-  - Id: sfp_cage
-    Name: "SFP cage"
-    Category: connectivity
-    Description: "SFP / SFP+ cage (≤10 Gbps)."
-    Capabilities: []
-  - Id: qsfp_cage
-    Name: "QSFP cage"
-    Category: connectivity
-    Description: "QSFP+ / QSFP28 cage (40/100 Gbps)."
-    Capabilities: []
-  - Id: qsfp_dd_cage
-    Name: "QSFP-DD cage"
-    Category: connectivity
-    Description: "QSFP-DD cage (200/400 Gbps, eight transceiver lanes)."
-    Capabilities: []
-
-#  ---------- Expansion connectors ----------
-  - Id: pmod_connector
-    Name: "Pmod connector"
-    Category: expansion
-    Description: "Digilent Pmod (12-pin, 3.3 V) expansion connector. Boards often have multiples."
-    Capabilities: [gpio]
-  - Id: pmod_diff
-    Name: "Pmod with differential pairs"
-    Category: expansion
-    Description: "Pmod with differential-pair routing for high-speed signals (e.g. HDMI Pmod)."
-    Capabilities: [gpio]
-  - Id: fmc_lpc
-    Name: "FMC LPC"
-    Category: expansion
-    Description: "VITA-57.1 FMC Low-Pin-Count connector."
-    Capabilities: [gpio]
-  - Id: fmc_hpc
-    Name: "FMC HPC"
-    Category: expansion
-    Description: "VITA-57.1 FMC High-Pin-Count connector."
-    Capabilities: [gpio]
-  - Id: fmc_plus
-    Name: "FMC+"
-    Category: expansion
-    Description: "VITA-57.4 FMC+ (28 Gb/s) connector."
-    Capabilities: [gpio]
-  - Id: syzygy_standard
-    Name: "SYZYGY Standard"
-    Category: expansion
-    Description: "Opal Kelly SYZYGY Standard expansion connector."
-    Capabilities: [gpio]
-  - Id: syzygy_txr4
-    Name: "SYZYGY TXR4"
-    Category: expansion
-    Description: "Opal Kelly SYZYGY TXR4 transceiver expansion connector."
-    Capabilities: [gpio]
-  - Id: arduino_shield_header
-    Name: "Arduino shield header"
-    Category: expansion
-    Description: "Arduino R3-style shield connector header."
-    Capabilities: [gpio]
-  - Id: raspi_hat_header
-    Name: "Raspberry Pi HAT header"
-    Category: expansion
-    Description: "Raspberry Pi 40-pin HAT-compatible header."
-    Capabilities: [gpio]
-  - Id: mikrobus_socket
-    Name: "mikroBUS socket"
-    Category: expansion
-    Description: "MikroElektronika mikroBUS click-board socket."
-    Capabilities: [gpio]
-  - Id: gpio_header_generic
-    Name: "Generic GPIO header"
-    Category: expansion
-    Description: "Bare 0.1\" / 2 mm GPIO header without a standard pinout."
-    Capabilities: [gpio]
-
-#  ---------- Sensors / Analog ----------
-  - Id: imu_chip
-    Name: "IMU"
-    Category: sensor
-    Description: "Inertial measurement unit (accel + gyro, maybe magnetometer)."
-    Capabilities: []
-  - Id: accelerometer
-    Name: "Accelerometer"
-    Category: sensor
-    Description: "3-axis accelerometer chip."
-    Capabilities: []
-  - Id: temperature_sensor_external
-    Name: "External temperature sensor"
-    Category: sensor
-    Description: "On-board temperature sensor (board-level, not the FPGA die-temp)."
-    Capabilities: []
-  - Id: barometric_pressure_sensor
-    Name: "Barometric pressure sensor"
-    Category: sensor
-    Description: "Pressure / altitude sensor."
-    Capabilities: []
-  - Id: ambient_light_sensor
-    Name: "Ambient light sensor"
-    Category: sensor
-    Description: "Phototransistor or digital light sensor."
-    Capabilities: []
-  - Id: mipi_csi2_input
-    Name: "MIPI CSI-2 camera input"
-    Category: sensor
-    Description: "MIPI CSI-2 camera connector."
-    Capabilities: []
-  - Id: pcam_connector
-    Name: "Digilent Pcam connector"
-    Category: sensor
-    Description: "Digilent Pcam-compatible MIPI CSI-2 camera connector."
-    Capabilities: []
-  - Id: parallel_camera_input
-    Name: "Parallel camera input"
-    Category: sensor
-    Description: "Parallel CMOS image-sensor interface (OV5640 / OV7670 style 8/10-bit data + HSYNC/VSYNC)."
-    Capabilities: []
-  - Id: analog_video_decoder
-    Name: "Analog video decoder"
-    Category: sensor
-    Description: "Composite / component / S-Video → digital decoder chip (ADV7180-class)."
-    Capabilities: []
-  - Id: adc_chip
-    Name: "ADC chip"
-    Category: sensor
-    Description: "General-purpose external ADC (parallel / SPI / LVDS interface)."
-    Capabilities: []
-  - Id: dac_chip
-    Name: "DAC chip"
-    Category: sensor
-    Description: "General-purpose external DAC."
-    Capabilities: []
-  - Id: rf_adc_dac_high_speed
-    Name: "High-speed RF ADC/DAC"
-    Category: sensor
-    Description: "High-rate (≥100 MSPS) ADC and/or DAC for RF / instrumentation."
-    Capabilities: []
-  - Id: sma_io_pair
-    Name: "SMA I/O"
-    Category: sensor
-    Description: "SMA-connectored analog input/output ports (test-and-measurement)."
-    Capabilities: []
-
-#  ---------- Programming / Debug ----------
-  - Id: jtag_header
-    Name: "JTAG header"
-    Category: programming
-    Description: "Generic JTAG header (Xilinx 14-pin / Altera 10-pin / etc.)."
-    Capabilities: []
-  - Id: usb_jtag_bridge
-    Name: "USB-JTAG bridge"
-    Category: programming
-    Description: "On-board USB-to-JTAG bridge (FT2232H / FT232H / vendor-specific)."
-    Capabilities: []
-  - Id: dfu_bootloader
-    Name: "USB DFU bootloader"
-    Category: programming
-    Description: "USB-DFU bootloader pre-flashed in the FPGA (Fomu, OrangeCrab style)."
-    Capabilities: []
-  - Id: avr_bridge
-    Name: "On-board AVR bridge"
-    Category: programming
-    Description: "AVR microcontroller acting as USB-to-FPGA-config bridge (Mojo v3 style)."
-    Capabilities: []
-  - Id: stlink_onboard
-    Name: "ST-LINK on-board"
-    Category: programming
-    Description: "ST-LINK debugger / programmer on-board (rare, for SoC bring-up)."
-    Capabilities: []
-  - Id: ftdi_usb_bridge
-    Name: "FTDI USB bridge"
-    Category: programming
-    Description: "FTDI FT2232H / FT232H / FT4232H bridge providing JTAG + UART over USB."
-    Capabilities: [serial_console]
-
-#  ---------- Power ----------
-  - Id: usb_powered
-    Name: "USB-powered"
-    Category: power
-    Description: "Board runs from USB 5 V — no external supply needed."
-    Capabilities: []
-  - Id: barrel_jack_input
-    Name: "Barrel jack DC input"
-    Category: power
-    Description: "External barrel jack DC input."
-    Capabilities: []
-  - Id: poe_input
-    Name: "Power over Ethernet"
-    Category: power
-    Description: "Power-over-Ethernet input (802.3af/at)."
-    Capabilities: []
-  - Id: battery_input
-    Name: "Battery input"
-    Category: power
-    Description: "Coin-cell or LiPo battery input for low-power operation."
-    Capabilities: []
-  - Id: atx_power
-    Name: "ATX power connector"
-    Category: power
-    Description: "PC ATX 4/8-pin power connector for high-current boards (Alveo-class)."
-    Capabilities: []
-  - Id: aux_pcie_power
-    Name: "Aux PCIe power"
-    Category: power
-    Description: "6 or 8-pin PCIe auxiliary power input (Alveo / BittWare accelerators)."
-    Capabilities: []
-  - Id: power_monitor_i2c
-    Name: "I2C power monitor"
-    Category: power
-    Description: "On-board power / current monitor accessible over I2C (INA226 / PMBus)."
-    Capabilities: []
-  - Id: clock_generator
-    Name: "Programmable clock generator"
-    Category: io
-    Description: "Programmable clock generator / synthesizer (Si5324, Si570, Si5341/5345, LMK04xxx) providing reference clocks to FPGA transceivers."
-    Capabilities: []
+  - id: user_leds
+    name: User LEDs
+    category: io
+    description: Discrete user LEDs driven directly by FPGA IOBs.
+    capabilities: [leds]
+  - id: rgb_leds
+    name: RGB LEDs
+    category: io
+    description: User RGB LEDs (typically common-cathode, 3 IOBs per LED).
+    capabilities: [rgb_leds]
+  - id: addressable_leds
+    name: Addressable LED string
+    category: io
+    description: WS2812 / SK6812 / APA102 string driven by a single IOB.
+    capabilities: [rgb_leds]
+  - id: user_buttons
+    name: User push-buttons
+    category: io
+    description: Momentary push-buttons for user input (excluding RESET).
+    capabilities: [buttons]
+  - id: dip_switches
+    name: DIP / slide switches
+    category: io
+    description: DIP or slide switches for user configuration.
+    capabilities: [switches]
+  - id: rotary_encoder
+    name: Rotary encoder
+    category: io
+    description: Quadrature rotary encoder, optionally with push-button.
+    capabilities: [buttons]
+  - id: seven_segment_display
+    name: 7-segment display
+    category: io
+    description: Multi-digit 7-segment LED display (shared or per-digit drive).
+    capabilities: [seven_segment]
+  - id: alphanumeric_display
+    name: Alphanumeric display
+    category: io
+    description: 14- or 16-segment alphanumeric LED display.
+    capabilities: [seven_segment]
+  - id: tm1638_module
+    name: TM1638 LED+key module
+    category: io
+    description: 'Pre-built TM1638 module: 8× 7-seg digits + 8 LEDs + 8 buttons over a 3-wire serial bus.'
+    capabilities: [seven_segment, leds, buttons]
+  - id: hdmi_output
+    name: HDMI output
+    category: display
+    description: HDMI Type-A output connector (usually 1080p@60 capable).
+    capabilities: [screen]
+  - id: hdmi_input
+    name: HDMI input
+    category: display
+    description: HDMI Type-A input connector.
+    capabilities: []
+  - id: displayport_output
+    name: DisplayPort output
+    category: display
+    description: DisplayPort 1.x or 2.x output.
+    capabilities: [screen]
+  - id: vga_output
+    name: VGA output
+    category: display
+    description: VGA DE-15 output (typically 4-bit-per-channel resistor DAC).
+    capabilities: [screen]
+  - id: tmds_pmod
+    name: TMDS Pmod (DVI/HDMI)
+    category: display
+    description: TMDS differential pairs routed to Pmod connector for an HDMI/DVI adapter board.
+    capabilities: [screen]
+  - id: parallel_lcd
+    name: Parallel RGB LCD
+    category: display
+    description: Parallel RGB LCD connector / on-board panel.
+    capabilities: [screen]
+  - id: mipi_dsi_output
+    name: MIPI DSI output
+    category: display
+    description: MIPI DSI display interface (smartphone-style panel).
+    capabilities: [screen]
+  - id: composite_video_output
+    name: Composite video output
+    category: display
+    description: NTSC/PAL composite video output (resistor DAC or AD725 encoder).
+    capabilities: [screen]
+  - id: audio_codec
+    name: Audio codec
+    category: audio
+    description: Stereo audio ADC+DAC codec (line-in/out, sometimes mic/speaker drivers). Typically I2S data + I2C config.
+    capabilities: [audio_in, audio_out]
+  - id: audio_dac
+    name: Audio DAC
+    category: audio
+    description: Audio DAC only (line-out / headphone-out). Often I2S.
+    capabilities: [audio_out]
+  - id: audio_amp_class_d
+    name: Class-D audio amplifier
+    category: audio
+    description: On-board Class-D amplifier driving an external speaker via PWM.
+    capabilities: [audio_out]
+  - id: digital_mic_i2s
+    name: I2S digital microphone
+    category: audio
+    description: MEMS digital microphone with I2S output (e.g. INMP441).
+    capabilities: [audio_in]
+  - id: digital_mic_pdm
+    name: PDM digital microphone
+    category: audio
+    description: MEMS digital microphone with PDM output.
+    capabilities: [audio_in]
+  - id: analog_mic_jack
+    name: Analog microphone jack
+    category: audio
+    description: 3.5 mm analog microphone jack feeding an external codec.
+    capabilities: [audio_in]
+  - id: headphone_jack
+    name: Headphone jack
+    category: audio
+    description: 3.5 mm headphone jack (output from a codec or DAC).
+    capabilities: [audio_out]
+  - id: ddr2_memory
+    name: DDR2 SDRAM
+    category: memory
+    description: DDR2 SDRAM chip(s) on-board.
+    capabilities: []
+  - id: ddr3_memory
+    name: DDR3 SDRAM
+    category: memory
+    description: DDR3 / DDR3L SDRAM chip(s) on-board.
+    capabilities: []
+  - id: ddr4_memory
+    name: DDR4 SDRAM
+    category: memory
+    description: DDR4 SDRAM chip(s) on-board.
+    capabilities: []
+  - id: ddr5_memory
+    name: DDR5 SDRAM
+    category: memory
+    description: DDR5 SDRAM chip(s) on-board (Agilex 7 M-series and Versal Premium-class).
+    capabilities: []
+  - id: lpddr2_memory
+    name: LPDDR2 SDRAM
+    category: memory
+    description: Low-power DDR2 (mobile-class). Used on Precursor and similar low-power boards.
+    capabilities: []
+  - id: lpddr3_memory
+    name: LPDDR3 SDRAM
+    category: memory
+    description: Low-power DDR3 (mobile-class).
+    capabilities: []
+  - id: lpddr4_memory
+    name: LPDDR4 SDRAM
+    category: memory
+    description: Low-power DDR4 (Zynq UltraScale+ MPSoC class).
+    capabilities: []
+  - id: sdr_sdram
+    name: SDR SDRAM
+    category: memory
+    description: Legacy single-data-rate SDRAM (PC100/PC133 class). Common on cheap Cyclone boards.
+    capabilities: []
+  - id: hyperram
+    name: HyperRAM / PSRAM
+    category: memory
+    description: Octal- or quad-line PSRAM (HyperRAM).
+    capabilities: []
+  - id: hbm2e_in_package
+    name: HBM2e in-package
+    category: memory
+    description: High-bandwidth memory stacked in-package with the FPGA (Stratix 10 MX, Versal HBM).
+    capabilities: []
+  - id: sram
+    name: SRAM
+    category: memory
+    description: Asynchronous SRAM (legacy boards).
+    capabilities: []
+  - id: ddr1_memory
+    name: DDR1 SDRAM
+    category: memory
+    description: Original DDR (DDR1) SDRAM — legacy Virtex-4 / Stratix-II class boards.
+    capabilities: []
+  - id: qdrii_sram
+    name: QDR-II/II+ SRAM
+    category: memory
+    description: Quad-data-rate SRAM (separate read/write busses) — typical of high-end packet-processing / NIC FPGA boards.
+    capabilities: []
+  - id: qspi_flash
+    name: QSPI configuration flash
+    category: storage
+    description: Quad SPI flash for FPGA configuration and/or general-purpose data.
+    capabilities: []
+  - id: spi_flash
+    name: SPI flash
+    category: storage
+    description: Single-line SPI flash.
+    capabilities: []
+  - id: nor_flash
+    name: Parallel NOR flash
+    category: storage
+    description: Parallel NOR flash (legacy).
+    capabilities: []
+  - id: nand_flash
+    name: NAND flash
+    category: storage
+    description: Raw NAND flash chip (eMMC-class density).
+    capabilities: []
+  - id: eeprom_chip
+    name: I2C/SPI EEPROM
+    category: storage
+    description: Small serial EEPROM (AT24C-class) — board ID, MAC address, calibration constants.
+    capabilities: []
+  - id: microsd_socket
+    name: microSD socket
+    category: storage
+    description: microSD card socket — often used as boot media on SoC FPGAs.
+    capabilities: []
+  - id: sd_card_socket
+    name: SD card socket (full-size)
+    category: storage
+    description: Full-size SD card slot.
+    capabilities: []
+  - id: emmc_flash
+    name: eMMC
+    category: storage
+    description: Soldered eMMC chip for bulk storage.
+    capabilities: []
+  - id: nvme_socket
+    name: M.2 NVMe socket
+    category: storage
+    description: M.2 M-key socket for NVMe SSD via PCIe.
+    capabilities: []
+  - id: ethernet_phy_10_100
+    name: 10/100 Ethernet PHY
+    category: connectivity
+    description: 10/100BASE-T Ethernet PHY with RJ-45 magjack.
+    capabilities: []
+  - id: ethernet_phy_gigabit
+    name: Gigabit Ethernet PHY
+    category: connectivity
+    description: 10/100/1000BASE-T PHY with RJ-45 magjack (RGMII/SGMII/RMII MAC interface).
+    capabilities: []
+  - id: ethernet_phy_2_5gbe
+    name: 2.5GbE Ethernet PHY
+    category: connectivity
+    description: 2.5GBASE-T PHY (newer industrial boards).
+    capabilities: []
+  - id: ethernet_10gbe_sfp
+    name: 10G Ethernet (SFP+)
+    category: connectivity
+    description: 10GBASE-* via SFP+ cage and transceiver lanes.
+    capabilities: []
+  - id: ethernet_25gbe_sfp28
+    name: 25G Ethernet (SFP28)
+    category: connectivity
+    description: 25GBASE-* via SFP28 cage.
+    capabilities: []
+  - id: usb_2_device
+    name: USB 2.0 device
+    category: connectivity
+    description: USB 2.0 device port (typically the FPGA-config / UART bridge).
+    capabilities: []
+  - id: usb_2_host
+    name: USB 2.0 host
+    category: connectivity
+    description: USB 2.0 host port (driven by FPGA / SoC USB controller).
+    capabilities: []
+  - id: usb_2_otg
+    name: USB 2.0 OTG
+    category: connectivity
+    description: USB 2.0 host/device OTG port (typical of Zynq-based boards).
+    capabilities: []
+  - id: usb_3_host
+    name: USB 3.0 host
+    category: connectivity
+    description: USB 3.0 / SuperSpeed host port via FPGA transceivers + ULPI/UTMI PHY.
+    capabilities: []
+  - id: usb_3_device
+    name: USB 3.0 device
+    category: connectivity
+    description: USB 3.0 / SuperSpeed device port (through a bridge such as the CH569 or FPGA transceivers).
+    capabilities: []
+  - id: usb_uart_bridge
+    name: USB-UART bridge
+    category: connectivity
+    description: FTDI / CP210x / CH340 USB-serial bridge for stdio + (sometimes) JTAG.
+    capabilities: [serial_console]
+  - id: rs232_transceiver
+    name: RS-232 transceiver
+    category: connectivity
+    description: MAX3232-class transceiver behind a DE-9 connector.
+    capabilities: [serial_console]
+  - id: rs485_transceiver
+    name: RS-485 transceiver
+    category: connectivity
+    description: Half/full-duplex RS-485 transceiver for industrial bus.
+    capabilities: []
+  - id: can_transceiver
+    name: CAN transceiver
+    category: connectivity
+    description: CAN 2.0 / CAN FD transceiver chip.
+    capabilities: []
+  - id: wifi_radio
+    name: Wi-Fi radio
+    category: connectivity
+    description: On-board Wi-Fi module (typically SDIO / SPI / UART AT).
+    capabilities: []
+  - id: bluetooth_le_radio
+    name: Bluetooth LE radio
+    category: connectivity
+    description: On-board Bluetooth Low Energy radio.
+    capabilities: []
+  - id: zigbee_radio
+    name: Zigbee radio
+    category: connectivity
+    description: On-board IEEE 802.15.4 / Zigbee radio.
+    capabilities: []
+  - id: pcie_endpoint
+    name: PCIe endpoint
+    category: connectivity
+    description: PCIe endpoint (Gen2/Gen3/Gen4/Gen5) via FPGA transceivers.
+    capabilities: []
+  - id: pcie_edge_connector
+    name: PCIe edge connector
+    category: connectivity
+    description: Card-edge PCIe finger for plugging the board into a host slot.
+    capabilities: []
+  - id: sata_host
+    name: SATA host
+    category: connectivity
+    description: SATA III host port via FPGA transceivers.
+    capabilities: []
+  - id: sfp_cage
+    name: SFP cage
+    category: connectivity
+    description: SFP / SFP+ cage (≤10 Gbps).
+    capabilities: []
+  - id: qsfp_cage
+    name: QSFP cage
+    category: connectivity
+    description: QSFP+ / QSFP28 cage (40/100 Gbps).
+    capabilities: []
+  - id: qsfp_dd_cage
+    name: QSFP-DD cage
+    category: connectivity
+    description: QSFP-DD cage (200/400 Gbps, eight transceiver lanes).
+    capabilities: []
+  - id: pmod_connector
+    name: Pmod connector
+    category: expansion
+    description: Digilent Pmod (12-pin, 3.3 V) expansion connector. Boards often have multiples.
+    capabilities: [gpio]
+  - id: pmod_diff
+    name: Pmod with differential pairs
+    category: expansion
+    description: Pmod with differential-pair routing for high-speed signals (e.g. HDMI Pmod).
+    capabilities: [gpio]
+  - id: fmc_lpc
+    name: FMC LPC
+    category: expansion
+    description: VITA-57.1 FMC Low-Pin-Count connector.
+    capabilities: [gpio]
+  - id: fmc_hpc
+    name: FMC HPC
+    category: expansion
+    description: VITA-57.1 FMC High-Pin-Count connector.
+    capabilities: [gpio]
+  - id: fmc_plus
+    name: FMC+
+    category: expansion
+    description: VITA-57.4 FMC+ (28 Gb/s) connector.
+    capabilities: [gpio]
+  - id: syzygy_standard
+    name: SYZYGY Standard
+    category: expansion
+    description: Opal Kelly SYZYGY Standard expansion connector.
+    capabilities: [gpio]
+  - id: syzygy_txr4
+    name: SYZYGY TXR4
+    category: expansion
+    description: Opal Kelly SYZYGY TXR4 transceiver expansion connector.
+    capabilities: [gpio]
+  - id: arduino_shield_header
+    name: Arduino shield header
+    category: expansion
+    description: Arduino R3-style shield connector header.
+    capabilities: [gpio]
+  - id: raspi_hat_header
+    name: Raspberry Pi HAT header
+    category: expansion
+    description: Raspberry Pi 40-pin HAT-compatible header.
+    capabilities: [gpio]
+  - id: mikrobus_socket
+    name: mikroBUS socket
+    category: expansion
+    description: MikroElektronika mikroBUS click-board socket.
+    capabilities: [gpio]
+  - id: gpio_header_generic
+    name: Generic GPIO header
+    category: expansion
+    description: Bare 0.1" / 2 mm GPIO header without a standard pinout.
+    capabilities: [gpio]
+  - id: imu_chip
+    name: IMU
+    category: sensor
+    description: Inertial measurement unit (accel + gyro, maybe magnetometer).
+    capabilities: []
+  - id: accelerometer
+    name: Accelerometer
+    category: sensor
+    description: 3-axis accelerometer chip.
+    capabilities: []
+  - id: temperature_sensor_external
+    name: External temperature sensor
+    category: sensor
+    description: On-board temperature sensor (board-level, not the FPGA die-temp).
+    capabilities: []
+  - id: barometric_pressure_sensor
+    name: Barometric pressure sensor
+    category: sensor
+    description: Pressure / altitude sensor.
+    capabilities: []
+  - id: ambient_light_sensor
+    name: Ambient light sensor
+    category: sensor
+    description: Phototransistor or digital light sensor.
+    capabilities: []
+  - id: mipi_csi2_input
+    name: MIPI CSI-2 camera input
+    category: sensor
+    description: MIPI CSI-2 camera connector.
+    capabilities: []
+  - id: pcam_connector
+    name: Digilent Pcam connector
+    category: sensor
+    description: Digilent Pcam-compatible MIPI CSI-2 camera connector.
+    capabilities: []
+  - id: parallel_camera_input
+    name: Parallel camera input
+    category: sensor
+    description: Parallel CMOS image-sensor interface (OV5640 / OV7670 style 8/10-bit data + HSYNC/VSYNC).
+    capabilities: []
+  - id: analog_video_decoder
+    name: Analog video decoder
+    category: sensor
+    description: Composite / component / S-Video → digital decoder chip (ADV7180-class).
+    capabilities: []
+  - id: adc_chip
+    name: ADC chip
+    category: sensor
+    description: General-purpose external ADC (parallel / SPI / LVDS interface).
+    capabilities: []
+  - id: dac_chip
+    name: DAC chip
+    category: sensor
+    description: General-purpose external DAC.
+    capabilities: []
+  - id: rf_adc_dac_high_speed
+    name: High-speed RF ADC/DAC
+    category: sensor
+    description: High-rate (≥100 MSPS) ADC and/or DAC for RF / instrumentation.
+    capabilities: []
+  - id: sma_io_pair
+    name: SMA I/O
+    category: sensor
+    description: SMA-connectored analog input/output ports (test-and-measurement).
+    capabilities: []
+  - id: jtag_header
+    name: JTAG header
+    category: programming
+    description: Generic JTAG header (Xilinx 14-pin / Altera 10-pin / etc.).
+    capabilities: []
+  - id: usb_jtag_bridge
+    name: USB-JTAG bridge
+    category: programming
+    description: On-board USB-to-JTAG bridge (FT2232H / FT232H / vendor-specific).
+    capabilities: []
+  - id: dfu_bootloader
+    name: USB DFU bootloader
+    category: programming
+    description: USB-DFU bootloader pre-flashed in the FPGA (Fomu, OrangeCrab style).
+    capabilities: []
+  - id: avr_bridge
+    name: On-board AVR bridge
+    category: programming
+    description: AVR microcontroller acting as USB-to-FPGA-config bridge (Mojo v3 style).
+    capabilities: []
+  - id: stlink_onboard
+    name: ST-LINK on-board
+    category: programming
+    description: ST-LINK debugger / programmer on-board (rare, for SoC bring-up).
+    capabilities: []
+  - id: ftdi_usb_bridge
+    name: FTDI USB bridge
+    category: programming
+    description: FTDI FT2232H / FT232H / FT4232H bridge providing JTAG + UART over USB.
+    capabilities: [serial_console]
+  - id: usb_powered
+    name: USB-powered
+    category: power
+    description: Board runs from USB 5 V — no external supply needed.
+    capabilities: []
+  - id: barrel_jack_input
+    name: Barrel jack DC input
+    category: power
+    description: External barrel jack DC input.
+    capabilities: []
+  - id: poe_input
+    name: Power over Ethernet
+    category: power
+    description: Power-over-Ethernet input (802.3af/at).
+    capabilities: []
+  - id: battery_input
+    name: Battery input
+    category: power
+    description: Coin-cell or LiPo battery input for low-power operation.
+    capabilities: []
+  - id: atx_power
+    name: ATX power connector
+    category: power
+    description: PC ATX 4/8-pin power connector for high-current boards (Alveo-class).
+    capabilities: []
+  - id: aux_pcie_power
+    name: Aux PCIe power
+    category: power
+    description: 6 or 8-pin PCIe auxiliary power input (Alveo / BittWare accelerators).
+    capabilities: []
+  - id: power_monitor_i2c
+    name: I2C power monitor
+    category: power
+    description: On-board power / current monitor accessible over I2C (INA226 / PMBus).
+    capabilities: []
+  - id: clock_generator
+    name: Programmable clock generator
+    category: io
+    description: Programmable clock generator / synthesizer (Si5324, Si570, Si5341/5345, LMK04xxx) providing reference clocks to FPGA transceivers.
+    capabilities: []
+  - id: ps2_port
+    name: PS/2 port
+    category: connectivity
+    description: PS/2 keyboard / mouse connector.
+    capabilities: [keyboard]
+  - id: character_lcd
+    name: Character LCD
+    category: display
+    description: HD44780-class character LCD (16x2, 20x4).
+    capabilities: [text_display]
+  - id: spi_lcd
+    name: SPI LCD
+    category: display
+    description: Small TFT / OLED display on SPI.
+    capabilities: [small_display]
+  - id: buzzer
+    name: Buzzer
+    category: audio
+    description: Piezo or magnetic buzzer.
+    capabilities: [actuators]
+  - id: fan_header
+    name: Fan header
+    category: io
+    description: Header for a PWM fan (tachometer optional).
+    capabilities: [actuators]
+  - id: ir_receiver
+    name: IR receiver
+    category: io
+    description: Infrared remote-control receiver.
+    capabilities: [ir_remote]
+  - id: irda_transceiver
+    name: IrDA transceiver
+    category: connectivity
+    description: IrDA infrared transceiver.
+    capabilities: []
+  - id: joystick
+    name: Joystick / gamepad port
+    category: io
+    description: Joystick or game controller connector.
+    capabilities: []

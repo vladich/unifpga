@@ -23,6 +23,8 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - spi_flash
+  - audio_codec
   devices:
   - winbond_w9825g6kh
   - usb_blaster_ii_built_in

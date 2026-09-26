@@ -25,6 +25,13 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - character_lcd
+  - ps2_port
+  - analog_video_decoder
+  - ir_receiver
+  - sram
+  - nor_flash
+  - sd_card_socket
   devices:
   - winbond_w9825g6kh
   - wolfson_wm8731

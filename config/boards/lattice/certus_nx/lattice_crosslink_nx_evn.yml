@@ -26,6 +26,8 @@ Board:
   features:
   - microsd_socket
   - usb_jtag_bridge
+  - nor_flash
+  - pmod_connector
   devices:
   - ftdi_ft2232h
   - microsd_socket_generic

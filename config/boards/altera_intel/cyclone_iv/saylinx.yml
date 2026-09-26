@@ -13,6 +13,12 @@ Board:
   bridges:
   - jtag
   programmer: quartus_pgm
+  features:
+  - buzzer
+  - sd_card_socket
+  - eeprom_chip
+  - sdr_sdram
+  - spi_flash
   defaults:
     iostandard: 3.3-V LVTTL
 

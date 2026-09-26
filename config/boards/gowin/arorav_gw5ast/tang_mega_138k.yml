@@ -18,6 +18,20 @@ Board:
   programmer: openFPGALoader
   features:
   - microsd_socket
+  - spi_flash
+  - user_leds
+  - ddr3_memory
+  - pcie_edge_connector
+  - adc_chip
+  - dip_switches
+  - hdmi_input
+  - ethernet_phy_gigabit
+  - audio_dac
+  - addressable_leds
+  - parallel_camera_input
+  - sdr_sdram
+  - joystick
+  - fan_header
   devices:
   - microsd_socket_generic
   # Gowin tool settings:

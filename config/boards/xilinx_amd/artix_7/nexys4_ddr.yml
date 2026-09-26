@@ -30,6 +30,7 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - usb_2_host
   devices:
   - cypress_s25fl128s
   - ftdi_ft2232h

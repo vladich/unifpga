@@ -18,6 +18,10 @@ Board:
   - addressable_leds
   - audio_amp_class_d
   - microsd_socket
+  - hdmi_output
+  - parallel_lcd
+  - spi_flash
+  - joystick
   devices:
   - maxim_max98357
   - ws2812_led_chain

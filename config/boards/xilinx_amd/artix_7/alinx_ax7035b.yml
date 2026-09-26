@@ -20,6 +20,12 @@ Board:
   - usb_uart_bridge
   - user_buttons
   - user_leds
+  - ddr3_memory
+  - ethernet_phy_gigabit
+  - hdmi_output
+  - qspi_flash
+  - temperature_sensor_external
+  - hdmi_input
   devices:
   - ftdi_ft2232h
   - silabs_cp2102

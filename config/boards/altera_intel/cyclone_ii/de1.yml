@@ -22,6 +22,10 @@ Board:
   - user_buttons
   - user_leds
   - vga_output
+  - ps2_port
+  - sram
+  - nor_flash
+  - sd_card_socket
   devices:
   - hynix_hy57v641620
   - wolfson_wm8731
