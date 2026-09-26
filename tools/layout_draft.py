@@ -112,7 +112,7 @@ def draft(board_id):
             c["pins"] = dict(sorted(((str(k), v) for k, v in fact["pins"].items()), key=lambda kv: _natural(kv[0])))
         else:
             c = {"id": bank, "type": "pin_row", "label": bank.upper(),
-                 "note": "pins in the board's order: the header's physical pin numbers are not verified yet",
+                 "note": "pins in the bank's order: the header's physical pin numbers are not verified yet",
                  "bank": bank, "pins": {"[{}]".format(k): ref for k, ref in enumerate(refs)}}
         connectors.append(c)
 
