@@ -1,4 +1,4 @@
-# Pinned LiteX stream export probe
+# Pinned LiteX stream and UART export probes
 
 This is the first executable ECO-07A intake experiment. It exports one LiteX
 `SyncFIFO` through an explicit, named ready/valid stream boundary. It proves
@@ -7,12 +7,21 @@ without changing LiteX. It does **not** admit the FIFO to the catalog or prove
 synthesis quality, board compatibility, or the two complex mixed-source
 systems in [the plan](../../ECOSYSTEM_PLAN.md).
 
+The probe also exports the pinned LiteX `RS232PHY` as an 8N1 UART component.
+`--component rs232-phy --clk-freq 10000000 --baudrate 115200` selects its
+clock/baud parameters; the default remains `sync-fifo`. Its TX input uses
+ready/valid with `sink_data` held stable until `sink_ready`. Its RX output is a
+one-cycle byte pulse: serial input cannot be stalled, and `source_ready=0` at
+arrival reports `rx_overflow` rather than holding the byte. Invalid stop bits
+report `rx_framing_error` and do not produce a byte. This contract requires a
+buffer or loss policy before composition with a backpressured consumer.
+
 The probe uses the clean `deps/litex` Git submodule pinned at
 `b6ae9e0b227354aecffef5339d3e946f2395ac09` and Migen 0.9.2 from the
 committed `uv.lock`. Set `LITEX_ROOT` to the absolute submodule path, and keep
 the virtual environment, cache, output, and `TMPDIR` inside a manifested task
 run. The probe rejects another revision or dirty checkout and emits only
-`litex_sync_fifo.v` and a digest-bearing `manifest.json` to an empty output
+one generated Verilog file and a digest-bearing `manifest.json` to an empty output
 directory. The submodule pin is experiment provenance, not admission of every
 LiteX core or its transitive dependencies to the product catalog.
 This probe imports and executes trusted pinned LiteX Python in-process. A
@@ -23,15 +32,16 @@ limits and no ambient credentials; this script is not that worker.
 PROJECT_DIR="$(git rev-parse --show-toplevel)"
 git submodule update --init deps/litex
 UV_PROJECT_ENVIRONMENT="$TASK_RUN_ROOT/litex-venv" UV_CACHE_DIR="$TASK_RUN_ROOT/uv-cache" uv sync --project experiments/litex --locked
-LITEX_ROOT="$PROJECT_DIR/deps/litex" TMPDIR="$TASK_RUN_ROOT/tmp" "$TASK_RUN_ROOT/litex-venv/bin/python" experiments/litex/test_probe.py -v
+LITEX_ROOT="$PROJECT_DIR/deps/litex" IVERILOG="$IVERILOG" VVP="$VVP" TMPDIR="$TASK_RUN_ROOT/tmp" "$TASK_RUN_ROOT/litex-venv/bin/python" -m unittest discover -s experiments/litex -p 'test_*.py' -v
 "$TASK_RUN_ROOT/litex-venv/bin/python" experiments/litex/probe.py --litex-root "$PROJECT_DIR/deps/litex" --output-root "$TASK_RUN_ROOT/export"
+"$TASK_RUN_ROOT/litex-venv/bin/python" experiments/litex/probe.py --litex-root "$PROJECT_DIR/deps/litex" --output-root "$TASK_RUN_ROOT/uart-export" --component rs232-phy --clk-freq 10000000 --baudrate 115200
 ```
 
 The first direct Migen conversion used ambiguous endpoint names such as
 `valid` and `valid_1`. The wrapper exports `sink_*` and `source_*` names and
 checks the emitted port inventory. Two fresh processes emitted identical RTL
 and manifests for width 8, depth 4 in the initial run.
-The seven focused probe tests pass, including a Migen-level packet and
+The nine focused probe tests pass, including a Migen-level packet and
 backpressure scenario, parameter width checks, and invalid-input/source guards.
 The Migen simulator test checks upstream FHDL behavior, not emitted RTL. A
 separate `test_rtl.py` exports width 16/depth 4 RTL and uses Icarus Verilog to
@@ -70,3 +80,12 @@ manifest still says `export-only` because export alone does
 not guarantee that a downstream caller ran the separate RTL test. No LiteX
 source was modified; any LiteX-side patch needs a demonstrated export
 limitation and its own tests.
+
+The UART RTL test exports the PHY, then runs two independent Icarus simulations
+through `unifpga sim`: one checks a received byte and overflow when the
+consumer is not ready; the other pairs the generated PHY with a native
+one-byte echo adapter and checks a complete serial round-trip plus invalid-stop
+framing detection. Both tests use the ordinary component-export snapshot path,
+not LiteX's build or simulation runner. This is a second reusable component
+boundary and a small mixed-source adapter. It is not the required CPU/control
+system, a validated virtual-device UART mapping, or a catalog admission.

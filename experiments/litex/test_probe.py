@@ -59,6 +59,44 @@ class LiteXProbeTests(unittest.TestCase):
         self.assertIn(b"output source_valid", rtl)
         self.assertIn(b"input source_ready", rtl)
 
+    def test_repeatable_uart_phy_export(self):
+        first = self.root / "uart-first"
+        second = self.root / "uart-second"
+        for output in (first, second):
+            result = self._run(output, "--component", "rs232-phy",
+                               "--clk-freq", "10000000", "--baudrate", "115200")
+            self.assertEqual(result.returncode, 0, result.stderr)
+        for name in ("litex_rs232_phy.v", "manifest.json"):
+            self.assertEqual((first / name).read_bytes(), (second / name).read_bytes())
+        report = json.loads((first / "manifest.json").read_text(encoding="utf-8"))
+        rtl = (first / "litex_rs232_phy.v").read_bytes()
+        self.assertEqual(report["component"], "litex:uart:rs232_phy")
+        self.assertEqual(report["parameters"],
+                         {"clk_freq": 10000000, "baudrate": 115200})
+        self.assertEqual(report["interfaces"]["serial"]["protocol"], "uart-8n1")
+        self.assertEqual(report["interfaces"]["source"]["protocol"],
+                         "pulse-byte-no-backpressure")
+        self.assertEqual(report["ports"]["sink_data"],
+                         {"direction": "input", "width": 8})
+        self.assertEqual(report["files"][0]["sha256"], hashlib.sha256(rtl).hexdigest())
+        self.assertIn(b"input serial_rx", rtl)
+        self.assertIn(b"output serial_tx", rtl)
+        self.assertIn(b"output rx_framing_error", rtl)
+        self.assertIn(b"output rx_overflow", rtl)
+
+    def test_uart_invalid_parameters_and_wrong_family_leave_no_output(self):
+        cases = (("--component", "rs232-phy", "--clk-freq", "999999"),
+                 ("--component", "rs232-phy", "--baudrate", "0"),
+                 ("--component", "rs232-phy", "--clk-freq", "1000000",
+                  "--baudrate", "200000"),
+                 ("--component", "rs232-phy", "--width", "8"),
+                 ("--baudrate", "115200"))
+        for index, args in enumerate(cases):
+            output = self.root / "bad-uart-{}".format(index)
+            result = self._run(output, *args)
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertFalse(output.exists())
+
     def test_invalid_parameters_leave_no_output(self):
         for index, args in enumerate((("--width", "0"), ("--depth", "1"),
                                       ("--width", "65"), ("--depth", "257"))):
