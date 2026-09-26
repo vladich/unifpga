@@ -36,7 +36,7 @@ Pin assignments in the board file `xilinx_zcu208`.
 Licence: [`LICENSES/MIT-digilent-xdc.txt`](LICENSES/MIT-digilent-xdc.txt), Copyright (c) 2017 Digilent.
 Source: https://github.com/Digilent/digilent-xdc
 
-Pin assignments in the board files `arty_s7_25`, `arty_s7_50`, `arty_z7_10`, `arty_z7_20`, `cmod_a7`, `cmod_s7`, `cora_z7_07s`, `cora_z7_10`, `digilent_genesys_zu_3eg`, `digilent_genesys_zu_5ev`, `digilent_usb104_a7`, `digilent_zedboard`, `digilent_zybo`, `genesys_2`, `nexys_video`, `usb104_a7_100t`, `zedboard`.
+Pin assignments in the board files `arty_s7`, `arty_z7`, `cmod_a7`, `cmod_s7`, `cora_z7`, `digilent_genesys_zu_3eg`, `digilent_genesys_zu_5ev`, `digilent_usb104_a7`, `zedboard`, `digilent_zybo`, `genesys_2`, `nexys_video`, `usb104_a7_100t`, `zedboard`.
 
 ## Code with its own licence header
 

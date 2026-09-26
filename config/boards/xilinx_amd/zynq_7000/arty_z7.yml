@@ -1,14 +1,25 @@
-# arty_z7_10 pin map.
+# arty_z7 pin map (Arty Z7-10, Arty Z7-20: the same pinout, one FPGA size per variant).
 #
-# Source: Digilent Arty-Z7-10-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
+# Sources: Arty-Z7-10-Master.xdc and Arty-Z7-20-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
 
 Board:
-  id: arty_z7_10
-  name: Arty Z7-10
+  id: arty_z7
+  name: Arty Z7
+  product: "Arty Z7-10, Arty Z7-20"
+  summary: "One board, two Zynq sizes: the Arty Z7-10 (XC7Z010) and the Arty Z7-20 (XC7Z020) share the pinout; a rig chooses one with part: 10 or part: 20, each size has its own Digilent XDC."
+  aliases:
+  - arty_z7_10
+  - arty_z7_20
+  - digilent_arty_z7
+  url: https://digilent.com/reference/programmable-logic/arty-z7/start
   producer: digilent
-  chip: XC7Z010-1CLG400C
+  chips:
+  - id: XC7Z010-1CLG400C
+    name: '10'
+  - id: XC7Z020-1CLG400C
+    name: '20'
   bridges:
   - jtag
   programmer: vivado_hw
@@ -40,12 +51,19 @@ Board:
   - issi_is43tr16256a
   - ti_txs02612
   documents:
-  - id: xdc
+  - id: xdc_10
     title: Digilent Arty-Z7-10-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
     kind: constraints
     url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Arty-Z7-10-Master.xdc
     sha256: 431481b25be07a87c83bf5950f1ec618b8a99b22c57e7bfa9795639e85e646d2
     bytes: 14598
+    retrieved: '2026-09-25'
+  - id: xdc_20
+    title: Digilent Arty-Z7-20-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Arty-Z7-20-Master.xdc
+    sha256: bfdb236bfbd3a575c86c25aaa2f8d155075a5b4b03ec46503ab2533a777bada5
+    bytes: 17838
     retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
