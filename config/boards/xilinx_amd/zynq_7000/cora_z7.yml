@@ -1,14 +1,25 @@
-# cora_z7_07s pin map.
+# cora_z7 pin map (Cora Z7-07S, Cora Z7-10: the same pinout, one FPGA size per variant).
 #
-# Source: Digilent Cora-Z7-07S-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
+# Sources: Cora-Z7-07S-Master.xdc and Cora-Z7-10-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
 
 Board:
-  id: cora_z7_07s
-  name: Cora Z7-07S
+  id: cora_z7
+  name: Cora Z7
+  product: "Cora Z7-07S, Cora Z7-10"
+  summary: "One board, two Zynq sizes: the Cora Z7-07S (XC7Z007S, single-core) and the Cora Z7-10 (XC7Z010) share the pinout; a rig chooses one with part: 07s or part: 10, each size has its own Digilent XDC."
+  aliases:
+  - cora_z7_07s
+  - cora_z7_10
+  - digilent_cora_z7
+  url: https://digilent.com/reference/programmable-logic/cora-z7/start
   producer: digilent
-  chip: XC7Z007SCLG400-1
+  chips:
+  - id: XC7Z007SCLG400-1
+    name: '07s'
+  - id: XC7Z010CLG400-1
+    name: '10'
   bridges:
   - jtag
   programmer: vivado_hw
@@ -32,12 +43,19 @@ Board:
   - rgb_led_common_anode
   - ti_txs02612
   documents:
-  - id: xdc
+  - id: xdc_07s
     title: Digilent Cora-Z7-07S-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
     kind: constraints
     url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Cora-Z7-07S-Master.xdc
     sha256: 7d689e023461834428a4f3b2b803ac94c66efb8d6994947d583bc4f5095c6eb5
     bytes: 14113
+    retrieved: '2026-09-25'
+  - id: xdc_10
+    title: Digilent Cora-Z7-10-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Cora-Z7-10-Master.xdc
+    sha256: 9f497dc0d4fc31d33f556ba675f48721f4e01dd644f0025ea670bc3afc020b5a
+    bytes: 14096
     retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33

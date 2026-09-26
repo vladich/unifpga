@@ -1,14 +1,25 @@
-# arty_s7_25 pin map.
+# arty_s7 pin map (Arty S7-25, Arty S7-50: the same pinout, one FPGA size per variant).
 #
-# Source: Digilent Arty-S7-25-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
+# Sources: Arty-S7-25-Master.xdc and Arty-S7-50-Master.xdc (github.com/Digilent/digilent-xdc, MIT-licensed)
 # Imported via tools/verify_pinmap_against_vendor.py.
 
 
 Board:
-  id: arty_s7_25
-  name: Arty S7-25
+  id: arty_s7
+  name: Arty S7
+  product: "Arty S7-25, Arty S7-50"
+  summary: "One board, two FPGA sizes: the Arty S7-25 (XC7S25) and the Arty S7-50 (XC7S50) share the pinout; a rig chooses one with part: 25 or part: 50, each size has its own Digilent XDC."
+  aliases:
+  - arty_s7_25
+  - arty_s7_50
+  - digilent_arty_s7
+  url: https://digilent.com/reference/programmable-logic/arty-s7/start
   producer: digilent
-  chip: XC7S25CSGA324-1
+  chips:
+  - id: XC7S25CSGA324-1
+    name: '25'
+  - id: XC7S50CSGA324-1
+    name: '50'
   bridges:
   - jtag
   programmer: vivado_hw
@@ -29,12 +40,19 @@ Board:
   - led_discrete_generic
   - rgb_led_common_anode
   documents:
-  - id: xdc
+  - id: xdc_25
     title: Digilent Arty-S7-25-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
     kind: constraints
     url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Arty-S7-25-Master.xdc
     sha256: a2bdf7e355e21f179ac5789631de7e7ceda694d5efa87e8213704fdd8d4243c8
     bytes: 18399
+    retrieved: '2026-09-25'
+  - id: xdc_50
+    title: Digilent Arty-S7-50-Master.xdc (github.com/Digilent/digilent-xdc, MIT)
+    kind: constraints
+    url: https://raw.githubusercontent.com/Digilent/digilent-xdc/00a3404901f35aa9567b01ecb3f2c233b6efe9f4/Arty-S7-50-Master.xdc
+    sha256: 26d472164373dff063f3cbdc3c10e958d1e8251d9e3b86776e5ab6889ba53ab5
+    bytes: 18428
     retrieved: '2026-09-25'
   defaults:
     iostandard: LVCMOS33
