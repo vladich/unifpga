@@ -179,7 +179,7 @@ Board:
       pins: {"sense_p": ["B16", "C12", "F13", "A15"], "sense_n": ["B17", "B12", "F14", "A16"]}
     onboard_ddr3:   # DDR3L SDRAM 256 MB (MT41K128M16XX-15E)
       source: {doc: mig, where: '<PinSelection>, lines 68-115'}
-      device: {"name": "DDR3L SDRAM 256 MB (MT41K128M16XX-15E)", "kind": "ddr"}
+      device: {"name": "DDR3L SDRAM 256 MB (MT41K128M16XX-15E)", "kind": "ddr", "id": "micron_mt41k128m16"}
       iostandard: ["DIFF_SSTL135", "SSTL135"]
       pins: {"addr": ["R2", "M6", "N4", "T1", "N6", "R7", "V6", "U7", "R8", "V7", "R6", "U6", "T6", "T8"], "ba": ["R1", "P4", "P2"], "cas_n": "M4", "ck_n": "V9", "ck_p": "U9", "cke": "N5", "cs_n": "U8", "dm": ["L1", "U1"], "dq": ["K5", "L3", "K3", "L6", "M3", "M1", "L4", "M2", "V4", "T5", "U4", "V5", "V1", "T3", "U3", "R3"], "dqs_n": ["N1", "V2"], "dqs_p": ["N2", "U2"], "odt": "R5", "ras_n": "P3", "reset_n": "K6", "we_n": "P5"}
   # ---- drawn: headers and parts; ./unifpga layout draft arty_a7 regenerates from here on ----

@@ -32,6 +32,8 @@ Board:
   features:
   - spi_flash
   - pmod_connector
+  devices:
+  - ftdi_ft2232h
   documents:
   - id: ds
     title: DS1003 GateMate FPGA Evaluation Board Datasheet (January 2024)
@@ -95,7 +97,7 @@ Board:
       iostandard: "2.5 V (VDD_WA)"
       pins: {"cs_n": "IO_WA_A8", "clk": "IO_WA_B8", "d0_mosi": "IO_WA_B7", "d1_miso": "IO_WA_A7", "d2_wp": "IO_WA_B6", "d3_hold": "IO_WA_A6"}
     onboard_usb:   # U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI
-      device: {"name": "U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI", "kind": "usb"}
+      device: {"name": "U7 FT2232HQ USB bridge (J7 mini-USB): channel A JTAG, channel B SPI", "kind": "usb", "id": "ftdi_ft2232h"}
       pins: {"jtag_tdo": "IO_WA_B3", "jtag_tdi": "IO_WA_A4", "jtag_tms": "IO_WA_B4", "jtag_tck": "IO_WA_A5", "spi_fwd": "IO_WA_B5"}
     pmod_a:   # Pmod A J17A (bank NB via SN74CB3T3245 level shifter)
       source: {doc: ds, where: '3.7, Table 3.9 (p. 37)'}

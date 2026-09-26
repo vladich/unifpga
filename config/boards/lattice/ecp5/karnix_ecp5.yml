@@ -22,6 +22,9 @@ Board:
   - audio_codec
   - eeprom_chip
   - spi_flash
+  devices:
+  - microchip_lan8710a
+  - winbond_w25q128
   documents:
   - id: readme
     title: Fabmicro-LLC/Karnix_ASB-254 README.md
@@ -118,7 +121,7 @@ Board:
       pins: {"a": ["N13", "P14", "R15", "T15", "P13", "R14", "R13", "T14", "R12", "T13", "M12", "N12", "M11", "N11", "P11", "P12", "K16", "K15"], "d": ["L16", "L15", "M16", "M15", "K13", "K12", "L13", "L12", "N16", "P15", "L14", "M14", "P16", "R16", "M13", "N14"], "cs_n": "H15", "oe_n": "J14", "we_n": "K14", "ble_n": "J15", "bhe_n": "J16"}
     onboard_ethernet:   # U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)
       source: {doc: pcb12, where: nets LAN_*}
-      device: {"name": "U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)", "kind": "ethernet"}
+      device: {"name": "U8 LAN8710AI 10/100 Ethernet PHY (MII) + XS4 RJ45 (passive PoE)", "kind": "ethernet", "id": "microchip_lan8710a"}
       pins: {"tx_clk": "B4", "tx_en": "A4", "txd": ["B5", "A5", "B6", "A6"], "rx_clk": "F1", "rx_dv": "B7", "rx_er": "C2", "rxd": ["D1", "E2", "E1", "F2"], "col": "B2", "crs": "C1", "mdc": "A2", "mdio": "B1", "int_n": "B3", "rst_n": "A3"}
     onboard_rs485:   # U9 MAX487 RS-485 transceiver (XS3)
       source: {doc: pcb12, where: nets RS485_RO/DI/DE}
@@ -143,7 +146,7 @@ Board:
       pins: {"scl": "R7", "sda": "P7", "wp": "R6", "reset": "T6"}
     onboard_serial_flash:   # U7 W25Q128JVPIQ SPI config flash (quad)
       source: {doc: pcb12, where: 'U7 pads; nets SPI_CONFIG_*, QSPI_D2/D3'}
-      device: {"name": "U7 W25Q128JVPIQ SPI config flash (quad)", "kind": "flash"}
+      device: {"name": "U7 W25Q128JVPIQ SPI config flash (quad)", "kind": "flash", "id": "winbond_w25q128"}
       pins: {"cs_n": "N8", "mosi_io0": "T8", "miso_io1": "T7", "io2": "M7", "io3": "N7", "sck": "N9"}
     onboard_other:   # U20 FT2232D channel A — JTAG (+ J4 external JTAG header)
       device: {"name": "U20 FT2232D channel A — JTAG (+ J4 external JTAG header)", "kind": "other"}

@@ -123,7 +123,7 @@ Board:
       pins: {"cs_n": "C23", "dq": ["B24", "A25", "B22", "A22"]}
     onboard_ddr3:   # DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)
       source: {doc: litex_core, where: 'resource ("ddram", 0), line 43'}
-      device: {"name": "DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)", "kind": "ddr"}
+      device: {"name": "DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)", "kind": "ddr", "id": "micron_mt41k128m16"}
       iostandard: ["DIFF_SSTL15", "LVCMOS15", "SSTL15"]
       pins: {"a": ["AF5", "AF2", "AD6", "AC6", "AD4", "AB6", "AE2", "Y5", "AA4", "AE6", "AE3", "AD5", "AB4", "Y6"], "ba": ["AD3", "AE1", "AE5"], "ras_n": "AC3", "cas_n": "AC4", "we_n": "AF4", "dm": ["V1", "V3"], "dq": ["W1", "V2", "Y1", "Y3", "AC2", "Y2", "AB2", "AA3", "U1", "V4", "U6", "W3", "V6", "U2", "U7", "U5"], "dqs_p": ["AB1", "W6"], "dqs_n": ["AC1", "W5"], "clk_p": "AA5", "clk_n": "AB5", "cke": "AD1", "odt": "AF3", "reset_n": "W4"}
     header_j2:   # Core-board 64-pin header U5 (LiteX/daughterboard name J2)
