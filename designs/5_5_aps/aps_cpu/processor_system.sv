@@ -448,7 +448,7 @@ end
     assign   ready[7] = '0;
   end
 
-  if(PLATFORM_SUPPORT_TIMER) begin
+  if(PLATFORM_SUPPORT_TIMER) begin : timer_peripheral
     timer_sb_ctrl timer_inst(
       .clk_i                (sysclk                 ),
       .rst_i                (core_rst               ),

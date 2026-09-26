@@ -326,7 +326,13 @@ intended SKIP, not a failure.
   working directory, so `$readmemh` paths should be relative to that directory.
   Designs without a manifest use a recursive source scan that excludes `run/`
   and `build/` outputs. See `designs/5_5_aps/fileset.yml` for an ordered
-  example that selects one of two CPU implementations.
+  example that selects one of two CPU implementations. Its additional
+  `tb_firmware` scenario runs through `./unifpga sim designs/5_5_aps
+  --tb-top tb_firmware --no-wave`: UART's four-byte finish command releases
+  the CPU, and the preloaded RISC-V program reads the timer and writes two
+  successive LED values. The testbench moves the timer counter near each
+  ten-million-tick threshold to keep simulation bounded; it does not validate
+  a full second of timing, synthesis, or any LiteX component integration.
 - **A new board**: write its file
   `config/boards/<producer>/<family>/<id>.yml` (copy a board on a similar
   chip: the catalogue fields, then its banks of pins; `./unifpga check`

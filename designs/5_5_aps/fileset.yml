@@ -44,6 +44,7 @@ sources:
   - sys_bus_controllers/vga_sb_ctrl.sv
 simulation:
   - tb.sv
+  - tb_firmware.sv
 assets:
   - program.hex
   - mem_files/vga_ch_map.mem
