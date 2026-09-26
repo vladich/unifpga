@@ -132,6 +132,10 @@ function designBitsOfRef(ref) {
 }
 // the trace's record of a use's attach (pins and per-pin design-port links)
 function attachOf(i) { return ((S.ev && S.ev.trace && S.ev.trace.attaches) || []).find((a) => a.attach_index === i); }
+// a pin the FPGA drives from something other than a design bit (tools/trace.py
+// pin_sources): {kind: clock | tied | reset, text}, or null
+function sourceOf(i, signal) { const a = attachOf(i); return (a && a.sources && a.sources[baseSignal(signal)]) || null; }
+const SOURCE_LOOK = {clock: {fill: "#a5d8ff", stroke: "#1971c2"}, tied: {fill: "#dee2e6", stroke: "#868e96"}, reset: {fill: "#ffd8a8", stroke: "#e8590c"}};
 function portByKey(key) { return ports().find((p) => p.capability + "." + p.signal === key); }
 function baseSignal(sig) { return String(sig).replace(/\[\d+\]$/, ""); }
 
@@ -471,8 +475,11 @@ function draw() {
       const px = BX + 22 + (k % perRow) * 11, py = oy + 24 + Math.floor(k / perRow) * 11;
       S.pos.obpins[pp.ref] = {x: px, y: py};
       const lit = hi.refs.has(pp.ref);
-      const dot = el("circle", {cx: px, cy: py, r: 4, fill: lit ? "var(--sel)" : "#ffffff", stroke: lit ? "var(--sel)" : dropped ? "#adb5bd" : "#2b8a3e"});
-      dot.append(el("title", {}, o.label + ": " + pp.s + " = " + pp.ref + " = FPGA " + (pp.pin || "?") + ""));
+      const src = sourceOf(i, pp.s), look = src && SOURCE_LOOK[src.kind];
+      const dot = el("circle", {cx: px, cy: py, r: 4, fill: lit ? "var(--sel)" : look ? look.fill : "#ffffff",
+                                stroke: lit ? "var(--sel)" : dropped ? "#adb5bd" : look ? look.stroke : "#2b8a3e"});
+      dot.append(el("title", {}, o.label + ": " + pp.s + " = " + pp.ref + " = FPGA " + (pp.pin || "?") +
+                                 (src ? " — driven by the FPGA itself: " + src.text + " (no design bit)" : "")));
       target(dot, {kind: "ref", ref: pp.ref});
       g.append(dot);
       if (SHARED.has(pp.ref)) g.append(el("circle", {cx: px, cy: py, r: 6.5, fill: "none", stroke: "#f76707", "stroke-width": 2, "pointer-events": "none"}));
@@ -597,7 +604,8 @@ function draw() {
       const t = el("text", {x: MX + 16, y: py + 4, "font-size": 11, class: "clickable",
                             fill: pend ? "#f76707" : isSel ? "var(--sel)" : "#343a40",
                             "font-weight": pend || isSel ? "bold" : "normal"},
-                   p + "  (" + m.pins[p] + ")" + (w[p] ? "  → " + w[p] : unwiredTie(m, p) ? "  — " + unwiredTie(m, p) + " on the module" : "  — not wired"));
+                   p + "  (" + m.pins[p] + ")" + (w[p] ? "  → " + w[p] : unwiredTie(m, p) ? "  — " + unwiredTie(m, p) + " on the module" : "  — not wired") +
+                   (w[p] && sourceOf(i, m.pins[p]) ? "  · " + sourceOf(i, m.pins[p]).text : ""));
       target(t, {kind: "mpin", use: i, pin: p});
       g.append(t);
       const dot = el("circle", {cx: MX, cy: py, r: 4, fill: col});
@@ -696,6 +704,9 @@ function draw() {
   if (wires.length) legend.push(["#d9480f", "", "wire from a header pin to a module (one colour per module)"]);
   if (SHARED.size) legend.push(["#f76707", "", "orange ring / outlined bit: an FPGA pin several parts reach, and the design bits on it (conflicted: only one may drive it)"]);
   if (ports().some((p) => sharedBits(p).size)) legend.push(["#f76707", "", "orange corner: a design bit several parts feed (inputs ORed, outputs drive all)"]);
+  if (((S.ev && S.ev.trace && S.ev.trace.attaches) || []).some((a) => a.sources && Object.keys(a.sources).length))
+    legend.push(["#1971c2", "", "blue / grey / orange pin dot: the FPGA drives the pin itself — from its clock tree (a PLL clock), " +
+                               "at a fixed level, or from the design's reset; no design bit reaches it (hover the dot)"]);
   legend.push(["var(--sel)", "", "the selection and everything it connects to (dashed when through a driver)"]);
   legend.forEach(([col, dash, text], k) => {
     const ly = LY + k * 16;
@@ -1774,7 +1785,11 @@ function details() {
       S.onboardPick = pick;
     }
     if (i >= 0 && partStatus(i)) d.append(h("p", {class: "note"}, "Not connected to the design: " + partText(i)));
-    for (const [s, ps] of Object.entries(cur.pins)) d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ")));
+    for (const [s, ps] of Object.entries(cur.pins)) {
+      const src = i >= 0 ? sourceOf(i, s) : null;
+      d.append(h("div", {}, s + ": " + ps.map((x) => x.ref + " = " + (x.pin || "?")).join(", ") +
+                            (src ? " — driven by the FPGA itself: " + src.text + " (no design bit)" : "")));
+    }
     if (i >= 0) { for (const x of portsOfUse(i)) d.append(chain(["design " + x.port.signal + (x.bits.length ? "[" + x.bits.join(",") + "]" : ""), o.label + (x.via ? " via " + x.via : "")])); }
     if (!STATIC) {
       if (i >= 0) { paramForm(d, i); d.append(h("button", {onclick: () => { S.setup.use.splice(i, 1); changed("stopped using " + o.label); }}, "Do not use")); }
