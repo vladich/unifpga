@@ -1782,7 +1782,7 @@ def _board_provider_terms(resolved, plans, cap_id, sig, bank=None):
         ref = (attach.get("bind") or {}).get(sig)
         if ref is None:
             continue
-        if bank is not None and {re.split(r"[.\[]", str(one).strip('"'), 1)[0]
+        if bank is not None and {re.split(r"[.\[]", str(one).strip('"'), maxsplit=1)[0]
                                  for one in (ref if isinstance(ref, list) else [ref])} != {bank}:
             continue
         inv = _peripheral_active_polarity(perif, attach, resolved["board_pinmap"]) == "low"
@@ -2336,7 +2336,7 @@ def _pin_of(ref):
     s = ref.strip().lstrip("~").strip()
     if not s.startswith("pin."):
         return None
-    return re.split(r"[\[\s]", s[len("pin."):], 1)[0]
+    return re.split(r"[\[\s]", s[len("pin."):], maxsplit=1)[0]
 
 
 def _optional_unbound_pins(perif, bind):
