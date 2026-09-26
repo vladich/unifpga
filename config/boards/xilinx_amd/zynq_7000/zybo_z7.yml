@@ -186,31 +186,31 @@ Board:
     - id: pmod_jb
       type: pin_row
       label: PMOD_JB
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_jb
       pins: {'[0]': 'pmod_jb[0]', '[1]': 'pmod_jb[1]', '[2]': 'pmod_jb[2]', '[3]': 'pmod_jb[3]', '[4]': 'pmod_jb[4]', '[5]': 'pmod_jb[5]', '[6]': 'pmod_jb[6]', '[7]': 'pmod_jb[7]'}
     - id: pmod_jc
       type: pin_row
       label: PMOD_JC
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_jc
       pins: {'[0]': 'pmod_jc[0]', '[1]': 'pmod_jc[1]', '[2]': 'pmod_jc[2]', '[3]': 'pmod_jc[3]', '[4]': 'pmod_jc[4]', '[5]': 'pmod_jc[5]', '[6]': 'pmod_jc[6]', '[7]': 'pmod_jc[7]'}
     - id: pmod_jd
       type: pin_row
       label: PMOD_JD
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_jd
       pins: {'[0]': 'pmod_jd[0]', '[1]': 'pmod_jd[1]', '[2]': 'pmod_jd[2]', '[3]': 'pmod_jd[3]', '[4]': 'pmod_jd[4]', '[5]': 'pmod_jd[5]', '[6]': 'pmod_jd[6]', '[7]': 'pmod_jd[7]'}
     - id: pmod_je
       type: pin_row
       label: PMOD_JE
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_je
       pins: {'[0]': 'pmod_je[0]', '[1]': 'pmod_je[1]', '[2]': 'pmod_je[2]', '[3]': 'pmod_je[3]', '[4]': 'pmod_je[4]', '[5]': 'pmod_je[5]', '[6]': 'pmod_je[6]', '[7]': 'pmod_je[7]'}
     - id: pmod_ja
       type: pin_row
       label: PMOD_JA
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_ja
       pins: {'[0]': 'pmod_ja[0]', '[1]': 'pmod_ja[1]', '[2]': 'pmod_ja[2]', '[3]': 'pmod_ja[3]', '[4]': 'pmod_ja[4]', '[5]': 'pmod_ja[5]', '[6]': 'pmod_ja[6]', '[7]': 'pmod_ja[7]'}
   parts:

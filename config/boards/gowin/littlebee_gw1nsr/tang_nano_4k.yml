@@ -134,13 +134,13 @@ Board:
     - id: header_p6
       type: pin_row
       label: HEADER_P6
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_p6
       pins: {'[0]': 'header_p6[0]', '[1]': 'header_p6[1]', '[2]': 'header_p6[2]', '[3]': 'header_p6[3]', '[4]': 'header_p6[4]', '[5]': 'header_p6[5]', '[6]': 'header_p6[6]', '[7]': 'header_p6[7]', '[8]': 'header_p6[8]', '[9]': 'header_p6[9]', '[10]': 'header_p6[10]', '[11]': 'header_p6[11]', '[12]': 'header_p6[12]', '[13]': 'header_p6[13]', '[14]': 'header_p6[14]', '[15]': 'header_p6[15]', '[16]': 'header_p6[16]', '[17]': 'header_p6[17]'}
     - id: header_p7
       type: pin_row
       label: HEADER_P7
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_p7
       pins: {'[0]': 'header_p7[0]', '[1]': 'header_p7[1]', '[2]': 'header_p7[2]', '[3]': 'header_p7[3]', '[4]': 'header_p7[4]', '[5]': 'header_p7[5]', '[6]': 'header_p7[6]', '[7]': 'header_p7[7]', '[8]': 'header_p7[8]', '[9]': 'header_p7[9]', '[10]': 'header_p7[10]', '[11]': 'header_p7[11]', '[12]': 'header_p7[12]', '[13]': 'header_p7[13]', '[14]': 'header_p7[14]', '[15]': 'header_p7[15]', '[16]': 'header_p7[16]', '[17]': 'header_p7[17]', '[18]': 'header_p7[18]', '[19]': 'header_p7[19]'}
   parts:

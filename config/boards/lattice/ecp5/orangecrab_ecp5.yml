@@ -142,7 +142,7 @@ Board:
     - id: gpio
       type: pin_row
       label: GPIO
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
       pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]', '[2]': 'gpio[2]', '[3]': 'gpio[3]', '[4]': 'gpio[4]', '[5]': 'gpio[5]', '[6]': 'gpio[6]', '[7]': 'gpio[7]'}
   parts:

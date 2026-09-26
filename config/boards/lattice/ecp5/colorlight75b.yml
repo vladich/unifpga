@@ -126,7 +126,7 @@ Board:
     - id: gpio
       type: pin_row
       label: GPIO
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: gpio
       pins: {'[0]': 'gpio[0]', '[1]': 'gpio[1]'}
     - id: onboard_buttons_pads

@@ -310,31 +310,31 @@ Board:
     - id: pmod_0
       type: pin_row
       label: PMOD_0
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_0
       pins: {'[0]': 'pmod_0[0]', '[1]': 'pmod_0[1]', '[2]': 'pmod_0[2]', '[3]': 'pmod_0[3]', '[4]': 'pmod_0[4]', '[5]': 'pmod_0[5]', '[6]': 'pmod_0[6]', '[7]': 'pmod_0[7]'}
     - id: pmod_1
       type: pin_row
       label: PMOD_1
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_1
       pins: {'[0]': 'pmod_1[0]', '[1]': 'pmod_1[1]', '[2]': 'pmod_1[2]', '[3]': 'pmod_1[3]', '[4]': 'pmod_1[4]', '[5]': 'pmod_1[5]', '[6]': 'pmod_1[6]', '[7]': 'pmod_1[7]'}
     - id: pmod_2
       type: pin_row
       label: PMOD_2
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: pmod_2
       pins: {'[0]': 'pmod_2[0]', '[1]': 'pmod_2[1]', '[2]': 'pmod_2[2]', '[3]': 'pmod_2[3]', '[4]': 'pmod_2[4]', '[5]': 'pmod_2[5]', '[6]': 'pmod_2[6]', '[7]': 'pmod_2[7]'}
     - id: jtag
       type: pin_row
       label: JTAG
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: jtag
       pins: {'[0]': 'jtag[0]', '[1]': 'jtag[1]', '[2]': 'jtag[2]', '[3]': 'jtag[3]', '[4]': 'jtag[4]', '[5]': 'jtag[5]'}
     - id: header_40p
       type: pin_row
       label: HEADER_40P
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: header_40p
       pins: {'[0]': 'header_40p[0]', '[1]': 'header_40p[1]', '[2]': 'header_40p[2]', '[3]': 'header_40p[3]', '[4]': 'header_40p[4]', '[5]': 'header_40p[5]', '[6]': 'header_40p[6]', '[7]': 'header_40p[7]', '[8]': 'header_40p[8]', '[9]': 'header_40p[9]', '[10]': 'header_40p[10]', '[11]': 'header_40p[11]', '[12]': 'header_40p[12]', '[13]': 'header_40p[13]', '[14]': 'header_40p[14]', '[15]': 'header_40p[15]', '[16]': 'header_40p[16]', '[17]': 'header_40p[17]', '[18]': 'header_40p[18]', '[19]': 'header_40p[19]', '[20]': 'header_40p[20]', '[21]': 'header_40p[21]', '[22]': 'header_40p[22]', '[23]': 'header_40p[23]', '[24]': 'header_40p[24]', '[25]': 'header_40p[25]', '[26]': 'header_40p[26]', '[27]': 'header_40p[27]', '[28]': 'header_40p[28]', '[29]': 'header_40p[29]', '[30]': 'header_40p[30]', '[31]': 'header_40p[31]', '[32]': 'header_40p[32]', '[33]': 'header_40p[33]', '[34]': 'header_40p[34]', '[35]': 'header_40p[35]', '[36]': 'header_40p[36]', '[37]': 'header_40p[37]'}
   parts:

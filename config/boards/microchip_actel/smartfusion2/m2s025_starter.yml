@@ -160,49 +160,49 @@ Board:
     - id: breadboard_p7
       type: pin_row
       label: BREADBOARD_P7
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p7
       pins: {'[0]': 'breadboard_p7[0]', '[1]': 'breadboard_p7[1]', '[2]': 'breadboard_p7[2]', '[3]': 'breadboard_p7[3]', '[4]': 'breadboard_p7[4]', '[5]': 'breadboard_p7[5]', '[6]': 'breadboard_p7[6]', '[7]': 'breadboard_p7[7]', '[8]': 'breadboard_p7[8]', '[9]': 'breadboard_p7[9]', '[10]': 'breadboard_p7[10]'}
     - id: breadboard_p8
       type: pin_row
       label: BREADBOARD_P8
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p8
       pins: {'[0]': 'breadboard_p8[0]', '[1]': 'breadboard_p8[1]', '[2]': 'breadboard_p8[2]', '[3]': 'breadboard_p8[3]', '[4]': 'breadboard_p8[4]', '[5]': 'breadboard_p8[5]', '[6]': 'breadboard_p8[6]', '[7]': 'breadboard_p8[7]'}
     - id: breadboard_p9
       type: pin_row
       label: BREADBOARD_P9
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p9
       pins: {'[0]': 'breadboard_p9[0]', '[1]': 'breadboard_p9[1]', '[2]': 'breadboard_p9[2]', '[3]': 'breadboard_p9[3]', '[4]': 'breadboard_p9[4]', '[5]': 'breadboard_p9[5]', '[6]': 'breadboard_p9[6]', '[7]': 'breadboard_p9[7]', '[8]': 'breadboard_p9[8]', '[9]': 'breadboard_p9[9]', '[10]': 'breadboard_p9[10]', '[11]': 'breadboard_p9[11]', '[12]': 'breadboard_p9[12]', '[13]': 'breadboard_p9[13]'}
     - id: breadboard_p10
       type: pin_row
       label: BREADBOARD_P10
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p10
       pins: {'[0]': 'breadboard_p10[0]', '[1]': 'breadboard_p10[1]', '[2]': 'breadboard_p10[2]', '[3]': 'breadboard_p10[3]', '[4]': 'breadboard_p10[4]', '[5]': 'breadboard_p10[5]', '[6]': 'breadboard_p10[6]', '[7]': 'breadboard_p10[7]', '[8]': 'breadboard_p10[8]', '[9]': 'breadboard_p10[9]', '[10]': 'breadboard_p10[10]', '[11]': 'breadboard_p10[11]', '[12]': 'breadboard_p10[12]', '[13]': 'breadboard_p10[13]', '[14]': 'breadboard_p10[14]', '[15]': 'breadboard_p10[15]'}
     - id: breadboard_p11
       type: pin_row
       label: BREADBOARD_P11
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p11
       pins: {'[0]': 'breadboard_p11[0]', '[1]': 'breadboard_p11[1]', '[2]': 'breadboard_p11[2]', '[3]': 'breadboard_p11[3]', '[4]': 'breadboard_p11[4]', '[5]': 'breadboard_p11[5]', '[6]': 'breadboard_p11[6]', '[7]': 'breadboard_p11[7]', '[8]': 'breadboard_p11[8]', '[9]': 'breadboard_p11[9]', '[10]': 'breadboard_p11[10]'}
     - id: breadboard_p12
       type: pin_row
       label: BREADBOARD_P12
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p12
       pins: {'[0]': 'breadboard_p12[0]', '[1]': 'breadboard_p12[1]', '[2]': 'breadboard_p12[2]', '[3]': 'breadboard_p12[3]', '[4]': 'breadboard_p12[4]', '[5]': 'breadboard_p12[5]', '[6]': 'breadboard_p12[6]', '[7]': 'breadboard_p12[7]', '[8]': 'breadboard_p12[8]', '[9]': 'breadboard_p12[9]', '[10]': 'breadboard_p12[10]', '[11]': 'breadboard_p12[11]', '[12]': 'breadboard_p12[12]', '[13]': 'breadboard_p12[13]'}
     - id: breadboard_p13
       type: pin_row
       label: BREADBOARD_P13
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p13
       pins: {'[0]': 'breadboard_p13[0]', '[1]': 'breadboard_p13[1]', '[2]': 'breadboard_p13[2]', '[3]': 'breadboard_p13[3]', '[4]': 'breadboard_p13[4]', '[5]': 'breadboard_p13[5]', '[6]': 'breadboard_p13[6]', '[7]': 'breadboard_p13[7]', '[8]': 'breadboard_p13[8]', '[9]': 'breadboard_p13[9]', '[10]': 'breadboard_p13[10]', '[11]': 'breadboard_p13[11]', '[12]': 'breadboard_p13[12]', '[13]': 'breadboard_p13[13]', '[14]': 'breadboard_p13[14]', '[15]': 'breadboard_p13[15]', '[16]': 'breadboard_p13[16]', '[17]': 'breadboard_p13[17]', '[18]': 'breadboard_p13[18]', '[19]': 'breadboard_p13[19]'}
     - id: breadboard_p14
       type: pin_row
       label: BREADBOARD_P14
-      note: 'pins in the pinmap''s order: the header''s physical pin numbers are not verified yet'
+      note: 'pins in the bank''s order: the header''s physical pin numbers are not verified yet'
       bank: breadboard_p14
       pins: {'[0]': 'breadboard_p14[0]', '[1]': 'breadboard_p14[1]', '[2]': 'breadboard_p14[2]', '[3]': 'breadboard_p14[3]', '[4]': 'breadboard_p14[4]', '[5]': 'breadboard_p14[5]', '[6]': 'breadboard_p14[6]', '[7]': 'breadboard_p14[7]', '[8]': 'breadboard_p14[8]', '[9]': 'breadboard_p14[9]', '[10]': 'breadboard_p14[10]', '[11]': 'breadboard_p14[11]', '[12]': 'breadboard_p14[12]', '[13]': 'breadboard_p14[13]', '[14]': 'breadboard_p14[14]', '[15]': 'breadboard_p14[15]', '[16]': 'breadboard_p14[16]', '[17]': 'breadboard_p14[17]', '[18]': 'breadboard_p14[18]', '[19]': 'breadboard_p14[19]'}
   parts:
