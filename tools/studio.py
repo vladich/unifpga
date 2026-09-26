@@ -91,6 +91,12 @@ def board_data(board_id):
     def pins(ref):
         return [{"ref": bit, "pin": pin} for bit, pin in codegen._bind_pins(board, ref)]
 
+    def bit_ref(ref):
+        """A header pin's reference as the trace names the bit (onboard_microsd.dat[1]
+        -> onboard_microsd_dat[1]), so edges, wires and header pins agree."""
+        bits = codegen._bind_pins(board, ref)
+        return bits[0][0] if len(bits) == 1 else ref
+
     connectors = []
     for c in board.get("headers") or []:
         ctype = ctypes.get(c["type"]) or {}
@@ -104,7 +110,7 @@ def board_data(board_id):
             "bank": c.get("bank"),
             "voltage": ctype.get("voltage"), "rows": rows,
             "power": {str(k): v for k, v in (ctype.get("power") or {}).items()},
-            "pins": {str(k): {"ref": ref, "pin": ", ".join(p["pin"] or "?" for p in pins(ref))}
+            "pins": {str(k): {"ref": bit_ref(ref), "pin": ", ".join(p["pin"] or "?" for p in pins(ref))}
                      for k, ref in (c.get("pins") or {}).items()},
         })
     onboard = []
@@ -134,6 +140,9 @@ def board_data(board_id):
         "board": board_id,
         "verified": bool((board.get("layout") or {}).get("verified")),
         "connectors": connectors,
+        # bank ref -> "connector.key": which header a pin on several headers belongs to
+        # (tools/setup.py ref_index); the page draws by it and never derives its own
+        "ref_index": {bit_ref(ref): where for ref, where in su.ref_index(board).items()},
         "onboard": onboard,
         "modules": sorted(modules.values(), key=lambda m: m["id"]),
         "peripherals": {pid: {"description": p.get("description"), "signals": p.get("signals") or [],
@@ -832,7 +841,9 @@ def make_server(port=8765, host="127.0.0.1"):
                 if path == "/api/evaluate":
                     return self._send(200, evaluate(body["setup"]))
                 if path == "/api/autowire":
-                    return self._send(200, su.autowire(body["setup"], int(body["use"])))
+                    got = su.autowire(body["setup"], int(body["use"]))
+                    # `note`: what the chosen pins share (the page shows it and strips it)
+                    return self._send(200, dict(got, note=su.wiring_note(body["setup"], int(body["use"]), got)))
                 if path == "/api/save":
                     return self._send(200, save(body["setup"]))
                 if path == "/api/verilog":

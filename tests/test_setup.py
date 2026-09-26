@@ -4,6 +4,9 @@
 import copy
 import json
 import os
+import re
+import shutil
+import subprocess
 import sys
 import threading
 import urllib.request
@@ -372,6 +375,31 @@ def test_autowire_plugs_or_wires_free_pins():
         su.autowire(lcd, len(lcd["use"]) - 1)             # J5 / J6 are the LCD's
 
 
+def test_autowire_prefers_the_pmods_to_the_sdram_socket_and_says_what_the_pins_share():
+    """Tang Mega 138K: both Pmods are handed to the design as gpio and J14 (the
+    SDRAM1 socket) is the roomiest header. The microphone goes to Pmod pins the
+    design also has as gpio, not through J14, whose pins the board multiplexes
+    with the SDRAM module, the camera and the Pmods; the note says which."""
+    rig = copy.deepcopy(su.read_setup("tang_mega_138k_lcd_480_272_tm1638"))
+    i = next(k for k, u in enumerate(rig["use"]) if u.get("module") == "inmp441_breakout")
+    rig["use"][i] = {"module": "inmp441_breakout", "wires": {}}
+    got = su.autowire(rig, i)
+    assert {w.split(".")[0] for w in got["wires"].values()} <= {"pmod_0", "pmod_1"}, got
+    note = su.wiring_note(rig, i, got)
+    assert "gpio" in note and "J14" not in note, note
+    rig["use"][i].update(got)
+    assert [p for p in su.validate(rig) if p[0] == "error"] == []
+    through = {"wires": {"SCK": "j14.1", "WS": "j14.3", "SD": "j14.5", "L/R": "j14.7"}}
+    assert "through J14 (SDRAM1), which the board multiplexes with onboard_sdram_1" in su.wiring_note(rig, i, through)
+    # with the Pmods not handed to the design, their free pins come first and nothing is shared
+    free = copy.deepcopy(rig)
+    free["use"] = [u for u in free["use"] if not u.get("gpio")]
+    j = next(k for k, u in enumerate(free["use"]) if u.get("module") == "inmp441_breakout")
+    free["use"][j] = {"module": "inmp441_breakout", "wires": {}}
+    got = su.autowire(free, j)
+    assert {w.split(".")[0] for w in got["wires"].values()} == {"pmod_0"} and su.wiring_note(free, j, got) == ""
+
+
 def test_evaluation_traces_around_a_broken_part():
     rig = copy.deepcopy(su.read_setup("arty_a7"))
     rig["use"].append({"module": "tm1638_led_key", "wires": {"CLK": "ja.99"}})
@@ -594,6 +622,104 @@ def test_conflicts_offer_buttons_that_resolve_them():
     assert ("autowire", len(rig["use"]) - 1) in ops and ("remove", mic3) in ops
     fixed = _apply(rig, next(f for f in p["resolve"] if f["op"] == "autowire" and f["use"] == len(rig["use"]) - 1))
     assert not [q for q in studio.evaluate(fixed)["problems"] if "used by both" in q["message"]]
+
+
+# ---------------------------------------------------------------- what the page draws by
+
+STUDIO_JS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "studio", "studio.js")
+
+
+def test_a_pin_on_two_headers_is_drawn_on_the_header_of_its_own_bank():
+    """The Tang Mega 138K's J14 (labelled SDRAM1) carries the Pmods' nets, so
+    its drawn pins reference pmod_0[…] / pmod_1[…]: a wire to a Pmod pin must be
+    drawn at the Pmod, never at J14. The server's ref_index says so, the page
+    takes it from board_data and derives no index of its own."""
+    board = su.read_drawn("tang_mega_138k")
+    j14 = next(c for c in board["headers"] if c["id"] == "j14")
+    assert j14["pins"]["2"] == "pmod_0[0]" and "SDRAM" in j14["label"]      # the trap this guards against
+    ri = su.ref_index(board)
+    assert ri["pmod_0[0]"] == "pmod_0.11" and ri["pmod_1[0]"] == "pmod_1.11" and ri["header_j14[0]"] == "j14.1"
+    assert studio.board_data("tang_mega_138k")["ref_index"] == ri
+    with open(STUDIO_JS) as f:
+        js = f.read()
+    assert "S.board.ref_index" in js
+    assert "for (const c of S.board.connectors) for (const [k, p] of Object.entries(c.pins)) idx[p.ref]" not in js
+
+
+def test_every_drawn_board_indexes_each_reference_on_a_header_of_its_bank():
+    """Over every drawn board: every indexed connector.key exists and holds that
+    reference, and a reference some header of its own bank lists is indexed on
+    such a header, whatever other headers carry the same net."""
+    for board_id, board in sorted(su.drawn_boards().items()):
+        ri = su.ref_index(board)
+        headers_of = {}
+        for c in board["headers"]:
+            if c.get("bank"):
+                headers_of.setdefault(c["bank"], set()).add(c["id"])
+        keys = {"{}.{}".format(c["id"], k): ref for c in board["headers"] for k, ref in (c.get("pins") or {}).items()}
+        for ref, where in ri.items():
+            assert keys[where] == ref, (board_id, ref, where)
+            bank = re.split(r"[.\[]", str(ref))[0]
+            if bank in headers_of:
+                assert where.split(".")[0] in headers_of[bank], (board_id, ref, where)
+
+
+def test_every_rig_draws_its_pins_where_its_wires_and_parts_say():
+    """For every rig, every traced pin has one place on the drawing (what the
+    page's pinAt finds): a reference the rig wires is placed where the wire
+    says, one place per reference, and every design-bit edge reaches a header
+    pin of the reference's own bank or a pin of an on-board part the rig uses
+    (as the rig binds it) — never another header that happens to carry the same
+    net, never nowhere."""
+    for sid in _setups():
+        setup = su.read_setup(sid)
+        bd = studio.board_data(setup["board"])
+        conns = {c["id"]: c for c in bd["connectors"]}
+        # the page's index: the board's, then wherever this rig's wires land a ref (a
+        # module wired to J6 on a Tang Nano 20K: its trace lines end at J6, not at the
+        # gpio row of the same net); one place per ref
+        ri, wired = dict(bd["ref_index"]), {}
+        for use in setup.get("use") or []:
+            for pin, where in (use.get("wires") or {}).items():
+                cid, key = where.split(".")
+                ref = conns[cid]["pins"][key]["ref"]
+                assert wired.get(ref, where) == where, (sid, use.get("module"), pin, ref, wired.get(ref), where)
+                wired[ref] = where
+        ri.update(wired)
+        traced = trace.trace(config_init.resolve_configuration(sid))
+        # the dots the page draws on a used part: its attach's pins as the rig binds
+        # them (a use's `bind:` override included), else the board's variant's
+        attaches = {a["attach_index"]: a for a in traced["attaches"]}
+        parts = {o["id"]: o for o in bd["onboard"]}
+        part_refs = set()
+        for i, u in enumerate(setup.get("use") or []):
+            if not u.get("onboard"):
+                continue
+            a, o = attaches.get(i), parts[u["onboard"]]
+            pins = a["pins"] if a and a.get("pins") else next((v["pins"] for v in o["variants"] if v["id"] == u.get("variant")),
+                                                               (o["variants"] or [{"pins": o["pins"]}])[0]["pins"])
+            part_refs |= {p["ref"] for ps in pins.values() for p in ps}
+        headers_of = {}
+        for c in bd["connectors"]:
+            if c.get("bank"):
+                headers_of.setdefault(c["bank"], set()).add(c["id"])
+        for ed in traced["edges"]:
+            ref = ed.get("ref")
+            if not ref:
+                continue
+            if ref in wired:
+                continue                                        # where the wire says, whatever the header's bank
+            if ref in ri:
+                bank = re.split(r"[.\[]", str(ref))[0]
+                if bank in headers_of:
+                    assert ri[ref].split(".")[0] in headers_of[bank], (sid, ref, ri[ref])
+            else:
+                assert ref in part_refs, (sid, ed.get("design_port"), ref)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_page_script_parses():
+    subprocess.run(["node", "--check", STUDIO_JS], check=True)
 
 
 def test_design_table_covers_every_design_and_configuration():

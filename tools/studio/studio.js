@@ -45,7 +45,14 @@ function onboardDef(id) { return S.board.onboard.find((o) => o.id === id); }
 // an on-board part is attached one way, or as one of its variants (the panels an LCD connector takes ...)
 function variantsOf(o) { return (o && o.variants) || (o ? [{id: null, label: o.label, attach: o.attach, pins: o.pins}] : []); }
 function variantOf(o, use) { const vs = variantsOf(o); return vs.find((v) => v.id === ((use && use.variant) || null)) || vs[0]; }
-function onboardPins(o, use) { const v = variantOf(o, use); return v ? v.pins : {}; }
+// an on-board part's pins as the rig binds them: the evaluated trace's attach of
+// use `i` (a use's own `bind:` may route a signal elsewhere — the DE1's decimal
+// points on its red LEDs), else the board's variant
+function onboardPins(o, use, i) {
+  const a = i !== undefined && i !== null ? attachOf(i) : null;
+  if (a && a.pins && Object.keys(a.pins).length) return a.pins;
+  const v = variantOf(o, use); return v ? v.pins : {};
+}
 // what a module pin must be when it is left unwired (the module's `unwired:`), "tie to GND" ...
 function unwiredTie(m, p) {
   const u = ((m && m.unwired) || {})[p];
@@ -67,10 +74,20 @@ function wiresOf(use) {
   return use.wires || {};
 }
 
-// pinmap ref -> "conn.key"
+// bank ref -> "conn.key": the server's (tools/setup.py ref_index), which knows
+// which header a pin on several headers belongs to (a Tang Mega 138K Pmod pin is
+// also a J14 pin: the Pmod's) — the page never derives that itself —
 function refIndex() {
-  const idx = {};
-  for (const c of S.board.connectors) for (const [k, p] of Object.entries(c.pins)) idx[p.ref] = c.id + "." + k;
+  const idx = Object.assign({}, S.board.ref_index || {});
+  // ... and wherever this rig's wires land a ref: a module wired to J6 on a Tang
+  // Nano 20K has its trace lines end at J6, not at the gpio row of the same net
+  for (const use of (S.setup && S.setup.use) || []) {
+    if (!use.module) continue;
+    for (const where of Object.values(wiresOf(use))) {
+      const [cid, key] = String(where).split("."), c = conn(cid), p = c && c.pins[key];
+      if (p) idx[p.ref] = cid + "." + key;
+    }
+  }
   return idx;
 }
 
@@ -465,7 +482,7 @@ function draw() {
     const dropped = false;
     const on = i !== null && hi.uses.has(i), selected = S.sel && S.sel.kind === "onboard" && S.sel.id === o.id;
     const g = el("g", {class: "clickable"});
-    const obpins = i === null ? [] : Object.entries(onboardPins(o, S.setup.use[i])).flatMap(([s, ps]) => ps.map((pp) => Object.assign({s}, pp)));
+    const obpins = i === null ? [] : Object.entries(onboardPins(o, S.setup.use[i], i)).flatMap(([s, ps]) => ps.map((pp) => Object.assign({s}, pp)));
     const perRow = Math.floor((OW - 20) / 11), pinRows = Math.ceil(obpins.length / perRow);
     const boxH = 20 + pinRows * 11;
     g.append(el("rect", {x: BX + 12, y: oy, width: OW, height: boxH, rx: 3,
@@ -1224,7 +1241,7 @@ function verilogTarget(sel) {
     const u = S.setup.use[i] || {};
     if (u.module) return Object.values(wiresOf(u)).map(pinRef).filter(Boolean);
     const o = u.onboard && onboardDef(u.onboard);
-    return o ? Object.values(onboardPins(o, u)).flatMap((ps) => ps.map((p) => p.ref)) : [];
+    return o ? Object.values(onboardPins(o, u, i)).flatMap((ps) => ps.map((p) => p.ref)) : [];
   };
   const withDrop = (i) => ({use: i});
   if (sel.kind === "vbit" || sel.kind === "vport") {
@@ -1766,10 +1783,13 @@ function details() {
     d.append(h("div", {}, S.board.connectors.length + " connectors, " + S.board.onboard.length + " on-board devices"));
     d.append(h("p", {class: "muted"}, "Double-click the board for the generated top module's ports: every FPGA pin this rig uses."));
   } else if (sel.kind === "ref") {
+    // the part whose pins (as this rig binds them) hold the ref, else the part whose board variants do
+    const holds = (o2, u2, k) => Object.values(onboardPins(o2, u2, k)).some((ps) => ps.some((pp) => pp.ref === sel.ref));
+    const idx = uses.findIndex((u2, k) => u2.onboard && onboardDef(u2.onboard) && holds(onboardDef(u2.onboard), u2, k));
     const has = (x) => variantsOf(x).some((v) => Object.values(v.pins).some((ps) => ps.some((pp) => pp.ref === sel.ref)));
-    const o = S.board.onboard.find(has);
-    const ou = o && uses.find((u) => u.onboard === o.id);
-    const pp = o && Object.entries(onboardPins(o, ou)).flatMap(([s, ps]) => ps.map((x) => Object.assign({s}, x))).find((x) => x.ref === sel.ref);
+    const o = idx >= 0 ? onboardDef(uses[idx].onboard) : S.board.onboard.find(has);
+    const ou = idx >= 0 ? uses[idx] : o && uses.find((u) => u.onboard === o.id);
+    const pp = o && Object.entries(onboardPins(o, ou, idx >= 0 ? idx : undefined)).flatMap(([s, ps]) => ps.map((x) => Object.assign({s}, x))).find((x) => x.ref === sel.ref);
     d.append(h("h4", {}, (o ? o.label + " " : "") + sel.ref));
     if (pp) d.append(h("div", {}, "signal " + pp.s + ", FPGA pin " + (pp.pin || "?")));
     const eds = ((S.ev && S.ev.trace && S.ev.trace.edges) || []).filter((ed) => ed.ref === sel.ref);
@@ -2003,12 +2023,15 @@ function problemsOfUse(i) { return ((S.ev && S.ev.problems) || []).filter((p) =>
 async function autoWire(i) {
   try {
     const got = await api("/api/autowire", {setup: S.setup, use: i});
+    const note = got.note;                    // what the chosen pins share (a multiplexed header, gpio pins); not part of the use
+    delete got.note;
     const use = S.setup.use[i];
     delete use.plug; delete use.wires;
     Object.assign(use, got);
     S.pending = null;
     S.sel = {kind: "use", use: i};
-    const what = "auto-wired " + useLabel(use) + (got.plug ? " (plugged into " + got.plug.connector + (got.plug.row === "all" ? "" : " row " + got.plug.row) + (got.plug.reversed ? ", turned round" : "") + ")" : "");
+    const what = "auto-wired " + useLabel(use) + (got.plug ? " (plugged into " + got.plug.connector + (got.plug.row === "all" ? "" : " row " + got.plug.row) + (got.plug.reversed ? ", turned round" : "") + ")" : "") +
+                 (note ? " — " + note : "");
     await changed(what);
     const st = partStatus(i);
     if (st) status(what + " — the pins are free, but it " + (st.connected ? "reaches the design only in part: " : "does not reach the design: ") + partText(i), true);

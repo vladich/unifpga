@@ -1053,65 +1053,146 @@ def plugged_row_refs(setup, layout, connectors, skip=None):
     return out
 
 
+def _header_ref(conn, key):
+    """The bank reference at a header's position `key` (keys are written as
+    strings or ints), or None."""
+    pins = conn.get("pins") or {}
+    return pins.get(key, pins.get(int(key) if str(key).isdigit() else key))
+
+
+def _pin_claims(setup, skip=None):
+    """{FPGA pin: "part" | "gpio"}: what the setup's uses (all but use `skip`)
+    put on each pin — "part" for a module, an on-board part or the row under a
+    plugged module, "gpio" when only a `gpio:` use (a header handed to the
+    design) claims it."""
+    board = config_init.peek_board(setup["board"]) or {}
+    uses = [u for k, u in enumerate(setup.get("use") or []) if k != skip]
+    attaches = generate(dict(setup, use=uses))["attach"]        # _generate: one attach per use, in order
+    claims = {}
+
+    def claim(ref, kind):
+        for _bit, pin in codegen._bind_pins(board, ref):
+            for p in (str(pin).split(",") if pin else []):
+                claims[p] = "part" if kind == "part" or claims.get(p) == "part" else "gpio"
+
+    for u, a in zip(uses, attaches):
+        kind = "gpio" if "gpio" in u and len(uses) == len(attaches) else "part"
+        for ref in (a.get("bind") or {}).values():
+            claim(ref, kind)
+    for ref in plugged_row_refs(setup, read_drawn(setup["board"]), read_connectors(), skip=skip):
+        claim(ref, "part")
+    return claims
+
+
 def used_pins(setup, skip=None):
     """FPGA pins the setup's uses occupy (all but use `skip`), the pins under
     a plugged module included."""
-    board = config_init.peek_board(setup["board"]) or {}
-    rest = dict(setup, use=[u for k, u in enumerate(setup.get("use") or []) if k != skip])
-    used = set()
-    refs = [ref for a in generate(rest)["attach"] for ref in (a.get("bind") or {}).values()]
-    refs += list(plugged_row_refs(setup, read_drawn(setup["board"]), read_connectors(), skip=skip))
-    for ref in refs:
-        for _bit, pin in codegen._bind_pins(board, ref):
-            if pin:
-                used.update(str(pin).split(","))
-    return used
+    return set(_pin_claims(setup, skip))
+
+
+# where autowire may put a module's pin, best first: a pin nothing else claims
+# on a header of its own; then one the design also has as gpio (a Pmod handed
+# to the design: a module may hang on it, as the hand-wired rigs do); then a
+# header the board multiplexes with other banks (the Tang Mega 138K's J14: the
+# SDRAM1 socket, also the camera's and the Pmods' nets); last both at once
+_WIRE_LEVELS = [(False, False), (False, True), (True, False), (True, True)]
 
 
 def autowire(setup, index):
     """{"plug": ...} or {"wires": ...} for module use `index`: a module with a
-    numbered header plugged into the first free row it fits, any other wired in order to
-    the first connector with enough free pins at a voltage it runs at. Pins
-    other uses occupy (on-board devices, gpio headers, modules) are avoided."""
+    numbered header plugged into the first row it fits, any other wired in
+    order to the first connector with enough pins at a voltage it runs at —
+    each at the best level of _WIRE_LEVELS that has room, in layout order
+    within it. Pins a module, an on-board part or a plugged row occupies are
+    never taken; wiring_note says what the chosen pins share."""
     use = setup["use"][index]
     modules, ctypes = read_modules(), read_connectors()
     module = modules.get(use.get("module"))
     if module is None:
         raise SetupError("use {} is not a module".format(index))
     layout = read_drawn(setup["board"])
-    used = used_pins(setup, skip=index)
+    claims = _pin_claims(setup, skip=index)
     lo, hi = _voltage_range(module.get("voltage"))
     need = [p for p, sig in module["pins"].items() if sig not in _PASSIVE]
+    banks = layout.get("banks") or {}
+    shared = {c["id"]: bool((banks.get(c.get("bank")) or {}).get("shares")) for c in layout.get("headers") or []}
 
-    def free(conn, key):
-        ref = (conn.get("pins") or {}).get(key, (conn.get("pins") or {}).get(int(key) if str(key).isdigit() else key))
+    def rank(conn, key):
+        """None when taken, else (header multiplexed with other banks, overlaps a gpio use)."""
+        ref = _header_ref(conn, key)
         if ref is None:
-            return False
+            return None
         pins = [p for _b, p in codegen._bind_pins(layout, ref)]
-        return pins and all(p and not set(str(p).split(",")) & used for p in pins)
+        if not pins or any(not p for p in pins):
+            return None
+        kinds = {claims.get(q) for p in pins for q in str(p).split(",")}
+        if "part" in kinds:
+            return None
+        return (shared[conn["id"]], "gpio" in kinds)
 
     candidates = []
     for c in layout.get("headers") or []:
         v = (ctypes.get(c["type"]) or {}).get("voltage")
         if lo is None or v is None or lo <= v <= hi:
             candidates.append(c)
-    for plug in plug_placements(ctypes, layout, module, {c["id"] for c in candidates}):
-        c = connector(layout, plug["connector"])
-        _c, row = _row_positions(ctypes, layout, plug)
-        if all(free(c, k) for k in row if k in {str(x) for x in c.get("pins") or {}}):
-            return {"plug": plug}
-    spare = []                       # (connector, [free keys]) in layout order
+    keys_of = {}
     for c in candidates:
         rows = (ctypes.get(c["type"]) or {}).get("rows")
-        keys = [str(k) for row in rows for k in row] if rows else [str(k) for k in c.get("pins") or {}]
-        spare.append((c, [k for k in keys if free(c, k)]))
-    for c, keys in spare:            # one connector when one has room
-        if len(keys) >= len(need):
-            return {"wires": {p: "{}.{}".format(c["id"], k) for p, k in zip(need, keys)}}
-    # else across connectors, the roomiest first (a PmodVGA spans two Pmods)
-    pool = ["{}.{}".format(c["id"], k) for c, keys in sorted(spare, key=lambda x: -len(x[1])) for k in keys]
+        keys_of[c["id"]] = [str(k) for row in rows for k in row] if rows else [str(k) for k in c.get("pins") or {}]
+    ranks = {(c["id"], k): rank(c, k) for c in candidates for k in keys_of[c["id"]]}
+
+    def ok(c, k, level):
+        r = ranks.get((c["id"], str(k)))
+        return r is not None and r <= level
+
+    placements = list(plug_placements(ctypes, layout, module, {c["id"] for c in candidates}))
+    for level in _WIRE_LEVELS:               # a plug first, at the best level a row allows
+        for plug in placements:
+            c = connector(layout, plug["connector"])
+            _c, row = _row_positions(ctypes, layout, plug)
+            if all(ok(c, k, level) for k in row if str(k) in {str(x) for x in c.get("pins") or {}}):
+                return {"plug": plug}
+    for level in _WIRE_LEVELS:               # one connector when one has room
+        for c in candidates:
+            keys = [k for k in keys_of[c["id"]] if ok(c, k, level)]
+            if len(keys) >= len(need):
+                return {"wires": {p: "{}.{}".format(c["id"], k) for p, k in zip(need, keys)}}
+    # else across connectors: the best pins first, within a level the roomiest connector first
+    spare = [(c, [k for k in keys_of[c["id"]] if ranks.get((c["id"], k)) is not None]) for c in candidates]
+    pool = ["{}.{}".format(c["id"], k)
+            for level in _WIRE_LEVELS
+            for c, keys in sorted(spare, key=lambda x: -len(x[1]))
+            for k in keys if ranks[(c["id"], k)] == level]
     if len(pool) >= len(need):
         return {"wires": dict(zip(need, pool))}
     raise SetupError("{} needs {} free pins; the board has {} left at {} V".format(
         module.get("name") or module["id"], len(need), len(pool),
         lo if lo == hi else "{}-{}".format(lo, hi)))
+
+
+def wiring_note(setup, index, wiring):
+    """What the pins chosen for module use `index` (autowire's {plug} or
+    {wires}) share, for the editor's status line: a header the board
+    multiplexes with other banks, and with which; pins the design also has as
+    gpio. "" when nothing."""
+    layout = read_drawn(setup["board"])
+    ctypes = read_connectors()
+    claims = _pin_claims(setup, skip=index)
+    if wiring.get("plug"):
+        c, row = _row_positions(ctypes, layout, wiring["plug"])
+        places = [(c, str(k)) for k in row if str(k) in {str(x) for x in c.get("pins") or {}}]
+    else:
+        places = [(connector(layout, w.split(".")[0]), w.split(".")[1]) for w in (wiring.get("wires") or {}).values()]
+    banks = layout.get("banks") or {}
+    notes, seen = [], set()
+    for c, _key in places:
+        shares = (banks.get(c.get("bank")) or {}).get("shares") or []
+        if shares and c["id"] not in seen:
+            seen.add(c["id"])
+            notes.append("through {}, which the board multiplexes with {}".format(c.get("label") or c["id"], ", ".join(shares)))
+    on_gpio = sorted({c.get("label") or c["id"] for c, key in places
+                      if any(claims.get(q) == "gpio" for _b, p in codegen._bind_pins(layout, _header_ref(c, key)) if p
+                             for q in str(p).split(","))})
+    if on_gpio:
+        notes.append("on pins the design also has as gpio ({})".format(", ".join(on_gpio)))
+    return "; ".join(notes)
