@@ -2629,7 +2629,8 @@ def _gpio_connection(resolved, plans):
 # What design_top gets from each capability is the capability's own data
 # (config/capabilities/<id>.yml, `design:`): the parameters it sets, the widths
 # the interface derives from them and the ports it connects. The order is
-# rtl/peripherals/design_top_interface.sv's. A capability marked `optional`
+# config/design_top.yml's (tools/design_top.py renders the interface file from
+# the same data). A capability marked `optional`
 # (small_display, text_display, actuators) reaches design_top only when the
 # design declares its parameters and ports, so designs that don't use it are
 # untouched; without the design at hand (a bare configuration), only when the
@@ -2722,14 +2723,14 @@ _KEY = {}
 
 
 def _contract_key():
-    """The capability files' and the interface's stats, looked at no more
-    than once a second (the Designs page asks tens of thousands of times)."""
+    """The capability files' and config/design_top.yml's stats, looked at no
+    more than once a second (the Designs page asks tens of thousands of times)."""
     now = time.monotonic()
     if _KEY.get("at") is None or now - _KEY["at"] > 1.0:
         cap_dir = os.path.join(REPO, "config", "capabilities")
         _KEY["value"] = tuple((f, os.stat(f).st_mtime_ns, os.stat(f).st_size) for f in
-                              [DESIGN_INTERFACE] + sorted(os.path.join(cap_dir, n) for n in os.listdir(cap_dir)
-                                                          if n.endswith(".yml")))
+                              [os.path.join(REPO, "config", "design_top.yml")] +
+                              sorted(os.path.join(cap_dir, n) for n in os.listdir(cap_dir) if n.endswith(".yml")))
         _KEY["at"] = now
     return _KEY["value"]
 
@@ -2754,31 +2755,41 @@ def design_contract():
     if _CONTRACT.get("key") == key:
         return _CONTRACT["value"]
     capabilities = _capabilities()
-    order_params, order_ports = design_declarations(DESIGN_INTERFACE) or ([], [])
-    params, derived, ports = {}, {}, {}
-    for cid, cap in capabilities.items():
+    order = design_top_order(capabilities)
+    params, derived, ports = [], [], []
+    for cid in order:
+        cap = capabilities[cid]
         design = cap.get("design") or {}
         optional = bool(cap.get("optional"))
         for name, spec in (design.get("parameters") or {}).items():
-            params[name] = DesignParameter(name, cid, spec, optional)
+            params.append(DesignParameter(name, cid, spec, optional))
         for name, spec in (design.get("derived") or {}).items():
-            derived[name] = DesignParameter(name, cid, spec, optional)
+            derived.append(DesignParameter(name, cid, spec, optional))
         for name, spec in (design.get("ports") or {}).items():
-            ports[name] = DesignPort(name, cid, spec["signal"], spec["width"], spec, optional)
-    for what, have, order in (("parameter", dict(params, **derived), order_params), ("port", ports, order_ports)):
-        missing = sorted(set(have) - set(order))
-        if missing:
-            raise CodegenError("design_top_interface.sv does not declare the {}s {} that capabilities give "
-                               "design_top".format(what, ", ".join(missing)))
-        extra = sorted(set(order) - set(have))
-        if extra:
-            raise CodegenError("design_top_interface.sv declares the {}s {} that no capability gives "
-                               "(config/capabilities/*.yml, design:)".format(what, ", ".join(extra)))
-    value = ([params[n] for n in order_params if n in params],
-             [derived[n] for n in order_params if n in derived],
-             [ports[n] for n in order_ports])
+            ports.append(DesignPort(name, cid, spec["signal"], spec["width"], spec, optional))
+    value = (params, derived, ports)
     _CONTRACT.update(key=key, value=value)
     return value
+
+
+def design_top_order(capabilities=None):
+    """The capabilities in the virtual device's order (config/design_top.yml,
+    section by section); every capability with a design block must be there
+    once, and every one named must exist."""
+    capabilities = capabilities if capabilities is not None else _capabilities()
+    order = [c for sec in (config_init.read_design_top().get("sections") or []) for c in sec.get("capabilities") or []]
+    seen = set()
+    for cid in order:
+        if cid not in capabilities:
+            raise CodegenError("config/design_top.yml names the capability {!r} that does not exist".format(cid))
+        if cid in seen:
+            raise CodegenError("config/design_top.yml lists the capability {!r} twice".format(cid))
+        seen.add(cid)
+    missing = sorted(cid for cid, cap in capabilities.items() if cap.get("design") and cid not in seen)
+    if missing:
+        raise CodegenError("config/design_top.yml leaves out the capabilities {} (each design: block is on the device)"
+                           .format(", ".join(missing)))
+    return order
 
 
 def design_ports():

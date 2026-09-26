@@ -18,7 +18,7 @@ sys.path.insert(0, REPO)
 from tools import check, cli                      # noqa: E402
 
 REPO_RULES = {"rig.rig_expands", "peripheral.peripheral_driver_files", "board.board_provenance",
-              "toolchain.toolchain_driver", "design.design_fileset"}
+              "toolchain.toolchain_driver", "design.design_fileset", "design_top.design_top_interface"}
 
 
 def _catalogue():
@@ -26,6 +26,7 @@ def _catalogue():
     relative to config/, as tools/catalog_snapshot.py captures them)."""
     return {
         "schema/entities.yml": {"Entities": check.read_entities()},
+        "design_top.yml": {"DesignTop": {"sections": [{"title": "Everything", "capabilities": ["leds", "reset"]}]}},
         "toolchains.yml": {"Toolchains": [{"Id": "tool", "Name": "Tool", "SupportedOperations": [],
                                            "KnownVersions": ["1.0"], "Version": None, "InstallDir": None}]},
         "programmers.yml": {"Programmers": [{"Id": "prog", "Name": "Prog", "KnownVersions": [], "Version": None,

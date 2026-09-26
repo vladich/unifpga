@@ -769,6 +769,24 @@ def cmd_check(args):
     return 1 if report["status"] == "failed" else 0
 
 
+def cmd_interface(args):
+    """interface [--write]: is rtl/peripherals/design_top_interface.sv what
+    config/design_top.yml and the capabilities render to; --write renders it."""
+    from tools import design_top
+    try:
+        if args.write:
+            changed = design_top.write()
+            print("{} {}".format("wrote" if changed else "unchanged", _shown(design_top.INTERFACE)))
+            return 0
+        if design_top.is_current():
+            print("{} is current".format(_shown(design_top.INTERFACE)))
+            return 0
+        print("{} is not what the capabilities render to: ./unifpga interface --write".format(_shown(design_top.INTERFACE)))
+        return 1
+    except config.init.ConfigError as exc:
+        raise CliError(str(exc))
+
+
 def cmd_view(args):
     """Write the board editor's page for a setup (or, with --board, a board)
     with its data inlined, read-only."""
@@ -912,6 +930,7 @@ COMMANDS = {
     "designs": cmd_designs,
     "setup": cmd_setup,
     "check": cmd_check,
+    "interface": cmd_interface,
     "layout": cmd_layout,
     "sources": cmd_sources,
     "inventory": cmd_inventory,
@@ -995,6 +1014,10 @@ def build_parser():
                                       "reference between entities resolved")
     ck.add_argument("entities", nargs="*", help="only these entities (default: all; see config/schema/entities.yml)")
     ck.add_argument("--json", action="store_true", help="print the report as JSON")
+
+    it = sub.add_parser("interface", help="rtl/peripherals/design_top_interface.sv from config/design_top.yml and the "
+                                          "capabilities: is it current (--write: render it)")
+    it.add_argument("--write", action="store_true", help="render the file")
 
     ly = sub.add_parser("layout", help="draw boards' headers and parts (the drawn section of their files) "
                                         "from their banks, their rigs and the facts already drawn from documents")

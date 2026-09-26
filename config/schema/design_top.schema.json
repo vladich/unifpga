@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:unifpga:schema:design_top",
+  "title": "Design top",
+  "description": "config/design_top.yml: the order and headings under which the capabilities put their parameters and ports on design_top (what they put there is each capability's design: block). rtl/peripherals/design_top_interface.sv is rendered from it.",
+  "type": "object",
+  "required": ["DesignTop"],
+  "additionalProperties": false,
+  "properties": {
+    "DesignTop": {
+      "type": "object",
+      "required": ["sections"],
+      "additionalProperties": false,
+      "properties": {
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["title", "capabilities"],
+            "additionalProperties": false,
+            "properties": {
+              "title": { "type": "string", "minLength": 1 },
+              "capabilities": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

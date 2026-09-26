@@ -64,11 +64,12 @@
       ]
     },
     "design_parameter": {
-      "description": "A design top parameter: its value from the capability's parameters (or a computed source) and its value on a rig without a provider",
+      "description": "A design top parameter: its value from the capability's parameters (or a computed source), its value on a rig without a provider (the interface's default), and what it is",
       "type": "object",
       "required": ["value"],
       "additionalProperties": false,
       "properties": {
+        "description": { "description": "The comment beside it in the rendered interface", "type": "string" },
         "value": {
           "oneOf": [
             { "$ref": "#/$defs/name" },
@@ -149,6 +150,7 @@
           "required": ["ports"],
           "additionalProperties": false,
           "properties": {
+            "comment": { "description": "What the rendered interface says above this capability's ports", "type": "string" },
             "parameters": {
               "type": "object",
               "propertyNames": { "$ref": "#/$defs/name" },

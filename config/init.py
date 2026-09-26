@@ -310,6 +310,13 @@ def read_kinds():
     return _registry("kinds.yml", "Kinds", "kind")
 
 
+def read_design_top():
+    """config/design_top.yml: the sections of the virtual device — which
+    capabilities put parameters and ports on design_top, in what order, under
+    which headings ({"sections": [{"title", "capabilities"}]})."""
+    return _load_yaml(os.path.join(dir_path, "design_top.yml"), "DesignTop")
+
+
 def read_devices():
     """config/devices.yml: named chips and modules (a TLV320AIC23B codec, an
     RTL8211 PHY), each in one feature class, with the peripherals that drive

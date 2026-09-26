@@ -169,6 +169,20 @@ Entities:
     relations:
       - {rule: design_fileset, why: "the files exist, design_top.sv once among the sources, tb.sv in simulation"}
 
+  design_top:
+    why: >-
+      The virtual device (config/design_top.yml): the order and headings under
+      which the capabilities put their parameters and ports on design_top.
+      Codegen's contract follows it; rtl/peripherals/design_top_interface.sv
+      is rendered from it (./unifpga interface).
+    files: config/design_top.yml
+    root: DesignTop
+    schema: design_top.schema.json
+    relations:
+      - {from: sections.*.capabilities.*, to: capability, why: "the capabilities on the device, in order"}
+      - {rule: design_top_sections, why: "every capability with a design block is in exactly one section"}
+      - {rule: design_top_interface, why: "rtl/peripherals/design_top_interface.sv is what the capabilities render to"}
+
   entity_registry:
     why: This file.
     files: config/schema/entities.yml

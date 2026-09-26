@@ -146,7 +146,7 @@ by Yuri Panchul and contributors; see
 | `config/setups/<id>.yml` | A rig, one file: board, toolchain(s), the ordered `use:` list (on-board parts, modules on connectors, headers as gpio, raw attaches) with each use's `params`, `pins`, `bind` and `design_bits`, and the `design:` section (`reset`, `clock`, `uart_rx`, `width`, `tie`). `tools/setup.py` expands it into the configuration the build reads (`./unifpga setup show <id>` prints it); `UNIFPGA_PROFILE=0` / `synthesize.py --no-profile` leaves the design section out (buses in attach order, a power-up reset). |
 | `config/modules/<id>.yml`, `config/connectors.yml` | Add-on modules with their pinouts, and the connector types (how a header is numbered). |
 | `config/peripherals/*.yml` | Peripheral definitions (`led_bank`, `vga_4bit`, `gpio_header`, `tm1638_led_key`, `inmp441_i2s_mic`, …). |
-| `config/capabilities/*.yml` | Abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules. |
+| `config/capabilities/*.yml`, `config/design_top.yml` | Abstract user-facing capabilities (`leds`, `screen`, `gpio`, `audio_in`, …) with aggregation rules and what each puts on `design_top` (its `design:` block, with the prose of the interface); `design_top.yml` orders them into the virtual device. `rtl/peripherals/design_top_interface.sv` is rendered from both (`./unifpga interface --write`; `./unifpga check` reports a stale file). |
 | `config/schema/` | The schema of the configuration: one JSON Schema (2020-12) per kind of file and `entities.yml`, which names every entity, where its records live and its relationships to the others; `./unifpga check` validates every file and resolves every reference against it (`tools/check.py`). |
 
 | `rtl/peripherals/*.sv` | Driver SV modules for hardware peripherals (TM1638 controller, VGA, I²S mic, etc.). |
@@ -207,6 +207,7 @@ build is `<rig>@<toolchain>[@<part>]`, or `synthesize.py -t <toolchain> --part <
 ./unifpga setup show <id>      # the configuration a rig expands to (what the build reads; not a file)
 ./unifpga check [entity...]    # every configuration file against its schema (config/schema/), every reference resolved
 ./unifpga sources fetch|verify [board]   # the documents a board's file lists: fetch them, check the facts read from them against its banks
+./unifpga interface [--write]  # rtl/peripherals/design_top_interface.sv rendered from config/design_top.yml and the capabilities
 ./unifpga view <setup id>      # the same drawing as a read-only HTML file (--board <board> for a board alone)
 ```
 
@@ -367,7 +368,7 @@ intended SKIP, not a failure.
 ├── rtl/
 │   └── peripherals/              # SV peripheral drivers
 │       ├── designs_common/       # reusable helpers
-│       └── design_top_interface.sv  # canonical user-design interface
+│       └── design_top_interface.sv  # the user-design interface, rendered from the capabilities
 ├── toolchains/                   # driver modules
 │   ├── vivado/                   #  Xilinx 7-series / Ultrascale / Versal
 │   ├── quartus_prime/            #  Cyclone IV / V / 10, MAX 10, Arria, Stratix

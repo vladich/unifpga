@@ -102,7 +102,9 @@ def _path_id(pattern, path):
     the glob's wildcards matched, the extension dropped (designs/x/fileset.yml
     -> x; config/chips/p/f.yml -> p/f)."""
     parts = [b for a, b in zip(pattern.split("/"), path.split("/")) if "*" in a]
-    if parts and parts[-1].endswith(".yml"):
+    if not parts:                                   # one fixed file: named after it
+        parts = [path.rsplit("/", 1)[-1]]
+    if parts[-1].endswith(".yml"):
         parts[-1] = parts[-1][:-4]
     return "/".join(parts)
 
@@ -213,7 +215,7 @@ def _records_of(spec, path, doc, finding, entity):
         if not isinstance(node, dict):
             finding("invalid_root", path, "{} must be a mapping".format(root))
             return
-        yield node.get(id_field), node, expected
+        yield (node.get(id_field) if id_field else _path_id(spec["files"], path)), node, expected
     elif kind == "list":
         if not isinstance(node, list):
             finding("invalid_root", path, "{} must be a list".format(root))
@@ -549,6 +551,28 @@ def _board_provenance(ctx, entity, rec_id, record, path):
     for bank, problems in v["parts"].items():
         for problem in problems:
             ctx.fail(path, "board {!r} {}: {}".format(rec_id, bank, problem))
+
+
+@rule("design_top_sections")
+def _design_top_sections(ctx, entity, rec_id, record, path):
+    """Every capability with a design block is in exactly one section."""
+    listed = [c for sec in record.get("sections") or [] for c in sec.get("capabilities") or []]
+    for c in sorted({c for c in listed if listed.count(c) > 1}):
+        ctx.fail(path, "the capability {!r} is in two sections".format(c))
+    for cid, (_p, cap) in sorted(ctx.records.get("capability", {}).items()):
+        if isinstance(cap, dict) and cap.get("design") and cid not in listed:
+            ctx.fail(path, "the capability {!r} puts ports on design_top but is in no section".format(cid))
+
+
+@rule("design_top_interface", needs_repo=True)
+def _design_top_interface(ctx, entity, rec_id, record, path):
+    """rtl/peripherals/design_top_interface.sv is what the data renders to."""
+    from tools import design_top
+    try:
+        if not design_top.is_current():
+            ctx.fail(path, "rtl/peripherals/design_top_interface.sv is not what the capabilities render to: ./unifpga interface --write")
+    except Exception as exc:                   # a capability the renderer cannot place
+        ctx.fail(path, "the interface cannot be rendered: {}".format(exc))
 
 
 @rule("peripheral_driver_files", needs_repo=True)
