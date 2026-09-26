@@ -24,6 +24,11 @@ Board:
   - ethernet_phy_10_100
   devices:
   - microsd_socket_generic
+  - xtx_xt25b32
+  - bouffalo_bl702
+  - worldsemi_ws2812
+  - microchip_usb3317
+  - realtek_rtl8201f
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -274,7 +279,7 @@ Board:
       pins: {"a": ["F7", "A4", "D6", "F8", "C4", "E6", "B1", "D8", "A5", "F9", "K3", "B7", "A3", "C8"], "ba": ["H4", "D3", "H5"], "ras_n": "R4", "cas_n": "R6", "we_n": "L2", "cs_n": "P5", "dm": ["G1", "K5"], "dq": ["G5", "F5", "F4", "F3", "E2", "C1", "E1", "B3", "M3", "K4", "N2", "L1", "P4", "H3", "R1", "M2"], "dqs": ["G2,G3", "J5,K6"], "ck": "J1,J3", "cke": "J2", "odt": "R3", "reset_n": "B9"}
     onboard_flash:   # SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)
       source: {doc: som, where: 'U9 XT25B32: ~CS <- M9_IOR34A_FLASH_SPI_~CS (MCS_N), CLK <- L10_IOR34B (MCLK), IO1/DO -> P10_IOR33A (MI), IO0/DI <- R10_IOR33B (MO); WP/HOLD pulled up 4.7K'}
-      device: {"name": "SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)", "kind": "flash"}
+      device: {"name": "SPI NOR flash U9 (XT25B32-S, 32 Mbit; configuration flash)", "kind": "flash", "id": "xtx_xt25b32"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "M9", "clk": "L10", "miso": "P10", "mosi": "R10"}
     onboard_sdcard:   # microSD card slot J2 (SDIO, push-pull)
@@ -307,12 +312,12 @@ Board:
       shares: ["onboard_leds"]   # the board multiplexes these pins
       pins: {"reconfig_n": "B10", "ready": "A13", "done": "C13"}
     onboard_other_2:   # BL702 USB-JTAG (FPGA configuration JTAG)
-      device: {"name": "BL702 USB-JTAG (FPGA configuration JTAG)", "kind": "other"}
+      device: {"name": "BL702 USB-JTAG (FPGA configuration JTAG)", "kind": "other", "id": "bouffalo_bl702"}
       shares: ["onboard_jtag"]   # the board multiplexes these pins
       pins: {"tck": "A7", "tms": "B8", "tdi": "A6", "tdo": "C6"}
     onboard_ws2812:   # WS2812B RGB LED U17
       source: {doc: dock3714, where: sheet 1 P007_Things WS2812-DAT <- T9 (DFP_IOR38_P); sheet 9 U17 DIN via R91 100R}
-      device: {"name": "WS2812B RGB LED U17", "kind": "ws2812"}
+      device: {"name": "WS2812B RGB LED U17", "kind": "ws2812", "id": "worldsemi_ws2812"}
       iostandard: "LVCMOS33"
       shares: ["gpio_0"]   # the board multiplexes these pins
       pins: {"din": "T9"}
@@ -330,13 +335,13 @@ Board:
       pins: {"d": ["T12", "T11", "P11", "R11", "M15", "M14", "J16", "J14"], "pclk": "F13", "xclk": "G12", "vsync": "G15", "hsync": "G14", "rst_n": "L13", "pwdn": "C10", "scl": "F14", "sda": "F16"}
     onboard_ethernet:   # Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)
       source: {doc: dock3714, where: 'sheet 1 P005 Ethernet: RTL_PHY_TXD0 D16, TXD1 E14, TXEN E16, ~RST F10, MDC F14, MDIO F16, RXD0 F15, RXD1 C9, CRS M6, RXER L8, TXCLK A9; sheet 6 RTL8201F'}
-      device: {"name": "Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)", "kind": "ethernet"}
+      device: {"name": "Ethernet PHY RTL8201F-VB-CG (10/100, RMII, RJ45)", "kind": "ethernet", "id": "realtek_rtl8201f"}
       iostandard: "LVCMOS33"
       shares: ["onboard_camera", "onboard_touch", "onboard_usb_ulpi"]   # the board multiplexes these pins
       pins: {"ref_clk": "A9", "tx_en": "E16", "txd": ["D16", "E14"], "rxd": ["F15", "C9"], "crs_dv": "M6", "rx_er": "L8", "mdc": "F14", "mdio": "F16", "rst_n": "F10"}
     onboard_usb_ulpi:   # USB 2.0 ULPI PHY U6 USB3317 (USB-C "OTG" J8, SW2 selects device/host)
       source: {doc: dock3714, where: 'sheet 1 P002_USB PHY: USB_DATA0..7, USB_RESET F10, USB_NXT K13, USB_DIR K12, USB_STP K11, USB_CLKOUT T15; sheet 5 U6 USB3317 (RN3..RN5 22R), 26 MHz U7'}
-      device: {"name": "USB 2.0 ULPI PHY U6 USB3317 (USB-C \"OTG\" J8, SW2 selects device/host)", "kind": "usb"}
+      device: {"name": "USB 2.0 ULPI PHY U6 USB3317 (USB-C \"OTG\" J8, SW2 selects device/host)", "kind": "usb", "id": "microchip_usb3317"}
       iostandard: "LVCMOS33"
       shares: ["onboard_ethernet"]   # the board multiplexes these pins
       pins: {"data": ["G11", "H12", "J12", "H13", "T14", "R13", "P13", "R12"], "clk": "T15", "dir": "K12", "nxt": "K13", "stp": "K11", "rst": "F10"}

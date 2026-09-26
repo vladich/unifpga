@@ -32,6 +32,9 @@ Board:
   - led_discrete_generic
   - pushbutton_smd_generic
   - dip_switch_generic
+  - infineon_s25fl256l
+  - silabs_cp2102n
+  - realtek_rtl8211eg
   documents:
   - id: core_manual
     title: QMTECH XC7K325T Core Board User Manual (Hardware) V01
@@ -118,7 +121,7 @@ Board:
       pins: {"led": ["J26", "H26"]}
     onboard_spi_flash:   # SPI flash S25FL256L (32 MB, quad)
       source: {doc: litex_core, where: 'resource ("spiflash4x", 0), line 34'}
-      device: {"name": "SPI flash S25FL256L (32 MB, quad)", "kind": "flash"}
+      device: {"name": "SPI flash S25FL256L (32 MB, quad)", "kind": "flash", "id": "infineon_s25fl256l"}
       iostandard: "LVCMOS33"
       pins: {"cs_n": "C23", "dq": ["B24", "A25", "B22", "A22"]}
     onboard_ddr3:   # DDR3 SDRAM MT41K128M16JT-125:K (256 MB, 16-bit)
@@ -137,7 +140,7 @@ Board:
       shares: ["onboard_db_buttons", "onboard_db_ethernet", "onboard_db_ethernet_clocks", "onboard_db_sdcard", "onboard_db_vga"]   # the board multiplexes these pins
       pins: ["AD21", "AE21", "AE22", "AF22", "AE23", "AF23", "V21", "W21", "Y22", "AA22", "AF24", "AF25", "AB21", "AC21", "AB22", "AC22", "AD23", "AD24", "AC23", "AC24", "AD25", "AE25", "AA23", "AB24", "AA25", "AB25", "Y23", "AA24", "AD26", "AE26", "AB26", "AC26", "W23", "W24", "Y25", "Y26", "W25", "W26", "U26", "V26", "V23", "V24", "U24", "U25", "T22", "T23", "R22", "R23", "R25", "P25", "P23", "N23", "N26", "M26"]
     onboard_db_uart:   # Daughterboard USB-UART (CP2102N, J4 mini-USB)
-      device: {"name": "Daughterboard USB-UART (CP2102N, J4 mini-USB)", "kind": "uart"}
+      device: {"name": "Daughterboard USB-UART (CP2102N, J4 mini-USB)", "kind": "uart", "id": "silabs_cp2102n"}
       iostandard: "LVCMOS33"
       shares: ["header_j2", "onboard_7seg", "onboard_buttons"]   # the board multiplexes these pins
       pins: {"rx": "B12", "tx": "B11"}
@@ -152,12 +155,12 @@ Board:
       shares: ["header_j2", "header_j3"]   # the board multiplexes these pins
       pins: {"user_btn": ["AD21", "B20", "A20", "C19", "B19"]}
     onboard_db_ethernet_clocks:   # Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)
-      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)", "kind": "ethernet"}
+      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG clocks (GMII)", "kind": "ethernet", "id": "realtek_rtl8211eg"}
       iostandard: "LVCMOS33"
       shares: ["header_j3"]   # the board multiplexes these pins
       pins: {"tx": "AC22", "gtx": "AA23", "rx": "AB26"}
     onboard_db_ethernet:   # Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)
-      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)", "kind": "ethernet"}
+      device: {"name": "Daughterboard Gigabit Ethernet RTL8211EG (GMII, PHY address 001b)", "kind": "ethernet", "id": "realtek_rtl8211eg"}
       iostandard: "LVCMOS33"
       shares: ["header_j3"]   # the board multiplexes these pins
       pins: {"int_n": "AC24", "mdio": "Y22", "mdc": "AA22", "rx_dv": "Y26", "rx_er": "AB25", "rx_data": ["Y25", "W24", "W23", "AC26", "AE26", "AD26", "AA24", "Y23"], "tx_en": "AE25", "tx_er": "AF24", "tx_data": ["AD25", "AC23", "AD24", "AD23", "AB22", "AC21", "AB21", "AF25"], "col": "AA25", "crs": "AB24"}

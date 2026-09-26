@@ -36,6 +36,7 @@ Board:
   - seven_seg_module_shared
   - micron_m25p16
   - maxim_ds1302
+  - hynix_hy57v2562gtr
   documents:
   - id: ug
     title: AX301 User Manual (English) V1.0
@@ -197,7 +198,7 @@ Board:
       pins: {"cs_n": "D11", "mosi": "F10", "sclk": "D12", "miso": "E15"}
     onboard_sdram:   # SDRAM HY57V2562GTR (256 Mbit, 16M x 16)
       source: {doc: ug, where: 'section 6, pp. 11-12, "SDRAM pin assignment"'}
-      device: {"name": "SDRAM HY57V2562GTR (256 Mbit, 16M x 16)", "kind": "sdram"}
+      device: {"name": "SDRAM HY57V2562GTR (256 Mbit, 16M x 16)", "kind": "sdram", "id": "hynix_hy57v2562gtr"}
       model_params: {col_bits: 9}
       pins: {"clk": "B14", "cke": "F16", "cs_n": "K10", "we_n": "J13", "cas_n": "J12", "ras_n": "K11", "dqm": ["J14", "G15"], "ba": ["G11", "F13"], "a": ["F11", "E11", "D14", "C14", "A14", "A15", "B16", "C15", "C16", "D15", "F14", "D16", "F15"], "dq": ["P14", "M12", "N14", "L12", "L13", "L14", "L11", "K12", "G16", "J11", "J16", "J15", "K16", "K15", "L16", "L15"]}
     onboard_spi_flash:   # SPI configuration flash M25P16 (16 Mbit, EPCS16-compatible)

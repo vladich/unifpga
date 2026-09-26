@@ -31,6 +31,7 @@ Board:
   devices:
   - ftdi_ft2232h
   - microsd_socket_generic
+  - macronix_mx25l12833f
   documents:
   - id: xnx_ug
     title: CrossLink-NX Evaluation Board User Guide FPGA-EB-02028-1.7 (July 2026)
@@ -87,7 +88,7 @@ Board:
       pins: {"programn": "E11"}
     onboard_serial_flash:   # Macronix MX25L12833F SPI flash (config) / Parallel Configuration header J27
       source: {doc: xnx_ug, where: Table 6.2 CrossLink-NX SPI Connections; section 4.4 flash part}
-      device: {"name": "Macronix MX25L12833F SPI flash (config) / Parallel Configuration header J27", "kind": "flash"}
+      device: {"name": "Macronix MX25L12833F SPI flash (config) / Parallel Configuration header J27", "kind": "flash", "id": "macronix_mx25l12833f"}
       pins: {"clk": "E12", "cs_n": "E13", "dq": ["D13", "D15", "D14", "D16"], "mcsno": "E16"}
     onboard_config_status:   # Config status: INITN (D17 red LED, TP10) and DONE (D18 green LED, TP12)
       device: {"name": "Config status: INITN (D17 red LED, TP10) and DONE (D18 green LED, TP12)", "kind": "other"}

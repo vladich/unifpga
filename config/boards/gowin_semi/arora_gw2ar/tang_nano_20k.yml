@@ -26,6 +26,10 @@ Board:
   - maxim_max98357
   - ws2812_led_chain
   - microsd_socket_generic
+  - worldsemi_ws2812
+  - ruimeng_ms5351m
+  - xtx_xt25f64f
+  - bouffalo_bl616
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -200,7 +204,7 @@ Board:
     onboard_pa_enable: { pins: "51", source: {doc: sch3923, where: 'sheet 1: PIN51_PA_SD/EN -> AUDIO PA_SD/EN -> R45 0R -> IC3 SD_MODE (low = shutdown); cst_audio PA_EN 51'} }
     onboard_ws2812:   # WS2812 RGB LED (Sipeed's TangNano-20K-example ws2812.cst: pin 79)
       source: {doc: sch3923, where: 'sheet PERIPHERALS: WS2812 -> R60 100R -> U1 DIN; sheet 1 PIN79_WS2812; cst_ws2812 WS2812 79; litex rgb_led 79'}
-      device: {"name": "WS2812 RGB LED", "kind": "ws2812"}
+      device: {"name": "WS2812 RGB LED", "kind": "ws2812", "id": "worldsemi_ws2812"}
       pins: {"din": "79"}
     onboard_joystick:
       source: {doc: sch3923, where: 'sheet 1 J5 annotations: 17 Joystick_CS (PIN72), 18 Joystick_MISO (PIN71), 19 Joystick_MOSI (PIN53), 20 Joystick_MCLK (PIN52); cst_nestang joystick_cs2 72, miso2 71, mosi2 53, clk2 52'}
@@ -218,7 +222,7 @@ Board:
         d_n: ["36", "38", "40"]
     onboard_ms5351_clk:   # MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)
       source: {doc: sch3923, where: 'sheet PERIPHERALS: U12 CLK0 -> PIN10_5351CKP (SYS_GCLK6_P, ball 10 IOL29A/GCLKT_6), CLK1 -> PIN11_5351CKN (SYS_GCLK6_N, ball 11 IOL29B/GCLKC_6), CLK2 -> PIN13_5351clk2 (SYS_LPLL2_in, ball 13 IOL45A/LPLL2_T_in); wiki_unbox: CLK0->PIN10, CLK1->PIN11, CLK2->PIN13; MS5351 SCL/SDA go to BL616 IO22/IO21, not the FPGA'}
-      device: {"name": "MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)", "kind": "clock"}
+      device: {"name": "MS5351M clock generator U12 (AUX_PLL, 3 outputs, configured by BL616 over I2C)", "kind": "clock", "id": "ruimeng_ms5351m"}
       shares: ["onboard_bl616_spi"]   # the board multiplexes these pins
       pins: {"clk0": "10", "clk1": "11", "clk2": "13"}
     onboard_hdmi_ctrl:   # HDMI HPD and CEC
@@ -233,17 +237,17 @@ Board:
       pins: {"xr": "18", "yd": "19", "xl": "20", "yu": "17"}
     onboard_serial_flash:   # XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)
       source: {doc: sch3923, where: 'sheet 1: U2 XT25F64FWOIGT: MSPI_CLK 59 (IOR34B/MCLK, via 0R R8, 1K pull-down R4), MSPI_CS 60 (IOR34A/MCS_N), MSPI_DI 61 (flash DI, IOR33B/MO), MSPI_DO 62 (flash DO, IOR33A/MI), MSPI_WP 57, MSPI_HOLD 63; litex spiflash cs_n 60 clk 59 mosi 61 miso 62'}
-      device: {"name": "XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)", "kind": "flash"}
+      device: {"name": "XT25F64F 64 Mbit SPI flash U2 (bitstream + user, MSPI)", "kind": "flash", "id": "xtx_xt25f64f"}
       iostandard: "LVCMOS33"
       pins: {"clk": "59", "cs": "60", "mosi": "61", "miso": "62", "wp": "57", "hold": "63"}
     onboard_bl616_spi:   # BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 "choose spi" command)
       source: {doc: sch3923, where: 'sheet 1 USB_JTAG block: PIN86_SPI_DIR -> SPI_DIR (BL616 IO0), PIN13_SPI_SCLK -> SPI_SCLK (BL616 IO1), PIN76_SPI_MOSI -> SPI_MOSI (BL616 IO27), PIN75_SPI_MISO -> SPI_MISO (BL616 IO30); wiki: USB to SPI for FPGA communication; wiki_unbox: BL616 is SPI slave in spi mode'}
-      device: {"name": "BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 \"choose spi\" command)", "kind": "usb"}
+      device: {"name": "BL616 FPGA-link SPI (BL616 SPI slave; selected with the BL616 \"choose spi\" command)", "kind": "usb", "id": "bouffalo_bl616"}
       shares: ["gpio", "header_j5", "header_j6", "onboard_ms5351_clk"]   # the board multiplexes these pins
       pins: {"sclk": "13", "dir": "86", "mosi": "76", "miso": "75"}
     onboard_jtag:   # FPGA JTAG (driven by BL616; test points TP3-TP6)
       source: {doc: sch3923, where: 'sheet 1: PIN05_SYS_TMS (IOR25B/TMS), PIN06_SYS_TCK (IOR26A/TCK, 4.7K pull-down R5), PIN07_SYS_TDI, PIN08_SYS_TDO -> BL616 JTAG_* and TP3..TP6; wiki: JTAG test points for an external debugger'}
-      device: {"name": "FPGA JTAG (driven by BL616; test points TP3-TP6)", "kind": "other"}
+      device: {"name": "FPGA JTAG (driven by BL616; test points TP3-TP6)", "kind": "other", "id": "bouffalo_bl616"}
       pins: {"tms": "5", "tck": "6", "tdi": "7", "tdo": "8"}
     onboard_reconfig:   # RECONFIG_N test point TP1
       source: {doc: sch3923, where: 'sheet 1: PIN09_SYS_RECFG (IOR31B/RECONFIG_N) -> TP1'}

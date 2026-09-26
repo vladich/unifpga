@@ -23,6 +23,10 @@ Board:
   - temperature_sensor_external
   - sdr_sdram
   - spi_flash
+  devices:
+  - microchip_at24c08
+  - lm75_generic
+  - hynix_hy57v561620
   documents:
   - id: sch_v25
     title: Development board schematic diagram V2.5 (Omdazz Cyclone IV board)
@@ -125,17 +129,17 @@ Board:
       pins: {"ir": "100"}
     onboard_eeprom:   # AT24C08 I2C EEPROM
       source: {doc: sch_v25, where: 'AT24C08 block: SCL=I2C_SCL, SDA=I2C_SDA; pininfo p.1 I2C_SCL 99, I2C_SDA 98'}
-      device: {"name": "AT24C08 I2C EEPROM", "kind": "eeprom"}
+      device: {"name": "AT24C08 I2C EEPROM", "kind": "eeprom", "id": "microchip_at24c08"}
       shares: ["gpio_p3"]   # the board multiplexes these pins
       pins: {"scl": "99", "sda": "98"}
     onboard_temp_sensor:   # LM75(A) I2C temperature sensor
       source: {doc: sch_v25, where: 'temperature sensor block: SCL/SDA nets; pininfo p.1 IIC SCL 112, SDA 113'}
-      device: {"name": "LM75(A) I2C temperature sensor", "kind": "temperature"}
+      device: {"name": "LM75(A) I2C temperature sensor", "kind": "temperature", "id": "lm75_generic"}
       shares: ["gpio_p1"]   # the board multiplexes these pins
       pins: {"scl": "112", "sda": "113"}
     onboard_sdram:   # HY57V561620FTP-H SDRAM (x16)
       source: {doc: sch_v25, where: 'SDRAM block; pininfo p.3 S DQ0..15, S A0..11, BS0/1, LDQM/UDQM, CKE, CLK, CS, RAS, CAS, WE'}
-      device: {"name": "HY57V561620FTP-H SDRAM (x16)", "kind": "sdram"}
+      device: {"name": "HY57V561620FTP-H SDRAM (x16)", "kind": "sdram", "id": "hynix_hy57v561620"}
       shares: ["gpio_p2", "gpio_pseudo_sdram"]   # the board multiplexes these pins
       model_params: {col_bits: 8}
       pins: {"clk": "43", "cke": "58", "cs_n": "72", "ras_n": "71", "cas_n": "70", "we_n": "69", "ba": ["73", "74"], "a": ["76", "77", "80", "83", "68", "67", "66", "65", "64", "60", "75", "59"], "dq": ["28", "30", "31", "32", "33", "34", "38", "39", "54", "53", "52", "51", "50", "49", "46", "44"], "dqm": ["42", "55"]}

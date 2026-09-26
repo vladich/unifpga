@@ -35,6 +35,13 @@ Board:
   devices:
   - microsd_socket_generic
   - winbond_w25q64
+  - ruimeng_ms5351m
+  - bouffalo_bl616
+  - realtek_rtl8211f
+  - princeton_pt8211
+  - worldsemi_ws2812
+  - omnivision_ov5640
+  - wch_ch569w
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
@@ -236,11 +243,11 @@ Board:
       active: "low"
       pins: {"sw0": "AB12"}
     onboard_usr_clk:   # MS5351M clock generator (USR_CLK_IN to fabric, SerDes refclk1)
-      device: {"name": "MS5351M clock generator (USR_CLK_IN to fabric, SerDes refclk1)", "kind": "clock"}
+      device: {"name": "MS5351M clock generator (USR_CLK_IN to fabric, SerDes refclk1)", "kind": "clock", "id": "ruimeng_ms5351m"}
       shares: ["onboard_serdes_q0"]   # the board multiplexes these pins
       pins: {"usr_clk_in": "V13", "refclk1": "F10,E10"}
     onboard_uart:   # BL616 USB-JTAG & UART debugger (USB-C J7 "USB-DEBUG")
-      device: {"name": "BL616 USB-JTAG & UART debugger (USB-C J7 \"USB-DEBUG\")", "kind": "uart"}
+      device: {"name": "BL616 USB-JTAG & UART debugger (USB-C J7 \"USB-DEBUG\")", "kind": "uart", "id": "bouffalo_bl616"}
       iostandard: "LVCMOS33"
       shares: ["som_debug"]   # the board multiplexes these pins
       pins: {"tx": "U15", "rx": "V14", "jtag_tms": "T13", "jtag_tck": "V12", "jtag_tdi": "R13", "jtag_tdo": "U13"}
@@ -249,7 +256,7 @@ Board:
       shares: ["onboard_hdmi_0"]   # the board multiplexes these pins
       pins: {"clk": "G15,G16", "d0": "J14,H14", "d1": "J15,H15", "d2": "K17,J17", "hpd": "K13", "ddc_scl": "M13", "ddc_sda": "L13", "dir_sel": "K14"}
     onboard_ethernet:   # Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII
-      device: {"name": "Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII", "kind": "ethernet_rgmii"}
+      device: {"name": "Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII", "kind": "ethernet_rgmii", "id": "realtek_rtl8211f"}
       active: "low"
       iostandard: "LVCMOS33"
       pins: {"txc": "F20", "tx_ctl": "F21", "txd": ["D21", "E21", "D22", "E22"], "rxc": "G21", "rx_ctl": "G22", "rxd": ["F18", "E18", "C22", "B22"], "mdc": "V18", "mdio": "U22", "rst_n": "W20", "phy_clk_25m": "V19"}
@@ -264,16 +271,16 @@ Board:
       shares: ["onboard_sdcard"]   # the board multiplexes these pins
       pins: ["AA15", "Y16", "AB15", "V15", "W15", "W14"]   # header pins 1-6: D0/MISO, CMD/MOSI, D1, CLK, D3/CS, D2
     onboard_audio:   # Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)
-      device: {"name": "Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)", "kind": "audio_i2s"}
+      device: {"name": "Stereo I2S DAC PT8211 (U16) + NS4263 class-D amplifier (speakers J27/J28, 3.5 mm jack J25)", "kind": "audio_i2s", "id": "princeton_pt8211"}
       model_params: {"align_right": 1, "offset_by_one_cycle": 0}   # PT8211: LSB-justified input
       active: "low"
       iostandard: "LVCMOS33"
       pins: {"bck": "Y17", "ws": "AB17", "din": "AA16", "pa_en_n": "AB16"}
     onboard_ws2812:   # WS2812B-2020 RGB LED (U15) + aRGB strip connector J24
-      device: {"name": "WS2812B-2020 RGB LED (U15) + aRGB strip connector J24", "kind": "ws2812"}
+      device: {"name": "WS2812B-2020 RGB LED (U15) + aRGB strip connector J24", "kind": "ws2812", "id": "worldsemi_ws2812"}
       pins: {"din": "J16"}
     onboard_camera:   # OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)
-      device: {"name": "OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)", "kind": "camera_dvp"}
+      device: {"name": "OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)", "kind": "camera_dvp", "id": "omnivision_ov5640"}
       iostandard: "LVCMOS33"
       shares: ["onboard_sdram_1", "pmod_1"]   # the board multiplexes these pins
       pins: {"xclk": "AA21", "pclk": "AB20", "vsync": "Y21", "href": "AB21", "rst_n": "Y22", "pwdn": "AB22", "d": ["P14", "P15", "R16", "R14", "N15", "T20", "AA19", "AA20"], "sda": "Y13", "scl": "AA14"}
@@ -307,7 +314,7 @@ Board:
       active: "high"
       pins: {"bl": "P20"}
     onboard_ch569_hspi:   # CH569W USB3 bridge, 16-bit HSPI (USB-C J/P1 "USB-3.0" via VL162 mux)
-      device: {"name": "CH569W USB3 bridge, 16-bit HSPI (USB-C J/P1 \"USB-3.0\" via VL162 mux)", "kind": "usb"}
+      device: {"name": "CH569W USB3 bridge, 16-bit HSPI (USB-C J/P1 \"USB-3.0\" via VL162 mux)", "kind": "usb", "id": "wch_ch569w"}
       iostandard: "LVCMOS33"
       shares: ["onboard_lcd"]   # the board multiplexes these pins
       pins: {"hd": ["G17", "H22", "L14", "K22", "K21", "K18", "L21", "M21", "M22", "N22", "L18", "M18", "N19", "N18", "K16", "L16"], "htclk": "L20", "htvld": "L15", "htreq": "N20", "htack": "L19", "htrdy": "J22", "hrclk": "J20", "hrvld": "G18", "hrack": "J21", "hrts": "K19", "hcts": "M20"}

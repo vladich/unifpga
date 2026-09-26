@@ -40,6 +40,7 @@ Board:
   - dip_switch_generic
   - ftdi_ft232r
   - cypress_s25fl128s
+  - microchip_usb3300
   documents:
   - id: bsb_ha
     title: Emcraft SmartFusion2 SOM (M2S-FG484 SOM) Baseboard Hardware Architecture, M2S-FG484-SOM-BSB-EXT-HA v1.4 (2016-06-21)
@@ -112,7 +113,7 @@ Board:
       pins: {"tx": "D21", "rx": "C22"}
     onboard_usb_ulpi:   # USB3300 ULPI USB OTG PHY on P19 mini-USB
       source: {doc: som_ha, where: 'section 2.15.2 P2 connector ULPI_CLK 26, ULPI_DATA7..0 30..44, ULPI_DIR 46, ULPI_NXT 48, ULPI_STP 50'}
-      device: {"name": "USB3300 ULPI USB OTG PHY on P19 mini-USB", "kind": "usb"}
+      device: {"name": "USB3300 ULPI USB OTG PHY on P19 mini-USB", "kind": "usb", "id": "microchip_usb3300"}
       pins: {"clk": "R17", "dir": "R18", "nxt": "T19", "stp": "T18", "data": ["V22", "V21", "U22", "U21", "T20", "T21", "P17", "V19"]}
     onboard_flash:   # S25FL128S 16 MB SPI flash (SOM, SPI0)
       device: {"name": "S25FL128S 16 MB SPI flash (SOM, SPI0)", "kind": "flash", "id": "cypress_s25fl128s"}

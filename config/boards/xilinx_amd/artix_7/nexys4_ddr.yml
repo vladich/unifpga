@@ -198,7 +198,7 @@ Board:
       pins: {"dq": ["K17", "K18", "L14", "M14"], "csn": "L13"}
     onboard_ddr2:   # DDR2 SDRAM 128 MB (MT47H64M16HR-25E)
       source: {doc: mig, where: '<PinSelection>, lines 46-91'}
-      device: {"name": "DDR2 SDRAM 128 MB (MT47H64M16HR-25E)", "kind": "ddr"}
+      device: {"name": "DDR2 SDRAM 128 MB (MT47H64M16HR-25E)", "kind": "ddr", "id": "micron_mt47h64m16"}
       iostandard: ["DIFF_SSTL18_II", "SSTL18_II"]
       pins: {"addr": ["M4", "P4", "M6", "T1", "L3", "P5", "M2", "N1", "L4", "N5", "R2", "K5", "N6"], "ba": ["P2", "P3", "R1"], "cas_n": "L1", "ck_n": "L5", "ck_p": "L6", "cke": "M1", "cs_n": "K6", "dm": ["T6", "U1"], "dq": ["R7", "V6", "R8", "U7", "V7", "R6", "U6", "R5", "T5", "U3", "V5", "U4", "V4", "T4", "V1", "T3"], "dqs_n": ["V9", "V2"], "dqs_p": ["U9", "U2"], "odt": "M3", "ras_n": "N4", "we_n": "N2"}
   # ---- drawn: headers and parts; ./unifpga layout draft nexys4_ddr regenerates from here on ----

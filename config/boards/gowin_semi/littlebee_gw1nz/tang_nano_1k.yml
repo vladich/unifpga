@@ -23,6 +23,8 @@ Board:
   features:
   - hyperram
   - parallel_lcd
+  devices:
+  - bouffalo_bl702
   documents:
   - id: sch6100
     title: Tang_Nano_6100 schematic (KiCad, 1 sheet)
@@ -100,7 +102,7 @@ Board:
       device: {"name": "LCD backlight enable (LCD_BL to LP3320 EN through R2, fitted NC)", "kind": "lcd_rgb"}
       pins: {"bl": "14"}
     onboard_jtag:   # JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)
-      device: {"name": "JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)", "kind": "other"}
+      device: {"name": "JTAG (BL702 USB-JTAG through 22R R22/R25/R26/R27)", "kind": "other", "id": "bouffalo_bl702"}
       pins: {"tck": "3", "tms": "4", "tdi": "5", "tdo": "7"}
     onboard_config:   # Configuration pins (RECONFIG_N, DONE, READY, MODE0, MODE1)
       device: {"name": "Configuration pins (RECONFIG_N, DONE, READY, MODE0, MODE1)", "kind": "other"}

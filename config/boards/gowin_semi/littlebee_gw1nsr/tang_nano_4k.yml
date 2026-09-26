@@ -17,6 +17,8 @@ Board:
   # Gowin tool settings:
   # set_device args verbatim (part, -name, -device_version) and the
   # set_option -use_*_as_gpio flags that free configuration pins for I/O.
+  devices:
+  - bouffalo_bl702
   documents:
   - id: sch3603
     title: Tang_Nano_4K_3603 schematic (KiCad, 2 sheets)
@@ -115,7 +117,7 @@ Board:
         pclk: "41"
         data: ["39", "40"]
     onboard_jtag:   # JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)
-      device: {"name": "JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)", "kind": "other"}
+      device: {"name": "JTAG (BL702 USB-JTAG through 0R R34/R41/R43/R44, ESD diodes)", "kind": "other", "id": "bouffalo_bl702"}
       shares: ["header_p7"]   # the board multiplexes these pins
       pins: {"tdi": "3", "tdo": "4", "tms": "6", "tck": "7"}
     header_p6:   # Header P6 (1x22)

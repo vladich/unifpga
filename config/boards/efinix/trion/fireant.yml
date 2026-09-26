@@ -28,6 +28,7 @@ Board:
   - ftdi_ft232h
   - led_discrete_generic
   - pushbutton_smd_generic
+  - winbond_w25q80dv
   documents:
   - id: fa_sch
     title: JGL1904 FireAnt FPGA / FireAnt Interface schematic V1.3 (2 sheets, 11/12/2019)
@@ -82,7 +83,7 @@ Board:
       pins: {"cdone": "CONDONE"}
     onboard_spi_flash:   # U4 W25Q80DV SPI flash (configuration)
       source: {doc: fa_sch, where: sheet 1 nets SPI_SS/SPI_SCLK/SPI_MOSI/SPI_MISO -> J4/H4/F4/H3; sheet 2 U4; litex_fa spiflash agrees}
-      device: {"name": "U4 W25Q80DV SPI flash (configuration)", "kind": "flash"}
+      device: {"name": "U4 W25Q80DV SPI flash (configuration)", "kind": "flash", "id": "winbond_w25q80dv"}
       pins: {"cs_n": "GPIOL_01_SS_N", "clk": "GPIOL_02_CCK", "mosi": "GPIOL_04_CDI0", "miso": "GPIOL_06_CDI1"}
     onboard_jtag_test_points_tp8_tp11:   # JTAG test points TP8..TP11
       device: {"name": "JTAG test points TP8..TP11", "kind": "other"}

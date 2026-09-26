@@ -358,9 +358,9 @@ Devices:
     name: 16x2 character LCD (HD44780)
     manufacturer: (generic)
     part: HD44780-compatible
-    feature: parallel_lcd
+    feature: character_lcd
     interface: parallel_4bit
-    peripherals: []
+    peripherals: [hd44780_lcd]
     notes: ML4xx/5xx/6xx era Xilinx eval boards, Cyclone V SoC Dev Kit.
   - id: led_discrete_generic
     name: Discrete LED (generic)
@@ -1014,3 +1014,306 @@ Devices:
     interface: ddr4
     peripherals: []
     notes: 16 Gbit DDR4 chip; high-end accelerator cards and RFSoC boards.
+  - id: realtek_rtl8201f
+    name: Realtek RTL8201F 10/100 Ethernet PHY
+    manufacturer: Realtek
+    part: RTL8201F
+    feature: ethernet_phy_10_100
+    interface: rmii
+    peripherals: [ethernet_rmii_phy]
+    notes: Tang Primer 20K Dock.
+  - id: realtek_rtl8211f
+    name: Realtek RTL8211F Gigabit Ethernet PHY
+    manufacturer: Realtek
+    part: RTL8211F-CG
+    feature: ethernet_phy_gigabit
+    interface: rgmii
+    peripherals: []
+    notes: RTL8211F-CG; RTL8211FI-CG is its industrial-temperature grade (Tang Mega 138K Pro).
+  - id: realtek_rtl8211eg
+    name: Realtek RTL8211EG Gigabit Ethernet PHY
+    manufacturer: Realtek
+    part: RTL8211EG
+    feature: ethernet_phy_gigabit
+    interface: gmii / rgmii
+    peripherals: []
+    notes: QMTECH Kintex-7 daughterboard (GMII).
+  - id: microchip_ksz9021rn
+    name: Microchip (Micrel) KSZ9021RN Gigabit Ethernet PHY
+    manufacturer: Microchip (Micrel)
+    part: KSZ9021RN
+    feature: ethernet_phy_gigabit
+    interface: rgmii
+    peripherals: []
+    notes: Terasic DE1-SoC and SoCKit HPS Ethernet.
+  - id: davicom_dm9000a
+    name: Davicom DM9000A 10/100 Ethernet MAC+PHY
+    manufacturer: Davicom
+    part: DM9000A
+    feature: ethernet_phy_10_100
+    interface: parallel
+    peripherals: []
+    notes: "Terasic DE2: a MAC with a parallel host bus, not a bare PHY."
+  - id: microchip_usb3300
+    name: Microchip (SMSC) USB3300 ULPI PHY
+    manufacturer: Microchip (SMSC)
+    part: USB3300
+    feature: usb_2_otg
+    interface: ulpi
+    peripherals: []
+    notes: Terasic HPS boards (DE0-Nano-SoC, DE10-Nano, DE1-SoC, SoCKit), Microsemi M2S025 starter.
+  - id: microchip_usb3317
+    name: Microchip (SMSC) USB3317 ULPI PHY
+    manufacturer: Microchip (SMSC)
+    part: USB3317
+    feature: usb_2_otg
+    interface: ulpi
+    peripherals: []
+    notes: Tang Primer 20K Dock USB-C OTG.
+  - id: nxp_isp1362
+    name: NXP (Philips) ISP1362 USB OTG host / device controller
+    manufacturer: NXP (Philips)
+    part: ISP1362
+    feature: usb_2_otg
+    interface: parallel
+    peripherals: []
+    notes: Terasic DE2.
+  - id: wch_ch569w
+    name: WCH CH569W RISC-V MCU with USB 3.0 (SuperSpeed) and HSPI
+    manufacturer: WCH
+    part: CH569W
+    feature: usb_3_device
+    interface: hspi
+    peripherals: []
+    notes: "Tang Mega 60K / 138K: the USB 3.0 bridge, 16-bit HSPI to the FPGA."
+  - id: bouffalo_bl616
+    name: Bouffalo Lab BL616 MCU (Wi-Fi 6 / BLE) as USB-JTAG and UART debugger
+    manufacturer: Bouffalo Lab
+    part: BL616
+    feature: usb_jtag_bridge
+    interface: usb_jtag
+    peripherals: []
+    notes: "Sipeed Tang Nano 20K, Tang Mega 60K / 138K / 138K Pro, Tang Primer 25K docks: JTAG, UART, SPI link and clock setup."
+  - id: bouffalo_bl702
+    name: Bouffalo Lab BL702 MCU (BLE) as USB-JTAG
+    manufacturer: Bouffalo Lab
+    part: BL702
+    feature: usb_jtag_bridge
+    interface: usb_jtag
+    peripherals: []
+    notes: Sipeed Tang Nano 1K / 4K / 9K, Tang Primer 20K Dock.
+  - id: wch_ch552t
+    name: WCH CH552T 8051 USB MCU as USB-JTAG / UART
+    manufacturer: WCH
+    part: CH552T
+    feature: usb_jtag_bridge
+    interface: usb_jtag
+    peripherals: []
+    notes: "Sipeed Tang Nano (1K): JTAG and the debug UART."
+  - id: gigadevice_gd32f150
+    name: GigaDevice GD32F150 Cortex-M3 MCU as USB-JTAG / UART / SPI bridge
+    manufacturer: GigaDevice
+    part: GD32F150G
+    feature: usb_jtag_bridge
+    interface: usb_jtag
+    peripherals: []
+    notes: Sipeed Lichee Tang.
+  - id: ftdi_ft2232d
+    name: FTDI FT2232D Dual USB Bridge (full speed)
+    manufacturer: FTDI
+    part: FT2232D
+    feature: usb_jtag_bridge
+    interface: usb_dual_mpsse
+    peripherals: []
+    notes: "Karnix ECP5: channel A JTAG."
+  - id: silabs_cp2102n
+    name: Silicon Labs CP2102N USB-UART
+    manufacturer: Silicon Labs
+    part: CP2102N
+    feature: usb_uart_bridge
+    interface: usb_uart
+    peripherals: []
+    notes: QMTECH Kintex-7 daughterboard.
+  - id: hynix_hy57v2562gtr
+    name: SK Hynix HY57V2562GTR 256 Mbit SDR SDRAM (16M x 16)
+    manufacturer: SK Hynix
+    part: HY57V2562GTR
+    feature: sdr_sdram
+    interface: sdr
+    peripherals: [sdram_sdr]
+    notes: Alinx AX301 / AX4010, Saylinx.
+  - id: hynix_hy57v561620
+    name: SK Hynix HY57V561620 256 Mbit SDR SDRAM (4M x 16 x 4 banks)
+    manufacturer: SK Hynix
+    part: HY57V561620FTP
+    feature: sdr_sdram
+    interface: sdr
+    peripherals: [sdram_sdr]
+    notes: omdazz.
+  - id: esmt_m12l64322a
+    name: ESMT M12L64322A 64 Mbit SDR SDRAM (2M x 32)
+    manufacturer: ESMT
+    part: M12L64322A
+    feature: sdr_sdram
+    interface: sdr
+    peripherals: [sdram_sdr]
+    notes: Colorlight receiver cards.
+  - id: micron_mt41j128m16
+    name: Micron MT41J128M16 2 Gbit DDR3 SDRAM
+    manufacturer: Micron
+    part: MT41J128M16
+    feature: ddr3_memory
+    interface: ddr3
+    peripherals: []
+    notes: Tang Mega 138K SOM 30353 (512 MB), QMTECH Kintex-7 core (MT41K128M16JT-125:K is the DDR3L twin).
+  - id: samsung_k6r4016v1d
+    name: Samsung K6R4016V1D 4 Mbit asynchronous SRAM (256K x 16)
+    manufacturer: Samsung
+    part: K6R4016V1D
+    feature: sram
+    interface: parallel
+    peripherals: [async_sram]
+    notes: Karnix ECP5, ice40hx8k_evb-class boards.
+  - id: infineon_s27ks0641
+    name: Infineon (Cypress) S27KS0641 64 Mbit HyperRAM
+    manufacturer: Infineon (Cypress)
+    part: S27KS0641
+    feature: hyperram
+    interface: hyperbus
+    peripherals: []
+    notes: GateMate EVB A1 (1.8 V, bank WB).
+  - id: infineon_s25fl256l
+    name: Infineon (Cypress) S25FL256L 256 Mbit SPI NOR flash
+    manufacturer: Infineon (Cypress)
+    part: S25FL256L
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+  - id: macronix_mx25l12833f
+    name: Macronix MX25L12833F 128 Mbit SPI NOR flash
+    manufacturer: Macronix
+    part: MX25L12833F
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Lattice CrossLink-NX EVN configuration flash.
+  - id: macronix_mx25r6435f
+    name: Macronix MX25R6435F 64 Mbit low-power SPI NOR flash
+    manufacturer: Macronix
+    part: MX25R6435F
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: GateMate EVB A1 configuration flash.
+  - id: winbond_w25q80dv
+    name: Winbond W25Q80DV 8 Mbit SPI NOR flash
+    manufacturer: Winbond
+    part: W25Q80DV
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Configuration flash of small iCE40 boards.
+  - id: intel_epcs64
+    name: Intel (Altera) EPCS64 64 Mbit serial configuration flash
+    manufacturer: Intel (Altera)
+    part: EPCS64
+    feature: spi_flash
+    interface: spi
+    peripherals: []
+    notes: Terasic DE0-Nano.
+  - id: xtx_xt25f64f
+    name: XTX XT25F64F 64 Mbit SPI NOR flash
+    manufacturer: XTX Technology
+    part: XT25F64F
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Sipeed Tang Nano 20K (bitstream + user data, MSPI).
+  - id: xtx_xt25b32
+    name: XTX XT25B32 32 Mbit SPI NOR flash
+    manufacturer: XTX Technology
+    part: XT25B32
+    feature: qspi_flash
+    interface: qspi
+    peripherals: []
+    notes: Sipeed Tang Primer 20K module (XT25B32-S).
+  - id: microchip_at24c01c
+    name: Microchip (Atmel) AT24C01C 1 Kbit I2C EEPROM
+    manufacturer: Microchip (Atmel)
+    part: AT24C01C
+    feature: eeprom_chip
+    interface: i2c
+    peripherals: []
+    notes: Karnix ECP5.
+  - id: microchip_at24c04
+    name: Microchip (Atmel) AT24C04 4 Kbit I2C EEPROM
+    manufacturer: Microchip (Atmel)
+    part: AT24C04
+    feature: eeprom_chip
+    interface: i2c
+    peripherals: []
+    notes: zeowaa.
+  - id: microchip_at24c08
+    name: Microchip (Atmel) AT24C08 8 Kbit I2C EEPROM
+    manufacturer: Microchip (Atmel)
+    part: AT24C08
+    feature: eeprom_chip
+    interface: i2c
+    peripherals: []
+    notes: omdazz, rzrd, piswords6.
+  - id: maxim_ds18b20
+    name: Maxim (ADI) DS18B20 1-Wire digital thermometer
+    manufacturer: Maxim (Analog Devices)
+    part: DS18B20
+    feature: temperature_sensor_external
+    interface: one_wire
+    peripherals: [ds18b20]
+    notes: piswords6.
+  - id: lm75_generic
+    name: LM75 / LM75A I2C temperature sensor (TI, NXP and second sources)
+    manufacturer: various (TI LM75, NXP LM75A)
+    part: LM75
+    feature: temperature_sensor_external
+    interface: i2c
+    peripherals: [i2c_temperature_sensor]
+    notes: omdazz, rzrd, Alinx AX7035B.
+  - id: ruimeng_ms5351m
+    name: Ruimeng MS5351M programmable clock generator (Si5351-compatible)
+    manufacturer: Hangzhou Ruimeng Technology
+    part: MS5351M
+    feature: clock_generator
+    interface: i2c
+    peripherals: []
+    notes: "Sipeed Tang Nano 20K, Tang Console, Tang Mega 60K / 138K / 138K Pro: set up by the on-board BL616."
+  - id: princeton_pt8211
+    name: Princeton Technology PT8211 16-bit stereo DAC (I2S, LSB-justified)
+    manufacturer: Princeton Technology
+    part: PT8211
+    feature: audio_dac
+    interface: i2s
+    peripherals: [i2s_audio_out]
+    notes: Sipeed Tang Mega 60K / 138K / 138K Pro (PT8211-S), with an on-board class-D amplifier.
+  - id: worldsemi_ws2812
+    name: Worldsemi WS2812 / WS2812B addressable RGB LED
+    manufacturer: Worldsemi
+    part: WS2812
+    feature: addressable_leds
+    interface: single_wire_serial
+    peripherals: [ws2812]
+    notes: WS2812B and WS2812B-2020 are the same protocol.
+  - id: omnivision_ov5640
+    name: OmniVision OV5640 5 MP camera sensor module (DVP)
+    manufacturer: OmniVision
+    part: OV5640
+    feature: parallel_camera_input
+    interface: dvp + sccb
+    peripherals: []
+    notes: The module Sipeed ships for the Tang Mega 60K / 138K camera FPC.
+  - id: ti_adc128s052
+    name: TI ADC128S052 8-channel 12-bit SAR ADC
+    manufacturer: Texas Instruments
+    part: ADC128S052
+    feature: adc_chip
+    interface: spi
+    peripherals: []
+    notes: Karnix ECP5 (the 8-channel sibling of the ADC128S022).

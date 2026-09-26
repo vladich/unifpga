@@ -37,6 +37,8 @@ Board:
   - adi_adxl345
   - ti_adc128s022
   - lt_ltc2308
+  - ftdi_ft232r
+  - microchip_usb3300
   documents:
   - id: manual
     title: DE0-Nano-SoC User Manual rev. D0 board (Terasic)
@@ -111,12 +113,12 @@ Board:
       pins: {"HPS_LED": "A20"}
     onboard_hps_ethernet:   # HPS Gigabit Ethernet PHY (KSZ9031RN)
       fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
-      device: {"name": "HPS Gigabit Ethernet PHY (KSZ9031RN)", "kind": "ethernet"}
+      device: {"name": "HPS Gigabit Ethernet PHY (KSZ9031RN)", "kind": "ethernet", "id": "microchip_ksz9031rnx"}
       iostandard: "3.3V"
       pins: {"HPS_ENET_TX_EN": "A12", "HPS_ENET_TX_DATA": ["A16", "J14", "A15", "D17"], "HPS_ENET_RX_DV": "J13", "HPS_ENET_RX_DATA": ["A14", "A11", "C15", "A9"], "HPS_ENET_RX_CLK": "J12", "HPS_ENET_RESET_N": "B14", "HPS_ENET_MDIO": "E16", "HPS_ENET_MDC": "A13", "HPS_ENET_GTX_CLK": "J15"}
     onboard_hps_uart:   # HPS UART to USB (FT232R)
       fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
-      device: {"name": "HPS UART to USB (FT232R)", "kind": "uart"}
+      device: {"name": "HPS UART to USB (FT232R)", "kind": "uart", "id": "ftdi_ft232r"}
       iostandard: "3.3V"
       shares: ["hps_ltc_header"]   # the board multiplexes these pins
       pins: {"HPS_UART_RX": "A22", "HPS_UART_TX": "B21", "HPS_CONV_USB_N": "C6"}
@@ -132,7 +134,7 @@ Board:
       pins: {"HPS_SD_CLK": "B8", "HPS_SD_CMD": "D14", "HPS_SD_DATA": ["C13", "B6", "B11", "B9"]}
     onboard_hps_usb_otg:   # HPS USB 2.0 OTG PHY (USB3300)
       fabric: false   # a hard-processor (HPS) pin: not reachable from the FPGA fabric
-      device: {"name": "HPS USB 2.0 OTG PHY (USB3300)", "kind": "usb"}
+      device: {"name": "HPS USB 2.0 OTG PHY (USB3300)", "kind": "usb", "id": "microchip_usb3300"}
       iostandard: "3.3V"
       pins: {"HPS_USB_CLKOUT": "G4", "HPS_USB_DATA": ["C10", "F5", "C9", "C4", "C8", "D4", "C7", "F4"], "HPS_USB_DIR": "E5", "HPS_USB_NXT": "D5", "HPS_USB_RESET": "H12", "HPS_USB_STP": "C5"}
     onboard_hps_gsensor:   # HPS accelerometer (ADXL345 G-sensor)
