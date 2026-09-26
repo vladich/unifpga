@@ -168,12 +168,12 @@ Board:
     - id: sdram
       label: SDRAM (8 MB, 16-bit)
       attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA_, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
-    - id: clk2_50mhz
-      label: CLOCK_50_2 (50 MHz)
-      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
     - id: sdcard
       label: SD card socket
       attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: onboard_sdcard.SD_DAT0, dat3: onboard_sdcard.SD_DAT3}}
+    - id: clk2_50mhz
+      label: CLOCK_50_2 (50 MHz)
+      device: {kind: clock, bank: onboard_clk2_50mhz}   # no peripheral model yet
     - id: flash
       label: Flash memory (4 MB)
       device: {kind: flash, bank: onboard_flash}   # no peripheral model yet

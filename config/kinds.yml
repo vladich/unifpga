@@ -42,6 +42,7 @@ Kinds:
   - {kind: audio,          description: "Audio codec",                         features: [audio_codec]}
   - {kind: audio_i2s,      description: "I2S audio device",                    features: [audio_codec, audio_dac, digital_mic_i2s]}
   - {kind: audio_dac,      description: "Audio DAC",                           features: [audio_dac]}
+  - {kind: audio_amp,      description: "Audio amplifier driven by a PWM or analog line", features: [audio_amp_class_d]}
   - {kind: mic,            description: "Microphone, or a connector for a microphone-array module (implies no on-board microphone)", features: []}
   - {kind: buzzer,         description: "Buzzer",                              features: [buzzer]}
   - {kind: fan,            description: "Fan header",                          features: [fan_header]}

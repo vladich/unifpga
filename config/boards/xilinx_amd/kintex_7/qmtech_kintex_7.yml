@@ -252,6 +252,9 @@ Board:
     - id: db_buttons
       label: Daughterboard keys (5)
       attach: {peripheral: button_array, params: {width: 5}, bind: {btn: onboard_db_buttons.user_btn}}
+    - id: db_sdcard
+      label: Daughterboard microSD slot
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_db_sdcard.clk, cmd: onboard_db_sdcard.cmd, dat0: 'onboard_db_sdcard.data[0]', dat3: 'onboard_db_sdcard.data[3]'}}
     - id: core_keys
       label: Core-board user keys SW2, SW3
       attach: {peripheral: button_array, params: {width: 2, active: low}, bind: {btn: [onboard_core_keys.sw2, onboard_core_keys.sw3]}}
@@ -279,6 +282,3 @@ Board:
     - id: db_vga
       label: Daughterboard VGA (RGB 5-6-5)
       device: {kind: vga, bank: onboard_db_vga}   # no peripheral model yet
-    - id: db_sdcard
-      label: Daughterboard microSD slot
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_db_sdcard.clk, cmd: onboard_db_sdcard.cmd, dat0: 'onboard_db_sdcard.data[0]', dat3: 'onboard_db_sdcard.data[3]'}}

@@ -173,6 +173,9 @@ Board:
     - id: leds
       label: leds
       attach: {peripheral: led_bank, params: {width: 8}, bind: {led: onboard_leds}}
+    - id: adc
+      label: A/D converter (LTC2308, SPI, 2x5 analog header)
+      attach: {peripheral: ltc2308, bind: {convst: onboard_adc.ADC_CONVST, sck: onboard_adc.ADC_SCK, sdi: onboard_adc.ADC_SDI, sdo: onboard_adc.ADC_SDO}}
     - id: fpga_clk2_50mhz
       label: FPGA_CLK2_50 (50 MHz)
       device: {kind: clock, bank: onboard_fpga_clk2_50mhz}   # no peripheral model yet
@@ -188,9 +191,6 @@ Board:
     - id: arduino_io
       label: Arduino Uno R3 expansion header
       device: {kind: header, bank: arduino_io}   # no peripheral model yet
-    - id: adc
-      label: A/D converter (LTC2308, SPI, 2x5 analog header)
-      attach: {peripheral: ltc2308, bind: {convst: onboard_adc.ADC_CONVST, sck: onboard_adc.ADC_SCK, sdi: onboard_adc.ADC_SDI, sdo: onboard_adc.ADC_SDO}}
     - id: hps_key
       label: HPS user push-button (HPS_KEY)
       device: {kind: buttons, bank: onboard_hps_key}   # no peripheral model yet

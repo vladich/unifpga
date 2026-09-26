@@ -149,6 +149,8 @@ Board:
         data: H5
         lrsel: F5
     onboard_pwm_amp:
+      device: {name: "PWM audio amplifier (Digilent)", kind: audio_amp}
+      model_params: {open_drain: true}   # AUD_PWM: 1'b0 for 0 V, high-Z for 3.3 V (Digilent)
       source: {doc: xdc, where: '"PWM Audio Amplifier", lines 213-214'}
       pins:
         pwm: A11
@@ -255,7 +257,7 @@ Board:
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
     - id: pwm_amp
-      label: pwm amp
+      label: PWM audio amplifier (Digilent)
       attach: {peripheral: pwm_amp, params: {open_drain: true}, bind: {pwm: onboard_pwm_amp.pwm, sd: onboard_pwm_amp.sd}}
     - id: uart
       label: uart

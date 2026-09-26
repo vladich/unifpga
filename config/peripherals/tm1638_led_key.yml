@@ -15,7 +15,7 @@ Peripheral:
     # What resets the controller: the design's reset, or (Tang Primer 25K:
     # `.rst ( tm_rst )`, tm_rst = rst_on_power_up) the power-up reset alone,
     # so a TM1638 key that resets the design does not also clear the keys
-    rst: { type: string, default: context.rst }
+    rst: { type: string, default: context.rst, rig: true }
   provides:
     - capability: switches
       params: { width: 8 }

@@ -362,6 +362,9 @@ Board:
     - id: fan
       label: 4-pin PWM fan connector
       attach: {peripheral: fan_pwm, bind: {pwm: onboard_fan.pwm, tach: onboard_fan.tach}}
+    - id: sdcard
+      label: microSD card slot J19 (SDIO)
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.d0, dat3: onboard_sdcard.d3}}
     - id: hdmi_rx
       label: DVI/HDMI B (RX) connector J12
       device: {kind: hdmi_rx, bank: onboard_hdmi_rx}   # no peripheral model yet
@@ -410,9 +413,6 @@ Board:
     - id: m2
       label: M.2 B-key socket J18 (2230/2242, SerDes Q1 lanes 2-3)
       device: {kind: serdes, bank: onboard_m2}   # no peripheral model yet
-    - id: sdcard
-      label: microSD card slot J19 (SDIO)
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.d0, dat3: onboard_sdcard.d3}}
     - id: camera_dvp
       label: DVP camera connector (FPC 24P, OV5640-style)
       device: {kind: camera_dvp, bank: onboard_camera_dvp}   # no peripheral model yet

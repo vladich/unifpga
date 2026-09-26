@@ -168,6 +168,9 @@ Board:
     - id: temp_sensor
       label: Temperature sensor LM75 (I2C)
       attach: {peripheral: i2c_temperature_sensor, bind: {scl: onboard_temp_sensor.scl, sda: onboard_temp_sensor.sda}}
+    - id: sdcard
+      label: microSD card slot (SD mode)
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.data[0]', dat3: 'onboard_sdcard.data[3]'}}
     - id: ddr3
       label: DDR3 SDRAM
       device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet
@@ -180,9 +183,6 @@ Board:
     - id: hdmi_tx
       label: HDMI output (J6; direct FPGA TMDS, HDMI_5V switch out_en)
       device: {kind: hdmi_tx, bank: onboard_hdmi_tx}   # no peripheral model yet
-    - id: sdcard
-      label: microSD card slot (SD mode)
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.data[0]', dat3: 'onboard_sdcard.data[3]'}}
     - id: qspi_flash
       label: QSPI flash (Micron N25Q128, 16 MB)
       device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet

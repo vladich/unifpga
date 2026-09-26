@@ -13,7 +13,8 @@ Peripheral:
       default: high
     as_switches:
       type: bool
-      default: false        # boards without switches feed the design's sw from the keys (`.sw (key)`)
+      default: false
+      rig: true             # the rig's convention, not the part's        # boards without switches feed the design's sw from the keys (`.sw (key)`)
   signals:
     - { name: btn, type: bus, width: $width, direction: input }
   # the on-board devices it models: a board inventory's `buttons` device (a bank

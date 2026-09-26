@@ -402,6 +402,9 @@ Board:
     - id: fan
       label: PWM fan connector J23 (4-pin)
       attach: {peripheral: fan_pwm, bind: {pwm: onboard_fan.pwm, en: onboard_fan.en, tach: onboard_fan.tacho}}
+    - id: sdcard
+      label: microSD slot J31 (TF-101A)
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd_mosi, dat0: onboard_sdcard.d0_miso, dat3: onboard_sdcard.d3_cs}}
     - id: spi_flash
       label: SPI NOR flash W25Q64 (SOM U1200, MSPI config flash)
       device: {kind: flash, bank: onboard_spi_flash}   # no peripheral model yet
@@ -441,9 +444,6 @@ Board:
     - id: ethernet
       label: Gigabit Ethernet RTL8211F-CG (U10, RJ45 J12), RGMII
       device: {kind: ethernet_rgmii, bank: onboard_ethernet}   # no peripheral model yet
-    - id: sdcard
-      label: microSD slot J31 (TF-101A)
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd_mosi, dat0: onboard_sdcard.d0_miso, dat3: onboard_sdcard.d3_cs}}
     - id: camera
       label: OV5640 camera FPC J15 (DVP, 24-pin 0.5 mm)
       device: {kind: camera_dvp, bank: onboard_camera}   # no peripheral model yet

@@ -265,6 +265,9 @@ Board:
     - id: sram
       label: SRAM (512 KB, 16-bit)
       attach: {peripheral: async_sram, params: {addr_bits: 18}, bind: {a: onboard_sram.SRAM_A, d: onboard_sram.SRAM_D, ce_n: onboard_sram.SRAM_CE_n, oe_n: onboard_sram.SRAM_OE_n, we_n: onboard_sram.SRAM_WE_n, lb_n: onboard_sram.SRAM_LB_n, ub_n: onboard_sram.SRAM_UB_n}}
+    - id: sdcard
+      label: SD card socket
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: 'onboard_sdcard.SD_DAT[0]', dat3: 'onboard_sdcard.SD_DAT[3]'}}
     - id: clk125mhz
       label: CLOCK_125 (125 MHz, Si5338, LVDS)
       device: {kind: clock, bank: onboard_clk125mhz}   # no peripheral model yet
@@ -283,9 +286,6 @@ Board:
     - id: lpddr2
       label: LPDDR2 SDRAM (512 MB, 32-bit)
       device: {kind: other, bank: onboard_lpddr2}   # no peripheral model yet
-    - id: sdcard
-      label: SD card socket
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: 'onboard_sdcard.SD_DAT[0]', dat3: 'onboard_sdcard.SD_DAT[3]'}}
     - id: hsmc
       label: HSMC connector
       device: {kind: header, bank: hsmc}   # no peripheral model yet

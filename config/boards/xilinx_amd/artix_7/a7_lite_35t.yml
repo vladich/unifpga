@@ -152,15 +152,15 @@ Board:
     - id: hdmi
       label: hdmi
       attach: {peripheral: hdmi_tmds, params: {timing: dvi, clock_serial_mhz: 250}, bind: {clk_p: onboard_hdmi.clk_p, d_p: onboard_hdmi.d_p, clk_n: onboard_hdmi.clk_n, d_n: onboard_hdmi.d_n}}
+    - id: sdcard
+      label: microSD card slot
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.data0, dat3: onboard_sdcard.data3}}
     - id: qspi_flash
       label: QSPI flash
       device: {kind: flash, bank: onboard_qspi_flash}   # no peripheral model yet
     - id: eeprom
       label: I2C EEPROM
       device: {kind: other, bank: onboard_eeprom}   # no peripheral model yet
-    - id: sdcard
-      label: microSD card slot
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.clk, cmd: onboard_sdcard.cmd, dat0: onboard_sdcard.data0, dat3: onboard_sdcard.data3}}
     - id: ddr3
       label: DDR3 SDRAM (MT41K256M16, 512 MB, 16-bit)
       device: {kind: ddr, bank: onboard_ddr3}   # no peripheral model yet

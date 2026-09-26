@@ -135,6 +135,8 @@ Board:
         data: H5
         lrsel: F5
     onboard_pwm_amp:
+      device: {name: "PWM audio amplifier (Digilent)", kind: audio_amp}
+      model_params: {open_drain: true}   # AUD_PWM: 1'b0 for 0 V, high-Z for 3.3 V (Digilent)
       source: {doc: xdc, where: '"PWM Audio Amplifier", lines 478-481'}
       pins:
         pwm: A11
@@ -241,9 +243,6 @@ Board:
     - id: vga
       label: vga
       attach: {peripheral: vga_4bit, params: {bits_r: 4, bits_g: 4, bits_b: 4, pin_bits_r: 4, pin_bits_g: 4, pin_bits_b: 4, color_depth: 444}, bind: {r: onboard_vga.r, g: onboard_vga.g, b: onboard_vga.b, hs: onboard_vga.hs, vs: onboard_vga.vs}}
-    - id: pwm_amp
-      label: pwm amp
-      attach: {peripheral: pwm_amp, bind: {pwm: onboard_pwm_amp.pwm, sd: onboard_pwm_amp.sd}}
     - id: uart
       label: uart
       attach: {peripheral: uart_2wire, bind: {rx: onboard_uart.rx}}
@@ -265,6 +264,9 @@ Board:
     - id: sdcard
       label: microSD card slot
       attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.sck, cmd: onboard_sdcard.cmd, dat0: 'onboard_sdcard.dat[0]', dat3: 'onboard_sdcard.dat[3]', reset: onboard_sdcard.reset}}
+    - id: pwm_amp
+      label: PWM audio amplifier (Digilent)
+      attach: {peripheral: pwm_amp, params: {open_drain: true}, bind: {pwm: onboard_pwm_amp.pwm, sd: onboard_pwm_amp.sd}}
     - id: ethernet
       label: 10/100 Ethernet PHY (SMSC, RMII)
       device: {kind: ethernet, bank: onboard_ethernet}   # no peripheral model yet

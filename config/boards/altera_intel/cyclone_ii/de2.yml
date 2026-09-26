@@ -234,6 +234,9 @@ Board:
     - id: sdram
       label: SDRAM (8 MB, 16-bit)
       attach: {peripheral: sdram_sdr, params: {row_bits: 12, data_bits: 16, col_bits: 8}, bind: {clk: onboard_sdram.DRAM_CLK, cke: onboard_sdram.DRAM_CKE, cs_n: onboard_sdram.DRAM_CS_N, ras_n: onboard_sdram.DRAM_RAS_N, cas_n: onboard_sdram.DRAM_CAS_N, we_n: onboard_sdram.DRAM_WE_N, ba: onboard_sdram.DRAM_BA_, a: onboard_sdram.DRAM_ADDR, dq: onboard_sdram.DRAM_DQ, dqm: [onboard_sdram.DRAM_LDQM, onboard_sdram.DRAM_UDQM]}}
+    - id: sdcard
+      label: SD card socket
+      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: onboard_sdcard.SD_DAT, dat3: onboard_sdcard.SD_DAT3}}
     - id: clk27mhz
       label: CLOCK_27 (27 MHz)
       device: {kind: clock, bank: onboard_clk27mhz}   # no peripheral model yet
@@ -261,6 +264,3 @@ Board:
     - id: usb_blaster_jtag
       label: USB-Blaster JTAG link to FPGA (Control Panel)
       device: {kind: other, bank: onboard_usb_blaster_jtag}   # no peripheral model yet
-    - id: sdcard
-      label: SD card socket
-      attach: {peripheral: sdcard_spi, bind: {clk: onboard_sdcard.SD_CLK, cmd: onboard_sdcard.SD_CMD, dat0: onboard_sdcard.SD_DAT, dat3: onboard_sdcard.SD_DAT3}}
