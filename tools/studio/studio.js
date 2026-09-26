@@ -2284,6 +2284,34 @@ async function changed(msg) {
   render();
 }
 
+// Refresh: the files may have changed under the page (an edit, a commit, the
+// drafter). Re-read the board (its parts and headers, the modules, the setups
+// list), the rig itself unless it is edited here (unsaved edits stay), the
+// designs, and evaluate and draw again — the page and its state remain.
+async function refresh() {
+  if (!S.setup) return;
+  const kept = S.dirty, setupId = S.setup.id, boardId = S.setup.board;
+  status("refreshing…");
+  try {
+    S.board = await api("/api/board/" + encodeURIComponent(boardId));
+    fillSelect($("setup"), S.board.setups, setupId);
+    renderModules();
+    if (!kept && setupId && S.board.setups.includes(setupId)) S.setup = await api("/api/setup/" + encodeURIComponent(setupId));
+    fillSelect($("toolchain"), S.board.toolchains, S.setup.toolchain);
+    $("toolchain").value = S.setup.toolchain;
+    S.ev = await api("/api/evaluate", {setup: S.setup});
+    // a selection of something the files no longer have is dropped
+    if (S.sel && S.sel.kind === "onboard" && !onboardDef(S.sel.id)) S.sel = null;
+    if (S.sel && (S.sel.kind === "pin" || S.sel.kind === "conn") && !conn(S.sel.kind === "pin" ? S.sel.conn : S.sel.id)) S.sel = null;
+    S.pos = {};
+    render();
+    loadDesigns().catch(() => {});
+    status(kept ? "refreshed: the board, modules and designs re-read from the files; your unsaved edits to the rig are kept"
+                : "refreshed: everything re-read from the files");
+    staleWarning();
+  } catch (e) { status(e.message, true); }
+}
+
 async function loadBoard(id, setupId) {
   S.board = await api("/api/board/" + encodeURIComponent(id));
   fillSelect($("setup"), S.board.setups, setupId);
@@ -2318,6 +2346,7 @@ function wire() {
   $("add-module").addEventListener("change", (e) => { const id = e.target.value; e.target.value = ""; if (id) addModule(id); });
   wireSide();
   $("remove-sel").addEventListener("click", removeSelected);
+  $("refresh").addEventListener("click", () => refresh());
   // New setup: an inline form (name, toolchain, empty rig or a copy of this one)
   $("new-setup").addEventListener("click", () => openNewSetupForm());
   $("ns-cancel").addEventListener("click", () => { $("new-setup-form").hidden = true; });
