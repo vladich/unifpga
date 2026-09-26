@@ -34,7 +34,7 @@ class ProbeError(ValueError):
     pass
 
 
-def _path(root, value, kind):
+def admit_path(root, value, kind):
     if not isinstance(value, str) or not value or "\\" in value or ":" in value or \
             any(ord(ch) < 32 for ch in value):
         raise ProbeError("invalid {} path {!r}".format(kind, value))
@@ -94,8 +94,8 @@ def load_request(root, request_path):
             not isinstance(defines, list) or len(defines) > MAX_FILES or \
             not isinstance(top, str) or not top.strip() or len(top) > 256:
         raise ProbeError("invalid source, include, define, or top inventory")
-    source_paths = [_path(root, item, "source") for item in sources]
-    include_paths = [_path(root, item, "include directory") for item in includes]
+    source_paths = [admit_path(root, item, "source") for item in sources]
+    include_paths = [admit_path(root, item, "include directory") for item in includes]
     if len(set(source_paths)) != len(source_paths) or len(set(include_paths)) != len(include_paths):
         raise ProbeError("duplicate source or include directory")
     if any(not isinstance(item, str) or len(item) > 1024 or not _DEFINE.fullmatch(item)
@@ -115,7 +115,7 @@ def load_request(root, request_path):
     return request, source_paths, include_paths, hashlib.sha256(raw).hexdigest()
 
 
-def _digest(path):
+def digest_file(path):
     size = 0
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -135,7 +135,7 @@ def _inventory(root, paths):
     for path in paths:
         if path.is_symlink() or not path.is_relative_to(root) or not path.is_file():
             raise ProbeError("frontend read an unsafe file: {!r}".format(path.name))
-        info = _digest(path)
+        info = digest_file(path)
         total += info["bytes"]
         if total > MAX_TOTAL_BYTES:
             raise ProbeError("source/include bytes exceed 32 MiB")

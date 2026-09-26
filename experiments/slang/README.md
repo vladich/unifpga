@@ -72,6 +72,10 @@ also means assets loaded at runtime, such as `$readmemh` files, are outside
 the candidate; they need separate inventory and review.
 `candidate_sha256` covers the canonical report without that digest field, so
 warning or blocker changes produce a different candidate identity.
+
+Resolved FuseSoC EDAM can feed this candidate through
+`tools.edam_import_input`; its command, supported file types, and asset
+limitations are documented in `experiments/fusesoc/README.md`.
 The command is for trusted local sources and requires the locked Slang
 environment described above. External repositories still need isolation and
 admission before this command can serve a public import service.

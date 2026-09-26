@@ -41,7 +41,29 @@ providers or run generators for other cores, so arbitrary external cores must
 not be pointed at this in-process experiment. A production import needs an
 isolated, supervised worker, immutable source snapshot, dependency pinning,
 resource limits, and an explicit executable-hook policy. The full three-design
-and four-flow parity matrix in [the plan](../../ECOSYSTEM_PLAN.md) remains open.
+and four-flow parity matrix remains open.
+
+For already resolved, trusted EDAM 0.2.1, `tools.edam_import_input` now checks
+the exact exported file inventory, core-file digests and dependency graph,
+then derives a Slang request without running a FuseSoC backend. Use the locked
+Slang environment and a task-owned scratch directory:
+
+```text
+python -m tools.edam_import_input --work-root <setup-build-root> \
+  --edam <setup-build-root>/<core>.eda.yml --core-root <admitted-core-root> \
+  --compilation-unit separate --candidate --scratch-root <task-tmp-root>
+```
+
+The combined candidate checks the HDL/include closure against what Slang
+actually read and rehashes EDAM, exported files, assets, and core files after
+elaboration. It preserves each asset but marks its placement `unverified`:
+EDAM presence did not put the fixture ROM into the generated Makefile. This
+reader supports `systemVerilogSource`, `verilogSource`, and `user` files plus
+integer `vlogparam` overrides. Unsupported file types, executable hooks,
+filters, VPI inputs, extra flow options, unsafe paths, and dependency cycles
+fail explicitly.
+The recheck detects ordinary concurrent edits; it is not an immutable snapshot
+or an untrusted-source sandbox.
 
 References: [CAPI2 core files](https://fusesoc.readthedocs.io/en/stable/user/build_system/core_files.html),
 [CAPI2 dependencies](https://fusesoc.readthedocs.io/en/stable/user/build_system/dependencies.html),

@@ -221,6 +221,10 @@ candidate with `python -m tools.sv_import_candidate --root <source-root> --reque
 in the locked Slang environment; `experiments/slang/README.md` describes its
 evidence and limits.
 
+For a resolved FuseSoC EDAM, `python -m tools.edam_import_input` admits its
+source closure and can run the same frontend with `--candidate`; see
+`experiments/fusesoc/README.md` for the supported subset.
+
 The board editor draws three columns: the virtual device `design_top` sees
 (its ports and bits), the board (on-board devices, connectors with numbered
 pins) and the add-on modules with their wires. Click a design bit, a header
